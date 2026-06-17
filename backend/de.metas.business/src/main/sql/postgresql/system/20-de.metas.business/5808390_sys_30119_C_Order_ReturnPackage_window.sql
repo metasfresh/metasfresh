@@ -20,7 +20,7 @@
 -- Reused AD_Elements (NO new AD_Element rows inserted — their ColumnNames already exist):
 --   585006 'Rücknahme Gebinde' (window/tab/menu caption + key column)
 --   187 C_BPartner_ID 'Geschäftspartner', 558 C_Order_ID 'Auftrag',
---   585007 PalletType 'Palette', 585008 QtyDeliveredLU 'geliefert', 585009 QtyReturnedLU 'zurück',
+--   585007 PalletType 'Palette', 585008 QtyDeliveredLU 'Geliefert', 585009 QtyReturnedLU 'Zurück',
 --   348 IsActive 'Aktiv', 113 AD_Org_ID 'Sektion', 102 AD_Client_ID 'Mandant'
 --
 -- Existing AD_Column_IDs on C_Order_ReturnPackage (from migration 5808300):
@@ -108,7 +108,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTran
 
 -- Field: QtyDeliveredLU (geliefert) — column 592826, element 585008
 -- 2026-06-17 10:01:06
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,592826,781162 /*From ID Server*/,0,549320,TO_TIMESTAMP('2026-06-17 10:01:06','YYYY-MM-DD HH24:MI:SS'),100,'Gelieferte Menge des Rücknahme-Gebindes.',0,'D',NULL,'Y','Y','Y','N','N','N','N','N','geliefert',40,40,0,TO_TIMESTAMP('2026-06-17 10:01:06','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,592826,781162 /*From ID Server*/,0,549320,TO_TIMESTAMP('2026-06-17 10:01:06','YYYY-MM-DD HH24:MI:SS'),100,'Gelieferte Menge des Rücknahme-Gebindes.',0,'D',NULL,'Y','Y','Y','N','N','N','N','N','Geliefert',40,40,0,TO_TIMESTAMP('2026-06-17 10:01:06','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 -- 2026-06-17 10:01:07
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Name,t.Description,t.Help, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781162 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
@@ -116,7 +116,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTran
 
 -- Field: QtyReturnedLU (zurück) — column 592827, element 585009
 -- 2026-06-17 10:01:08
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,592827,781163 /*From ID Server*/,0,549320,TO_TIMESTAMP('2026-06-17 10:01:08','YYYY-MM-DD HH24:MI:SS'),100,'Zurückgegebene Menge des Rücknahme-Gebindes.',0,'D',NULL,'Y','Y','Y','N','N','N','N','N','zurück',50,50,0,TO_TIMESTAMP('2026-06-17 10:01:08','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,592827,781163 /*From ID Server*/,0,549320,TO_TIMESTAMP('2026-06-17 10:01:08','YYYY-MM-DD HH24:MI:SS'),100,'Zurückgegebene Menge des Rücknahme-Gebindes.',0,'D',NULL,'Y','Y','Y','N','N','N','N','N','Zurück',50,50,0,TO_TIMESTAMP('2026-06-17 10:01:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 -- 2026-06-17 10:01:09
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Name,t.Description,t.Help, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781163 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
@@ -245,10 +245,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781161,0,549320,652307 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:12','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Y','N',0,'Palette',30,0,30,TO_TIMESTAMP('2026-06-17 10:02:12','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 -- 2026-06-17 10:02:13
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781162,0,549320,652308 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Y','N',0,'geliefert',40,0,40,TO_TIMESTAMP('2026-06-17 10:02:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781162,0,549320,652308 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Y','N',0,'Geliefert',40,0,40,TO_TIMESTAMP('2026-06-17 10:02:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 -- 2026-06-17 10:02:14
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781163,0,549320,652309 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:14','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Y','N',0,'zurück',50,0,50,TO_TIMESTAMP('2026-06-17 10:02:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781163,0,549320,652309 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:14','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','Y','N',0,'Zurück',50,0,50,TO_TIMESTAMP('2026-06-17 10:02:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 -- IsActive in the flags group (first element), not in grid
 -- 2026-06-17 10:02:15
