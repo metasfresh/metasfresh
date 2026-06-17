@@ -22,6 +22,7 @@ import { toastError } from '../../utils/toast';
 import { getIsLoggedInFromState } from '../../reducers/appHandler';
 import { putSettingsAction } from '../../reducers/settings';
 import { useUIEventsTracing } from '../../utils/ui_trace/useUIEventsTracing';
+import { useDeviceBackButton } from '../../hooks/useDeviceBackButton';
 
 const ApplicationRoot = () => {
   const auth = useAuth();
@@ -70,6 +71,7 @@ const ApplicationRoot = () => {
   return (
     <>
       <ConnectedRouter history={history} basename="./">
+        <DeviceBackButtonTrap />
         <Switch>
           <Route exact path="/login">
             <LoginScreen />
@@ -89,6 +91,13 @@ const ApplicationRoot = () => {
       {REGISTER_SERVICE_WORKER && <VersionChecker updateIntervalMillis={VERSION_CHECK_INTERVAL_MILLIS} />}
     </>
   );
+};
+
+// Renderless: mounted once inside ConnectedRouter so the device/browser Back button follows the
+// app's screen-declared back navigation instead of the browser history stack. See useDeviceBackButton.
+const DeviceBackButtonTrap = () => {
+  useDeviceBackButton();
+  return null;
 };
 
 export default ApplicationRoot;
