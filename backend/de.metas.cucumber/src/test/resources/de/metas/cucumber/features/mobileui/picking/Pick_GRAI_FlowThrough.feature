@@ -219,13 +219,14 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | product               | pickFromLU | 3         | 7613204.00307.000004 |
       |                       |            |           | 7613204.00307.000005 |
       |                       |            |           | 7613204.00307.000006 |
-    # PRODUCT aggregation: LU is materialised at line level — register it before asserting GRAIs.
+    # PRODUCT aggregation: the source LU flows through to become the line-level picked LU, so the
+    # effective line target IS pickFromLU — assert against it (not a fresh identifier).
     And expect line picking target
       | Existing_LU |
-      | pickedLU    |
+      | pickFromLU  |
 
     # The picked TUs must carry the scanned GRAIs (LU materialised at line level for PRODUCT aggregation).
-    Then the TUs on picked LU identified by pickedLU carry GRAIs
+    Then the TUs on picked LU identified by pickFromLU carry GRAIs
       | GRAI                 |
       | 7613204.00307.000004 |
       | 7613204.00307.000005 |
@@ -319,12 +320,14 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
       | product2              | pickFromLU | 3         | 7613204.00307.000004 |
       |                       |            |           | 7613204.00307.000005 |
       |                       |            |           | 7613204.00307.000006 |
+    # SALES_ORDER aggregation materialises ONE shared header LU for the whole order (both lines pick onto
+    # it). It is a NEW LU, not the source pickFromLU — register it under a fresh identifier (mixedLU).
     And expect current picking target
       | Existing_LU |
-      | pickFromLU  |
+      | mixedLU     |
 
     # The shared LU's TUs must carry ALL SIX GRAIs (both picks). On buggy code only ...04,05,06 survive.
-    Then the TUs on picked LU identified by pickFromLU carry GRAIs
+    Then the TUs on picked LU identified by mixedLU carry GRAIs
       | GRAI                 |
       | 7613204.00307.000001 |
       | 7613204.00307.000002 |
