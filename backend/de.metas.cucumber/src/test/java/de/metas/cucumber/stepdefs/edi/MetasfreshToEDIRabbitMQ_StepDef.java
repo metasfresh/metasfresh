@@ -27,7 +27,7 @@ import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.GetResponse;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -55,7 +55,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -207,70 +206,73 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		ediExpDesadvTable.put(ediExpDesadvIdentifier, export);
 	}
 
+	/**
+	 * Polls one EDI-export message off the given queue and parses it into an XML {@link Document}.
+	 * <p>
+	 * Implemented with a <b>synchronous {@code basicGet} pull-loop</b> rather than an asynchronous push
+	 * consumer ({@code basicConsume} + {@link DefaultConsumer#handleDelivery}). The push-consumer
+	 * approach is racy here: with no prefetch limit the broker dispatches <i>every</i> queued message at
+	 * once to the consumer; after we ack the first one and let the poll method's {@code finally} close
+	 * the channel, the broker's still-pending extra deliveries re-enter {@code handleDelivery} and call
+	 * {@code basicAck}/{@code basicNack} on the now-closed channel — which throws inside the consumer
+	 * callback and makes the RabbitMQ client tear the channel down with
+	 * {@code ShutdownSignalException: ... Closed due to exception from Consumer ... handleDelivery}
+	 * (the observed CI flake). A pull-loop fetches exactly one message per {@code basicGet}, on the
+	 * test thread, so there is no consumer callback to throw and no extra-delivery/close race.
+	 * <p>
+	 * The loop is also tolerant of a foreign or unparseable message left on the (shared, durable) queue:
+	 * any message that does not parse as XML is acked-and-skipped (removed) and polling continues, so a
+	 * cross-scenario/cross-feature leftover can neither be returned as the wrong document nor crash the
+	 * consumer. Combined with the Background queue-purge isolation step
+	 * ({@link #edi_export_queue_is_purged(String)}), this eliminates the bleed class entirely.
+	 */
 	@NonNull
 	private Document pollDocumentFromQueue(@NonNull final String queueName) throws IOException, TimeoutException, InterruptedException, ParserConfigurationException, SAXException
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 		final Channel channel = connection.createChannel();
 
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-		final String[] messages = new String[1];
-
-		final DefaultConsumer consumer = new DefaultConsumer(channel)
+		try
 		{
-			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException
+			final long deadlineMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
+
+			while (System.currentTimeMillis() < deadlineMillis)
 			{
-				// Only accept the first delivery and ack it; cancel the consumer immediately so the
-				// broker requeues / leaves any remaining messages (e.g. a second DESADV pre-queued
-				// before this poll) for the next pollDocumentFromQueue call.
-				if (countDownLatch.getCount() == 0)
+				// autoAck=false: pull exactly one message at a time on the test thread, then ack it
+				// explicitly once we have read its body. No prefetch storm, no consumer-callback thread.
+				final GetResponse getResponse = channel.basicGet(queueName, false);
+				if (getResponse == null)
 				{
-					// Reject without requeue is wrong (would lose the message); nack with requeue=true
-					// keeps it in the queue for the next caller. With basicCancel below, this path is
-					// only hit if the broker dispatched extra messages before cancellation took effect.
-					channel.basicNack(envelope.getDeliveryTag(), false, true);
-					return;
+					// Queue currently empty (the export workpackage may not have published yet) -> wait
+					// briefly and retry until the deadline.
+					Thread.sleep(250);
+					continue;
 				}
 
-				messages[0] = new String(body, StandardCharsets.UTF_8);
-
-				logger.info("*** Queue: {}, received message: {}", queueName, messages[0]);
-
-				countDownLatch.countDown();
-
-				channel.basicAck(envelope.getDeliveryTag(), false);
+				final String message = new String(getResponse.getBody(), StandardCharsets.UTF_8);
+				channel.basicAck(getResponse.getEnvelope().getDeliveryTag(), false);
 
 				try
 				{
-					channel.basicCancel(consumerTag);
+					final Document document = parseXmlStringToDocument(message);
+					logger.info("*** Queue: {}, received message: {}", queueName, message);
+					return document;
 				}
-				catch (final Exception e)
+				catch (final SAXException | IOException foreignMessage)
 				{
-					// best-effort cancel; channel may already be in the process of closing
-					logger.warn("basicCancel failed (ignored): {}", e.getMessage());
+					// A leftover / foreign message that is not the expected EDI XML: it is already acked
+					// (removed) above, so just skip it and keep polling for the message we expect.
+					logger.warn("*** Queue: {}, skipping non-XML/foreign message: {}", queueName, foreignMessage.getMessage());
 				}
 			}
-		};
 
-		try
-		{
-			// autoAck=false: we manually ack the first message and nack-with-requeue any extras the
-			// broker dispatched before basicCancel took effect, so a follow-up pollDocumentFromQueue
-			// call still finds those messages in the queue.
-			channel.basicConsume(queueName, false, consumer);
-
-			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
-
-			assertThat(messageReceivedWithinTimeout).isTrue();
+			throw new AssertionError("No EDI-export message received on queue '" + queueName + "' within 60s");
 		}
 		finally
 		{
 			channel.close();
+			connection.close();
 		}
-
-		return parseXmlStringToDocument(messages[0]);
 	}
 
 	@NonNull
