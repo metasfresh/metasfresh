@@ -20,6 +20,7 @@ import { pickingLineScreenLocation, pickingStepScreenLocation } from '../../../r
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
 import { useAvailablePickingTargets } from '../../../api/picking';
 import { PickingTargetType } from '../../../constants/PickingTargetType';
+import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
 
 const PickStepScanScreen = () => {
   const { history, wfProcessId, activityId, lineId, stepId, altStepId } = useScreenDefinition({
@@ -42,6 +43,21 @@ const PickStepScanScreen = () => {
     lineId,
     type: PickingTargetType.TU,
   });
+
+  // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
+  // fallbackToHeader). When a TU pick target is set, the operator established it via the pick-target
+  // GRAI scan (SelectPickTargetScreen's GraiScanPanel) — feature #1 already captured the GRAI — so the
+  // inline capture must NOT fire (it would swallow the pick). We gate on presence (not `.grai`) because
+  // once the TU materializes on first pick it becomes an existing-TU target with grai nulled in the
+  // JSON, yet still present. The Flow-Through path picks into an LU target with no TU target, so the
+  // inline capture still fires there.
+  const { tuPickingTarget } = useCurrentPickingTargetInfo({
+    wfProcessId,
+    activityId,
+    lineId,
+    fallbackToHeader: true,
+  });
+  const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
 
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {
@@ -92,7 +108,7 @@ const PickStepScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
-      graiScanEnabled={graiScanEnabled}
+      graiScanEnabled={isInlineGraiCaptureEnabled}
       //
       getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
       onResult={onResult}

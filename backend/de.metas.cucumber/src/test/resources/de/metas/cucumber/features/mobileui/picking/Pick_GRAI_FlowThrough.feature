@@ -63,7 +63,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | SALES_ORDER               |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | sales_order               |
 
     # GRAIRequired=Y customer -> the completion guard fires for this LU_TU job.
     # Distinct identity (graiCustomer / GRAI_Dummy_GLN) on purpose: the C_BPartner step upserts by
@@ -205,7 +205,7 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | PRODUCT                   |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | product                   |
 
     And start picking job for sales order identified by SO
     # PRODUCT aggregation: scan the source HU first (the extra ScanPickFromHU activity).

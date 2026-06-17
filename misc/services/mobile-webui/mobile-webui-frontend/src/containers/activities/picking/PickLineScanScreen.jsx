@@ -87,6 +87,20 @@ const PickLineScanScreen = () => {
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
+  // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
+  // fallbackToHeader). When a TU pick target is set, the operator established it via the pick-target
+  // GRAI scan (SelectPickTargetScreen's GraiScanPanel) — feature #1 already captured the GRAI for
+  // that TU — so the inline GRAI capture below must NOT fire (it would swallow the pick). The
+  // pre-materialization target exposes `.grai`; once the TU is materialized on first pick it becomes
+  // an existing-TU target (grai nulled in the JSON) but is still present — so we gate on presence,
+  // which survives materialization. The Flow-Through path (feature #2) picks into an LU target with
+  // NO TU target, so the inline capture still fires there.
+  const { tuPickingTarget } = useCurrentPickingTargetInfo({
+    wfProcessId,
+    activityId,
+    lineId,
+    fallbackToHeader: true,
+  });
 
   // GRAI Flow-Through: when GRAI scanning is required for this job's customer, the qty confirm
   // auto-invokes the inline GRAI capture (handled by ScanHUAndGetQtyComponent) and the captured codes
@@ -96,6 +110,7 @@ const PickLineScanScreen = () => {
     lineId,
     type: PickingTargetType.TU,
   });
+  const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -143,7 +158,7 @@ const PickLineScanScreen = () => {
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
-      graiScanEnabled={graiScanEnabled}
+      graiScanEnabled={isInlineGraiCaptureEnabled}
       qtyTargetCaption={trl('general.QtyToPick')}
       qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
       packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
