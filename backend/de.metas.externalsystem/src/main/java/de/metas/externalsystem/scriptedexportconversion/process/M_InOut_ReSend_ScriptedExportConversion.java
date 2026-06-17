@@ -27,6 +27,7 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -38,19 +39,25 @@ import org.compiere.model.I_M_InOut;
 import java.util.List;
 
 /**
- * Re-triggers the scripted-export-conversion for any config with a non-Sent attempt for this M_InOut.
+ * Re-triggers the scripted-export-conversion for a selection of M_InOut records.
+ * When {@code IsOnlyNotSentSuccessfully=Y} only configs in error/invalid state are re-sent.
+ * When {@code IsOnlyNotSentSuccessfully=N} configs in any terminal state (including already-Sent)
+ * are re-triggered; in-flight and DontSend configs are always skipped.
  */
 public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess implements IProcessPrecondition
 {
 	private final ExternalSystemScriptedExportConversionService scriptedExportService =
 			SpringContextHolder.instance.getBean(ExternalSystemScriptedExportConversionService.class);
 
+	@Param(parameterName = "IsOnlyNotSentSuccessfully")
+	private boolean isOnlyNotSentSuccessfully;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		if (context.getSelectedIncludedRecords().size() > 1)
+		if (context.getSelectionSize().isNoSelection())
 		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 		return ProcessPreconditionsResolution.accept();
 	}
@@ -58,24 +65,30 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 	@Override
 	protected String doIt()
 	{
-		final int m_inout_id = getRecord_ID();
-		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
-
-		final List<ExternalSystemScriptedExportConversionConfigId> configIds =
-				scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord);
+		// Collect IDs first to close the DB cursor before making external-service calls.
+		final List<Integer> inoutIds = retrieveSelectedRecordsQueryBuilder(I_M_InOut.class).create().listIds();
 
 		int triggered = 0;
-		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
+		for (final int m_inout_id : inoutIds)
 		{
-			final ExternalSystemScriptedExportConversionConfig config =
-					scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
+			final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, m_inout_id);
 
-			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
-					config,
-					m_inout_id,
-					ExternalSystemInvocationContext.RESEND);
+			final List<ExternalSystemScriptedExportConversionConfigId> configIds = isOnlyNotSentSuccessfully
+					? scriptedExportService.getResendableConfigsBySourceRecord(sourceRecord)
+					: scriptedExportService.getMatchingConfigIdsBySourceRecord(sourceRecord);
 
-			triggered++;
+			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
+			{
+				final ExternalSystemScriptedExportConversionConfig config =
+						scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
+
+				scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
+						config,
+						m_inout_id,
+						ExternalSystemInvocationContext.RESEND);
+
+				triggered++;
+			}
 		}
 
 		return "@Processed@ #" + triggered;

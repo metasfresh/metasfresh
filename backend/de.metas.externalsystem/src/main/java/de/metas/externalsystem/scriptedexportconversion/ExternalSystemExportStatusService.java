@@ -139,6 +139,29 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
+	 * Returns all config IDs in a re-triggerable terminal state for the given source record.
+	 * Excluded:
+	 * <ul>
+	 *   <li>{@link ExternalSystemExportStatus#DontSend} — WhereClause explicitly excluded this record; must not be re-triggered.</li>
+	 *   <li>In-flight rows ({@link ExternalSystemExportStatus#Pending}, {@link ExternalSystemExportStatus#Enqueued},
+	 *       {@link ExternalSystemExportStatus#SendingStarted}) — already being processed; re-triggering would cause a duplicate send.</li>
+	 * </ul>
+	 * {@link ExternalSystemExportStatus#Sent} rows <em>are</em> included: re-triggering a successfully-sent record is
+	 * intentional (e.g. the external system lost its data).
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getMatchingConfigIdsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getLatestBySourceRecord(sourceRecord)
+				.stream()
+				.filter(s -> !s.getStatus().isDontSend() && !s.getStatus().isPending() && !s.getStatus().isProcessing())
+				.map(ScriptedExportConversionStatus::getConfigId)
+				.distinct()
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * Binds the PInstance to the (config, record) status row and transitions it to the in-flight
 	 * {@link ExternalSystemExportStatus#Enqueued} state.
 	 *

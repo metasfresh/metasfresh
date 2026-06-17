@@ -9,7 +9,7 @@
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 61 | 65 | 94% |
-| Distribution | 34 | 37 | 92% |
+| Distribution | 37 | 40 | 93% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -242,11 +242,13 @@
 | New distribution orders appear in launcher list via websockets | `distribution/launchers_websockets.spec.js` |
 | Without workplace set → all distribution jobs visible | `distribution/filter_by_workplace.spec.js` |
 | With workplace set → only jobs whose drop-to locator matches workplace shown | `distribution/filter_by_workplace.spec.js` |
+| IsPackingPlace=Y workplace → only DD orders targeting its pick-from locator; IsPackingPlace=N workplace → only DD orders NOT targeting any packing-place locator | `distribution/filter_by_packingplace.spec.js` |
 | Sort by SeqNo when orderBys=SeqNo,Priority,DatePromised | `distribution/sorting.spec.js` |
+| Sort by locator priority when orderBys=LocatorPriority → lower FROM-locator PriorityNo first | `distribution/sort_by_locator_priority.spec.js` |
 | ❌ maxLaunchers cap — list truncated beyond N jobs | — |
 | ❌ maxStartedLaunchers cap | — |
 
-**7/9 — 78%**
+**8/10 — 80%**
 
 ### Distribution — job execution
 
@@ -260,11 +262,13 @@
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
-| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end ⏸ SKIPPED (post-switch job-Complete doesn't navigate to jobs-list; job completes server-side — me03 #30441) | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
-| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) ⏸ SKIPPED (same post-switch job-Complete navigation — me03 #30441) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
+| "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**11/11 — 100%**
+**11/13 active — 2 skipped (post-switch job-Complete UI navigation, tracked on me03 #30441)**
 
 ### Distribution — HU scanning
 

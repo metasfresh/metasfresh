@@ -505,6 +505,10 @@ public class DDOrderLowLevelDAO
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
 		}
+		else if (field == DDOrderQuery.OrderByField.LocatorPriority)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_LocatorPriorityNo;
+		}
 		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_DatePromised;

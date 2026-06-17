@@ -54,9 +54,9 @@ Feature: DD_Order replenishment — stock-aware multi-locator split and per-loca
     # Two named source locators in the stocking warehouse. Their Value drives the greedy allocation order:
     # locatorA.Value (10-A) sorts before locatorB.Value (20-B), so locatorA is consumed first.
     And metasfresh contains M_Locator:
-      | Identifier | M_Warehouse_ID | Value | IsDefault |
-      | locatorA   | stockWH        | 10-A  | Y         |
-      | locatorB   | stockWH        | 20-B  | N         |
+      | Identifier | M_Warehouse_ID | Value | IsDefault | IsGroundLocator | PriorityNo |
+      | locatorA   | stockWH        | 10-A  | Y         | Y               | 10         |
+      | locatorB   | stockWH        | 20-B  | N         | Y               | 20         |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
       | inTransitWH    | customer      | customerLocation       | true        |

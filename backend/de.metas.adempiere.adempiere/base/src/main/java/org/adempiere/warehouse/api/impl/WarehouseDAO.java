@@ -402,7 +402,7 @@ public class WarehouseDAO implements IWarehouseDAO
 	{
 		return queryBL
 				.createQueryBuilderOutOfTrx(I_M_Locator.class)
-				.addEqualsFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseId)
 				.orderBy(I_M_Locator.COLUMN_X)
 				.orderBy(I_M_Locator.COLUMN_Y)
 				.orderBy(I_M_Locator.COLUMN_Z)
@@ -423,7 +423,7 @@ public class WarehouseDAO implements IWarehouseDAO
 
 		final ImmutableMap<WarehouseId, Collection<LocatorId>> locatorIdsByWarehouseId = queryBL
 				.createQueryBuilderOutOfTrx(I_M_Locator.class)
-				.addInArrayFilter(I_M_Locator.COLUMN_M_Warehouse_ID, warehouseIds)
+				.addInArrayFilter(I_M_Locator.COLUMNNAME_M_Warehouse_ID, warehouseIds)
 				.orderBy(I_M_Locator.COLUMNNAME_M_Warehouse_ID)
 				.orderBy(I_M_Locator.COLUMNNAME_X)
 				.orderBy(I_M_Locator.COLUMNNAME_Y)

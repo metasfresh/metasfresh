@@ -102,6 +102,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
@@ -1416,6 +1417,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_PaymentTerm_Override_ID, null)
 				.create()
 				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
 				.orElse(null);
 
 		if (selectionToUpdateId == null)
@@ -1482,7 +1484,9 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		{
 			selectionQueryBuilder.addEqualsFilter(columnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection().orElse(null);
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			Loggables.withLogger(logger, Level.INFO)
