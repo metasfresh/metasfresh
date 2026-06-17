@@ -22,29 +22,72 @@
 
 package org.adempiere.warehouse;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 @Value
-@Builder
 public class Warehouse
 {
 	@NonNull WarehouseId warehouseId;
+	boolean active;
 	@NonNull String name;
 	@Nullable ResourceId resourceId;
 	boolean isReceiveAsSourceHU;
 	boolean isAutoDistributionOrder;
 	@NonNull WarehouseSourceHUConfigList warehouseSourceHUConfigs;
-	boolean active;
+	@NonNull @Getter(AccessLevel.NONE) ImmutableMap<LocatorId, Locator> locatorsById;
+
+	@Builder
+	private Warehouse(
+			@NonNull final WarehouseId warehouseId,
+			@NonNull final Boolean active,
+			@NonNull final String name,
+			@Nullable final ResourceId resourceId,
+			final boolean isReceiveAsSourceHU,
+			final boolean isAutoDistributionOrder,
+			@NonNull final Collection<Locator> locators,
+			@NonNull final WarehouseSourceHUConfigList warehouseSourceHUConfigs)
+	{
+		this.warehouseId = warehouseId;
+		this.active = active;
+		this.name = name;
+		this.resourceId = resourceId;
+		this.isReceiveAsSourceHU = isReceiveAsSourceHU;
+		this.isAutoDistributionOrder = isAutoDistributionOrder;
+		this.warehouseSourceHUConfigs = warehouseSourceHUConfigs;
+		this.locatorsById = Maps.uniqueIndex(locators, Locator::getLocatorId);
+	}
 
 	public boolean isConfiguredToReceiveAsSourceHU(@NonNull final ProductCategoryId productCategoryId)
 	{
 		if (!isReceiveAsSourceHU) {return false;}
 		return warehouseSourceHUConfigs.applies(productCategoryId);
+	}
+
+	public Collection<Locator> getLocators()
+	{
+		return locatorsById.values();
+	}
+
+	@NonNull
+	public Locator getLocatorById(final @NonNull LocatorId locatorId)
+	{
+		final Locator locator = locatorsById.get(locatorId);
+		if (locator == null)
+		{
+			throw new AdempiereException("Locator with id " + locatorId + " not found in warehouse " + getName());
+		}
+		return locator;
 	}
 }

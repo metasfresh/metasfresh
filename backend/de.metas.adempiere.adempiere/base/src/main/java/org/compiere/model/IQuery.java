@@ -629,7 +629,7 @@ public interface IQuery<T>
 	 *
 	 * @return selection's or empty if there were no records matching
 	 */
-	Optional<PInstanceId> createSelection();
+	Optional<CreateSelectionResponse> createSelection();
 
 	/**
 	 * Appends this query result to an existing selection.

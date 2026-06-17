@@ -56,6 +56,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.util.Env;
 import org.joda.time.Instant;
@@ -105,6 +106,7 @@ public class C_OLCandToOrderEnqueuer
 				.addEqualsFilter(I_C_OLCand.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
 				.create()
 				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
 				.orElseThrow(() -> new AdempiereException("No C_OLCands found for async batch " + asyncBatchId));
 
 		return lockAndEnqueueSelection(batchSelectionId, asyncBatchId, propagateAsyncIdsToShipmentSchduleWPs);

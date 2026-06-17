@@ -174,6 +174,13 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, locatorId);
 
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
+
+		if (locatorRequest.getPriorityNo() != null)
+		{
+			locatorRecord.setPriorityNo(locatorRequest.getPriorityNo());
+			saveRecord(locatorRecord);
+		}
+
 		return toJson(locatorRecord);
 	}
 
