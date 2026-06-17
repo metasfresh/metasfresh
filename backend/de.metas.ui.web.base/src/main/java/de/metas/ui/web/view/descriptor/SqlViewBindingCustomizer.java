@@ -2,7 +2,6 @@ package de.metas.ui.web.view.descriptor;
 
 import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
-import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -31,8 +30,8 @@ import org.springframework.stereotype.Component;
  * without introducing a {@link de.metas.ui.web.view.ViewProfile} (unlike {@link de.metas.ui.web.view.SqlViewCustomizer},
  * which is keyed by {@code (windowId, profileId)} and therefore surfaces a profile selector in the UI).
  * <p>
- * Implementors shall be annotated with {@link Component}, are discovered by spring and autowired into
- * {@link SqlViewFactory}. When a binding is built for the implementor's {@link #getWindowId()},
+ * Implementors are discovered by Spring and autowired into {@link SqlViewFactory}.
+ * When a binding is built for the implementor's {@link #getWindowId()},
  * {@link #customizeSqlViewBinding(SqlViewBinding.Builder)} is invoked after the builder has been populated from the
  * AD metadata, so it can override binding properties (e.g. {@code queryIfNoFilters}).
  * <p>

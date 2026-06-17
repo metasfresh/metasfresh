@@ -12,23 +12,23 @@ import { STOCK_PER_WEEK_WINDOW_ID } from '../utils/WindowIds';
  *
  * Window AD_Window_ID: 542159, table MD_Stock_PerWeek_V (~782k rows on the customer instance).
  *
- * Behaviour under test (me03 #30457): opening the window standalone (from the menu, no filter)
- * must NOT scan the whole materialised view. Instead the view returns a zero-row selection plus a
+ * Behaviour under test: opening window 542159 standalone (from the menu, no filter) must NOT scan
+ * the whole materialised view. Instead the view returns a zero-row selection plus a
  * "please filter first" hint. Rows load only once the user applies a filter (product / warehouse /
  * week range).
  *
- * Mechanism: StockPerWeekSqlViewBindingCustomizer sets queryIfNoFilters(false) on the SqlViewBinding
- * for this one windowId; the existing SqlViewRowIdsOrderedSelectionFactory guard then short-circuits
- * to an EmptyReason (AD_Messages webui.view.emptyReason.pleaseFilterFirst.text / .hint) when no filter
- * is applied. The frontend renders that reason in `.empty-info-text` (<h5>=text, <p>=hint).
+ * The open-empty behaviour is enforced at the view-framework level: when a window is configured
+ * with queryIfNoFilters=false, the view guard short-circuits to an EmptyReason
+ * (AD_Messages webui.view.emptyReason.pleaseFilterFirst.text / .hint) when no filter is applied.
+ * The frontend renders that reason in `.empty-info-text` (<h5>=text, <p>=hint).
  *
- * NOTE: the assertion contract here is the open-empty BEHAVIOUR, which is fully deterministic and needs
- * no seeded stock:
- *   1. standalone open  -> 0 grid rows + the "filter first" hint shown.
- *   2. after a filter is applied -> the "filter first" hint is gone (guard no longer fires).
+ * NOTE: the assertion contract here is the open-empty BEHAVIOUR, which is fully deterministic and
+ * needs no seeded stock:
+ *   1. standalone open  -> 0 grid rows + the "filter first" hint shown (UI assertion).
+ *   2. after a filter is applied via REST -> the "filter first" hint is gone (guard no longer fires).
  * Asserting that real rows appear additionally requires stock materialised into MD_Stock_PerWeek_V,
- * which is timing/data dependent; this test logs the row count opportunistically but does not hard-fail
- * on it (the hint toggling already proves the filter-gated load path).
+ * which is timing/data dependent; this test does not hard-fail on row count
+ * (the hint toggling already proves the filter-gated load path).
  */
 
 const testCases = [
@@ -52,24 +52,18 @@ testCases.forEach(({ language, label }) => {
 
 1. **Standalone open** — open window 542159 from the URL (no filter). Assert 0 grid rows and the
    "please filter first" empty hint is shown (the ~782k-row view is NOT scanned).
-2. **Apply a product filter** — assert the empty hint disappears (the queryIfNoFilters guard is
-   filter-gated). Row count after filtering is logged.
+2. **Apply a WeekStartDate filter via REST** — assert the empty-reason hint is absent in the view
+   response (the queryIfNoFilters guard does not fire once a filter is supplied).
       `);
 
       test.setTimeout(180000); // 3 minutes
 
-      // === CREATE TEST DATA (a product to filter by) + LOGIN USER ===
+      // === CREATE LOGIN USER ===
+      // Step 2 uses a REST-based view assertion — no seeded product or price list required.
       const masterdata = await Backend.createMasterdata({
         request: {
           login: {
             user: { language, firstname: 'stockperweek', lastname: 'test' },
-          },
-          products: {
-            Product1: {
-              name: 'SPW_PROD',
-              type: 'Item',
-              prices: [{ price: 10.0, currencyCode: 'EUR' }],
-            },
           },
         },
       });
@@ -112,74 +106,56 @@ testCases.forEach(({ language, label }) => {
       });
 
       // ======================================================================
-      // STEP 2: Apply a product filter -> the filter-first hint disappears
+      // STEP 2: Create a view via REST with a WeekStartDate filter
+      //         -> the view framework guard must NOT fire (emptyResultText absent)
       // ======================================================================
-      await test.step('Applying a product filter removes the empty hint', async () => {
-        const productId = masterdata.products?.Product1?.id ?? masterdata.products?.Product1;
-        console.log(`[INFO] Filtering by M_Product_ID = ${JSON.stringify(productId)}`);
+      await test.step('Creating a filtered view via REST removes the empty-reason hint', async () => {
+        // Use a WeekStartDate range covering the current week so the filter is non-trivial.
+        // The exact row count depends on stock data materialised into MD_Stock_PerWeek_V, but
+        // the guard behaviour (emptyResultText present ↔ no filter) is deterministic.
+        const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-        // Open the first filter button in the filter bar and pick the product filter.
-        const filterButton = page.locator('.filter-wrapper .btn-filter').first();
-        await filterButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await filterButton.click();
-        await page.waitForTimeout(500);
+        // Resolve the REST base from the page's own runtime config (window.config.API_URL) — that is
+        // exactly the origin the browser logged in against, so page.request (which shares the browser
+        // context's cookie jar) carries the authenticated session to it. This is robust across stack
+        // topologies: a static prod-build front-end talks to the WebAPI directly (e.g. :8080), while a
+        // webpack dev-server proxies /rest/api on its own origin. Fall back to the WebAPI default.
+        const restBase = await page.evaluate(
+          () => (window.config && window.config.API_URL) || null
+        );
+        const apiBase = restBase || process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
-        // Select the product filter option if a filter menu opened, otherwise the widget is inline.
-        const productOption = page
-          .locator('.filter-menu li, .filter-option')
-          .filter({ hasText: /Product|Produkt/i })
-          .first();
-        if (await productOption.isVisible().catch(() => false)) {
-          await productOption.click();
-          await page.waitForTimeout(500);
-        }
-
-        // Type into the product lookup widget and pick the seeded product.
-        const productLookup = page.locator('#lookup_M_Product_ID input').first();
-        if (await productLookup.isVisible().catch(() => false)) {
-          await productLookup.click();
-          await productLookup.fill('SPW_PROD');
-          await page.waitForTimeout(1500);
-          const firstSuggestion = page.locator('.input-dropdown-list-option').first();
-          if (await firstSuggestion.isVisible().catch(() => false)) {
-            await firstSuggestion.click();
-          } else {
-            await productLookup.press('Enter');
+        const createViewResp = await page.request.post(
+          `${apiBase}/documentView/${STOCK_PER_WEEK_WINDOW_ID}`,
+          {
+            headers: { 'Content-Type': 'application/json' },
+            data: {
+              // JSONCreateViewRequest reads the window id from @JsonProperty("documentType").
+              documentType: String(STOCK_PER_WEEK_WINDOW_ID),
+              viewType: 'grid',
+              filters: [
+                {
+                  filterId: 'WeekStartDate',
+                  parameters: [
+                    { parameterName: 'WeekStartDate', value: today },
+                  ],
+                },
+              ],
+            },
           }
-          await page.waitForTimeout(500);
-        }
-
-        // Apply the filter (Apply button inside the filter widget, else Enter).
-        const applyButton = page.locator('.filter-btn-apply, .btn-filter-apply, .applyBtn').first();
-        if (await applyButton.isVisible().catch(() => false)) {
-          await applyButton.click();
-        } else {
-          await page.keyboard.press('Enter');
-        }
-
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page
-          .locator('.indicator-pending')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page.waitForTimeout(1000);
-
-        const rowsAfter = await page.locator('table tbody tr').count();
-        const hintStillVisible = await page
-          .locator('.empty-info-text')
-          .isVisible()
-          .catch(() => false);
-        console.log(
-          `[INFO] After product filter: grid rows = ${rowsAfter}, filter-first hint visible = ${hintStillVisible}`
         );
-        allure.attachment('Filtered screenshot', await page.screenshot(), 'image/png');
 
-        // Core assertion: once a filter is applied the queryIfNoFilters guard no longer fires,
-        // so the "please filter first" hint is gone. (Whether actual rows appear depends on
-        // stock being materialised into MD_Stock_PerWeek_V for the seeded product.)
-        expect(hintStillVisible, 'the filter-first hint must disappear once a filter is applied').toBe(
-          false
-        );
+        expect(createViewResp.ok(), `POST /documentView/${STOCK_PER_WEEK_WINDOW_ID} must succeed`).toBe(true);
+        const viewData = await createViewResp.json();
+        console.log(`[INFO] Filtered view created: viewId=${viewData.viewId}, size=${viewData.size}`);
+        allure.attachment('Filtered view response', JSON.stringify(viewData, null, 2), 'application/json');
+
+        // Core assertion: when a filter is present the queryIfNoFilters guard does NOT fire,
+        // so emptyResultText must be absent (null / undefined) in the view response.
+        expect(
+          viewData.emptyResultText ?? null,
+          'emptyResultText must be absent when a filter is applied (guard must not fire)'
+        ).toBeNull();
       });
 
       console.log('[PASS] Stock-per-week open-empty / load-on-filter test completed');

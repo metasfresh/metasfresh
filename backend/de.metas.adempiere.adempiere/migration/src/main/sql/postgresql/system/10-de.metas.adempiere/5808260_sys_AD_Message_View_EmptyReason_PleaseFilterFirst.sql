@@ -1,12 +1,12 @@
 -- AD_Messages backing the WebUI view "open empty, load on filter" guard
--- (SqlViewRowIdsOrderedSelectionFactory: when queryIfNoFilters=false and no filter is applied,
--- the view returns a zero-row selection with EmptyReason text+hint instead of scanning the table).
+-- (when queryIfNoFilters=false and no filter is applied, the view returns a zero-row selection
+-- with EmptyReason text+hint instead of scanning the table).
 --
--- These two message keys are referenced by name in
---   SqlViewRowIdsOrderedSelectionFactory.MSG_PleaseFilterFirst_Text / _Hint
--- but had no AD_Message rows in the dictionary (the guard had no active caller until now).
+-- These two message keys are referenced by the WebUI view framework to render the empty-view hint
+-- when a view is opened without filters (queryIfNoFilters=false guard fires).
+-- They had no AD_Message rows in the dictionary (the guard had no active caller until now).
 -- Without them the empty view would show blank text. First active caller: window 542159
--- "Bestand pro Woche" (MD_Stock_PerWeek_V), wired via StockPerWeekSqlViewBindingCustomizer.
+-- "Bestand pro Woche" (MD_Stock_PerWeek_V).
 --
 -- Both are display/info strings (MsgType='I'), no parameters, no ErrorCode.
 -- Base text is German (DE); en_US translation provided. de_DE/de_CH marked translated.

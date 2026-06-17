@@ -1031,6 +1031,24 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Labels captions resolve via AD_UI_Element.AD_Name_ID → AD_Element_Trl (language-specific); Labels tooltips are German in every language (AD_UI_Element.Description has no _Trl)
 - A BP-Group restriction set through the Labels widget is persisted on the record
 
+### 40. Stock per Week — Open Empty, Load on Filter (`stock-per-week-open-empty.spec.js`)
+
+**Features Tested**:
+- F14030: Filtering & Sorting
+- F14030
+
+**Epic**: E0193: User Interface
+
+**Workflow** (de_DE and en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user (login only — no seeded products/price lists)
+2. **Standalone open** — navigate to window 542159 (Bestand pro Woche, ~782k-row MD_Stock_PerWeek_V) with no filter; assert 0 grid rows and the localized "please filter first" hint is shown in `.empty-info-text` (the view is NOT scanned)
+3. **Filtered view via REST** — create a documentView for 542159 with a `WeekStartDate` filter; assert `emptyResultText` is absent in the response (the queryIfNoFilters guard does not fire once a filter is supplied)
+
+**Key Validations**:
+- The open-empty guard short-circuits to an EmptyReason (AD_Messages `webui.view.emptyReason.pleaseFilterFirst.text`/`.hint`) when no filter is applied, and stops firing when one is
+- Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
+- The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
+
 ## Test Architecture
 
 ### Page Objects
