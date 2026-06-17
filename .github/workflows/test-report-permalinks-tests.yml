@@ -1,4 +1,4 @@
-# Unit tests for the Allure feature/spec permalink tooling (me03 30437).
+# Unit tests for the Allure feature/spec permalink tooling.
 #
 # The generator (generate_permalinks.py) and the resolver (permalink.js) carry
 # real logic — tree-walking Allure behaviors/suites JSON and building redirect
