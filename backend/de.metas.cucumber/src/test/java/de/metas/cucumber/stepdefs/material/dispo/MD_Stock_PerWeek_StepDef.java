@@ -228,7 +228,7 @@ public class MD_Stock_PerWeek_StepDef
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) product<br>
 	 *   <b>M_Warehouse_ID</b> — (required, identifier-ref) warehouse<br>
 	 *   <b>WeekOffset</b> — (required) weeks relative to the current ISO week (0 = this week, 1 = next week, …)<br>
-	 *   <b>QtyATPBegin</b> — (required) expected projected stock as-of the Monday of that week (= prior week's QtyATP)<br>
+	 *   <b>QtyATPBegin</b> — (optional) expected projected stock as-of the Monday of that week (= prior week's QtyATP); omit the column to skip this assertion<br>
 	 *   <b>QtyExpectedShipments</b> — (required) expected value in that week<br>
 	 *   <b>QtyExpectedReceipts</b> — (required) expected value in that week<br>
 	 *   <b>QtyATP</b> — (required) expected projected stock at week-end<br>
@@ -260,7 +260,7 @@ public class MD_Stock_PerWeek_StepDef
 		// I1: use UTC midnight to avoid JVM-local-tz mismatch on Berlin-tz CI executors
 		final Timestamp weekStartTs = toUtcMidnightTimestamp(weekStartDate);
 
-		final BigDecimal expectedAtpBegin = row.getAsBigDecimal(I_MD_Stock_PerWeek_V.COLUMNNAME_QtyATPBegin);
+		final java.util.Optional<BigDecimal> expectedAtpBegin = row.getAsOptionalBigDecimal(I_MD_Stock_PerWeek_V.COLUMNNAME_QtyATPBegin);
 		final BigDecimal expectedShipments = row.getAsBigDecimal(I_MD_Stock_PerWeek_V.COLUMNNAME_QtyExpectedShipments);
 		final BigDecimal expectedReceipts = row.getAsBigDecimal(I_MD_Stock_PerWeek_V.COLUMNNAME_QtyExpectedReceipts);
 		final BigDecimal expectedAtp = row.getAsBigDecimal(I_MD_Stock_PerWeek_V.COLUMNNAME_QtyATP);
@@ -291,9 +291,9 @@ public class MD_Stock_PerWeek_StepDef
 				.execute();
 
 		final SoftAssertions softly = new SoftAssertions();
-		softly.assertThat(record.getQtyATPBegin())
+		expectedAtpBegin.ifPresent(exp -> softly.assertThat(record.getQtyATPBegin())
 				.as("QtyATPBegin for product=%d wh=%d weekOffset=%d (week=%s)", productId, warehouseId, weekOffset, weekStartDate)
-				.isEqualByComparingTo(expectedAtpBegin);
+				.isEqualByComparingTo(exp));
 		softly.assertThat(record.getQtyExpectedShipments())
 				.as("QtyExpectedShipments for product=%d wh=%d weekOffset=%d (week=%s)", productId, warehouseId, weekOffset, weekStartDate)
 				.isEqualByComparingTo(expectedShipments);
