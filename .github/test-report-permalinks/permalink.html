@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>metasfresh test report permalink</title>
+<style>body{font-family:-apple-system,Segoe UI,Roboto,sans-serif;margin:40px}code{background:#f0f0f0;padding:2px 4px;border-radius:3px}</style>
+<script src="permalink.js"></script></head>
+<body>
+<div id="msg">Resolving…</div>
+<script>
+(function () {
+  var p = new URLSearchParams(location.search);
+  var kind = p.has('spec') ? 'spec' : 'feature';
+  var key = p.get(kind);
+  var suite = p.get('suite');
+  var msg = document.getElementById('msg');
+  if (!key) {
+    msg.innerHTML = 'Provide <code>?feature=Fxxxx</code> or <code>?spec=path/to/file.spec.js</code>.';
+    return;
+  }
+  fetch('permalinks.json', { cache: 'no-store' })
+    .then(function (r) { if (!r.ok) throw new Error('permalinks.json not found for this branch'); return r.json(); })
+    .then(function (data) {
+      var entry = Permalink.lookup(data, kind, key);
+      var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
+      if (!url) {
+        // build with textContent — never innerHTML — so the reflected key cannot inject markup (XSS-safe)
+        msg.textContent = 'No tests found for ' + kind + ' ';
+        var codeEl = document.createElement('code');
+        codeEl.textContent = key;
+        msg.appendChild(codeEl);
+        msg.appendChild(document.createTextNode(' on this branch’s newest build.'));
+        return;
+      }
+      location.replace(url);
+    })
+    .catch(function (e) { msg.textContent = 'Could not resolve permalink: ' + e.message; });
+})();
+</script>
+</body></html>
