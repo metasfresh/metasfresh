@@ -307,9 +307,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 					}
 				}
 
+				// the while-loop exits at collected == numberOfMessages (success) or on the deadline
+				// (collected < numberOfMessages); collected can never exceed numberOfMessages, so assert
+				// exact equality rather than >= which would disguise the loop's invariant.
 				assertThat(collected)
 						.as("Expected %s qualifying message(s) on queue '%s' within 60s, but got %s", numberOfMessages, QUEUE_NAME_MF_TO_ES, collected)
-						.isGreaterThanOrEqualTo(numberOfMessages);
+						.isEqualTo(numberOfMessages);
 
 				return collector.build();
 			}

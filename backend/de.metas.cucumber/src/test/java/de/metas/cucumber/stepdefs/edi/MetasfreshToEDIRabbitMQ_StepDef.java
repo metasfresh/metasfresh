@@ -270,6 +270,10 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 					{
 						// A leftover / foreign message that is not the expected EDI XML: it is already acked
 						// (removed) above, so just skip it and keep polling for the message we expect.
+						// ParserConfigurationException is intentionally NOT caught here: it signals a broken
+						// JAXP/JVM configuration (the DocumentBuilderFactory is created once at construction),
+						// not a per-message condition, so it must propagate and fail the run loudly rather
+						// than be swallowed as a "foreign message" and masked by the 60s-timeout AssertionError.
 						logger.warn("*** Queue: {}, skipping non-XML/foreign message: {}", queueName, foreignMessage.getMessage());
 					}
 				}
