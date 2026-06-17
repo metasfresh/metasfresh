@@ -60,11 +60,7 @@ public class MD_Stock
 	public void triggerSyncAvailableForSales(@NonNull final I_MD_Stock stockRecord)
 	{
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(stockRecord.getAD_Client_ID(), stockRecord.getAD_Org_ID());
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				AvailableForSalesConfigRepo.ConfigQuery.builder()
-						.clientId(clientAndOrgId.getClientId())
-						.orgId(clientAndOrgId.getOrgId())
-						.build());
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 		if (!config.isFeatureEnabled())
 		{
 			return; // nothing to do

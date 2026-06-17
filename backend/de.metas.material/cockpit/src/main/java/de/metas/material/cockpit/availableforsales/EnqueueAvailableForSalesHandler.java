@@ -43,6 +43,16 @@ public class EnqueueAvailableForSalesHandler implements IEventListener
 	{
 		final Properties ctx = Env.newTemporaryCtx();
 		Env.setClientAndOrgId(ctx, request.getAvailableForSalesQuery().getClientAndOrgId());
+		// Apply the originating user/role that the publisher captured (serialized in the event), so the
+		// recompute runs under the same security context — not the system default.
+		if (request.getContextUserId() != null)
+		{
+			Env.setLoggedUserId(ctx, request.getContextUserId());
+		}
+		if (request.getContextRoleId() != null)
+		{
+			Env.setLoggedRoleId(ctx, request.getContextRoleId());
+		}
 		return Env.switchContext(ctx);
 	}
 
