@@ -45,5 +45,6 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 ;
 
 -- AD_UI_Element — place in existing 'hu' element group 542064 (SeqNo 15: after IsHUtracing=10, before the existing HULabelPer=20)
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781148,0,180,652294 /*From ID Server*/,542064,'F',TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Seriennummer kommissionieren',15,0,0,TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100)
+-- IsAdvancedField='Y' to match every sibling in the 'hu' group (the group lives in the Advanced-Edit section); a standard-form field here would render orphaned from its Alt+E-only peers.
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781148,0,180,652294 /*From ID Server*/,542064,'F',TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',0,'Seriennummer kommissionieren',15,0,0,TO_TIMESTAMP('2026-06-16 02:27:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
