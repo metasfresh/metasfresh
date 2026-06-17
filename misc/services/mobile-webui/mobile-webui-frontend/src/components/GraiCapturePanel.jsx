@@ -34,7 +34,6 @@ const GraiCapturePanel = ({
   onAddGrais,
   onRemoveGrai,
   onClearAll,
-  header,
   children,
 }) => {
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
@@ -53,7 +52,6 @@ const GraiCapturePanel = ({
 
   return (
     <div className="grai-screen">
-      {header}
       {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} />}
 
       <div className="grai-count" data-testid="grai-count">
@@ -112,7 +110,6 @@ GraiCapturePanel.propTypes = {
   onAddGrais: PropTypes.func.isRequired,
   onRemoveGrai: PropTypes.func.isRequired,
   onClearAll: PropTypes.func.isRequired,
-  header: PropTypes.node,
   children: PropTypes.node,
 };
 
