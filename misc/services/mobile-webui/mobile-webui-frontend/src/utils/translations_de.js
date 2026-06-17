@@ -153,16 +153,8 @@ const translations = {
       graiScan: {
         multipleScanned:
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
-        buttonCaption: 'GRAI scannen',
-        windowName: 'GRAI scannen',
         count: '%(scanned)s / %(total)s GRAIs gescannt',
         countExtra: '(%(extra)s extra)',
-        manualEntry: {
-          placeholder: 'GRAI eingeben',
-          submit: {
-            buttonCaption: 'Hinzufügen',
-          },
-        },
         save: {
           buttonCaption: 'Speichern',
         },

@@ -7,7 +7,6 @@ import PickProductsScanScreen from '../containers/activities/picking/PickProduct
 import { toUrl } from '../utils';
 import { SelectPickTargetScreen } from '../containers/activities/picking/SelectPickTargetScreen';
 import { ReopenLUScreen } from '../containers/activities/picking/ReopenLUScreen';
-import PickGraiScanScreen from '../containers/activities/picking/PickGraiScanScreen';
 import { appLaunchersLocation } from './launchers';
 import { APPLICATION_ID_Picking } from '../apps/picking';
 
@@ -30,14 +29,6 @@ export const reopenClosedLUScreenLocation = ({ applicationId, wfProcessId, activ
 export const selectPickingTargetScreenLocation = ({ applicationId, wfProcessId, activityId, lineId, type }) => {
   const baseUrl = pickingJobLocation({ applicationId, wfProcessId });
   return `${baseUrl}/selectPickTarget/${activityId}${lineId ? `/${lineId}` : ''}/${type}`;
-};
-
-// In-picking GRAI mass-capture screen for the picked LU. The literal `grai` prefix keeps this URL
-// from colliding with any sibling `:param` route at the same position (see double-mount warning below),
-// so each concrete URL matches exactly one route entry.
-export const pickingGraiScanScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) => {
-  const baseUrl = pickingJobLocation({ applicationId, wfProcessId });
-  return `${baseUrl}/grai/${activityId}/${lineId}`;
 };
 
 export const pickingScanScreenLocation = ({ applicationId, wfProcessId, activityId }) =>
@@ -122,16 +113,6 @@ export const pickingRoutes = [
       type: ':type',
     }),
     Component: SelectPickTargetScreen,
-  },
-  {
-    // Literal `grai` prefix => cannot match any sibling `:param` route at this position (no double-mount).
-    path: pickingGraiScanScreenLocation({
-      applicationId: ':applicationId',
-      wfProcessId: ':workflowId',
-      activityId: ':activityId',
-      lineId: ':lineId',
-    }),
-    Component: PickGraiScanScreen,
   },
   {
     path: pickingLineScanScreenLocation({

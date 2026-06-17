@@ -7,10 +7,7 @@ import { getActivityById, getLineByIdFromActivity, isAnonymousPickHUsOnTheFly } 
 
 import PickStepButton from './PickStepButton';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
-import { pickingGraiScanScreenLocation, pickingLineScanScreenLocation } from '../../../routes/picking';
-import { useAvailablePickingTargets } from '../../../api/picking';
-import { useCurrentPickingTargetInfo } from '../../../reducers/wfProcesses/picking/useCurrentPickTarget';
-import { PickingTargetType } from '../../../constants/PickingTargetType';
+import { pickingLineScanScreenLocation } from '../../../routes/picking';
 import {
   getCurrentPickFromHUQRCode,
   getQtyPickedOrRejectedTotalForLine,
@@ -67,21 +64,6 @@ const PickLineScreen = () => {
     qtyPicked,
     additionalHeaderProperties,
   });
-
-  // GRAI mass-capture entry point: shown only when GRAI scanning is required for this job's customer
-  // (graiScanEnabled === GRAIRequired != No) AND an LU has been picked (luPickingTarget.luId present).
-  // fallbackToHeader: under sales_order aggregation the pick target lives at the header/activity level
-  // (the line-level target is null), so fall back to it — otherwise the button never shows for the
-  // (common) sales_order Flow-Through config. For product aggregation the line target is set, so the
-  // fallback is a no-op.
-  // Perf note: this fires on every PickLineScreen mount purely to learn graiScanEnabled; there is no
-  // cached job-level flag to read instead, so we accept the extra GET as the trade-off.
-  const { graiScanEnabled } = useAvailablePickingTargets({ wfProcessId, lineId, type: PickingTargetType.TU });
-  const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId, fallbackToHeader: true });
-  const isShowGraiScanButton = !manuallyClosed && graiScanEnabled && luPickingTarget?.luId != null;
-
-  const onGraiScanButtonClick = () =>
-    history.push(pickingGraiScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
 
   const onPickFromManufacturingOrderClicked = () => {
     startWorkflowRequest({
@@ -213,13 +195,6 @@ const PickLineScreen = () => {
           <ButtonWithIndicator captionKey="general.closeText" onClick={onClose} />
         )}
         {manuallyClosed && <ButtonWithIndicator captionKey="general.reOpenText" onClick={onReOpen} />}
-        {isShowGraiScanButton && (
-          <ButtonWithIndicator
-            captionKey="activities.picking.graiScan.buttonCaption"
-            testId="grai-scan-button"
-            onClick={onGraiScanButtonClick}
-          />
-        )}
       </div>
     </div>
   );

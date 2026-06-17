@@ -148,16 +148,8 @@ const translations = {
       },
       graiScan: {
         multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
-        buttonCaption: 'Scan GRAI',
-        windowName: 'Scan GRAI',
         count: '%(scanned)s / %(total)s GRAIs scanned',
         countExtra: '(%(extra)s extra)',
-        manualEntry: {
-          placeholder: 'Enter GRAI',
-          submit: {
-            buttonCaption: 'Add',
-          },
-        },
         save: {
           buttonCaption: 'Save',
         },
