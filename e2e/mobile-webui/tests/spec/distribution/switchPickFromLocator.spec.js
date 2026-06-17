@@ -206,11 +206,9 @@ test('Switch pick-from locator — button stays visible after picking has starte
 });
 
 // noinspection JSUnusedLocalSymbols
-// SKIPPED (me03 #30441): after a mid-job locator switch, job-Complete completes server-side
-// (DD_Order DocStatus=CL, goods moved to wh2) but the mobile UI does not navigate back to the
-// jobs-list (#WFLaunchersScreen). The switch/priority/round-robin behaviour itself is covered by the
-// other specs above; this end-to-end completion path is a separate frontend WF-navigation fix tracked on the issue.
-test.skip('Switch pick-from locator — round-robin wrap then pick + drop completes end-to-end', async ({ page }) => {
+// End-to-end: round-robin wrap back to the starting locator, then pick + drop + Complete navigates
+// back to the jobs-list and the HU lands in the target warehouse.
+test('Switch pick-from locator — round-robin wrap then pick + drop completes end-to-end', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
@@ -302,10 +300,9 @@ test('Switch pick-from locator — after switch, scanning an HU from the origina
 });
 
 // noinspection JSUnusedLocalSymbols
-// SKIPPED (me03 #30441): same post-switch job-Complete navigation issue as the round-robin spec above —
-// the cross-locator pick (A→switch→B) itself works and completes server-side, but the UI doesn't return
-// to the jobs-list. Tracked on the issue as a separate frontend WF-navigation fix.
-test.skip('Switch pick-from locator — pick from locator A, switch mid-job, pick from locator B, drop + complete', async ({ page }) => {
+// End-to-end: fulfill one line from two locators (pick from A, switch mid-job, pick remainder from B),
+// then drop + Complete navigates back to the jobs-list and the HU lands fully in the target warehouse.
+test('Switch pick-from locator — pick from locator A, switch mid-job, pick from locator B, drop + complete', async ({ page }) => {
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
