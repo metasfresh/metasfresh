@@ -125,6 +125,18 @@ public class GRAISet implements Iterable<GRAI>
 
 	public boolean contains(@NonNull final GRAI grai) {return grais.contains(grai);}
 
+	/**
+	 * Returns the union of this set and {@code other}, with this set's elements first (preserving their order)
+	 * followed by {@code other}'s not-already-present elements. Duplicates are dropped.
+	 */
+	@NonNull
+	public GRAISet union(@NonNull final GRAISet other)
+	{
+		if (other.isEmpty()) {return this;}
+		if (this.isEmpty()) {return other;}
+		return Stream.concat(this.stream(), other.stream()).collect(collect());
+	}
+
 	@Override
 	@NonNull
 	public Iterator<GRAI> iterator() {return grais.iterator();}

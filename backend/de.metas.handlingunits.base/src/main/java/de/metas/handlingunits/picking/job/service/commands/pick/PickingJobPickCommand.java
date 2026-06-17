@@ -528,19 +528,8 @@ public class PickingJobPickCommand
 	}
 
 	/**
-	 * Stamps the event's {@code graiCodes} onto the picked LU inside the pick transaction
-	 * ({@code HUGraiService} distributes them across the LU's TU slots).
-	 * <p>
-	 * The picked LU id is resolved via {@link PickingJob#getLuPickingTargetEffective(PickingJobLineId)}
-	 * for the current line ({@link #_lineId}), which handles both aggregation modes:
-	 * <ul>
-	 *   <li>SALES_ORDER / DELIVERY_LOCATION (header-level): the line has no line-level target; the effective
-	 *       lookup falls back to the header LU target.</li>
-	 *   <li>PRODUCT (line-level): the line's own target was just materialised by
-	 *       {@code splitOutPickToHUs()} → {@code updatePickingTarget()}.</li>
-	 * </ul>
-	 * Must be called inside the ambient pick HU context (inside {@code temporarySetNewHContextForProcessing()})
-	 * so the attribute writes commit with the pick transaction.
+	 * Stamps the event's {@code graiCodes} onto the picked LU's TU slots, unioned with the GRAIs already on the LU.
+	 * Must be called inside the ambient pick HU context so the attribute writes commit with the pick transaction.
 	 * No-op when {@code isSetGrais} is false or {@code graiCodes} is empty.
 	 */
 	private void stampGraisIfRequired()
@@ -550,11 +539,10 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		// Resolve the picked LU from the already-updated _pickingJob state (after splitOutPickToHUs → updatePickingTarget).
-		// getLuPickingTargetEffective(_lineId) covers both aggregation modes: for PRODUCT-agg it returns
-		// the line's own just-materialised LU; for SALES_ORDER/DELIVERY_LOCATION-agg it falls back to the header LU.
-		// Using the current line avoids the findFirst()-over-all-lines pitfall that would stamp the wrong
-		// LU in a multi-line PRODUCT-agg job where a prior line's LU is already materialised.
+		// Resolve the picked LU via the current line's effective target (after splitOutPickToHUs → updatePickingTarget):
+		// PRODUCT-agg → the line's just-materialised LU; SALES_ORDER/DELIVERY_LOCATION-agg → the header LU. Resolving
+		// per current line (not findFirst over all lines) avoids stamping the wrong LU in a multi-line PRODUCT-agg job
+		// where a prior line's LU is already materialised.
 		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
 				.filter(LUPickingTarget::isExistingLU)
 				.map(LUPickingTarget::getLuIdNotNull)
@@ -566,7 +554,13 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		huService.setGrais(pickedLuId, GRAISet.parseStrings(graiCodes));
+		// Union with the GRAIs already on the LU: setGrais treats its argument as the LU's COMPLETE desired set
+		// (HUGraiSnapshot.computeDelta), so on a shared SALES_ORDER-agg LU a later product's pick would otherwise
+		// WIPE an earlier product's GRAIs. Existing-first preserves each VHU's slot order; for a single-product LU
+		// the existing set is empty, so the union is a no-op.
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		final GRAISet desiredGrais = existingGrais.union(GRAISet.parseStrings(graiCodes));
+		huService.setGrais(pickedLuId, desiredGrais);
 	}
 
 	private void closeLUAndTUPickingTargets()
