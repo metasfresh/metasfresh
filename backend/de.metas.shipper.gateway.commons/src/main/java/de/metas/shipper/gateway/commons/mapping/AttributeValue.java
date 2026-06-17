@@ -53,9 +53,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	EXTERNAL_SYSTEM_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ExternalSystemValue),
 
 	// From parcel
-	// Note: X_M_Shipper_Mapping_Config does not yet have a generated constant for TopLevelType;
-	// the string literal is used directly here — keep in sync with DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE.
-	TOP_LEVEL_TYPE("TopLevelType"),
+	TOP_LEVEL_TYPE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TopLevelType),
 	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ParcelId),
 
 	// From content
