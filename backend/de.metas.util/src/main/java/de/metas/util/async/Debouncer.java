@@ -57,11 +57,16 @@ public final class Debouncer<T>
 	private final ScheduledExecutorService executor;
 	private final int bufferMaxSize;
 	/**
-	 * Hard upper bound on the in-memory buffer (backpressure). Unlike {@link #bufferMaxSize} — which only
-	 * controls the scheduling delay — this is an absolute ceiling: once reached, the oldest buffered items are
-	 * dropped (and counted/logged) instead of letting the buffer grow without bound. Prevents an
-	 * OutOfMemoryError when the consumer is wedged/slower than the producers (e.g. blocked on an exhausted
-	 * connection pool). {@code <= 0} means "no hard cap".
+	 * Hard upper bound on the in-memory buffer — a <b>load-shedding</b> drop cap (NOT backpressure: it does not
+	 * slow the producer; it discards overflow). Unlike {@link #bufferMaxSize} — which only controls the
+	 * scheduling delay — this is an absolute ceiling: once reached, the oldest buffered items are dropped (and
+	 * counted/logged) instead of letting the buffer grow without bound, preventing an OutOfMemoryError when the
+	 * consumer is wedged/slower than the producers (e.g. blocked on an exhausted connection pool).
+	 * <p>
+	 * <b>OPT-IN.</b> Defaults to {@code -1} ("no cap" = the pre-existing unbounded behaviour) so existing callers
+	 * are never silently capped — a cap means dropping items, which is data loss for a caller whose items are not
+	 * recomputable. Set it explicitly only where dropping the oldest pending items under overload is acceptable
+	 * (e.g. idempotent, re-computable-on-next-event sync requests).
 	 */
 	private final int bufferHardLimit;
 	private final int delayInMillis;
@@ -89,11 +94,9 @@ public final class Debouncer<T>
 		this.executor = createExecutor(name);
 		this.consumer = consumer;
 		this.bufferMaxSize = bufferMaxSize > 0 ? bufferMaxSize : -1;
-		// Default the hard cap to a generous multiple of bufferMaxSize so normal operation is unaffected and
-		// only pathological growth (a wedged consumer) is bounded. Callers can set it explicitly.
-		this.bufferHardLimit = bufferHardLimit > 0
-				? bufferHardLimit
-				: (bufferMaxSize > 0 ? bufferMaxSize * 100 : -1);
+		// Opt-in only: no cap unless the caller sets one. Deriving a cap from bufferMaxSize would retroactively
+		// drop items for existing unbounded callers (e.g. the process-log debouncer) = silent data loss.
+		this.bufferHardLimit = bufferHardLimit > 0 ? bufferHardLimit : -1;
 		this.delayInMillis = delayInMillis;
 		this.buffer = distinct
 				? new LinkedHashSet<>(bufferMaxSize)
