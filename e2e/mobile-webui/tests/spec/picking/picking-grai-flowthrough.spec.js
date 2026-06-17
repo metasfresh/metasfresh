@@ -170,23 +170,27 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
     // Save must be disabled before all 10 GRAIs are captured.
     await PickGraiScreen.expectSaveDisabled();
 
-    // Capture the first GRAI by TYPING it on the keyboard (the manual-entry path), the rest by scanning.
-    await PickGraiScreen.enterGraiManually({ graiString: grais[0] });
-    await PickGraiScreen.expectGraiChipCount({ expectedCount: 1 });
-    for (let i = 1; i < TU_COUNT; i++) {
+    // Realistic flow: scan the crates that have a readable tag (9 here), then TYPE the one that
+    // wouldn't scan via the scanner's manual-entry mode. Both capture paths are exercised.
+    for (let i = 0; i < TU_COUNT - 1; i++) {
         await PickGraiScreen.scanGrai({ graiString: grais[i] });
         // Assertion between scans lets the keyboard-hook interval flush each barcode (buffer-merge guard).
         await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
     }
+    await PickGraiScreen.enterGraiManually({ graiString: grais[TU_COUNT - 1] });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_COUNT });
 
     // Exactly 10 GRAIs captured -> count reads 10 / 10, save enabled; save sends the atomic pick
-    // (qty + the 10 GRAIs) and the workflow returns to the picking job.
+    // (qty + the 10 GRAIs). The line is now fully picked, so the flow returns to the picking line.
     await PickGraiScreen.expectCount({ scanned: TU_COUNT, total: TU_COUNT });
     await PickGraiScreen.expectSaveEnabled();
     await PickGraiScreen.clickSave();
-    await PickingJobScreen.waitForScreen();
+    await PickingJobLineScreen.waitForScreen();
 
-    // Completion must succeed now that every picked crate has a GRAI -> shipment is created.
+    // Go back to the job and complete it: completion must succeed now that every picked crate has a
+    // GRAI -> shipment is created.
+    await PickingJobLineScreen.goBack();
+    await PickingJobScreen.waitForScreen();
     await PickingJobScreen.complete();
 
     await Backend.expect({

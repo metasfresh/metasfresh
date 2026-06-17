@@ -137,9 +137,13 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
         // This pick is 10 crates -> required count is TU_PER_PRODUCT, independent of any later pick.
         await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
 
-        // RFID over-scan within this burst: the reader re-reads one crate's tag. The in-memory capture
-        // dedups it, so the count is exactly TU_PER_PRODUCT, not TU_PER_PRODUCT + 1.
-        await PickGraiScreen.scanGraiBatch({ graiStrings: [...product1Grais, product1Grais[0]] });
+        // Scan this pick's 10 crate GRAIs (assertion between each lets the keyboard hook flush each).
+        for (let i = 0; i < TU_PER_PRODUCT; i++) {
+            await PickGraiScreen.scanGrai({ graiString: product1Grais[i] });
+            await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
+        }
+        // RFID re-read of a crate already captured in this pick is deduped — the count stays at 10.
+        await PickGraiScreen.scanGrai({ graiString: product1Grais[0] });
         await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_PER_PRODUCT });
         await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
         await PickGraiScreen.expectSaveEnabled();
@@ -157,8 +161,10 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
         // The second pick's capture starts fresh at 0 / TU_PER_PRODUCT (it is not the LU's running total).
         await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
 
-        await PickGraiScreen.scanGraiBatch({ graiStrings: product2Grais });
-        await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_PER_PRODUCT });
+        for (let i = 0; i < TU_PER_PRODUCT; i++) {
+            await PickGraiScreen.scanGrai({ graiString: product2Grais[i] });
+            await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
+        }
         await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
         await PickGraiScreen.expectSaveEnabled();
         await PickGraiScreen.clickSave();

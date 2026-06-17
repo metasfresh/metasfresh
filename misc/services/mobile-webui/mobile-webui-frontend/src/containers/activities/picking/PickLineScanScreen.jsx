@@ -31,7 +31,9 @@ import {
   getQtyRejectedReasonsFromActivity,
 } from '../../../reducers/wfProcesses';
 import { parseQRCodeString, toQRCodeString } from '../../../utils/qrCode/hu';
-import { getScannedHUQRCodeInfo } from '../../../api/picking';
+import { getScannedHUQRCodeInfo, useAvailablePickingTargets } from '../../../api/picking';
+import { PickingTargetType } from '../../../constants/PickingTargetType';
+import Spinner from '../../../components/Spinner';
 import { useBooleanSetting } from '../../../reducers/settings';
 import {
   getNextEligibleLineToPick,
@@ -86,6 +88,15 @@ const PickLineScanScreen = () => {
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
 
+  // GRAI Flow-Through: when GRAI scanning is required for this job's customer, the qty confirm
+  // auto-invokes the inline GRAI capture (handled by ScanHUAndGetQtyComponent) and the captured codes
+  // are reported on the same onResult, so qty + GRAIs go out as ONE atomic pick.
+  const { graiScanEnabled, isTargetsLoading } = useAvailablePickingTargets({
+    wfProcessId,
+    lineId,
+    type: PickingTargetType.TU,
+  });
+
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
   const resolveScannedBarcode = useCallback(
@@ -122,10 +133,17 @@ const PickLineScanScreen = () => {
     [qtyToPickRemaining]
   );
 
+  // Block qty entry until graiScanEnabled is known (the targets GET defaults it false while in flight),
+  // else a GRAI-required pick could be confirmed and sent without GRAIs.
+  if (isTargetsLoading) {
+    return <Spinner />;
+  }
+
   return (
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
+      graiScanEnabled={graiScanEnabled}
       qtyTargetCaption={trl('general.QtyToPick')}
       qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
       packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
@@ -384,6 +402,8 @@ const usePostQtyPicked = ({
     isDone = true,
     resolvedBarcodeData,
     barcodeType,
+    setGrais,
+    graiCodes,
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
 
@@ -418,6 +438,8 @@ const usePostQtyPicked = ({
         bestBeforeDate,
         setLotNo: lotNo !== undefined,
         lotNo,
+        setGrais,
+        graiCodes,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

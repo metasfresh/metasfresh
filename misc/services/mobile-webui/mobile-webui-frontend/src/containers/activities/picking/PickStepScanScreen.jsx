@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { shallowEqual, useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../utils/translations';
@@ -10,11 +10,8 @@ import {
 } from '../../../reducers/wfProcesses';
 import { toastError } from '../../../utils/toast';
 import { getPickFromForStep, getQtyToPickForStep } from '../../../utils/picking';
-import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../../../utils/grai';
 
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
-import GraiCapturePanel from '../../../components/GraiCapturePanel';
-import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import Spinner from '../../../components/Spinner';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
 import { toNumberOrZero } from '../../../utils/numbers';
@@ -36,10 +33,10 @@ const PickStepScanScreen = () => {
       shallowEqual
     );
 
-  // GRAI Flow-Through: when GRAI scanning is required for this job's customer, the pick is NOT sent
-  // when the qty is confirmed; instead an inline, non-skippable GRAI capture is auto-invoked and the
-  // whole pick (qty + the captured GRAIs) is sent in ONE atomic event. When it is not required the
-  // flow is unchanged — qty confirm sends the pick directly.
+  // GRAI Flow-Through: when GRAI scanning is required for this job's customer, ScanHUAndGetQtyComponent
+  // auto-invokes the inline GRAI capture after qty entry (non-skippable) and reports the captured codes
+  // (setGrais/graiCodes) on the same onResult — so the whole pick goes out as ONE atomic event. When it
+  // is not required the flow is unchanged.
   const { graiScanEnabled, isTargetsLoading } = useAvailablePickingTargets({
     wfProcessId,
     lineId,
@@ -58,83 +55,31 @@ const PickStepScanScreen = () => {
 
   const dispatch = useDispatch();
 
-  // null while entering the qty; once qty is confirmed and GRAI capture is required, holds the
-  // confirmed pick params awaiting their GRAIs.
-  const [pendingPick, setPendingPick] = useState(null);
-  const [graiCodes, setGraiCodes] = useState([]);
+  const onResult = ({ qty = 0, reason = null, scannedBarcode = null, setGrais, graiCodes }) => {
+    const qtyRejected = qtyToPick - qty;
 
-  const dispatchPick = useCallback(
-    (pick, capturedGrais) => {
-      const graiFields = capturedGrais != null ? { setGrais: true, graiCodes: capturedGrais } : {};
-      return dispatch(
-        postStepPickedThunk({
-          history,
-          wfProcessId,
-          activityId,
-          lineId,
-          stepId,
-          huQRCode: pick.scannedBarcode,
-          qtyPicked: pick.qty,
-          qtyRejectedReasonCode: pick.reason,
-          qtyRejected: pick.qtyRejected,
-          ...graiFields,
-        })
-      )
-        .then(({ isPickingJobCompleted }) => {
-          setPendingPick(null);
-          setGraiCodes([]);
-          if (isPickingJobCompleted) history.goTo(pickingLineScreenLocation); // go to picking line screen
-        })
-        .catch((axiosError) => toastError({ axiosError }));
-    },
-    [dispatch, history, wfProcessId, activityId, lineId, stepId]
-  );
-
-  const onResult = ({ qty = 0, reason = null, scannedBarcode = null }) => {
-    const pick = { qty, reason, scannedBarcode, qtyRejected: qtyToPick - qty };
-    if (graiScanEnabled && qty > 0) {
-      setGraiCodes([]);
-      setPendingPick(pick); // auto-invoke inline GRAI capture before sending the pick
-      return;
-    }
-    dispatchPick(pick, null);
+    return dispatch(
+      postStepPickedThunk({
+        history,
+        wfProcessId,
+        activityId,
+        lineId,
+        stepId,
+        huQRCode: scannedBarcode,
+        qtyPicked: qty,
+        qtyRejectedReasonCode: reason,
+        qtyRejected,
+        setGrais,
+        graiCodes,
+      })
+    )
+      .then(({ isPickingJobCompleted }) => isPickingJobCompleted && history.goTo(pickingLineScreenLocation)) // go to picking line screen
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
-  if (pendingPick) {
-    const expectedCount = pendingPick.qty;
-    const assignedGrais = getAssignedGrais(graiCodes, expectedCount);
-    const extraGrais = getExtraGrais(graiCodes, expectedCount);
-    // Save is enabled only when exactly N (= picked TUs) GRAIs are captured, with no extras.
-    const canSave = graiCodes.length === expectedCount;
-
-    return (
-      <GraiCapturePanel
-        graiCodes={graiCodes}
-        assignedGrais={assignedGrais}
-        extraGrais={extraGrais}
-        expectedCount={expectedCount}
-        countKey="activities.picking.graiScan.count"
-        countExtraKey="activities.picking.graiScan.countExtra"
-        clearAllButtonKey="activities.picking.graiScan.clearAll.buttonCaption"
-        clearAllConfirmKey="activities.picking.graiScan.clearAll.confirmQuestion"
-        onAddGrais={(newGrais) => setGraiCodes((prev) => mergeGraiArrays(prev, newGrais))}
-        onRemoveGrai={(grai) => setGraiCodes((prev) => prev.filter((g) => g !== grai))}
-        onClearAll={() => setGraiCodes([])}
-      >
-        <ButtonWithIndicator
-          captionKey="activities.picking.graiScan.save.buttonCaption"
-          testId="grai-save-button"
-          disabled={!canSave}
-          onClick={() => dispatchPick(pendingPick, assignedGrais)}
-          additionalCssClass="action-button"
-        />
-      </GraiCapturePanel>
-    );
-  }
-
-  // Block qty entry until we know whether GRAI capture is required: if the operator confirmed the
-  // qty while graiScanEnabled was still defaulting to false (GET in flight), a GRAI-required pick
-  // would be sent without GRAIs.
+  // Block qty entry until we know whether GRAI capture is required: if the operator confirmed the qty
+  // while graiScanEnabled was still defaulting to false (the targets GET in flight), a GRAI-required
+  // pick would be sent without GRAIs.
   if (isTargetsLoading) {
     return <Spinner />;
   }
@@ -147,6 +92,7 @@ const PickStepScanScreen = () => {
       qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
+      graiScanEnabled={graiScanEnabled}
       //
       getConfirmationPromptForQty={isShowPromptWhenOverPicking ? getConfirmationPromptForQty : undefined}
       onResult={onResult}
