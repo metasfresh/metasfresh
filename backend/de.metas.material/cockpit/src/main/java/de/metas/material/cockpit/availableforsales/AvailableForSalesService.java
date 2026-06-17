@@ -79,6 +79,11 @@ public class AvailableForSalesService
 		this.syncProductDebouncer = Debouncer.<EnqueueAvailableForSalesRequest>builder()
 				.name("syncAvailableForSalesDebouncer")
 				.bufferMaxSize(sysConfigBL.getIntValue("de.metas.material.cockpit.availableforsales.AvailableForSalesService.debouncer.bufferMaxSize", 100))
+				// Backpressure hard cap: bounds the in-memory buffer if the consumer can't keep up (e.g. blocked
+				// on an exhausted DB connection pool), preventing an OutOfMemoryError from the buffer growing to
+				// millions of entries. Oldest pending syncs are dropped + logged; a dropped product re-syncs on its
+				// next order-line/stock event.
+				.bufferHardLimit(sysConfigBL.getIntValue("de.metas.material.cockpit.availableforsales.AvailableForSalesService.debouncer.bufferHardLimit", 10000))
 				.delayInMillis(sysConfigBL.getIntValue("de.metas.material.cockpit.availableforsales.AvailableForSalesService.debouncer.delayInMillis", 5000))
 				.distinct(true)
 				.consumer(this::syncAvailableForSales)
