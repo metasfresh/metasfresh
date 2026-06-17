@@ -82,3 +82,44 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
       | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
       | product_S25618_atp2 | wh_S25618_atp  | 0          | 7                    | 0                   | -7     |
+
+  @Id:S30457_10
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F19100
+  Scenario: QtyATP sums across customer subgroups, taking the latest STOCK candidate per subgroup
+
+    # The view groups STOCK candidates by (StorageAttributesKey, C_BPartner_Customer_ID) and
+    # takes the latest (highest DateProjected, then highest SeqNo) per subgroup before the
+    # week-end boundary, then SUMs across subgroups. Here the two subgroups differ by customer.
+    #
+    # Subgroup A (C_BPartner_Customer_ID=customer_A): two STOCK candidates in week 0.
+    #   - earlier (DayWithinWeek=1, ATP=30): DateProjected = Monday+1; its validity interval ends
+    #     at Monday+2 (the next step's DateProjected) → does NOT reach the week-end → excluded.
+    #   - later  (DayWithinWeek=2, ATP=40): DateProjected = Monday+2; next_dp IS NULL
+    #     → owns week 0 → contributes 40.
+    # Subgroup B (C_BPartner_Customer_ID=customer_B): one STOCK candidate in week 0 (ATP=20)
+    #   → contributes 20.
+    # Expected QtyATP for week 0 = 40 (latest of subgroup A) + 20 (subgroup B) = 60.
+    Given metasfresh contains M_Products:
+      | Identifier          | M_Product_Category_ID    | C_UOM_ID.X12DE355 |
+      | product_S30457_atp3 | standard_category_S25618 | PCE               |
+
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | Name       |
+      | customer_A | Customer A |
+      | customer_B | Customer B |
+
+    And metasfresh initially has this MD_Candidate data relative to current week
+      | Identifier             | MD_Candidate_Type | MD_Candidate_BusinessCase | M_Product_ID        | WeekOffset | DayWithinWeek | Qty | ATP | M_Warehouse_ID | C_BPartner_Customer_ID |
+      | inv_S30457_custA_early | INVENTORY_UP      |                           | product_S30457_atp3 | 0          | 1             | 30  | 30  | wh_S25618_atp  | customer_A             |
+      | inv_S30457_custA_late  | INVENTORY_UP      |                           | product_S30457_atp3 | 0          | 2             | 40  | 40  | wh_S25618_atp  | customer_A             |
+      | inv_S30457_custB       | INVENTORY_UP      |                           | product_S30457_atp3 | 0          | 1             | 20  | 20  | wh_S25618_atp  | customer_B             |
+
+    # Week 0: view sums the latest STOCK per customer subgroup.
+    #   customer_A latest (DayWithinWeek=2) → ATP=40; customer_B (DayWithinWeek=1, only entry) → ATP=20.
+    #   QtyATP = 40 + 20 = 60.
+    #   No DEMAND/SUPPLY rows → QtyExpectedShipments = QtyExpectedReceipts = 0.
+    Then after not more than 10s, MD_Stock_PerWeek_V contains:
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S30457_atp3 | wh_S25618_atp  | 0          | 0                    | 0                   | 60     |
