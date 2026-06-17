@@ -78,7 +78,7 @@ const GRAIScreen = () => {
     <div className="grai-screen">
       <HUInfoComponent handlingUnitInfo={handlingUnitInfo} />
 
-      {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} continuousRunning={true} />}
+      {!loading && <BarcodeScannerComponent onResolvedResult={onResolvedResult} />}
 
       <div className="grai-count" data-testid="grai-count">
         {trl('huManager.action.scanGRAI.count', { scanned: assignedGrais.length, total: tuCount })}
