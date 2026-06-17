@@ -22,21 +22,28 @@
 
 package de.metas.order.returnpackage;
 
+import de.metas.order.OrderId;
+import de.metas.order.returnpackage.core.repository.OrderReturnPackageRepository;
+import de.metas.order.returnpackage.core.service.OrderReturnPackageService;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Order_ReturnPackage;
 import org.compiere.model.X_C_Order_ReturnPackage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
+@ExtendWith(AdempiereTestWatcher.class)
 class OrderReturnPackageServiceTest
 {
 	private static final int ORG_ID = 100;
@@ -47,7 +54,8 @@ class OrderReturnPackageServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		service = new OrderReturnPackageService();
+		final OrderReturnPackageRepository repository = new OrderReturnPackageRepository();
+		service = new OrderReturnPackageService(repository);
 	}
 
 	private I_C_Order createSalesOrder()
@@ -60,15 +68,15 @@ class OrderReturnPackageServiceTest
 		order.setIsSOTrx(true);
 		order.setAD_Org_ID(ORG_ID);
 		order.setC_BPartner_ID(bpartner.getC_BPartner_ID());
-		saveRecord(order);
+		save(order);
 		return order;
 	}
 
-	private List<I_C_Order_ReturnPackage> retrievePackages(final I_C_Order order)
+	private List<I_C_Order_ReturnPackage> retrievePackages(final OrderId orderId)
 	{
 		return de.metas.util.Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_ReturnPackage.class)
-				.addEqualsFilter(I_C_Order_ReturnPackage.COLUMNNAME_C_Order_ID, order.getC_Order_ID())
+				.addEqualsFilter(I_C_Order_ReturnPackage.COLUMNNAME_C_Order_ID, orderId.getRepoId())
 				.orderBy(I_C_Order_ReturnPackage.COLUMNNAME_PalletType)
 				.create()
 				.list(I_C_Order_ReturnPackage.class);
@@ -79,9 +87,10 @@ class OrderReturnPackageServiceTest
 	{
 		final I_C_Order order = createSalesOrder();
 
-		service.createDefaultsForOrder(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		service.createDefaultsForOrder(orderId);
 
-		final List<I_C_Order_ReturnPackage> packages = retrievePackages(order);
+		final List<I_C_Order_ReturnPackage> packages = retrievePackages(orderId);
 		assertThat(packages).hasSize(2);
 
 		final I_C_Order_ReturnPackage eur = packages.stream()
@@ -108,9 +117,10 @@ class OrderReturnPackageServiceTest
 	{
 		final I_C_Order order = createSalesOrder();
 
-		service.createDefaultsForOrder(order);
-		service.createDefaultsForOrder(order); // second call must not create duplicates
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		service.createDefaultsForOrder(orderId);
+		service.createDefaultsForOrder(orderId); // second call must not create duplicates
 
-		assertThat(retrievePackages(order)).hasSize(2);
+		assertThat(retrievePackages(orderId)).hasSize(2);
 	}
 }

@@ -22,7 +22,8 @@
 
 package de.metas.order.returnpackage.interceptor;
 
-import de.metas.order.returnpackage.OrderReturnPackageService;
+import de.metas.order.OrderId;
+import de.metas.order.returnpackage.core.service.OrderReturnPackageService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -49,6 +50,6 @@ public class C_Order_ReturnPackage
 			return;
 		}
 
-		orderReturnPackageService.createDefaultsForOrder(order);
+		orderReturnPackageService.createDefaultsForOrder(OrderId.ofRepoId(order.getC_Order_ID()));
 	}
 }
