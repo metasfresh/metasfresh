@@ -14,10 +14,10 @@ import java.util.stream.Stream;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Guards the fix for me03 30475 (dantherme2e OOM): the {@code limit} carried by {@link DDOrderQuery} must be pushed
- * down into the SQL query, so the {@code T_Query_Selection} INSERT built by the guaranteed iterator stays bounded.
- * Without the push-down, the mobile Distribution launchers WebSocket producer (polled every second) materializes the
- * whole DD_Order backlog on every poll, pinning JDBC connections.
+ * Guards the limit push-down: the {@code limit} carried by {@link DDOrderQuery} must be pushed down into the SQL
+ * query, so the {@code T_Query_Selection} INSERT built by the guaranteed iterator stays bounded. Without the
+ * push-down, the mobile Distribution launchers WebSocket producer (polled every second) materializes the whole
+ * DD_Order backlog on every poll, pinning JDBC connections.
  */
 class DDOrderLowLevelDAOStreamLimitTest
 {
