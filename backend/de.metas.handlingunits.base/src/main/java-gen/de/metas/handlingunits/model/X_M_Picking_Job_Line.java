@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_Picking_Job_Line, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2036402452L;
+	private static final long serialVersionUID = -97547417L;
 
     /** Standard Constructor */
     public X_M_Picking_Job_Line (final Properties ctx, final int M_Picking_Job_Line_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1) 
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else 
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
 	}
 
 	@Override
@@ -219,6 +234,27 @@ public class X_M_Picking_Job_Line extends org.compiere.model.PO implements I_M_P
 	public java.lang.String getCurrent_PickTo_TU_QRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_Current_PickTo_TU_QRCode);
+	}
+
+	/** 
+	 * IsCarrierAdviseReadOnly AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISCARRIERADVISEREADONLY_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISCARRIERADVISEREADONLY_Yes = "Y";
+	/** No = N */
+	public static final String ISCARRIERADVISEREADONLY_No = "N";
+	@Override
+	public void setIsCarrierAdviseReadOnly (final java.lang.String IsCarrierAdviseReadOnly)
+	{
+		set_Value (COLUMNNAME_IsCarrierAdviseReadOnly, IsCarrierAdviseReadOnly);
+	}
+
+	@Override
+	public java.lang.String getIsCarrierAdviseReadOnly() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsCarrierAdviseReadOnly);
 	}
 
 	@Override

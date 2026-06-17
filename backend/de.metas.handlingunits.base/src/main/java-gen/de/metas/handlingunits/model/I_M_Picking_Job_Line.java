@@ -52,6 +52,27 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCarrier_Product_ID (int Carrier_Product_ID);
+
+	/**
+	 * Get Carrier Product.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCarrier_Product_ID();
+
+	ModelColumn<I_M_Picking_Job_Line, org.compiere.model.I_Carrier_Product> COLUMN_Carrier_Product_ID = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Product_ID", org.compiere.model.I_Carrier_Product.class);
+	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
+
+	/**
 	 * Set Catch UOM.
 	 * Catch weight UOM as taken from the product master data.
 	 *
@@ -375,6 +396,27 @@ public interface I_M_Picking_Job_Line
 
 	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Carrier Advise Read-Only.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsCarrierAdviseReadOnly (java.lang.String IsCarrierAdviseReadOnly);
+
+	/**
+	 * Get Carrier Advise Read-Only.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getIsCarrierAdviseReadOnly();
+
+	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job_Line.class, "IsCarrierAdviseReadOnly", null);
+	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";
 
 	/**
 	 * Set Manually closed.
