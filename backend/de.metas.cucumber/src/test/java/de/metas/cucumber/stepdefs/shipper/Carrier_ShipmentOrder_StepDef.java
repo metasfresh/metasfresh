@@ -79,10 +79,18 @@ public class Carrier_ShipmentOrder_StepDef
 	 * the optional {@code Carrier_Product_ID} column selects the one delivery order whose carrier product
 	 * matches — otherwise the first found delivery order for the shipment is used.</p>
 	 *
+	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>Identifier</b>          — (required) alias to store the found delivery order under<br>
 	 *   <b>M_InOut_ID</b>          — (required, identifier-ref) shipment whose delivery order(s) to poll for<br>
 	 *   <b>Carrier_Product_ID</b>  — (optional, identifier-ref) disambiguator when the shipment was split into several delivery orders
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, Carrier_ShipmentOrder is found:
+	 *   | Identifier | M_InOut_ID  | Carrier_Product_ID |
+	 *   | cso_cp1    | inout_split | cp1                |
+	 *   | cso_cp2    | inout_split | cp2                |
+	 * </pre>
 	 */
 	@And("^after not more than (.*)s, Carrier_ShipmentOrder is found:$")
 	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable)

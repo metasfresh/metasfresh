@@ -1387,6 +1387,9 @@ Feature: nShift Shipment
     And metasfresh contains Carrier_Products:
       | Identifier      | M_Shipper_ID | Name          |
       | cp_lu_man_named | nShift       | LU Man Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_lu_man_named    | cgt2                  | cs3                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_lu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
@@ -1397,6 +1400,12 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_lu_man  | so_lu_man_l1   | N             |
+    # The advise enqueued at order completion is processed asynchronously. Wait until the carrier product is set
+    # (advise Completed) before manually overriding it — running the manual advise while the schedule is still
+    # Requested is a silent no-op (Requested is ineligible for manual enqueue).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_lu_man             | cp_lu_man_named    | cgt2                  | cs3                |
@@ -1504,6 +1513,9 @@ Feature: nShift Shipment
     And metasfresh contains Carrier_Products:
       | Identifier      | M_Shipper_ID | Name          |
       | cp_tu_man_named | nShift       | TU Man Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_tu_man_named    | cgt2                  | cs3                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_tu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
@@ -1514,6 +1526,12 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_tu_man  | so_tu_man_l1   | N             |
+    # The advise enqueued at order completion is processed asynchronously. Wait until the carrier product is set
+    # (advise Completed) before manually overriding it — running the manual advise while the schedule is still
+    # Requested is a silent no-op (Requested is ineligible for manual enqueue).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_tu_man  | so_tu_man_l1   | N             | cp_tu_man_named    |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_tu_man             | cp_tu_man_named    | cgt2                  | cs3                |
@@ -1618,6 +1636,9 @@ Feature: nShift Shipment
     And metasfresh contains Carrier_Products:
       | Identifier      | M_Shipper_ID | Name          |
       | cp_cu_man_named | nShift       | CU Man Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_cu_man_named    | cgt2                  | cs3                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_cu_man  | true    | customer      | 2025-04-01  | wh             | nShift       |
@@ -1628,6 +1649,12 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_cu_man  | so_cu_man_l1   | N             |
+    # The advise enqueued at order completion is processed asynchronously. Wait until the carrier product is set
+    # (advise Completed) before manually overriding it — running the manual advise while the schedule is still
+    # Requested is a silent no-op (Requested is ineligible for manual enqueue).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_cu_man  | so_cu_man_l1   | N             | cp_cu_man_named    |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_cu_man             | cp_cu_man_named    | cgt2                  | cs3                |

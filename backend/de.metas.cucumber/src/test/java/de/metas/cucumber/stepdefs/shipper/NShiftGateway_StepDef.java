@@ -36,6 +36,7 @@ import org.mockito.stubbing.Answer;
 
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,8 +68,25 @@ public class NShiftGateway_StepDef
 	 * One entry per nShift {@code createShipment} call — i.e. one per delivery order the gateway splits the
 	 * packages into. Cleared each time {@link #stubShipmentServiceWithSuccess()} is called.
 	 */
-	@NonNull private final List<JsonDeliveryRequest> capturedShipmentRequests = new java.util.ArrayList<>();
+	@NonNull private final List<JsonDeliveryRequest> capturedShipmentRequests = new ArrayList<>();
 
+	/**
+	 * Stubs the nShift ship advisor service so {@code advise(...)} returns a successful response built from the
+	 * DataTable row, and captures the actual request for later assertion (see {@code capturedAdvisorRequest}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_Product_ID</b>     — (required, identifier-ref) carrier product returned as the advised shipper product<br>
+	 *   <b>Carrier_Goods_Type_ID</b>  — (required, identifier-ref) goods type returned in the advise response<br>
+	 *   <b>Carrier_Service_ID</b>     — (optional, identifier-ref) comma-separated carrier service(s) to include in the response
+	 * @cucumber.depends StepDefData: Carrier_Product_StepDefData, Carrier_Goods_Type_StepDefData, Carrier_Service_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the nShift ship advisor service is stubbed to return a successful response based on the request
+	 *   | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+	 *   | cp1                | cgt1                  | cs1                |
+	 * </pre>
+	 */
 	@Given("the nShift ship advisor service is stubbed to return a successful response based on the request")
 	public void stubShipAdvisorServiceWithDynamicSuccess(@NonNull final DataTable dataTable)
 	{
