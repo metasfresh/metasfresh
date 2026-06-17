@@ -43,11 +43,6 @@ public class DDOrderQuery
 	@Nullable Set<ResourceId> plantIds;
 	@Nullable Set<DDOrderId> onlyDDOrderIds;
 
-	/**
-	 * Max number of records to fetch. Pushed down into the SQL query (and thus into the {@code T_Query_Selection}
-	 * INSERT built by guaranteed iterators), so an unbounded selection is never materialized.
-	 * Defaults to {@link QueryLimit#NO_LIMIT} to keep existing callers unchanged.
-	 */
 	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 
 	//

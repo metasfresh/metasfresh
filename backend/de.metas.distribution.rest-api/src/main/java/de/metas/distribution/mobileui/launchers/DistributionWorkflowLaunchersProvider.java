@@ -168,7 +168,7 @@ public class DistributionWorkflowLaunchersProvider
 		// Already started jobs
 		if (!query.isExcludeAlreadyStarted())
 		{
-			ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query))
+			ddOrderService.streamDDOrders(DistributionJobQueries.ddOrdersAssignedToUser(query.withSuggestedLimit(QueryLimit.NO_LIMIT)))
 					.forEach(collector::collect);
 		}
 
@@ -177,8 +177,9 @@ public class DistributionWorkflowLaunchersProvider
 		@NonNull final QueryLimit suggestedLimit = query.getSuggestedLimit();
 		if (suggestedLimit.isNoLimit() || !suggestedLimit.isLimitHitOrExceeded(collector.getCollectedItems()))
 		{
-			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query))
-					.limit(suggestedLimit.minusSizeOf(collector.getCollectedItems()).toIntOr(Integer.MAX_VALUE))
+			final QueryLimit limit = suggestedLimit.minusSizeOf(collector.getCollectedItems());
+			ddOrderService.streamDDOrders(DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query.withSuggestedLimit(limit)))
+					.limit(limit.toIntOr(Integer.MAX_VALUE))
 					.forEach(collector::collect);
 		}
 	}
