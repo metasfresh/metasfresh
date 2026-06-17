@@ -47,3 +47,53 @@ def test_main_writes_versioned_json(tmp_path):
     out = json.loads((base / "branches" / "new-dawn-uat" / "permalinks.json").read_text(encoding="utf-8"))
     assert out["version"] == "v1"
     assert out["features"] and out["specs"]
+
+
+# --- extract_features: F-code alias path (a node named "F#### Description") ---
+def test_feature_aliased_by_fcode_when_node_name_has_description():
+    """A feature node named 'F67042 HU receipt date' is reachable by BOTH the full
+    node name AND the short F-code alias — exercises the setdefault() alias branch."""
+    root = {"children": [
+        {"name": "E2300 Attributes", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "F67042 HU receipt date", "uid": "a".ljust(32, "0"),
+             "children": [{"name": "scenario 1"}, {"name": "scenario 2"}]},
+        ]},
+    ]}
+    feats = gp.extract_features(root)
+    assert feats["F67042 HU receipt date"] == ("a".ljust(32, "0"), 2)   # full-name key
+    assert feats["F67042"] == ("a".ljust(32, "0"), 2)                    # F-code alias
+
+
+# --- extract_features: a node WITHOUT an F-code prefix is indexed by name only ---
+def test_feature_without_fcode_indexed_by_name_only():
+    """Documents the by-node-name limitation: indexing is keyed off the Allure grouping
+    node NAME, not test tags. A node whose name carries no F-code gets no F-code key."""
+    root = {"children": [
+        {"name": "E2300 Attributes", "uid": "e".ljust(32, "0"), "children": [
+            {"name": "HU_DateReceived attribute population", "uid": "b".ljust(32, "0"),
+             "children": [{"name": "scenario"}]},
+        ]},
+    ]}
+    feats = gp.extract_features(root)
+    assert "HU_DateReceived attribute population" in feats
+    assert not any(k.startswith("F") for k in feats)  # no tag-derived F-code key
+
+
+# --- _count_leaves: leaf (children=None) -> 1; empty group ([]) -> 0 ---
+def test_count_leaves_semantics():
+    assert gp._count_leaves({"name": "leaf"}) == 1                       # no children key
+    assert gp._count_leaves({"name": "leaf", "children": None}) == 1     # explicit null
+    assert gp._count_leaves({"name": "empty group", "children": []}) == 0
+    assert gp._count_leaves({"children": [{"name": "a"}, {"name": "b"}]}) == 2
+
+
+# --- extract_specs: a .feature-named group node is indexed (not only .spec.js) ---
+def test_spec_indexed_for_feature_extension():
+    root = {"children": [
+        {"name": "cucumber", "uid": "x".ljust(32, "0"), "children": [
+            {"name": "receiving.feature", "uid": "c".ljust(32, "0"),
+             "children": [{"name": "step"}]},
+        ]},
+    ]}
+    specs = gp.extract_specs(root)
+    assert specs["receiving.feature"] == ("c".ljust(32, "0"), 1)

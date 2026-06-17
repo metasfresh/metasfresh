@@ -10,8 +10,10 @@ ECODE_RE = re.compile(r"^E\d+\b")
 SPEC_SUFFIXES = (".spec.js", ".feature")
 
 def _count_leaves(node):
+    # A leaf test-case has no "children" key (Allure uses null); a group node has a
+    # list — count its leaves (an explicit empty list yields 0, not a phantom 1).
     ch = node.get("children")
-    if not ch:
+    if ch is None:
         return 1
     return sum(_count_leaves(c) for c in ch)
 
