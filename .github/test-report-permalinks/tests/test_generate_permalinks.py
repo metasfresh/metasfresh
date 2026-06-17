@@ -49,6 +49,17 @@ def test_main_writes_versioned_json(tmp_path):
     assert out["features"] and out["specs"]
 
 
+def test_main_output_is_world_readable(tmp_path):
+    """The published file is served by the web server (a different user than the CI
+    publisher), so it MUST be group+other readable. tempfile.mkstemp creates 0600 —
+    the generator must widen it, else nginx returns 403 (file present but unreadable)."""
+    base = _layout(tmp_path, "new-dawn-uat", "v1")
+    gp.main(["prog", "new-dawn-uat", "v1", str(base)])
+    out = base / "branches" / "new-dawn-uat" / "permalinks.json"
+    mode = out.stat().st_mode & 0o777
+    assert mode & 0o044 == 0o044, f"permalinks.json must be group+other readable, got {oct(mode)}"
+
+
 # --- extract_features: F-code alias path (a node named "F#### Description") ---
 def test_feature_aliased_by_fcode_when_node_name_has_description():
     """A feature node named 'F67042 HU receipt date' is reachable by BOTH the full

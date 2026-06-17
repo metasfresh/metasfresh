@@ -73,6 +73,10 @@ def main(argv):
     fd, tmp = tempfile.mkstemp(dir=out_dir, suffix=".tmp")
     with os.fdopen(fd, "w", encoding="utf-8") as f:
         json.dump({"version": version, "features": features, "specs": specs}, f, indent=2, ensure_ascii=False)
+    # mkstemp creates the temp file 0600; the web server runs as a different user and
+    # must be able to read the published file (else nginx serves 403). Widen to 0644
+    # before the atomic rename so the served file is group+other readable.
+    os.chmod(tmp, 0o644)
     os.replace(tmp, os.path.join(out_dir, "permalinks.json"))
     print(f"permalinks.json: {len(features)} feature keys, {len(specs)} spec keys")
 
