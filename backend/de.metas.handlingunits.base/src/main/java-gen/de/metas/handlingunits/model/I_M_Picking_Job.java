@@ -330,20 +330,20 @@ public interface I_M_Picking_Job
 	/**
 	 * Set Carrier Advise Read-Only.
 	 *
-	 * <br>Type: List
+	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsCarrierAdviseReadOnly (java.lang.String IsCarrierAdviseReadOnly);
+	void setIsCarrierAdviseReadOnly (boolean IsCarrierAdviseReadOnly);
 
 	/**
 	 * Get Carrier Advise Read-Only.
 	 *
-	 * <br>Type: List
+	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getIsCarrierAdviseReadOnly();
+	boolean isCarrierAdviseReadOnly();
 
 	ModelColumn<I_M_Picking_Job, Object> COLUMN_IsCarrierAdviseReadOnly = new ModelColumn<>(I_M_Picking_Job.class, "IsCarrierAdviseReadOnly", null);
 	String COLUMNNAME_IsCarrierAdviseReadOnly = "IsCarrierAdviseReadOnly";

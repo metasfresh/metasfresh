@@ -13,7 +13,7 @@
 --   AD_Element 585012 (IsCarrierAdviseReadOnly — created by the 5808430 script; reused, NOT duplicated)
 --   AD_Table   541906 (M_Picking_Job; dominant EntityType de.metas.handlingunits)
 --   AD_Reference 19   (TableDir — FK whose ColumnName = referenced table's PK Carrier_Product_ID)
---   AD_Reference 17 / AD_Reference_Value_ID 319 (_YesNo list)
+--   AD_Reference 20   (Yes-No — boolean accessor, like every other Is* flag)
 
 -- =========================================================================
 -- Column 1: M_Picking_Job.Carrier_Product_ID (nullable FK, reuse AD_Element 584116)
@@ -52,7 +52,7 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 -- AD_Column: M_Picking_Job.IsCarrierAdviseReadOnly (YesNo list, mandatory)
 -- 2026-06-17T11:01:00.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
-VALUES (0,592832 /*From ID Server*/,585012,0,17,319,541906,'XX','IsCarrierAdviseReadOnly',TO_TIMESTAMP('2026-06-17 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','N','de.metas.handlingunits',0,1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Lieferweg-Abfrage schreibgeschützt','NP',0,0,TO_TIMESTAMP('2026-06-17 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+VALUES (0,592832 /*From ID Server*/,585012,0,20,NULL,541906,'XX','IsCarrierAdviseReadOnly',TO_TIMESTAMP('2026-06-17 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','N','de.metas.handlingunits',0,1,'Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Lieferweg-Abfrage schreibgeschützt','NP',0,0,TO_TIMESTAMP('2026-06-17 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-06-17T11:01:01.000Z
