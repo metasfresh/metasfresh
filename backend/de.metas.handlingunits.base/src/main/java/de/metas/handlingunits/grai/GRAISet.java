@@ -12,6 +12,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collector;
@@ -134,7 +135,11 @@ public class GRAISet implements Iterable<GRAI>
 	{
 		if (other.isEmpty()) {return this;}
 		if (this.isEmpty()) {return other;}
-		return Stream.concat(this.stream(), other.stream()).collect(collect());
+		// LinkedHashSet makes the "this-first, then other's new ones" order explicit (and dedups),
+		// independent of how the collector accumulates.
+		final LinkedHashSet<GRAI> combined = new LinkedHashSet<>(this.grais);
+		combined.addAll(other.grais);
+		return ofCollection(combined);
 	}
 
 	@Override

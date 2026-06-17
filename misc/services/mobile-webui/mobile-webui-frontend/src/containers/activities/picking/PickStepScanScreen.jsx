@@ -46,7 +46,7 @@ const PickStepScanScreen = () => {
 
   // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
   // fallbackToHeader). When a TU pick target is set, the operator established it via the pick-target
-  // GRAI scan (SelectPickTargetScreen's GraiScanPanel) — feature #1 already captured the GRAI — so the
+  // GRAI scan (SelectPickTargetScreen's GraiScanPanel), which already captured the GRAI — so the
   // inline capture must NOT fire (it would swallow the pick). We gate on presence (not `.grai`) because
   // once the TU materializes on first pick it becomes an existing-TU target with grai nulled in the
   // JSON, yet still present. The Flow-Through path picks into an LU target with no TU target, so the

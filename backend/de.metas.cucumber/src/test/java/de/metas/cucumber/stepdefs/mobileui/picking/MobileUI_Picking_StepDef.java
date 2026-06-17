@@ -304,8 +304,8 @@ public class MobileUI_Picking_StepDef
 	 * And pick line with GRAIs:
 	 *   | PickingLine.byProduct | PickFromHU | QtyPicked | GRAI                 |
 	 *   | product               | pickFromLU | 3         | 7613204.00307.000001 |
-	 *   | product               | pickFromLU |           | 7613204.00307.000002 |
-	 *   | product               | pickFromLU |           | 7613204.00307.000003 |
+	 *   |                       |            |           | 7613204.00307.000002 |
+	 *   |                       |            |           | 7613204.00307.000003 |
 	 * </pre>
 	 *
 	 * @param dataTable each row: PickingLine.byProduct (opt), PickFromHU (req), QtyPicked (req on row 1), GRAI (req)
