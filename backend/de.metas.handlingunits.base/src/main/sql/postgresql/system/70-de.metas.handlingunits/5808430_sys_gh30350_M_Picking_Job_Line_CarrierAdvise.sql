@@ -81,6 +81,14 @@ WHERE AD_Element_ID=585012 AND AD_Language IN ('de_DE','de_CH')
 /* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585012 /*AD_Element_ID*/, 'en_US')
 ;
 
+-- 2026-06-17T10:01:15.000Z
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585012 /*AD_Element_ID*/, 'de_DE')
+;
+
+-- 2026-06-17T10:01:16.000Z
+/* DDL */ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585012 /*AD_Element_ID*/, 'de_CH')
+;
+
 -- AD_Column: M_Picking_Job_Line.IsCarrierAdviseReadOnly (YesNo list, mandatory)
 -- 2026-06-17T10:02:00.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
