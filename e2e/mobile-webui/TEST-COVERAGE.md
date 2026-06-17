@@ -185,14 +185,14 @@
 
 | Scenario | Test |
 |---|---|
-| Scan one GRAI → TU auto-created with GRAI attribute (TC1) | `picking/picking-grai-scan.spec.js` |
-| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error (TC2) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error (TC3) | `picking/picking-grai-scan.spec.js` |
-| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list (TC4) | `picking/picking-grai-scan.spec.js` |
-| Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
-| BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
-| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI → TU auto-created with GRAI attribute | `picking/picking-grai-scan.spec.js` |
+| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error | `picking/picking-grai-scan.spec.js` |
+| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error | `picking/picking-grai-scan.spec.js` |
+| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list | `picking/picking-grai-scan.spec.js` |
+| Unparseable barcode → scanner ignores it, stays live for valid scan | `picking/picking-grai-scan.spec.js` |
+| Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
+| BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
 
 **8/8 — 100%**
 
