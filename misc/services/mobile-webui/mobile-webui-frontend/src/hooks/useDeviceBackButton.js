@@ -36,7 +36,7 @@ export const useDeviceBackButton = () => {
   const onBackRef = useRef();
   onBackRef.current = () => {
     if (backLocation) {
-      // history.replace(backLocation); the listen() below then lays down a fresh sentinel.
+      // goTo() calls history.replace() internally; the listen() below then lays down a fresh sentinel.
       goTo(backLocation);
     } else {
       // Top of the stack: no navigation, so re-prime here to keep trapping Back (stay put).

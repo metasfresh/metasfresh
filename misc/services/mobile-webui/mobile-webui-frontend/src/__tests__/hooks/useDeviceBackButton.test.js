@@ -111,13 +111,30 @@ describe('useDeviceBackButton', () => {
     expect(pushStateSpy).not.toHaveBeenCalled();
   });
 
-  it('removes the popstate listener and the history listener on unmount', () => {
+  it('on device Back, re-primes the sentinel via the resulting REPLACE (full popstate → goTo → listen chain)', () => {
+    useBackLocationFromHeaders.mockReturnValue('/some/back');
+    const { history } = renderTrap();
+    // goTo is what useMobileNavigation does in production: a history.replace.
+    goTo.mockImplementation((location) => history.replace(location));
+    pushStateSpy.mockClear();
+
+    firePopState();
+
+    expect(history.location.pathname).toBe('/some/back'); // navigated to the declared back
+    expect(pushStateSpy).toHaveBeenCalledTimes(1); // and a fresh sentinel was laid down by listen(REPLACE)
+  });
+
+  it('removes the exact popstate listener it added, and detaches the history listener, on unmount', () => {
+    const addEventListenerSpy = jest.spyOn(window, 'addEventListener');
     const removeEventListenerSpy = jest.spyOn(window, 'removeEventListener');
     useBackLocationFromHeaders.mockReturnValue(null);
     const { unmount, history } = renderTrap();
 
+    const addedHandler = addEventListenerSpy.mock.calls.find(([type]) => type === 'popstate')[1];
+
     unmount();
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('popstate', expect.any(Function));
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('popstate', addedHandler); // same fn reference
+    addEventListenerSpy.mockRestore();
     removeEventListenerSpy.mockRestore();
 
     // history listener is detached too: a post-unmount navigation must not prime.
