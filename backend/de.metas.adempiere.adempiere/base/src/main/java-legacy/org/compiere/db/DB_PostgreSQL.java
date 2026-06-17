@@ -495,7 +495,7 @@ public class DB_PostgreSQL implements AdempiereDatabase
 				// Without the gate, under pool saturation it would fire on EVERY checkout (thousands/min) and produce a multi-GB/day
 				// log + GC storm that turns pool-saturation into heap death. The connection acquisition above is deliberately left
 				// untouched - only this logging/finalization side-effect is throttled.
-				if (tryAcquireBusyConnectionsLogSlot(System.currentTimeMillis()))
+				if (tryAcquireBusyConnectionsLogSlot(System.currentTimeMillis(), BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS))
 				{
 					final String statusBefore = getStatus();
 
@@ -538,19 +538,27 @@ public class DB_PostgreSQL implements AdempiereDatabase
 	 * Rate-limit guard for the busy-connections log+finalization block. Returns {@code true} (and atomically claims the
 	 * slot) only if at least {@link #BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS} elapsed since the last claim; otherwise {@code false}.
 	 * <p>
-	 * Extracted as a package-visible method (taking {@code nowMillis} as a parameter rather than reading the clock
-	 * internally) so the throttle logic is unit-testable without touching the connection pool or the wall clock.
+	 * Extracted as a package-visible method (taking {@code nowMillis} and {@code intervalMillis} as parameters rather than
+	 * reading the clock / the configured interval internally) so the throttle logic is unit-testable without touching the
+	 * connection pool, the wall clock, or any system property.
 	 * Concurrency-safe via {@link AtomicLong#compareAndSet(long, long)}: under a saturation storm many threads may pass the
 	 * elapsed check at once, but only the one that wins the CAS proceeds; the rest fall through and just acquire their connection.
+	 * <p>
+	 * A non-positive {@code intervalMillis} (e.g. a misconfigured {@code db.postgresql.busyConnectionsLogIntervalMillis}=0)
+	 * is clamped to {@link #BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT} so the throttle can never be accidentally disabled
+	 * (which would re-open the multi-GB/day log + GC storm this guard exists to prevent).
 	 *
-	 * @param nowMillis current time in epoch millis (the caller passes {@link System#currentTimeMillis()} - intentionally
-	 *                  NOT {@code SystemTime}, since this is low-level infra running before/around connection acquisition)
+	 * @param nowMillis      current time in epoch millis (the caller passes {@link System#currentTimeMillis()} - intentionally
+	 *                       NOT {@code SystemTime}, since this is low-level infra running before/around connection acquisition)
+	 * @param intervalMillis minimum interval between two claims; non-positive values are treated as "use the default"
 	 */
 	@VisibleForTesting
-	boolean tryAcquireBusyConnectionsLogSlot(final long nowMillis)
+	boolean tryAcquireBusyConnectionsLogSlot(final long nowMillis, final long intervalMillis)
 	{
+		final long effectiveIntervalMillis = intervalMillis > 0 ? intervalMillis : BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS_DEFAULT;
+
 		final long lastRun = _busyConnectionsLogLastRunMillis.get();
-		if (lastRun != 0 && (nowMillis - lastRun) < BUSY_CONNECTIONS_LOG_INTERVAL_MILLIS)
+		if (lastRun != 0 && (nowMillis - lastRun) < effectiveIntervalMillis)
 		{
 			return false;
 		}
