@@ -135,6 +135,7 @@ public class OrderLineBL implements IOrderLineBL
 {
 	@NonNull private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
 	@NonNull private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@NonNull static final String SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED = "de.metas.order.PurchaseOrder.UseDatePromisedForPricing";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
 
@@ -150,7 +151,7 @@ public class OrderLineBL implements IOrderLineBL
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -569,9 +570,19 @@ public class OrderLineBL implements IOrderLineBL
 		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
-		return order.isSOTrx()
+		if (order.isSOTrx())
+		{
+			return getPriceDateFromDatePromised(orderLine, order, timeZone);
+		}
+
+		return isUseDatePromised()
 				? getPriceDateFromDatePromised(orderLine, order, timeZone)
 				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
+	}
+
+	private static boolean isUseDatePromised()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED, false);
 	}
 
 	@NonNull
