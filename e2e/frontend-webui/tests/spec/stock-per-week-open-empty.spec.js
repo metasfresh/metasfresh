@@ -39,9 +39,9 @@ const testCases = [
 testCases.forEach(({ language, label }) => {
   test.describe(`Stock per Week open-empty (${label})`, () => {
     test(`Standalone open is empty, filtering loads (${label})`, async ({ page }) => {
-      allure.epic('E0193: User Interface');
-      allure.tag('F14030: Filtering & Sorting');
-      allure.tag('F14030');
+      allure.epic('E0155: Material Disposition');
+      allure.tag('F19100: Stock per week');
+      allure.tag('F19100');
       allure.story('Stock per Week opens empty and loads rows only after a filter');
       allure.severity('critical');
       allure.parameter('Language', language);

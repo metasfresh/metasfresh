@@ -1034,10 +1034,10 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 ### 40. Stock per Week — Open Empty, Load on Filter (`stock-per-week-open-empty.spec.js`)
 
 **Features Tested**:
-- F14030: Filtering & Sorting
-- F14030
+- F19100: Stock per week
+- F19100
 
-**Epic**: E0193: User Interface
+**Epic**: E0155: Material Disposition
 
 **Workflow** (de_DE and en_US, requires port 8282):
 1. Login via `Backend.createMasterdata()` user (login only — no seeded products/price lists)
