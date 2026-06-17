@@ -4,6 +4,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.event.Event;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;
@@ -29,11 +30,13 @@ class EnqueueAvailableForSalesConverter
 
 	public EnqueueAvailableForSalesRequest fromEvent(final @NonNull Event event)
 	{
+		Check.assumeEquals(event.getEventName(), EVENT_NAME, "Event must match event name: {}", event);
+		
 		//noinspection DataFlowIssue
 		return EnqueueAvailableForSalesRequest.builder()
 				.availableForSalesQuery(JsonObjectMapperHolder.fromJsonNonNull(event.getPropertyAsString(PROPERTY_Query), AvailableForSalesQuery.class))
 				.contextUserId(UserId.ofRepoIdOrNull(event.getPropertyAsInt(Env.CTXNAME_AD_User_ID, -1)))
-				.contextRoleId(RoleId.ofRepoId(event.getPropertyAsInt(Env.CTXNAME_AD_Role_ID, -1)))
+				.contextRoleId(RoleId.ofRepoIdOrNull(event.getPropertyAsInt(Env.CTXNAME_AD_Role_ID, -1)))
 				.build();
 	}
 
