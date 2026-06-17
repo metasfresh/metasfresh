@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.common.util.time.SystemTime;
 import de.metas.event.impl.PlainEventBusFactory;
+import de.metas.material.cockpit.availableforsales.event.EnqueueAvailableForSalesPublisher;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
@@ -115,7 +116,7 @@ public class AvailableForSalesService
 		}
 	}
 
-	void syncAvailableForSalesTable(@NonNull final AvailableForSalesQuery availableForSalesQuery)
+	public void syncAvailableForSalesTable(@NonNull final AvailableForSalesQuery availableForSalesQuery)
 	{
 		final ImmutableList<AvailableForSalesResult> availableForSalesComputationResults = computeAvailableForSales(AvailableForSalesMultiQuery.of(availableForSalesQuery))
 				.getAvailableForSalesResults();

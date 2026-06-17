@@ -1,10 +1,12 @@
-package de.metas.material.cockpit.availableforsales;
+package de.metas.material.cockpit.availableforsales.event;
 
 import de.metas.Profiles;
 import de.metas.event.Event;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
 import de.metas.event.IEventListener;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesService;
+import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -26,7 +28,7 @@ public class EnqueueAvailableForSalesHandler implements IEventListener
 	@PostConstruct
 	public void subscribe()
 	{
-		eventBusFactory.getEventBus(EnqueueAvailableForSalesPublisher.TOPIC).subscribe(this);
+		eventBusFactory.getEventBus(EnqueueAvailableForSalesConfiguration.TOPIC).subscribe(this);
 	}
 
 	@Override

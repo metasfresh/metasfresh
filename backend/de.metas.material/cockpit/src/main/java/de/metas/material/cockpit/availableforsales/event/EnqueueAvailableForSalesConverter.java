@@ -1,10 +1,11 @@
-package de.metas.material.cockpit.availableforsales;
+package de.metas.material.cockpit.availableforsales.event;
 
 import de.metas.JsonObjectMapperHolder;
 import de.metas.event.Event;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
+import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
-import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.compiere.util.Env;

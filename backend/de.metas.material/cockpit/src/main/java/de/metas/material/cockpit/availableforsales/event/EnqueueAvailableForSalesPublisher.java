@@ -1,9 +1,9 @@
-package de.metas.material.cockpit.availableforsales;
+package de.metas.material.cockpit.availableforsales.event;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.event.IEventBus;
 import de.metas.event.IEventBusFactory;
-import de.metas.event.Topic;
+import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -16,14 +16,12 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class EnqueueAvailableForSalesPublisher
 {
-	public static final Topic TOPIC = Topic.distributedAndAsync("de.metas.material.cockpit.availableforsales");
-
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IEventBusFactory eventBusFactory;
 
 	private IEventBus eventBus()
 	{
-		return eventBusFactory.getEventBus(TOPIC);
+		return eventBusFactory.getEventBus(EnqueueAvailableForSalesConfiguration.TOPIC);
 	}
 
 	public void publishAfterCommit(@NonNull final EnqueueAvailableForSalesRequest request)

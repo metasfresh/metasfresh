@@ -1,7 +1,9 @@
-package de.metas.material.cockpit.availableforsales;
+package de.metas.material.cockpit.availableforsales.event;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.event.Event;
+import de.metas.material.cockpit.availableforsales.AvailableForSalesQuery;
+import de.metas.material.cockpit.availableforsales.EnqueueAvailableForSalesRequest;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.security.RoleId;
