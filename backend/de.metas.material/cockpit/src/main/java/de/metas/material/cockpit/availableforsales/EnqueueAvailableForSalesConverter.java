@@ -30,7 +30,8 @@ class EnqueueAvailableForSalesConverter
 
 	public EnqueueAvailableForSalesRequest fromEvent(final @NonNull Event event)
 	{
-		Check.assumeEquals(event.getEventName(), EVENT_NAME, "Event must match event name: {}", event);
+		// NOTE: for some reason eventName has JsonIgnore, so we cannot validate it. he reason needs to be cleared first.
+		// Check.assumeEquals(event.getEventName(), EVENT_NAME, "Event must match event name: {}", event);
 		
 		//noinspection DataFlowIssue
 		return EnqueueAvailableForSalesRequest.builder()
