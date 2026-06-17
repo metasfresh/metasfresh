@@ -37,6 +37,7 @@ import de.metas.esb.edi.model.I_EDI_cctop_invoic_v;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -91,6 +92,67 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		metasfreshToRabbitMQFactory.setPort(commandLineOptions.getRabbitPort());
 		metasfreshToRabbitMQFactory.setUsername(commandLineOptions.getRabbitUser());
 		metasfreshToRabbitMQFactory.setPassword(commandLineOptions.getRabbitPassword());
+	}
+
+	/**
+	 * Purges the given durable EDI-export RabbitMQ queue so the scenario starts from a known-empty
+	 * state, regardless of what an earlier scenario (or an earlier feature on the same CI executor)
+	 * left behind.
+	 * <p>
+	 * Why this is needed: the EDI export queues (e.g. {@code ediExport}) are <b>durable</b> and
+	 * <b>shared</b> by every scenario in a feature and by every feature that exports through the same
+	 * routing key on one CI executor (all run sequentially against one RabbitMQ broker). The consumer
+	 * in {@link #pollDocumentFromQueue(String)} returns the message at the head of the queue, so a
+	 * single leftover message (a foreign DESADV/INVOIC from a sibling scenario, or a message re-queued
+	 * by the consumer's {@code basicNack(requeue=true)} extra-message path) makes the next scenario
+	 * consume the <i>wrong</i> document. That manifests as the flaky
+	 * {@code [EDI_Exp_Desadv_Pack] Expecting actual not to be null} (a foreign INVOIC has no pack
+	 * element) and the sibling {@code ShutdownSignalException}. Purging in the Background (per the
+	 * setUp-isolation convention) removes the bleed at its source.
+	 * <p>
+	 * The purge is a no-op when the queue does not exist yet (first run on a fresh broker): we
+	 * passively check existence first and skip silently, because "no queue" already means "nothing to
+	 * bleed".
+	 * <p>
+	 * DataTable-free step. Example:
+	 * <pre>
+	 * Given the EDI export RabbitMQ queue 'ediExport' is purged
+	 * </pre>
+	 */
+	@Given("the EDI export RabbitMQ queue {string} is purged")
+	public void edi_export_queue_is_purged(@NonNull final String queueName) throws IOException, TimeoutException
+	{
+		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
+		try
+		{
+			final Channel channel = connection.createChannel();
+			try
+			{
+				// queueDeclarePassive throws (and closes the channel) when the queue does not exist yet;
+				// in that case there is nothing to purge, so we treat it as a no-op and return. The dead
+				// channel needs no explicit close (the broker already closed it; the finally below guards
+				// it via isOpen()), and the outer finally closes the connection.
+				channel.queueDeclarePassive(queueName);
+
+				final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(queueName);
+				logger.info("Purged {} message(s) from EDI export queue {}", purgeOk.getMessageCount(), queueName);
+			}
+			catch (final IOException queueAbsent)
+			{
+				logger.info("EDI export queue {} does not exist yet -> nothing to purge", queueName);
+			}
+			finally
+			{
+				if (channel.isOpen())
+				{
+					channel.close();
+				}
+			}
+		}
+		finally
+		{
+			connection.close();
+		}
 	}
 
 	@Then("RabbitMQ receives a EDI_cctop_invoic_v")
