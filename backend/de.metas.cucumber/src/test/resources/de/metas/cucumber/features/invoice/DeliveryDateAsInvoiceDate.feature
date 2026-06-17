@@ -48,14 +48,11 @@ Feature: Invoice Date can be taken from DeliveryDate
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
-    # Drain the material event queue so invoice-candidate async creation completes before the poll.
-    # Background sets SKIP_WP_PROCESSOR_FOR_AUTOMATION=true, forcing async via RabbitMQ. Under CI load
-    # this poll occasionally exhausts its 60 s budget, cascading to the step-def's 120 s recompute
-    # fallback, which can in turn time out and abort the runner before any test completes
-    # ("Tests run: 0").
-    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
-
-    And after not more than 60s, C_Invoice_Candidate are found:
+    # No queue-drain step: the drain checks only the queue's ready-message count and is blind to
+    # in-flight (unacked) cascade events, so it reports "empty" prematurely. The poll below waits
+    # for the committed QtyToInvoice, which only settles after the async recompute cascade completes;
+    # the `validate invoice candidate` step that follows further confirms the candidate is settled.
+    And after not more than 300s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_1                              | sol_1                     | 10           |
 
