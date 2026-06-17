@@ -5,27 +5,28 @@ import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponen
 
 const NAME = 'PickGraiScreen';
 
-/** Container of the in-picking GRAI mass-capture screen (PickGraiScanScreen.jsx). */
+/** Container of the inline GRAI mass-capture panel (GraiCapturePanel.jsx). */
 const containerElement = () => page.locator('.grai-screen');
 
 /**
- * Screen object for the in-picking GRAI mass-capture screen (`PickGraiScanScreen`), reached from
- * the pick-line screen via the {@code grai-scan-button}. It is shown for a GRAIRequired customer
- * once an LU has been picked (Flow Through / LU_TU profile).
+ * Screen object for the inline GRAI mass-capture (`GraiCapturePanel`). In the "Flow Through"
+ * (LU_TU) profile of a GRAIRequired customer, this panel is auto-invoked right after the pick
+ * quantity is confirmed (no separate screen, no button to reach it): the operator must capture one
+ * GRAI per picked crate (TU) before the pick can be saved. Save sends the whole pick — quantity +
+ * the captured GRAIs — in one atomic event; the count's total is the picked TU quantity.
  *
- * The screen captures one GRAI per picked TU (N = tuCount). GRAIs are added either by scanning
- * (the live {@link BarcodeScannerComponent} on this screen) or by typing them into the manual
- * input ({@code grai-manual-input} + {@code grai-manual-submit}). The save button
- * ({@code grai-save-button}, label "Save"/"Speichern") is enabled only when exactly N GRAIs are
- * captured; on save the app returns to the picking job screen.
+ * GRAIs are added either by scanning (the live {@link BarcodeScannerComponent}, hardware mode) or
+ * by typing — typing goes through the scanner component's own manual-entry mode (tap "Enter
+ * manually", type into `manual-entry-input`, submit). The save button (`grai-save-button`, label
+ * "Save"/"Speichern") is enabled only when exactly N GRAIs are captured.
  */
 export const PickGraiScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+        await containerElement().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /**
-     * Scan a GRAI barcode through the screen's live scanner (the offscreen hardware-scan input).
+     * Scan a GRAI barcode through the live scanner (the offscreen hardware-scan input).
      * Dispatches keyboard events at document level, terminated with Enter (DataWedge behaviour).
      */
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
@@ -38,32 +39,25 @@ export const PickGraiScreen = {
      * sends Enter after each code, so the keyboard hook flushes each barcode individually (no buffer
      * merge) and no inter-scan assertion is needed (unlike consecutive {@link scanGrai} calls).
      *
-     * The list may legitimately contain GRAIs already captured on the LU — the screen's deduped merge
-     * (usePickingGrais.mergeGraiArrays) ignores any GRAI already present, so re-reading already-assigned
-     * tags does not inflate the count.
+     * The list may legitimately contain GRAIs already captured — the panel's deduped merge
+     * (mergeGraiArrays) ignores any GRAI already present, so re-reading already-captured tags does
+     * not inflate the count.
      */
     scanGraiBatch: async ({ graiStrings }) => await test.step(`${NAME} - Scan GRAI batch of ${graiStrings.length}`, async () => {
         await BarcodeScannerComponent.typeBatch({ codes: graiStrings });
     }),
 
-    /** Type a GRAI into the manual-entry input and confirm it with the Add button. */
+    /**
+     * Type a GRAI by hand: switch the scanner to manual-entry mode, type the GRAI into the visible
+     * manual input and confirm it. After a successful submit the scanner auto-returns to the default
+     * (hardware) mode, ready for the next scan.
+     */
     enterGraiManually: async ({ graiString }) => await test.step(`${NAME} - Enter GRAI manually: ${graiString}`, async () => {
-        const input = page.getByTestId('grai-manual-input');
+        await page.getByTestId('barcode-scanner-enter-manually').tap();
+        const input = page.getByTestId('manual-entry-input');
         await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await input.fill(graiString);
-        await page.getByTestId('grai-manual-submit').tap();
-    }),
-
-    /**
-     * Wait until the screen has loaded the expected GRAI count (tuCount > 0) from the backend and
-     * return it. The count label reads "<scanned> / <total> GRAIs scanned"; total is the tuCount.
-     */
-    waitForTuCountLoaded: async () => await test.step(`${NAME} - Wait for tuCount to load`, async () => {
-        const label = page.getByTestId('grai-count');
-        await expect(label).toContainText(/\/\s*[1-9]\d*\s/, { timeout: SLOW_ACTION_TIMEOUT });
-        const text = await label.textContent();
-        const match = text.match(/\/\s*(\d+)/);
-        return match ? parseInt(match[1], 10) : 0;
+        await page.getByTestId('manual-entry-submit').tap();
     }),
 
     /** Assert the total captured GRAI chip count — both assigned ('grai-chip') and overflow
@@ -75,8 +69,8 @@ export const PickGraiScreen = {
     }),
 
     /**
-     * Assert the count label reads "<scanned> / <total>" (e.g. 0 / 10) — proving the screen learned
-     * the LU's real crate count from the backend (tuCount = N, not 1).
+     * Assert the count label reads "<scanned> / <total>" (e.g. 0 / 10) — proving the panel shows the
+     * picked crate count (total = the picked TU quantity, N) as the required number of GRAIs.
      */
     expectCount: async ({ scanned, total }) => await test.step(`${NAME} - Expect count ${scanned} / ${total}`, async () => {
         await expect(page.getByTestId('grai-count')).toContainText(
@@ -94,7 +88,7 @@ export const PickGraiScreen = {
         await expect(page.getByTestId('grai-save-button')).toBeDisabled({ timeout: FAST_ACTION_TIMEOUT });
     }),
 
-    /** Tap the save ("Save"/"Speichern") button. */
+    /** Tap the save ("Save"/"Speichern") button — sends the atomic pick (qty + GRAIs). */
     clickSave: async () => await test.step(`${NAME} - Click save`, async () => {
         await page.getByTestId('grai-save-button').tap();
     }),

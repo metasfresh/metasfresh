@@ -1,19 +1,18 @@
 /**
- * Playwright E2E — mixed-product LU in the GRAI "Flow Through" (LU_TU) picking profile.
+ * Playwright E2E — mixed-product LU in the GRAI "Flow Through" (LU_TU) picking profile (inline capture).
  *
  * A GRAIRequired=Y customer orders TWO products (10 TUs / IFCO crates each) on one sales order.
  * With sales_order aggregation the whole order is picked onto ONE shared LU, so the LU ends up
  * holding 2 x 10 = 20 crates. Each crate is a distinct returnable asset needing its own GRAI.
  *
- * Scenario (the RFID re-scan dedup on a mixed-product LU):
- *  1. Pick Product1 (10 crates) onto the LU; capture its 10 GRAIs (LU holds only Product1 -> 0/10).
- *  2. Pick Product2 (10 crates) onto the SAME LU; re-open the GRAI screen. It must now require the
- *     LU's full crate count (20, NOT the per-product 10) and pre-load the 10 already-assigned
- *     Product1 GRAIs -> 10/20, save disabled.
- *  3. RFID over-scan: the reader re-reads EVERY tag on the LU (the 10 already-assigned Product1 GRAIs
- *     + the 10 new Product2 GRAIs). The screen must dedup the already-assigned ones and only add the
- *     new crates -> exactly 20/20.
- *  4. Complete; verify the LU carries exactly the 20 scanned GRAIs (10 per product VHU).
+ * With the inline atomic capture, each pick captures its OWN crates' GRAIs at pick time (there is no
+ * re-openable per-LU GRAI screen anymore):
+ *  1. Pick Product1 (10 crates) onto the LU; the inline GRAI capture is auto-invoked for THIS pick
+ *     (0 / 10). An RFID over-scan that re-reads a crate already captured in this burst is deduped
+ *     (still 10). Save sends Product1's pick + its 10 GRAIs atomically.
+ *  2. Pick Product2 (10 crates) onto the SAME LU; the inline capture is auto-invoked for the second
+ *     pick (0 / 10, independent of product 1); scan its 10 GRAIs; Save.
+ *  3. Complete; verify each product's VHU carries exactly its own 10 GRAIs (20 on the LU in total).
  *
  * Lives in its own file (separate from picking-grai-flowthrough.spec.js) because it uses a different
  * createMasterdata setup — per the convention "Playwright tests that don't share the same
@@ -30,7 +29,6 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
 import { PickGraiScreen } from '../../utils/screens/picking/PickGraiScreen';
 
 const TU_PER_PRODUCT = 10;
@@ -43,8 +41,8 @@ const QTY_CUS_PER_TU = 4;
  * products share one LU type (LU_MAIN) so sales_order aggregation packs them onto ONE LU. Source HUs
  * are plain bulk stock (the TUs are materialised on the target LU during picking, per the order
  * line's piItemProduct). Only PI_P1 carries graiMapping — one returned canonical GRAI is enough to
- * derive all distinct crate GRAIs from (the in-picking GRAI mass-capture screen records GRAIs as
- * plain HU attributes; it does no M_HU_PI_GRAI TU-type resolution).
+ * derive all distinct crate GRAIs from (GRAIs are recorded as plain HU attributes during the atomic
+ * pick; no M_HU_PI_GRAI TU-type resolution is involved).
  */
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -103,27 +101,17 @@ const buildDistinctGrais = (baseGrai, count) => {
     return Array.from({ length: count }, (_, i) => `${companyPrefix}.${assetType}.${String(i + 1).padStart(6, '0')}`);
 };
 
-/** Open the GRAI mass-capture screen for the (shared) picked LU via the given picked line. */
-const openGraiScreenViaLine = async ({ lineIndex }) => {
-    await PickingJobScreen.clickLineButton({ index: lineIndex });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.expectGraiScanButtonVisible();
-    await PickingJobLineScreen.clickGraiScanButton();
-    await PickGraiScreen.waitForScreen();
-};
-
 // noinspection JSUnusedLocalSymbols
-test('Flow Through: mixed-product LU counts all crates and dedups already-assigned GRAIs on RFID re-scan', async ({ page }) => {
+test('Flow Through: each pick onto a mixed-product LU captures its own crate GRAIs (RFID re-read deduped)', async ({ page }) => {
     await allure.epic('E0105: Picking');
     await allure.feature('F00230: MobileUI Picking');
-    await allure.story('GRAI Flow Through — mixed-product LU crate count and dedup of re-scanned already-assigned GRAIs');
+    await allure.story('GRAI Flow Through — per-pick inline GRAI capture on a shared mixed-product LU');
     await allure.severity('critical');
 
     const masterdata = await createMasterdata();
 
     // TU_MIXED_LU distinct GRAIs: the first TU_PER_PRODUCT are Product1's crates, the next
-    // TU_PER_PRODUCT are Product2's. Product1's GRAIs are reused verbatim in the RFID re-scan set
-    // (the reader re-reads every tag already on the LU).
+    // TU_PER_PRODUCT are Product2's.
     const allGrais = buildDistinctGrais(masterdata.packingInstructions.PI_P1.grai, TU_MIXED_LU);
     const product1Grais = allGrais.slice(0, TU_PER_PRODUCT);
     const product2Grais = allGrais.slice(TU_PER_PRODUCT, TU_MIXED_LU);
@@ -139,15 +127,19 @@ test('Flow Through: mixed-product LU counts all crates and dedups already-assign
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
 
-    // --- Product 1: pick its crates onto the LU (pickHU auto-routes to the P1 line) -------------
-    await test.step('Pick product 1 crates, then capture their GRAIs (LU holds only product 1)', async () => {
-        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU_SOURCE_P1.qrCode, expectQtyEntered: String(TU_PER_PRODUCT) });
-
-        await openGraiScreenViaLine({ lineIndex: 1 });
-        // Only product 1 is on the LU yet -> required count is TU_PER_PRODUCT.
+    // --- Product 1: pick its 10 crates; the inline capture is auto-invoked for THIS pick ---------
+    await test.step('Pick product 1 crates and capture their GRAIs inline (RFID re-read deduped)', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU_SOURCE_P1.qrCode,
+            expectQtyEntered: String(TU_PER_PRODUCT),
+            expectNextScreen: 'PickGraiScreen',
+        });
+        // This pick is 10 crates -> required count is TU_PER_PRODUCT, independent of any later pick.
         await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
 
-        await PickGraiScreen.scanGraiBatch({ graiStrings: product1Grais });
+        // RFID over-scan within this burst: the reader re-reads one crate's tag. The in-memory capture
+        // dedups it, so the count is exactly TU_PER_PRODUCT, not TU_PER_PRODUCT + 1.
+        await PickGraiScreen.scanGraiBatch({ graiStrings: [...product1Grais, product1Grais[0]] });
         await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_PER_PRODUCT });
         await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
         await PickGraiScreen.expectSaveEnabled();
@@ -155,40 +147,30 @@ test('Flow Through: mixed-product LU counts all crates and dedups already-assign
         await PickingJobScreen.waitForScreen();
     });
 
-    // --- Product 2: pick its crates onto the SAME LU --------------------------------------------
-    await test.step('Pick product 2 crates onto the same LU', async () => {
-        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU_SOURCE_P2.qrCode, expectQtyEntered: String(TU_PER_PRODUCT) });
-    });
+    // --- Product 2: pick its 10 crates onto the SAME LU; a fresh inline capture for the 2nd pick --
+    await test.step('Pick product 2 crates onto the same LU and capture their GRAIs inline', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: masterdata.handlingUnits.HU_SOURCE_P2.qrCode,
+            expectQtyEntered: String(TU_PER_PRODUCT),
+            expectNextScreen: 'PickGraiScreen',
+        });
+        // The second pick's capture starts fresh at 0 / TU_PER_PRODUCT (it is not the LU's running total).
+        await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
 
-    await test.step('Re-open GRAI screen: required count is the LU total and product-1 GRAIs are pre-loaded', async () => {
-        await openGraiScreenViaLine({ lineIndex: 2 });
-        // The LU now holds TU_MIXED_LU crates -> required count is the LU total, NOT the per-product
-        // count. The TU_PER_PRODUCT already-assigned product-1 GRAIs are re-loaded from the backend.
+        await PickGraiScreen.scanGraiBatch({ graiStrings: product2Grais });
         await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_PER_PRODUCT });
-        await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_MIXED_LU });
-        await PickGraiScreen.expectSaveDisabled();
-    });
-
-    await test.step('RFID over-scan: re-read everything in range; already-assigned GRAIs are deduped', async () => {
-        // The RFID gun re-reads ALL tags on the LU: the already-assigned product-1 GRAIs PLUS the new
-        // product-2 GRAIs. The screen must IGNORE the already-assigned ones (dedup against the
-        // pre-loaded list) and only add the new crates -> exactly TU_MIXED_LU captured.
-        await PickGraiScreen.scanGraiBatch({ graiStrings: [...product1Grais, ...product2Grais] });
-
-        await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_MIXED_LU });
-        await PickGraiScreen.expectCount({ scanned: TU_MIXED_LU, total: TU_MIXED_LU });
+        await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
         await PickGraiScreen.expectSaveEnabled();
         await PickGraiScreen.clickSave();
         await PickingJobScreen.waitForScreen();
     });
 
-    // --- Complete + verify the exact GRAI set on the LU ----------------------------------------
+    // --- Complete + verify each product's VHU carries exactly its own GRAIs ----------------------
     await PickingJobScreen.complete();
 
-    // The mixed-product LU has one aggregate VHU per product; computeDelta fills each block in pick
-    // order from the assigned list (product-1 GRAIs first, then product-2), so the product-1 VHU
-    // carries product-1's GRAIs and the product-2 VHU carries product-2's — together EXACTLY the 20
-    // scanned GRAIs, no more, no less.
+    // Each product is its own aggregate VHU on the shared LU; the atomic pick stamps that pick's
+    // GRAIs onto its crates, so the product-1 VHU carries product-1's GRAIs and the product-2 VHU
+    // carries product-2's — together EXACTLY the 20 scanned GRAIs, no more, no less.
     await Backend.expect({
         title: 'Mixed-product LU carries exactly the 2x10 scanned GRAIs (per product VHU)',
         pickings: {

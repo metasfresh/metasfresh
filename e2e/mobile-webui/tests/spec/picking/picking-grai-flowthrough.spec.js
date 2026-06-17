@@ -1,18 +1,18 @@
 /**
- * Playwright E2E — in-picking GRAI mass-capture in the "Flow Through" (LU_TU) picking profile.
+ * Playwright E2E — inline GRAI mass-capture in the "Flow Through" (LU_TU) picking profile.
  *
- * A GRAIRequired=Y customer forces the picker to capture one GRAI per crate (TU) on the picked LU
- * before the picking job can be completed. This spec picks exactly 10 TUs (returnable IFCO crates)
- * onto ONE LU, then opens the dedicated GRAI mass-capture screen (reached via the grai-scan-button
- * on the pick-line screen) and captures the 10 GRAIs — one typed via the manual keyboard input, the
- * rest scanned — before completing the job.
+ * A GRAIRequired=Y customer forces the picker to capture one GRAI per crate (TU) before the pick
+ * can be saved. This spec picks exactly 10 TUs (returnable IFCO crates) onto ONE LU: after the pick
+ * quantity is confirmed, the GRAI capture is auto-invoked inline (no separate screen, no button),
+ * the 10 GRAIs are captured — one typed via the scanner's manual-entry mode, the rest scanned — and
+ * Save sends the whole pick (quantity + the 10 GRAIs) in ONE atomic event, after which the job
+ * completes.
  *
- * The screen under test is PickGraiScanScreen (frontend) backed by the picking-scoped GRAI endpoints
- * GET/PUT /api/v2/picking/job/{wfProcessId}/lu/{huId}/grai. Those endpoints operate on the picked
- * LU's snapshot, so the screen's required GRAI count = the LU's crate count (tuCount = 10) even
- * though a Flow-Through pick packs the 10 crates into ONE aggregate TU (VHU). The completion guard
- * (PickingJobCompleteCommand -> PickingJobGRAIValidator) blocks completion until all 10 crates carry
- * a GRAI.
+ * The capture is the inline GraiCapturePanel (frontend); the pick event carries setGrais/graiCodes
+ * and the backend stamps one GRAI per materialised crate within the pick transaction. The required
+ * GRAI count = the picked TU quantity (10). The completion guard
+ * (PickingJobCompleteCommand -> PickingJobGRAIValidator) is the backend enforcement of the same
+ * one-GRAI-per-crate invariant.
  *
  * GRAI canonical format (see de.metas.handlingunits.grai.GRAI):
  *   "{companyPrefix}.{assetType}.{serial}"  — companyPrefix is 7 chars.
@@ -118,11 +118,12 @@ const buildDistinctGrais = (baseGrai, count) => {
 };
 
 /**
- * Drive the common prefix of both scenarios: log in, start the job, set the LU target, pick the
- * TU_COUNT crates into that LU, then open the pick-line screen's GRAI capture screen.
+ * Drive the common prefix of both scenarios: log in, start the job, set the LU target, scan the
+ * source HU and confirm the pick quantity (TU_COUNT crates). Confirming the quantity auto-invokes
+ * the inline GRAI capture.
  *
- * Postcondition: PickGraiScreen is showing for the picked LU and reports tuCount = TU_COUNT
- * (count label 0 / TU_COUNT).
+ * Postcondition: the inline GRAI capture panel is showing and reports the picked crate count as the
+ * required number of GRAIs (count label 0 / TU_COUNT).
  *
  * @returns {Promise<{ masterdata: any, grais: string[] }>}
  */
@@ -148,14 +149,10 @@ const pickAllTUsAndOpenGraiScreen = async () => {
     await PickLineScanScreen.waitForScreen();
     await PickLineScanScreen.typeQRCode(masterdata.handlingUnits.HU_SOURCE.qrCode);
     await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: String(TU_COUNT) });
-    await PickingJobLineScreen.waitForScreen();
 
-    // The GRAI mass-capture button now appears on the pick-line screen (LU picked, GRAIRequired=Y).
-    await PickingJobLineScreen.expectGraiScanButtonVisible();
-    await PickingJobLineScreen.clickGraiScanButton();
+    // Confirming the quantity auto-invokes the inline GRAI capture (GRAIRequired=Y); the pick is NOT
+    // sent yet. The panel shows the picked crate count as the required GRAI count: 0 / TU_COUNT.
     await PickGraiScreen.waitForScreen();
-
-    // The screen must report the LU's real crate count (tuCount = TU_COUNT), starting at 0 / TU_COUNT.
     await PickGraiScreen.expectCount({ scanned: 0, total: TU_COUNT });
 
     return { masterdata, grais };
@@ -184,7 +181,8 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
         await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
     }
 
-    // Exactly 10 GRAIs captured -> count reads 10 / 10, save enabled; save returns to the picking job.
+    // Exactly 10 GRAIs captured -> count reads 10 / 10, save enabled; save sends the atomic pick
+    // (qty + the 10 GRAIs) and the workflow returns to the picking job.
     await PickGraiScreen.expectCount({ scanned: TU_COUNT, total: TU_COUNT });
     await PickGraiScreen.expectSaveEnabled();
     await PickGraiScreen.clickSave();

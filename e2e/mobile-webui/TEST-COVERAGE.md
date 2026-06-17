@@ -196,13 +196,13 @@
 
 **8/8 — 100%**
 
-### GRAI mass-capture in Flow Through (LU_TU) picking
+### Inline GRAI capture in Flow Through (LU_TU) picking
 
 | Scenario | Test |
 |---|---|
-| Pick 10 crates onto one LU, capture all 10 GRAIs (one typed manually, rest scanned) → save enabled, job completes | `picking/picking-grai-flowthrough.spec.js` |
-| Pick 10 crates onto one LU, capture fewer than 10 GRAIs → save stays disabled and completion is blocked | `picking/picking-grai-flowthrough.spec.js` |
-| Pick two products onto one LU; re-opening GRAI capture shows the LU's full crate count with the first product's GRAIs pre-loaded, and an RFID re-scan of all tags dedups the already-assigned ones → exactly the scanned GRAIs land on the LU and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
+| Pick 10 crates onto one LU; confirming the quantity auto-invokes the inline GRAI capture; capture all 10 GRAIs (one typed via manual entry, the rest scanned) → save enabled, the atomic pick is sent and the job completes | `picking/picking-grai-flowthrough.spec.js` |
+| Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
+| Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
 
 **3/3 — 100%**
 
