@@ -294,7 +294,11 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 					{
 						// A leftover / foreign message that is not a JsonExternalSystemRequest: it is already acked
 						// (removed) above, so just skip it and keep polling for the messages we expect.
-						logger.warn("*** {}: skipping non-JsonExternalSystemRequest/foreign message: {}", QUEUE_NAME_MF_TO_ES, foreignMessage.getMessage());
+						// The full body is logged on purpose: after the queue-empty isolation step, a non-parseable
+						// message most likely means the system under test published a malformed request, and the only
+						// other symptom is the generic 60s-timeout assertion below — the body is what makes that root
+						// cause diagnosable from the CI log.
+						logger.warn("*** {}: skipping non-JsonExternalSystemRequest/foreign message (body={}): {}", QUEUE_NAME_MF_TO_ES, externalSystemRequest, foreignMessage.getMessage());
 						continue;
 					}
 

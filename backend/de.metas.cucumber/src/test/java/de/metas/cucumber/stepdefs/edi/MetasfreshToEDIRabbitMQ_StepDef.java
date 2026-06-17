@@ -126,18 +126,25 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 			final Channel channel = connection.createChannel();
 			try
 			{
-				// queueDeclarePassive throws (and closes the channel) when the queue does not exist yet;
-				// in that case there is nothing to purge, so we treat it as a no-op and return. The dead
-				// channel needs no explicit close (the broker already closed it; the finally below guards
-				// it via isOpen()), and the outer finally closes the connection.
-				channel.queueDeclarePassive(queueName);
+				try
+				{
+					// queueDeclarePassive throws (and closes the channel) when the queue does not exist yet;
+					// in that case there is nothing to purge, so we treat it as a no-op and return. The dead
+					// channel needs no explicit close (the broker already closed it; the finally below guards
+					// it via isOpen()), and the outer finally closes the connection.
+					channel.queueDeclarePassive(queueName);
+				}
+				catch (final IOException queueAbsent)
+				{
+					logger.info("EDI export queue {} does not exist yet -> nothing to purge", queueName);
+					return;
+				}
 
+				// queuePurge is OUTSIDE the queueAbsent catch on purpose: the queue exists here, so a purge
+				// failure (e.g. ACCESS_REFUSED, or a protocol error) is a real problem and must propagate
+				// rather than be mislogged as "does not exist yet" and silently leave the queue unpurged.
 				final AMQP.Queue.PurgeOk purgeOk = channel.queuePurge(queueName);
 				logger.info("Purged {} message(s) from EDI export queue {}", purgeOk.getMessageCount(), queueName);
-			}
-			catch (final IOException queueAbsent)
-			{
-				logger.info("EDI export queue {} does not exist yet -> nothing to purge", queueName);
 			}
 			finally
 			{
@@ -274,7 +281,11 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 						// JAXP/JVM configuration (the DocumentBuilderFactory is created once at construction),
 						// not a per-message condition, so it must propagate and fail the run loudly rather
 						// than be swallowed as a "foreign message" and masked by the 60s-timeout AssertionError.
-						logger.warn("*** Queue: {}, skipping non-XML/foreign message: {}", queueName, foreignMessage.getMessage());
+						// The full body is logged on purpose: after the Background queue-purge, a non-parseable
+						// message most likely means the system under test published malformed XML, and the only
+						// other symptom is the generic 60s-timeout AssertionError below — the body is what makes
+						// that root cause diagnosable from the CI log.
+						logger.warn("*** Queue: {}, skipping non-XML/foreign message (body={}): {}", queueName, message, foreignMessage.getMessage());
 					}
 				}
 
