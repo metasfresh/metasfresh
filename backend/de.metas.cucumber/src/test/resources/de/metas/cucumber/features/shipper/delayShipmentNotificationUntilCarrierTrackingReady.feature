@@ -140,8 +140,9 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
       | cso                      | null        |
 
     # ── assert: shipment mail WP is held because TrackingURL is still blank ────
-    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
-    Then after not more than 30s, MailWorkpackageProcessor workpackage for document is in state:
+    # Poll the committed WP state directly (it retries until terminal); no queue-drain step —
+    # the drain only checks ready-message count and is blind to in-flight (unacked) cascade events.
+    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment  | skipped       |
 
@@ -149,10 +150,9 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
     And update Carrier_ShipmentOrder_Parcel TrackingURL:
       | Carrier_ShipmentOrder_ID | TrackingURL                    |
       | cso                      | https://track.example.com/test |
-    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
     # "released" = the WP ran past the delay gate (either processed or attempted to send);
     # we do not assert actual SMTP delivery here — that depends on the test infra mail config
-    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
+    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment  | released      |
 
@@ -192,8 +192,7 @@ Feature: Shipment notification email is delayed until carrier tracking URLs are 
       | cso2                     | awb1 | trackingUrl1 |
 
     # ── assert: shipment mail WP was NOT held — goes straight past the gate ────
-    And wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes
-    Then after not more than 60s, MailWorkpackageProcessor workpackage for document is in state:
+    Then after not more than 300s, MailWorkpackageProcessor workpackage for document is in state:
       | Record_ID | ExpectedState |
       | shipment2 | released      |
 
