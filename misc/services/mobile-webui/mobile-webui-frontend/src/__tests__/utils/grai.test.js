@@ -39,11 +39,11 @@ describe('grai list helpers', () => {
       expect(result).toBe(prev);
     });
 
-    it('dedup is against prev only — within-newGrais duplicates both pass through', () => {
-      // mergeGraiArrays deduplicates against the existing (prev) list only.
-      // Duplicate entries within newGrais itself are NOT filtered — both append.
-      const result = mergeGraiArrays([], ['X', 'X']);
-      expect(result).toEqual(['X', 'X']);
+    it('deduplicates duplicates WITHIN newGrais (RFID re-read of the same crate in one burst)', () => {
+      // A GRAI uniquely identifies one returnable asset, so a code repeated within a single scan
+      // burst is the same crate read twice — it must collapse to a single entry.
+      expect(mergeGraiArrays([], ['X', 'X'])).toEqual(['X']);
+      expect(mergeGraiArrays(['A'], ['B', 'A', 'B', 'C'])).toEqual(['A', 'B', 'C']);
     });
   });
 

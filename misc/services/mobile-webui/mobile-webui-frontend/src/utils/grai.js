@@ -131,17 +131,27 @@ export const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes
 export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
 
 /**
- * Merge newGrais into the existing list, deduplicating by value.
- * Preserves existing order; appends new items at the end.
+ * Merge newGrais into the existing list, deduplicating by value — both against the existing list
+ * AND within newGrais itself. Preserves existing order; appends new items at the end.
  * Returns the same array reference if nothing was added (no unnecessary re-render).
+ *
+ * Within-batch dedup matters for RFID mass-scan: a single burst can re-read the same physical
+ * crate's tag more than once, and a GRAI uniquely identifies one returnable asset — so a repeated
+ * code in one batch is the same crate, not a second one, and must collapse to a single entry.
  *
  * @param {string[]} prev - existing GRAI list
  * @param {string[]} newGrais - GRAIs to add
  * @returns {string[]}
  */
 export const mergeGraiArrays = (prev, newGrais) => {
-  const existingSet = new Set(prev);
-  const toAdd = newGrais.filter((g) => !existingSet.has(g));
+  const seen = new Set(prev);
+  const toAdd = [];
+  for (const g of newGrais) {
+    if (!seen.has(g)) {
+      seen.add(g);
+      toAdd.push(g);
+    }
+  }
   if (toAdd.length === 0) return prev;
   return [...prev, ...toAdd];
 };

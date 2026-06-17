@@ -15,6 +15,7 @@ import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../../../utils
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import GraiCapturePanel from '../../../components/GraiCapturePanel';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import Spinner from '../../../components/Spinner';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
 import { toNumberOrZero } from '../../../utils/numbers';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
@@ -39,7 +40,11 @@ const PickStepScanScreen = () => {
   // when the qty is confirmed; instead an inline, non-skippable GRAI capture is auto-invoked and the
   // whole pick (qty + the captured GRAIs) is sent in ONE atomic event. When it is not required the
   // flow is unchanged — qty confirm sends the pick directly.
-  const { graiScanEnabled } = useAvailablePickingTargets({ wfProcessId, lineId, type: PickingTargetType.TU });
+  const { graiScanEnabled, isTargetsLoading } = useAvailablePickingTargets({
+    wfProcessId,
+    lineId,
+    type: PickingTargetType.TU,
+  });
 
   const getConfirmationPromptForQty = useCallback(
     (qtyInput) => {
@@ -125,6 +130,13 @@ const PickStepScanScreen = () => {
         />
       </GraiCapturePanel>
     );
+  }
+
+  // Block qty entry until we know whether GRAI capture is required: if the operator confirmed the
+  // qty while graiScanEnabled was still defaulting to false (GET in flight), a GRAI-required pick
+  // would be sent without GRAIs.
+  if (isTargetsLoading) {
+    return <Spinner />;
   }
 
   return (
