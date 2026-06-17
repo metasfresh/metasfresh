@@ -154,6 +154,10 @@ public class CarrierAdviseCommand
 		return new CarrierAdviseCommand(shipmentScheduleId, packedHUItem);
 	}
 
+	/**
+	 * Advises the schedule only when its advising status is still {@code Requested} — the auto/async path
+	 * (at order completion), which must not touch schedules that were already advised or set Manual.
+	 */
 	public void execute()
 	{
 		final ShipmentSchedule shipmentSchedule = retrieveShipmentSchedule();
@@ -162,6 +166,24 @@ public class CarrierAdviseCommand
 			logger.info("Skip adviseShipment for {} because it is not requested", shipmentSchedule.getId());
 			return;
 		}
+		advise(shipmentSchedule);
+	}
+
+	/**
+	 * Re-advises the schedule regardless of its current advising status — the mobile packing re-advise, where
+	 * the schedule is typically already {@code Completed} from the auto-advise at order completion but must be
+	 * re-advised against the actually-packed HU (this {@link CarrierAdviseCommand}'s {@code packedHUItem}).
+	 * <p>
+	 * The caller is responsible for excluding {@code Manual} schedules (a manually-set carrier product must not
+	 * be overwritten) — see {@link de.metas.picking.workflow.PackedHUCarrierAdviseService#advise}.
+	 */
+	public void executeSync()
+	{
+		advise(retrieveShipmentSchedule());
+	}
+
+	private void advise(@NonNull final ShipmentSchedule shipmentSchedule)
+	{
 		updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.InProgress);
 
 		try

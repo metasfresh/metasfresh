@@ -44,6 +44,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -114,15 +115,18 @@ public class JsonPickingJobConverterCommand
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue());
 
+		// Carrier-advise is a property of the job's picked content (its shipment schedules' carrier),
+		// NOT of the bare target-container HU — which may be a fresh/stale TU that is not where the picked
+		// qty is keyed (e.g. a remainder TU started after an earlier TU was packed and shipped). Resolve it
+		// from the actually-picked HUs so the current LU/TU target previews the advise consistently,
+		// whether the target is a new or an existing HU.
+		final CarrierAdviseTargetInfo jobCarrierAdvise = resolveCarrierAdviseInfoForPickedHUs(pickingJob.getPickedHuIds(null));
+
 		pickingJob.getLuPickingTarget(null)
-				.filter(LUPickingTarget::isExistingLU)
-				.ifPresent(target -> builder.luPickingTarget(
-						JsonLUPickingTarget.of(target, resolveCarrierAdviseInfo(target.getLuIdNotNull()))));
+				.ifPresent(target -> builder.luPickingTarget(JsonLUPickingTarget.of(target, jobCarrierAdvise)));
 
 		pickingJob.getTuPickingTarget(null)
-				.filter(TUPickingTarget::isExistingTU)
-				.ifPresent(target -> builder.tuPickingTarget(
-						JsonTUPickingTarget.of(target, resolveCarrierAdviseInfo(target.getTuIdNotNull()))));
+				.ifPresent(target -> builder.tuPickingTarget(JsonTUPickingTarget.of(target, jobCarrierAdvise)));
 
 		return builder.build();
 	}
@@ -146,6 +150,22 @@ public class JsonPickingJobConverterCommand
 		return carrierAdviseInfoByHuId.computeIfAbsent(
 				topLevelHuId,
 				ignored -> packedHUCarrierAdviseService.resolveTargetInfo(topLevelHU));
+	}
+
+	/**
+	 * Aggregates the carrier-advise info across a set of picked HUs (each resolved to its top-level HU,
+	 * memoized by {@link #resolveCarrierAdviseInfo}) — the proven-correct source — so an LU/TU target previews
+	 * the advise even when the bare target container HU is not where the picked qty is keyed.
+	 * Mirrors the CU-direct aggregation: the first available HU's info, or {@code NONE} when none is available.
+	 */
+	@NonNull
+	private CarrierAdviseTargetInfo resolveCarrierAdviseInfoForPickedHUs(@NonNull final Collection<HuId> pickedHuIds)
+	{
+		return pickedHuIds.stream()
+				.map(this::resolveCarrierAdviseInfo)
+				.filter(CarrierAdviseTargetInfo::isAvailable)
+				.findFirst()
+				.orElse(CarrierAdviseTargetInfo.NONE);
 	}
 
 	@NonNull
@@ -190,13 +210,17 @@ public class JsonPickingJobConverterCommand
 	{
 		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
 
+		// Resolve the line's carrier-advise once from its actually-picked HUs (the proven-correct source) —
+		// not the bare LU/TU target container, which may not be where the picked qty is keyed — and expose it
+		// on whichever pick-to shape the line has (existing-LU target, existing-TU target, or CU-direct line).
+		final CarrierAdviseTargetInfo lineInfo = resolveCarrierAdviseInfoForPickedHUs(line.getPickedHUIds());
+
 		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
 				.filter(LUPickingTarget::isExistingLU)
 				.orElse(null);
 		if (existingLuTarget != null)
 		{
-			return lineBuilder.luPickingTarget(
-					JsonLUPickingTarget.of(existingLuTarget, resolveCarrierAdviseInfo(existingLuTarget.getLuIdNotNull())));
+			return lineBuilder.luPickingTarget(JsonLUPickingTarget.of(existingLuTarget, lineInfo));
 		}
 
 		final TUPickingTarget existingTuTarget = currentPickingTarget.getTuPickingTarget()
@@ -204,16 +228,10 @@ public class JsonPickingJobConverterCommand
 				.orElse(null);
 		if (existingTuTarget != null)
 		{
-			return lineBuilder.tuPickingTarget(
-					JsonTUPickingTarget.of(existingTuTarget, resolveCarrierAdviseInfo(existingTuTarget.getTuIdNotNull())));
+			return lineBuilder.tuPickingTarget(JsonTUPickingTarget.of(existingTuTarget, lineInfo));
 		}
 
-		// CU-direct: no LU/TU target — resolve from the line's picked HUs (each resolved to its top-level HU).
-		final CarrierAdviseTargetInfo lineInfo = line.getPickedHUIds().stream()
-				.map(this::resolveCarrierAdviseInfo)
-				.filter(CarrierAdviseTargetInfo::isAvailable)
-				.findFirst()
-				.orElse(CarrierAdviseTargetInfo.NONE);
+		// CU-direct: no LU/TU target — expose at line level.
 		return lineBuilder
 				.carrierAdviseAvailable(lineInfo.isAvailable())
 				.carrierAdviseReadOnly(lineInfo.isReadOnly())

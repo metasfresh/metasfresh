@@ -182,7 +182,10 @@ public class PackedHUCarrierAdviseService
 				{
 					continue;
 				}
-				CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).execute();
+				// executeSync (not execute): re-advise against the packed HU regardless of the schedule's
+				// current advising status — at packing time it is typically already Completed from the
+				// auto-advise at order completion, so the Requested-only execute() guard would no-op.
+				CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).executeSync();
 			}
 		}
 	}

@@ -184,6 +184,24 @@ public class MobileUI_Picking_StepDef
 				.as("carrierProductCaption for target %s", target).isEqualTo(caption));
 	}
 
+	/**
+	 * Triggers the mobile packing re-advise for the current picking job (the "Advise carrier" button →
+	 * {@code POST /job/{wfProcessId}/target/advise}). Re-advises the packed HUs' shipment schedules against
+	 * the actually-packed HU, regardless of their current advising status (Manual schedules are skipped).
+	 *
+	 * @cucumber.stepdef {@code run carrier advise for the current picking job}
+	 * @cucumber.example
+	 * <pre>
+	 * When run carrier advise for the current picking job
+	 * </pre>
+	 */
+	@When("run carrier advise for the current picking job")
+	public void runCarrierAdviseForCurrentPickingJob()
+	{
+		final JsonWFProcess wfProcess = mobileUIPickingClient.advisePackedHU(context.getWfProcessIdNotNull());
+		context.setWfProcess(wfProcess);
+	}
+
 	@When("pick lines")
 	public void pickLines(@NonNull final DataTable dataTable)
 	{

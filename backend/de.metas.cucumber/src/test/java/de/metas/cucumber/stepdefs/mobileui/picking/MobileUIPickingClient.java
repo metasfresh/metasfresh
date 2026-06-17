@@ -124,6 +124,16 @@ public class MobileUIPickingClient
 	}
 
 	/**
+	 * Triggers the mobile packing re-advise — the {@code POST /job/{wfProcessId}/target/advise} endpoint the
+	 * "Advise carrier" button calls — which re-advises the packed HUs' shipment schedules regardless of their
+	 * current advising status (except Manual).
+	 */
+	public JsonWFProcess advisePackedHU(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.advisePackedHU(wfProcessId, null);
+	}
+
+	/**
 	 * Re-fetches the current workflow process from the server, exactly like the mobile UI does after each step.
 	 * Unlike the post-event responses, this rebuilds the picking-job JSON freshly, so values that materialize
 	 * only after a pick (e.g. the existing LU/TU picking target and its carrier-advise flags) are reflected.

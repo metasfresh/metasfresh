@@ -1704,6 +1704,53 @@ Feature: nShift Shipment
       | line   | false     | false    |
 
   @from:cucumber
+  @Id:S0355_PickingReadvise_390
+  Scenario: nShift Carrier Re-advise — mobile packing re-advise overwrites an already-advised schedule's carrier product
+    # The schedule is auto-advised to cp1 at order completion (advising status Completed). When the operator packs
+    # and triggers the carrier advise from mobile picking, the schedule must be RE-advised against the packed HU —
+    # here the advisor now returns cp2 — even though the schedule is already Completed.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot   | IsDynamic |
+      | slot_readv | display_readv | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_readv   | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier  | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_readv_l1 | so_readv   | product      | 10         | product_TU_10CU         |
+    When the order identified by so_readv is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_readv   | so_readv_l1    | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_readv              |
+    # Initial advise resolves to cp1
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_readv   | so_readv_l1    | cp1                |
+    When start picking job for sales order identified by so_readv
+    And scan picking slot identified by slot_readv
+    And set picking target as new TU identified by TU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    # The advisor now returns a different product; the mobile packing re-advise must apply it to the Completed schedule
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp2                | cgt1                  | cs1                |
+    And run carrier advise for the current picking job
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_readv   | so_readv_l1    | cp2                |
+
+  @from:cucumber
   @Id:S0355_DeliveryOrder_400
   Scenario: nShift Delivery Order — one shipment whose HUs carry different carriers is split into two delivery orders
     # One nShift order, two lines on two different products, each packed into its own top-level HU (one package each).
