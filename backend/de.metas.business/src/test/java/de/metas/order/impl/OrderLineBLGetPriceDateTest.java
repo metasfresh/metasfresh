@@ -74,6 +74,32 @@ class OrderLineBLGetPriceDateTest
 				.isEqualTo(dateOrdered);
 	}
 
+	@Test
+	void salesOrder_alwaysUsesDatePromised_regardlessOfSysConfig()
+	{
+		final LocalDate dateOrdered = LocalDate.of(2024, 1, 1);
+		final LocalDate datePromised = LocalDate.of(2024, 3, 1);
+
+		// SysConfig deliberately NOT set — SO must use DatePromised unconditionally
+
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsSOTrx(true); // sales order
+		order.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
+		order.setDatePromised(TimeUtil.asTimestamp(datePromised));
+		InterfaceWrapperHelper.save(order);
+
+		final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+		orderLine.setDateOrdered(TimeUtil.asTimestamp(dateOrdered));
+		orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised));
+		InterfaceWrapperHelper.save(orderLine);
+
+		final ZonedDateTime priceDate = OrderLineBL.getPriceDate(orderLine, order);
+
+		assertThat(priceDate.toLocalDate())
+				.as("sales order must always use DatePromised regardless of SysConfig")
+				.isEqualTo(datePromised);
+	}
+
 	private static void setSysConfig(final String name, final String value)
 	{
 		final I_AD_SysConfig sysConfig = InterfaceWrapperHelper.newInstance(I_AD_SysConfig.class);

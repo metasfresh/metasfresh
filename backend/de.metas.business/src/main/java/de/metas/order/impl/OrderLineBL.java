@@ -86,6 +86,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
+import com.google.common.annotations.VisibleForTesting;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -135,6 +136,7 @@ public class OrderLineBL implements IOrderLineBL
 {
 	@NonNull private static final AdMessageKey MSG_COUNTER_DOC_MISSING_MAPPED_PRODUCT = AdMessageKey.of("de.metas.order.CounterDocMissingMappedProduct");
 	@NonNull private static final String SYSCONFIG_SetBOMDescription = "de.metas.order.sales.line.SetBOMDescription";
+	@VisibleForTesting
 	@NonNull static final String SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED = "de.metas.order.PurchaseOrder.UseDatePromisedForPricing";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(OrderLineBL.class);
@@ -151,7 +153,7 @@ public class OrderLineBL implements IOrderLineBL
 	@NonNull private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
-	@NonNull private static final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
@@ -567,7 +569,7 @@ public class OrderLineBL implements IOrderLineBL
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // as long as this is a static method, we can't use the orgDAO field. 
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class); // static method — cannot use instance fields; use Services.get() directly
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		if (order.isSOTrx())
@@ -575,14 +577,15 @@ public class OrderLineBL implements IOrderLineBL
 			return getPriceDateFromDatePromised(orderLine, order, timeZone);
 		}
 
-		return isUseDatePromised()
+		return isUseDatePromised(order)
 				? getPriceDateFromDatePromised(orderLine, order, timeZone)
 				: asZonedDateTimeNonNull(orderLine.getDateOrdered(), timeZone);
 	}
 
-	private static boolean isUseDatePromised()
+	private static boolean isUseDatePromised(final I_C_Order order)
 	{
-		return sysConfigBL.getBooleanValue(SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED, false);
+		return Services.get(ISysConfigBL.class)
+				.getBooleanValue(SYSCONFIG_PO_PRICE_DATE_USE_DATE_PROMISED, false, order.getAD_Client_ID(), order.getAD_Org_ID());
 	}
 
 	@NonNull
