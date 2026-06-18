@@ -1,5 +1,6 @@
 package de.metas.picking.workflow;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -20,9 +21,9 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
-import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
@@ -30,8 +31,10 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
+import de.metas.product.IProductBL;
 import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
+import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
@@ -73,6 +76,7 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
 	{
@@ -174,9 +178,7 @@ public class PackedHUCarrierAdviseService
 		{
 			final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 
-			// Use the first schedule's order line as the price source (single-product HU enforced in buildRequestParcel).
-			final ShipmentSchedule firstSchedule = schedulesById.values().stream().findFirst().orElse(null);
-			final JsonDeliveryAdvisorRequestParcel parcel = buildRequestParcel(topLevelHU, firstSchedule);
+			final JsonDeliveryAdvisorRequestParcel parcel = buildRequestParcel(topLevelHU, schedulesById);
 
 			for (final ShipmentSchedule schedule : schedulesById.values())
 			{
@@ -192,50 +194,82 @@ public class PackedHUCarrierAdviseService
 		}
 	}
 
-	// Carrier "final info" build path — HU-advise (1 of 3).
-	// Field derivation MUST stay consistent across the three nShift build paths (change together):
-	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestParcel
-	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestParcel
-	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
-	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
-	private JsonDeliveryAdvisorRequestParcel buildRequestParcel(
+	// HU-advise parcel envelope: parcel-level fields (weight/dims/topLevelType) from packedHUShippingInfoService.of(hu),
+	// plus one item per contained product (buildRequestItem). The PARCEL gross weight is the real HU weight;
+	// per-item weights are the nominal product weights (see buildRequestItem).
+	@VisibleForTesting
+	JsonDeliveryAdvisorRequestParcel buildRequestParcel(
 			@NonNull final I_M_HU topLevelHU,
-			@Nullable final ShipmentSchedule schedule)
+			@NonNull final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById)
 	{
 		final PackedHUShippingInfo shippingInfo = packedHUShippingInfoService.of(topLevelHU);
 
-		final List<IHUProductStorage> productStorages = handlingUnitsBL
-				.getStorageFactory()
-				.getProductStorages(topLevelHU);
-
-		if (productStorages.isEmpty())
+		final List<PackedHUProductItem> productItems = packedHUShippingInfoService.getProductItems(topLevelHU);
+		if (productItems.isEmpty())
 		{
 			throw new AdempiereException("HU " + topLevelHU.getM_HU_ID() + " has no product storage");
 		}
-		if (productStorages.size() > 1)
-		{
-			throw new AdempiereException("Carrier advise for multi-product HUs is not supported. HU_ID=" + topLevelHU.getM_HU_ID());
-		}
-		final IHUProductStorage singleProductStorage = productStorages.get(0);
 
-		final Product product = productRepository.getById(singleProductStorage.getProductId());
-		final Quantity qty = singleProductStorage.getQtyInStockingUOM();
-		final int numberOfItems = qty.intValueExact();
+		// product → schedule lookup: each schedule resolves to its order line's product.
+		// A product with no matching schedule keeps its value/price/qty fields null (still emitted with product/qty/weight/customs/CoO).
+		final ImmutableMap<ProductId, ShipmentSchedule> scheduleByProductId = schedulesById.values().stream()
+				.collect(ImmutableMap.toImmutableMap(
+						ShipmentSchedule::getProductId,
+						s -> s,
+						(existing, ignored) -> existing));
 
 		final PackageDimensions dimensions = shippingInfo.getDimensions();
 		final BigDecimal grossWeightKgBD = shippingInfo.getWeightInKg() != null
 				? shippingInfo.getWeightInKg().toBigDecimal()
 				: BigDecimal.ZERO;
 
+		final ImmutableList<JsonDeliveryAdvisorRequestItem> items = productItems.stream()
+				.map(productItem -> buildRequestItem(
+						productItem,
+						scheduleByProductId.get(productItem.getProductId())))
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonDeliveryAdvisorRequestParcel.builder()
+				.grossWeightKg(grossWeightKgBD)
+				.packageDimensions(JsonPackageDimensions.builder()
+						.heightInCM(dimensions.getHeightInCM())
+						.widthInCM(dimensions.getWidthInCM())
+						.lengthInCM(dimensions.getLengthInCM())
+						.build())
+				.topLevelType(toTopLevelTypeWireString(shippingInfo.getTopLevelType()))
+				.items(items)
+				.build();
+	}
+
+	// Carrier "final info" build path — HU-advise item (1 of 3).
+	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+	private JsonDeliveryAdvisorRequestItem buildRequestItem(
+			@NonNull final PackedHUProductItem productItem,
+			@Nullable final ShipmentSchedule schedule)
+	{
+		final Product product = productRepository.getById(productItem.getProductId());
+		final Quantity qty = productItem.getQty();
+		final int numberOfItems = qty.intValueExact();
+
 		// Customs tariff — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
-		// Unit price / total value from order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
+		// Total weight in kg — nominal gross weight, same as NShiftDraftDeliveryOrderCreator#computeNominalGrossWeightInKg.
+		// This is the per-product nominal weight (productBL.computeGrossWeight → kg), NOT the HU gross weight;
+		// the HU gross weight stays on the parcel. Mirrors the nShift ship path for advise/ship parity.
+		final BigDecimal totalWeightInKgBD = productBL.computeGrossWeight(product.getId(), qty)
+				.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
+				.map(Quantity::getAsBigDecimal)
+				.orElse(BigDecimal.ZERO);
+
+		// Unit price / total value from THIS product's order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
 		// Null when no schedule or no order line is available (e.g. inventory-receipt picks).
 		JsonMoney unitPrice = null;
 		JsonMoney totalValue = null;
-		BigDecimal totalWeightInKg = null;
 		JsonQuantity shippedQuantity = null;
 		if (schedule != null)
 		{
@@ -264,31 +298,18 @@ public class PackedHUCarrierAdviseService
 						.uomCode(qtyConverted.getX12DE355().getCode())
 						.build();
 			}
-			// Total weight in kg — nominal gross weight, same as NShiftDraftDeliveryOrderCreator#computeNominalGrossWeightInKg
-			totalWeightInKg = grossWeightKgBD;
 		}
 
-		final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
+		return JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(numberOfItems)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
-				.countryOfOrigin(shippingInfo.getCountryOfOrigin())
+				.countryOfOrigin(productItem.getCountryOfOrigin())
 				.customsTariff(customsTariff)
 				.unitPrice(unitPrice)
 				.totalValue(totalValue)
 				.shippedQuantity(shippedQuantity)
-				.totalWeightInKg(totalWeightInKg)
-				.build();
-
-		return JsonDeliveryAdvisorRequestParcel.builder()
-				.grossWeightKg(grossWeightKgBD)
-				.packageDimensions(JsonPackageDimensions.builder()
-						.heightInCM(dimensions.getHeightInCM())
-						.widthInCM(dimensions.getWidthInCM())
-						.lengthInCM(dimensions.getLengthInCM())
-						.build())
-				.topLevelType(toTopLevelTypeWireString(shippingInfo.getTopLevelType()))
-				.items(ImmutableList.of(item))
+				.totalWeightInKg(totalWeightInKgBD)
 				.build();
 	}
 
