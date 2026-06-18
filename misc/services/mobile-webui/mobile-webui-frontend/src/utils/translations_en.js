@@ -169,7 +169,7 @@ const translations = {
         skippedProducts: 'Skipped products',
       },
       adviseCarrier: 'Carrier Advise',
-      carrierProduct: 'Carrier',
+      carrierProduct: 'Carrier Product',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

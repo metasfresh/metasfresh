@@ -174,7 +174,7 @@ const translations = {
         skippedProducts: 'Übersprungene Produkte',
       },
       adviseCarrier: 'Lieferweg-Abfrage',
-      carrierProduct: 'Frachtführer',
+      carrierProduct: 'Lieferweg-Produkt',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
