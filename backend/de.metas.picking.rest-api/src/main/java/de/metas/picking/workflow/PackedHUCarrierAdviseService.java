@@ -184,8 +184,8 @@ public class PackedHUCarrierAdviseService
 						hu -> hu,
 						(existing, ignored) -> existing));
 
-		// advised carrier product per non-Manual schedule (read AFTER executeSync persisted it)
-		final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId = new LinkedHashMap<>();
+		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
+		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();
 		// at least one of the advised HUs has a Manual schedule → the whole job's carrier product is read-only
 		boolean anyManual = false;
 
@@ -203,11 +203,19 @@ public class PackedHUCarrierAdviseService
 					continue;
 				}
 				adviseSchedule(schedule.getId(), parcel);
+				advisedScheduleIds.add(schedule.getId());
+			}
+		}
 
-				// executeSync persisted the advised product onto the schedule (setCarrierProductId + save);
-				// re-read it (the in-memory schedule from resolveSchedulesByIdForHU is stale) to learn the result.
-				final CarrierProductId advisedProductId = shipmentScheduleService.getById(schedule.getId()).getCarrierProductId();
-				advisedProductByScheduleId.put(schedule.getId(), advisedProductId);
+		// adviseSchedule (executeSync) persisted the advised product onto each schedule (setCarrierProductId + save);
+		// re-read them (the in-memory schedules from resolveSchedulesByIdForHU are now stale) in ONE batch to learn
+		// the results — avoids a per-schedule getById inside the loop.
+		final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId = new LinkedHashMap<>();
+		if (!advisedScheduleIds.isEmpty())
+		{
+			for (final ShipmentSchedule advisedSchedule : shipmentScheduleService.getByIds(ImmutableSet.copyOf(advisedScheduleIds)))
+			{
+				advisedProductByScheduleId.put(advisedSchedule.getId(), advisedSchedule.getCarrierProductId());
 			}
 		}
 
@@ -250,7 +258,18 @@ public class PackedHUCarrierAdviseService
 	{
 		if (advisedProductByScheduleId.isEmpty())
 		{
-			return pickingJob;
+			// No non-Manual schedule was advised. If every advise schedule was Manual, the carrier product is
+			// manually controlled → still flag the header read-only (no product to set). Otherwise nothing to do.
+			if (!anyManual)
+			{
+				return pickingJob;
+			}
+			final PickingJob jobWithReadOnly = pickingJob.withCarrierAdviseReadOnly(true);
+			if (jobWithReadOnly != pickingJob)
+			{
+				pickingJobRepository.save(jobWithReadOnly);
+			}
+			return jobWithReadOnly;
 		}
 
 		// header carrier product = the single distinct advised product (the job's current carrier target).

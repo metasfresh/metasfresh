@@ -165,10 +165,12 @@ public class PackedHUCarrierAdviseServiceTest
 		// stub the static-command seam (no real DB / shipper-gateway call in a unit test)
 		doNothing().when(service).adviseSchedule(any(), any());
 
-		// post-executeSync re-read: the Tomato schedule now carries the advised product
+		// post-executeSync batch re-read: the Tomato schedule now carries the advised product
 		final ShipmentSchedule tomatoSchedAdvised = mock(ShipmentSchedule.class);
+		when(tomatoSchedAdvised.getId()).thenReturn(SCHED_TOMATO);
 		when(tomatoSchedAdvised.getCarrierProductId()).thenReturn(advisedProductId);
-		when(shipmentScheduleService.getById(SCHED_TOMATO)).thenReturn(tomatoSchedAdvised);
+		when(shipmentScheduleService.getByIds(com.google.common.collect.ImmutableSet.of(SCHED_TOMATO)))
+				.thenReturn(com.google.common.collect.ImmutableList.of(tomatoSchedAdvised));
 
 		// --- picking job: one non-Manual line (Tomato) + one Manual line (Salad) ---
 		final PickingJobLine tomatoLine = mock(PickingJobLine.class);
@@ -208,6 +210,42 @@ public class PackedHUCarrierAdviseServiceTest
 		verify(jobAfterProduct).withCarrierAdviseReadOnly(true);
 		verify(pickingJobRepository).save(jobFinal);
 		assertThat(result).isSameAs(jobFinal);
+	}
+
+	/**
+	 * Every advise schedule of the picked HU is Manual: nothing is re-advised, but the carrier product is
+	 * manually controlled, so the header must still be flagged read-only ({@code carrierAdviseReadOnly=true}).
+	 * No line is touched (a Manual line's carrier product must never be overwritten).
+	 */
+	@Test
+	public void advise_allManual_flagsHeaderReadOnly_noProduct_noLineTouched()
+	{
+		final I_M_HU hu = createTwoProductHU();
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+
+		final ShipmentSchedule tomatoSched = mockSchedule(SCHED_TOMATO, data.helper.pTomatoProductId);
+		when(tomatoSched.getCarrierAdvisingStatus()).thenReturn(CarrierAdviseStatus.Manual);
+		final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+		when(saladSched.getCarrierAdvisingStatus()).thenReturn(CarrierAdviseStatus.Manual);
+		when(huShipmentScheduleResolver.resolveSchedulesByIdForHU(any())).thenReturn(ImmutableMap.of(
+				SCHED_TOMATO, tomatoSched,
+				SCHED_SALAD, saladSched));
+
+		final PickingJob pickingJob = mock(PickingJob.class);
+		when(pickingJob.getPickedHuIds(null)).thenReturn(com.google.common.collect.ImmutableSet.of(huId));
+		final PickingJob jobReadOnly = mock(PickingJob.class);
+		when(pickingJob.withCarrierAdviseReadOnly(true)).thenReturn(jobReadOnly);
+
+		final PickingJob result = service.advise(pickingJob, null);
+
+		// no schedule advised, no batch re-read, no line change, no header product
+		verify(service, never()).adviseSchedule(any(), any());
+		verify(pickingJob, never()).withChangedLines(any());
+		verify(pickingJob, never()).withCarrierProductId(any());
+		// header flagged read-only + saved
+		verify(pickingJob).withCarrierAdviseReadOnly(true);
+		verify(pickingJobRepository).save(jobReadOnly);
+		assertThat(result).isSameAs(jobReadOnly);
 	}
 
 	private I_M_HU createTwoProductHU()
