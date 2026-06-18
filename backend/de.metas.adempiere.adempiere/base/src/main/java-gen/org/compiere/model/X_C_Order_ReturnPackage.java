@@ -36,21 +36,6 @@ public class X_C_Order_ReturnPackage extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setC_BPartner_ID (final int C_BPartner_ID)
-	{
-		if (C_BPartner_ID < 1) 
-			set_Value (COLUMNNAME_C_BPartner_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
-	}
-
-	@Override
-	public int getC_BPartner_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
-	}
-
-	@Override
 	public void setC_Order_ID (final int C_Order_ID)
 	{
 		if (C_Order_ID < 1) 

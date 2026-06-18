@@ -15,8 +15,9 @@
 -- (these are the table-local AD_Column rows of C_Order_ReturnPackage — not shared global columns).
 -- The business partner is NOT a field here — it is derivable from the order (C_Order_ID).
 --
--- Menu: placed under the existing "Aufträge" (Orders) folder, AD_TreeNodeMM Node_ID 457 —
--- the natural home, since C_Order_ReturnPackage is a child of the sales order (C_Order).
+-- Menu: placed under the existing "Vertrieb" (Sales) folder, AD_TreeNodeMM Parent_ID 1000010 —
+-- the same top-level menu node that the sales-order window lives under, so the entry is visible
+-- in the WebUI menu (C_Order_ReturnPackage is a child of the sales order, C_Order).
 --
 -- Reused AD_Elements (NO new AD_Element rows inserted — their ColumnNames already exist):
 --   585006 'Rücknahme Gebinde' (window/tab/menu caption + key column)
@@ -261,7 +262,7 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30, Updated=TO_
 ;
 
 -- ============================================================================
--- Menu entry under "Aufträge" (Orders), AD_TreeNodeMM Node_ID 457.
+-- Menu entry under "Vertrieb" (Sales), AD_TreeNodeMM Parent_ID 1000010.
 -- ============================================================================
 -- 2026-06-17 10:04:00
 INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,Description,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,585006,542340 /*From ID Server*/,0,542164,TO_TIMESTAMP('2026-06-17 10:04:00','YYYY-MM-DD HH24:MI:SS'),100,'Rücknahme-Gebinde-Zeilen je Kundenauftrag (Palettentyp EUR / H1).','D','C_Order_ReturnPackage','Y','N','N','N','N','Rücknahme Gebinde',TO_TIMESTAMP('2026-06-17 10:04:00','YYYY-MM-DD HH24:MI:SS'),100)
@@ -274,7 +275,7 @@ INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrow
 /* DDL */  select update_menu_translation_from_ad_element(585006)
 ;
 
--- Tree node: place the menu under "Aufträge" (Node_ID 457) in the main menu tree (AD_Table_ID 116).
+-- Tree node: place the menu under "Vertrieb" (Parent_ID 1000010) in the main menu tree (AD_Table_ID 116).
 -- 2026-06-17 10:04:03
-INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100, t.AD_Tree_ID, 542340, 457, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542340)
+INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', TO_TIMESTAMP('2026-06-17 10:04:03','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-17 10:04:03','YYYY-MM-DD HH24:MI:SS'), 100, t.AD_Tree_ID, 542340, 1000010, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542340)
 ;
