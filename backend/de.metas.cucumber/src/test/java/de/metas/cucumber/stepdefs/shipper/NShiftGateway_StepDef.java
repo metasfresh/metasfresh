@@ -38,8 +38,10 @@ import org.mockito.stubbing.Answer;
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -407,48 +409,73 @@ public class NShiftGateway_StepDef
 				.as("packageDimensions.heightInCM")
 				.isEqualTo(expected));
 
-		// --- per-item fields: match every row to its item and assert ---
+		// --- per-item fields: match every row to its (distinct) item and assert ---
+		// matchedItemIndexes guards against two rows resolving to the same item, which would otherwise
+		// leave the other item(s) silently unasserted despite the row-count == item-count check above.
+		final Set<Integer> matchedItemIndexes = new HashSet<>();
 		for (int i = 0; i < rows.size(); i++)
 		{
 			final DataTableRow row = rows.get(i);
-			final JsonDeliveryAdvisorRequestItem item = matchAdvisorRequestItem(row, items, i);
-			assertAdvisorRequestItem(softly, row, item);
+			final int itemIndex = matchAdvisorRequestItemIndex(row, items, i, matchedItemIndexes);
+			matchedItemIndexes.add(itemIndex);
+			assertAdvisorRequestItem(softly, row, items.get(itemIndex));
 		}
 
 		softly.assertAll();
 	}
 
 	/**
-	 * Matches a DataTable row to exactly one advisor-request item. With a single item, the row is matched by
-	 * index (no discriminator needed). With multiple items, the row's {@code productName} / {@code productValue}
-	 * discriminator selects the item.
+	 * Resolves the index of the advisor-request item a DataTable row refers to. With a single item, the row is
+	 * matched by index (no discriminator needed). With multiple items, the row's {@code productName} /
+	 * {@code productValue} discriminator must select exactly one not-yet-matched item — zero matches, multiple
+	 * matches, or a missing discriminator all fail fast so no item is left silently unasserted.
 	 */
-	private static JsonDeliveryAdvisorRequestItem matchAdvisorRequestItem(
+	private static int matchAdvisorRequestItemIndex(
 			@NonNull final DataTableRow row,
 			@NonNull final List<JsonDeliveryAdvisorRequestItem> items,
-			final int rowIndex)
+			final int rowIndex,
+			@NonNull final Set<Integer> alreadyMatchedItemIndexes)
 	{
 		if (items.size() == 1)
 		{
-			return items.get(0);
+			return 0;
 		}
 
-		Stream<JsonDeliveryAdvisorRequestItem> filtered = items.stream();
 		final Optional<String> productName = row.getAsOptionalString("productName");
-		if (productName.isPresent())
-		{
-			filtered = filtered.filter(it -> productName.get().equals(it.getProductName()));
-		}
 		final Optional<String> productValue = row.getAsOptionalString("productValue");
-		if (productValue.isPresent())
+		if (!productName.isPresent() && !productValue.isPresent())
 		{
-			filtered = filtered.filter(it -> productValue.get().equals(it.getProductValue()));
+			throw new AssertionError("row[" + rowIndex + "] must carry a productName/productValue discriminator "
+					+ "to match one of the " + items.size() + " advisor request items");
 		}
 
-		return filtered.findFirst()
-				.orElseThrow(() -> new AssertionError(
-						"No advisor request item found for row[" + rowIndex + "] ProductName="
-								+ productName.orElse("<any>") + ", ProductValue=" + productValue.orElse("<any>")));
+		final List<Integer> candidates = new ArrayList<>();
+		for (int i = 0; i < items.size(); i++)
+		{
+			if (alreadyMatchedItemIndexes.contains(i))
+			{
+				continue;
+			}
+			final JsonDeliveryAdvisorRequestItem item = items.get(i);
+			if (productName.isPresent() && !productName.get().equals(item.getProductName()))
+			{
+				continue;
+			}
+			if (productValue.isPresent() && !productValue.get().equals(item.getProductValue()))
+			{
+				continue;
+			}
+			candidates.add(i);
+		}
+
+		if (candidates.size() != 1)
+		{
+			throw new AssertionError("expected exactly one not-yet-matched advisor request item for row["
+					+ rowIndex + "] ProductName=" + productName.orElse("<any>")
+					+ ", ProductValue=" + productValue.orElse("<any>") + " but found " + candidates.size());
+		}
+
+		return candidates.get(0);
 	}
 
 	private static void assertAdvisorRequestItem(
