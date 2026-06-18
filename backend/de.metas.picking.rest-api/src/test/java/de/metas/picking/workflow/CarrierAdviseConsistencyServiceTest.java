@@ -221,6 +221,32 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	// --------------------------------------------------
+	// ONE advise-enabled schedule backs TWO picking-job lines that DIVERGE on carrier product.
+	//
+	// A single shipment schedule can back N picking-job lines (N picking-job-schedules), each independently
+	// re-advised at packing → they can carry divergent carriers. The pre-T9 first-wins map kept only ONE line
+	// per schedule, silently dropping the divergent sibling → no divergence detected → NO throw. Line-centric
+	// code (ListMultimap) keeps BOTH lines → distinct products > 1 → throws NonManualDivergentOnHU.
+	// IsSelectionRules='N' (rules OFF, the default stub) so E2 is active.
+	// --------------------------------------------------
+
+	@Test
+	void e2_oneSchedule_twoLinesDivergeOnProduct_throwsNonManualDivergent()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		stubResolver(s1);
+		stubShipper(SHIPPER_1);
+
+		// TWO lines for the SAME schedule (SCHED_ID_1), diverging on carrier product
+		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
+		final PickingJobLine line2 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
+
+		assertThrowsWithKey(
+				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
+				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
+	}
+
+	// --------------------------------------------------
 	// (E3 dropped) The "multiple advise-enabled shippers on one HU" check (MSG_MultipleShippersOnHU)
 	// was removed in T4: the shipper is legitimately header-level and multiple advise-enabled shippers
 	// on a single picked HU is not a real case to guard against. There is intentionally NO replacement

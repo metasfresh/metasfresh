@@ -1,6 +1,7 @@
 package de.metas.picking.workflow;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -76,16 +77,13 @@ public class CarrierAdviseConsistencyService
 
 		// The picking-job LINE is the carrier-advise source of truth: the carrier VALUES + manual flag
 		// are read from the line (matched to a schedule by ShipmentScheduleId), not from the schedule.
-		final ImmutableMap<ShipmentScheduleId, PickingJobLine> linesByScheduleId = pickingJob.streamLines()
-				.collect(ImmutableMap.toImmutableMap(
+		// Line-centric: a single shipment schedule can back N picking-job lines (N picking-job-
+		// schedules), each independently re-advised at packing — so they CAN diverge. We keep ALL lines per
+		// schedule (ListMultimap, not a first-wins map) so the consistency check sees every line on the HU.
+		final ImmutableListMultimap<ShipmentScheduleId, PickingJobLine> linesByScheduleId = pickingJob.streamLines()
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						line -> line.getScheduleId().getShipmentScheduleId(),
-						Function.identity(),
-						// First-wins is safe ONLY while there is at most one picking-job line per shipment schedule
-						// (today's reality). me03 #30350 T9 will enable N picking-job-schedules (lines) per shipment
-						// schedule — each independently re-advised at packing, so they CAN diverge — at which point this
-						// consistency check must become line-centric (group all advised lines per top-level HU) rather
-						// than collapsing to one line per schedule.
-						(first, second) -> first));
+						Function.identity()));
 
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
 		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
@@ -98,7 +96,7 @@ public class CarrierAdviseConsistencyService
 
 	private void assertConsistentForHU(
 			@NonNull final I_M_HU topLevelHU,
-			@NonNull final Map<ShipmentScheduleId, PickingJobLine> linesByScheduleId)
+			@NonNull final ImmutableListMultimap<ShipmentScheduleId, PickingJobLine> linesByScheduleId)
 	{
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
 				huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
@@ -121,11 +119,12 @@ public class CarrierAdviseConsistencyService
 		// this job is not part of this job's picked state, so it is skipped.
 		final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
 				.filter(s -> isAdviseEnabled(s, shippersById))
-				.filter(s -> linesByScheduleId.get(s.getId()) != null)
+				.filter(s -> !linesByScheduleId.get(s.getId()).isEmpty())
 				.collect(ImmutableSet.toImmutableSet());
 
+		// Line-centric: ALL picking-job lines of the advise-enabled schedules on this HU (not one-per-schedule).
 		final ImmutableSet<PickingJobLine> adviseEnabledLines = adviseEnabledSchedules.stream()
-				.map(s -> linesByScheduleId.get(s.getId()))
+				.flatMap(s -> linesByScheduleId.get(s.getId()).stream())
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (adviseEnabledLines.isEmpty())
