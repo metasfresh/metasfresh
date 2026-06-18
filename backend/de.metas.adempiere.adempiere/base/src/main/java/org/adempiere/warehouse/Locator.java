@@ -13,6 +13,7 @@ public class Locator
 	@Builder.Default boolean active = true;
 	@NonNull String value;
 	int priorityNo;
+	boolean isGroundFloor;
 
 	public LocatorQRCode getQrCode()
 	{
