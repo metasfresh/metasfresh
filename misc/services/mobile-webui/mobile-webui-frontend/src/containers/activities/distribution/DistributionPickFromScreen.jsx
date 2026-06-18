@@ -179,7 +179,7 @@ const useDistributionScreenDefinition = () => {
       },
       {
         id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
-        caption: trl('general.Locator'),
+        caption: trl('general.LocatorFrom'),
         value: pickFromLocator?.caption,
         bold: true,
       },
