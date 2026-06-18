@@ -2,6 +2,7 @@ package de.metas.einvoice.cii;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.einvoice.EInvoiceFormat;
+import de.metas.invoice.InvoiceId;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.CodeType;
 import de.metas.einvoice.cii.model.CountryIDType;
@@ -335,8 +336,8 @@ public class CiiMapper
 		}
 
 		// BT-25/BT-26 Preceding invoice reference (credit notes)
-		final int refInvoiceId = invoice.getRef_Invoice_ID();
-		if (refInvoiceId > 0)
+		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
+		if (refInvoiceId != null)
 		{
 			final I_C_Invoice refInvoice = InterfaceWrapperHelper.load(refInvoiceId, I_C_Invoice.class);
 			if (refInvoice != null)
