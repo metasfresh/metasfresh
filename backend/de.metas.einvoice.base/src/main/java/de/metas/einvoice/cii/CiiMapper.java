@@ -131,7 +131,7 @@ public class CiiMapper
 		final I_C_DocType docType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
 		final String docBaseType = docType != null ? docType.getDocBaseType() : "ARI";
 
-		// CII_MAPPING.md §6: ARI → 380, ARC → 381
+		// EN 16931 §6.3.4: commercial invoice → type code 380, credit note → 381
 		final String typeCodeValue = "ARC".equals(docBaseType) ? "381" : "380";
 
 		final DocumentCodeType typeCode = new DocumentCodeType();

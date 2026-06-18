@@ -104,7 +104,6 @@ public class CiiMapperTest
 		final I_C_BPartner buyerBPartner = newInstance(I_C_BPartner.class);
 		buyerBPartner.setName("Käufer AG");
 		buyerBPartner.setTaxID("DE987654321");
-		buyerBPartner.setEInvoice_BuyerReference("991-1234512345-06");
 		saveRecord(buyerBPartner);
 
 		// Link buyer location to buyer bpartner
@@ -131,7 +130,6 @@ public class CiiMapperTest
 		invoice.setC_BPartner_ID(buyerBPartner.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(buyerBPLocation.getC_BPartner_Location_ID());
 		invoice.setPOReference("PO-2024-999");
-		invoice.setDueDate(Timestamp.valueOf(LocalDate.of(2024, 7, 15).atStartOfDay()));
 		saveRecord(invoice);
 
 		// === EInvoiceRecipientConfig ===
@@ -269,5 +267,26 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:CountryID")
 				.isEqualTo("DE");
+
+		// Buyer postal code (BT-53)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode")
+				.isEqualTo("20095");
+
+		// Buyer electronic address (BT-49, scheme EM)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:URIUniversalCommunication/ram:URIID")
+				.isEqualTo("einkauf@buyer.de");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:URIUniversalCommunication/ram:URIID/@schemeID")
+				.isEqualTo("EM");
+
+		// Buyer VAT id (BT-48) — value and scheme
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID")
+				.isEqualTo("DE987654321");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID/@schemeID")
+				.isEqualTo("VA");
 	}
 }
