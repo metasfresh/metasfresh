@@ -81,21 +81,11 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 /* DDL */ select update_Column_Translation_From_AD_Element(585023)
 ;
 
--- Physical column (new mandatory YesNo column with default 'N'; backfill existing rows then NOT NULL)
+-- Physical column (new mandatory YesNo column — db_alter_table, combined DEFAULT 'N' + CHECK + NOT NULL in one call;
+-- mirrors the sibling mandatory boolean IsManuallyClosed in script 5719240 on the same table. DEFAULT 'N' backfills
+-- existing rows atomically so the NOT NULL is satisfied in the same statement.)
 -- 2026-06-18T10:01:03.000Z
-ALTER TABLE public.M_Picking_Job_Line ADD COLUMN IF NOT EXISTS IsCarrierAdviseManual CHAR(1) DEFAULT 'N'
-;
-
--- 2026-06-18T10:01:04.000Z
-UPDATE public.M_Picking_Job_Line SET IsCarrierAdviseManual = 'N' WHERE IsCarrierAdviseManual IS NULL
-;
-
--- 2026-06-18T10:01:05.000Z
-ALTER TABLE public.M_Picking_Job_Line ALTER COLUMN IsCarrierAdviseManual SET NOT NULL
-;
-
--- 2026-06-18T10:01:06.000Z
-ALTER TABLE public.M_Picking_Job_Line ADD CONSTRAINT M_Picking_Job_Line_IsCarrierAdviseManual_Check CHECK (IsCarrierAdviseManual IN ('Y','N'))
+/* DDL */ SELECT public.db_alter_table('M_Picking_Job_Line','ALTER TABLE public.M_Picking_Job_Line ADD COLUMN IsCarrierAdviseManual CHAR(1) DEFAULT ''N'' CHECK (IsCarrierAdviseManual IN (''Y'',''N'')) NOT NULL')
 ;
 
 -- =========================================================================

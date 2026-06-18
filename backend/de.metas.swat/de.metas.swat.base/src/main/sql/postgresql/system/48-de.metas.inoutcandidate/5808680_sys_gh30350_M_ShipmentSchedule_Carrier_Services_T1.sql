@@ -53,7 +53,7 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 -- Column: M_ShipmentSchedule.Carrier_Services
 -- 2026-06-18T11:01:00.000Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy)
-VALUES (0,592841,781217 /*From ID Server*/,0,500221,0,TO_TIMESTAMP('2026-06-18 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.inoutcandidate',0,0,'Y','Y','Y','N','N','N','N','N','Y','N',0,'Lieferweg-Services',0,0,770,0,1,1,TO_TIMESTAMP('2026-06-18 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+VALUES (0,592841,781217 /*From ID Server*/,0,500221,0,TO_TIMESTAMP('2026-06-18 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'D',0,0,'Y','Y','Y','N','N','N','N','N','Y','N',0,'Lieferweg-Services',0,0,770,0,1,1,TO_TIMESTAMP('2026-06-18 11:01:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-06-18T11:01:01.000Z
@@ -74,6 +74,15 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781217
 
 -- 2026-06-18T11:01:04.000Z
 /* DDL */ select AD_Element_Link_Create_Missing_Field(781217)
+;
+
+-- EntityType normalization: the AD_Field is dictionary metadata ('D'), matching the sibling carrier AD_Fields
+-- on this window (Carrier_Advising_Status / Carrier_Goods_Type_ID / Carrier_Product_ID, all 'D' in 5773622).
+-- Self-healing UPDATE so the field ends 'D' even where it was previously created with the AD_Column's EntityType.
+-- 2026-06-18T11:01:05.000Z
+UPDATE AD_Field SET EntityType='D',
+  Updated=TO_TIMESTAMP('2026-06-18 11:01:05.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100
+WHERE AD_Field_ID=781217 AND EntityType<>'D'
 ;
 
 -- AD_UI_Element pairing (group 540052 "advanced edit"; mirrors the existing carrier fields on this window)
