@@ -733,6 +733,31 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_ExternalIds = "ExternalIds";
 
 	/**
+	 * Set Account Override.
+	 * Overridden GL account for this invoice line
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setInvoiceAcctOverride_Indicator (@Nullable java.lang.String InvoiceAcctOverride_Indicator);
+
+	/**
+	 * Get Account Override.
+	 * Overridden GL account for this invoice line
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getInvoiceAcctOverride_Indicator();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_InvoiceAcctOverride_Indicator = new ModelColumn<>(I_C_InvoiceLine.class, "InvoiceAcctOverride_Indicator", null);
+	String COLUMNNAME_InvoiceAcctOverride_Indicator = "InvoiceAcctOverride_Indicator";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -1232,7 +1257,7 @@ public interface I_C_InvoiceLine
 	/**
 	 * Set Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -1241,7 +1266,7 @@ public interface I_C_InvoiceLine
 	/**
 	 * Get Reason.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: List
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */

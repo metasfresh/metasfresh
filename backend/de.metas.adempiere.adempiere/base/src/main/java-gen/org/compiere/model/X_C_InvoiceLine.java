@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1134422900L;
+	private static final long serialVersionUID = -1487975181L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -570,6 +570,17 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setInvoiceAcctOverride_Indicator (final @Nullable java.lang.String InvoiceAcctOverride_Indicator)
+	{
+		throw new IllegalArgumentException ("InvoiceAcctOverride_Indicator is virtual column");	}
+
+	@Override
+	public java.lang.String getInvoiceAcctOverride_Indicator() 
+	{
+		return get_ValueAsString(COLUMNNAME_InvoiceAcctOverride_Indicator);
+	}
+
+	@Override
 	public void setIsDescription (final boolean IsDescription)
 	{
 		set_Value (COLUMNNAME_IsDescription, IsDescription);
@@ -887,6 +898,23 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	/** 
+	 * Reason AD_Reference_ID=541968
+	 * Reference name: Reason for without charge
+	 */
+	public static final int REASON_AD_Reference_ID=541968;
+	/** Warranty = W */
+	public static final String REASON_Warranty = "W";
+	/** Goodwill = G */
+	public static final String REASON_Goodwill = "G";
+	/** FullService = F */
+	public static final String REASON_FullService = "F";
+	/** PromotionalCampaign = P */
+	public static final String REASON_PromotionalCampaign = "P";
+	/** InternalUse = I */
+	public static final String REASON_InternalUse = "I";
+	/** Bestandteil Handelsstückliste = B */
+	public static final String REASON_BestandteilHandelsstueckliste = "B";
 	@Override
 	public void setReason (final @Nullable java.lang.String Reason)
 	{
