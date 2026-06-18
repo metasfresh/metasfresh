@@ -26,6 +26,8 @@ public class MobileUIDistributionConfigRepository
 
 	private final CCache<Integer, MobileUIDistributionConfig> cache = CCache.<Integer, MobileUIDistributionConfig>builder()
 			.tableName(I_MobileUI_UserProfile_DD.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_Sort.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_CaptionItem.Table_Name)
 			.build();
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
