@@ -115,7 +115,7 @@ public class Carrier_ShipmentOrder_StepDef
 	{
 		final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
 
-		final CarrierProductId expectedProductId = row.getAsOptionalIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
+		final CarrierProductId expectedCarrierProductId = row.getAsOptionalIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
 				.map(identifier -> identifier.lookupNotNullIdIn(carrierProductTable))
 				.orElse(null);
 
@@ -141,8 +141,8 @@ public class Carrier_ShipmentOrder_StepDef
 
 			final DeliveryOrder match = deliveryOrderIds.stream()
 					.map(shipmentOrderRepository::getById)
-					.filter(order -> expectedProductId == null
-							|| CarrierProductId.equals(expectedProductId, carrierProductIdOfCso(order.getId())))
+					.filter(order -> expectedCarrierProductId == null
+							|| CarrierProductId.equals(expectedCarrierProductId, carrierProductIdOfShipmentOrder(order.getId())))
 					.findFirst()
 					.orElse(null);
 
@@ -160,7 +160,7 @@ public class Carrier_ShipmentOrder_StepDef
 		assertThat(resultHolder[0])
 				.as("Carrier_ShipmentOrder with AWB for M_InOut_ID=%s%s was not found within %ss",
 						inOutId,
-						expectedProductId != null ? " and Carrier_Product_ID=" + expectedProductId : "",
+						expectedCarrierProductId != null ? " and Carrier_Product_ID=" + expectedCarrierProductId : "",
 						timeoutSec)
 				.isNotNull();
 
@@ -178,10 +178,10 @@ public class Carrier_ShipmentOrder_StepDef
 	}
 
 	@Nullable
-	private CarrierProductId carrierProductIdOfCso(@NonNull final DeliveryOrderId deliveryOrderId)
+	private CarrierProductId carrierProductIdOfShipmentOrder(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		final I_Carrier_ShipmentOrder cso = InterfaceWrapperHelper.load(deliveryOrderId.getRepoId(), I_Carrier_ShipmentOrder.class);
-		return CarrierProductId.ofRepoIdOrNull(cso.getCarrier_Product_ID());
+		final I_Carrier_ShipmentOrder carrierShipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId.getRepoId(), I_Carrier_ShipmentOrder.class);
+		return CarrierProductId.ofRepoIdOrNull(carrierShipmentOrder.getCarrier_Product_ID());
 	}
 
 	/**
@@ -438,7 +438,7 @@ public class Carrier_ShipmentOrder_StepDef
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
-			final CarrierProductId expectedProductId = row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
+			final CarrierProductId expectedCarrierProductId = row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
 					.lookupNotNullIdIn(carrierProductTable);
 
 			final I_Carrier_ShipmentOrder_Parcel parcel = queryParcelsOfShipment(inOutId).first();
@@ -447,15 +447,15 @@ public class Carrier_ShipmentOrder_StepDef
 					.as("Carrier_ShipmentOrder_Parcel for M_InOut_ID=%s", inOutId)
 					.isNotNull();
 
-			final I_Carrier_ShipmentOrder cso = InterfaceWrapperHelper.load(
+			final I_Carrier_ShipmentOrder carrierShipmentOrder = InterfaceWrapperHelper.load(
 					parcel.getCarrier_ShipmentOrder_ID(), I_Carrier_ShipmentOrder.class);
-			assertThat(cso)
+			assertThat(carrierShipmentOrder)
 					.as("Carrier_ShipmentOrder for M_InOut_ID=%s", inOutId)
 					.isNotNull();
 
-			assertThat(CarrierProductId.ofRepoIdOrNull(cso.getCarrier_Product_ID()))
+			assertThat(CarrierProductId.ofRepoIdOrNull(carrierShipmentOrder.getCarrier_Product_ID()))
 					.as("Carrier_ShipmentOrder.Carrier_Product_ID for M_InOut_ID=%s", inOutId)
-					.isEqualTo(expectedProductId);
+					.isEqualTo(expectedCarrierProductId);
 		});
 	}
 }
