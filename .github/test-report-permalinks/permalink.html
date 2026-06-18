@@ -51,10 +51,11 @@
       var entry = Permalink.lookup(data, kind, key);
       if (!entry) { notFound(); return; }
       var suites = Permalink.suitesByCount(entry);
-      // explicit &suite= override, or a single-suite feature/spec -> go straight there
-      if (suite || suites.length === 1) {
+      // explicit &suite= override, or 0/1 suite -> go straight there (a 0-suite entry can't
+      // happen from the generator, but <=1 keeps it falling to notFound() rather than a 0-item chooser)
+      if (suite || suites.length <= 1) {
         var url = Permalink.buildRedirectUrl(data.version, kind, entry, suite);
-        if (!url) { notFound(); return; }  // e.g. an &suite= value with no tests for this key
+        if (!url) { notFound(); return; }  // e.g. an &suite= value with no tests for this key, or an empty entry
         location.replace(url);
         return;
       }

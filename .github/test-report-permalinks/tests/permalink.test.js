@@ -47,6 +47,8 @@ assert.strictEqual(by[2].suite, 'frontend-webui');     // lowest count last
 assert.strictEqual(P.suitesByCount(entry)[0].suite, 'frontend-webui'); // count 9 > 3
 assert.deepStrictEqual(P.suitesByCount({}), []);
 assert.deepStrictEqual(P.suitesByCount(null), []);
+// an empty entry resolves to no URL -> the page falls to the not-found path (never a 0-item chooser)
+assert.strictEqual(P.buildRedirectUrl('v1', 'feature', {}), null);
 // the default suite (chooseSuite) is always suitesByCount()[0]
 assert.strictEqual(P.suitesByCount(multi)[0].suite, P.chooseSuite(multi));
 
