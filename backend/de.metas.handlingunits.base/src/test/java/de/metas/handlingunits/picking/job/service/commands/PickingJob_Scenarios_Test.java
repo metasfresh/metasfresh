@@ -230,7 +230,10 @@ class PickingJob_Scenarios_Test
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711); // fake test id
 		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(4712); // fake test id
-		final String carrierServices = "PRIORITY,COD";
+		final com.google.common.collect.ImmutableSet<de.metas.inoutcandidate.CarrierServiceId> carrierServices =
+				com.google.common.collect.ImmutableSet.of(
+						de.metas.inoutcandidate.CarrierServiceId.ofRepoId(4713),
+						de.metas.inoutcandidate.CarrierServiceId.ofRepoId(4714)); // fake test ids
 
 		helper.createVHUInfo(productId, "100", "QR-VHU1");
 

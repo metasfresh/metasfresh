@@ -348,7 +348,7 @@ public class PickingJobTestHelper
 			@Nullable final UserId lockedBy,
 			@Nullable final CarrierProductId carrierProductId,
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@Nullable final String carrierServices,
+			@Nullable final java.util.Set<de.metas.inoutcandidate.CarrierServiceId> carrierServices,
 			@Nullable final String carrierAdvisingStatus,
 			final boolean assignToWorkplace)
 	{
@@ -373,7 +373,6 @@ public class PickingJobTestHelper
 		{
 			shipmentSchedule.setCarrier_Goods_Type_ID(carrierGoodsTypeId.getRepoId());
 		}
-		shipmentSchedule.setCarrier_Services(carrierServices);
 		shipmentSchedule.setCarrier_Advising_Status(carrierAdvisingStatus);
 		shipmentSchedule.setC_Order_ID(orderAndLineId.getOrderRepoId());
 		shipmentSchedule.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
@@ -381,6 +380,25 @@ public class PickingJobTestHelper
 		shipmentSchedule.setPreparationDate(Timestamp.from(dateEffective));
 		save(shipmentSchedule);
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+
+		// seed the schedule carrier-services junction so the create command can copy it onto the picking-job line
+		if (carrierServices != null)
+		{
+			for (final de.metas.inoutcandidate.CarrierServiceId carrierServiceId : carrierServices)
+			{
+				// the schedule repo collects ids by following the FK to Carrier_Service, so the master record must exist
+				final org.compiere.model.I_Carrier_Service carrierService =
+						InterfaceWrapperHelper.newInstanceOutOfTrx(org.compiere.model.I_Carrier_Service.class);
+				carrierService.setCarrier_Service_ID(carrierServiceId.getRepoId());
+				save(carrierService);
+
+				final org.compiere.model.I_M_ShipmentSchedule_Carrier_Service assignment =
+						InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_ShipmentSchedule_Carrier_Service.class);
+				assignment.setM_ShipmentSchedule_ID(shipmentScheduleId.getRepoId());
+				assignment.setCarrier_Service_ID(carrierServiceId.getRepoId());
+				save(assignment);
+			}
+		}
 
 		if (assignToWorkplace)
 		{

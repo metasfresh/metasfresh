@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -167,7 +168,9 @@ class PickingJobRepositoryTest
 	{
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711);
 		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(8150);
-		final String carrierServices = "SVC1,SVC2";
+		final ImmutableSet<CarrierServiceId> carrierServices = ImmutableSet.of(
+				CarrierServiceId.ofRepoId(8151),
+				CarrierServiceId.ofRepoId(8152));
 
 		final PickingJob jobToSave = createSampleJob()
 				.withCarrierProductId(carrierProductId)

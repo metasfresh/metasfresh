@@ -31,6 +31,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       {
         "caption": "productName-6",
         "carrierAdviseReadOnly": false,
+        "carrierServices": [ ],
         "currentPickingTarget": { },
         "deliveryBPLocationId": {
           "bpartnerId": 3,
