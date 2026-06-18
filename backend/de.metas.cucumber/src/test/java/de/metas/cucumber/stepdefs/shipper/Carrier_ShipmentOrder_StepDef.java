@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.shipper;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -35,6 +36,7 @@ import de.metas.shipper.gateway.spi.model.ContactPerson;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderItem;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderParcel;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -44,6 +46,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_Carrier_ShipmentOrder;
 import org.compiere.model.I_Carrier_ShipmentOrder_Item;
 import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
@@ -119,23 +122,17 @@ public class Carrier_ShipmentOrder_StepDef
 		final DeliveryOrder[] resultHolder = new DeliveryOrder[1];
 
 		final Supplier<Boolean> foundWithAwb = () -> {
-			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
-					.createQueryBuilder(I_M_Package.class)
-					.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
-					.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
-					.create()
-					.list();
+			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryParcelsOfShipment(inOutId).list();
 
 			if (parcels.isEmpty())
 			{
 				return false;
 			}
 
-			final List<DeliveryOrderId> deliveryOrderIds = parcels.stream()
-					.filter(p -> p.getawb() != null && !p.getawb().isEmpty())
-					.map(p -> DeliveryOrderId.ofRepoId(p.getCarrier_ShipmentOrder_ID()))
-					.distinct()
-					.collect(Collectors.toList());
+			final ImmutableSet<DeliveryOrderId> deliveryOrderIds = parcels.stream()
+					.filter(parcel -> Check.isNotBlank(parcel.getawb()))
+					.map(parcel -> DeliveryOrderId.ofRepoId(parcel.getCarrier_ShipmentOrder_ID()))
+					.collect(ImmutableSet.toImmutableSet());
 
 			if (deliveryOrderIds.isEmpty())
 			{
@@ -145,7 +142,7 @@ public class Carrier_ShipmentOrder_StepDef
 			final DeliveryOrder match = deliveryOrderIds.stream()
 					.map(shipmentOrderRepository::getById)
 					.filter(order -> expectedProductId == null
-							|| expectedProductId.equals(carrierProductIdOfCso(order.getId())))
+							|| CarrierProductId.equals(expectedProductId, carrierProductIdOfCso(order.getId())))
 					.findFirst()
 					.orElse(null);
 
@@ -168,6 +165,16 @@ public class Carrier_ShipmentOrder_StepDef
 				.isNotNull();
 
 		carrierShipmentOrderTable.put(row.getAsIdentifier(), resultHolder[0]);
+	}
+
+	/** All {@link I_Carrier_ShipmentOrder_Parcel}s reachable from the given shipment's {@link I_M_Package}s. */
+	private IQuery<I_Carrier_ShipmentOrder_Parcel> queryParcelsOfShipment(@NonNull final InOutId inOutId)
+	{
+		return queryBL
+				.createQueryBuilder(I_M_Package.class)
+				.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
+				.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
+				.create();
 	}
 
 	@Nullable
@@ -434,12 +441,7 @@ public class Carrier_ShipmentOrder_StepDef
 			final CarrierProductId expectedProductId = row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
 					.lookupNotNullIdIn(carrierProductTable);
 
-			final I_Carrier_ShipmentOrder_Parcel parcel = queryBL
-					.createQueryBuilder(I_M_Package.class)
-					.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
-					.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
-					.create()
-					.first();
+			final I_Carrier_ShipmentOrder_Parcel parcel = queryParcelsOfShipment(inOutId).first();
 
 			assertThat(parcel)
 					.as("Carrier_ShipmentOrder_Parcel for M_InOut_ID=%s", inOutId)

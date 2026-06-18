@@ -34,11 +34,9 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.compiere.util.Env;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -57,14 +55,13 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.catchThrowable;
 
 @RequiredArgsConstructor
 public class MobileUI_Picking_StepDef
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	@NonNull private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	@NonNull private final MobileUIPickingClient mobileUIPickingClient = new MobileUIPickingClient();
 
@@ -287,7 +284,8 @@ public class MobileUI_Picking_StepDef
 
 	/**
 	 * Attempts to complete the current picking job and asserts that it is rejected with the given AD_Message key.
-	 * The exception message is resolved via {@link IMsgBL} so the assertion is robust to translation changes.
+	 * The assertion verifies the thrown exception's AD_Message <em>key</em> (not its rendered text), so it is
+	 * robust to both translation and message-text changes.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -303,17 +301,20 @@ public class MobileUI_Picking_StepDef
 	{
 		waitUntilPickingJobSchedulesValid();
 		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
-		// The raw message template carries a "{0}" placeholder for the HU id; the thrown exception has it
-		// substituted, so assert on the stable text following the placeholder (still uniquely identifies the message).
-		final String expectedMessageTemplate = msgBL.getMsg(Env.getCtx(), expectedMessageKey);
-		final int placeholderEnd = expectedMessageTemplate.indexOf("{0}");
-		final String expectedStableText = placeholderEnd >= 0
-				? expectedMessageTemplate.substring(placeholderEnd + "{0}".length())
-				: expectedMessageTemplate;
-		assertThatThrownBy(() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()))
-				.as("Picking job completion must be rejected with AD_Message %s", adMessageKey)
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining(expectedStableText);
+
+		final Throwable thrown = catchThrowable(
+				() -> mobileUIPickingClient.complete(context.getWfProcessIdNotNull()));
+
+		assertThat(thrown)
+				.as("Picking job completion must be rejected")
+				.isInstanceOf(AdempiereException.class);
+
+		// Assert on the AD_Message KEY carried by the exception (robust to text/translation changes),
+		// rather than on the rendered message text.
+		final Optional<AdMessageKey> actualMessageKey = AdempiereException.extractMessageTrl(thrown).getAdMessageKey();
+		assertThat(actualMessageKey)
+				.as("Picking job rejection must carry AD_Message key %s", adMessageKey)
+				.contains(expectedMessageKey);
 	}
 
 	/**

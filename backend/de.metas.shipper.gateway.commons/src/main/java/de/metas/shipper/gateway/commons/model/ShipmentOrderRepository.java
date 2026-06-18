@@ -83,9 +83,10 @@ public class ShipmentOrderRepository
 	@NonNull private final CarrierGoodsTypeRepository goodsTypeRepository;
 	@NonNull private final CarrierShipmentOrderServiceRepository carrierServiceRepository;
 
+	@NonNull
 	public DeliveryOrder getById(@NonNull final DeliveryOrderId deliveryOrderId)
 	{
-		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId, I_Carrier_ShipmentOrder.class);
+		final I_Carrier_ShipmentOrder shipmentOrder = InterfaceWrapperHelper.loadNotNull(deliveryOrderId, I_Carrier_ShipmentOrder.class);
 
 		final ImmutableListMultimap<DeliveryOrderParcelId, DeliveryOrderItem> parcelIdToItems = queryBL.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
 				.addEqualsFilter(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID, deliveryOrderId)
