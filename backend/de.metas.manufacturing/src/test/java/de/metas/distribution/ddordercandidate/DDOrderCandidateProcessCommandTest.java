@@ -38,6 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -135,7 +136,7 @@ class DDOrderCandidateProcessCommandTest
 		assertThatCode(command::execute).doesNotThrowAnyException();
 
 		// productPlanningDAO must not be queried at all when there is no product planning
-		verify(productPlanningDAO, org.mockito.Mockito.never()).getById(any());
+		verify(productPlanningDAO, never()).getById(any());
 
 		final I_DD_Order header = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_DD_Order.class)
