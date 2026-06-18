@@ -44,7 +44,6 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
-import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -142,7 +141,6 @@ public class C_OrderLine_StepDef
 	@NonNull private final M_Attribute_StepDefData attributeTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
-	@NonNull private final M_Shipper_StepDefData shipperTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
 	@NonNull private final C_Project_StepDefData projectTable;
@@ -227,10 +225,6 @@ public class C_OrderLine_StepDef
 
 			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		}
-
-		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_Shipper_ID)
-				.map(shipperTable::getId)
-				.ifPresent(shipperId -> orderLine.setM_Shipper_ID(shipperId.getRepoId()));
 
 		final String uomX12DE355 = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_ID + "." + I_C_UOM.COLUMNNAME_X12DE355);
 		if (Check.isNotBlank(uomX12DE355))

@@ -130,7 +130,7 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	/**
-	 * Mocks a shipment schedule. After T4 the schedule is only the advise-enabled GATE: the service reads
+	 * Mocks a shipment schedule. The schedule is only the advise-enabled GATE: the service reads
 	 * its {@code shipperId} (to resolve the shipper's {@code isApiCarrierAdvise()}) and its id (to match the
 	 * picking-job line). The carrier VALUES + manual flag are read from the line, NOT from the schedule.
 	 */
@@ -182,9 +182,7 @@ class CarrierAdviseConsistencyServiceTest
 			final AdMessageKey expectedKey)
 	{
 		assertThatThrownBy(code)
-				.isInstanceOf(AdempiereException.class)
-				.satisfies(ex -> {
-					final AdempiereException adEx = (AdempiereException)ex;
+				.isInstanceOfSatisfying(AdempiereException.class, adEx -> {
 					assertThat(adEx.getErrorCode())
 							.as("exception must carry expected AD_Message key as error code")
 							.isEqualTo(expectedKey.toAD_Message());
@@ -195,7 +193,7 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	// --------------------------------------------------
-	// (T4 RED) line is the source of truth: schedules AGREE on product, lines DIVERGE → E2
+	// Line-centric (not schedule-centric): schedules AGREE on product, lines DIVERGE → E2
 	//
 	// This is the central proof that the consistency check now reads the LINE, not the schedule.
 	// The two non-manual schedules carry no carrier values at all (they are only the advise-enabled
@@ -224,7 +222,7 @@ class CarrierAdviseConsistencyServiceTest
 	// ONE advise-enabled schedule backs TWO picking-job lines that DIVERGE on carrier product.
 	//
 	// A single shipment schedule can back N picking-job lines (N picking-job-schedules), each independently
-	// re-advised at packing → they can carry divergent carriers. The pre-T9 first-wins map kept only ONE line
+	// re-advised at packing → they can carry divergent carriers. A first-wins map would keep only ONE line
 	// per schedule, silently dropping the divergent sibling → no divergence detected → NO throw. Line-centric
 	// code (ListMultimap) keeps BOTH lines → distinct products > 1 → throws NonManualDivergentOnHU.
 	// IsSelectionRules='N' (rules OFF, the default stub) so E2 is active.
@@ -247,10 +245,9 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	// --------------------------------------------------
-	// (E3 dropped) The "multiple advise-enabled shippers on one HU" check (MSG_MultipleShippersOnHU)
-	// was removed in T4: the shipper is legitimately header-level and multiple advise-enabled shippers
-	// on a single picked HU is not a real case to guard against. There is intentionally NO replacement
-	// assertion for it.
+	// The "multiple advise-enabled shippers on one HU" check (MSG_MultipleShippersOnHU) was removed:
+	// the shipper is legitimately header-level and multiple advise-enabled shippers on a single picked
+	// HU is not a real case to guard against. There is intentionally NO replacement assertion for it.
 	// --------------------------------------------------
 
 	// --------------------------------------------------
@@ -383,8 +380,8 @@ class CarrierAdviseConsistencyServiceTest
 	//
 	// With selection rules ON (the column default; also the no-config case), nShift resolves the carrier via its
 	// rules and a re-advise harmonises it, so divergent carrier products on one HU are NOT a completion blocker —
-	// the job completes silently. This is the RED case: current (pre-gate) code throws unconditionally regardless
-	// of the flag.
+	// the job completes silently. Without the IsSelectionRules gate, divergent non-manual products would throw
+	// unconditionally regardless of the flag.
 	// --------------------------------------------------
 
 	@Test

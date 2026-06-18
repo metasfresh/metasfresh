@@ -214,9 +214,17 @@ public class CarrierAdviseConsistencyService
 
 	/**
 	 * True if at least one of the given advise-enabled schedules has a shipper with selection rules ON
-	 * ({@code Carrier_Config.IsSelectionRules='Y'} / no config row → default 'Y'). One shipper per HU is the
-	 * norm post-E3; with selection rules ON nShift auto-resolves the carrier, so the E2 divergence check is
-	 * skipped. Schedules carry a non-null shipper id here (they passed {@link #isAdviseEnabled}).
+	 * ({@code Carrier_Config.IsSelectionRules='Y'} / no config row → default 'Y'). With selection rules ON
+	 * nShift auto-resolves the carrier, so the E2 divergence check is skipped.
+	 * <p>
+	 * One shipper per HU is the norm: the shipper is header-level, so all schedules of one order share it,
+	 * and that is the only path that packs schedules onto a shared HU today. The {@code anyMatch} (rather than
+	 * {@code allMatch}) semantics are deliberate, not incidental: a HU carrying schedules of two shippers — one
+	 * rules-OFF, one rules-ON — is intentionally allowed to complete silently (the multi-shipper-on-HU block,
+	 * "E3", was removed by explicit product decision, on the rationale that nShift's selection rules plus the
+	 * packing re-advise resolve the carrier). "Any shipper resolves via rules ⇒ let the HU complete" is exactly
+	 * that decision; do not tighten to {@code allMatch} without revisiting it. Schedules carry a non-null shipper
+	 * id here (they passed {@link #isAdviseEnabled}).
 	 */
 	private boolean anyShipperHasSelectionRulesOn(@NonNull final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules)
 	{
