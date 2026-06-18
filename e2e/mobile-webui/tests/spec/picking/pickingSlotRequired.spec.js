@@ -75,12 +75,19 @@ test('Pick without a picking slot when picking slot is not required', async ({ p
         await PickingJobScreen.expectPickingSlotButtonNotVisible();
     });
 
-    await test.step("Pick the line directly, without a picking slot", async () => {
+    await test.step("Pick the line, without a picking slot", async () => {
+        // HU1 holds 1000 but the line only needs 11, so picking opens the quantity
+        // dialog pre-filled with the to-pick qty (this is NOT a pick-directly case).
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU1.qrCode,
-            expectedPickDirectly: true,
-            expectNextScreen: 'PickingJobsListScreen',
+            expectQtyEntered: 11,
         });
+    });
+
+    await test.step("Complete the job and return to the jobs list", async () => {
+        // No completeJobAutomatically => the operator completes the job explicitly,
+        // which lands back on the jobs list.
+        await PickingJobScreen.complete();
         await PickingJobsListScreen.waitForScreen();
     });
 
