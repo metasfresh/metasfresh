@@ -2,7 +2,7 @@
 
 -- Table: AD_ChangeLog_Config
 -- 2025-02-04T15:02:59.269Z
-INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength) VALUES ('4',0,0,0,542463,'N',TO_TIMESTAMP('2025-02-04 16:02:59.014','YYYY-MM-DD HH24:MI:SS.US'),100,'D','N','Y','N','Y','Y','N','N','N','N','N',0,'Einstellungen für Änderungs Historie','NP','L','AD_ChangeLog_Config','DTI',TO_TIMESTAMP('2025-02-04 16:02:59.014','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CopyColumnsFromTable,Created,CreatedBy,EntityType,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy) VALUES ('4',0,0,0,542463,'N',TO_TIMESTAMP('2025-02-04 16:02:59.014','YYYY-MM-DD HH24:MI:SS.US'),100,'D','N','Y','N','Y','Y','N','N','N','N','N',0,'Einstellungen für Änderungs Historie','NP','L','AD_ChangeLog_Config','DTI',TO_TIMESTAMP('2025-02-04 16:02:59.014','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
 -- 2025-02-04T15:02:59.280Z
