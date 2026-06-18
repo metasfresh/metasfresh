@@ -1,5 +1,6 @@
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
@@ -78,8 +79,8 @@ class CarrierAdviseConsistencyServiceTest
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
 
-		// by default: getById(HU_ID_1) → topLevelHU, top-level parent = itself
-		when(handlingUnitsDAO.getById(HU_ID_1)).thenReturn(topLevelHU);
+		// by default: getByIds([HU_ID_1]) → topLevelHU, top-level parent = itself
+		when(handlingUnitsDAO.getByIds(ImmutableSet.of(HU_ID_1))).thenReturn(ImmutableList.of(topLevelHU));
 		when(handlingUnitsBL.getTopLevelParentAsLUTUCUPair(topLevelHU))
 				.thenReturn(LUTUCUPair.ofLU(topLevelHU));
 	}

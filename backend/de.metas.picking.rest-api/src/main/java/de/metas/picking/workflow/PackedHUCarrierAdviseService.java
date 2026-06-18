@@ -157,7 +157,7 @@ public class PackedHUCarrierAdviseService
 	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
 	 * must never be overwritten, neither on the schedule nor on the picking job line).
 	 * <p>
-	 * Top-level resolution (getById → getTopLevelParentAsLUTUCUPair → getTopLevelHU) and
+	 * Top-level resolution (getByIds → getTopLevelParentAsLUTUCUPair → getTopLevelHU) and
 	 * deduplication by HuId must be kept in sync with
 	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob}.
 	 *
@@ -176,8 +176,7 @@ public class PackedHUCarrierAdviseService
 		// Resolve to top-level HUs and deduplicate by HuId
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
 		// Keep in sync with CarrierAdviseConsistencyService#assertConsistentForJob
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = pickedHuIds.stream()
-				.map(handlingUnitsDAO::getById)
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsDAO.getByIds(pickedHuIds).stream()
 				.map(hu -> handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
 				.collect(ImmutableMap.toImmutableMap(
 						hu -> HuId.ofRepoId(hu.getM_HU_ID()),

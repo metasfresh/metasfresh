@@ -75,8 +75,7 @@ public class CarrierAdviseConsistencyService
 
 		// resolve to top-level HUs and deduplicate by HuId
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = pickedHuIds.stream()
-				.map(handlingUnitsDAO::getById)
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsDAO.getByIds(pickedHuIds).stream()
 				.map(hu -> handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
 				.collect(ImmutableMap.toImmutableMap(
 						hu -> HuId.ofRepoId(hu.getM_HU_ID()),
