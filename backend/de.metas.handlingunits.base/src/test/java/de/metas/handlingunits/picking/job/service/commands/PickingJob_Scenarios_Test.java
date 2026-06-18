@@ -24,6 +24,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -206,6 +207,49 @@ class PickingJob_Scenarios_Test
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU()).isEqualTo(vhu1);
 			assertThat(pickingJob.getStepById(stepId).getPickFrom(PickingJobStepPickFromKey.MAIN).getPickedTo()).isNull();
 		}
+	}
+
+	@Test
+	void createPickingJob_seedsLineCarrierProductFromShipmentSchedule_withPickingPlan()
+	{
+		// isAllowPickingAnyHU=false routes through createLineRequest_WithPickingPlan
+		assertSeedsLineCarrierProductFromShipmentSchedule(false);
+	}
+
+	@Test
+	void createPickingJob_seedsLineCarrierProductFromShipmentSchedule_noPickingPlan()
+	{
+		// isAllowPickingAnyHU=true routes through createLineRequest_NoPickingPlan
+		assertSeedsLineCarrierProductFromShipmentSchedule(true);
+	}
+
+	private void assertSeedsLineCarrierProductFromShipmentSchedule(final boolean isAllowPickingAnyHU)
+	{
+		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711); // fake test id
+
+		helper.createVHUInfo(productId, "100", "QR-VHU1");
+
+		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrderCarrier");
+		helper.packageable()
+				.orderAndLineId(orderAndLineId)
+				.productId(productId)
+				.qtyToDeliver("100")
+				.carrierProductId(carrierProductId)
+				.build();
+
+		final PickingJob pickingJob = helper.pickingJobService.createPickingJob(
+				PickingJobCreateRequest.builder()
+						.aggregationType(PickingJobAggregationType.SALES_ORDER)
+						.pickerId(UserId.ofRepoId(1234))
+						.salesOrderId(orderAndLineId.getOrderId())
+						.deliveryBPLocationId(helper.shipToBPLocationId)
+						.isAllowPickingAnyHU(isAllowPickingAnyHU)
+						.build());
+
+		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+		assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+		assertThat(line.isCarrierAdviseReadOnly()).isFalse();
 	}
 
 	@Nested

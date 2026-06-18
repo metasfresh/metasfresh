@@ -40,6 +40,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import lombok.Builder;
@@ -265,6 +266,19 @@ public class PickingJobCreateCommand
 		}
 	}
 
+	@Nullable
+	private CarrierProductId getCarrierProductId(@NonNull final ScheduledPackageableList items)
+	{
+		final ShipmentScheduleAndJobScheduleId scheduleId = items.getSingleScheduleIdIfUnique().orElse(null);
+		if (scheduleId == null)
+		{
+			return null;
+		}
+
+		return CarrierProductId.ofRepoIdOrNull(
+				shipmentScheduleService.getByIdAsRecord(scheduleId.getShipmentScheduleId()).getCarrier_Product_ID());
+	}
+
 	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull ScheduledPackageableList items)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
@@ -293,6 +307,7 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElse(null))
+				.carrierProductId(getCarrierProductId(items))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
 						.map(planLine -> createStepRequest(planLine, allowedReservedVhuIds))
@@ -304,7 +319,7 @@ public class PickingJobCreateCommand
 				.build();
 	}
 
-	private static PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull ScheduledPackageableList items)
+	private PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull ScheduledPackageableList items)
 	{
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
@@ -313,6 +328,7 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No single schedule found for " + items)))
+				.carrierProductId(getCarrierProductId(items))
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();

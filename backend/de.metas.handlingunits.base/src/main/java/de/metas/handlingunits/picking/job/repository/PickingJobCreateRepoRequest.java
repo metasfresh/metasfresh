@@ -14,6 +14,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import lombok.Builder;
@@ -56,6 +57,7 @@ public class PickingJobCreateRepoRequest
 		@NonNull OrderAndLineId salesOrderAndLineId;
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@Nullable ShipmentScheduleAndJobScheduleId scheduleId;
+		@Nullable CarrierProductId carrierProductId;
 		@Nullable UomId catchWeightUomId;
 		@Nullable PPOrderId pickFromManufacturingOrderId;
 		@Singular @NonNull ImmutableList<Step> steps;

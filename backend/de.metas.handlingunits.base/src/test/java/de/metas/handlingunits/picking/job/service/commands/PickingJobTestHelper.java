@@ -83,6 +83,7 @@ import de.metas.picking.model.I_M_Picking_Config_V2;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.test.MetasfreshSnapshotFunction;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -344,6 +345,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
+			@Nullable final CarrierProductId carrierProductId,
 			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
@@ -359,6 +361,10 @@ public class PickingJobTestHelper
 		shipmentSchedule.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(huPIItemProductId));
 		shipmentSchedule.setQtyOrdered(qtyToDeliverBD);
 		shipmentSchedule.setQtyToDeliver(qtyToDeliverBD);
+		if (carrierProductId != null)
+		{
+			shipmentSchedule.setCarrier_Product_ID(carrierProductId.getRepoId());
+		}
 		shipmentSchedule.setC_Order_ID(orderAndLineId.getOrderRepoId());
 		shipmentSchedule.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
 		shipmentSchedule.setDeliveryDate(Timestamp.from(dateEffective));
