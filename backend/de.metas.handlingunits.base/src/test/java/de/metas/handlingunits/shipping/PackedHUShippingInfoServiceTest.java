@@ -6,6 +6,7 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.uom.X12DE355;
 import de.metas.util.collections.CollectionUtils;
@@ -119,5 +120,42 @@ public class PackedHUShippingInfoServiceTest
 		final PackedHUShippingInfo info = service.of(cu);
 
 		assertThat(info.getTopLevelType()).isEqualTo(HuUnitType.VHU);
+	}
+
+	@Test
+	public void getProductItems_multiProduct()
+	{
+		// A virtual HU has unlimited capacity (ofVirtualPI → maxHUsToCreate=1), so loading two
+		// products into the same producer puts both into ONE top-level HU's storage.
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		producer.setLocatorId(data.defaultLocatorId);
+
+		data.helper.load(producer, data.helper.pTomatoProductId, new BigDecimal("20"), data.helper.uomKg);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("3"), data.helper.uomEach);
+
+		final List<I_M_HU> createdHUs = producer.getCreatedHUs();
+		assertThat(createdHUs).hasSize(1);
+		final I_M_HU hu = createdHUs.get(0);
+
+		final List<PackedHUProductItem> items = service.getProductItems(hu);
+
+		assertThat(items).hasSize(2);
+		assertThat(items)
+				.extracting(PackedHUProductItem::getProductId)
+				.containsExactlyInAnyOrder(data.helper.pTomatoProductId, data.helper.pSaladProductId);
+
+		final PackedHUProductItem tomato = findItem(items, data.helper.pTomatoProductId);
+		assertThat(tomato.getQty().toBigDecimal()).isEqualByComparingTo("20");
+
+		final PackedHUProductItem salad = findItem(items, data.helper.pSaladProductId);
+		assertThat(salad.getQty().toBigDecimal()).isEqualByComparingTo("3");
+	}
+
+	private static PackedHUProductItem findItem(final List<PackedHUProductItem> items, final ProductId productId)
+	{
+		return items.stream()
+				.filter(item -> productId.equals(item.getProductId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("No item for product " + productId));
 	}
 }
