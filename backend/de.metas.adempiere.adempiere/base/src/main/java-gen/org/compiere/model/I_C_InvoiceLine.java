@@ -93,33 +93,6 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_A_CapvsExp = "A_CapvsExp";
 
 	/**
-	 * Set Account.
-	 * Account used
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAccount_ID (int Account_ID);
-
-	/**
-	 * Get Account.
-	 * Account used
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAccount_ID();
-
-	@Nullable org.compiere.model.I_C_ElementValue getAccount();
-
-	void setAccount(@Nullable org.compiere.model.I_C_ElementValue Account);
-
-	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new ModelColumn<>(I_C_InvoiceLine.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
-	String COLUMNNAME_Account_ID = "Account_ID";
-
-	/**
 	 * Set Create Asset.
 	 *
 	 * <br>Type: YesNo

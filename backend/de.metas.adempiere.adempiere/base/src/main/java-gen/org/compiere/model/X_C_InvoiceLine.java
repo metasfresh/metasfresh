@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1487975181L;
+	private static final long serialVersionUID = -2112206447L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -108,33 +108,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public java.lang.String getA_CapvsExp() 
 	{
 		return get_ValueAsString(COLUMNNAME_A_CapvsExp);
-	}
-
-	@Override
-	public org.compiere.model.I_C_ElementValue getAccount()
-	{
-		return get_ValueAsPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class);
-	}
-
-	@Override
-	public void setAccount(final org.compiere.model.I_C_ElementValue Account)
-	{
-		set_ValueFromPO(COLUMNNAME_Account_ID, org.compiere.model.I_C_ElementValue.class, Account);
-	}
-
-	@Override
-	public void setAccount_ID (final int Account_ID)
-	{
-		if (Account_ID < 1) 
-			set_Value (COLUMNNAME_Account_ID, null);
-		else 
-			set_Value (COLUMNNAME_Account_ID, Account_ID);
-	}
-
-	@Override
-	public int getAccount_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Account_ID);
 	}
 
 	@Override
