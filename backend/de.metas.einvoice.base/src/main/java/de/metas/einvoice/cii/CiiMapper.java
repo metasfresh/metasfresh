@@ -57,13 +57,13 @@ public class CiiMapper
 			"urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931";
 	private static final String GUIDELINE_ID_XRECHNUNG =
 			"urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0";
+	/** Peppol BIS Billing 3.0 — European profile. */
 	private static final String GUIDELINE_ID_PEPPOL =
-			"urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:international:aunz:3.0";
+			"urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0";
 
 	/** CII date format code for yyyyMMdd (UNCL2379 code 102). */
 	private static final String DATE_FORMAT_102 = "102";
 
-	// Service fields — declared at class level per metasfresh convention
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@NonNull

@@ -146,7 +146,7 @@ public class CiiMapperTest
 
 		// === Marshal to XML ===
 		final JAXBContext ctx = JAXBContext.newInstance(CrossIndustryInvoiceType.class,
-				de.metas.einvoice.cii.model.ObjectFactory.class);
+				ObjectFactory.class);
 		final Marshaller marshaller = ctx.createMarshaller();
 		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 
@@ -167,6 +167,12 @@ public class CiiMapperTest
 		ns.put("qdt", "urn:un:unece:uncefact:data:standard:QualifiedDataType:100");
 
 		final XmlAssert xmlAssert = XmlAssert.assertThat(xml).withNamespaceContext(ns);
+
+		// Guideline ID (ZUGFeRD / Factur-X EN 16931 profile)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:ExchangedDocumentContext"
+								+ "/ram:GuidelineSpecifiedDocumentContextParameter/ram:ID")
+				.isEqualTo("urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931");
 
 		// BT-1 Invoice number
 		xmlAssert.valueByXPath(
@@ -218,10 +224,31 @@ public class CiiMapperTest
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:CountryID")
 				.isEqualTo("DE");
 
-		// Seller VAT id (BT-31)
+		// Seller postal code (BT-38)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:PostalTradeAddress/ram:PostcodeCode")
+				.isEqualTo("10115");
+
+		// Seller electronic address (BT-34, scheme EM)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:URIUniversalCommunication/ram:URIID")
+				.isEqualTo("invoice@muster.de");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:URIUniversalCommunication/ram:URIID/@schemeID")
+				.isEqualTo("EM");
+
+		// Seller legal registration (BT-30)
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID")
+				.isEqualTo("HRB 12345");
+
+		// Seller VAT id (BT-31) — value and scheme
 		xmlAssert.valueByXPath(
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID")
 				.isEqualTo("DE123456789");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID/@schemeID")
+				.isEqualTo("VA");
 
 		// Buyer name (BT-44)
 		xmlAssert.valueByXPath(
