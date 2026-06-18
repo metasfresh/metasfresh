@@ -21,6 +21,7 @@ public class EInvoiceConfigService
 	public Optional<EInvoiceRecipientConfig> resolveForInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		// I_C_Invoice has no getBill_BPartner_ID(); C_BPartner_ID is the bill partner on standard invoices
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 
 		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);

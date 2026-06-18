@@ -19,6 +19,20 @@ public class EInvoiceConfigServiceTest
 {
 	private EInvoiceConfigService service;
 
+	@Test
+	public void eInvoiceFormat_optionalOfCode_knownCode_returnsPresent()
+	{
+		assertThat(EInvoiceFormat.optionalOfCode("Z")).isPresent().contains(EInvoiceFormat.ZUGFeRD);
+		assertThat(EInvoiceFormat.optionalOfCode("X")).isPresent().contains(EInvoiceFormat.XRECHNUNG);
+		assertThat(EInvoiceFormat.optionalOfCode("P")).isPresent().contains(EInvoiceFormat.PEPPOL);
+	}
+
+	@Test
+	public void eInvoiceFormat_optionalOfCode_nullCode_returnsEmpty()
+	{
+		assertThat(EInvoiceFormat.optionalOfCode(null)).isEmpty();
+	}
+
 	@BeforeEach
 	public void init()
 	{

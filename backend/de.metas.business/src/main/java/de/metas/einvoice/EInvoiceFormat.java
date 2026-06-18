@@ -9,6 +9,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 public enum EInvoiceFormat implements ReferenceListAwareEnum
@@ -31,6 +32,11 @@ public enum EInvoiceFormat implements ReferenceListAwareEnum
 	public static EInvoiceFormat ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
+	}
+
+	public static Optional<EInvoiceFormat> optionalOfCode(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	@JsonValue
