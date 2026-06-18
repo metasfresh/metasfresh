@@ -7,6 +7,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
@@ -27,13 +28,14 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * Validates that the carrier-advise attributes are consistent across all shipment schedules
  * linked to each packed top-level HU in a picking job.
  *
  * <p>Raises a user-visible {@link AdempiereException} when an inconsistency is detected
- * (e.g. multiple shippers, mixed manual/non-manual, divergent product or goods-type).
+ * (e.g. mixed manual/non-manual, or divergent carrier product or goods-type across lines on the same HU).
  */
 @Service
 @RequiredArgsConstructor
@@ -43,8 +45,6 @@ public class CarrierAdviseConsistencyService
 			AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU");
 	private static final AdMessageKey MSG_NonManualDivergentOnHU =
 			AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU");
-	private static final AdMessageKey MSG_MultipleShippersOnHU =
-			AdMessageKey.of("de.metas.picking.CarrierAdvise_MultipleShippersOnHU");
 
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ShipperRepository shipperRepository;
@@ -71,16 +71,31 @@ public class CarrierAdviseConsistencyService
 			return;
 		}
 
+		// The picking-job LINE is the carrier-advise source of truth: the carrier VALUES + manual flag
+		// are read from the line (matched to a schedule by ShipmentScheduleId), not from the schedule.
+		final ImmutableMap<ShipmentScheduleId, PickingJobLine> linesByScheduleId = pickingJob.streamLines()
+				.collect(ImmutableMap.toImmutableMap(
+						line -> line.getScheduleId().getShipmentScheduleId(),
+						Function.identity(),
+						// First-wins is safe ONLY while there is at most one picking-job line per shipment schedule
+						// (today's reality). me03 #30350 T9 will enable N picking-job-schedules (lines) per shipment
+						// schedule — each independently re-advised at packing, so they CAN diverge — at which point this
+						// consistency check must become line-centric (group all advised lines per top-level HU) rather
+						// than collapsing to one line per schedule.
+						(first, second) -> first));
+
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
 		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
 
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{
-			assertConsistentForHU(topLevelHU);
+			assertConsistentForHU(topLevelHU, linesByScheduleId);
 		}
 	}
 
-	private void assertConsistentForHU(@NonNull final I_M_HU topLevelHU)
+	private void assertConsistentForHU(
+			@NonNull final I_M_HU topLevelHU,
+			@NonNull final Map<ShipmentScheduleId, PickingJobLine> linesByScheduleId)
 	{
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
 				huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
@@ -89,6 +104,7 @@ public class CarrierAdviseConsistencyService
 			return;
 		}
 
+		// The advise-enabled GATE stays schedule/shipper-based: the shipper is legitimately header-level.
 		// collect shipper IDs from all schedules (null shipper IDs filtered out)
 		final ImmutableSet<ShipperId> allShipperIds = schedulesById.values().stream()
 				.map(ShipmentSchedule::getShipperId)
@@ -97,33 +113,26 @@ public class CarrierAdviseConsistencyService
 
 		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(allShipperIds);
 
-		// restrict to advise-enabled schedules
-		final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
+		// restrict to advise-enabled schedules that have a corresponding line in this job; read each
+		// schedule's carrier VALUES + manual flag from its picking-job LINE. A schedule with no line in
+		// this job is not part of this job's picked state, so it is skipped.
+		final ImmutableSet<PickingJobLine> adviseEnabledLines = schedulesById.values().stream()
 				.filter(s -> isAdviseEnabled(s, shippersById))
+				.map(s -> linesByScheduleId.get(s.getId()))
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (adviseEnabledSchedules.isEmpty())
+		if (adviseEnabledLines.isEmpty())
 		{
 			return;
 		}
 
 		final HuId huId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
 
-		// (E3) all advise-enabled schedules must belong to the same shipper
-		final ImmutableSet<ShipperId> adviseShipperIds = adviseEnabledSchedules.stream()
-				.map(ShipmentSchedule::getShipperId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (adviseShipperIds.size() > 1)
-		{
-			throw new AdempiereException(MSG_MultipleShippersOnHU, huId.getRepoId())
-					.markAsUserValidationError();
-		}
-
-		final boolean anyManual = adviseEnabledSchedules.stream()
-				.anyMatch(s -> s.getCarrierAdvisingStatus().isManual());
-		final boolean anyNonManual = adviseEnabledSchedules.stream()
-				.anyMatch(s -> !s.getCarrierAdvisingStatus().isManual());
+		final boolean anyManual = adviseEnabledLines.stream()
+				.anyMatch(PickingJobLine::isManual);
+		final boolean anyNonManual = adviseEnabledLines.stream()
+				.anyMatch(line -> !line.isManual());
 
 		// (E1) mix of manual + non-manual
 		if (anyManual && anyNonManual)
@@ -135,7 +144,7 @@ public class CarrierAdviseConsistencyService
 		if (anyManual)
 		{
 			// (E1) all manual: all must share identical (CarrierProductId, CarrierGoodsTypeId, CarrierServiceIds)
-			final ImmutableSet<ManualAdviseKey> manualKeys = adviseEnabledSchedules.stream()
+			final ImmutableSet<ManualAdviseKey> manualKeys = adviseEnabledLines.stream()
 					.map(CarrierAdviseConsistencyService::toManualAdviseKey)
 					.collect(ImmutableSet.toImmutableSet());
 			if (manualKeys.size() > 1)
@@ -147,13 +156,13 @@ public class CarrierAdviseConsistencyService
 		else
 		{
 			// (E2) all non-manual: check for divergent CarrierProductId or CarrierGoodsTypeId.
-			// A carrier product/goods-type is set whenever the shipper is set; it is null only when
-			// advise failed (the QtyToDeliver=0 case never reaches here — it has no picked records).
-			// Counting distinct values including null routes a failed-advise schedule (null vs a set
+			// A carrier product/goods-type is set whenever advise succeeded; it is null when advise failed
+			// (the QtyToDeliver=0 case never reaches here — it has no picked records).
+			// Counting distinct values including null routes a failed-advise line (null vs a set
 			// product on the same HU) to E2, which the picker resolves with re-advise.
 			// Stream.distinct() tolerates null, unlike ImmutableSet.toImmutableSet().
-			final long distinctProductIds = adviseEnabledSchedules.stream()
-					.map(ShipmentSchedule::getCarrierProductId)
+			final long distinctProductIds = adviseEnabledLines.stream()
+					.map(PickingJobLine::getCarrierProductId)
 					.distinct()
 					.count();
 			if (distinctProductIds > 1)
@@ -162,8 +171,8 @@ public class CarrierAdviseConsistencyService
 						.markAsUserValidationError();
 			}
 
-			final long distinctGoodsTypeIds = adviseEnabledSchedules.stream()
-					.map(ShipmentSchedule::getCarrierGoodsTypeId)
+			final long distinctGoodsTypeIds = adviseEnabledLines.stream()
+					.map(PickingJobLine::getCarrierGoodsTypeId)
 					.distinct()
 					.count();
 			if (distinctGoodsTypeIds > 1)
@@ -188,12 +197,12 @@ public class CarrierAdviseConsistencyService
 	}
 
 	@NonNull
-	private static ManualAdviseKey toManualAdviseKey(@NonNull final ShipmentSchedule schedule)
+	private static ManualAdviseKey toManualAdviseKey(@NonNull final PickingJobLine line)
 	{
 		return new ManualAdviseKey(
-				schedule.getCarrierProductId(),
-				schedule.getCarrierGoodsTypeId(),
-				ImmutableSet.copyOf(schedule.getCarrierServicesIfLoaded())
+				line.getCarrierProductId(),
+				line.getCarrierGoodsTypeId(),
+				ImmutableSet.copyOf(line.getCarrierServices())
 		);
 	}
 
