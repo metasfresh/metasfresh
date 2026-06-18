@@ -9,7 +9,7 @@
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 58 | 62 | 94% |
-| Distribution | 39 | 40 | 98% |
+| Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -249,6 +249,7 @@
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| Packing-table operator: orders offered sorted by priority then locator priority; pick + scan auto-advances order→order through the run | `distribution/packingTable_navigateToNextOrder.spec.js` |
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
@@ -258,7 +259,7 @@
 | "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
 | "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**13/13 — 100%**
+**14/14 — 100%**
 
 ### Distribution — HU scanning
 

@@ -168,6 +168,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.progress = computeProgress(this.isManuallyClosed, this.qtyToPick, this.qtyPicked);
 	}
 
+	@Override
 	public BPartnerId getCustomerId() {return this.deliveryBPLocationId.getBpartnerId();}
 
 	private static PickingJobProgress computeProgress(final boolean isManuallyClosed, final Quantity qtyToPick, final Quantity qtyPicked)

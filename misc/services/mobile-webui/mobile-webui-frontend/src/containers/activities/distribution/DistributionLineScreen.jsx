@@ -85,7 +85,11 @@ export const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) =>
 export const useDistributionScreenDefinition = ({ screenId, captionKey, back } = {}) => {
   const { wfProcessId, activityId, lineId } = useMobileLocation();
 
-  const { productName, uom, qtyToMove } = useDistributionLineProps({ wfProcessId, activityId, lineId });
+  const { productName, uom, qtyToMove, pickFromLocator } = useDistributionLineProps({
+    wfProcessId,
+    activityId,
+    lineId,
+  });
 
   return useScreenDefinition({
     screenId,
@@ -93,13 +97,21 @@ export const useDistributionScreenDefinition = ({ screenId, captionKey, back } =
     back,
     values: [
       {
+        id: 'ProductValueAndName', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.Product'),
         value: productName,
         bold: true,
       },
       {
+        id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.QtyToMove'),
         value: formatQtyToHumanReadableStr({ qty: qtyToMove, uom }),
+        bold: true,
+      },
+      {
+        id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
+        caption: trl('general.LocatorFrom'),
+        value: pickFromLocator?.caption,
         bold: true,
       },
     ],
