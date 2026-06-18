@@ -56,6 +56,25 @@ describe('useMobileNavigation back navigation (no browser-stack dependency)', ()
     expect(replace).toHaveBeenCalledWith('/explicit/path');
   });
 
+  it('go(delta) with a positive delta (forward) goes Home, never history.go(delta)', () => {
+    const historyGo = jest.fn();
+    useHistory.mockReturnValue({ replace, go: historyGo });
+    useLocation.mockReturnValue({ state: {} });
+    useBackLocationFromHeaders.mockReturnValue(null);
+    useMobileLocation.mockReturnValue({});
+    const api = { current: null };
+    function C() {
+      api.current = useMobileNavigation();
+      return null;
+    }
+    render(<C />);
+
+    api.current.go(1);
+
+    expect(historyGo).not.toHaveBeenCalled();
+    expect(replace).toHaveBeenCalledWith('/');
+  });
+
   it('go(delta) with |delta|>1 goes Home, never history.go(delta)', () => {
     const historyGo = jest.fn();
     useHistory.mockReturnValue({ replace, go: historyGo });

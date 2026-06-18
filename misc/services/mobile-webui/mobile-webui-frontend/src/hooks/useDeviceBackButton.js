@@ -1,29 +1,34 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useMobileNavigation } from './useMobileNavigation';
 
 /**
- * Fully neutralizes the device / browser Back button: pressing it does NOTHING, on every screen.
+ * Routes the device / browser Back button through the app's own navigation: pressing it does exactly
+ * what the on-screen footer Back button does — navigate to the current screen's declared backLocation,
+ * or Home when the screen declares none (useMobileNavigation.goBack).
  *
- * Why: the mobile app navigates with history.replace and declares its own per-screen back target,
- * reached via the on-screen footer Back button (useMobileNavigation.goBack). The browser history
- * stack holds *arrival order*, not the app's logical flow, so a browser Back is meaningless — it
- * used to drop the operator out of the PWA or jump to the wrong screen, and (when it happened to
- * have a target) behaved inconsistently from one screen to the next. Operators navigate with the
- * on-screen Back / Home buttons; the hardware/browser Back is banned outright, consistently.
+ * Why: the app navigates with history.replace, so the browser history stack holds *arrival order*, not
+ * the app's logical screen flow. A raw browser Back (history.go(-1)) is therefore meaningless — it used
+ * to drop the operator out of the PWA or jump to the wrong screen. So we intercept the browser/device
+ * Back and replay the in-app Back navigation, making hardware/browser Back and the footer Back behave
+ * identically and consistently on every screen.
  *
- * Mechanism: a popstate cannot be cancelled (the navigation already happened by the time it fires),
- * so we keep a throwaway "sentinel" entry on top of the browser history. When Back is pressed the
- * sentinel is popped; we immediately re-push it, so the URL / stack never actually moves — the press
- * is a no-op. The sentinel is re-primed after every real in-app navigation (history PUSH / REPLACE),
- * and explicitly NOT on POP (POP is the Back press we are absorbing; re-priming on it would stack up
- * spurious entries, and connected-react-router also emits a POP when the sentinel itself is popped).
+ * Mechanism: a popstate cannot be cancelled (the navigation already happened by the time it fires), so
+ * we keep a throwaway "sentinel" entry on top of the browser history. A Back press pops the sentinel —
+ * never a real app entry, so the browser never leaves the PWA — and in the popstate handler we re-prime
+ * the sentinel and invoke goBack(). goBack() navigates via history.replace, which the history.listen
+ * below re-primes too. The sentinel is (re)primed on mount and after every real navigation (history
+ * PUSH / REPLACE) but explicitly NOT on POP (POP is the Back press we are handling; connected-react-router
+ * also emits a POP when the sentinel itself is popped).
  *
- * Note: this never calls history.go(-1). The footer Back (useMobileNavigation.goBack) also avoids
- * go(-1) — it navigates to the declared backLocation, else Home — so the footer Back is a
- * history.replace and is never swallowed by this trap.
+ * goBack is read through a ref so the popstate handler always uses the current screen's backLocation
+ * (the handler is registered once, but goBack is re-created on every render as the location changes).
  */
 export const useDeviceBackButton = () => {
   const history = useHistory();
+  const { goBack } = useMobileNavigation();
+  const goBackRef = useRef(goBack);
+  goBackRef.current = goBack;
 
   useEffect(() => {
     primeSentinel();
@@ -34,8 +39,12 @@ export const useDeviceBackButton = () => {
       }
     });
 
-    // Browser / device Back is fully neutralized: re-push the sentinel and do nothing else.
-    const onPopState = () => primeSentinel();
+    // Device / browser Back: re-prime the sentinel (so the browser stack never escapes the app) and
+    // replay the in-app Back navigation — identical to tapping the on-screen footer Back button.
+    const onPopState = () => {
+      primeSentinel();
+      goBackRef.current();
+    };
     window.addEventListener('popstate', onPopState);
 
     return () => {
@@ -45,9 +54,9 @@ export const useDeviceBackButton = () => {
   }, [history]);
 };
 
-// Push a throwaway history entry at the current URL. pushState never fires popstate and is not
-// observed by the history library (it only reacts to its own push/replace and to popstate), so this
-// does not trigger an app navigation or re-enter the listen() above.
+// Push a throwaway history entry at the current URL. pushState never fires popstate and is not observed
+// by the history library (it only reacts to its own push/replace and to popstate), so this does not
+// trigger an app navigation or re-enter the listen() above.
 const primeSentinel = () => {
   window.history.pushState(null, '', window.location.href);
 };

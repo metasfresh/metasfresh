@@ -18,6 +18,15 @@ export const setCurrentPage = (currentPage) => {
 
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
+/**
+ * Simulate a device / browser Back button press (the hardware Back key on a handheld, or the browser
+ * Back). The app routes this through its own navigation (useDeviceBackButton), so it behaves like the
+ * on-screen footer Back button.
+ */
+export const pressDeviceBack = async () => await step(`Press device/browser Back button`, async () => {
+    await page.goBack();
+});
+
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
 const runAndWatchForErrors = async (func) => {
