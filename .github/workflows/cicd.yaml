@@ -2058,6 +2058,8 @@ jobs:
       contents: read
       pull-requests: write # post Allure report links as PR comments
     steps:
+      - uses: actions/checkout@v6 # needed for .github/test-report-permalinks (generator + resolver page)
+
       - name: Check for report server secret
         id: check-secret
         run: |
@@ -2396,6 +2398,21 @@ jobs:
           print(f"Kept {len(data['builds'])} build(s), pruned {len(evicted)} old build(s)")
           PYEOF
 
+      - name: Generate feature/spec permalinks
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          DIR=.github/test-report-permalinks
+          # build the feature/spec -> uid map from the just-published build's trees (server-side)
+          ssh reports-server "python3 - '${BRANCH}' '${VERSION}'" < "$DIR/generate_permalinks.py"
+          # deploy the static resolver (identical content per branch)
+          ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.js"   < "$DIR/permalink.js"
+          ssh reports-server "cat > /var/www/test-reports/branches/${BRANCH}/permalink.html" < "$DIR/permalink.html"
+          echo "Permalinks: https://test-reports.metasfresh.com/branches/${BRANCH}/permalink.html?feature=Fxxxx"
+
       - name: Update landing page
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
         run: |
@@ -2666,6 +2683,8 @@ jobs:
           | Report | Link |
           |--------|------|
           ${REPORT_LINKS}
+          **Permalinks** (build-stable, always newest): \`${BUILD_URL%/builds/*}/permalink.html?feature=Fxxxx\` · \`${BUILD_URL%/builds/*}/permalink.html?spec=spec/.../x.spec.js\`
+
           _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
 
           # Find existing comment with marker, update or create
