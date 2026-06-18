@@ -20,6 +20,17 @@ export const DistributionLinePickFromScreen = {
             await DistributionUtils.expectJobId({ distributionJobId });
         }),
 
+        // Assert a row of the job header table that this screen renders after auto-advance. `exact`
+        // (default true) matches the value EXACTLY so that e.g. locator "L1" is not satisfied by a
+        // stale "L10" value — exactly the wrong/leftover-header class of bug this test guards. Pass
+        // `exact: false` only when the rendered value legitimately carries trailing content you do
+        // not want to pin (e.g. a qty followed by its UOM symbol). See DistributionUtils for the
+        // shared header-row assertion.
+        expectHeaderProperty: async ({ caption, value, exact = true }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
+            await DistributionLinePickFromScreen.waitForScreen();
+            await DistributionUtils.expectHeaderProperty({ caption, value, exact });
+        }),
+
         scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
             await DistributionLinePickFromScreen.waitForScreen();
 
