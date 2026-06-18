@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_DD, MobileUI_UserProfile_DD_Sort, MobileUI_UserProfile_DD_CaptionItem
+ * Repository Cluster: MobileUIDistributionConfigRepository
+ */
 @Repository
 public class MobileUIDistributionConfigRepository
 {

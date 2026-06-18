@@ -41,3 +41,7 @@ VALUES (0,781216,0,547735,553846,652328 /*From ID Server*/,'F',TO_TIMESTAMP('202
 -- Defensive: ensure every translatable table has rows for every active language.
 SELECT add_missing_translations()
 ;
+
+-- Propagate the element's translations across all derived _Trl tables.
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584328 /*IsNavigateToJobsListAfterPickFromComplete, From ID Server*/)
+;

@@ -37,7 +37,7 @@ import java.util.Comparator;
 public class WorkflowLauncher
 {
 	public static final Comparator<WorkflowLauncher> ORDERBY_AlreadyStartedFirst = Comparator.comparing(WorkflowLauncher::isAlreadyStarted).reversed();
-	
+
 	@NonNull MobileApplicationId applicationId;
 	@NonNull WorkflowLauncherCaption caption;
 	@Nullable WFProcessId startedWFProcessId;

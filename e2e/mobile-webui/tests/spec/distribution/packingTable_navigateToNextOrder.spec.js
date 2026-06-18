@@ -1,5 +1,4 @@
 import { test } from "../../../playwright.config";
-import { expect } from '@playwright/test';
 import { Backend } from "../../utils/screens/Backend";
 import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
@@ -10,14 +9,9 @@ import { DistributionLinePickFromScreen } from '../../utils/screens/distribution
 import { generateEAN13 } from '../../utils/ean13';
 
 //
-// me03 #30474 — AC7: the "packing-table operator" distribution flow (dt204 / deep_tundra).
+// The "packing-table operator" distribution flow.
 //
-// VERSION MATCH: this spec uses the deep_tundra_release masterdata DSL (locators flagged
-// isGroundLocator + priorityNo; the launcher/orderBys knobs). Run ONLY against a
-// deep_tundra_release backend with the deep_tundra_release e2e code overlaid
-// (git checkout origin/deep_tundra_release -- e2e/mobile-webui).
-//
-// Scenario (AC7): an operator works at a single PACKING TABLE. Distribution orders bring goods
+// Scenario: an operator works at a single PACKING TABLE. Distribution orders bring goods
 // FROM many ground locators (L1..L10) TO that packing table. The operator starts the first
 // offered order, scans the source HU + product, confirms the qty, and — with
 // navigateToJobsListAfterPickFromComplete — is carried straight to the NEXT order's pick-from
@@ -119,12 +113,12 @@ const createMasterdata = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('me30474 AC7 — packing-table operator: orders sorted by priority then locator priority and auto-advance order→order', async ({ page }) => {
+test('Packing-table operator: orders sorted by priority then locator priority and auto-advance order→order', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
-    allure.story('me30474 AC7: packing-table operator auto-advances order→order, picking from ground locators by priority');
+    allure.story('Packing-table operator auto-advances from order to order, picking from ground locators by priority');
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
