@@ -147,6 +147,8 @@ class MobileConfigPickingCommand
 			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
 		}
 
+		builder.pickingSlotRequired(OptionalBoolean.ofNullableBoolean(from.getPickingSlotRequired()));
+
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
 		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
