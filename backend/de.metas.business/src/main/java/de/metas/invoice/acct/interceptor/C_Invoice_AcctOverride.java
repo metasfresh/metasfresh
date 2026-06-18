@@ -28,9 +28,12 @@ import java.util.List;
  * ({@code C_ElementValue_Override_ID}) into {@code C_Invoice_Acct} rows,
  * one row per accounting schema × account concept (P_Expense_Acct, P_InventoryClearing_Acct).
  *
- * <p>Uses {@code AccountConceptualName} string constants directly (same values as
- * {@code ProductAcctType.P_Expense_Acct/P_InventoryClearing_Acct.getAccountConceptualName()})
- * to avoid a compile dependency on {@code de.metas.acct.base}.</p>
+ * <p>Derives the {@code AccountConceptualName}s from the {@code I_M_Product_Acct} column names (the
+ * same source {@code ProductAcctType.P_Expense_Acct/P_InventoryClearing_Acct.getAccountConceptualName()}
+ * uses) — rename-safe, and avoids a compile dependency on {@code de.metas.acct.base}.</p>
+ *
+ * <p>Purchase-only (me03 30443): the override field is exposed only on purchase candidates/lines;
+ * sales invoices are skipped via the {@code isSOTrx()} guard.</p>
  *
  * <p>Kept in its own class to separate this concern from the existing {@code C_Invoice} interceptor
  * (pattern: {@code de.metas.promotioncode.C_Invoice}).</p>
@@ -55,6 +58,12 @@ public class C_Invoice_AcctOverride
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void materializeAcctOverrides(@NonNull final I_C_Invoice invoice)
 	{
+		// Purchase-only scope (me03 30443): the override field is exposed only on purchase candidates/lines.
+		if (invoice.isSOTrx())
+		{
+			return;
+		}
+
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
 		final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(clientId);

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,12 +89,12 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 		final long activeCount = allRows.stream().filter(I_C_Invoice_Acct::isActive).count();
 		assertThat(activeCount).isEqualTo(1);
 
-		final java.util.Optional<I_C_Invoice_Acct> activeRowOpt = allRows.stream().filter(I_C_Invoice_Acct::isActive).findFirst();
+		final Optional<I_C_Invoice_Acct> activeRowOpt = allRows.stream().filter(I_C_Invoice_Acct::isActive).findFirst();
 		assertThat(activeRowOpt).as("active row after override").isPresent();
 		final I_C_Invoice_Acct activeRow = activeRowOpt.get();
 		assertThat(activeRow.getC_ElementValue_ID()).isEqualTo(ELEMENT_B.getRepoId());
 
-		final java.util.Optional<I_C_Invoice_Acct> inactiveRowOpt = allRows.stream().filter(r -> !r.isActive()).findFirst();
+		final Optional<I_C_Invoice_Acct> inactiveRowOpt = allRows.stream().filter(r -> !r.isActive()).findFirst();
 		assertThat(inactiveRowOpt).as("deactivated row after override").isPresent();
 		final I_C_Invoice_Acct inactiveRow = inactiveRowOpt.get();
 		assertThat(inactiveRow.getC_ElementValue_ID()).isEqualTo(ELEMENT_A.getRepoId());
@@ -117,7 +118,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 		assertThat(allActiveRows()).hasSize(3);
 
 		// unrelated rows still have ELEMENT_A
-		final java.util.Optional<I_C_Invoice_Acct> inventoryRowOpt = allActiveRows().stream()
+		final Optional<I_C_Invoice_Acct> inventoryRowOpt = allActiveRows().stream()
 				.filter(r -> CONCEPT_INVENTORY.getAsString().equals(r.getAccountName())
 						&& r.getC_InvoiceLine_ID() == LINE_ID.getRepoId())
 				.findFirst();
@@ -125,7 +126,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 		final I_C_Invoice_Acct inventoryRow = inventoryRowOpt.get();
 		assertThat(inventoryRow.getC_ElementValue_ID()).isEqualTo(ELEMENT_A.getRepoId());
 
-		final java.util.Optional<I_C_Invoice_Acct> otherLineRowOpt = allActiveRows().stream()
+		final Optional<I_C_Invoice_Acct> otherLineRowOpt = allActiveRows().stream()
 				.filter(r -> CONCEPT_EXPENSE.getAsString().equals(r.getAccountName())
 						&& r.getC_InvoiceLine_ID() == OTHER_LINE_ID.getRepoId())
 				.findFirst();
@@ -166,7 +167,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
 
 		// OTHER_SCHEMA_ID row is still active with ELEMENT_B
-		final java.util.Optional<I_C_Invoice_Acct> otherSchemaRowOpt = allActiveRows().stream()
+		final Optional<I_C_Invoice_Acct> otherSchemaRowOpt = allActiveRows().stream()
 				.filter(r -> r.getC_AcctSchema_ID() == OTHER_SCHEMA_ID.getRepoId())
 				.findFirst();
 		assertThat(otherSchemaRowOpt).as("OTHER_SCHEMA_ID row must remain active").isPresent();

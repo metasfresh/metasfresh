@@ -20,6 +20,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository Tables: C_Invoice_Acct
+ * Repository Cluster: InvoiceAcctRepository (sole owner)
+ */
 @Repository
 public class InvoiceAcctRepository
 {
@@ -174,7 +178,7 @@ public class InvoiceAcctRepository
 		newRecord.setC_ElementValue_ID(elementValueId.getRepoId());
 		newRecord.setIsActive(true);
 		InterfaceWrapperHelper.save(newRecord);
-
-		cache.remove(invoiceId);
+		// No explicit cache eviction needed: this CCache is registered on C_Invoice_Acct.Table_Name,
+		// so saving the row above already fires the table-change listener that resets it.
 	}
 }
