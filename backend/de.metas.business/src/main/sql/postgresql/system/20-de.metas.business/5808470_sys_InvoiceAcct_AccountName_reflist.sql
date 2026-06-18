@@ -195,9 +195,11 @@ WHERE AD_Field_ID=710155;
 -- ===========================================================================
 -- 7. Check constraint on C_Invoice_Acct.AccountName to enforce valid values
 --    (column stays VARCHAR; constraint guards against invalid strings)
+--    AccountName is optional — empty (NULL) means the override applies to every
+--    account concept of that invoice/line (AC1), so NULL must explicitly pass.
 -- ===========================================================================
 ALTER TABLE C_Invoice_Acct ADD CONSTRAINT AccountName_Check
-    CHECK (AccountName IN (
+    CHECK (AccountName IS NULL OR AccountName IN (
         'P_Revenue_Acct',
         'P_Expense_Acct',
         'P_TradeDiscountGrant_Acct',
