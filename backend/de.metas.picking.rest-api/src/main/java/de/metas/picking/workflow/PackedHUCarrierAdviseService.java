@@ -157,7 +157,7 @@ public class PackedHUCarrierAdviseService
 	 * <p>
 	 * Top-level resolution and deduplication by HuId is shared with
 	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob} via
-	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuId(java.util.Collection)}.
+	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuIds(java.util.Collection)}.
 	 *
 	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
@@ -172,7 +172,7 @@ public class PackedHUCarrierAdviseService
 		}
 
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuId(pickedHuIds);
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
 
 		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
 		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();

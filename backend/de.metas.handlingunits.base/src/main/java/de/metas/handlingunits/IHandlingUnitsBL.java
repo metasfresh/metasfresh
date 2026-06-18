@@ -287,7 +287,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 *
 	 * @return map of top-level {@link HuId} → its (top-level) {@link I_M_HU}; never {@code null}.
 	 */
-	ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuId(@NonNull Collection<HuId> huIds);
+	ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuIds(@NonNull Collection<HuId> huIds);
 
 	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).

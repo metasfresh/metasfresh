@@ -719,7 +719,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuId(@NonNull final Collection<HuId> huIds)
+	public ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuIds(@NonNull final Collection<HuId> huIds)
 	{
 		return getByIds(huIds).stream()
 				.map(hu -> getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())

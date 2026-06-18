@@ -74,8 +74,8 @@ class CarrierAdviseConsistencyServiceTest
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
 
-		// by default: getTopLevelHUsByHuId([HU_ID_1]) → {HU_ID_1: topLevelHU} (top-level parent = itself)
-		when(handlingUnitsBL.getTopLevelHUsByHuId(ImmutableSet.of(HU_ID_1)))
+		// by default: getTopLevelHUsByHuIds([HU_ID_1]) → {HU_ID_1: topLevelHU} (top-level parent = itself)
+		when(handlingUnitsBL.getTopLevelHUsByHuIds(ImmutableSet.of(HU_ID_1)))
 				.thenReturn(ImmutableMap.of(HU_ID_1, topLevelHU));
 	}
 
