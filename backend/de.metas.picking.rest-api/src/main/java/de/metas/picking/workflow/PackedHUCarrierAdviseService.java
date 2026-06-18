@@ -186,7 +186,7 @@ public class PackedHUCarrierAdviseService
 
 		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
 		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();
-		// at least one of the advised HUs has a Manual schedule → the whole job's carrier product is read-only
+		// at least one schedule among the processed HUs is Manual → the whole job's carrier product is read-only
 		boolean anyManual = false;
 
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())

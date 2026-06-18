@@ -2,6 +2,7 @@ package de.metas.picking.workflow;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
 import de.metas.customstariff.CustomsTariffRepository;
@@ -169,8 +170,8 @@ public class PackedHUCarrierAdviseServiceTest
 		final ShipmentSchedule tomatoSchedAdvised = mock(ShipmentSchedule.class);
 		when(tomatoSchedAdvised.getId()).thenReturn(SCHED_TOMATO);
 		when(tomatoSchedAdvised.getCarrierProductId()).thenReturn(advisedProductId);
-		when(shipmentScheduleService.getByIds(com.google.common.collect.ImmutableSet.of(SCHED_TOMATO)))
-				.thenReturn(com.google.common.collect.ImmutableList.of(tomatoSchedAdvised));
+		when(shipmentScheduleService.getByIds(ImmutableSet.of(SCHED_TOMATO)))
+				.thenReturn(ImmutableList.of(tomatoSchedAdvised));
 
 		// --- picking job: one non-Manual line (Tomato) + one Manual line (Salad) ---
 		final PickingJobLine tomatoLine = mock(PickingJobLine.class);
@@ -182,7 +183,7 @@ public class PackedHUCarrierAdviseServiceTest
 		when(saladLine.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_SALAD));
 
 		final PickingJob pickingJob = mock(PickingJob.class);
-		when(pickingJob.getPickedHuIds(null)).thenReturn(com.google.common.collect.ImmutableSet.of(huId));
+		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
 
 		// withChangedLines(mapper): apply the mapper to the two lines so we can assert per-line behaviour
 		final PickingJob jobAfterLines = mock(PickingJob.class);
@@ -232,7 +233,7 @@ public class PackedHUCarrierAdviseServiceTest
 				SCHED_SALAD, saladSched));
 
 		final PickingJob pickingJob = mock(PickingJob.class);
-		when(pickingJob.getPickedHuIds(null)).thenReturn(com.google.common.collect.ImmutableSet.of(huId));
+		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
 		final PickingJob jobReadOnly = mock(PickingJob.class);
 		when(pickingJob.withCarrierAdviseReadOnly(true)).thenReturn(jobReadOnly);
 

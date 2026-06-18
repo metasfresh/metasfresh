@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -303,7 +304,7 @@ public class NShiftGateway_StepDef
 			@Nullable final CarrierProduct expected,
 			@Nullable final JsonShipperProduct actual)
 	{
-		return java.util.Objects.equals(
+		return Objects.equals(
 				expected != null ? expected.getCode() : null,
 				actual != null ? actual.getCode() : null);
 	}
@@ -316,7 +317,7 @@ public class NShiftGateway_StepDef
 			@Nullable final CarrierGoodsType expected,
 			@Nullable final JsonGoodsType actual)
 	{
-		return java.util.Objects.equals(
+		return Objects.equals(
 				expected != null ? expected.getExternalId() : null,
 				actual != null ? actual.getId() : null);
 	}
