@@ -3,11 +3,15 @@ package de.metas.manufacturing.workflows_api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelConfig;
 import de.metas.handlingunits.report.labels.HULabelConfigQuery;
-import de.metas.handlingunits.report.labels.HULabelConfigService;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceive;
@@ -19,10 +23,13 @@ import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.process.AdProcessId;
 import de.metas.product.ProductId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.quantity.Quantity;
+import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,17 +52,17 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * RED test — proves that {@code generateFinishGoodsReceiveQRCodes} (Auszeichnung Fertigware)
- * ignores {@code M_HU_Label_Config}: the label-config service is never consulted on current code.
+ * GREEN test — proves that {@code generateFinishGoodsReceiveQRCodes} (Auszeichnung Fertigware)
+ * consults {@code M_HU_Label_Config} and uses the configured process when one matches.
  *
- * <p>AC1 (RED — must FAIL until the fix lands):
- * When {@code generateFinishGoodsReceiveQRCodes} is invoked, it MUST call
- * {@code HULabelConfigService.getFirstMatching} with a query whose
- * {@code sourceDocType == HULabelSourceDocType.Manufacturing}.
- * On current code that call never happens → the verify below FAILS → RED.
+ * <p>AC1: when a matching rule exists, the print call uses the rule's process id.
+ * <p>AC2: when no rule matches, the print call passes {@code null} process id → the
+ * existing global default (584977) path in {@code GlobalQRCodeService} runs unchanged.
  */
 class FinishedGoodsLabelConfigTest
 {
+	private static final HuPackingInstructionsId TEST_PI_ID = HuPackingInstructionsId.ofRepoId(100);
+
 	// ── mocks ───────────────────────────────────────────────────────────────
 	private MobileUIManufacturingConfigRepository configRepository;
 	private ManufacturingRestService manufacturingRestService;
@@ -67,11 +74,14 @@ class FinishedGoodsLabelConfigTest
 	private HUQRCodesService huQRCodesService;
 
 	/**
-	 * The service that SHOULD be consulted when selecting which label process to use.
-	 * Currently it is NOT injected into {@link ManufacturingMobileApplication} — that
-	 * is the root of the bug this test documents.
+	 * Repository-level label config lookup (no sysconfig fallback — AC2 requirement).
 	 */
-	private HULabelConfigService huLabelConfigService;
+	private HULabelConfigRepository huLabelConfigRepository;
+
+	/**
+	 * Mocked so getHU_UnitType(piId) does not hit the DB.
+	 */
+	private IHandlingUnitsBL handlingUnitsBL;
 
 	// ── system under test ────────────────────────────────────────────────────
 	private ManufacturingMobileApplication app;
@@ -87,22 +97,20 @@ class FinishedGoodsLabelConfigTest
 		manufacturingRestService = mock(ManufacturingRestService.class);
 		userWorkstationService = mock(UserWorkstationService.class);
 		huQRCodesService = mock(HUQRCodesService.class);
-		huLabelConfigService = mock(HULabelConfigService.class);
+		huLabelConfigRepository = mock(HULabelConfigRepository.class);
+		handlingUnitsBL = mock(IHandlingUnitsBL.class);
 
-		// HULabelConfigService is NOT a constructor parameter today — that is the bug.
-		// TODO FIX (GREEN phase): two steps are required to turn this test GREEN —
-		//   (1) production code must call huLabelConfigService.getFirstMatching(...), AND
-		//   (2) huLabelConfigService must be passed here as a new constructor argument:
-		//         app = new ManufacturingMobileApplication(
-		//                 configRepository, manufacturingRestService,
-		//                 huQRCodesService, userWorkstationService, huLabelConfigService);
-		//   If only (1) is done, this test stays RED because the verified mock is not the
-		//   one the SUT holds.
+		// Register handlingUnitsBL mock so Services.get(IHandlingUnitsBL.class) returns it.
+		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
+		// Stub getHU_UnitType for the test PI id (no DB access needed).
+		doReturn(HuUnitType.TU.getCode()).when(handlingUnitsBL).getHU_UnitType(TEST_PI_ID);
+
 		app = new ManufacturingMobileApplication(
 				configRepository,
 				manufacturingRestService,
 				huQRCodesService,
-				userWorkstationService);
+				userWorkstationService,
+				huLabelConfigRepository);
 
 		// Wire up manufacturingRestService to return a canned job so the method can
 		// reach the print call without a NullPointerException.
@@ -113,33 +121,63 @@ class FinishedGoodsLabelConfigTest
 		doReturn(ImmutableList.of()).when(huQRCodesService).generate(any(HUQRCodeGenerateRequest.class));
 	}
 
-	// ─── AC1 — RED: HULabelConfigService must be consulted ──────────────────
+	// ─── AC1 — matching rule → configured process id is passed to print ─────────────
 
-	/**
-	 * AC1 (RED): When {@code generateFinishGoodsReceiveQRCodes} runs, it MUST consult
-	 * {@code HULabelConfigService.getFirstMatching} with a query that has
-	 * {@code sourceDocType == Manufacturing}.
-	 *
-	 * <p>On current code this verify FAILS with
-	 * "Wanted but not invoked: huLabelConfigService.getFirstMatching(…)" because
-	 * {@code ManufacturingMobileApplication} never calls {@code HULabelConfigService} at all.
-	 * That is the RED signal.
-	 */
 	@Test
-	void generateFinishGoodsQRCodes_mustConsultHULabelConfigService()
+	void generateFinishGoodsQRCodes_withMatchingLabelConfig_printsConfiguredProcess()
 	{
+		// given — a matching M_HU_Label_Config rule returns process 999001
+		final AdProcessId configuredProcessId = AdProcessId.ofRepoId(999001);
+		final HULabelConfig matchingConfig = HULabelConfig.builder()
+				.printFormatProcessId(configuredProcessId)
+				.autoPrint(true)
+				.autoPrintCopies(PrintCopies.ONE)
+				.build();
+		doReturn(ExplainedOptional.of(matchingConfig))
+				.when(huLabelConfigRepository).getFirstMatching(any(HULabelConfigQuery.class));
+
 		// when
 		app.generateFinishGoodsReceiveQRCodes(buildRequest());
 
-		// then — HULabelConfigService.getFirstMatching MUST have been called with
-		//        a query whose sourceDocType is Manufacturing.
-		//        On current code it is NEVER called → this verify FAILS → RED.
+		// then — repository must be called with sourceDocType == Manufacturing
 		final ArgumentCaptor<HULabelConfigQuery> queryCaptor = ArgumentCaptor.forClass(HULabelConfigQuery.class);
-		verify(huLabelConfigService).getFirstMatching(queryCaptor.capture());
-
+		verify(huLabelConfigRepository).getFirstMatching(queryCaptor.capture());
 		assertThat(queryCaptor.getValue().getSourceDocType())
 				.as("HULabelConfigQuery.sourceDocType must be Manufacturing")
 				.isEqualTo(HULabelSourceDocType.Manufacturing);
+
+		// and — print must be called with the configured process id
+		final ArgumentCaptor<AdProcessId> processCaptor = ArgumentCaptor.forClass(AdProcessId.class);
+		verify(huQRCodesService).print(
+				any(),
+				processCaptor.capture(),
+				any(PrintCopies.class));
+		assertThat(processCaptor.getValue())
+				.as("print must use the configured LabelReport_Process_ID=999001")
+				.isEqualTo(configuredProcessId);
+	}
+
+	// ─── AC2 — no matching rule → null processId → existing global default path ────
+
+	@Test
+	void generateFinishGoodsQRCodes_withNoMatchingLabelConfig_printsWithNullProcess()
+	{
+		// given — no M_HU_Label_Config rule matches
+		doReturn(ExplainedOptional.emptyBecause("no rule"))
+				.when(huLabelConfigRepository).getFirstMatching(any(HULabelConfigQuery.class));
+
+		// when
+		app.generateFinishGoodsReceiveQRCodes(buildRequest());
+
+		// then — print must be called with null processId (→ GlobalQRCodeService default 584977)
+		final ArgumentCaptor<AdProcessId> processCaptor = ArgumentCaptor.forClass(AdProcessId.class);
+		verify(huQRCodesService).print(
+				any(),
+				processCaptor.capture(),
+				any(PrintCopies.class));
+		assertThat(processCaptor.getValue())
+				.as("print must pass null processId when no label config rule matches (→ global default path)")
+				.isNull();
 	}
 
 	// ─── helpers ────────────────────────────────────────────────────────────────
@@ -150,7 +188,7 @@ class FinishedGoodsLabelConfigTest
 		return JsonFinishGoodsReceiveQRCodesGenerateRequest.builder()
 				.wfProcessId(WFProcessId.ofIdPart(ManufacturingMobileApplication.APPLICATION_ID, ppOrderId))
 				.finishedGoodsReceiveLineId(FinishedGoodsReceiveLineId.FINISHED_GOODS)
-				.huPackingInstructionsId(HuPackingInstructionsId.ofRepoId(100))
+				.huPackingInstructionsId(TEST_PI_ID)
 				.numberOfHUs(1)
 				.build();
 	}
