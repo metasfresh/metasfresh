@@ -91,8 +91,11 @@ const createMasterdata = async () => {
                     maxLaunchers: 20,
                     maxStartedLaunchers: 3,
                     orderBys: 'Priority, LocatorPriority',
-                    // Show source locator + product in the job-detail header (assert P/L per order).
-                    captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName',
+                    // Show source locator + product + qty in the JOB header (asserted per order).
+                    // Qty is a job-level caption token, so the qty-to-move appears in the header on
+                    // EVERY order — including auto-advanced orders, where no single line is yet
+                    // selected and the line-level header is therefore absent.
+                    captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName,Qty',
                 },
             },
             // The workplace is the packing table: a single warehouse, pick-from = packingTable.
@@ -138,46 +141,67 @@ test('Packing-table operator: orders sorted by priority then locator priority an
         );
     });
 
-    await test.step('Start the first offered order → it is DD1 (product P1, from locator L1)', async () => {
+    // Assert THIS order's full job header. The header carries the job-level caption-format fields
+    // (From Locator, Product Value and Name, Quantity) for the CURRENT order. This is the regression
+    // guard: the bug left these showing the PREVIOUS order's values (or undefined) after the
+    // operator auto-advanced order→order — so the header is asserted on EVERY order, on whichever
+    // screen renders it (the job screen for the first order, the pick-from screen for the rest).
+    //
+    // From Locator + Product Value and Name: exact value match — catches a stale/leftover header
+    // and avoids the L1 ⊂ L10 substring trap. Quantity (server-rendered "<qty> <uomSymbol>"):
+    // substring on THIS order's qty number (i*10), robust to the UOM symbol while still proving the
+    // qty advanced with the order.
+    const assertJobHeader = async (screen, i) => {
+        await screen.expectHeaderProperty({ caption: 'From Locator', value: `L${i}` });
+        await screen.expectHeaderProperty({
+            caption: 'Product Value and Name',
+            value: masterdata.products[`P${i}`].productCode + "_" + masterdata.products[`P${i}`].productName,
+        });
+        await screen.expectHeaderProperty({ caption: 'Quantity', value: `${i * 10}`, exact: false });
+    };
+    const assertHeaderOnJobScreen = (i) => assertJobHeader(DistributionJobScreen, i);
+    const assertHeaderOnPickFromScreen = (i) => assertJobHeader(DistributionLinePickFromScreen, i);
+
+    await test.step('Start the first offered order → it is DD1 (product P1, from locator L1, qty 10)', async () => {
         await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
         await DistributionJobScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD1.jobId });
-        await DistributionJobScreen.expectHeaderProperty({ caption: 'From Locator', value: 'L1' });
-        await DistributionJobScreen.expectHeaderProperty({
-            caption: 'Product Value and Name',
-            value: masterdata.products.P1.productCode + "_" + masterdata.products.P1.productName,
-        });
+        await assertHeaderOnJobScreen(1);
     });
 
-    await test.step('Pick DD1 (scan HU1 + product P1, confirm qty 10) → auto-advance to DD2 (product P2, locator L2)', async () => {
+    // Pick DD1 on the job screen, then auto-advance DD2→DD3→…→DD10, each landing directly on the
+    // next order's pick-from screen. After EACH advance, assert the new order's full header.
+    await test.step('Pick DD1 (scan HU1 + product P1, confirm qty 10) → auto-advance to DD2 pick-from', async () => {
         await DistributionJobScreen.scanHUToMove({
             huQRCode: masterdata.externalBarcodes[1],
             productScannedCode: masterdata.products.P1.gtin,
             expectedQtyToMove: 10,
             expectNextScreen: 'DistributionLinePickFromScreen',
         });
-        // The pick-from screen for DD2 uniquely identifies the order (= product P2, locator L2 by
-        // construction: DDi moves Pi from Li). The product+locator header is asserted explicitly on
-        // the initial job screen above (the header method lives on DistributionJobScreen).
         await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId });
+        await assertHeaderOnPickFromScreen(2);
     });
 
-    await test.step('Pick DD2 (scan HU2 + product P2, confirm qty 20) → auto-advance to DD3 (product P3, locator L3)', async () => {
-        await DistributionLinePickFromScreen.scanHUToMove({
-            huQRCode: masterdata.externalBarcodes[2],
-            productScannedCode: masterdata.products.P2.gtin,
-            expectedQtyToMove: 20,
-            expectNextScreen: 'DistributionLinePickFromScreen',
+    for (let i = 2; i < N; i++) {
+        const next = i + 1;
+        await test.step(`Pick DD${i} (scan HU${i} + product P${i}, confirm qty ${i * 10}) → auto-advance to DD${next} pick-from (assert DD${next} header)`, async () => {
+            await DistributionLinePickFromScreen.scanHUToMove({
+                huQRCode: masterdata.externalBarcodes[i],
+                productScannedCode: masterdata.products[`P${i}`].gtin,
+                expectedQtyToMove: i * 10,
+                expectNextScreen: 'DistributionLinePickFromScreen',
+            });
+            await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders[`DD${next}`].jobId });
+            await assertHeaderOnPickFromScreen(next);
         });
-        await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD3.jobId });
-    });
+    }
 
-    await test.step('Pick DD3 (scan HU3 + product P3, confirm qty 30) → auto-advance to DD4 pick-from', async () => {
+    await test.step(`Pick DD${N} (scan HU${N} + product P${N}, confirm qty ${N * 10}) → no more orders, return to jobs list`, async () => {
         await DistributionLinePickFromScreen.scanHUToMove({
-            huQRCode: masterdata.externalBarcodes[3],
-            productScannedCode: masterdata.products.P3.gtin,
-            expectedQtyToMove: 30,
-            expectNextScreen: 'DistributionLinePickFromScreen',
+            huQRCode: masterdata.externalBarcodes[N],
+            productScannedCode: masterdata.products[`P${N}`].gtin,
+            expectedQtyToMove: N * 10,
+            expectNextScreen: 'DistributionJobsListScreen',
         });
-        await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD4.jobId });
+        await DistributionJobsListScreen.waitForScreen();
     });
 });
