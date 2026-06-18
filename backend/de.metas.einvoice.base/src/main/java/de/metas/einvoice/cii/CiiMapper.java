@@ -1,5 +1,6 @@
 package de.metas.einvoice.cii;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.einvoice.EInvoiceFormat;
 import de.metas.invoice.InvoiceId;
@@ -25,9 +26,11 @@ import de.metas.einvoice.cii.model.TaxRegistrationType;
 import de.metas.einvoice.cii.model.TextType;
 import de.metas.einvoice.cii.model.TradeAddressType;
 import de.metas.einvoice.cii.model.TradePartyType;
+import de.metas.einvoice.cii.model.TradePaymentTermsType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -265,7 +268,8 @@ public class CiiMapper
 		}
 		if (sellerBPLoc == null)
 		{
-			return new TradeAddressType();
+			throw new AdempiereException("Cannot build CII: seller BPartner " + sellerBP.getC_BPartner_ID()
+					+ " has no postal address (EN16931 BG-5/BG-8 mandatory)");
 		}
 
 		return buildAddress(InterfaceWrapperHelper.load(sellerBPLoc.getC_Location_ID(), I_C_Location.class));
@@ -275,10 +279,12 @@ public class CiiMapper
 
 	private TradePartyType buildBuyerParty(@NonNull final I_C_Invoice invoice)
 	{
-		final I_C_BPartner buyerBP = InterfaceWrapperHelper.load(invoice.getC_BPartner_ID(), I_C_BPartner.class);
-		final I_C_BPartner_Location buyerBPLoc = InterfaceWrapperHelper.load(
-				invoice.getC_BPartner_Location_ID(),
-				I_C_BPartner_Location.class);
+		final I_C_BPartner buyerBP = bPartnerDAO.getById(invoice.getC_BPartner_ID());
+		// getBPartnerLocationByIdEvenInactive: invoices may reference inactive locations after completion
+		final BPartnerLocationId buyerBPLocId = BPartnerLocationId.ofRepoIdOrNull(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		final I_C_BPartner_Location buyerBPLoc = buyerBPLocId != null
+				? bPartnerDAO.getBPartnerLocationByIdEvenInactive(buyerBPLocId)
+				: null;
 
 		final TradePartyType buyer = new TradePartyType();
 
@@ -333,6 +339,15 @@ public class CiiMapper
 			final CurrencyCodeType currencyCode = new CurrencyCodeType();
 			currencyCode.setValue(currency.getISO_Code());
 			settlement.setInvoiceCurrencyCode(currencyCode);
+		}
+
+		// BT-9 Payment due date
+		final java.sql.Timestamp dueDate = invoice.getDueDate();
+		if (dueDate != null)
+		{
+			final TradePaymentTermsType paymentTerms = new TradePaymentTermsType();
+			paymentTerms.setDueDateDateTime(toDateTime(dueDate));
+			settlement.setSpecifiedTradePaymentTerms(paymentTerms);
 		}
 
 		// BT-25/BT-26 Preceding invoice reference (credit notes)

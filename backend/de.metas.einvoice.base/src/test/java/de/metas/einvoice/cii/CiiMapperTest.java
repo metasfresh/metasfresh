@@ -61,7 +61,6 @@ public class CiiMapperTest
 		sellerBPartner.setTaxID("DE123456789");
 		sellerBPartner.setEMail("invoice@muster.de");
 		sellerBPartner.setCommercialRegisterNumber("HRB 12345");
-		// Mark as org BPartner: set AD_OrgBP_ID so retrieveOrgBPartner can find it
 		saveRecord(sellerBPartner);
 
 		final I_C_BPartner_Location sellerBPLocation = newInstance(I_C_BPartner_Location.class);
@@ -76,7 +75,7 @@ public class CiiMapperTest
 		org.setName("Muster GmbH Org");
 		saveRecord(org);
 
-		// Link sellerBPartner to the org via AD_OrgBP_ID
+		// Mark as org BPartner: AD_OrgBP_ID links the BPartner to the org so retrieveOrgBPartner can find it
 		sellerBPartner.setAD_OrgBP_ID(org.getAD_Org_ID());
 		saveRecord(sellerBPartner);
 
@@ -108,7 +107,6 @@ public class CiiMapperTest
 		buyerBPartner.setTaxID("DE987654321");
 		saveRecord(buyerBPartner);
 
-		// Link buyer location to buyer bpartner
 		buyerBPLocation.setC_BPartner_ID(buyerBPartner.getC_BPartner_ID());
 		saveRecord(buyerBPLocation);
 
@@ -132,6 +130,7 @@ public class CiiMapperTest
 		invoice.setC_BPartner_ID(buyerBPartner.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(buyerBPLocation.getC_BPartner_Location_ID());
 		invoice.setPOReference("PO-2024-999");
+		invoice.setDueDate(Timestamp.from(LocalDate.of(2024, 7, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		saveRecord(invoice);
 
 		// === EInvoiceRecipientConfig ===
@@ -266,6 +265,16 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:BuyerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID/@schemeID")
 				.isEqualTo("VA");
+
+		// BT-9 Payment due date
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement"
+								+ "/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString")
+				.isEqualTo("20240715");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement"
+								+ "/ram:SpecifiedTradePaymentTerms/ram:DueDateDateTime/udt:DateTimeString/@format")
+				.isEqualTo("102");
 	}
 
 	/**
@@ -274,13 +283,23 @@ public class CiiMapperTest
 	@Test
 	void credit_note_type_code_and_preceding_invoice_ref() throws Exception
 	{
-		// Minimal seller org
+		// Minimal seller org — must have a location so EN16931 BG-5 fail-fast does not trigger
 		final I_AD_Org org = newInstance(I_AD_Org.class);
 		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
 		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
 		sellerBP.setName("Seller GmbH");
 		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
 		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
 		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
 		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
 		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
