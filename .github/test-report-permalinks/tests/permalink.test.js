@@ -34,4 +34,20 @@ assert.strictEqual(P.buildRedirectUrl('v1', 'feature', null), null);
 assert.strictEqual(P.lookup({features:{F1:entry}, specs:{}}, 'feature', 'F1'), entry);
 assert.strictEqual(P.lookup({features:{}, specs:{}}, 'feature', 'nope'), null);
 
+// suitesByCount: list a feature/spec's suites, highest test count first (for the multi-suite chooser)
+const multi = { 'cucumber': { uid: 'a'.repeat(32), count: 15 },
+                'mobile-webui': { uid: 'b'.repeat(32), count: 22 },
+                'frontend-webui': { uid: 'c'.repeat(32), count: 1 } };
+const by = P.suitesByCount(multi);
+assert.strictEqual(by.length, 3);
+assert.strictEqual(by[0].suite, 'mobile-webui');       // highest count first
+assert.strictEqual(by[0].count, 22);
+assert.strictEqual(by[0].uid, 'b'.repeat(32));
+assert.strictEqual(by[2].suite, 'frontend-webui');     // lowest count last
+assert.strictEqual(P.suitesByCount(entry)[0].suite, 'frontend-webui'); // count 9 > 3
+assert.deepStrictEqual(P.suitesByCount({}), []);
+assert.deepStrictEqual(P.suitesByCount(null), []);
+// the default suite (chooseSuite) is always suitesByCount()[0]
+assert.strictEqual(P.suitesByCount(multi)[0].suite, P.chooseSuite(multi));
+
 console.log('OK');
