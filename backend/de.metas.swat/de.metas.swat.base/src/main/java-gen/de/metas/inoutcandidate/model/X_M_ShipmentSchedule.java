@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_ShipmentSchedule, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1604460451L;
+	private static final long serialVersionUID = -1969087080L;
 
     /** Standard Constructor */
     public X_M_ShipmentSchedule (final Properties ctx, final int M_ShipmentSchedule_ID, @Nullable final String trxName)
@@ -319,6 +319,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public int getCarrier_Product_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
+	}
+
+	@Override
+	public void setCarrier_Services (final @Nullable java.lang.String Carrier_Services)
+	{
+		set_Value (COLUMNNAME_Carrier_Services, Carrier_Services);
+	}
+
+	@Override
+	public java.lang.String getCarrier_Services() 
+	{
+		return get_ValueAsString(COLUMNNAME_Carrier_Services);
 	}
 
 	@Override
@@ -962,6 +974,17 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	}
 
 	@Override
+	public void setInsufficientQtyAvailableForSalesColor_ID (final int InsufficientQtyAvailableForSalesColor_ID)
+	{
+		throw new IllegalArgumentException ("InsufficientQtyAvailableForSalesColor_ID is virtual column");	}
+
+	@Override
+	public int getInsufficientQtyAvailableForSalesColor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_InsufficientQtyAvailableForSalesColor_ID);
+	}
+
+	@Override
 	public void setIsBPartnerAddress_Override (final boolean IsBPartnerAddress_Override)
 	{
 		set_Value (COLUMNNAME_IsBPartnerAddress_Override, IsBPartnerAddress_Override);
@@ -1524,6 +1547,18 @@ public class X_M_ShipmentSchedule extends org.compiere.model.PO implements I_M_S
 	public java.lang.String getProductDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductDescription);
+	}
+
+	@Override
+	public void setQtyAvailableForSales (final @Nullable BigDecimal QtyAvailableForSales)
+	{
+		throw new IllegalArgumentException ("QtyAvailableForSales is virtual column");	}
+
+	@Override
+	public BigDecimal getQtyAvailableForSales() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyAvailableForSales);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
