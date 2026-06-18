@@ -7,11 +7,9 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTe
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
-import de.metas.product.ProductRepository;
 import de.metas.uom.X12DE355;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,7 +33,6 @@ public class PackedHUShippingInfoServiceTest
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
-		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
 		service = PackedHUShippingInfoService.newInstanceForUnitTesting();
 
 		// The packing material DAO needs a centimetre UOM to convert dimensions.
