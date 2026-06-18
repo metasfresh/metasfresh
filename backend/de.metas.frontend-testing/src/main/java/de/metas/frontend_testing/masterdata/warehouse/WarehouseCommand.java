@@ -169,17 +169,13 @@ public class WarehouseCommand
 						.y(StringUtils.trimBlankToOptional(locatorRequest.getY()).orElse(identifierStr))
 						.z(StringUtils.trimBlankToOptional(locatorRequest.getZ()).orElse(identifierStr))
 						.x1(StringUtils.trimBlankToOptional(locatorRequest.getX1()).orElse(identifierStr))
+						.priorityNo(locatorRequest.getPriorityNo())
+						.isGroundLocator(locatorRequest.getIsGroundLocator())
 						.build()
 		);
 		context.putIdentifier(identifier, locatorId);
 
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
-
-		if (locatorRequest.getPriorityNo() != null)
-		{
-			locatorRecord.setPriorityNo(locatorRequest.getPriorityNo());
-			saveRecord(locatorRecord);
-		}
 
 		return toJson(locatorRecord);
 	}
@@ -195,6 +191,8 @@ public class WarehouseCommand
 				.y(locatorRecord.getY())
 				.z(locatorRecord.getZ())
 				.x1(locatorRecord.getX1())
+				.priorityNo(locatorRecord.getPriorityNo())
+				.isGroundLocator(locatorRecord.isGroundLocator())
 				.build();
 	}
 }

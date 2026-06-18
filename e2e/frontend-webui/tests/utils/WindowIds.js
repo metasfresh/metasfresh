@@ -150,6 +150,18 @@ export const FORECAST_WINDOW_ID = 328;
  * with current stock on hand. Used for sales & purchase statistics.
  */
 export const PURCHASE_SALES_OVERVIEW_WINDOW_ID = 542070;
+
+/**
+ * Stock per Week window (Bestand pro Woche)
+ * Table: MD_Stock_PerWeek_V (AD_Table_ID=542612)
+ * Window ID: 542159
+ * Description: Read-only grid view of available-to-promise stock per week.
+ * Opens EMPTY (queryIfNoFilters=false via StockPerWeekSqlViewBindingCustomizer);
+ * rows load only after a filter (product / warehouse / week range) is applied.
+ */
+export const STOCK_PER_WEEK_WINDOW_ID = 542159;
+
+// ============================================================================
 // PICKING WINDOWS
 // ============================================================================
 
