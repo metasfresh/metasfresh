@@ -53,7 +53,7 @@ import java.util.stream.Stream;
 
 /**
  * Repository Tables: MobileUI_UserProfile_Picking, MobileUI_UserProfile_Picking_BPartner,
- *     MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
+ * MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
  * Repository Cluster: MobileUIPickingUserProfileRepository
  */
 @Repository
