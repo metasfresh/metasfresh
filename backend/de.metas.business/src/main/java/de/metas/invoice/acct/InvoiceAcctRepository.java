@@ -134,6 +134,7 @@ public class InvoiceAcctRepository
 	 */
 	public void createOrUpdateLineOverride(
 			@NonNull final InvoiceAndLineId invoiceAndLineId,
+			@NonNull final OrgId orgId,
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final AccountConceptualName accountConceptualName,
 			@NonNull final ElementValueId elementValueId)
@@ -164,15 +165,10 @@ public class InvoiceAcctRepository
 		}
 
 		// Insert new active row.
-		// NOTE: we use OrgId.ANY (0) here intentionally.  All rows produced by this method
-		// therefore share the same orgId=0, which is compatible with the uniqueElementOrThrow
-		// check inside extractOrgId() used by retrieveByInvoiceId().  Do NOT mix rows from
-		// save() (which stamps a real OrgId) with rows from this method on the same invoice,
-		// as that would cause extractOrgId() to throw "Unique org expected".
 		final I_C_Invoice_Acct newRecord = InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class);
 		newRecord.setC_Invoice_ID(invoiceId.getRepoId());
 		newRecord.setC_InvoiceLine_ID(invoiceAndLineId.getRepoId());
-		newRecord.setAD_Org_ID(OrgId.ANY.getRepoId());
+		newRecord.setAD_Org_ID(orgId.getRepoId());
 		newRecord.setC_AcctSchema_ID(acctSchemaId.getRepoId());
 		newRecord.setAccountName(accountConceptualName.getAsString());
 		newRecord.setC_ElementValue_ID(elementValueId.getRepoId());

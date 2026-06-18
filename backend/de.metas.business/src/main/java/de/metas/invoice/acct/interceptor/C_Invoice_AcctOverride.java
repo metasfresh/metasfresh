@@ -10,6 +10,7 @@ import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.acct.InvoiceAcctRepository;
 import de.metas.invoice.service.IInvoiceBL;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -65,6 +66,7 @@ public class C_Invoice_AcctOverride
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
 		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
 		final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(clientId);
 
@@ -83,11 +85,13 @@ public class C_Invoice_AcctOverride
 				final AcctSchemaId acctSchemaId = acctSchema.getId();
 				invoiceAcctRepository.createOrUpdateLineOverride(
 						invoiceAndLineId,
+						orgId,
 						acctSchemaId,
 						CONCEPT_P_EXPENSE_ACCT,
 						overrideElementValueId);
 				invoiceAcctRepository.createOrUpdateLineOverride(
 						invoiceAndLineId,
+						orgId,
 						acctSchemaId,
 						CONCEPT_P_INVENTORY_CLEARING_ACCT,
 						overrideElementValueId);

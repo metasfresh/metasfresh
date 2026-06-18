@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -30,6 +31,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	private static final InvoiceId INVOICE_ID = InvoiceId.ofRepoId(1001);
 	private static final InvoiceAndLineId LINE_ID = InvoiceAndLineId.ofRepoId(INVOICE_ID, 2001);
 	private static final InvoiceAndLineId OTHER_LINE_ID = InvoiceAndLineId.ofRepoId(INVOICE_ID, 2002);
+	private static final OrgId ORG_ID = OrgId.ofRepoId(1000000);
 	private static final AcctSchemaId SCHEMA_ID = AcctSchemaId.ofRepoId(3001);
 	private static final AcctSchemaId OTHER_SCHEMA_ID = AcctSchemaId.ofRepoId(3002);
 	private static final AccountConceptualName CONCEPT_EXPENSE = AccountConceptualName.ofString("P_Expense_Acct");
@@ -51,7 +53,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	@Test
 	void newOverride_inserted_when_none_exists()
 	{
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
 
 		final List<I_C_Invoice_Acct> rows = allActiveRows();
 		assertThat(rows).hasSize(1);
@@ -72,11 +74,11 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	void contradicting_row_deactivated_and_new_active_row_inserted()
 	{
 		// seed: existing row with ELEMENT_A
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
 		assertThat(allActiveRows()).hasSize(1);
 
 		// now override with ELEMENT_B (different account)
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
 
 		// old row must be inactive
 		final List<I_C_Invoice_Acct> allRows = queryBL
@@ -107,12 +109,12 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	void unrelated_rows_remain_untouched()
 	{
 		// unrelated row 1: same line, different concept
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_INVENTORY, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_INVENTORY, ELEMENT_A);
 		// unrelated row 2: different line, same concept
-		repo.createOrUpdateLineOverride(OTHER_LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(OTHER_LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
 
 		// now update the target (LINE_ID / CONCEPT_EXPENSE) with ELEMENT_B
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
 
 		// All three are still active (the two unrelated + the new one)
 		assertThat(allActiveRows()).hasSize(3);
@@ -141,9 +143,9 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	@Test
 	void idempotent_same_account_no_duplicate()
 	{
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
 
 		assertThat(allActiveRows()).hasSize(1);
 		assertThat(allActiveRows().get(0).getC_ElementValue_ID()).isEqualTo(ELEMENT_A.getRepoId());
@@ -156,15 +158,15 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	void different_schema_rows_are_isolated()
 	{
 		// insert for SCHEMA_ID
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
 		// insert for OTHER_SCHEMA_ID (independent tuple)
-		repo.createOrUpdateLineOverride(LINE_ID, OTHER_SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, OTHER_SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
 
 		// both rows are active
 		assertThat(allActiveRows()).hasSize(2);
 
 		// updating SCHEMA_ID with a new element must NOT touch the OTHER_SCHEMA_ID row
-		repo.createOrUpdateLineOverride(LINE_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
 
 		// OTHER_SCHEMA_ID row is still active with ELEMENT_B
 		final Optional<I_C_Invoice_Acct> otherSchemaRowOpt = allActiveRows().stream()
