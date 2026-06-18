@@ -1,5 +1,6 @@
 package de.metas.einvoice.cii;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.einvoice.EInvoiceFormat;
@@ -279,8 +280,8 @@ public class CiiMapper
 
 	private TradePartyType buildBuyerParty(@NonNull final I_C_Invoice invoice)
 	{
-		final I_C_BPartner buyerBP = bPartnerDAO.getById(invoice.getC_BPartner_ID());
-		// getBPartnerLocationByIdEvenInactive: invoices may reference inactive locations after completion
+		final I_C_BPartner buyerBP = bPartnerDAO.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+		// invoices may reference inactive locations after completion
 		final BPartnerLocationId buyerBPLocId = BPartnerLocationId.ofRepoIdOrNull(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
 		final I_C_BPartner_Location buyerBPLoc = buyerBPLocId != null
 				? bPartnerDAO.getBPartnerLocationByIdEvenInactive(buyerBPLocId)
