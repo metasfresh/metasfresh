@@ -22,11 +22,16 @@
 
 package de.metas.common.delivery.v1.json;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
 /**
  * Wire codes for the top-level handling-unit type sent to nShift on advise/ship items
  * ({@code JsonDeliveryAdvisorRequestItem#topLevelType}, {@code JsonDeliveryOrderParcel#topLevelType}).
  * LU = load unit, TU = transport unit, CU = customer unit (a single product unit / no packaging).
  */
+@Getter
+@AllArgsConstructor
 public enum JsonTopLevelType
 {
 	LU("LU"),
@@ -34,14 +39,4 @@ public enum JsonTopLevelType
 	CU("CU");
 
 	private final String code;
-
-	JsonTopLevelType(final String code)
-	{
-		this.code = code;
-	}
-
-	public String getCode()
-	{
-		return code;
-	}
 }
