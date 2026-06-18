@@ -1657,7 +1657,7 @@ public class TypedSqlQuery<T> extends AbstractTypedQuery<T>
 
 		sqlDelete.append(selectSql)
 				.append(" )");
-		return DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.toString(), params, trxName);
+		return DB.executeUpdateEx(sqlDelete.toString(), params, trxName);
 	}
 
 	/**
