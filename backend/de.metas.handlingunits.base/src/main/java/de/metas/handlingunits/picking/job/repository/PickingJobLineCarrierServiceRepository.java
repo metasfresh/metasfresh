@@ -45,6 +45,9 @@ import java.util.Set;
  * {@link I_M_Picking_Job_Line_Carrier_Service}.
  * <p>
  * Line-side counterpart of {@code de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository}.
+ *
+ * Repository Tables: M_Picking_Job_Line_Carrier_Service
+ * Repository Cluster: PickingJobLineCarrierServiceRepository
  */
 @Repository
 public class PickingJobLineCarrierServiceRepository

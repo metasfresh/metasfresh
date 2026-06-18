@@ -68,6 +68,7 @@ import de.metas.util.lang.UIDStringUtil;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -81,7 +82,10 @@ import java.util.function.BiFunction;
 public class PickingJobSaver
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
-	protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository = new PickingJobLineCarrierServiceRepository();
+	// Obtain the Spring-managed repository like the schedule side does, with a plain-new fallback for the no-Spring-context
+	// (unit-test) case in which this plain saver is instantiated directly via its factory methods.
+	protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository =
+			SpringContextHolder.getBeanOrSupply(PickingJobLineCarrierServiceRepository.class, PickingJobLineCarrierServiceRepository::new);
 
 	protected final HashMap<PickingJobId, I_M_Picking_Job> pickingJobs = new HashMap<>();
 	protected final ArrayListMultimap<PickingJobId, I_M_Picking_Job_HUAlternative> pickingJobHUAlternatives = ArrayListMultimap.create();

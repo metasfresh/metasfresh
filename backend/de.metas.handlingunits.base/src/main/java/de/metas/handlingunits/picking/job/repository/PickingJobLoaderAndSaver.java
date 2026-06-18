@@ -58,6 +58,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
@@ -95,6 +96,9 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	private final PickingJobLoaderSupportingServices loadingSupportingServices;
 
 	private final HashMap<PickingJobId, Boolean> hasLocks = new HashMap<>();
+
+	/** Batch-loaded once per {@link #loadRecordsFromDB(Set)} pass, so {@link #loadLine} does not query per line (avoids N+1). */
+	private final HashMap<PickingJobLineId, ImmutableSet<CarrierServiceId>> carrierServicesByLineId = new HashMap<>();
 
 	private PickingJobLoaderAndSaver(@NonNull final PickingJobLoaderSupportingServices loadingSupportingServices)
 	{
@@ -168,7 +172,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		pickingJobLines.put(pickingJobId, record);
 	}
 
-	public void assignCarrierServicesToLine(@NonNull final PickingJobLineId lineId, @NonNull final java.util.Set<de.metas.inoutcandidate.CarrierServiceId> carrierServiceIds)
+	public void assignCarrierServicesToLine(@NonNull final PickingJobLineId lineId, @NonNull final Set<CarrierServiceId> carrierServiceIds)
 	{
 		lineCarrierServiceRepository.assignServicesToLine(lineId, carrierServiceIds);
 	}
@@ -218,7 +222,38 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
 		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
 
+		warmUpCarrierServicesByLineId(pickingJobIds);
+
 		hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
+	}
+
+	/**
+	 * Batch-loads the assigned carrier services for all the just-loaded jobs' lines in ONE query (mirrors how steps are
+	 * batch-loaded in {@link PickingJobSaver#loadRecordsFromDB}), so the per-line {@link #loadLine} can read from the map
+	 * instead of issuing a query per line.
+	 */
+	private void warmUpCarrierServicesByLineId(@NonNull final Set<PickingJobId> pickingJobIds)
+	{
+		// Only the line ids not yet in the map, so repeated calls (loadRecordsFromDB + loadJob) issue at most one query per line id.
+		final ImmutableSet<PickingJobLineId> lineIdsToLoad = pickingJobIds.stream()
+				.flatMap(pickingJobId -> pickingJobLines.get(pickingJobId).stream())
+				.map(line -> PickingJobLineId.ofRepoId(line.getM_Picking_Job_Line_ID()))
+				.filter(lineId -> !carrierServicesByLineId.containsKey(lineId))
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (lineIdsToLoad.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSetMultimap<PickingJobLineId, CarrierServiceId> servicesByLineId =
+				lineCarrierServiceRepository.getAssignedServiceIdsMapByLineIds(lineIdsToLoad);
+
+		// IMPORTANT: also map the lines that have NO assigned service to an empty set, so loadLine never falls back to a query.
+		for (final PickingJobLineId lineId : lineIdsToLoad)
+		{
+			carrierServicesByLineId.put(lineId, servicesByLineId.get(lineId));
+		}
 	}
 
 	private ImmutableSet<OrderId> extractSalesOrderIdsFromCachedObjects()
@@ -265,6 +300,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 	{
 		final PickingJobId pickingJobId = PickingJobId.ofRepoId(record.getM_Picking_Job_ID());
 		final PickingJobHeader pickingJobHeader = toPickingJobHeader(record);
+
+		// Make sure the line carrier-services are batch-loaded for this job's lines. loadRecordsFromDB already warms
+		// them up, but the create path (PickingJobCreateRepoHelper) populates pickingJobLines via addAlreadyLoadedFromDB
+		// and never goes through loadRecordsFromDB, so warm up here too. Both paths stay single-query (no per-line query).
+		warmUpCarrierServicesByLineId(ImmutableSet.of(pickingJobId));
 
 		return PickingJob.builder()
 				.id(pickingJobId)
@@ -479,7 +519,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
 				.isManual(record.isCarrierAdviseManual())
 				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
-				.carrierServices(lineCarrierServiceRepository.getAssignedServiceIdsByLineId(pickingJobLineId))
+				.carrierServices(carrierServicesByLineId.getOrDefault(pickingJobLineId, ImmutableSet.of()))
 				.build();
 	}
 

@@ -46,7 +46,7 @@ import java.util.stream.Stream;
  * existence / lookup queries over the same tables.
  *
  * Repository Tables: M_Picking_Job, M_Picking_Job_Line, M_Picking_Job_Step, M_Picking_Job_Step_HUAlternative, M_Picking_Job_Step_PickedHU, M_Picking_Job_HUAlternative
- * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper
+ * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper, PickingJobLineCarrierServiceRepository
  */
 @Repository
 public class PickingJobRepository
