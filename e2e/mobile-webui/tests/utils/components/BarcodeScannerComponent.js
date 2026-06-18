@@ -240,13 +240,14 @@ export const BarcodeScannerComponent = {
         await page.getByTestId(testId).tap();
     }),
 
-    // Asserts a footer button (by testId) IS shown.
-    expectFooterButtonPresent: async (testId) => await test.step(`${NAME} - Expect footer button present '${testId}'`, async () => {
+    // Asserts a button (by testId) IS shown. The testId may be a footer button or a
+    // mode-panel button (e.g. 'barcode-scanner-back-to-scanner', rendered by ManualModePanel).
+    expectButtonPresent: async (testId) => await test.step(`${NAME} - Expect button present '${testId}'`, async () => {
         await expect(page.getByTestId(testId)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    // Asserts a footer button (by testId) is NOT shown.
-    expectFooterButtonAbsent: async (testId) => await test.step(`${NAME} - Expect footer button absent '${testId}'`, async () => {
+    // Asserts a button (by testId) is NOT shown.
+    expectButtonAbsent: async (testId) => await test.step(`${NAME} - Expect button absent '${testId}'`, async () => {
         await expect(page.getByTestId(testId)).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 }

@@ -393,7 +393,7 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectCameraVideoAbsent();
         // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
         // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
-        await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-back-to-scanner');
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-back-to-scanner');
     });
 
     // camera toggle: hardware + camera both enabled →
@@ -460,8 +460,8 @@ test.describe('Modes', () => {
 
         // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
         // (camera toggle needs BOTH hardware and camera enabled).
-        await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-enter-manually');
-        await BarcodeScannerComponent.expectFooterButtonAbsent('barcode-scanner-toggle-hw-camera');
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectButtonAbsent('barcode-scanner-toggle-hw-camera');
 
         // Manual fallback works: tap "enter manually" → visible editable input → type + Enter forwards.
         await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
