@@ -36,8 +36,7 @@ const getEntryItemsFromState = (state) => {
     .reduce((acc, headersEntry) => acc.concat(headersEntry.values), [])
     .filter((entryItem) => !entryItem.hidden)
     .forEach((entryItem) => {
-      const caption = entryItem.caption;
-      const key = caption ? caption : 'unique-' + nextUniqueId++;
+      const key = entryItem.id ?? entryItem.caption ?? 'unique-' + nextUniqueId++;
 
       let isFieldRemoved;
       if (entryItem.hideField) {
@@ -256,16 +255,17 @@ const mergeEntryValues = (valuesArray, newValuesArray) => {
   if (!valuesArray?.length) return [...newValuesArray];
 
   const newValuesByCaption = newValuesArray.reduce((accum, value) => {
-    accum[value.caption] = value;
+    const entryId = value.id ?? value.caption;
+    accum[entryId] = value;
     return accum;
   }, {});
 
   const result = [];
 
   valuesArray.forEach((value) => {
-    const caption = value.caption;
-    const newValue = newValuesByCaption[caption];
-    delete newValuesByCaption[caption];
+    const entryId = value.id ?? value.caption;
+    const newValue = newValuesByCaption[entryId];
+    delete newValuesByCaption[entryId];
     if (newValue) {
       result.push(newValue);
     } else {
@@ -274,9 +274,9 @@ const mergeEntryValues = (valuesArray, newValuesArray) => {
   });
 
   newValuesArray.forEach((value) => {
-    const caption = value.caption;
-    const newValue = newValuesByCaption[caption];
-    delete newValuesByCaption[caption];
+    const entryId = value.id ?? value.caption;
+    const newValue = newValuesByCaption[entryId];
+    delete newValuesByCaption[entryId];
     if (newValue) {
       result.push(newValue);
     }
