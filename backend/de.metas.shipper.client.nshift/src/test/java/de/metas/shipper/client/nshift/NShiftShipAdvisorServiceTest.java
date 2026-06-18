@@ -35,6 +35,8 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
+import de.metas.shipper.client.nshift.json.JsonDetail;
+import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.request.JsonShipAdvisorRequest;
@@ -46,6 +48,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -216,6 +219,70 @@ public class NShiftShipAdvisorServiceTest
 		assertThat(refsByKind.get(130)).as("total value summed across items").isEqualTo("25");
 		// kind 134 = gross weight kg (CUSTOM_FIELD_6) — PARCEL-level, resolved ONCE (not duplicated per item)
 		assertThat(refsByKind.get(134)).as("parcel gross weight resolved once").isEqualTo("12");
+	}
+
+	@Test
+	void build_request_emits_detail_groups_like_ship_path()
+	{
+		final JsonShipAdvisorRequest request = NShiftShipAdvisorService.buildRequest(ADVISOR_REQUEST_TWO_ITEMS);
+
+		final List<JsonDetailGroup> detailGroups = request.getData().getDetailGroups();
+		assertThat(detailGroups)
+				.as("advise must carry detail groups (preview of what ship sends to nShift)")
+				.isNotEmpty();
+
+		// LINE_DETAIL_GROUP: group "1" (customs article) — single advise parcel ⇒ lineNo = 1.
+		final JsonDetailGroup lineGroup = detailGroups.stream()
+				.filter(g -> NShiftTestMappingConfigs.DETAIL_GROUP_KEY_CUSTOMS_ARTICLE.equals(g.getGroupID()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("expected a LINE_DETAIL_GROUP with groupID="
+						+ NShiftTestMappingConfigs.DETAIL_GROUP_KEY_CUSTOMS_ARTICLE));
+
+		assertThat(lineGroup.getRows())
+				.as("one detail row per product item")
+				.hasSize(2);
+
+		// Each row: lineNo = 1 (single parcel), the eDekGoodsLineNo special detail (kindId 193 = lineNo),
+		// and the resolved per-product values (description of goods = product name).
+		final Map<String, Map<Integer, String>> rowsByProductName = lineGroup.getRows().stream()
+				.collect(Collectors.toMap(
+						row -> row.getDetails().stream()
+								.filter(d -> d.getKindId() == Integer.parseInt(NShiftTestMappingConfigs.DETAIL_KIND_DESCRIPTION_OF_GOODS))
+								.map(JsonDetail::getValue)
+								.findFirst().orElse(null),
+						row -> {
+							assertThat(row.getLineNo()).as("single advise parcel ⇒ lineNo 1").isEqualTo(1);
+							return row.getDetails().stream()
+									.collect(Collectors.toMap(
+											JsonDetail::getKindId,
+											JsonDetail::getValue,
+											(a, b) -> a));
+						}));
+
+		assertThat(rowsByProductName.keySet())
+				.as("both products resolved as LINE detail rows")
+				.containsExactlyInAnyOrder("Product A", "Product B");
+
+		final int kindUnitValue = Integer.parseInt(NShiftTestMappingConfigs.DETAIL_KIND_UNIT_VALUE);
+		final int kindQuantity = Integer.parseInt(NShiftTestMappingConfigs.DETAIL_KIND_QUANTITY);
+		final int kindLineNo = 193;
+		// Product A
+		assertThat(rowsByProductName.get("Product A").get(kindUnitValue)).as("Product A unit price").isEqualTo("10");
+		assertThat(rowsByProductName.get("Product A").get(kindQuantity)).as("Product A shipped qty").isEqualTo("1");
+		assertThat(rowsByProductName.get("Product A").get(kindLineNo)).as("Product A eDekGoodsLineNo").isEqualTo("1");
+		// Product B
+		assertThat(rowsByProductName.get("Product B").get(kindUnitValue)).as("Product B unit price").isEqualTo("15");
+		assertThat(rowsByProductName.get("Product B").get(kindQuantity)).as("Product B shipped qty").isEqualTo("1");
+
+		// Shipment-level DETAIL_GROUP: group "2" (customs info). SHARED_TEST maps SenderCountryCode→ShipperEORI
+		// for receiver-country RO, so a shipment-level group is present (single row, no lineNo).
+		final JsonDetailGroup shipmentGroup = detailGroups.stream()
+				.filter(g -> NShiftTestMappingConfigs.DETAIL_GROUP_KEY_CUSTOMS_INFO.equals(g.getGroupID()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("expected a shipment-level DETAIL_GROUP with groupID="
+						+ NShiftTestMappingConfigs.DETAIL_GROUP_KEY_CUSTOMS_INFO));
+		assertThat(shipmentGroup.getRows()).as("shipment-level group has one row").hasSize(1);
+		assertThat(shipmentGroup.getRows().get(0).getLineNo()).as("shipment-level row carries no lineNo").isNull();
 	}
 
 	@Test

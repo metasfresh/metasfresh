@@ -169,7 +169,6 @@ public class NShiftUtil
 				})
 				.collect(Collectors.toList());
 
-		// The advise carries exactly one physical parcel (the packed HU) → lineNo = 1.
 		allDetailGroups.addAll(buildLineLevelDetailGroups(perItemValueProviders, 1, mappingConfigs));
 
 		return allDetailGroups;

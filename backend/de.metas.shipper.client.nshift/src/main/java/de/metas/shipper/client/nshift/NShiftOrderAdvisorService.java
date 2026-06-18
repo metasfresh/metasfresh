@@ -111,6 +111,8 @@ public class NShiftOrderAdvisorService
 
 		dataBuilder.line(NShiftUtil.buildAdvisorLine(deliveryAdvisorRequest, mappingConfigs));
 
+		dataBuilder.detailGroups(NShiftUtil.buildAdvisorDetailGroups(deliveryAdvisorRequest, mappingConfigs));
+
 		return JsonShipAdvisorRequest.builder()
 				.options(options)
 				.data(dataBuilder.build())
