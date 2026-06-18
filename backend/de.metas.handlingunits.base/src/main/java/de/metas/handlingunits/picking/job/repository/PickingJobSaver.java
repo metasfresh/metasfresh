@@ -57,6 +57,7 @@ import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -352,6 +353,9 @@ public class PickingJobSaver
 
 		updateRecord(record, from.getCurrentPickingTarget());
 
+		record.setCarrier_Product_ID(CarrierProductId.toRepoId(from.getCarrierProductId()));
+		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
+
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());
 	}
@@ -381,6 +385,9 @@ public class PickingJobSaver
 			@NonNull final PickingJobDocStatus docStatus)
 	{
 		updateRecord(record, from.getCurrentPickingTarget());
+
+		record.setCarrier_Product_ID(CarrierProductId.toRepoId(from.getCarrierProductId()));
+		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
 
 		final boolean isManuallyClosed = from.isManuallyClosed();
 		record.setIsManuallyClosed(isManuallyClosed);

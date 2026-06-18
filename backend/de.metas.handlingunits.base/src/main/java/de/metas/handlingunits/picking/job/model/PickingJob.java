@@ -41,6 +41,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -165,6 +166,25 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return UserId.equals(header.getLockedBy(), lockedBy)
 				? this
 				: toBuilder().header(header.toBuilder().lockedBy(lockedBy).build()).build();
+	}
+
+	@Nullable
+	public CarrierProductId getCarrierProductId() {return header.getCarrierProductId();}
+
+	public boolean isCarrierAdviseReadOnly() {return header.isCarrierAdviseReadOnly();}
+
+	public PickingJob withCarrierProductId(@Nullable final CarrierProductId carrierProductId)
+	{
+		return CarrierProductId.equals(header.getCarrierProductId(), carrierProductId)
+				? this
+				: toBuilder().header(header.toBuilder().carrierProductId(carrierProductId).build()).build();
+	}
+
+	public PickingJob withCarrierAdviseReadOnly(final boolean carrierAdviseReadOnly)
+	{
+		return header.isCarrierAdviseReadOnly() == carrierAdviseReadOnly
+				? this
+				: toBuilder().header(header.toBuilder().carrierAdviseReadOnly(carrierAdviseReadOnly).build()).build();
 	}
 
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)

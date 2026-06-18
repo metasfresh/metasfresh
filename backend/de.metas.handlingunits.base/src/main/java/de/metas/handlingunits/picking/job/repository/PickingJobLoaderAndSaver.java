@@ -62,6 +62,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.OptionalBoolean;
@@ -315,6 +316,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.isDisplayPickingSlotSuggestions(pickingJobOptions.getDisplayPickingSlotSuggestions().orElseFalse())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
+				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
 				.build();
 	}
 
@@ -466,6 +469,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.pickingUnit(computePickingUnit(UomId.ofRepoIdOrNull(record.getCatch_UOM_ID()), packingInfo, pickingJobOptions))
 				.currentPickingTarget(currentPickingTarget)
 				.pickFromManufacturingOrderId(PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID()))
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
+				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
 				.build();
 	}
 

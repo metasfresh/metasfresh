@@ -28,6 +28,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -94,8 +95,7 @@ class PickingJobRepositoryTest
 				.build();
 	}
 
-	@Test
-	void createNewAndGet_then_getById()
+	private PickingJob createSampleJob()
 	{
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(11), dummyQRCode("7a71c408-e7fb-4b5d-a0b8-814896b31659"));
 		loadingSupportServices.mockQRCode(HuId.ofRepoId(1001), dummyQRCode("f18c53be-1341-4203-b0f4-fb25fb33a5fa"));
@@ -103,7 +103,7 @@ class PickingJobRepositoryTest
 		final OrderAndLineId salesOrderLineId = OrderAndLineId.ofRepoIds(salesOrderId, 8);
 		final ShipmentScheduleAndJobScheduleId scheduleId = ShipmentScheduleAndJobScheduleId.ofRepoIds(7, -1);
 		final BPartnerLocationId deliveryBPLocationId = BPartnerLocationId.ofRepoId(3, 4);
-		final PickingJob jobCreated = pickingJobRepository.createNewAndGet(
+		return pickingJobRepository.createNewAndGet(
 				PickingJobCreateRepoRequest.builder()
 						.aggregationType(PickingJobAggregationType.SALES_ORDER)
 						.orgId(orgId)
@@ -147,12 +147,43 @@ class PickingJobRepositoryTest
 								.build())
 						.build(),
 				loadingSupportServices);
+	}
+
+	@Test
+	void createNewAndGet_then_getById()
+	{
+		final PickingJob jobCreated = createSampleJob();
 		expect.toMatchSnapshot(jobCreated);
 
 		final PickingJob jobLoaded = pickingJobRepository.getById(jobCreated.getId(), loadingSupportServices);
 		Assertions.assertThat(jobLoaded)
 				.usingRecursiveComparison()
 				.isEqualTo(jobCreated);
+	}
+
+	@Test
+	void carrierProductAndAdviseReadOnly_roundTrip_onHeaderAndLine()
+	{
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711);
+
+		final PickingJob jobToSave = createSampleJob()
+				.withCarrierProductId(carrierProductId)
+				.withCarrierAdviseReadOnly(true)
+				.withChangedLines(line -> line.toBuilder()
+						.carrierProductId(carrierProductId)
+						.carrierAdviseReadOnly(true)
+						.build());
+		pickingJobRepository.save(jobToSave);
+
+		final PickingJob jobLoaded = pickingJobRepository.getById(jobToSave.getId(), loadingSupportServices);
+
+		Assertions.assertThat(jobLoaded.getCarrierProductId()).isEqualTo(carrierProductId);
+		Assertions.assertThat(jobLoaded.isCarrierAdviseReadOnly()).isTrue();
+
+		Assertions.assertThat(jobLoaded.getLines()).allSatisfy(line -> {
+			Assertions.assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+			Assertions.assertThat(line.isCarrierAdviseReadOnly()).isTrue();
+		});
 	}
 
 	private int createPickingJobWithLine(

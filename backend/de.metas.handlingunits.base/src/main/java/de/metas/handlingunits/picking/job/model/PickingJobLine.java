@@ -41,6 +41,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -83,6 +84,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	@NonNull ImmutableList<PickingJobStep> steps;
 	boolean isManuallyClosed;
 
+	@Nullable CarrierProductId carrierProductId;
+	boolean carrierAdviseReadOnly;
+
 	// computed values
 	@NonNull PickingJobProgress progress;
 
@@ -120,7 +124,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final ImmutableList<PickingJobStep> steps,
 			@Nullable final CurrentPickingTarget currentPickingTarget,
 			@NonNull final PickingUnit pickingUnit,
-			final boolean isManuallyClosed)
+			final boolean isManuallyClosed,
+			@Nullable final CarrierProductId carrierProductId,
+			final boolean carrierAdviseReadOnly)
 	{
 		this.id = id;
 		this.caption = caption;
@@ -140,6 +146,8 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.pickFromManufacturingOrderId = pickFromManufacturingOrderId;
 		this.steps = steps;
 		this.isManuallyClosed = isManuallyClosed;
+		this.carrierProductId = carrierProductId;
+		this.carrierAdviseReadOnly = carrierAdviseReadOnly;
 
 		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 
