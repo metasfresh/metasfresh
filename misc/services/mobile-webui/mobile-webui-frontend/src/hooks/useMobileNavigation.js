@@ -30,8 +30,11 @@ export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) =>
     if (backLocation) {
       goTo(backLocation);
     } else {
-      console.warn('Going back to previous location using history.go(-1) because backLocation is not provided.');
-      history.go(-1);
+      // No screen-declared back target. The app navigates with history.replace, so the browser
+      // history stack does not reflect the logical screen flow — a history.go(-1) here is unreliable
+      // and is also swallowed by the device-back trap (see useDeviceBackButton). Go Home instead.
+      console.warn('No backLocation provided; navigating Home instead of browser back.');
+      goHome();
     }
   };
 
@@ -59,8 +62,10 @@ export const useMobileNavigation = ({ backLocation: backLocationParam } = {}) =>
       } else if (delta === -1) {
         goBack();
       } else {
-        console.warn('Going back more than one step is not supported yet.');
-        history.go(delta);
+        // Multi-step browser-history jumps don't map to this app's replace-based navigation
+        // (and would be swallowed by the device-back trap). Go Home instead.
+        console.warn('Multi-step browser history navigation is not supported; navigating Home.', { delta });
+        goHome();
       }
     },
     goHome,
