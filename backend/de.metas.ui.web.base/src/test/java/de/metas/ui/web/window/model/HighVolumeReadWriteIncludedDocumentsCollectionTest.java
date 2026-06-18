@@ -72,7 +72,7 @@ class HighVolumeReadWriteIncludedDocumentsCollectionTest
 		// -----------------------------------------------------------------------
 		// Build the stub DocumentsRepository.
 		//
-		// Faithful reproduction of SqlDocumentsRepository.save() (lines 452-481):
+		// Faithful reproduction of SqlDocumentsRepository.save():
 		//   1. Make the child report no remaining changes (markAsSaved).
 		//   2. Notify the parent: child.getParentDocument().onChildSaved(child).
 		//   3. Return SAVED.
