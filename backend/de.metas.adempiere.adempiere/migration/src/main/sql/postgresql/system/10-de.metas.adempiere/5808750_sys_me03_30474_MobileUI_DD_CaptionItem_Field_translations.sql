@@ -3,9 +3,10 @@
 -- These caption-item options render as the labels of the mobile distribution job-detail header.
 -- They were created with English base names and never translated (IsTranslated='N'), so the
 -- German WebUI showed English. Set the German base Name + de_DE/de_CH/fr_CH + en_US translations.
--- German terms taken from the existing metasfresh elements (M_LocatorFrom_ID='Von Lagerort',
--- M_LocatorTo_ID='Lagerort An', M_WarehouseTo_ID='Lager Nach', PickDate='Kommissionierdatum',
--- PP_Plant_ID='Produktionsstätte', Qty='Menge', Value='Suchschlüssel').
+-- German terms are harmonized with the mobile-webui frontend vocabulary
+-- (misc/services/mobile-webui/mobile-webui-frontend/src/utils/translations_de.js):
+--   Locator='Lagerplatz', source locator='Quell-Lagerplatz', DropToLocator='Ziellagerplatz',
+--   ProductValue='Artikelnummer' — NOT the backend AD_Element terms (Lagerort/Suchschlüssel).
 -- PickingInstruction (544097) was already translated and is intentionally left unchanged.
 -- See https://github.com/metasfresh/me03/issues/30474
 
@@ -15,14 +16,14 @@ SET Name = m.de_name,
     Updated = TO_TIMESTAMP('2026-06-18 12:00:00', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 100
 FROM (VALUES
-    ('SourceDoc',           'Quellbeleg'),
-    ('WarehouseFrom',       'Lager Von'),
-    ('WarehouseTo',         'Lager Nach'),
+    ('SourceDoc',           'Quelldokument'),
+    ('WarehouseFrom',       'Quell-Lager'),
+    ('WarehouseTo',         'Ziellager'),
     ('PickDate',            'Kommissionierdatum'),
-    ('LocatorFrom',         'Von Lagerort'),
-    ('LocatorTo',           'Lagerort An'),
+    ('LocatorFrom',         'Quell-Lagerplatz'),
+    ('LocatorTo',           'Ziellagerplatz'),
     ('ProductGTIN',         'Produkt-GTIN'),
-    ('ProductValueAndName', 'Suchschlüssel und Name'),
+    ('ProductValueAndName', 'Artikelnummer und Name'),
     ('Plant',               'Produktionsstätte'),
     ('Qty',                 'Menge'),
     ('Priority',            'Priorität')
@@ -37,14 +38,14 @@ SET Name = m.de_name,
     Updated = TO_TIMESTAMP('2026-06-18 12:00:01', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 100
 FROM AD_Ref_List rl, (VALUES
-    ('SourceDoc',           'Quellbeleg'),
-    ('WarehouseFrom',       'Lager Von'),
-    ('WarehouseTo',         'Lager Nach'),
+    ('SourceDoc',           'Quelldokument'),
+    ('WarehouseFrom',       'Quell-Lager'),
+    ('WarehouseTo',         'Ziellager'),
     ('PickDate',            'Kommissionierdatum'),
-    ('LocatorFrom',         'Von Lagerort'),
-    ('LocatorTo',           'Lagerort An'),
+    ('LocatorFrom',         'Quell-Lagerplatz'),
+    ('LocatorTo',           'Ziellagerplatz'),
     ('ProductGTIN',         'Produkt-GTIN'),
-    ('ProductValueAndName', 'Suchschlüssel und Name'),
+    ('ProductValueAndName', 'Artikelnummer und Name'),
     ('Plant',               'Produktionsstätte'),
     ('Qty',                 'Menge'),
     ('Priority',            'Priorität')
@@ -62,11 +63,11 @@ SET Name = m.en_name,
     UpdatedBy = 100
 FROM AD_Ref_List rl, (VALUES
     ('SourceDoc',           'Source Document'),
-    ('WarehouseFrom',       'From Warehouse'),
-    ('WarehouseTo',         'To Warehouse'),
+    ('WarehouseFrom',       'Source Warehouse'),
+    ('WarehouseTo',         'Target Warehouse'),
     ('PickDate',            'Pick Date'),
-    ('LocatorFrom',         'From Locator'),
-    ('LocatorTo',           'To Locator'),
+    ('LocatorFrom',         'Source Locator'),
+    ('LocatorTo',           'Drop to Locator'),
     ('ProductGTIN',         'Product GTIN'),
     ('ProductValueAndName', 'Product Value and Name'),
     ('Plant',               'Plant'),
@@ -84,14 +85,14 @@ SET Name = m.de_name,
     Updated = TO_TIMESTAMP('2026-06-18 12:00:03', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy = 100
 FROM AD_Ref_List rl, (VALUES
-    ('SourceDoc',           'Quellbeleg'),
-    ('WarehouseFrom',       'Lager Von'),
-    ('WarehouseTo',         'Lager Nach'),
+    ('SourceDoc',           'Quelldokument'),
+    ('WarehouseFrom',       'Quell-Lager'),
+    ('WarehouseTo',         'Ziellager'),
     ('PickDate',            'Kommissionierdatum'),
-    ('LocatorFrom',         'Von Lagerort'),
-    ('LocatorTo',           'Lagerort An'),
+    ('LocatorFrom',         'Quell-Lagerplatz'),
+    ('LocatorTo',           'Ziellagerplatz'),
     ('ProductGTIN',         'Produkt-GTIN'),
-    ('ProductValueAndName', 'Suchschlüssel und Name'),
+    ('ProductValueAndName', 'Artikelnummer und Name'),
     ('Plant',               'Produktionsstätte'),
     ('Qty',                 'Menge'),
     ('Priority',            'Priorität')
