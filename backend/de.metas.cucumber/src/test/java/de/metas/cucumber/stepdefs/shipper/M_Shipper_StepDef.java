@@ -107,7 +107,7 @@ public class M_Shipper_StepDef
 				.ifPresent(record::setShipperGateway);
 
 		row.getAsOptionalBoolean(I_M_Shipper.COLUMNNAME_IsApiCarrierAdvise)
-				.ifPresent(value -> record.setIsApiCarrierAdvise(value));
+				.ifPresent(record::setIsApiCarrierAdvise);
 
 		InterfaceWrapperHelper.save(record);
 
