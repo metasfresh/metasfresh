@@ -246,6 +246,8 @@ public class PackedHUCarrierAdviseService
 	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
 	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
+	// numberOfItems is intentionally path-specific (NOT part of the consistency contract):
+	// HU-advise = the product's packed qty; schedule-advise = 1 (no packed HU, a single CU baseline).
 	private JsonDeliveryAdvisorRequestItem buildRequestItem(
 			@NonNull final PackedHUProductItem productItem,
 			@Nullable final ShipmentSchedule schedule)
