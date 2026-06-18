@@ -22,7 +22,6 @@ import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.product.ProductId;
 import de.metas.business.BusinessTestHelper;
 import de.metas.quantity.Quantity;
-import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
 import de.metas.workflow.rest_api.model.WFProcessId;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -90,8 +89,15 @@ class FinishedGoodsLabelConfigTest
 		huQRCodesService = mock(HUQRCodesService.class);
 		huLabelConfigService = mock(HULabelConfigService.class);
 
-		// Construct the app.
-		// Note: HULabelConfigService is NOT a constructor parameter today — that is the bug.
+		// HULabelConfigService is NOT a constructor parameter today — that is the bug.
+		// TODO FIX (GREEN phase): two steps are required to turn this test GREEN —
+		//   (1) production code must call huLabelConfigService.getFirstMatching(...), AND
+		//   (2) huLabelConfigService must be passed here as a new constructor argument:
+		//         app = new ManufacturingMobileApplication(
+		//                 configRepository, manufacturingRestService,
+		//                 huQRCodesService, userWorkstationService, huLabelConfigService);
+		//   If only (1) is done, this test stays RED because the verified mock is not the
+		//   one the SUT holds.
 		app = new ManufacturingMobileApplication(
 				configRepository,
 				manufacturingRestService,
