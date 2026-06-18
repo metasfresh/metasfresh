@@ -427,27 +427,6 @@ public interface I_M_ShipmentSchedule
 	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
-	 * Set Carrier Services.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCarrier_Services (@Nullable java.lang.String Carrier_Services);
-
-	/**
-	 * Get Carrier Services.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCarrier_Services();
-
-	ModelColumn<I_M_ShipmentSchedule, Object> COLUMN_Carrier_Services = new ModelColumn<>(I_M_ShipmentSchedule.class, "Carrier_Services", null);
-	String COLUMNNAME_Carrier_Services = "Carrier_Services";
-
-	/**
 	 * Set Async Batch.
 	 *
 	 * <br>Type: TableDir

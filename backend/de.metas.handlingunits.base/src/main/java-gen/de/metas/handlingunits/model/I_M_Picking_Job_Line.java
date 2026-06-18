@@ -94,27 +94,6 @@ public interface I_M_Picking_Job_Line
 	String COLUMNNAME_Carrier_Product_ID = "Carrier_Product_ID";
 
 	/**
-	 * Set Carrier Services.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCarrier_Services (@Nullable java.lang.String Carrier_Services);
-
-	/**
-	 * Get Carrier Services.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCarrier_Services();
-
-	ModelColumn<I_M_Picking_Job_Line, Object> COLUMN_Carrier_Services = new ModelColumn<>(I_M_Picking_Job_Line.class, "Carrier_Services", null);
-	String COLUMNNAME_Carrier_Services = "Carrier_Services";
-
-	/**
 	 * Set Catch UOM.
 	 * Catch weight UOM as taken from the product master data.
 	 *
