@@ -173,7 +173,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
-      adviseCarrier: 'Frachtführer anfragen',
+      adviseCarrier: 'Lieferweg-Abfrage',
       carrierProduct: 'Frachtführer',
     },
     distribution: {

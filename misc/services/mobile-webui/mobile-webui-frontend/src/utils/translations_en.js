@@ -168,7 +168,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Open demand remaining',
         skippedProducts: 'Skipped products',
       },
-      adviseCarrier: 'Advise carrier',
+      adviseCarrier: 'Carrier Advise',
       carrierProduct: 'Carrier',
     },
     distribution: {
