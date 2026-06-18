@@ -273,22 +273,50 @@ public class NShiftGateway_StepDef
 			final CarrierProduct expectedProduct = carrierProductTable.get(row.getAsIdentifier(I_Carrier_Product.COLUMNNAME_Carrier_Product_ID));
 
 			final JsonDeliveryRequest request = capturedShipmentRequests.stream()
-					.filter(req -> expectedProduct.getCode().equals(req.getShipperProduct().getCode()))
+					.filter(req -> shipperProductEquals(expectedProduct, req.getShipperProduct()))
 					.findFirst()
 					.orElseThrow(() -> new AssertionError("No captured nShift shipment request with shipperProduct.code=" + expectedProduct.getCode()));
 
 			final SoftAssertions softly = new SoftAssertions();
 			row.getAsOptionalIdentifier(I_Carrier_Goods_Type.COLUMNNAME_Carrier_Goods_Type_ID)
 					.map(carrierGoodsTypeTable::get)
-					.ifPresent(expectedGoodsType -> softly.assertThat(request.getGoodsType().getId())
-							.as("goodsType.id for carrier product %s", expectedProduct.getCode())
-							.isEqualTo(expectedGoodsType.getExternalId()));
+					.ifPresent(expectedGoodsType -> softly.assertThat(goodsTypeEquals(expectedGoodsType, request.getGoodsType()))
+							.as("goodsType.id for carrier product %s (expected externalId=%s, actual id=%s)",
+									expectedProduct.getCode(), expectedGoodsType.getExternalId(),
+									request.getGoodsType() != null ? request.getGoodsType().getId() : null)
+							.isTrue());
 			row.getAsOptionalInt("NumParcels").ifPresent(expectedNumParcels -> softly
 					.assertThat(request.getDeliveryOrderParcels().size())
 					.as("number of parcels for carrier product %s", expectedProduct.getCode())
 					.isEqualTo(expectedNumParcels));
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Null-safe equality between an expected {@link CarrierProduct} and the captured request's
+	 * {@link JsonShipperProduct}, compared on their natural key (the shipper-product {@code code}).
+	 */
+	private static boolean shipperProductEquals(
+			@Nullable final CarrierProduct expected,
+			@Nullable final JsonShipperProduct actual)
+	{
+		return java.util.Objects.equals(
+				expected != null ? expected.getCode() : null,
+				actual != null ? actual.getCode() : null);
+	}
+
+	/**
+	 * Null-safe equality between an expected {@link CarrierGoodsType} and the captured request's
+	 * {@link JsonGoodsType}, compared on their natural key (the goods-type external id).
+	 */
+	private static boolean goodsTypeEquals(
+			@Nullable final CarrierGoodsType expected,
+			@Nullable final JsonGoodsType actual)
+	{
+		return java.util.Objects.equals(
+				expected != null ? expected.getExternalId() : null,
+				actual != null ? actual.getId() : null);
 	}
 
 	/**
@@ -312,16 +340,22 @@ public class NShiftGateway_StepDef
 	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
 	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
 	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
-	 *   <b>numberOfItems</b>     — (optional) expected items[0].numberOfItems<br>
-	 *   <b>grossWeightKg</b>     — (optional) expected request.grossWeightKg (parcel-level, per-unit, rounded up)<br>
-	 *   <b>lengthInCM</b>        — (optional) expected request.packageDimensions.lengthInCM (parcel-level)<br>
-	 *   <b>widthInCM</b>         — (optional) expected request.packageDimensions.widthInCM (parcel-level)<br>
-	 *   <b>heightInCM</b>        — (optional) expected request.packageDimensions.heightInCM (parcel-level)<br>
+	 *   <b>grossWeightKg</b>     — (optional) expected request.grossWeightKg (parcel-level, per-unit, rounded up — request-level, taken from the first row)<br>
+	 *   <b>lengthInCM</b>        — (optional) expected request.packageDimensions.lengthInCM (parcel-level — request-level, taken from the first row)<br>
+	 *   <b>widthInCM</b>         — (optional) expected request.packageDimensions.widthInCM (parcel-level — request-level, taken from the first row)<br>
+	 *   <b>heightInCM</b>        — (optional) expected request.packageDimensions.heightInCM (parcel-level — request-level, taken from the first row)<br>
+	 *   <b>productName</b>       — (optional, per-item discriminator) matches the item by its productName<br>
+	 *   <b>productValue</b>      — (optional, per-item discriminator) matches the item by its productValue<br>
+	 *   <b>numberOfItems</b>     — (optional) expected item.numberOfItems<br>
 	 *   <b>unitPrice</b>         — (optional) expected item.unitPrice.amount<br>
 	 *   <b>totalValue</b>        — (optional) expected item.totalValue.amount<br>
 	 *   <b>shippedQuantity</b>   — (optional) expected item.shippedQuantity.value<br>
 	 *   <b>customsTariff</b>     — (optional) expected item.customsTariff<br>
 	 *   <b>totalWeightInKg</b>   — (optional) expected item.totalWeightInKg
+	 *   <p>Each DataTable row is matched to exactly one advisor-request item; the row count MUST equal the number
+	 *   of items. With a single item the row is matched by index; with multiple items each row is matched by its
+	 *   {@code productName} / {@code productValue} discriminator. The request-level address / contact / parcel
+	 *   columns are asserted once, from the first row.
 	 */
 	@And("validate the captured nShift advisor request:")
 	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
@@ -330,75 +364,130 @@ public class NShiftGateway_StepDef
 				.as("nShift ship advisor service was not called")
 				.isNotNull();
 
-		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final List<JsonDeliveryAdvisorRequestItem> items = capturedAdvisorRequest.getItems();
+		assertThat(items).as("advisor request items").isNotEmpty();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+
+		// One row per item: validating every item (not just the first) is the whole point — a row count
+		// that disagrees with the item count would silently leave items unasserted.
+		assertThat(rows)
+				.as("advisor request item count (one DataTable row per item)")
+				.hasSameSizeAs(items);
+
 		final SoftAssertions softly = new SoftAssertions();
 
-		assertAddress(softly, capturedAdvisorRequest.getPickupAddress(), row, "Sender", "pickupAddress");
-		assertContact(softly, capturedAdvisorRequest.getPickupContact(), row, "Sender", "pickupContact");
-		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
-		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
+		// --- request-level fields (address / contact / single per-unit parcel) — taken from the first row ---
+		final DataTableRow firstRow = rows.get(0);
+		assertAddress(softly, capturedAdvisorRequest.getPickupAddress(), firstRow, "Sender", "pickupAddress");
+		assertContact(softly, capturedAdvisorRequest.getPickupContact(), firstRow, "Sender", "pickupContact");
+		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), firstRow, "Receiver", "deliveryAddress");
+		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), firstRow, "Receiver", "deliveryContact");
 
-		// PARCEL-level fields live on the request; per-product fields live on the (single) item.
-		assertThat(capturedAdvisorRequest.getItems()).as("advisor request items").isNotEmpty();
-		final JsonDeliveryAdvisorRequestItem firstItem = capturedAdvisorRequest.getItems().get(0);
-
-		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
-				.assertThat(firstItem.getNumberOfItems())
-				.as("item.numberOfItems")
-				.isEqualTo(expected));
-
-		row.getAsOptionalBigDecimal("grossWeightKg").ifPresent(expected -> softly
+		firstRow.getAsOptionalBigDecimal("grossWeightKg").ifPresent(expected -> softly
 				.assertThat(capturedAdvisorRequest.getGrossWeightKg())
 				.as("grossWeightKg")
 				.isEqualByComparingTo(expected));
 
-		row.getAsOptionalInt("lengthInCM").ifPresent(expected -> softly
+		firstRow.getAsOptionalInt("lengthInCM").ifPresent(expected -> softly
 				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
 						? capturedAdvisorRequest.getPackageDimensions().getLengthInCM() : null)
 				.as("packageDimensions.lengthInCM")
 				.isEqualTo(expected));
 
-		row.getAsOptionalInt("widthInCM").ifPresent(expected -> softly
+		firstRow.getAsOptionalInt("widthInCM").ifPresent(expected -> softly
 				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
 						? capturedAdvisorRequest.getPackageDimensions().getWidthInCM() : null)
 				.as("packageDimensions.widthInCM")
 				.isEqualTo(expected));
 
-		row.getAsOptionalInt("heightInCM").ifPresent(expected -> softly
+		firstRow.getAsOptionalInt("heightInCM").ifPresent(expected -> softly
 				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
 						? capturedAdvisorRequest.getPackageDimensions().getHeightInCM() : null)
 				.as("packageDimensions.heightInCM")
 				.isEqualTo(expected));
 
+		// --- per-item fields: match every row to its item and assert ---
+		for (int i = 0; i < rows.size(); i++)
+		{
+			final DataTableRow row = rows.get(i);
+			final JsonDeliveryAdvisorRequestItem item = matchAdvisorRequestItem(row, items, i);
+			assertAdvisorRequestItem(softly, row, item);
+		}
+
+		softly.assertAll();
+	}
+
+	/**
+	 * Matches a DataTable row to exactly one advisor-request item. With a single item, the row is matched by
+	 * index (no discriminator needed). With multiple items, the row's {@code productName} / {@code productValue}
+	 * discriminator selects the item.
+	 */
+	private static JsonDeliveryAdvisorRequestItem matchAdvisorRequestItem(
+			@NonNull final DataTableRow row,
+			@NonNull final List<JsonDeliveryAdvisorRequestItem> items,
+			final int rowIndex)
+	{
+		if (items.size() == 1)
+		{
+			return items.get(0);
+		}
+
+		Stream<JsonDeliveryAdvisorRequestItem> filtered = items.stream();
+		final Optional<String> productName = row.getAsOptionalString("productName");
+		if (productName.isPresent())
+		{
+			filtered = filtered.filter(it -> productName.get().equals(it.getProductName()));
+		}
+		final Optional<String> productValue = row.getAsOptionalString("productValue");
+		if (productValue.isPresent())
+		{
+			filtered = filtered.filter(it -> productValue.get().equals(it.getProductValue()));
+		}
+
+		return filtered.findFirst()
+				.orElseThrow(() -> new AssertionError(
+						"No advisor request item found for row[" + rowIndex + "] ProductName="
+								+ productName.orElse("<any>") + ", ProductValue=" + productValue.orElse("<any>")));
+	}
+
+	private static void assertAdvisorRequestItem(
+			@NonNull final SoftAssertions softly,
+			@NonNull final DataTableRow row,
+			@NonNull final JsonDeliveryAdvisorRequestItem item)
+	{
+		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
+				.assertThat(item.getNumberOfItems())
+				.as("item.numberOfItems")
+				.isEqualTo(expected));
+
 		row.getAsOptionalBigDecimal("unitPrice").ifPresent(expected -> softly
-				.assertThat(firstItem.getUnitPrice() != null
-						? firstItem.getUnitPrice().getAmount() : null)
+				.assertThat(item.getUnitPrice() != null
+						? item.getUnitPrice().getAmount() : null)
 				.as("item.unitPrice.amount")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalBigDecimal("totalValue").ifPresent(expected -> softly
-				.assertThat(firstItem.getTotalValue() != null
-						? firstItem.getTotalValue().getAmount() : null)
+				.assertThat(item.getTotalValue() != null
+						? item.getTotalValue().getAmount() : null)
 				.as("item.totalValue.amount")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalBigDecimal("shippedQuantity").ifPresent(expected -> softly
-				.assertThat(firstItem.getShippedQuantity() != null
-						? firstItem.getShippedQuantity().getValue() : null)
+				.assertThat(item.getShippedQuantity() != null
+						? item.getShippedQuantity().getValue() : null)
 				.as("item.shippedQuantity.value")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalString("customsTariff").ifPresent(expected -> softly
-				.assertThat(firstItem.getCustomsTariff())
+				.assertThat(item.getCustomsTariff())
 				.as("item.customsTariff")
 				.isEqualTo(expected));
 
 		row.getAsOptionalBigDecimal("totalWeightInKg").ifPresent(expected -> softly
-				.assertThat(firstItem.getTotalWeightInKg())
+				.assertThat(item.getTotalWeightInKg())
 				.as("item.totalWeightInKg")
 				.isEqualByComparingTo(expected));
-
-		softly.assertAll();
 	}
 
 	/**
