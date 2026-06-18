@@ -24,28 +24,42 @@ package de.metas.order.returnpackage.interceptor;
 
 import de.metas.order.OrderId;
 import de.metas.order.returnpackage.core.service.OrderReturnPackageService;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
  * On creation of a sales order, auto-creates the two return-package (Rücknahme Gebinde) rows (EUR + H1).
+ * <p>
+ * Gated by SysConfig {@code C_Order.ReturnPackage.AutoCreate} (default {@code false}): the auto-creation is
+ * off for vanilla installs and only switched on for the deployment that exposes the feature's UI.
  */
 @Interceptor(I_C_Order.class)
 @Component
 @RequiredArgsConstructor
 public class C_Order_ReturnPackage
 {
+	private static final String SYSCONFIG_AutoCreate = "C_Order.ReturnPackage.AutoCreate";
+
 	@NonNull private final OrderReturnPackageService orderReturnPackageService;
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
 	public void createReturnPackages(@NonNull final I_C_Order order)
 	{
 		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		final boolean autoCreate = sysConfigBL.getBooleanValue(SYSCONFIG_AutoCreate, false, order.getAD_Client_ID(), order.getAD_Org_ID());
+		if (!autoCreate)
 		{
 			return;
 		}

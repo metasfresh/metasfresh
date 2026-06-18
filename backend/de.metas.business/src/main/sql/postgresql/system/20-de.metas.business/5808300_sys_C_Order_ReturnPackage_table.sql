@@ -5,6 +5,9 @@
 -- Creates the general table C_Order_ReturnPackage (Name 'Rücknahme Gebinde'), a child of C_Order.
 -- Depends on the pallet-type reference list AD_Reference 542107 created in migration 5808290.
 --
+-- PalletType is mandatory (NOT NULL, IsMandatory='Y'): every row is either EUR or H1; a row with no
+-- pallet type is meaningless. The business partner is NOT stored here — it is derived via C_Order_ID.
+--
 -- Per-row design ("Reading B"): QtyDeliveredLU AND QtyReturnedLU are BOTH stored,
 -- user-editable manual quantity columns — neither is virtual / calculated. Users set them at the
 -- order stage from the known LU quantities to be shipped / received.
@@ -19,12 +22,12 @@
 -- IDs from central ID server:
 --   AD_Table   542618
 --   AD_Element 585006 (C_Order_ReturnPackage_ID key), 585007 (PalletType), 585008 (QtyDeliveredLU), 585009 (QtyReturnedLU)
---   Reused AD_Element: 187 (C_BPartner_ID), 558 (C_Order_ID), and the standard-column elements
---   AD_Column  592815..592827
+--   Reused AD_Element: 558 (C_Order_ID), and the standard-column elements
+--   AD_Column  592815..592827 (592823 / C_BPartner_ID intentionally omitted)
 
 -- Table: C_Order_ReturnPackage
 -- 2026-06-17T09:00:00.000Z
-INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CloningEnabled,CopyColumnsFromTable,Created,CreatedBy,DownlineCloningStrategy,Description,EntityType,Help,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength,WhenChildCloningStrategy) VALUES ('3',0,0,0,542618 /*From ID Server*/,'A','N',TO_TIMESTAMP('2026-06-17 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'A','Rücknahme-Gebinde-Zeilen zu einem Kundenauftrag (C_Order). Je Kundenauftrag werden zwei Zeilen (Palettentyp EUR und H1) automatisch durch einen C_Order-Model-Interceptor angelegt, sobald der Auftrag angelegt wird.','D','Je Kundenauftrag werden zwei Zeilen (Palettentyp EUR und H1) automatisch durch einen C_Order-Model-Interceptor angelegt, sobald der Auftrag angelegt wird. Erscheint keine Zeile, prüfe den Interceptor bzw. ob der Auftrag korrekt angelegt wurde.','N','Y','N','Y','Y','N','Y','N','N','N',0,'Rücknahme Gebinde','NP','L','C_Order_ReturnPackage','DTI',TO_TIMESTAMP('2026-06-17 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,0,'A')
+INSERT INTO AD_Table (AccessLevel,ACTriggerLength,AD_Client_ID,AD_Org_ID,AD_Table_ID,CloningEnabled,CopyColumnsFromTable,Created,CreatedBy,DownlineCloningStrategy,Description,EntityType,Help,ImportTable,IsActive,IsAutocomplete,IsChangeLog,IsDeleteable,IsDLM,IsEnableRemoteCacheInvalidation,IsHighVolume,IsSecurityEnabled,IsView,LoadSeq,Name,PersonalDataCategory,ReplicationType,TableName,TooltipType,Updated,UpdatedBy,WEBUI_View_PageLength,WhenChildCloningStrategy) VALUES ('3',0,0,0,542618 /*From ID Server*/,'A','N',TO_TIMESTAMP('2026-06-17 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'A','Rücknahme-Gebinde-Zeilen zu einem Kundenauftrag (C_Order). Je Kundenauftrag werden zwei Zeilen (Palettentyp EUR und H1) automatisch durch einen C_Order-Model-Interceptor angelegt, sobald der Auftrag angelegt wird (sofern der SysConfig-Schalter C_Order.ReturnPackage.AutoCreate aktiviert ist; Standard: aus).','D','Je Kundenauftrag werden zwei Zeilen (Palettentyp EUR und H1) automatisch durch einen C_Order-Model-Interceptor angelegt, sobald der Auftrag angelegt wird - sofern der SysConfig-Schalter C_Order.ReturnPackage.AutoCreate aktiviert ist (Standard: aus). Erscheint keine Zeile, prüfe zuerst diesen SysConfig-Wert, dann den Interceptor bzw. ob der Auftrag korrekt angelegt wurde.','N','Y','N','Y','Y','N','Y','N','N','N',0,'Rücknahme Gebinde','NP','L','C_Order_ReturnPackage','DTI',TO_TIMESTAMP('2026-06-17 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,0,'A')
 ;
 
 -- 2026-06-17T09:00:01.000Z
@@ -166,18 +169,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(558)
 ;
 
--- Column: C_Order_ReturnPackage.C_BPartner_ID (reuse element 187)
--- 2026-06-17T09:00:32.000Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592823 /*From ID Server*/,187,0,19,542618,'C_BPartner_ID',TO_TIMESTAMP('2026-06-17 09:00:32','YYYY-MM-DD HH24:MI:SS'),100,'N','Bezeichnet einen Geschäftspartner','D',10,'Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','Y','N','N','N','N','N','N','N','N','N','Y','N','Y','Geschäftspartner','NP',0,TO_TIMESTAMP('2026-06-17 09:00:32','YYYY-MM-DD HH24:MI:SS'),100,0)
-;
-
--- 2026-06-17T09:00:33.000Z
-INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592823 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
-;
--- 2026-06-17T09:00:34.000Z
-/* DDL */  select update_Column_Translation_From_AD_Element(187)
-;
-
 -- Element: PalletType
 -- 2026-06-17T09:00:35.000Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585007 /*From ID Server*/,0,'PalletType',TO_TIMESTAMP('2026-06-17 09:00:35','YYYY-MM-DD HH24:MI:SS'),100,'Palettentyp des Rücknahme-Gebindes (EUR oder H1).','D','Y','Palette','Palette',TO_TIMESTAMP('2026-06-17 09:00:35','YYYY-MM-DD HH24:MI:SS'),100)
@@ -207,7 +198,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-17 09:
 
 -- Column: C_Order_ReturnPackage.PalletType (list, AD_Reference_Value_ID=542107)
 -- 2026-06-17T09:00:38.000Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592825 /*From ID Server*/,585007,0,17,542107,542618,'PalletType',TO_TIMESTAMP('2026-06-17 09:00:38','YYYY-MM-DD HH24:MI:SS'),100,'N','Palettentyp des Rücknahme-Gebindes (EUR oder H1).','D',10,NULL,'Y','Y','N','N','N','N','N','N','N','N','N','Y','N','Y','Palette','NP',0,TO_TIMESTAMP('2026-06-17 09:00:38','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592825 /*From ID Server*/,585007,0,17,542107,542618,'PalletType',TO_TIMESTAMP('2026-06-17 09:00:38','YYYY-MM-DD HH24:MI:SS'),100,'N','Palettentyp des Rücknahme-Gebindes (EUR oder H1).','D',10,NULL,'Y','Y','N','N','N','N','N','N','Y','N','N','Y','N','Y','Palette','NP',0,TO_TIMESTAMP('2026-06-17 09:00:38','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2026-06-17T09:00:39.000Z
@@ -297,7 +288,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Physical table
 -- 2026-06-17T09:00:53.000Z
-/* DDL */ CREATE TABLE public.C_Order_ReturnPackage (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_BPartner_ID NUMERIC(10), C_Order_ID NUMERIC(10) NOT NULL, C_Order_ReturnPackage_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) DEFAULT 'Y' CHECK (IsActive IN ('Y','N')) NOT NULL, PalletType VARCHAR(10), QtyDeliveredLU NUMERIC, QtyReturnedLU NUMERIC, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT CBPartner_COrderReturnPackage FOREIGN KEY (C_BPartner_ID) REFERENCES public.C_BPartner DEFERRABLE INITIALLY DEFERRED, CONSTRAINT COrder_COrderReturnPackage FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT C_Order_ReturnPackage_Key PRIMARY KEY (C_Order_ReturnPackage_ID))
+/* DDL */ CREATE TABLE public.C_Order_ReturnPackage (AD_Client_ID NUMERIC(10) NOT NULL, AD_Org_ID NUMERIC(10) NOT NULL, C_Order_ID NUMERIC(10) NOT NULL, C_Order_ReturnPackage_ID NUMERIC(10) NOT NULL, Created TIMESTAMP WITH TIME ZONE NOT NULL, CreatedBy NUMERIC(10) NOT NULL, IsActive CHAR(1) DEFAULT 'Y' CHECK (IsActive IN ('Y','N')) NOT NULL, PalletType VARCHAR(10) NOT NULL, QtyDeliveredLU NUMERIC, QtyReturnedLU NUMERIC, Updated TIMESTAMP WITH TIME ZONE NOT NULL, UpdatedBy NUMERIC(10) NOT NULL, CONSTRAINT COrder_COrderReturnPackage FOREIGN KEY (C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED, CONSTRAINT C_Order_ReturnPackage_Key PRIMARY KEY (C_Order_ReturnPackage_ID))
 ;
 
 -- 2026-06-17T09:00:54.000Z

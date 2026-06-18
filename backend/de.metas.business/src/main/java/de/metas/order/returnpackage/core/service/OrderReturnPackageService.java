@@ -22,11 +22,14 @@
 
 package de.metas.order.returnpackage.core.service;
 
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.returnpackage.PalletType;
 import de.metas.order.returnpackage.core.repository.OrderReturnPackageRepository;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Service;
 
 /**
@@ -37,6 +40,7 @@ import org.springframework.stereotype.Service;
 public class OrderReturnPackageService
 {
 	@NonNull private final OrderReturnPackageRepository orderReturnPackageRepository;
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	/**
 	 * Idempotent: creates the two return-package rows (EUR, H1) for the given order if it has none yet.
@@ -48,9 +52,10 @@ public class OrderReturnPackageService
 			return;
 		}
 
+		final I_C_Order order = orderDAO.getById(orderId); // load once; reused for both pallet-type rows
 		for (final PalletType palletType : PalletType.values())
 		{
-			orderReturnPackageRepository.createRow(orderId, palletType);
+			orderReturnPackageRepository.createRow(order, palletType);
 		}
 	}
 

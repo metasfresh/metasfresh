@@ -76,7 +76,7 @@ class OrderReturnPackageServiceTest
 	{
 		return de.metas.util.Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_Order_ReturnPackage.class)
-				.addEqualsFilter(I_C_Order_ReturnPackage.COLUMNNAME_C_Order_ID, orderId.getRepoId())
+				.addEqualsFilter(I_C_Order_ReturnPackage.COLUMNNAME_C_Order_ID, orderId)
 				.orderBy(I_C_Order_ReturnPackage.COLUMNNAME_PalletType)
 				.create()
 				.list(I_C_Order_ReturnPackage.class);
@@ -103,7 +103,6 @@ class OrderReturnPackageServiceTest
 		for (final I_C_Order_ReturnPackage p : packages)
 		{
 			assertThat(p.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
-			assertThat(p.getC_BPartner_ID()).isEqualTo(order.getC_BPartner_ID());
 			assertThat(p.getQtyDeliveredLU()).isZero(); // Quantity columns default to 0 (the user types the real count)
 			assertThat(p.getQtyReturnedLU()).isZero();
 		}

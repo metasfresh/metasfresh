@@ -8,35 +8,37 @@
 -- sub-tab is separate customer-specific work, intentionally NOT in this PR, nor is the vanilla
 -- sales-order window).
 --
--- Fields shown (sensible order): Geschäftspartner, Auftrag, Palette, geliefert, zurück,
+-- Fields shown (sensible order): Auftrag, Palette, geliefert, zurück,
 -- plus the standard Aktiv (flags group) and Sektion / Mandant (org group).
 -- Grid (list) view + single-record (form) view both provided.
--- Geschäftspartner / Auftrag / Palette are made grid filters via AD_Column.IsSelectionColumn='Y'
+-- Auftrag / Palette are made grid filters via AD_Column.IsSelectionColumn='Y'
 -- (these are the table-local AD_Column rows of C_Order_ReturnPackage — not shared global columns).
+-- The business partner is NOT a field here — it is derivable from the order (C_Order_ID).
 --
 -- Menu: placed under the existing "Aufträge" (Orders) folder, AD_TreeNodeMM Node_ID 457 —
 -- the natural home, since C_Order_ReturnPackage is a child of the sales order (C_Order).
 --
 -- Reused AD_Elements (NO new AD_Element rows inserted — their ColumnNames already exist):
 --   585006 'Rücknahme Gebinde' (window/tab/menu caption + key column)
---   187 C_BPartner_ID 'Geschäftspartner', 558 C_Order_ID 'Auftrag',
+--   558 C_Order_ID 'Auftrag',
 --   585007 PalletType 'Palette', 585008 QtyDeliveredLU 'Geliefert', 585009 QtyReturnedLU 'Zurück',
 --   348 IsActive 'Aktiv', 113 AD_Org_ID 'Sektion', 102 AD_Client_ID 'Mandant'
 --
 -- Existing AD_Column_IDs on C_Order_ReturnPackage (from migration 5808300):
 --   592815 C_Order_ReturnPackage_ID (key), 592816 AD_Client_ID, 592817 AD_Org_ID,
---   592818 IsActive, 592823 C_BPartner_ID, 592824 C_Order_ID, 592825 PalletType,
+--   592818 IsActive, 592824 C_Order_ID, 592825 PalletType,
 --   592826 QtyDeliveredLU, 592827 QtyReturnedLU
+--   (592823 / C_BPartner_ID intentionally not created — derived via C_Order_ID)
 --
 -- IDs from central ID server:
 --   AD_Window 542164
 --   AD_Tab    549320
---   AD_Field  781159..781166 (8: C_BPartner_ID, C_Order_ID, PalletType, QtyDeliveredLU,
---             QtyReturnedLU, IsActive, AD_Org_ID, AD_Client_ID)
+--   AD_Field  781160..781166 (7: C_Order_ID, PalletType, QtyDeliveredLU,
+--             QtyReturnedLU, IsActive, AD_Org_ID, AD_Client_ID; 781159 / C_BPartner_ID dropped)
 --   AD_UI_Section        547829
 --   AD_UI_Column         549566 (left), 549567 (right)
 --   AD_UI_ElementGroup   555463 (left primary), 555464 (right flags), 555465 (right org)
---   AD_UI_Element        652305..652312 (one per field)
+--   AD_UI_Element        652306..652312 (one per field; 652305 / C_BPartner_ID dropped)
 --   AD_Menu   542340
 --
 -- NOTE: the window-designer render self-check (render-window-layout.sh) was NOT run — no local
@@ -81,14 +83,6 @@ INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Na
 -- Fields (AD_Field) — one per shown column. Field translations propagate from the
 -- column's AD_Element via update_FieldTranslation_From_AD_Name_Element below.
 -- ============================================================================
-
--- Field: C_BPartner_ID (Geschäftspartner) — column 592823, element 187
--- 2026-06-17 10:01:00
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,Updated,UpdatedBy) VALUES (0,592823,781159 /*From ID Server*/,0,549320,TO_TIMESTAMP('2026-06-17 10:01:00','YYYY-MM-DD HH24:MI:SS'),100,'Bezeichnet einen Geschäftspartner',10,'D','Ein Geschäftspartner ist jemand, mit dem Sie interagieren. Dies kann Lieferanten, Kunden, Mitarbeiter oder Handelsvertreter umfassen.','Y','Y','Y','N','N','N','N','N','Geschäftspartner',10,10,0,TO_TIMESTAMP('2026-06-17 10:01:00','YYYY-MM-DD HH24:MI:SS'),100)
-;
--- 2026-06-17 10:01:01
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy) SELECT l.AD_Language, t.AD_Field_ID, t.Name,t.Description,t.Help, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781159 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
 
 -- Field: C_Order_ID (Auftrag) — column 592824, element 558
 -- 2026-06-17 10:01:02
@@ -148,9 +142,6 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTran
 
 -- Propagate field translations (DE base + en_US) from each column's AD_Element.
 -- Pass the COLUMN's AD_Element_ID (no AD_Name_ID override is set on any field).
--- 2026-06-17 10:01:30
-/* DDL */ select update_FieldTranslation_From_AD_Name_Element(187)
-;
 -- 2026-06-17 10:01:31
 /* DDL */ select update_FieldTranslation_From_AD_Name_Element(558)
 ;
@@ -175,10 +166,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Name,Description,Help, IsTran
 
 -- Rebuild element links for the new fields
 -- 2026-06-17 10:01:40
-DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (781159,781160,781161,781162,781163,781164,781165,781166)
-;
--- 2026-06-17 10:01:41
-/* DDL */ select AD_Element_Link_Create_Missing_Field(781159)
+DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (781160,781161,781162,781163,781164,781165,781166)
 ;
 -- 2026-06-17 10:01:42
 /* DDL */ select AD_Element_Link_Create_Missing_Field(781160)
@@ -235,9 +223,6 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 
 -- UI elements (one per field). Left primary group: business fields. Right flags: IsActive.
 -- Right org group: Sektion, then Mandant (advanced).
--- 2026-06-17 10:02:10
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781159,0,549320,652305 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:10','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Y','N',0,'Geschäftspartner',10,0,10,TO_TIMESTAMP('2026-06-17 10:02:10','YYYY-MM-DD HH24:MI:SS'),100)
-;
 -- 2026-06-17 10:02:11
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,781160,0,549320,652306 /*From ID Server*/,555463,'F',TO_TIMESTAMP('2026-06-17 10:02:11','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N','Y','N',0,'Auftrag',20,0,20,TO_TIMESTAMP('2026-06-17 10:02:11','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -264,13 +249,10 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 -- ============================================================================
--- Grid filters: make Geschäftspartner / Auftrag / Palette selection columns.
+-- Grid filters: make Auftrag / Palette selection columns.
 -- These are the table-local AD_Column rows of C_Order_ReturnPackage (not shared globals),
 -- so flipping IsSelectionColumn affects only this table's windows.
 -- ============================================================================
--- 2026-06-17 10:03:00
-UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10, Updated=TO_TIMESTAMP('2026-06-17 10:03:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=592823
-;
 -- 2026-06-17 10:03:01
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20, Updated=TO_TIMESTAMP('2026-06-17 10:03:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Column_ID=592824
 ;

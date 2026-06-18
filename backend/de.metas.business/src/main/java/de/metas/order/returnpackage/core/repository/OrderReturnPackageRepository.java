@@ -22,7 +22,6 @@
 
 package de.metas.order.returnpackage.core.repository;
 
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.returnpackage.PalletType;
 import de.metas.util.Services;
@@ -39,7 +38,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class OrderReturnPackageRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 
 	public boolean hasReturnPackages(final OrderId orderId)
@@ -52,14 +50,12 @@ public class OrderReturnPackageRepository
 	}
 
 
-	public void createRow(@NonNull final OrderId orderId, @NonNull final PalletType palletType)
+	public void createRow(@NonNull final I_C_Order order, @NonNull final PalletType palletType)
 	{
 		final I_C_Order_ReturnPackage row = InterfaceWrapperHelper.newInstance(I_C_Order_ReturnPackage.class);
-		final I_C_Order order = orderDAO.getById(orderId);
 
 		row.setAD_Org_ID(order.getAD_Org_ID());
 		row.setC_Order_ID(order.getC_Order_ID());
-		row.setC_BPartner_ID(order.getC_BPartner_ID());
 		row.setPalletType(palletType.getCode());
 		// Quantities default to 0; the user enters the actual counts.
 		saveRecord(row);
