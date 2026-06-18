@@ -719,6 +719,17 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuId(@NonNull final Collection<HuId> huIds)
+	{
+		return getByIds(huIds).stream()
+				.map(hu -> getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
+				.collect(ImmutableMap.toImmutableMap(
+						hu -> HuId.ofRepoId(hu.getM_HU_ID()),
+						hu -> hu,
+						(existing, ignored) -> existing));
+	}
+
+	@Override
 	public List<I_M_HU> getTopLevelHUs(@NonNull final TopLevelHusQuery request)
 	{
 		final Set<Integer> seenM_HU_IDs = new HashSet<>();

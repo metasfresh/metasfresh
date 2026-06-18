@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.i18n.AdMessageKey;
@@ -50,7 +49,6 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@VisibleForTesting
 	public static CarrierAdviseConsistencyService newInstanceForUnitTesting(
@@ -75,12 +73,7 @@ public class CarrierAdviseConsistencyService
 
 		// resolve to top-level HUs and deduplicate by HuId
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsDAO.getByIds(pickedHuIds).stream()
-				.map(hu -> handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
-				.collect(ImmutableMap.toImmutableMap(
-						hu -> HuId.ofRepoId(hu.getM_HU_ID()),
-						hu -> hu,
-						(existing, ignored) -> existing));
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuId(pickedHuIds);
 
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{

@@ -1,13 +1,10 @@
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.util.Services;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.LUTUCUPair;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.i18n.AdMessageKey;
@@ -59,7 +56,6 @@ class CarrierAdviseConsistencyServiceTest
 
 	@Mock private HUShipmentScheduleResolver resolver;
 	@Mock private IHandlingUnitsBL handlingUnitsBL;
-	@Mock private IHandlingUnitsDAO handlingUnitsDAO;
 	@Mock private ShipperRepository shipperRepository;
 
 	private CarrierAdviseConsistencyService service;
@@ -72,17 +68,15 @@ class CarrierAdviseConsistencyServiceTest
 	{
 		AdempiereTestHelper.get().init();
 		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
-		Services.registerService(IHandlingUnitsDAO.class, handlingUnitsDAO);
 
 		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(resolver, shipperRepository);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
 
-		// by default: getByIds([HU_ID_1]) → topLevelHU, top-level parent = itself
-		when(handlingUnitsDAO.getByIds(ImmutableSet.of(HU_ID_1))).thenReturn(ImmutableList.of(topLevelHU));
-		when(handlingUnitsBL.getTopLevelParentAsLUTUCUPair(topLevelHU))
-				.thenReturn(LUTUCUPair.ofLU(topLevelHU));
+		// by default: getTopLevelHUsByHuId([HU_ID_1]) → {HU_ID_1: topLevelHU} (top-level parent = itself)
+		when(handlingUnitsBL.getTopLevelHUsByHuId(ImmutableSet.of(HU_ID_1)))
+				.thenReturn(ImmutableMap.of(HU_ID_1, topLevelHU));
 	}
 
 	// --------------------------------------------------

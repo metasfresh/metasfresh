@@ -17,7 +17,6 @@ import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
@@ -77,7 +76,6 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final PickingJobRepository pickingJobRepository;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
@@ -157,9 +155,9 @@ public class PackedHUCarrierAdviseService
 	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
 	 * must never be overwritten, neither on the schedule nor on the picking job line).
 	 * <p>
-	 * Top-level resolution (getByIds → getTopLevelParentAsLUTUCUPair → getTopLevelHU) and
-	 * deduplication by HuId must be kept in sync with
-	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob}.
+	 * Top-level resolution and deduplication by HuId is shared with
+	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob} via
+	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuId(java.util.Collection)}.
 	 *
 	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
@@ -175,13 +173,7 @@ public class PackedHUCarrierAdviseService
 
 		// Resolve to top-level HUs and deduplicate by HuId
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		// Keep in sync with CarrierAdviseConsistencyService#assertConsistentForJob
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsDAO.getByIds(pickedHuIds).stream()
-				.map(hu -> handlingUnitsBL.getTopLevelParentAsLUTUCUPair(hu).getTopLevelHU())
-				.collect(ImmutableMap.toImmutableMap(
-						hu -> HuId.ofRepoId(hu.getM_HU_ID()),
-						hu -> hu,
-						(existing, ignored) -> existing));
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuId(pickedHuIds);
 
 		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
 		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();

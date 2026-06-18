@@ -279,6 +279,17 @@ public interface IHandlingUnitsBL extends ISingletonService
 	ImmutableSet<HuId> getTopLevelHUs(@NonNull Collection<HuId> huIds);
 
 	/**
+	 * Resolves the given HUs to their top-level HUs (via {@link #getTopLevelParentAsLUTUCUPair(I_M_HU)}),
+	 * deduplicated by top-level {@link HuId}.
+	 * <p>
+	 * Two of the given HUs can share the same top-level LU yet resolve to distinct {@code I_M_HU} instances;
+	 * the result is keyed by the top-level {@link HuId} and the merge keeps the first instance encountered.
+	 *
+	 * @return map of top-level {@link HuId} → its (top-level) {@link I_M_HU}; never {@code null}.
+	 */
+	ImmutableMap<HuId, I_M_HU> getTopLevelHUsByHuId(@NonNull Collection<HuId> huIds);
+
+	/**
 	 * Gets top level HUs of given HUs (i.e. the top of hierarchy).
 	 *
 	 * @param query see {@link TopLevelHusQuery}.
