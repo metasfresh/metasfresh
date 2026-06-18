@@ -1,8 +1,8 @@
 package de.metas.handlingunits.picking.job.model;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.scannable_code.ScannedCode;
@@ -49,7 +49,7 @@ public class PickingJobStepEvent
 	@Nullable String lotNo;
 	boolean isCloseTarget;
 	boolean isSetGrais;
-	@Nullable ImmutableList<String> graiCodes;
+	@Nullable GRAISet graiCodes;
 
 	//
 	// Event Type: UNPICK

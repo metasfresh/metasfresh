@@ -123,7 +123,7 @@ const buildDistinctGrais = (baseGrai, count) => {
  * Postcondition: the inline GRAI capture panel is showing and reports the picked crate count as the
  * required number of GRAIs (count label 0 / TU_COUNT).
  *
- * @returns {Promise<{ masterdata: any, grais: string[] }>}
+ * @returns {Promise<{ masterdata: any, grais: string[], pickingJobId: any }>}
  */
 const pickAllTUsAndOpenGraiScreen = async () => {
     const masterdata = await createMasterdataForGraiFlowThrough();
@@ -134,7 +134,7 @@ const pickAllTUsAndOpenGraiScreen = async () => {
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ index: 1 });
+    const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1 });
 
     // Flow Through: scan the picking slot, set the LU target at job level, open the line.
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
@@ -153,7 +153,7 @@ const pickAllTUsAndOpenGraiScreen = async () => {
     await PickGraiScreen.waitForScreen();
     await PickGraiScreen.expectCount({ scanned: 0, total: TU_COUNT });
 
-    return { masterdata, grais };
+    return { masterdata, grais, pickingJobId };
 };
 
 // --- Happy path — pick 10 crates, capture 10 GRAIs (1 manual + 9 scanned), save, complete -------
@@ -165,19 +165,20 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
     await allure.story('GRAI Flow Through — capture one GRAI per picked crate, then completion succeeds');
     await allure.severity('critical');
 
-    const { grais } = await pickAllTUsAndOpenGraiScreen();
+    const { grais, pickingJobId } = await pickAllTUsAndOpenGraiScreen();
 
     // Save must be disabled before all 10 GRAIs are captured.
     await PickGraiScreen.expectSaveDisabled();
 
-    // Realistic flow: scan the crates that have a readable tag (9 here), then TYPE the one that
-    // wouldn't scan via the scanner's manual-entry mode. Both capture paths are exercised.
-    for (let i = 0; i < TU_COUNT - 1; i++) {
-        await PickGraiScreen.scanGrai({ graiString: grais[i] });
-        // Assertion between scans lets the keyboard-hook interval flush each barcode (buffer-merge guard).
-        await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
-    }
-    await PickGraiScreen.enterGraiManually({ graiString: grais[TU_COUNT - 1] });
+    // Realistic flow: first TYPE the one crate whose tag wouldn't scan (manual-entry path), then read
+    // the remaining 9 as overlapping RFID-gun bursts (whitespace-separated batches, like the
+    // HU-Manager RFID batch scan). The second burst re-reads crates 4-6 of the first; the deduped
+    // merge collapses the overlap, so both capture paths are exercised and the count lands on 10.
+    await PickGraiScreen.enterGraiManually({ graiString: grais[0] });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: 1 });
+    await PickGraiScreen.scanGraiBatch({ graiStrings: grais.slice(1, 7) });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: 7 });
+    await PickGraiScreen.scanGraiBatch({ graiStrings: grais.slice(4, TU_COUNT) });
     await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_COUNT });
 
     // Exactly 10 GRAIs captured -> count reads 10 / 10, save enabled; save sends the atomic pick
@@ -186,6 +187,23 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
     await PickGraiScreen.expectSaveEnabled();
     await PickGraiScreen.clickSave();
     await PickingJobLineScreen.waitForScreen();
+
+    // After the atomic pick, the picked LU must carry exactly the 10 captured GRAIs (the stamp ran
+    // inside the pick transaction) — asserted before completing, so the GRAI stamping is proven
+    // independently of the shipment generation.
+    await Backend.expect({
+        title: 'After the pick: the LU carries all 10 captured GRAIs',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ vhu: 'vhu1', tu: 'tu1', lu: 'lu1' }] },
+                },
+            },
+        },
+        hus: {
+            vhu1: { attributes: { GRAI: grais.join(',') } },
+        },
+    });
 
     // Go back to the job and complete it: completion must succeed now that every picked crate has a
     // GRAI -> shipment is created.
@@ -210,11 +228,13 @@ test('Flow Through: capturing fewer GRAIs than crates keeps save disabled and bl
 
     const { grais } = await pickAllTUsAndOpenGraiScreen();
 
-    // Capture FEWER than the required 10 GRAIs (9) — one crate is left without a GRAI.
-    for (let i = 0; i < TU_COUNT - 1; i++) {
-        await PickGraiScreen.scanGrai({ graiString: grais[i] });
-        await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
-    }
+    // Capture FEWER than the required 10 GRAIs (9) — one crate is left without a GRAI. Read them as
+    // two overlapping RFID-gun bursts (the second re-reads crates 4-6 of the first); the deduped
+    // merge collapses the overlap, so the count stays at 9.
+    await PickGraiScreen.scanGraiBatch({ graiStrings: grais.slice(0, 6) });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: 6 });
+    await PickGraiScreen.scanGraiBatch({ graiStrings: grais.slice(3, TU_COUNT - 1) });
+    await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_COUNT - 1 });
 
     // Below 10 the count reads 9 / 10 and the save button stays disabled — the UI guard prevents
     // persisting an incomplete capture, so the picker cannot complete the job with a GRAI-less crate

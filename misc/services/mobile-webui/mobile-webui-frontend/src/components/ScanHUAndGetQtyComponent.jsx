@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
@@ -70,6 +70,14 @@ const ScanHUAndGetQtyComponent = ({
   // atomic onResult call. graiCodes holds the in-progress capture.
   const [pendingGraiResult, setPendingGraiResult] = useState(null);
   const [graiCodes, setGraiCodes] = useState([]);
+  // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
+  // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
+  // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
+  // codes during a rapid RFID burst (multiple GRAIs scanned back-to-back). All three only use the
+  // stable setGraiCodes setter, so [] deps are correct.
+  const handleAddGrais = useCallback((newGrais) => setGraiCodes((prev) => mergeGraiArrays(prev, newGrais)), []);
+  const handleRemoveGrai = useCallback((grai) => setGraiCodes((prev) => prev.filter((g) => g !== grai)), []);
+  const handleClearAllGrais = useCallback(() => setGraiCodes([]), []);
   const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
     useResolvedBarcodeData({
       userInfo,
@@ -341,9 +349,9 @@ const ScanHUAndGetQtyComponent = ({
           countExtraKey="activities.picking.graiScan.countExtra"
           clearAllButtonKey="activities.picking.graiScan.clearAll.buttonCaption"
           clearAllConfirmKey="activities.picking.graiScan.clearAll.confirmQuestion"
-          onAddGrais={(newGrais) => setGraiCodes((prev) => mergeGraiArrays(prev, newGrais))}
-          onRemoveGrai={(grai) => setGraiCodes((prev) => prev.filter((g) => g !== grai))}
-          onClearAll={() => setGraiCodes([])}
+          onAddGrais={handleAddGrais}
+          onRemoveGrai={handleRemoveGrai}
+          onClearAll={handleClearAllGrais}
         >
           <ButtonWithIndicator
             captionKey="activities.picking.graiScan.save.buttonCaption"

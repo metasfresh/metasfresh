@@ -8,10 +8,13 @@
  * With the inline atomic capture, each pick captures its OWN crates' GRAIs at pick time (there is no
  * re-openable per-LU GRAI screen anymore):
  *  1. Pick Product1 (10 crates) onto the LU; the inline GRAI capture is auto-invoked for THIS pick
- *     (0 / 10). An RFID over-scan that re-reads a crate already captured in this burst is deduped
- *     (still 10). Save sends Product1's pick + its 10 GRAIs atomically.
+ *     (0 / 10). The 10 GRAIs are read as overlapping RFID-gun bursts (whitespace-separated batches,
+ *     like the HU-Manager RFID batch scan) — the deduped merge collapses the overlap back to 10.
+ *     Save sends Product1's pick + its 10 GRAIs atomically; the resulting LU then carries exactly
+ *     Product1's 10 GRAIs.
  *  2. Pick Product2 (10 crates) onto the SAME LU; the inline capture is auto-invoked for the second
- *     pick (0 / 10, independent of product 1); scan its 10 GRAIs; Save.
+ *     pick (0 / 10, independent of product 1); scan its 10 GRAIs the same way; Save. The shared LU
+ *     must now carry BOTH picks' GRAIs (the second pick UNIONS, it does not wipe the first).
  *  3. Complete; verify each product's VHU carries exactly its own 10 GRAIs (20 on the LU in total).
  *
  * Lives in its own file (separate from picking-grai-flowthrough.spec.js) because it uses a different
@@ -30,10 +33,6 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { PickGraiScreen } from '../../utils/screens/picking/PickGraiScreen';
-
-const TU_PER_PRODUCT = 10;
-const TU_MIXED_LU = TU_PER_PRODUCT * 2;
-const QTY_CUS_PER_TU = 4;
 
 /**
  * Masterdata for the mixed-product Flow-Through scenario: a GRAIRequired customer, sales_order
@@ -69,9 +68,10 @@ const createMasterdata = async () => {
             },
             packingInstructions: {
                 // Both PIs share the SAME LU type so sales_order aggregation packs both onto one LU.
-                // qtyTUsPerLU leaves headroom over the 20 crates the order will pack.
-                PI_P1: { lu: 'LU_MAIN', qtyTUsPerLU: 40, tu: 'TU_IFCO_P1', product: 'P1', qtyCUsPerTU: QTY_CUS_PER_TU, graiMapping: true },
-                PI_P2: { lu: 'LU_MAIN', qtyTUsPerLU: 40, tu: 'TU_IFCO_P2', product: 'P2', qtyCUsPerTU: QTY_CUS_PER_TU },
+                // qtyTUsPerLU (40) leaves headroom over the 20 crates the order will pack; qtyCUsPerTU
+                // is 4, so each line's 10 crates = 10 x 4 = 40 CUs.
+                PI_P1: { lu: 'LU_MAIN', qtyTUsPerLU: 40, tu: 'TU_IFCO_P1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
+                PI_P2: { lu: 'LU_MAIN', qtyTUsPerLU: 40, tu: 'TU_IFCO_P2', product: 'P2', qtyCUsPerTU: 4 },
             },
             handlingUnits: {
                 HU_SOURCE_P1: { product: 'P1', warehouse: 'wh', qty: 200 },
@@ -83,8 +83,9 @@ const createMasterdata = async () => {
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
                     lines: [
-                        { product: 'P1', qty: TU_PER_PRODUCT * QTY_CUS_PER_TU, piItemProduct: 'TU_IFCO_P1' },
-                        { product: 'P2', qty: TU_PER_PRODUCT * QTY_CUS_PER_TU, piItemProduct: 'TU_IFCO_P2' },
+                        // 10 whole crates of each product (10 TUs x 4 CUs/TU = 40 CUs per line).
+                        { product: 'P1', qty: 40, piItemProduct: 'TU_IFCO_P1' },
+                        { product: 'P2', qty: 40, piItemProduct: 'TU_IFCO_P2' },
                     ],
                 },
             },
@@ -110,11 +111,10 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
 
     const masterdata = await createMasterdata();
 
-    // TU_MIXED_LU distinct GRAIs: the first TU_PER_PRODUCT are Product1's crates, the next
-    // TU_PER_PRODUCT are Product2's.
-    const allGrais = buildDistinctGrais(masterdata.packingInstructions.PI_P1.grai, TU_MIXED_LU);
-    const product1Grais = allGrais.slice(0, TU_PER_PRODUCT);
-    const product2Grais = allGrais.slice(TU_PER_PRODUCT, TU_MIXED_LU);
+    // 20 distinct GRAIs: the first 10 are Product1's crates, the next 10 are Product2's.
+    const allGrais = buildDistinctGrais(masterdata.packingInstructions.PI_P1.grai, 20);
+    const product1Grais = allGrais.slice(0, 10);
+    const product2Grais = allGrais.slice(10, 20);
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -128,57 +128,90 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
 
     // --- Product 1: pick its 10 crates; the inline capture is auto-invoked for THIS pick ---------
-    await test.step('Pick product 1 crates and capture their GRAIs inline (RFID re-read deduped)', async () => {
+    await test.step('Pick product 1 crates and capture their GRAIs inline (overlapping RFID bursts, deduped)', async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU_SOURCE_P1.qrCode,
-            expectQtyEntered: String(TU_PER_PRODUCT),
+            expectQtyEntered: '10',
             expectNextScreen: 'PickGraiScreen',
         });
-        // This pick is 10 crates -> required count is TU_PER_PRODUCT, independent of any later pick.
-        await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
+        // This pick is 10 crates -> required count is 10, independent of any later pick.
+        await PickGraiScreen.expectCount({ scanned: 0, total: 10 });
 
-        // Scan this pick's 10 crate GRAIs (assertion between each lets the keyboard hook flush each).
-        for (let i = 0; i < TU_PER_PRODUCT; i++) {
-            await PickGraiScreen.scanGrai({ graiString: product1Grais[i] });
-            await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
-        }
-        // RFID re-read of a crate already captured in this pick is deduped — the count stays at 10.
-        await PickGraiScreen.scanGrai({ graiString: product1Grais[0] });
-        await PickGraiScreen.expectGraiChipCount({ expectedCount: TU_PER_PRODUCT });
-        await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
+        // Capture the 10 GRAIs as two OVERLAPPING RFID-gun bursts (mirrors the HU-Manager RFID batch
+        // scan): a whitespace/Enter-separated batch each, the second re-reading crates 4-7 of the
+        // first. The deduped merge collapses the overlap so the count lands on exactly 10.
+        await PickGraiScreen.scanGraiBatch({ graiStrings: product1Grais.slice(0, 7) });
+        await PickGraiScreen.expectGraiChipCount({ expectedCount: 7 });
+        await PickGraiScreen.scanGraiBatch({ graiStrings: product1Grais.slice(3, 10) });
+        await PickGraiScreen.expectGraiChipCount({ expectedCount: 10 });
+
+        await PickGraiScreen.expectCount({ scanned: 10, total: 10 });
         await PickGraiScreen.expectSaveEnabled();
         await PickGraiScreen.clickSave();
         await PickingJobScreen.waitForScreen();
+    });
+
+    // After product 1's atomic pick, the shared LU must carry EXACTLY product 1's 10 GRAIs.
+    await Backend.expect({
+        title: 'After product 1 pick: the shared LU carries product 1\'s 10 GRAIs',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ vhu: 'vhuP1', tu: 'tuP1', lu: 'luMixed' }] },
+                    P2: {}, // P2's schedule exists but is not yet picked
+                },
+            },
+        },
+        hus: {
+            vhuP1: { attributes: { GRAI: product1Grais.join(',') } },
+        },
     });
 
     // --- Product 2: pick its 10 crates onto the SAME LU; a fresh inline capture for the 2nd pick --
     await test.step('Pick product 2 crates onto the same LU and capture their GRAIs inline', async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU_SOURCE_P2.qrCode,
-            expectQtyEntered: String(TU_PER_PRODUCT),
+            expectQtyEntered: '10',
             expectNextScreen: 'PickGraiScreen',
         });
-        // The second pick's capture starts fresh at 0 / TU_PER_PRODUCT (it is not the LU's running total).
-        await PickGraiScreen.expectCount({ scanned: 0, total: TU_PER_PRODUCT });
+        // The second pick's capture starts fresh at 0 / 10 (it is not the LU's running total).
+        await PickGraiScreen.expectCount({ scanned: 0, total: 10 });
 
-        for (let i = 0; i < TU_PER_PRODUCT; i++) {
-            await PickGraiScreen.scanGrai({ graiString: product2Grais[i] });
-            await PickGraiScreen.expectGraiChipCount({ expectedCount: i + 1 });
-        }
-        await PickGraiScreen.expectCount({ scanned: TU_PER_PRODUCT, total: TU_PER_PRODUCT });
+        await PickGraiScreen.scanGraiBatch({ graiStrings: product2Grais.slice(0, 7) });
+        await PickGraiScreen.expectGraiChipCount({ expectedCount: 7 });
+        await PickGraiScreen.scanGraiBatch({ graiStrings: product2Grais.slice(3, 10) });
+        await PickGraiScreen.expectGraiChipCount({ expectedCount: 10 });
+
+        await PickGraiScreen.expectCount({ scanned: 10, total: 10 });
         await PickGraiScreen.expectSaveEnabled();
         await PickGraiScreen.clickSave();
         await PickingJobScreen.waitForScreen();
     });
 
-    // --- Complete + verify each product's VHU carries exactly its own GRAIs ----------------------
+    // After product 2's atomic pick onto the SAME LU, the shared LU must carry BOTH picks' GRAIs:
+    // the second pick UNIONS with the first, it does NOT wipe product 1's GRAIs (each product is its
+    // own aggregate VHU; product-1's VHU keeps product-1's GRAIs, product-2's VHU carries product-2's).
+    await Backend.expect({
+        title: 'After product 2 pick: the shared LU carries BOTH products\' GRAIs (second pick unions, not wipes)',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ vhu: 'vhuP1', tu: 'tuP1', lu: 'luMixed' }] },
+                    P2: { qtyPicked: [{ vhu: 'vhuP2', tu: 'tuP2', lu: 'luMixed' }] },
+                },
+            },
+        },
+        hus: {
+            vhuP1: { attributes: { GRAI: product1Grais.join(',') } },
+            vhuP2: { attributes: { GRAI: product2Grais.join(',') } },
+        },
+    });
+
+    // --- Complete + verify the final picked/shipped state -----------------------------------------
     await PickingJobScreen.complete();
 
-    // Each product is its own aggregate VHU on the shared LU; the atomic pick stamps that pick's
-    // GRAIs onto its crates, so the product-1 VHU carries product-1's GRAIs and the product-2 VHU
-    // carries product-2's — together EXACTLY the 20 scanned GRAIs, no more, no less.
     await Backend.expect({
-        title: 'Mixed-product LU carries exactly the 2x10 scanned GRAIs (per product VHU)',
+        title: 'Mixed-product LU carries exactly the 2x10 scanned GRAIs (per product VHU), picked & processed',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {

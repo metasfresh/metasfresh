@@ -136,7 +136,7 @@ public class PickingJobPickCommand
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
 	private final boolean isSetGrais;
-	@Nullable private final ImmutableList<String> graiCodes;
+	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -178,7 +178,7 @@ public class PickingJobPickCommand
 			final @Nullable String lotNo,
 			final boolean isCloseTarget,
 			final boolean isSetGrais,
-			final @Nullable List<String> graiCodes)
+			final @Nullable GRAISet graiCodes)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -275,7 +275,7 @@ public class PickingJobPickCommand
 
 		this.isCloseTarget = isCloseTarget;
 		this.isSetGrais = isSetGrais;
-		this.graiCodes = graiCodes != null ? ImmutableList.copyOf(graiCodes) : null;
+		this.graiCodes = graiCodes;
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -559,7 +559,7 @@ public class PickingJobPickCommand
 		// WIPE an earlier product's GRAIs. Existing-first preserves each VHU's slot order; for a single-product LU
 		// the existing set is empty, so the union is a no-op.
 		final GRAISet existingGrais = huService.getGrais(pickedLuId);
-		final GRAISet desiredGrais = existingGrais.union(GRAISet.parseStrings(graiCodes));
+		final GRAISet desiredGrais = existingGrais.union(graiCodes);
 		huService.setGrais(pickedLuId, desiredGrais);
 	}
 

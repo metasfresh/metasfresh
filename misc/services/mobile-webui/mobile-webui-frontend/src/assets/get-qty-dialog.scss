@@ -20,8 +20,14 @@
             // Wrap the full label onto multiple lines instead of clipping it — the longer
             // German captions ("Mindesthaltbarkeitsdatum", "Gewicht/Fanggewicht") otherwise
             // overflowed the old nowrap+ellipsis cell and showed as "efore" / "g".
+            // Use break-word (not "anywhere"): "anywhere" also collapses the cell's min-content
+            // width, letting this 45% column shrink and break the long German words at arbitrary
+            // points; break-word breaks a too-long word only when needed and keeps the column at
+            // its 45%, so the labels wrap at "/" and word boundaries rather than mid-word. hyphens
+            // adds clean hyphenation where the document language supports it.
             white-space: normal;
-            overflow-wrap: anywhere;
+            overflow-wrap: break-word;
+            hyphens: auto;
             vertical-align: middle;
           }
 

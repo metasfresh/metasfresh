@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { trl } from '../utils/translations';
 import { parseGraiArrayFromRawInput } from '../utils/grai';
 import { traceLogWarn } from '../utils/ui_trace';
+import { useKeyboardBarcodeReader } from '../hooks/useKeyboardBarcodeReader';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import ButtonWithIndicator from './buttons/ButtonWithIndicator';
 import YesNoDialog from './dialogs/YesNoDialog';
@@ -38,17 +39,30 @@ const GraiCapturePanel = ({
 }) => {
   const [showClearAllDialog, setShowClearAllDialog] = useState(false);
 
-  const onResolvedResult = useCallback(
-    (resolvedResult) => {
-      const parsed = parseGraiArrayFromRawInput(resolvedResult.scannedBarcode);
+  const onBarcodeString = useCallback(
+    (barcodeString) => {
+      const parsed = parseGraiArrayFromRawInput(barcodeString);
       if (parsed.length > 0) {
         onAddGrais(parsed);
       } else {
-        traceLogWarn('Scanned barcode is not a valid GRAI', { scannedBarcode: resolvedResult.scannedBarcode });
+        traceLogWarn('Scanned barcode is not a valid GRAI', { scannedBarcode: barcodeString });
       }
     },
     [onAddGrais]
   );
+
+  const onResolvedResult = useCallback(
+    (resolvedResult) => onBarcodeString(resolvedResult.scannedBarcode),
+    [onBarcodeString]
+  );
+
+  // Capture rapid RFID bursts (a whole batch of GRAIs scanned back-to-back) reliably, mirroring the
+  // HU-Manager GRAIScreen. The reader inside BarcodeScannerComponent rebuilds its onReadDone every
+  // render, so its window-keydown effect re-subscribes during a fast burst and drops codes after the
+  // first; this direct reader keeps a STABLE onReadDone (onBarcodeString, memoised on the stable
+  // onAddGrais), so it stays subscribed for the whole burst and every code lands. Codes that both
+  // readers happen to deliver are deduped by onAddGrais (mergeGraiArrays), so there is no double-count.
+  useKeyboardBarcodeReader({ onReadDone: onBarcodeString, disabled: loading });
 
   return (
     <div className="grai-screen">
@@ -123,6 +137,7 @@ const GraiChip = ({ grai, extra, onRemove }) => {
         {grai}
       </span>
       <button
+        type="button"
         className="grai-chip-remove"
         data-testid={extra ? 'grai-chip-extra-remove' : 'grai-chip-remove'}
         onClick={onRemove}

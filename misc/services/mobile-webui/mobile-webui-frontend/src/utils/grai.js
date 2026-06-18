@@ -35,10 +35,14 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
     const base = graiData.substring(1, 13);
     const serial = graiData.substring(14);
 
-    // For GRAI, the company prefix is typically 7 digits (GS1 standard for most European prefixes)
-    // We use a heuristic: GS1 prefixes starting with 76 (Switzerland) are 7 digits
-    const companyPrefix = base.substring(0, 7);
-    const assetType = base.substring(7);
+    // The 12-digit base is split into a fixed 7-digit company prefix + the remaining asset type,
+    // matching the backend parser (de.metas.handlingunits.grai.GRAI.GS1_COMPANY_PREFIX_LENGTH = 7).
+    // GS1 allows variable-length company prefixes, but this scan path is calibrated for the 7-digit
+    // prefixes in use; the frontend and backend MUST stay on the same split so a scanned GRAI parses
+    // to the same canonical value on both sides.
+    const COMPANY_PREFIX_LENGTH = 7;
+    const companyPrefix = base.substring(0, COMPANY_PREFIX_LENGTH);
+    const assetType = base.substring(COMPANY_PREFIX_LENGTH);
 
     if (!serial) return null;
 

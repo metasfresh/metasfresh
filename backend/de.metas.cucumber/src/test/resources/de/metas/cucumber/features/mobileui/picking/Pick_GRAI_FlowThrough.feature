@@ -248,11 +248,11 @@ Feature: mobileUI Picking - GRAI scan in the Flow Through (LU_TU) picking profil
 # ONE shared source LU (pickFromLU). The order has two lines (one per product). The pick of product1 sends
 # GRAIs ...01,02,03; the pick of product2 sends GRAIs ...04,05,06 — each event carries only its own set.
 #
-# On BUGGY code this FAILS (RED): stampGraisIfRequired passes only the current pick's GRAIs to
-# huService.setGrais(luId, ...), and HUGraiSnapshot.computeDelta treats that as the LU's COMPLETE desired
-# set — so picking product2 WIPES product1's GRAIs. The LU then carries only ...04,05,06, so the
-# "carry GRAIs" assertion (expects all six) fails; and completion throws GRAI_COUNT_MISMATCH (only 3 of
-# the 6 TUs carry a GRAI). A fix lands in a later push.
+# This proves stampGraisIfRequired UNIONS the new pick's GRAIs with those already on the shared LU
+# before calling huService.setGrais(luId, ...): HUGraiSnapshot.computeDelta treats the argument as the
+# LU's COMPLETE desired set, so without the union picking product2 would WIPE product1's GRAIs (the LU
+# would carry only ...04,05,06 and completion would throw GRAI_COUNT_MISMATCH). With the union the
+# shared LU correctly carries all six (...01..06) and completion succeeds.
 # ######################################################################################################################
   @from:cucumber
   Scenario: GRAIRequired customer - SALES_ORDER aggregation - two products on one shared LU; each pick carries its own GRAIs; the shared LU must carry ALL of them

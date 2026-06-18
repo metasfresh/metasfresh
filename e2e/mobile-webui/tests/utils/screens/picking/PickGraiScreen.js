@@ -66,6 +66,11 @@ export const PickGraiScreen = {
     expectGraiChipCount: async ({ expectedCount }) => await test.step(`${NAME} - Expect ${expectedCount} GRAI chip(s)`, async () => {
         const chips = page.locator('[data-testid="grai-chip"], [data-testid="grai-chip-extra"]');
         await expect(chips).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+        // Assert the chips are actually painted (not merely attached) so a green count cannot pass
+        // while a re-render/spinner is still in flight — per the mobile-webui visible-not-attached rule.
+        if (expectedCount > 0) {
+            await expect(chips.last()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        }
     }),
 
     /**
