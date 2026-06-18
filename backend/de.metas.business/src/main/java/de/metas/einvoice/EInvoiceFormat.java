@@ -1,5 +1,6 @@
 package de.metas.einvoice;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
@@ -7,6 +8,7 @@ import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.compiere.model.X_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -14,15 +16,19 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public enum EInvoiceFormat implements ReferenceListAwareEnum
 {
-	ZUGFeRD("Z"),
-	XRECHNUNG("X"),
-	PEPPOL("P"),
+	ZUGFeRD(X_C_BPartner.EINVOICETYPE_ZUGFeRD),
+	XRECHNUNG(X_C_BPartner.EINVOICETYPE_XRechnung),
+	PEPPOL(X_C_BPartner.EINVOICETYPE_PEPPOL),
 	;
 
-	@NonNull @Getter private final String code;
+	public static final int AD_REFERENCE_ID = X_C_BPartner.EINVOICETYPE_AD_Reference_ID;
 
 	@NonNull private static final ValuesIndex<EInvoiceFormat> index = ReferenceListAwareEnums.index(values());
 
+	@NonNull @Getter private final String code;
+
+	@JsonCreator
+	@NonNull
 	public static EInvoiceFormat ofCode(@NonNull final String code)
 	{
 		return index.ofCode(code);

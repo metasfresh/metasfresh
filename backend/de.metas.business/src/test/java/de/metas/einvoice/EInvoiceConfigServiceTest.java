@@ -1,11 +1,10 @@
 package de.metas.einvoice;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.X_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,9 +21,9 @@ public class EInvoiceConfigServiceTest
 	@Test
 	public void eInvoiceFormat_optionalOfCode_knownCode_returnsPresent()
 	{
-		assertThat(EInvoiceFormat.optionalOfCode("Z")).isPresent().contains(EInvoiceFormat.ZUGFeRD);
-		assertThat(EInvoiceFormat.optionalOfCode("X")).isPresent().contains(EInvoiceFormat.XRECHNUNG);
-		assertThat(EInvoiceFormat.optionalOfCode("P")).isPresent().contains(EInvoiceFormat.PEPPOL);
+		assertThat(EInvoiceFormat.optionalOfCode(X_C_BPartner.EINVOICETYPE_ZUGFeRD)).isPresent().contains(EInvoiceFormat.ZUGFeRD);
+		assertThat(EInvoiceFormat.optionalOfCode(X_C_BPartner.EINVOICETYPE_XRechnung)).isPresent().contains(EInvoiceFormat.XRECHNUNG);
+		assertThat(EInvoiceFormat.optionalOfCode(X_C_BPartner.EINVOICETYPE_PEPPOL)).isPresent().contains(EInvoiceFormat.PEPPOL);
 	}
 
 	@Test
@@ -45,7 +44,7 @@ public class EInvoiceConfigServiceTest
 	{
 		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
 		bpartner.setIsEInvoiceRecipeint(true);
-		bpartner.setEInvoiceType("Z");
+		bpartner.setEInvoiceType(X_C_BPartner.EINVOICETYPE_ZUGFeRD);
 		bpartner.setEInvoice_BuyerReference("04011000-12345-67");
 		saveRecord(bpartner);
 
