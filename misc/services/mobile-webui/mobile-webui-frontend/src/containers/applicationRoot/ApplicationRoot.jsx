@@ -93,8 +93,8 @@ const ApplicationRoot = () => {
   );
 };
 
-// Renderless: mounted once inside ConnectedRouter so the device/browser Back button follows the
-// app's screen-declared back navigation instead of the browser history stack. See useDeviceBackButton.
+// Renderless: mounted once inside ConnectedRouter. Fully neutralizes the device/browser Back button
+// (pure no-op on every screen — operators use the on-screen footer Back/Home instead). See useDeviceBackButton.
 const DeviceBackButtonTrap = () => {
   useDeviceBackButton();
   return null;
