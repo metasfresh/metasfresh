@@ -341,15 +341,14 @@ SELECT update_FieldTranslation_From_AD_Name_Element(585021);
 -- Rebuild AD_Element_Link for field 781213 (window 541977)
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781213;
 INSERT INTO AD_Element_Link (AD_Element_Link_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Element_ID, AD_Field_ID, AD_Window_ID)
-SELECT
-    nextval('AD_Element_Link_SEQ'),
-    0, 0, 'Y',
-    TO_TIMESTAMP('2026-06-18 10:03:00', 'YYYY-MM-DD HH24:MI:SS'),
-    100,
-    TO_TIMESTAMP('2026-06-18 10:03:00', 'YYYY-MM-DD HH24:MI:SS'),
-    100,
-    585021,
-    781213,
-    541977
+VALUES
+    (628441 /*From ID Server*/, 0, 0, 'Y',
+     TO_TIMESTAMP('2026-06-18 10:03:00', 'YYYY-MM-DD HH24:MI:SS'),
+     100,
+     TO_TIMESTAMP('2026-06-18 10:03:00', 'YYYY-MM-DD HH24:MI:SS'),
+     100,
+     585021,
+     781213,
+     541977)
 ;
 
