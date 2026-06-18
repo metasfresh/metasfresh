@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
@@ -47,7 +46,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 import java.util.function.Function;
 
 @Service
@@ -112,13 +110,7 @@ public class NShiftShipAdvisorService
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, valueProvider));
 
-		final JsonDeliveryAdvisorRequestItem item = deliveryAdvisorRequest.getItem();
-		final Function<String, Optional<String>> lineValueProvider = NShiftUtil.withFallback(
-				item::getValue,
-				attributeValue -> Optional.ofNullable(deliveryAdvisorRequest.getValue(attributeValue)));
-		final Function<String, String> finalLineValueProvider = attributeValue -> lineValueProvider.apply(attributeValue).orElse(null);
-
-		dataBuilder.line(NShiftUtil.buildAdvisorLine(item, mappingConfigs, finalLineValueProvider));
+		dataBuilder.line(NShiftUtil.buildAdvisorLine(deliveryAdvisorRequest, mappingConfigs));
 
 		return JsonShipAdvisorRequest.builder()
 				.options(options)

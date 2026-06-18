@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -45,6 +46,7 @@ import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
@@ -140,7 +142,8 @@ public class CarrierAdviseCommand
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	private final ShipmentScheduleId shipmentScheduleId;
-	@Nullable private final JsonDeliveryAdvisorRequestItem packedHUItem;
+	// HU-advise: the packed-HU parcel (parcel-level fields + per-product items). Null for the schedule-advise path.
+	@Nullable private final JsonDeliveryAdvisorRequestParcel packedHUParcel;
 
 	public static CarrierAdviseCommand of(final @NonNull ShipmentScheduleId id)
 	{
@@ -149,9 +152,9 @@ public class CarrierAdviseCommand
 
 	public static CarrierAdviseCommand ofPackedHU(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final JsonDeliveryAdvisorRequestItem packedHUItem)
+			@NonNull final JsonDeliveryAdvisorRequestParcel packedHUParcel)
 	{
-		return new CarrierAdviseCommand(shipmentScheduleId, packedHUItem);
+		return new CarrierAdviseCommand(shipmentScheduleId, packedHUParcel);
 	}
 
 	/**
@@ -238,11 +241,14 @@ public class CarrierAdviseCommand
 
 	private JsonDeliveryAdvisorRequest createAdvisorRequest(@NonNull final ShipperId shipperId, @NonNull final ShipmentSchedule shipmentSchedule, final ShipperGatewayClient client)
 	{
-		final JsonDeliveryAdvisorRequestItem item = packedHUItem != null
-				? packedHUItem
-				: getJsonDeliveryAdvisorRequestItem(shipmentSchedule);
+		final JsonDeliveryAdvisorRequestParcel parcel = packedHUParcel != null
+				? packedHUParcel
+				: getJsonDeliveryAdvisorRequestParcel(shipmentSchedule);
 		final JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder requestBuilder = JsonDeliveryAdvisorRequest.builder()
-				.item(item);
+				.grossWeightKg(parcel.getGrossWeightKg())
+				.packageDimensions(parcel.getPackageDimensions())
+				.topLevelType(parcel.getTopLevelType())
+				.items(parcel.getItems());
 		return applyAdvisorContext(requestBuilder, shipperId, shipmentSchedule, client).build();
 	}
 
@@ -323,7 +329,7 @@ public class CarrierAdviseCommand
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
 	@NonNull
-	private JsonDeliveryAdvisorRequestItem getJsonDeliveryAdvisorRequestItem(@NonNull final ShipmentSchedule shipmentSchedule)
+	private JsonDeliveryAdvisorRequestParcel getJsonDeliveryAdvisorRequestParcel(@NonNull final ShipmentSchedule shipmentSchedule)
 	{
 		final Product product = productRepository.getById(shipmentSchedule.getProductId());
 		final PackageDimensions dimensions = product.getPackageDimensions();
@@ -367,23 +373,27 @@ public class CarrierAdviseCommand
 					.build();
 		}
 
-		return JsonDeliveryAdvisorRequestItem.builder()
+		final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(1)
-				// schedule-advise has no packed HU; a single product unit is a customer unit (CU)
-				.topLevelType(JsonTopLevelType.CU.getCode())
-				.grossWeightKg(grossWeightKg)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
-				.packageDimensions(JsonPackageDimensions.builder()
-						.heightInCM(dimensions.getHeightInCM())
-						.widthInCM(dimensions.getWidthInCM())
-						.lengthInCM(dimensions.getLengthInCM())
-						.build())
 				.customsTariff(customsTariff)
 				.unitPrice(unitPrice)
 				.totalValue(totalValue)
 				.shippedQuantity(shippedQuantity)
 				.totalWeightInKg(grossWeightKg)
+				.build();
+
+		return JsonDeliveryAdvisorRequestParcel.builder()
+				// schedule-advise has no packed HU; a single product unit is a customer unit (CU)
+				.topLevelType(JsonTopLevelType.CU.getCode())
+				.grossWeightKg(grossWeightKg)
+				.packageDimensions(JsonPackageDimensions.builder()
+						.heightInCM(dimensions.getHeightInCM())
+						.widthInCM(dimensions.getWidthInCM())
+						.lengthInCM(dimensions.getLengthInCM())
+						.build())
+				.items(ImmutableList.of(item))
 				.build();
 	}
 

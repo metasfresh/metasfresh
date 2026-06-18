@@ -1,5 +1,6 @@
 package de.metas.picking.workflow;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.JsonMoney;
@@ -7,6 +8,7 @@ import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.JsonTopLevelType;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.customstariff.CustomsTariffId;
@@ -172,9 +174,9 @@ public class PackedHUCarrierAdviseService
 		{
 			final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 
-			// Use the first schedule's order line as the price source (single-product HU enforced in buildRequestItem).
+			// Use the first schedule's order line as the price source (single-product HU enforced in buildRequestParcel).
 			final ShipmentSchedule firstSchedule = schedulesById.values().stream().findFirst().orElse(null);
-			final JsonDeliveryAdvisorRequestItem item = buildRequestItem(topLevelHU, firstSchedule);
+			final JsonDeliveryAdvisorRequestParcel parcel = buildRequestParcel(topLevelHU, firstSchedule);
 
 			for (final ShipmentSchedule schedule : schedulesById.values())
 			{
@@ -185,18 +187,18 @@ public class PackedHUCarrierAdviseService
 				// executeSync (not execute): re-advise against the packed HU regardless of the schedule's
 				// current advising status — at packing time it is typically already Completed from the
 				// auto-advise at order completion, so the Requested-only execute() guard would no-op.
-				CarrierAdviseCommand.ofPackedHU(schedule.getId(), item).executeSync();
+				CarrierAdviseCommand.ofPackedHU(schedule.getId(), parcel).executeSync();
 			}
 		}
 	}
 
 	// Carrier "final info" build path — HU-advise (1 of 3).
 	// Field derivation MUST stay consistent across the three nShift build paths (change together):
-	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
-	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestParcel
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestParcel
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
-	private JsonDeliveryAdvisorRequestItem buildRequestItem(
+	private JsonDeliveryAdvisorRequestParcel buildRequestParcel(
 			@NonNull final I_M_HU topLevelHU,
 			@Nullable final ShipmentSchedule schedule)
 	{
@@ -266,10 +268,19 @@ public class PackedHUCarrierAdviseService
 			totalWeightInKg = grossWeightKgBD;
 		}
 
-		return JsonDeliveryAdvisorRequestItem.builder()
+		final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
 				.numberOfItems(numberOfItems)
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
+				.countryOfOrigin(shippingInfo.getCountryOfOrigin())
+				.customsTariff(customsTariff)
+				.unitPrice(unitPrice)
+				.totalValue(totalValue)
+				.shippedQuantity(shippedQuantity)
+				.totalWeightInKg(totalWeightInKg)
+				.build();
+
+		return JsonDeliveryAdvisorRequestParcel.builder()
 				.grossWeightKg(grossWeightKgBD)
 				.packageDimensions(JsonPackageDimensions.builder()
 						.heightInCM(dimensions.getHeightInCM())
@@ -277,12 +288,7 @@ public class PackedHUCarrierAdviseService
 						.lengthInCM(dimensions.getLengthInCM())
 						.build())
 				.topLevelType(toTopLevelTypeWireString(shippingInfo.getTopLevelType()))
-				.countryOfOrigin(shippingInfo.getCountryOfOrigin())
-				.customsTariff(customsTariff)
-				.unitPrice(unitPrice)
-				.totalValue(totalValue)
-				.shippedQuantity(shippedQuantity)
-				.totalWeightInKg(totalWeightInKg)
+				.items(ImmutableList.of(item))
 				.build();
 	}
 
