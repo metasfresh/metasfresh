@@ -55,8 +55,8 @@ import static org.mockito.Mockito.verify;
  * GREEN test — proves that {@code generateFinishGoodsReceiveQRCodes} (Auszeichnung Fertigware)
  * consults {@code M_HU_Label_Config} and uses the configured process when one matches.
  *
- * <p>AC1: when a matching rule exists, the print call uses the rule's process id.
- * <p>AC2: when no rule matches, the print call passes {@code null} process id → the
+ * <p>When a matching rule exists, the print call uses the rule's process id.
+ * <p>When no rule matches, the print call passes {@code null} process id → the
  * existing global default (584977) path in {@code GlobalQRCodeService} runs unchanged.
  */
 class FinishedGoodsLabelConfigTest
@@ -74,7 +74,7 @@ class FinishedGoodsLabelConfigTest
 	private HUQRCodesService huQRCodesService;
 
 	/**
-	 * Repository-level label config lookup (no sysconfig fallback — AC2 requirement).
+	 * Repository-level label config lookup (no sysconfig fallback).
 	 */
 	private HULabelConfigRepository huLabelConfigRepository;
 
@@ -121,7 +121,7 @@ class FinishedGoodsLabelConfigTest
 		doReturn(ImmutableList.of()).when(huQRCodesService).generate(any(HUQRCodeGenerateRequest.class));
 	}
 
-	// ─── AC1 — matching rule → configured process id is passed to print ─────────────
+	// ─── matching rule → configured process id is passed to print ─────────────
 
 	@Test
 	void generateFinishGoodsQRCodes_withMatchingLabelConfig_printsConfiguredProcess()
@@ -157,7 +157,7 @@ class FinishedGoodsLabelConfigTest
 				.isEqualTo(configuredProcessId);
 	}
 
-	// ─── AC2 — no matching rule → null processId → existing global default path ────
+	// ─── no matching rule → null processId → existing global default path ────
 
 	@Test
 	void generateFinishGoodsQRCodes_withNoMatchingLabelConfig_printsWithNullProcess()

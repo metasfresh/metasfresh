@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelConfig;
 import de.metas.handlingunits.report.labels.HULabelConfigQuery;
 import de.metas.handlingunits.report.labels.HULabelConfigRepository;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
@@ -63,6 +64,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	private final HUQRCodesService huQRCodesService;
 	private final UserWorkstationService userWorkstationService;
 	private final HULabelConfigRepository huLabelConfigRepository;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ManufacturingMobileApplication(
 			@NonNull final MobileUIManufacturingConfigRepository userProfileRepository,
@@ -252,14 +254,14 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 				: PrintCopies.ONE;
 
 		final HuUnitType huUnitType = HuUnitType.ofCode(
-				Services.get(IHandlingUnitsBL.class).getHU_UnitType(request.getHuPackingInstructionsId()));
-		final HULabelConfigQuery labelConfigQuery = HULabelConfigQuery.builder()
-				.sourceDocType(HULabelSourceDocType.Manufacturing)
-				.huUnitType(huUnitType)
-				.bpartnerId(null)
-				.build();
-		final AdProcessId labelProcessId = huLabelConfigRepository.getFirstMatching(labelConfigQuery)
-				.map(config -> config.getPrintFormatProcessId())
+				handlingUnitsBL.getHU_UnitType(request.getHuPackingInstructionsId()));
+		final AdProcessId labelProcessId = huLabelConfigRepository.getFirstMatching(
+						HULabelConfigQuery.builder()
+								.sourceDocType(HULabelSourceDocType.Manufacturing)
+								.huUnitType(huUnitType)
+								.bpartnerId(null)
+								.build())
+				.map(HULabelConfig::getPrintFormatProcessId)
 				.orElse(null);
 
 		huQRCodesService.print(qrCodes, labelProcessId, copies);
