@@ -30,6 +30,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -284,7 +285,7 @@ public class PickingJobCreateCommand
 		return CarrierAdviseState.builder()
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Product_ID()))
 				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Goods_Type_ID()))
-				.carrierServices(shipmentSchedule.getCarrier_Services())
+				.carrierServices(shipmentScheduleService.getCarrierServiceIds(scheduleId.getShipmentScheduleId()))
 				.isManual(advisingStatus != null && advisingStatus.isManual())
 				.build();
 	}
@@ -297,7 +298,7 @@ public class PickingJobCreateCommand
 
 		@Nullable CarrierProductId carrierProductId;
 		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
-		@Nullable String carrierServices;
+		@Builder.Default @NonNull ImmutableSet<CarrierServiceId> carrierServices = ImmutableSet.of();
 		boolean isManual;
 	}
 

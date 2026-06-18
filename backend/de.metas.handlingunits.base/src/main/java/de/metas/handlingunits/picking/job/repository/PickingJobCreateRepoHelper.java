@@ -120,7 +120,6 @@ class PickingJobCreateRepoHelper
 		updateRecord(record, line.getScheduleId());
 		record.setCarrier_Product_ID(CarrierProductId.toRepoId(line.getCarrierProductId()));
 		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(line.getCarrierGoodsTypeId()));
-		record.setCarrier_Services(line.getCarrierServices());
 		record.setIsCarrierAdviseManual(line.isManual());
 		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		record.setPP_Order_ID(PPOrderId.toRepoId(line.getPickFromManufacturingOrderId()));
@@ -128,6 +127,7 @@ class PickingJobCreateRepoHelper
 		loader.addAlreadyLoadedFromDB(record);
 
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
+		loader.assignCarrierServicesToLine(pickingJobLineId, line.getCarrierServices());
 		line.getSteps().forEach(step -> createStepRecord(step, pickingJobId, pickingJobLineId, orgId));
 	}
 

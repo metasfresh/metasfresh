@@ -81,6 +81,7 @@ import java.util.function.BiFunction;
 public class PickingJobSaver
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
+	protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository = new PickingJobLineCarrierServiceRepository();
 
 	protected final HashMap<PickingJobId, I_M_Picking_Job> pickingJobs = new HashMap<>();
 	protected final ArrayListMultimap<PickingJobId, I_M_Picking_Job_HUAlternative> pickingJobHUAlternatives = ArrayListMultimap.create();
@@ -170,6 +171,8 @@ public class PickingJobSaver
 			// NOTE: atm we have nothing to sync on line level
 			updateRecord(existingRecord, line, docStatus);
 			InterfaceWrapperHelper.save(existingRecord);
+
+			lineCarrierServiceRepository.assignServicesToLine(line.getId(), line.getCarrierServices());
 
 			saveSteps(line.getSteps(), pickingJobId, line.getId(), orgId, docStatus);
 		}
@@ -391,7 +394,6 @@ public class PickingJobSaver
 		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
 		record.setIsCarrierAdviseManual(from.isManual());
 		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(from.getCarrierGoodsTypeId()));
-		record.setCarrier_Services(from.getCarrierServices());
 
 		final boolean isManuallyClosed = from.isManuallyClosed();
 		record.setIsManuallyClosed(isManuallyClosed);

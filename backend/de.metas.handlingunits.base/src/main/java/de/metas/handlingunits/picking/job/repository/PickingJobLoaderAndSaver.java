@@ -168,6 +168,11 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		pickingJobLines.put(pickingJobId, record);
 	}
 
+	public void assignCarrierServicesToLine(@NonNull final PickingJobLineId lineId, @NonNull final java.util.Set<de.metas.inoutcandidate.CarrierServiceId> carrierServiceIds)
+	{
+		lineCarrierServiceRepository.assignServicesToLine(lineId, carrierServiceIds);
+	}
+
 	public void addAlreadyLoadedFromDB(final I_M_Picking_Job_Step record)
 	{
 		final PickingJobLineId pickingJobLineId = PickingJobLineId.ofRepoId(record.getM_Picking_Job_Line_ID());
@@ -474,7 +479,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
 				.isManual(record.isCarrierAdviseManual())
 				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
-				.carrierServices(record.getCarrier_Services())
+				.carrierServices(lineCarrierServiceRepository.getAssignedServiceIdsByLineId(pickingJobLineId))
 				.build();
 	}
 

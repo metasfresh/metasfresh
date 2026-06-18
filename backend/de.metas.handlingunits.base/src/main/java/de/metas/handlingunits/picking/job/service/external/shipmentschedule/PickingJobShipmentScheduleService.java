@@ -6,7 +6,10 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inout.ShipmentScheduleId;
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -42,6 +45,7 @@ public class PickingJobShipmentScheduleService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 
 	public static PickingJobShipmentScheduleService newInstanceForUnitTesting()
 	{
@@ -49,8 +53,15 @@ public class PickingJobShipmentScheduleService
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
 				PickingJobShipmentScheduleService.class,
-				() -> new PickingJobShipmentScheduleService(ShipmentScheduleRepository.newInstanceForUnitTesting())
+				() -> new PickingJobShipmentScheduleService(
+						ShipmentScheduleRepository.newInstanceForUnitTesting(),
+						ShipmentScheduleCarrierServiceRepository.newInstanceForUnitTesting())
 		);
+	}
+
+	public ImmutableSet<CarrierServiceId> getCarrierServiceIds(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleId(shipmentScheduleId);
 	}
 
 	public ShipmentScheduleInfoLoadingCache newLoadingCache()

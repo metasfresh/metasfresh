@@ -40,6 +40,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.CarrierProductId;
@@ -89,7 +90,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 	boolean carrierAdviseReadOnly;
 	boolean isManual;
 	@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
-	@Nullable String carrierServices;
+	@NonNull ImmutableSet<CarrierServiceId> carrierServices;
 
 	// computed values
 	@NonNull PickingJobProgress progress;
@@ -133,7 +134,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			final boolean carrierAdviseReadOnly,
 			final boolean isManual,
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@Nullable final String carrierServices)
+			@Nullable final Set<CarrierServiceId> carrierServices)
 	{
 		this.id = id;
 		this.caption = caption;
@@ -157,7 +158,7 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.carrierAdviseReadOnly = carrierAdviseReadOnly;
 		this.isManual = isManual;
 		this.carrierGoodsTypeId = carrierGoodsTypeId;
-		this.carrierServices = carrierServices;
+		this.carrierServices = carrierServices != null ? ImmutableSet.copyOf(carrierServices) : ImmutableSet.of();
 
 		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 
