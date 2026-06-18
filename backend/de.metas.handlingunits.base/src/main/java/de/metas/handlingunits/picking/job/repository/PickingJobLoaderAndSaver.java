@@ -57,6 +57,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
 import de.metas.product.ProductValueAndName;
@@ -471,6 +472,9 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.pickFromManufacturingOrderId(PPOrderId.ofRepoIdOrNull(record.getPP_Order_ID()))
 				.carrierProductId(CarrierProductId.ofRepoIdOrNull(record.getCarrier_Product_ID()))
 				.carrierAdviseReadOnly(record.isCarrierAdviseReadOnly())
+				.isManual(record.isCarrierAdviseManual())
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(record.getCarrier_Goods_Type_ID()))
+				.carrierServices(record.getCarrier_Services())
 				.build();
 	}
 

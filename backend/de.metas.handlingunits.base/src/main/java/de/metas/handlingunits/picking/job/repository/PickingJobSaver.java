@@ -53,6 +53,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedTo;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.organization.OrgId;
@@ -388,6 +389,9 @@ public class PickingJobSaver
 
 		record.setCarrier_Product_ID(CarrierProductId.toRepoId(from.getCarrierProductId()));
 		record.setIsCarrierAdviseReadOnly(from.isCarrierAdviseReadOnly());
+		record.setIsCarrierAdviseManual(from.isManual());
+		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(from.getCarrierGoodsTypeId()));
+		record.setCarrier_Services(from.getCarrierServices());
 
 		final boolean isManuallyClosed = from.isManuallyClosed();
 		record.setIsManuallyClosed(isManuallyClosed);

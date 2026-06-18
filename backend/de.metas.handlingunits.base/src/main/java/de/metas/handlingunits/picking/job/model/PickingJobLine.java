@@ -39,6 +39,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.CarrierProductId;
@@ -86,6 +87,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 
 	@Nullable CarrierProductId carrierProductId;
 	boolean carrierAdviseReadOnly;
+	boolean isManual;
+	@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+	@Nullable String carrierServices;
 
 	// computed values
 	@NonNull PickingJobProgress progress;
@@ -126,7 +130,10 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 			@NonNull final PickingUnit pickingUnit,
 			final boolean isManuallyClosed,
 			@Nullable final CarrierProductId carrierProductId,
-			final boolean carrierAdviseReadOnly)
+			final boolean carrierAdviseReadOnly,
+			final boolean isManual,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@Nullable final String carrierServices)
 	{
 		this.id = id;
 		this.caption = caption;
@@ -148,6 +155,9 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 		this.isManuallyClosed = isManuallyClosed;
 		this.carrierProductId = carrierProductId;
 		this.carrierAdviseReadOnly = carrierAdviseReadOnly;
+		this.isManual = isManual;
+		this.carrierGoodsTypeId = carrierGoodsTypeId;
+		this.carrierServices = carrierServices;
 
 		this.currentPickingTarget = currentPickingTarget != null ? currentPickingTarget : CurrentPickingTarget.EMPTY;
 

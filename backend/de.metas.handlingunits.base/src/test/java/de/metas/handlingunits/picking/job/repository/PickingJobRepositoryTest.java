@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
@@ -165,6 +166,8 @@ class PickingJobRepositoryTest
 	void carrierProductAndAdviseReadOnly_roundTrip_onHeaderAndLine()
 	{
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711);
+		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(8150);
+		final String carrierServices = "SVC1,SVC2";
 
 		final PickingJob jobToSave = createSampleJob()
 				.withCarrierProductId(carrierProductId)
@@ -172,6 +175,9 @@ class PickingJobRepositoryTest
 				.withChangedLines(line -> line.toBuilder()
 						.carrierProductId(carrierProductId)
 						.carrierAdviseReadOnly(true)
+						.isManual(true)
+						.carrierGoodsTypeId(carrierGoodsTypeId)
+						.carrierServices(carrierServices)
 						.build());
 		pickingJobRepository.save(jobToSave);
 
@@ -183,6 +189,9 @@ class PickingJobRepositoryTest
 		Assertions.assertThat(jobLoaded.getLines()).allSatisfy(line -> {
 			Assertions.assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
 			Assertions.assertThat(line.isCarrierAdviseReadOnly()).isTrue();
+			Assertions.assertThat(line.isManual()).as("isManual").isTrue();
+			Assertions.assertThat(line.getCarrierGoodsTypeId()).as("carrierGoodsTypeId").isEqualTo(carrierGoodsTypeId);
+			Assertions.assertThat(line.getCarrierServices()).as("carrierServices").isEqualTo(carrierServices);
 		});
 	}
 

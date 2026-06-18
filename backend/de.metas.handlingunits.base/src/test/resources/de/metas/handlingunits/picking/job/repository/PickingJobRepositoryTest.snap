@@ -37,6 +37,7 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
           "repoId": 4
         },
         "id": 1000000,
+        "isManual": false,
         "isManuallyClosed": false,
         "orderLineSeqNo": 0,
         "packingInfo": {
