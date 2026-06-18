@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.common.delivery.v1.json.JsonAddress;
@@ -110,17 +111,17 @@ public class NShiftOrderAdvisorServiceTest
 			.customerReference("Customer reference")
 			.incotermsValue("incoterms")
 			.externalSystemValue("Other")
-			.item(JsonDeliveryAdvisorRequestItem.builder()
+			.grossWeightKg(BigDecimal.TEN)
+			.packageDimensions(JsonPackageDimensions.builder()
+					.lengthInCM(100)
+					.widthInCM(20)
+					.heightInCM(15)
+					.build())
+			.items(ImmutableList.of(JsonDeliveryAdvisorRequestItem.builder()
 					.numberOfItems(1)
-					.grossWeightKg(BigDecimal.TEN)
 					.productName("Test Product")
 					.productValue("Test Product Value")
-					.packageDimensions(JsonPackageDimensions.builder()
-							.lengthInCM(100)
-							.widthInCM(20)
-							.heightInCM(15)
-							.build())
-					.build())
+					.build()))
 			.shipperConfig(JsonShipperConfig.builder()
 					.url(URL)
 					.password(PASSWORD)

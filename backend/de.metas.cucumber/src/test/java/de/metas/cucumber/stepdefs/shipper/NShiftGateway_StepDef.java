@@ -5,6 +5,7 @@ import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
+import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -311,11 +312,11 @@ public class NShiftGateway_StepDef
 	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
 	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
 	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
-	 *   <b>numberOfItems</b>     — (optional) expected item.numberOfItems<br>
-	 *   <b>grossWeightKg</b>     — (optional) expected item.grossWeightKg (per-unit, rounded up)<br>
-	 *   <b>lengthInCM</b>        — (optional) expected item.packageDimensions.lengthInCM<br>
-	 *   <b>widthInCM</b>         — (optional) expected item.packageDimensions.widthInCM<br>
-	 *   <b>heightInCM</b>        — (optional) expected item.packageDimensions.heightInCM<br>
+	 *   <b>numberOfItems</b>     — (optional) expected items[0].numberOfItems<br>
+	 *   <b>grossWeightKg</b>     — (optional) expected request.grossWeightKg (parcel-level, per-unit, rounded up)<br>
+	 *   <b>lengthInCM</b>        — (optional) expected request.packageDimensions.lengthInCM (parcel-level)<br>
+	 *   <b>widthInCM</b>         — (optional) expected request.packageDimensions.widthInCM (parcel-level)<br>
+	 *   <b>heightInCM</b>        — (optional) expected request.packageDimensions.heightInCM (parcel-level)<br>
 	 *   <b>unitPrice</b>         — (optional) expected item.unitPrice.amount<br>
 	 *   <b>totalValue</b>        — (optional) expected item.totalValue.amount<br>
 	 *   <b>shippedQuantity</b>   — (optional) expected item.shippedQuantity.value<br>
@@ -337,59 +338,62 @@ public class NShiftGateway_StepDef
 		assertAddress(softly, capturedAdvisorRequest.getDeliveryAddress(), row, "Receiver", "deliveryAddress");
 		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
 
+		// PARCEL-level fields live on the request; per-product fields live on the (single) item.
+		final JsonDeliveryAdvisorRequestItem firstItem = capturedAdvisorRequest.getItems().get(0);
+
 		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getNumberOfItems())
+				.assertThat(firstItem.getNumberOfItems())
 				.as("item.numberOfItems")
 				.isEqualTo(expected));
 
 		row.getAsOptionalBigDecimal("grossWeightKg").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getGrossWeightKg())
-				.as("item.grossWeightKg")
+				.assertThat(capturedAdvisorRequest.getGrossWeightKg())
+				.as("grossWeightKg")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalInt("lengthInCM").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
-						? capturedAdvisorRequest.getItem().getPackageDimensions().getLengthInCM() : null)
-				.as("item.packageDimensions.lengthInCM")
+				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
+						? capturedAdvisorRequest.getPackageDimensions().getLengthInCM() : null)
+				.as("packageDimensions.lengthInCM")
 				.isEqualTo(expected));
 
 		row.getAsOptionalInt("widthInCM").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
-						? capturedAdvisorRequest.getItem().getPackageDimensions().getWidthInCM() : null)
-				.as("item.packageDimensions.widthInCM")
+				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
+						? capturedAdvisorRequest.getPackageDimensions().getWidthInCM() : null)
+				.as("packageDimensions.widthInCM")
 				.isEqualTo(expected));
 
 		row.getAsOptionalInt("heightInCM").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getPackageDimensions() != null
-						? capturedAdvisorRequest.getItem().getPackageDimensions().getHeightInCM() : null)
-				.as("item.packageDimensions.heightInCM")
+				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
+						? capturedAdvisorRequest.getPackageDimensions().getHeightInCM() : null)
+				.as("packageDimensions.heightInCM")
 				.isEqualTo(expected));
 
 		row.getAsOptionalBigDecimal("unitPrice").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getUnitPrice() != null
-						? capturedAdvisorRequest.getItem().getUnitPrice().getAmount() : null)
+				.assertThat(firstItem.getUnitPrice() != null
+						? firstItem.getUnitPrice().getAmount() : null)
 				.as("item.unitPrice.amount")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalBigDecimal("totalValue").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getTotalValue() != null
-						? capturedAdvisorRequest.getItem().getTotalValue().getAmount() : null)
+				.assertThat(firstItem.getTotalValue() != null
+						? firstItem.getTotalValue().getAmount() : null)
 				.as("item.totalValue.amount")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalBigDecimal("shippedQuantity").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getShippedQuantity() != null
-						? capturedAdvisorRequest.getItem().getShippedQuantity().getValue() : null)
+				.assertThat(firstItem.getShippedQuantity() != null
+						? firstItem.getShippedQuantity().getValue() : null)
 				.as("item.shippedQuantity.value")
 				.isEqualByComparingTo(expected));
 
 		row.getAsOptionalString("customsTariff").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getCustomsTariff())
+				.assertThat(firstItem.getCustomsTariff())
 				.as("item.customsTariff")
 				.isEqualTo(expected));
 
 		row.getAsOptionalBigDecimal("totalWeightInKg").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getItem().getTotalWeightInKg())
+				.assertThat(firstItem.getTotalWeightInKg())
 				.as("item.totalWeightInKg")
 				.isEqualByComparingTo(expected));
 
