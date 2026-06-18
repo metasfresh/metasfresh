@@ -14,6 +14,7 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -58,6 +59,9 @@ public class PickingJobCreateRepoRequest
 		@NonNull BPartnerLocationId deliveryBPLocationId;
 		@Nullable ShipmentScheduleAndJobScheduleId scheduleId;
 		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@Nullable String carrierServices;
+		boolean isManual;
 		@Nullable UomId catchWeightUomId;
 		@Nullable PPOrderId pickFromManufacturingOrderId;
 		@Singular @NonNull ImmutableList<Step> steps;

@@ -65,6 +65,7 @@ import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -346,6 +347,9 @@ public class PickingJobTestHelper
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
 			@Nullable final CarrierProductId carrierProductId,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@Nullable final String carrierServices,
+			@Nullable final String carrierAdvisingStatus,
 			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
@@ -365,6 +369,12 @@ public class PickingJobTestHelper
 		{
 			shipmentSchedule.setCarrier_Product_ID(carrierProductId.getRepoId());
 		}
+		if (carrierGoodsTypeId != null)
+		{
+			shipmentSchedule.setCarrier_Goods_Type_ID(carrierGoodsTypeId.getRepoId());
+		}
+		shipmentSchedule.setCarrier_Services(carrierServices);
+		shipmentSchedule.setCarrier_Advising_Status(carrierAdvisingStatus);
 		shipmentSchedule.setC_Order_ID(orderAndLineId.getOrderRepoId());
 		shipmentSchedule.setC_OrderLine_ID(orderAndLineId.getOrderLineRepoId());
 		shipmentSchedule.setDeliveryDate(Timestamp.from(dateEffective));

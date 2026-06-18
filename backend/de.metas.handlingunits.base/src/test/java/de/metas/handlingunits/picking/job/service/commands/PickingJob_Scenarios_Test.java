@@ -24,6 +24,8 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
@@ -227,6 +229,8 @@ class PickingJob_Scenarios_Test
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoId(4711); // fake test id
+		final CarrierGoodsTypeId carrierGoodsTypeId = CarrierGoodsTypeId.ofRepoId(4712); // fake test id
+		final String carrierServices = "PRIORITY,COD";
 
 		helper.createVHUInfo(productId, "100", "QR-VHU1");
 
@@ -236,6 +240,9 @@ class PickingJob_Scenarios_Test
 				.productId(productId)
 				.qtyToDeliver("100")
 				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServices)
+				.carrierAdvisingStatus(CarrierAdviseStatus.Manual.getCode())
 				.build();
 
 		final PickingJob pickingJob = helper.pickingJobService.createPickingJob(
@@ -249,6 +256,9 @@ class PickingJob_Scenarios_Test
 
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		assertThat(line.getCarrierProductId()).isEqualTo(carrierProductId);
+		assertThat(line.getCarrierGoodsTypeId()).isEqualTo(carrierGoodsTypeId);
+		assertThat(line.getCarrierServices()).isEqualTo(carrierServices);
+		assertThat(line.isManual()).isTrue();
 		assertThat(line.isCarrierAdviseReadOnly()).isFalse();
 	}
 

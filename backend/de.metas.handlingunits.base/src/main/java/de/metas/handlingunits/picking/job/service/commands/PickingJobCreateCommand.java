@@ -28,6 +28,9 @@ import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
@@ -266,17 +269,36 @@ public class PickingJobCreateCommand
 		}
 	}
 
-	@Nullable
-	private CarrierProductId getCarrierProductId(@NonNull final ScheduledPackageableList items)
+	@NonNull
+	private CarrierAdviseState getCarrierAdviseState(@NonNull final ScheduledPackageableList items)
 	{
 		final ShipmentScheduleAndJobScheduleId scheduleId = items.getSingleScheduleIdIfUnique().orElse(null);
 		if (scheduleId == null)
 		{
-			return null;
+			return CarrierAdviseState.NONE;
 		}
 
-		return CarrierProductId.ofRepoIdOrNull(
-				shipmentScheduleService.getByIdAsRecord(scheduleId.getShipmentScheduleId()).getCarrier_Product_ID());
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleService.getByIdAsRecord(scheduleId.getShipmentScheduleId());
+		final CarrierAdviseStatus advisingStatus = CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status());
+
+		return CarrierAdviseState.builder()
+				.carrierProductId(CarrierProductId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Product_ID()))
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(shipmentSchedule.getCarrier_Goods_Type_ID()))
+				.carrierServices(shipmentSchedule.getCarrier_Services())
+				.isManual(advisingStatus != null && advisingStatus.isManual())
+				.build();
+	}
+
+	@Value
+	@Builder
+	private static class CarrierAdviseState
+	{
+		static final CarrierAdviseState NONE = CarrierAdviseState.builder().build();
+
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@Nullable String carrierServices;
+		boolean isManual;
 	}
 
 	private PickingJobCreateRepoRequest.Line createLineRequest_WithPickingPlan(final @NonNull ScheduledPackageableList items)
@@ -300,6 +322,8 @@ public class PickingJobCreateCommand
 		final ImmutableSet<HuId> allowedReservedVhuIds = huService.getVHUIdsByDocumentRef(
 				HUReservationDocRef.ofSalesOrderLineId(items.getSingleSalesOrderLineId()));
 
+		final CarrierAdviseState carrierAdviseState = getCarrierAdviseState(items);
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -307,7 +331,10 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElse(null))
-				.carrierProductId(getCarrierProductId(items))
+				.carrierProductId(carrierAdviseState.getCarrierProductId())
+				.carrierGoodsTypeId(carrierAdviseState.getCarrierGoodsTypeId())
+				.carrierServices(carrierAdviseState.getCarrierServices())
+				.isManual(carrierAdviseState.isManual())
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.steps(lines.stream()
 						.map(planLine -> createStepRequest(planLine, allowedReservedVhuIds))
@@ -321,6 +348,8 @@ public class PickingJobCreateCommand
 
 	private PickingJobCreateRepoRequest.Line createLineRequest_NoPickingPlan(final @NonNull ScheduledPackageableList items)
 	{
+		final CarrierAdviseState carrierAdviseState = getCarrierAdviseState(items);
+
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(items.getSingleProductId())
 				.huPIItemProductId(items.getSinglePackToHUPIItemProductId())
@@ -328,7 +357,10 @@ public class PickingJobCreateCommand
 				.salesOrderAndLineId(items.getSingleSalesOrderLineId())
 				.deliveryBPLocationId(items.getSingleCustomerLocationId().orElseThrow(() -> new AdempiereException("No single customer location found for " + items)))
 				.scheduleId(items.getSingleScheduleIdIfUnique().orElseThrow(() -> new AdempiereException("No single schedule found for " + items)))
-				.carrierProductId(getCarrierProductId(items))
+				.carrierProductId(carrierAdviseState.getCarrierProductId())
+				.carrierGoodsTypeId(carrierAdviseState.getCarrierGoodsTypeId())
+				.carrierServices(carrierAdviseState.getCarrierServices())
+				.isManual(carrierAdviseState.isManual())
 				.catchWeightUomId(items.getSingleCatchWeightUomIdIfUnique().orElse(null))
 				.pickFromManufacturingOrderId(items.getSingleManufacturingOrderId().orElse(null))
 				.build();

@@ -25,6 +25,7 @@ import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import lombok.Builder;
@@ -118,6 +119,9 @@ class PickingJobCreateRepoHelper
 		record.setC_BPartner_Location_ID(line.getDeliveryBPLocationId().getRepoId());
 		updateRecord(record, line.getScheduleId());
 		record.setCarrier_Product_ID(CarrierProductId.toRepoId(line.getCarrierProductId()));
+		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(line.getCarrierGoodsTypeId()));
+		record.setCarrier_Services(line.getCarrierServices());
+		record.setIsCarrierAdviseManual(line.isManual());
 		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		record.setPP_Order_ID(PPOrderId.toRepoId(line.getPickFromManufacturingOrderId()));
 		InterfaceWrapperHelper.save(record);
