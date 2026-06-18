@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.nshift.client;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
@@ -94,12 +95,12 @@ class ShipAdvisorServiceTest
 				.pickupDate("2025-01-01")
 				.pickupTimeFrom("08:00")
 				.deliveryAddress(minimalAddress())
-				.item(JsonDeliveryAdvisorRequestItem.builder()
+				.grossWeightKg(BigDecimal.ONE)
+				.items(ImmutableList.of(JsonDeliveryAdvisorRequestItem.builder()
 						.numberOfItems(1)
-						.grossWeightKg(BigDecimal.ONE)
 						.productName("Test Product")
 						.productValue("TEST")
-						.build())
+						.build()))
 				.shipperConfig(configBuilder.build())
 				.build();
 	}
