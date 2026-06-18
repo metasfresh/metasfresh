@@ -28,14 +28,23 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
+import de.metas.shipper.client.nshift.json.JsonDetail;
+import de.metas.shipper.client.nshift.json.JsonDetailGroup;
+import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLine;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @UtilityClass
 public class NShiftUtil
@@ -128,6 +137,137 @@ public class NShiftUtil
 			lineBuilder.height(heightMM);
 		}
 		return lineBuilder.build();
+	}
+
+	/**
+	 * Assembles the nShift detail groups for an advise request — the advise-side counterpart of the ship path's
+	 * detail-group assembly in {@code NShiftShipmentService.buildShipmentRequest}. So the mobile advise is a real
+	 * preview of what ship sends to nShift, it emits the same shipment-level + line-level detail groups:
+	 * <ul>
+	 *   <li>shipment-level groups via {@link #buildShipmentDetailGroups(NShiftMappingConfigs, Function)} resolved by
+	 *       {@code request::getValue};</li>
+	 *   <li>line-level groups via {@link #buildLineLevelDetailGroups(List, int, NShiftMappingConfigs)} with one
+	 *       per-item value-provider chain {@code withFallback(item::getValue, request::getValue)} per advise item.
+	 *       The advise carries exactly ONE physical parcel (the packed HU), so all rows use {@code lineNo = 1}
+	 *       (mirroring {@link #buildAdvisorLine}).</li>
+	 * </ul>
+	 * Shared by {@code NShiftShipAdvisorService} and {@code NShiftOrderAdvisorService} — the two advise endpoints
+	 * must build detail groups identically (same contract as {@link #buildAdvisorLine}).
+	 */
+	public static List<JsonDetailGroup> buildAdvisorDetailGroups(
+			@NonNull final JsonDeliveryAdvisorRequest request,
+			@NonNull final NShiftMappingConfigs mappingConfigs)
+	{
+		final List<JsonDetailGroup> allDetailGroups = new ArrayList<>(
+				buildShipmentDetailGroups(mappingConfigs, request::getValue));
+
+		final List<Function<String, String>> perItemValueProviders = request.getItems().stream()
+				.map(item -> {
+					final Function<String, Optional<String>> chain =
+							withFallback(item::getValue, attributeValue -> Optional.ofNullable(request.getValue(attributeValue)));
+					return (Function<String, String>)(attributeValue -> chain.apply(attributeValue).orElse(null));
+				})
+				.collect(Collectors.toList());
+
+		// The advise carries exactly one physical parcel (the packed HU) → lineNo = 1.
+		allDetailGroups.addAll(buildLineLevelDetailGroups(perItemValueProviders, 1, mappingConfigs));
+
+		return allDetailGroups;
+	}
+
+	/**
+	 * Builds the shipment-level nShift detail groups ({@link DeliveryMappingConstants#ATTRIBUTE_TYPE_DETAIL_GROUP}),
+	 * processed once per shipment. Shared by the ship path ({@code NShiftShipmentService}) and the advise paths
+	 * ({@code NShiftShipAdvisorService} / {@code NShiftOrderAdvisorService}) so both emit identical groups —
+	 * keep this the single source for shipment-level detail-group building.
+	 *
+	 * @param shipmentValueProvider resolves shipment-level attribute values (e.g. {@code request::getValue}).
+	 */
+	public static List<JsonDetailGroup> buildShipmentDetailGroups(
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final Function<String, String> shipmentValueProvider)
+	{
+		final List<String> shipmentLevelGroupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, shipmentValueProvider);
+
+		if (shipmentLevelGroupKeys.isEmpty())
+		{
+			return Collections.emptyList();
+		}
+
+		final List<JsonDetailGroup> resultGroups = new ArrayList<>();
+		for (final String groupKey : shipmentLevelGroupKeys)
+		{
+			final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, shipmentValueProvider);
+			if (details.isEmpty())
+			{
+				continue;
+			}
+
+			// For shipment-level groups, we create one row without a line number.
+			final JsonDetailRow detailRow = JsonDetailRow.builder()
+					.details(details)
+					.build();
+
+			resultGroups.add(JsonDetailGroup.builder()
+					.groupID(groupKey)
+					.row(detailRow)
+					.build());
+		}
+		return resultGroups;
+	}
+
+	/**
+	 * Builds the line-level nShift detail groups ({@link DeliveryMappingConstants#ATTRIBUTE_TYPE_LINE_DETAIL_GROUP})
+	 * for ONE physical line/parcel (all its content items share the given {@code lineNo}). Shared by the ship path
+	 * ({@code NShiftShipmentService}) and the advise paths ({@code NShiftShipAdvisorService} /
+	 * {@code NShiftOrderAdvisorService}); keep this the single source for line-level detail-group building.
+	 * <p>
+	 * Each per-item value provider is already the full fallback chain the caller wants for that content item
+	 * (ship: {@code withFallback(content::getValue, withFallback(parcel::getValue, request::getValue))};
+	 * advise: {@code withFallback(item::getValue, request::getValue)}). This method just iterates the provided
+	 * chains, so the two paths share one implementation while keeping their own context plumbing.
+	 *
+	 * @param perItemValueProviders one value-provider chain per content item of the line.
+	 * @param lineNo                the nShift line number all emitted rows carry.
+	 */
+	public static List<JsonDetailGroup> buildLineLevelDetailGroups(
+			@NonNull final List<Function<String, String>> perItemValueProviders,
+			final int lineNo,
+			@NonNull final NShiftMappingConfigs mappingConfigs)
+	{
+		final Map<String, JsonDetailGroup.JsonDetailGroupBuilder> groupBuilders = new LinkedHashMap<>();
+
+		for (final Function<String, String> finalValueProvider : perItemValueProviders)
+		{
+			final List<String> groupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
+			if (groupKeys.isEmpty())
+			{
+				continue;
+			}
+
+			for (final String groupKey : groupKeys)
+			{
+				final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
+
+				if (!details.isEmpty())
+				{
+					// eDekGoodsLineNo
+					final JsonDetailRow.JsonDetailRowBuilder builder = JsonDetailRow.builder()
+							.lineNo(lineNo)
+							.details(details);
+					if (groupKey.equals("1"))
+					{
+						builder.detail(JsonDetail.builder().kindId(193).value(String.valueOf(lineNo)).build()); // lineNo
+					}
+					groupBuilders.computeIfAbsent(groupKey, k -> JsonDetailGroup.builder().groupID(k))
+							.row(builder.build());
+				}
+			}
+		}
+
+		return groupBuilders.values().stream()
+				.map(JsonDetailGroup.JsonDetailGroupBuilder::build)
+				.collect(Collectors.toList());
 	}
 
 	public static <T, R> Function<T, Optional<R>> withFallback(

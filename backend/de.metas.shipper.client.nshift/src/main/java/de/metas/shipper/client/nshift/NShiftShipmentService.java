@@ -37,9 +37,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
-import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
-import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
 import de.metas.shipper.client.nshift.json.JsonLine;
 import de.metas.shipper.client.nshift.json.JsonPackage;
@@ -60,7 +58,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -196,14 +193,14 @@ public class NShiftShipmentService
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
 		// 1. Add shipment-level detail groups (processed once)
-		final List<JsonDetailGroup> allDetailGroups = new ArrayList<>(buildShipmentDetailGroups(mappingConfigs, deliveryRequest::getValue));
+		final List<JsonDetailGroup> allDetailGroups = new ArrayList<>(NShiftUtil.buildShipmentDetailGroups(mappingConfigs, deliveryRequest::getValue));
 
 		// 2. Add line-level detail groups (processed for each parcel)
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
 		{
 			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, useRules));
-			allDetailGroups.addAll(buildLineLevelDetailGroups(deliveryLine, lineNoCounter, mappingConfigs, deliveryRequest));
+			allDetailGroups.addAll(NShiftUtil.buildLineLevelDetailGroups(buildContentValueProviders(deliveryLine, deliveryRequest), lineNoCounter, mappingConfigs));
 			lineNoCounter++;
 		}
 
@@ -213,39 +210,6 @@ public class NShiftShipmentService
 				.options(options)
 				.data(dataBuilder.build())
 				.build();
-	}
-
-	private static List<JsonDetailGroup> buildShipmentDetailGroups(
-			@NonNull final NShiftMappingConfigs mappingConfigs,
-			@NonNull final Function<String, String> valueProvider)
-	{
-		final List<String> shipmentLevelGroupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, valueProvider);
-
-		if (shipmentLevelGroupKeys.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-
-		final List<JsonDetailGroup> resultGroups = new ArrayList<>();
-		for (final String groupKey : shipmentLevelGroupKeys)
-		{
-			final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP, valueProvider);
-			if (details.isEmpty())
-			{
-				continue;
-			}
-
-			// For shipment-level groups, we create one row without a line number.
-			final JsonDetailRow detailRow = JsonDetailRow.builder()
-					.details(details)
-					.build();
-
-			resultGroups.add(JsonDetailGroup.builder()
-					.groupID(groupKey)
-					.row(detailRow)
-					.build());
-		}
-		return resultGroups;
 	}
 
 	private static JsonLine buildNShiftLine(@NonNull final JsonDeliveryOrderParcel deliveryLine,
@@ -284,55 +248,29 @@ public class NShiftShipmentService
 		return lineBuilder.build();
 	}
 
-	private static List<JsonDetailGroup> buildLineLevelDetailGroups(
+	/**
+	 * Builds the per-content value-provider chains for one parcel, to feed
+	 * {@link NShiftUtil#buildLineLevelDetailGroups(List, int, NShiftMappingConfigs)}. Each chain resolves a detail
+	 * value from content first, then parcel, then request — identical to the previous inline ship-path logic.
+	 */
+	private static List<Function<String, String>> buildContentValueProviders(
 			@NonNull final JsonDeliveryOrderParcel deliveryLine,
-			final int lineNo,
-			@NonNull final NShiftMappingConfigs mappingConfigs,
 			@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
-		final Map<String, JsonDetailGroup.JsonDetailGroupBuilder> groupBuilders = new LinkedHashMap<>();
-
 		// This provider is for evaluating mapping rules, which might depend on parcel or request data.
 		final Function<String, Optional<String>> parcelAndRequestProvider =
 				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 
+		final List<Function<String, String>> perContentProviders = new ArrayList<>();
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents content : deliveryLine.getContents())
 		{
 			// This full valueProviderChain is for resolving the detail values, which can come from content, parcel, or request.
 			final Function<String, Optional<String>> valueProviderChain =
 					NShiftUtil.withFallback(content::getValue, parcelAndRequestProvider);
 
-			final Function<String, String> finalValueProvider = attributeValue -> valueProviderChain.apply(attributeValue).orElse(null);
-
-			final List<String> groupKeys = mappingConfigs.getDetailGroupKeysForType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
-			if (groupKeys.isEmpty())
-			{
-				continue;
-			}
-
-			for (final String groupKey : groupKeys)
-			{
-				final List<JsonDetail> details = mappingConfigs.getDetailsForGroupAndType(groupKey, DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP, finalValueProvider);
-
-				if (!details.isEmpty())
-				{
-					 // eDekGoodsLineNo
-					final JsonDetailRow.JsonDetailRowBuilder builder = JsonDetailRow.builder()
-							.lineNo(lineNo)
-							.details(details);
-					if(groupKey.equals("1"))
-					{
-						builder.detail(JsonDetail.builder().kindId(193).value(String.valueOf(lineNo)).build()); // lineNo
-					}
-					groupBuilders.computeIfAbsent(groupKey, k -> JsonDetailGroup.builder().groupID(k))
-							.row(builder.build());
-				}
-			}
+			perContentProviders.add(attributeValue -> valueProviderChain.apply(attributeValue).orElse(null));
 		}
-
-		return groupBuilders.values().stream()
-				.map(JsonDetailGroup.JsonDetailGroupBuilder::build)
-				.collect(Collectors.toList());
+		return perContentProviders;
 	}
 
 	@VisibleForTesting
