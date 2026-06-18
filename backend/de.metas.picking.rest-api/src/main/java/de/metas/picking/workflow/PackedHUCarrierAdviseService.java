@@ -21,11 +21,13 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -55,6 +57,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,6 +73,8 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final CarrierProductRepository carrierProductRepository;
 	@NonNull private final CustomsTariffRepository customsTariffRepository;
 	@NonNull private final ShipperRepository shipperRepository;
+	@NonNull private final ShipmentScheduleService shipmentScheduleService;
+	@NonNull private final PickingJobRepository pickingJobRepository;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
@@ -143,24 +148,29 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Re-advises all packed top-level HUs for the given picking job / line.
+	 * Re-advises all packed top-level HUs for the given picking job / line, then persists the advised
+	 * carrier product (and the read-only flag) onto the picking job header + its non-Manual lines, so the
+	 * mobile preview and the {@link CarrierAdviseConsistencyService} checks read the same persisted state.
 	 * Covers LU, standalone-TU, and CU self-packed picks — any HU that was picked
 	 * on the job (or on the specific line when {@code lineId} is non-null) is resolved
 	 * to its top-level HU and re-advised.
-	 * Skips shipment schedules whose carrier advising status is Manual.
+	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
+	 * must never be overwritten, neither on the schedule nor on the picking job line).
 	 * <p>
 	 * Top-level resolution (getById → getTopLevelParentAsLUTUCUPair → getTopLevelHU) and
 	 * deduplication by HuId must be kept in sync with
 	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob}.
+	 *
+	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
-	public void advise(
+	public PickingJob advise(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
 		final ImmutableSet<HuId> pickedHuIds = pickingJob.getPickedHuIds(lineId);
 		if (pickedHuIds.isEmpty())
 		{
-			return;
+			return pickingJob;
 		}
 
 		// Resolve to top-level HUs and deduplicate by HuId
@@ -174,6 +184,11 @@ public class PackedHUCarrierAdviseService
 						hu -> hu,
 						(existing, ignored) -> existing));
 
+		// advised carrier product per non-Manual schedule (read AFTER executeSync persisted it)
+		final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId = new LinkedHashMap<>();
+		// at least one of the advised HUs has a Manual schedule → the whole job's carrier product is read-only
+		boolean anyManual = false;
+
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{
 			final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
@@ -184,14 +199,89 @@ public class PackedHUCarrierAdviseService
 			{
 				if (schedule.getCarrierAdvisingStatus().isManual())
 				{
+					anyManual = true;
 					continue;
 				}
-				// executeSync (not execute): re-advise against the packed HU regardless of the schedule's
-				// current advising status — at packing time it is typically already Completed from the
-				// auto-advise at order completion, so the Requested-only execute() guard would no-op.
-				CarrierAdviseCommand.ofPackedHU(schedule.getId(), parcel).executeSync();
+				adviseSchedule(schedule.getId(), parcel);
+
+				// executeSync persisted the advised product onto the schedule (setCarrierProductId + save);
+				// re-read it (the in-memory schedule from resolveSchedulesByIdForHU is stale) to learn the result.
+				final CarrierProductId advisedProductId = shipmentScheduleService.getById(schedule.getId()).getCarrierProductId();
+				advisedProductByScheduleId.put(schedule.getId(), advisedProductId);
 			}
 		}
+
+		return persistAdvisedProductOnJob(pickingJob, advisedProductByScheduleId, anyManual);
+	}
+
+	/**
+	 * Re-advises one non-Manual schedule against the packed-HU parcel.
+	 * <p>
+	 * executeSync (not execute): re-advise against the packed HU regardless of the schedule's
+	 * current advising status — at packing time it is typically already Completed from the
+	 * auto-advise at order completion, so the Requested-only execute() guard would no-op.
+	 * <p>
+	 * Extracted as a seam so {@link #advise(PickingJob, PickingJobLineId)} can be unit-tested without
+	 * exercising the static {@link CarrierAdviseCommand} (which performs real DB + shipper-gateway work).
+	 */
+	@VisibleForTesting
+	void adviseSchedule(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final JsonDeliveryAdvisorRequestParcel parcel)
+	{
+		CarrierAdviseCommand.ofPackedHU(shipmentScheduleId, parcel).executeSync();
+	}
+
+	/**
+	 * Persists the advised carrier product onto the picking job:
+	 * <ul>
+	 *     <li>each non-Manual line (mapped to a just-advised schedule via its shipment-schedule id) gets the
+	 *         advised product; Manual lines are left untouched;</li>
+	 *     <li>the header gets the single distinct advised product (the job's current carrier target) — if the
+	 *         advised schedules resolve to MORE than one distinct product, this is ambiguous and we abort
+	 *         rather than guess which one the header should carry;</li>
+	 *     <li>{@code carrierAdviseReadOnly = anyManual} on the header and on every touched line.</li>
+	 * </ul>
+	 */
+	private PickingJob persistAdvisedProductOnJob(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId,
+			final boolean anyManual)
+	{
+		if (advisedProductByScheduleId.isEmpty())
+		{
+			return pickingJob;
+		}
+
+		// header carrier product = the single distinct advised product (the job's current carrier target).
+		// More than one distinct product across the advised schedules has no single "current" target → abort.
+		final ImmutableSet<CarrierProductId> distinctAdvisedProducts = advisedProductByScheduleId.values().stream()
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		if (distinctAdvisedProducts.size() > 1)
+		{
+			throw new AdempiereException("Cannot set a single carrier product on the picking job header: "
+					+ "the advised schedules resolved to multiple distinct carrier products " + distinctAdvisedProducts);
+		}
+		final CarrierProductId headerProductId = distinctAdvisedProducts.stream().findFirst().orElse(null);
+
+		// set the advised product on each non-Manual line mapped to an advised schedule (by shipment-schedule id);
+		// Manual lines never appear in advisedProductByScheduleId, so they are left untouched.
+		final PickingJob jobWithLines = pickingJob.withChangedLines(line -> {
+			final ShipmentScheduleId lineScheduleId = line.getScheduleId().getShipmentScheduleId();
+			if (!advisedProductByScheduleId.containsKey(lineScheduleId))
+			{
+				return line;
+			}
+			return line.withCarrierProductIdAndReadOnly(advisedProductByScheduleId.get(lineScheduleId), anyManual);
+		});
+
+		final PickingJob jobWithHeader = jobWithLines
+				.withCarrierProductId(headerProductId)
+				.withCarrierAdviseReadOnly(anyManual);
+
+		pickingJobRepository.save(jobWithHeader);
+		return jobWithHeader;
 	}
 
 	// HU-advise parcel envelope: parcel-level fields (weight/dims/topLevelType) from packedHUShippingInfoService.of(hu),

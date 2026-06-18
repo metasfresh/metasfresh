@@ -616,8 +616,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				wfProcessId,
 				(wfProcess, pickingJob) -> {
 					wfProcess.assertHasAccess(callerId);
-					packedHUCarrierAdviseService.advise(pickingJob, lineId);
-					return pickingJob;
+					return packedHUCarrierAdviseService.advise(pickingJob, lineId);
 				});
 	}
 
