@@ -18,6 +18,13 @@ public class EInvoiceConfigServiceTest
 {
 	private EInvoiceConfigService service;
 
+	@BeforeEach
+	public void init()
+	{
+		AdempiereTestHelper.get().init();
+		service = new EInvoiceConfigService();
+	}
+
 	@Test
 	public void eInvoiceFormat_optionalOfCode_knownCode_returnsPresent()
 	{
@@ -30,13 +37,6 @@ public class EInvoiceConfigServiceTest
 	public void eInvoiceFormat_optionalOfCode_nullCode_returnsEmpty()
 	{
 		assertThat(EInvoiceFormat.optionalOfCode(null)).isEmpty();
-	}
-
-	@BeforeEach
-	public void init()
-	{
-		AdempiereTestHelper.get().init();
-		service = new EInvoiceConfigService();
 	}
 
 	@Test
@@ -77,6 +77,28 @@ public class EInvoiceConfigServiceTest
 		final Optional<EInvoiceRecipientConfig> result = service.resolveForInvoice(invoiceId);
 
 		assertThat(result).isEmpty();
+	}
+
+	@Test
+	public void givenEInvoiceRecipientWithoutBuyerReference_whenResolveForInvoice_thenReturnConfigWithNullBuyerReference()
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setIsEInvoiceRecipeint(true);
+		bpartner.setEInvoiceType(X_C_BPartner.EINVOICETYPE_ZUGFeRD);
+		// EInvoice_BuyerReference not set — ZUGFeRD does not require a Leitweg-ID
+		saveRecord(bpartner);
+
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(invoice);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		final Optional<EInvoiceRecipientConfig> result = service.resolveForInvoice(invoiceId);
+
+		assertThat(result).isPresent();
+		assertThat(result.get().getFormat()).isEqualTo(EInvoiceFormat.ZUGFeRD);
+		assertThat(result.get().getBuyerReference()).isNull();
 	}
 
 	@Test

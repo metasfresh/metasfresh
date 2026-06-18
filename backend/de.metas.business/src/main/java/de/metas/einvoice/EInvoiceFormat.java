@@ -50,4 +50,19 @@ public enum EInvoiceFormat implements ReferenceListAwareEnum
 	{
 		return getCode();
 	}
+
+	public boolean isZUGFeRD()
+	{
+		return this == ZUGFeRD;
+	}
+
+	public boolean isXRechnung()
+	{
+		return this == XRECHNUNG;
+	}
+
+	public boolean isPeppol()
+	{
+		return this == PEPPOL;
+	}
 }
