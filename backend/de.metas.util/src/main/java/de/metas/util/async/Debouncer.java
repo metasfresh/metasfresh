@@ -26,11 +26,14 @@ import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
@@ -45,12 +48,27 @@ import java.util.function.Consumer;
  */
 public final class Debouncer<T>
 {
+	private static final Logger logger = LoggerFactory.getLogger(Debouncer.class);
+
 	// Params
 	@Nullable
 	private final String name; // having it as a field for debugging purposes
 	@NonNull
 	private final ScheduledExecutorService executor;
 	private final int bufferMaxSize;
+	/**
+	 * Hard upper bound on the in-memory buffer — a <b>load-shedding</b> drop cap (NOT backpressure: it does not
+	 * slow the producer; it discards overflow). Unlike {@link #bufferMaxSize} — which only controls the
+	 * scheduling delay — this is an absolute ceiling: once reached, the oldest buffered items are dropped (and
+	 * counted/logged) instead of letting the buffer grow without bound, preventing an OutOfMemoryError when the
+	 * consumer is wedged/slower than the producers (e.g. blocked on an exhausted connection pool).
+	 * <p>
+	 * <b>OPT-IN.</b> Defaults to {@code -1} ("no cap" = the pre-existing unbounded behaviour) so existing callers
+	 * are never silently capped — a cap means dropping items, which is data loss for a caller whose items are not
+	 * recomputable. Set it explicitly only where dropping the oldest pending items under overload is acceptable
+	 * (e.g. idempotent, re-computable-on-next-event sync requests).
+	 */
+	private final int bufferHardLimit;
 	private final int delayInMillis;
 	@NonNull
 	private final Consumer<List<T>> consumer;
@@ -59,12 +77,14 @@ public final class Debouncer<T>
 	private final Object lock = new Object();
 	private long dueTime = -1;
 	private final Collection<T> buffer;
+	private long droppedItemsCount = 0; // guarded by lock
 
 	@Builder
 	private Debouncer(
 			@Nullable final String name,
 			@NonNull final Consumer<List<T>> consumer,
 			final int bufferMaxSize,
+			final int bufferHardLimit,
 			final int delayInMillis,
 			final boolean distinct)
 	{
@@ -74,6 +94,9 @@ public final class Debouncer<T>
 		this.executor = createExecutor(name);
 		this.consumer = consumer;
 		this.bufferMaxSize = bufferMaxSize > 0 ? bufferMaxSize : -1;
+		// Opt-in only: no cap unless the caller sets one. Deriving a cap from bufferMaxSize would retroactively
+		// drop items for existing unbounded callers (e.g. the process-log debouncer) = silent data loss.
+		this.bufferHardLimit = bufferHardLimit > 0 ? bufferHardLimit : -1;
 		this.delayInMillis = delayInMillis;
 		this.buffer = distinct
 				? new LinkedHashSet<>(bufferMaxSize)
@@ -125,6 +148,7 @@ public final class Debouncer<T>
 		synchronized (lock)
 		{
 			buffer.addAll(items);
+			enforceHardLimit();
 			updateDueTimeAndScheduleTask();
 		}
 	}
@@ -134,7 +158,40 @@ public final class Debouncer<T>
 		synchronized (lock)
 		{
 			buffer.add(item);
+			enforceHardLimit();
 			updateDueTimeAndScheduleTask();
+		}
+	}
+
+	/**
+	 * Backpressure: enforce {@link #bufferHardLimit} by dropping the OLDEST buffered items. Must be called while
+	 * holding {@link #lock}. Dropping (rather than blocking the producer) is the correct overload response here:
+	 * the buffer only grows unbounded when the consumer cannot keep up (e.g. wedged on an exhausted connection
+	 * pool), and in that state blocking the producers would only spread the stall; the stalest pending items are
+	 * shed instead, and the drop is counted + logged. A dropped item is recomputed on the next triggering event.
+	 */
+	private void enforceHardLimit()
+	{
+		if (bufferHardLimit <= 0 || buffer.size() <= bufferHardLimit)
+		{
+			return;
+		}
+
+		long dropped = 0;
+		final Iterator<T> it = buffer.iterator();
+		while (buffer.size() > bufferHardLimit && it.hasNext())
+		{
+			it.next();
+			it.remove();
+			dropped++;
+		}
+
+		if (dropped > 0)
+		{
+			droppedItemsCount += dropped;
+			logger.warn("Debouncer {}: buffer hard limit {} reached — dropped {} oldest item(s) (total dropped so far: {}). "
+							+ "The consumer is not keeping up; check for a wedged/slow consumer (e.g. an exhausted DB connection pool).",
+					name, bufferHardLimit, dropped, droppedItemsCount);
 		}
 	}
 
@@ -203,6 +260,15 @@ public final class Debouncer<T>
 		synchronized (lock)
 		{
 			return buffer.size();
+		}
+	}
+
+	/** Number of items dropped so far due to the {@link #bufferHardLimit} backpressure (monitoring / tests). */
+	public long getDroppedItemsCount()
+	{
+		synchronized (lock)
+		{
+			return droppedItemsCount;
 		}
 	}
 

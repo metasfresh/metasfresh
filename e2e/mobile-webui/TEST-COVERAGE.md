@@ -9,7 +9,7 @@
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 59 | 63 | 94% |
-| Distribution | 39 | 40 | 98% |
+| Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -186,11 +186,12 @@
 | Lines aggregated and grouped by delivery location | `picking/picking_deliveryLocationBasedAggregation.spec.js` |
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
+| Picking slot not required → slot-scan step absent, job pickable directly | `picking/pickingSlotRequired.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
 | DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Product-based picking
 
@@ -257,6 +258,7 @@
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| Packing-table operator: orders offered sorted by priority then locator priority; pick + scan auto-advances order→order through the run | `distribution/packingTable_navigateToNextOrder.spec.js` |
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
@@ -266,7 +268,7 @@
 | "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
 | "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**13/13 — 100%**
+**14/14 — 100%**
 
 ### Distribution — HU scanning
 

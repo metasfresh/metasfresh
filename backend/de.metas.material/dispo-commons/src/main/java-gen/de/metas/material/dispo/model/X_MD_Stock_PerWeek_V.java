@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_MD_Stock_PerWeek_V extends org.compiere.model.PO implements I_MD_Stock_PerWeek_V, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1948295841L;
+	private static final long serialVersionUID = 1989035965L;
 
     /** Standard Constructor */
     public X_MD_Stock_PerWeek_V (final Properties ctx, final int MD_Stock_PerWeek_V_ID, @Nullable final String trxName)
@@ -94,6 +94,19 @@ public class X_MD_Stock_PerWeek_V extends org.compiere.model.PO implements I_MD_
 	}
 
 	@Override
+	public void setQtyATPBegin (final @Nullable BigDecimal QtyATPBegin)
+	{
+		set_ValueNoCheck (COLUMNNAME_QtyATPBegin, QtyATPBegin);
+	}
+
+	@Override
+	public BigDecimal getQtyATPBegin() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyATPBegin);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setQtyExpectedReceipts (final @Nullable BigDecimal QtyExpectedReceipts)
 	{
 		set_ValueNoCheck (COLUMNNAME_QtyExpectedReceipts, QtyExpectedReceipts);
@@ -120,7 +133,7 @@ public class X_MD_Stock_PerWeek_V extends org.compiere.model.PO implements I_MD_
 	}
 
 	@Override
-	public void setWeekStartDate (final @Nullable java.sql.Timestamp WeekStartDate)
+	public void setWeekStartDate (final java.sql.Timestamp WeekStartDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_WeekStartDate, WeekStartDate);
 	}

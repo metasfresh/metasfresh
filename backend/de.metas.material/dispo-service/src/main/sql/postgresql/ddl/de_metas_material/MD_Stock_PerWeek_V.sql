@@ -2,10 +2,16 @@
 --
 -- Derives, per product x warehouse x ISO calendar week (Monday-anchored), the material
 -- outlook straight from the dispo engine's MD_Candidate timeline:
+--   QtyATPBegin          : projected stock as-of the START of the week (the Monday) —
+--                          latest STOCK candidate with DateProjected < WeekStartDate,
+--                          summed across attribute/customer subgroups. By construction,
+--                          QtyATPBegin(W) == QtyATP(W-1): the ATP at a week's start equals
+--                          the ATP at the prior week's end (same Monday boundary).
 --   QtyExpectedShipments : reserved demand   (DEMAND / SHIPMENT,  ABS(Qty))
 --   QtyExpectedReceipts  : purchased supply  (SUPPLY / PURCHASE,  Qty)
---   QtyATP               : projected stock   (latest STOCK candidate at/before week-end,
---                          summed across attribute/customer subgroups) — the authoritative
+--   QtyATP               : projected stock as-of the END of the week — latest STOCK
+--                          candidate at/before week-end (DateProjected < WeekStartDate + 7),
+--                          summed across attribute/customer subgroups — the authoritative
 --                          available-to-promise number; it reflects ALL streams (shipment,
 --                          purchase, production, distribution, forecast, inventory), so its
 --                          row-to-row delta need NOT equal receipts - shipments.
@@ -30,14 +36,18 @@
 --     GREATEST(date_trunc('week',DateProjected), date_trunc('week',current_date)).
 --     Joined to the week skeleton by (product, warehouse, week).
 --
---   QtyATP single-pass technique:
+--   QtyATP / QtyATPBegin single-pass technique:
 --     1. atp_collapsed: per (pw, subgroup, DateProjected) keep the Qty of the
 --        max-SeqNo candidate (DISTINCT ON ... ORDER BY SeqNo DESC). This makes the
 --        carry-forward exact under ties.
 --     2. atp_steps: LEAD(DateProjected) over each subgroup gives a half-open validity
---        interval [DateProjected, next_DateProjected). A step owns week W iff
---            DateProjected < W+7  AND  (next IS NULL OR next >= W+7).
---        The inequalities are the same timestamp comparisons as the original.
+--        interval [DateProjected, next_DateProjected). A step owns week W (end) iff
+--            DateProjected < W+7  AND  (next IS NULL OR next >= W+7);
+--        it owns week W (begin) iff
+--            DateProjected < W    AND  (next IS NULL OR next >= W).
+--        The inequalities are the same timestamp comparisons as the original; the only
+--        difference between end-of-week (QtyATP) and start-of-week (QtyATPBegin) is the
+--        boundary: WeekStartDate + 7 (next Monday) vs WeekStartDate (this Monday).
 --     3. Join steps to the week skeleton on that interval and SUM Qty per (pw, week).
 --
 --   Weeks come from generate_series LATERAL-joined to the per-pw aggregates (not a
@@ -131,8 +141,7 @@ atp_steps AS (
          ) AS next_dp
     FROM atp_collapsed
 ),
--- 3) map each step to the weeks it owns and SUM across subgroups per (pw, week).
---    step owns week W iff  DateProjected < W+7  AND  (next_dp IS NULL OR next_dp >= W+7)
+-- 3a) ATP as-of week END: step owns week W iff DateProjected < W+7 AND (next_dp IS NULL OR next_dp >= W+7)
 atp AS (
   SELECT w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate,
          SUM(s.Qty) AS qty
@@ -142,6 +151,20 @@ atp AS (
      AND s.M_Warehouse_ID = w.M_Warehouse_ID
      AND s.DateProjected < (w.WeekStartDate + 7)::timestamptz
      AND (s.next_dp IS NULL OR s.next_dp >= (w.WeekStartDate + 7)::timestamptz)
+   GROUP BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate
+),
+-- 3b) ATP as-of week START (the Monday): same technique, boundary at WeekStartDate (not +7).
+--     step owns week W iff DateProjected < W AND (next_dp IS NULL OR next_dp >= W).
+--     By construction this equals the prior week's QtyATP (its week-end ATP).
+atp_begin AS (
+  SELECT w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate,
+         SUM(s.Qty) AS qty
+    FROM weeks w
+    JOIN atp_steps s
+      ON s.M_Product_ID  = w.M_Product_ID
+     AND s.M_Warehouse_ID = w.M_Warehouse_ID
+     AND s.DateProjected < (w.WeekStartDate)::timestamptz
+     AND (s.next_dp IS NULL OR s.next_dp >= (w.WeekStartDate)::timestamptz)
    GROUP BY w.M_Product_ID, w.M_Warehouse_ID, w.WeekStartDate
 )
 SELECT
@@ -155,6 +178,7 @@ SELECT
   w.M_Product_ID,
   w.M_Warehouse_ID,
   w.WeekStartDate,
+  COALESCE(atp_begin.qty, 0) AS QtyATPBegin,
   COALESCE(ship.qty, 0) AS QtyExpectedShipments,
   COALESCE(recv.qty, 0) AS QtyExpectedReceipts,
   COALESCE(atp.qty,  0) AS QtyATP
@@ -167,4 +191,7 @@ LEFT JOIN recv ON recv.M_Product_ID = w.M_Product_ID
               AND recv.WeekStartDate = w.WeekStartDate
 LEFT JOIN atp  ON atp.M_Product_ID = w.M_Product_ID
               AND atp.M_Warehouse_ID = w.M_Warehouse_ID
-              AND atp.WeekStartDate = w.WeekStartDate;
+              AND atp.WeekStartDate = w.WeekStartDate
+LEFT JOIN atp_begin ON atp_begin.M_Product_ID = w.M_Product_ID
+              AND atp_begin.M_Warehouse_ID = w.M_Warehouse_ID
+              AND atp_begin.WeekStartDate = w.WeekStartDate;

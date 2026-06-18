@@ -41,20 +41,24 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
       | supply_S25618_atp1  | SUPPLY            | PURCHASE                  | product_S25618_atp1 | 2          | 1             | 8   | 98  | wh_S25618_atp  |
 
     # Week 0 row: QtyATP = 100 (the STOCK candidate from the INVENTORY_UP, dated in week 0,
-    # which is before the week+1 start, so visible in week 0's window)
+    # which is before the week+1 start, so visible in week 0's window).
+    # QtyATPBegin = 0: no STOCK candidate is dated before week 0's Monday, so the as-of-start
+    # stock is empty.
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_atp1 | wh_S25618_atp  | 0          | 0                    | 0                   | 100    |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_atp1 | wh_S25618_atp  | 0          | 0           | 0                    | 0                   | 100    |
 
     # Week +1 row: latest STOCK before week+2 start is the one in week+1 with Qty=90.
+    # QtyATPBegin = 100 = week 0's QtyATP (the INVENTORY_UP STOCK still owns week+1's Monday).
     And after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_atp1 | wh_S25618_atp  | 1          | 10                   | 0                   | 90     |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_atp1 | wh_S25618_atp  | 1          | 100         | 10                   | 0                   | 90     |
 
     # Week +2 row: latest STOCK before week+3 start is the one in week+2 with Qty=98.
+    # QtyATPBegin = 90 = week+1's QtyATP (the DEMAND STOCK owns week+2's Monday).
     And after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_atp1 | wh_S25618_atp  | 2          | 0                    | 8                   | 98     |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_atp1 | wh_S25618_atp  | 2          | 90          | 0                    | 8                   | 98     |
 
   @Id:S25618_30
   @from:cucumber
@@ -79,9 +83,11 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
     # QtyATP=-7: the STOCK candidate paired with this DEMAND is dated in the past week with
     # Qty=ATP=-7. That date is before the current week+1 start, so it is the latest STOCK
     # for this product/warehouse → QtyATP=-7.
+    # QtyATPBegin=-7: that same STOCK candidate is also dated before the current week's Monday
+    # (it is two weeks overdue), so it owns the as-of-start stock too.
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S25618_atp2 | wh_S25618_atp  | 0          | 7                    | 0                   | -7     |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S25618_atp2 | wh_S25618_atp  | 0          | -7          | 7                    | 0                   | -7     |
 
   @Id:S30457_10
   @from:cucumber
@@ -120,6 +126,8 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
     #   customer_A latest (DayWithinWeek=2) → ATP=40; customer_B (DayWithinWeek=1, only entry) → ATP=20.
     #   QtyATP = 40 + 20 = 60.
     #   No DEMAND/SUPPLY rows → QtyExpectedShipments = QtyExpectedReceipts = 0.
+    #   QtyATPBegin = 0: all STOCK candidates are dated within week 0 (Monday+1 / Monday+2), none
+    #   before week 0's Monday, so the as-of-start stock is empty.
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
-      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
-      | product_S30457_atp3 | wh_S25618_atp  | 0          | 0                    | 0                   | 60     |
+      | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
+      | product_S30457_atp3 | wh_S25618_atp  | 0          | 0           | 0                    | 0                   | 60     |

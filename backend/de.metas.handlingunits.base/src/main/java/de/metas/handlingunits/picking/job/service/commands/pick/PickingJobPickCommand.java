@@ -8,8 +8,6 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -20,6 +18,8 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -135,6 +135,7 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
+	private final boolean isPickingSlotRequired;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -203,6 +204,8 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
+
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
@@ -218,7 +221,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -270,6 +272,7 @@ public class PickingJobPickCommand
 				.build();
 
 		this.isCloseTarget = isCloseTarget;
+		this.isPickingSlotRequired = pickingJobOptions.isPickingSlotRequired();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -397,6 +400,11 @@ public class PickingJobPickCommand
 
 	private void checkOrAllocatePickingSlot()
 	{
+		if (!isPickingSlotRequired)
+		{
+			return;
+		}
+
 		if (isLineLevelPickTarget())
 		{
 			changeLine(line -> {

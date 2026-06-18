@@ -91,6 +91,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -303,9 +304,19 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		}
 	}
 
+	private static ImmutableList<WFActivity> toWFActivitiesList(@Nullable WFActivity... wfActivities)
+	{
+		if (wfActivities == null || wfActivities.length == 0)
+		{
+			return ImmutableList.of();
+		}
+
+		return Arrays.stream(wfActivities).filter(Objects::nonNull).collect(ImmutableList.toImmutableList());
+	}
+
 	private static ImmutableList<WFActivity> toWFActivities_SalesOrderBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
 				toWFActivity_Complete(pickingJob)
@@ -314,7 +325,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static ImmutableList<WFActivity> toWFActivities_DeliveryLocationBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
 				toWFActivity_Complete(pickingJob)
@@ -323,7 +334,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static ImmutableList<WFActivity> toWFActivities_ProductBasedAggregation(@NonNull final PickingJob pickingJob)
 	{
-		return ImmutableList.of(
+		return toWFActivitiesList(
 				toWActivity_PickFromHU(pickingJob),
 				toWActivity_ScanPickingSlot(pickingJob),
 				toWFActivity_PickLines(pickingJob),
@@ -342,8 +353,14 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.build();
 	}
 
+	@Nullable
 	private static WFActivity toWActivity_ScanPickingSlot(final @NotNull PickingJob pickingJob)
 	{
+		if (!pickingJob.isPickingSlotRequired())
+		{
+			return null;
+		}
+
 		return WFActivity.builder()
 				.id(ACTIVITY_ID_ScanPickingSlot)
 				.caption(TranslatableStrings.adMessage(MSG_Caption_ScanPickingSlot))

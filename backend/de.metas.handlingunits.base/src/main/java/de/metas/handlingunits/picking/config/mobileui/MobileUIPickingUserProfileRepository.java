@@ -53,7 +53,7 @@ import java.util.stream.Stream;
 
 /**
  * Repository Tables: MobileUI_UserProfile_Picking, MobileUI_UserProfile_Picking_BPartner,
- *     MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
+ * MobileUI_UserProfile_Picking_Job, PickingProfile_PickingJobConfig, PickingProfile_Filter
  * Repository Cluster: MobileUIPickingUserProfileRepository
  */
 @Repository
@@ -135,6 +135,7 @@ public class MobileUIPickingUserProfileRepository
 				.isAllowCompletingPartialPickingJob(profileRecord.isAllowCompletingPartialPickingJob())
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
+				.pickingSlotRequired(OptionalBoolean.ofBoolean(profileRecord.isPickingSlotRequired()))
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
@@ -352,6 +353,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsShowConfirmationPromptWhenOverPick(from.isShowConfirmationPromptWhenOverPick());
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
+		record.setIsPickingSlotRequired(from.isPickingSlotRequired());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));
@@ -454,6 +456,7 @@ public class MobileUIPickingUserProfileRepository
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(record.getCreateShipmentPolicy()))
 				.isAllowCompletingPartialPickingJob(record.isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(record.isAnonymousHuPickedOnTheFly())
+				.pickingSlotRequired(OptionalBoolean.ofNullableString(record.getIsPickingSlotRequired()))
 				.displayPickingSlotSuggestions(OptionalBoolean.ofNullableString(record.getIsDisplayPickingSlotSuggestions()))
 				.pickingLineGroupBy(PickingLineGroupBy.ofNullableCode(record.getPickingLineGroupBy()))
 				.pickingLineSortBy(PickingLineSortBy.ofNullableCode(record.getPickingLineSortBy()))

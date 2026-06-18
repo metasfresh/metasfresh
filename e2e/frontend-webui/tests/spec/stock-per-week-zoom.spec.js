@@ -16,7 +16,7 @@ import {
  * Validates the read-only weekly-stock window (AD_Window_ID 542159) reached via the
  * AD_RelationType zoom (540499, InternalName C_OrderLine_MD_Stock_PerWeek) from a
  * sales-order line. The zoom filters MD_Stock_PerWeek_V to the line's product +
- * resolved storage warehouse (MD_getStockWarehouse), anchored at week(DatePromised).
+ * resolved storage warehouse (MD_getStockWarehouse), anchored at week(C_Order.PreparationDate).
  *
  * KEY ASSERTIONS (the open question this test answers):
  *  - the zoom link surfaces on a C_OrderLine and navigates to window 542159
@@ -36,9 +36,10 @@ const EXPECTED_GRID_HEADERS = [
   'Produkt',
   'Lager',
   'Wochenbeginn',
-  'Erwartete Lieferungen',
-  'Erwartete Wareneingänge',
-  'Verfügbar (ATP)',
+  'ATP Beginn',
+  'Erw. Lieferungen',
+  'Erw. Wareneingänge',
+  'ATP Ende',
 ];
 
 test.describe('Stock per week (Bestand pro Woche) — order-line zoom', () => {
