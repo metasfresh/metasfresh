@@ -95,6 +95,7 @@ class MobileConfigPickingCommand
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
+				.pickingSlotRequired(profile.getDefaultPickingJobOptions().getPickingSlotRequired().toBooleanOrNull())
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())

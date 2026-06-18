@@ -58,7 +58,7 @@ test('Pick without a picking slot when picking slot is not required', async ({ p
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.feature('F00230: MobileUI Picking');
-    allure.story('Pick without a picking slot when IsPickingSlotRequired=N');
+    allure.story('Pick without a picking slot when picking slot is not required');
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
