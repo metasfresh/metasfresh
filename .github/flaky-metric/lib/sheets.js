@@ -75,6 +75,11 @@ async function ensureTab(sheets, spreadsheetId, title, header, { allowTrailingCo
   // own — it must never wipe them just because they are not in its own schema.
   // Only a genuine change to one of the OWNED columns (prefix mismatch) still
   // triggers the clean re-fill.
+  //
+  // Caveat: this only detects owned-column RENAMES, not a REMOVAL. If the owned
+  // header ever shrinks (a column dropped), the now-stale column would still
+  // prefix-match and be silently carried as a phantom "annotation". The schema
+  // has only ever grown; should a column be removed, clear the tab manually once.
   const got = await sheets.spreadsheets.values.get({
     spreadsheetId,
     range: `${title}!A1:Z1`,
