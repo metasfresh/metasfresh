@@ -65,6 +65,7 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 		assertThat(row.getAccountName()).isEqualTo(CONCEPT_EXPENSE.getAsString());
 		assertThat(row.getC_ElementValue_ID()).isEqualTo(ELEMENT_A.getRepoId());
 		assertThat(row.isActive()).isTrue();
+		assertThat(row.getAD_Org_ID()).as("materialized row must carry the passed org").isEqualTo(ORG_ID.getRepoId());
 	}
 
 	// -----------------------------------------------------------------------
@@ -174,6 +175,33 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 				.findFirst();
 		assertThat(otherSchemaRowOpt).as("OTHER_SCHEMA_ID row must remain active").isPresent();
 		assertThat(otherSchemaRowOpt.get().getC_ElementValue_ID()).isEqualTo(ELEMENT_B.getRepoId());
+	}
+
+	// -----------------------------------------------------------------------
+	// Scenario 6: a manually-saved real-org row + a materialized same-org row
+	//             must be retrievable (extractOrgId's uniqueElementOrThrow must not throw).
+	//             This is the regression the orgId fix (real invoice org, not OrgId.ANY) addresses.
+	// -----------------------------------------------------------------------
+	@Test
+	void manual_and_materialized_rows_with_same_real_org_are_retrievable()
+	{
+		// seed a manually-inserted row with the real org (simulates the window save() path)
+		final I_C_Invoice_Acct manualRow = InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class);
+		manualRow.setC_Invoice_ID(INVOICE_ID.getRepoId());
+		manualRow.setAD_Org_ID(ORG_ID.getRepoId());
+		manualRow.setC_AcctSchema_ID(SCHEMA_ID.getRepoId());
+		manualRow.setAccountName(CONCEPT_INVENTORY.getAsString());
+		manualRow.setC_ElementValue_ID(ELEMENT_A.getRepoId());
+		manualRow.setIsActive(true);
+		InterfaceWrapperHelper.save(manualRow);
+
+		// materialized override for a different concept, same invoice + real org
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_B);
+
+		// getById must succeed — all rows share the same org, so uniqueElementOrThrow does not throw
+		final Optional<InvoiceAcct> result = repo.getById(INVOICE_ID);
+		assertThat(result).as("invoice override must be retrievable with mixed manual+materialized same-org rows").isPresent();
+		assertThat(result.get().getOrgId()).isEqualTo(ORG_ID);
 	}
 
 	// -----------------------------------------------------------------------

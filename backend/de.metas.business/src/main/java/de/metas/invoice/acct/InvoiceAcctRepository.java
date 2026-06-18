@@ -130,7 +130,7 @@ public class InvoiceAcctRepository
 	 * <li>Existing row with different {@code elementValueId} → deactivate it, then insert new active row.</li>
 	 * </ul>
 	 * Never touches rows belonging to other (schema / invoice / line / concept) tuples.
-	 * Invalidates the cache for the affected invoice after any write.
+	 * Cache is reset automatically after any write (the CCache table-change listener on C_Invoice_Acct fires on save).
 	 */
 	public void createOrUpdateLineOverride(
 			@NonNull final InvoiceAndLineId invoiceAndLineId,
