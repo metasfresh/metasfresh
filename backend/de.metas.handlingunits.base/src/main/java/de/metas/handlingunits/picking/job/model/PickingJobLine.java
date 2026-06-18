@@ -278,14 +278,22 @@ public class PickingJobLine implements PickingJobHeaderOrLine
 				: this;
 	}
 
-	public PickingJobLine withCarrierProductIdAndReadOnly(
+	public PickingJobLine withCarrierAdvise(
 			@Nullable final CarrierProductId carrierProductId,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			@NonNull final Set<CarrierServiceId> carrierServices,
 			final boolean carrierAdviseReadOnly)
 	{
-		return CarrierProductId.equals(this.carrierProductId, carrierProductId) && this.carrierAdviseReadOnly == carrierAdviseReadOnly
+		final ImmutableSet<CarrierServiceId> carrierServicesSet = ImmutableSet.copyOf(carrierServices);
+		return CarrierProductId.equals(this.carrierProductId, carrierProductId)
+				&& CarrierGoodsTypeId.equals(this.carrierGoodsTypeId, carrierGoodsTypeId)
+				&& this.carrierServices.equals(carrierServicesSet)
+				&& this.carrierAdviseReadOnly == carrierAdviseReadOnly
 				? this
 				: toBuilder()
 				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServicesSet)
 				.carrierAdviseReadOnly(carrierAdviseReadOnly)
 				.build();
 	}

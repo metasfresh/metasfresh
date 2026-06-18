@@ -16,6 +16,8 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierAdviseStatus;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
@@ -139,7 +141,7 @@ public class PackedHUCarrierAdviseServiceTest
 	 * One packed HU carries a Tomato schedule (non-Manual, re-advised) and a Salad schedule (Manual, skipped).
 	 * After {@link PackedHUCarrierAdviseService#advise}:
 	 * <ul>
-	 *     <li>the non-Manual (Tomato) line gets the advised carrier product and {@code carrierAdviseReadOnly=true};</li>
+	 *     <li>the non-Manual (Tomato) line gets the advised carrier product + goods-type + services and {@code carrierAdviseReadOnly=true};</li>
 	 *     <li>the Manual (Salad) line is left untouched;</li>
 	 *     <li>the header gets the single advised product + {@code carrierAdviseReadOnly=true} (anyManual);</li>
 	 *     <li>the picking job is saved.</li>
@@ -152,6 +154,10 @@ public class PackedHUCarrierAdviseServiceTest
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 
 		final CarrierProductId advisedProductId = CarrierProductId.ofRepoId(777);
+		final CarrierGoodsTypeId advisedGoodsTypeId = CarrierGoodsTypeId.ofRepoId(888);
+		final ImmutableSet<CarrierServiceId> advisedServices = ImmutableSet.of(
+				CarrierServiceId.ofRepoId(901),
+				CarrierServiceId.ofRepoId(902));
 
 		// HU resolves to a non-Manual Tomato schedule (re-advised) + a Manual Salad schedule (skipped)
 		final ShipmentSchedule tomatoSched = mockSchedule(SCHED_TOMATO, data.helper.pTomatoProductId);
@@ -166,10 +172,12 @@ public class PackedHUCarrierAdviseServiceTest
 		// stub the static-command seam (no real DB / shipper-gateway call in a unit test)
 		doNothing().when(service).adviseSchedule(any(), any());
 
-		// post-executeSync batch re-read: the Tomato schedule now carries the advised product
+		// post-executeSync batch re-read: the Tomato schedule now carries the advised product + goods-type + services
 		final ShipmentSchedule tomatoSchedAdvised = mock(ShipmentSchedule.class);
 		when(tomatoSchedAdvised.getId()).thenReturn(SCHED_TOMATO);
 		when(tomatoSchedAdvised.getCarrierProductId()).thenReturn(advisedProductId);
+		when(tomatoSchedAdvised.getCarrierGoodsTypeId()).thenReturn(advisedGoodsTypeId);
+		when(tomatoSchedAdvised.getCarrierServicesIfLoaded()).thenReturn(advisedServices);
 		when(shipmentScheduleService.getByIds(ImmutableSet.of(SCHED_TOMATO)))
 				.thenReturn(ImmutableList.of(tomatoSchedAdvised));
 
@@ -177,7 +185,7 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJobLine tomatoLine = mock(PickingJobLine.class);
 		when(tomatoLine.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_TOMATO));
 		final PickingJobLine tomatoLineChanged = mock(PickingJobLine.class);
-		when(tomatoLine.withCarrierProductIdAndReadOnly(any(), anyBooleanEq())).thenReturn(tomatoLineChanged);
+		when(tomatoLine.withCarrierAdvise(any(), any(), any(), anyBooleanEq())).thenReturn(tomatoLineChanged);
 
 		final PickingJobLine saladLine = mock(PickingJobLine.class);
 		when(saladLine.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_SALAD));
@@ -199,12 +207,12 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJob result = service.advise(pickingJob, null);
 
 		// --- assert ---
-		// the line mapper sets the advised product + readOnly on the non-Manual line, leaves the Manual line as-is
+		// the line mapper sets the advised product + goods-type + services + readOnly on the non-Manual line, leaves the Manual line as-is
 		final UnaryOperator<PickingJobLine> mapper = mapperCaptor.getValue();
 		assertThat(mapper.apply(tomatoLine)).isSameAs(tomatoLineChanged);
-		verify(tomatoLine).withCarrierProductIdAndReadOnly(advisedProductId, true);
+		verify(tomatoLine).withCarrierAdvise(advisedProductId, advisedGoodsTypeId, advisedServices, true);
 		assertThat(mapper.apply(saladLine)).isSameAs(saladLine);
-		verify(saladLine, never()).withCarrierProductIdAndReadOnly(any(), anyBooleanEq());
+		verify(saladLine, never()).withCarrierAdvise(any(), any(), any(), anyBooleanEq());
 
 		// header product + readOnly + save
 		verify(jobAfterLines).withCarrierProductId(advisedProductId);

@@ -25,6 +25,8 @@ import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.interfaces.I_C_OrderLine;
@@ -49,8 +51,10 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -197,19 +201,36 @@ public class PackedHUCarrierAdviseService
 			}
 		}
 
-		// adviseSchedule (executeSync) persisted the advised product onto each schedule (setCarrierProductId + save);
-		// re-read them (the in-memory schedules from resolveSchedulesByIdForHU are now stale) in ONE batch to learn
-		// the results — avoids a per-schedule getById inside the loop.
-		final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId = new LinkedHashMap<>();
+		// adviseSchedule (executeSync) persisted the advised carrier onto each schedule; re-read them (the in-memory
+		// schedules from resolveSchedulesByIdForHU are now stale) in ONE batch to learn the results — avoids a
+		// per-schedule getById inside the loop.
+		final Map<ShipmentScheduleId, AdvisedCarrier> advisedCarrierByScheduleId = new LinkedHashMap<>();
 		if (!advisedScheduleIds.isEmpty())
 		{
 			for (final ShipmentSchedule advisedSchedule : shipmentScheduleService.getByIds(ImmutableSet.copyOf(advisedScheduleIds)))
 			{
-				advisedProductByScheduleId.put(advisedSchedule.getId(), advisedSchedule.getCarrierProductId());
+				advisedCarrierByScheduleId.put(advisedSchedule.getId(), AdvisedCarrier.builder()
+						.carrierProductId(advisedSchedule.getCarrierProductId())
+						.carrierGoodsTypeId(advisedSchedule.getCarrierGoodsTypeId())
+						.carrierServices(ImmutableSet.copyOf(advisedSchedule.getCarrierServicesIfLoaded()))
+						.build());
 			}
 		}
 
-		return persistAdvisedProductOnJob(pickingJob, advisedProductByScheduleId, anyManual);
+		return persistAdvisedProductOnJob(pickingJob, advisedCarrierByScheduleId, anyManual);
+	}
+
+	/**
+	 * The carrier advice re-read from a just-advised shipment schedule: the carrier product the header carries,
+	 * plus the goods-type + services that (with the product) are persisted onto the picking-job line.
+	 */
+	@Value
+	@Builder
+	private static class AdvisedCarrier
+	{
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@NonNull ImmutableSet<CarrierServiceId> carrierServices;
 	}
 
 	/**
@@ -243,10 +264,10 @@ public class PackedHUCarrierAdviseService
 	 */
 	private PickingJob persistAdvisedProductOnJob(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final Map<ShipmentScheduleId, CarrierProductId> advisedProductByScheduleId,
+			@NonNull final Map<ShipmentScheduleId, AdvisedCarrier> advisedCarrierByScheduleId,
 			final boolean anyManual)
 	{
-		if (advisedProductByScheduleId.isEmpty())
+		if (advisedCarrierByScheduleId.isEmpty())
 		{
 			// No non-Manual schedule was advised. If every advise schedule was Manual, the carrier product is
 			// manually controlled → still flag the header read-only (no product to set). Otherwise nothing to do.
@@ -264,7 +285,9 @@ public class PackedHUCarrierAdviseService
 
 		// header carrier product = the single distinct advised product (the job's current carrier target).
 		// More than one distinct product across the advised schedules has no single "current" target → abort.
-		final ImmutableSet<CarrierProductId> distinctAdvisedProducts = advisedProductByScheduleId.values().stream()
+		// (the header table has no goods-type/services columns — those live only on the line.)
+		final ImmutableSet<CarrierProductId> distinctAdvisedProducts = advisedCarrierByScheduleId.values().stream()
+				.map(AdvisedCarrier::getCarrierProductId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 		if (distinctAdvisedProducts.size() > 1)
@@ -274,15 +297,20 @@ public class PackedHUCarrierAdviseService
 		}
 		final CarrierProductId headerProductId = distinctAdvisedProducts.stream().findFirst().orElse(null);
 
-		// set the advised product on each non-Manual line mapped to an advised schedule (by shipment-schedule id);
-		// Manual lines never appear in advisedProductByScheduleId, so they are left untouched.
+		// set the advised product + goods-type + services on each non-Manual line mapped to an advised schedule
+		// (by shipment-schedule id); Manual lines never appear in advisedCarrierByScheduleId, so they are left untouched.
 		final PickingJob jobWithLines = pickingJob.withChangedLines(line -> {
 			final ShipmentScheduleId lineScheduleId = line.getScheduleId().getShipmentScheduleId();
-			if (!advisedProductByScheduleId.containsKey(lineScheduleId))
+			final AdvisedCarrier advisedCarrier = advisedCarrierByScheduleId.get(lineScheduleId);
+			if (advisedCarrier == null)
 			{
 				return line;
 			}
-			return line.withCarrierProductIdAndReadOnly(advisedProductByScheduleId.get(lineScheduleId), anyManual);
+			return line.withCarrierAdvise(
+					advisedCarrier.getCarrierProductId(),
+					advisedCarrier.getCarrierGoodsTypeId(),
+					advisedCarrier.getCarrierServices(),
+					anyManual);
 		});
 
 		final PickingJob jobWithHeader = jobWithLines
