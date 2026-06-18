@@ -52,6 +52,7 @@ import org.adempiere.exceptions.DBMoreThanOneRecordsFoundException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_PInstance;
 import org.compiere.model.ModelValidator;
@@ -1078,7 +1079,7 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return appliesToTableName(tableName);
 	}
 
-	public void createSelection(@NonNull final PInstanceId selectionId, final Collection<Integer> selection)
+	public int createSelection(@NonNull final PInstanceId selectionId, final Collection<Integer> selection)
 	{
 		final ImmutableSet<Integer> selectionSet = selection != null ? ImmutableSet.copyOf(selection) : ImmutableSet.of();
 
@@ -1094,6 +1095,8 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 					.addAll(selectionSet).build();
 			this.selectionId2selection.put(selectionId, combinedSelectionSet);
 		}
+
+		return selectionSet.size();
 	}
 
 	private PInstanceId createSelectionPInstanceId()
@@ -1101,11 +1104,16 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return Services.get(IADPInstanceDAO.class).createSelectionId();
 	}
 
-	public Optional<PInstanceId> createSelection(final Collection<Integer> selection)
+	public Optional<CreateSelectionResponse> createSelection(final Collection<Integer> selection)
 	{
 		final PInstanceId selectionId = PInstanceId.ofRepoId(nextId(I_AD_PInstance.Table_Name));
-		createSelection(selectionId, selection);
-		return Optional.of(selectionId);
+		final int count = createSelection(selectionId, selection);
+		if (count <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(CreateSelectionResponse.of(selectionId, count));
 	}
 
 	@SafeVarargs

@@ -15,6 +15,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -98,6 +99,7 @@ public class InvoiceCandDAOTest
 		final PInstanceId selectionId = Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class)
 				.create()
 				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
 				.orElseThrow(() -> new AdempiereException("No candidates found"));
 
 		// create an unrelated IC that also has no payment term; it shall be left untouched
@@ -186,7 +188,7 @@ public class InvoiceCandDAOTest
 
 		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		assertThat(selection).isEqualTo(0);
+		assertThat(selection).isZero();
 	}
 
 	@Test
@@ -205,7 +207,7 @@ public class InvoiceCandDAOTest
 		// invoke the method under test
 		final int selection = invoiceCandDAO.createSelectionByQuery(multiQuery, PInstanceId.ofRepoId(P_INSTANCE_ID));
 
-		assertThat(selection).isEqualTo(0);
+		assertThat(selection).isZero();
 	}
 
 	@Test
@@ -228,7 +230,7 @@ public class InvoiceCandDAOTest
 		// invoke the method under test
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(2);
+		assertThat(records).hasSize(2);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
@@ -255,7 +257,7 @@ public class InvoiceCandDAOTest
 
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(3);
+		assertThat(records).hasSize(3);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")
@@ -287,7 +289,7 @@ public class InvoiceCandDAOTest
 		// invoke the method under test
 		final List<I_C_Invoice_Candidate> records = invoiceCandDAO.getByQuery(multiQuery);
 
-		assertThat(records.size()).isEqualTo(5);
+		assertThat(records).hasSize(5);
 
 		assertThat(records)
 				.extracting("C_Invoice_Candidate_ID", "ExternalHeaderId", "ExternalLineId")

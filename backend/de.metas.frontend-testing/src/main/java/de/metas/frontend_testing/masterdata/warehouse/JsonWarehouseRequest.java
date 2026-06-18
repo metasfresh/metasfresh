@@ -42,5 +42,7 @@ public class JsonWarehouseRequest
 		@Nullable String y;
 		@Nullable String z;
 		@Nullable String x1;
+		@Nullable Integer priorityNo;
+		@Nullable Boolean isGroundLocator;
 	}
 }

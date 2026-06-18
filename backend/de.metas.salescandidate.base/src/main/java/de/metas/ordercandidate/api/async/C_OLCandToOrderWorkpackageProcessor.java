@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -85,6 +86,7 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidateIds)
 				.create()
 				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
 				.orElse(null);
 		if (enqueuedSelection == null)
 		{

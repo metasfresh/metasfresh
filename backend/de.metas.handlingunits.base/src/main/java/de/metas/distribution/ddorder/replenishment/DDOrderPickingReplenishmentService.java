@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder.replenishment;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
@@ -18,7 +19,9 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.handlingunits.storage.LocatorIdAndQty;
 import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
+import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -36,6 +39,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Loggables;
+import de.metas.util.ProgressLogger;
 import de.metas.util.Services;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
@@ -46,11 +50,11 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.Locator;
 import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseBL;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_M_Locator;
+import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -62,6 +66,7 @@ import org.springframework.stereotype.Component;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -93,10 +98,9 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final WorkplaceService workplaceService;
 	@NonNull private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	@NonNull private final WarehouseRepository warehouseRepository;
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	@NonNull private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -257,16 +261,19 @@ public class DDOrderPickingReplenishmentService
 	private boolean isOnAutoDistributionOrder(@NonNull final PickingJobSchedule jobSchedule)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(jobSchedule.getShipmentScheduleId());
-		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
-		return warehouse.isAutoDistributionOrder();
+		return isOnAutoDistributionOrder(schedule);
 	}
 
 	private boolean isOnAutoDistributionOrder(@NonNull final I_M_Picking_Job_Schedule jobScheduleRecord)
 	{
 		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(ShipmentScheduleId.ofRepoId(jobScheduleRecord.getM_ShipmentSchedule_ID()));
+		return isOnAutoDistributionOrder(schedule);
+	}
+
+	private boolean isOnAutoDistributionOrder(final I_M_ShipmentSchedule schedule)
+	{
 		final WarehouseId warehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse warehouse = warehouseBL.getById(warehouseId);
+		final Warehouse warehouse = warehouseRepository.getById(warehouseId);
 		return warehouse.isAutoDistributionOrder();
 	}
 
@@ -293,7 +300,7 @@ public class DDOrderPickingReplenishmentService
 
 		final OrgId orgId = OrgId.ofRepoId(schedule.getAD_Org_ID());
 		final WarehouseId targetWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(schedule);
-		final I_M_Warehouse targetWarehouse = warehouseBL.getById(targetWarehouseId);
+		final Warehouse targetWarehouse = warehouseRepository.getById(targetWarehouseId);
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
 		// Target locator = the workstation's configured pick-from locator; if unset, fall back to the workplace
@@ -313,8 +320,7 @@ public class DDOrderPickingReplenishmentService
 					locatorToId.getRepoId());
 		}
 
-		final DistributionNetworkId networkId = DistributionNetworkId.ofRepoIdOrNull(targetWarehouse.getDD_NetworkDistribution_ID());
-		final WarehouseId sourceWarehouseId = getFirstSourceWarehouseIdOrThrow(networkId, targetWarehouseId, productId);
+		final WarehouseId sourceWarehouseId = getFirstSourceWarehouseIdOrThrow(targetWarehouse, productId);
 
 		// Demand qty = the assignment's QtyToPick in the assignment's UOM. The zero/negative case is intercepted
 		// up in #reconcile, so this code path is never reached with a non-positive qty.
@@ -343,7 +349,7 @@ public class DDOrderPickingReplenishmentService
 						.adClientId(schedule.getAD_Client_ID())
 						.adOrgId(orgId.getRepoId())
 						.build());
-		final WarehouseId inTransitWarehouseId = warehouseBL.getInTransitWarehouseId(orgId);
+		final WarehouseId inTransitWarehouseId = warehouseRepository.getInTransitWarehouseId(orgId);
 
 		// EXISTING-only locators (no longer contribute) → void.
 		for (final Map.Entry<LocatorId, I_DD_OrderLine> entry : existingLineByLocator.entrySet())
@@ -417,15 +423,29 @@ public class DDOrderPickingReplenishmentService
 			@NonNull final ProductId productId,
 			@NonNull final Quantity demandQty)
 	{
-		final List<LocatorId> sourceLocatorIds = warehouseDAO.getLocatorIds(sourceWarehouseId);
-		final Map<LocatorId, Quantity> qtyOnHandByLocator = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
-				.getQtyOnHandByLocator(productId, ImmutableSet.copyOf(sourceLocatorIds));
+		final Warehouse sourceWarehouse = warehouseRepository.getById(sourceWarehouseId);
+		final List<LocatorId> sourceLocatorIds = sourceWarehouse.getGroundFloorLocatorIdsOrderedByPriority();
+		if (sourceLocatorIds.isEmpty())
+		{
+			Loggables.addLog("No ground floor locators found for {}", sourceWarehouse.getName());
+			return ImmutableMap.of();
+		}
+
+		// Sort the source locators in the locator pick order BEFORE streaming their on-hand qty, so the
+		// lazy chunked stream yields the highest-priority locators first; once the greedy loop has covered
+		// the demand it stops pulling, and no further locator chunks are queried for stock.
+		final List<LocatorId> sourceLocatorIdsInPickOrder = sourceLocatorIds.stream()
+				.sorted(Comparator.comparing(this::getLocatorSortKey))
+				.collect(ImmutableList.toImmutableList());
 
 		final UOMConversionContext conversionCtx = UOMConversionContext.of(productId);
 
-		final AllocationResult result = greedyAllocate(
+		final Stream<LocatorIdAndQty> orderedNonEmpty = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
+				.streamLocatorQtyOnHandOrdered(productId, 50, sourceLocatorIdsInPickOrder);
+
+		final AllocationResult result = greedyAllocateOrdered(
 				demandQty,
-				qtyOnHandByLocator,
+				orderedNonEmpty,
 				availableStockingUom -> uomConversionBL.convertQuantityTo(availableStockingUom, conversionCtx, demandQty.getUomId()),
 				(locatorId, availableStockingUom) -> Loggables.addLog(
 						"DD_Order picking replenishment: skipping source M_Locator_ID={0} for M_Product_ID={1}:"
@@ -466,43 +486,57 @@ public class DDOrderPickingReplenishmentService
 	@VisibleForTesting
 	AllocationResult greedyAllocate(
 			@NonNull final Quantity demandQty,
-			@NonNull final Map<LocatorId, Quantity> qtyOnHandByLocator,
+			@NonNull final ProductQtyOnHandByLocator qtyOnHandByLocator,
 			@NonNull final ConvertToDemandUom convertToDemandUom,
 			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
 	{
-		// Contributing locators (positive on-hand) in the locator pick order.
-		final List<LocatorId> contributingOrdered = qtyOnHandByLocator.entrySet().stream()
-				.filter(e -> e.getValue().signum() > 0)
-				.map(Map.Entry::getKey)
+		// Pre-materialised map variant: sort contributing locators in the locator pick order, then delegate
+		// to the streaming core. Production goes through greedyAllocateOrdered directly with a lazy stream.
+		final Stream<LocatorIdAndQty> orderedNonEmpty = qtyOnHandByLocator.streamNonEmptyLocatorIds()
 				.sorted(Comparator.comparing(this::getLocatorSortKey))
-				.collect(ImmutableList.toImmutableList());
+				.map(locatorId -> LocatorIdAndQty.of(locatorId, qtyOnHandByLocator.getQty(locatorId)));
+		return greedyAllocateOrdered(demandQty, orderedNonEmpty, convertToDemandUom, onSkippedLocator);
+	}
 
+	/**
+	 * Greedy allocation core: consumes {@code orderedNonEmpty} (already in the locator pick order and only
+	 * positive-on-hand entries) via an iterator so the stream's lazy upstream (chunked locator-stock fetch)
+	 * is short-circuited as soon as {@code remaining <= 0}.
+	 */
+	private AllocationResult greedyAllocateOrdered(
+			@NonNull final Quantity demandQty,
+			@NonNull final Stream<LocatorIdAndQty> orderedNonEmpty,
+			@NonNull final ConvertToDemandUom convertToDemandUom,
+			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
+	{
 		final LinkedHashMap<LocatorId, Quantity> allocation = new LinkedHashMap<>();
 		Quantity remaining = demandQty;
-		for (final LocatorId locatorId : contributingOrdered)
+
+		try (Stream<LocatorIdAndQty> stream = orderedNonEmpty)
 		{
-			if (remaining.signum() <= 0)
+			final Iterator<LocatorIdAndQty> iter = stream.iterator();
+			while (remaining.signum() > 0 && iter.hasNext())
 			{
-				break;
-			}
+				final LocatorIdAndQty locatorAndQty = iter.next();
 
-			// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
-			// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
-			final Quantity availableStockingUom = qtyOnHandByLocator.get(locatorId);
-			final Quantity available;
-			try
-			{
-				available = convertToDemandUom.convert(availableStockingUom);
-			}
-			catch (final NoUOMConversionException ex)
-			{
-				onSkippedLocator.accept(locatorId, availableStockingUom);
-				continue;
-			}
+				// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
+				// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
+				final Quantity availableStockingUom = locatorAndQty.getQty();
+				final Quantity available;
+				try
+				{
+					available = convertToDemandUom.convert(availableStockingUom);
+				}
+				catch (final NoUOMConversionException ex)
+				{
+					onSkippedLocator.accept(locatorAndQty.getLocatorId(), availableStockingUom);
+					continue;
+				}
 
-			final Quantity allocated = remaining.min(available);
-			allocation.put(locatorId, allocated);
-			remaining = remaining.subtract(allocated);
+				final Quantity allocated = remaining.min(available);
+				allocation.put(locatorAndQty.getLocatorId(), allocated);
+				remaining = remaining.subtract(allocated);
+			}
 		}
 
 		return new AllocationResult(allocation, remaining);
@@ -530,8 +564,7 @@ public class DDOrderPickingReplenishmentService
 
 	private String getLocatorSortKey(@NonNull final LocatorId locatorId)
 	{
-		// org.compiere.model.I_M_Locator (base), not de.metas.handlingunits.model.I_M_Locator (HU-extended)
-		final I_M_Locator loc = warehouseBL.getLocatorById(locatorId);
+		final Locator loc = warehouseRepository.getLocatorById(locatorId);
 		return buildLocatorSortKey(loc.getPriorityNo(), loc.getValue());
 	}
 
@@ -569,10 +602,13 @@ public class DDOrderPickingReplenishmentService
 			final I_DD_OrderLine line = lines.get(0);
 			// Resolve the source LocatorId from the locator record (authoritative warehouse) rather than the line's
 			// M_Warehouse_ID, which is not reliably populated on a programmatically-built DD_OrderLine.
-			final LocatorId sourceLocatorId = LocatorId.ofRecordOrNull(warehouseDAO.getLocatorByRepoId(line.getM_Locator_ID()));
-			if (sourceLocatorId != null)
+			// Skip lines whose source locator is unset: getLocatorByRepoId throws on a 0/unknown id, and a
+			// reconcile line with no source locator must be skipped (matches the prior ofRecordOrNull behaviour).
+			final int sourceLocatorRepoId = line.getM_Locator_ID();
+			if (sourceLocatorRepoId > 0)
 			{
-				byLocator.put(sourceLocatorId, line);
+				final Locator sourceLocator = warehouseRepository.getLocatorByRepoId(sourceLocatorRepoId);
+				byLocator.put(sourceLocator.getLocatorId(), line);
 			}
 		}
 		return byLocator;
@@ -648,7 +684,7 @@ public class DDOrderPickingReplenishmentService
 		ddOrder.setM_Warehouse_To_ID(request.getTargetWarehouseId().getRepoId());
 		// PP_Plant from the target warehouse (mirrors HUs2DDOrderProducer) — the libero DD_OrderLine interceptor
 		// derives PP_Plant_From_ID from it; without it that interceptor logs a benign "@NotFound@ @PP_Plant_ID@" WARN.
-		warehouseBL.getPlantId(request.getTargetWarehouseId())
+		warehouseRepository.getPlantId(request.getTargetWarehouseId())
 				.ifPresent(plantId -> ddOrder.setPP_Plant_ID(plantId.getRepoId()));
 		ddOrder.setM_Picking_Job_Schedule_ID(request.getPickingJobScheduleId().getRepoId());
 		ddOrder.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
@@ -790,12 +826,15 @@ public class DDOrderPickingReplenishmentService
 
 	public void rebuildDrift()
 	{
-		// Republish a reconcile event for every active, not-processed assignment on a packing warehouse that has
-		// no live (Completed) DD_Order linked — the watchdog's "drifted" assignments.
-		reconciliationEventPublisher.publishAll(
-				streamAssignmentsNeedingDDOrder()
-						.map(DDOrderReplenishmentRequest::of)
-						.collect(ImmutableSet.toImmutableSet()));
+		final ProgressLogger progress = Loggables.get().newProgress();
+
+		streamAssignmentsNeedingDDOrder()
+				.map(DDOrderReplenishmentRequest::of)
+				.distinct()
+				.peek(progress::itemProcessed)
+				.forEach(reconciliationEventPublisher::publishOne);
+
+		progress.done("Enqueued {} requests");
 	}
 
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
@@ -818,18 +857,17 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	private WarehouseId getFirstSourceWarehouseIdOrThrow(
-			@Nullable final DistributionNetworkId networkId,
-			@NonNull final WarehouseId targetWarehouseId,
+			@NonNull final Warehouse targetWarehouse,
 			@NonNull final ProductId productId)
 	{
-		return resolveSourceWarehouse(targetWarehouseId, productId, networkId)
+		final DistributionNetworkId networkId = targetWarehouse.getDistributionNetworkId();
+		return resolveSourceWarehouse(targetWarehouse.getWarehouseId(), networkId)
 				.orElseThrow(() -> new AdempiereException(MSG_DDOrderPickingReplenishment_NetworkGap, networkId, productId));
 	}
 
 	@VisibleForTesting
 	Optional<WarehouseId> resolveSourceWarehouse(
 			@NonNull final WarehouseId targetWarehouseId,
-			@NonNull final ProductId productId,
 			@Nullable final DistributionNetworkId networkId)
 	{
 		if (networkId == null)

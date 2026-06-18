@@ -66,6 +66,13 @@ jobs:
         working-directory: .github/flaky-metric
         run: npm ci
 
+      # Guard: never run the sheet upsert with broken logic. A regression in the
+      # pure bucketize/parse/metrics/annotation functions would otherwise silently
+      # corrupt the live sheet (e.g. wipe or misalign the manual annotation columns).
+      - name: Test
+        working-directory: .github/flaky-metric
+        run: npm test
+
       - name: Extract + upsert
         working-directory: .github/flaky-metric
         env:

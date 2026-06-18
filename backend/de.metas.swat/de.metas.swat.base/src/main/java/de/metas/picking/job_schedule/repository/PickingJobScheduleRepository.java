@@ -12,6 +12,7 @@ import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.workplace.WorkplaceId;
 import lombok.NonNull;
@@ -235,16 +236,16 @@ public class PickingJobScheduleRepository
 	 */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
 	{
-		return queryBL
-				.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+		final IQuery<I_M_Picking_Job_Schedule> query = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.addNotInSubQueryFilter(
 						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
 						I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID,
 						completedDDOrdersQuery)
-				.create()
-				.stream()
-				.map(PickingJobScheduleRepository::fromRecord);
+				.create();
+		Loggables.addLog("AssignmentsNeedingDDOrder - query: {}", query);
+
+		return query.iterateAndStream().map(PickingJobScheduleRepository::fromRecord);
 	}
 }

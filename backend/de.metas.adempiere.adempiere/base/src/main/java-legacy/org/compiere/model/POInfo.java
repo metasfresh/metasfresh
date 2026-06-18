@@ -869,6 +869,16 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	}
 
 	/**
+	 * Like {@link #getColumnSql(String)} but returns {@code null} for unknown columns instead of throwing.
+	 */
+	@Nullable
+	public String getColumnSqlOrNull(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return columnIndex >= 0 ? getColumnSql(columnIndex) : null;
+	}
+
+	/**
 	 * Is Column Virtual?
 	 *
 	 * @param index index

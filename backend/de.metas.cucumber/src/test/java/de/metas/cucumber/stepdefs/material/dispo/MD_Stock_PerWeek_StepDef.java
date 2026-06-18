@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ItemProvider;
@@ -44,6 +45,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.DB;
@@ -67,6 +69,7 @@ public class MD_Stock_PerWeek_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 
 	// ---------------------------------------------------------------------------
 	// Helpers
@@ -121,6 +124,9 @@ public class MD_Stock_PerWeek_StepDef
 	 *   <b>Qty</b> — quantity<br>
 	 *   <b>ATP</b> — projected stock<br>
 	 *   <b>M_Warehouse_ID</b> — (identifier-ref) warehouse<br>
+	 *   <b>C_BPartner_Customer_ID</b> — (optional) bpartner identifier resolved from {@link C_BPartner_StepDefData};
+	 *       set on both the main and paired STOCK candidate so the view's per-customer subgroup grouping is exercised;
+	 *       omit or leave blank to leave 0 (no customer)<br>
 	 */
 	@Given("^metasfresh initially has this MD_Candidate data relative to current week$")
 	public void seed_md_candidates_relative_to_current_week(@NonNull final DataTable dataTable)
@@ -146,6 +152,13 @@ public class MD_Stock_PerWeek_StepDef
 					.orElse(null);
 			final String businessCaseCode = businessCaseStr != null ? CandidateBusinessCase.toCode(CandidateBusinessCase.ofCode(businessCaseStr)) : null;
 
+			final int bpartnerCustomerId = row.getAsOptionalIdentifier("C_BPartner_Customer_ID")
+					.map(id -> {
+						final I_C_BPartner bp = id.lookupNotNullIn(bpartnerTable);
+						return bp.getC_BPartner_ID();
+					})
+					.orElse(0);
+
 			// Save the main candidate (DEMAND / SUPPLY / INVENTORY_UP)
 			final I_MD_Candidate mainRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			mainRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
@@ -155,11 +168,14 @@ public class MD_Stock_PerWeek_StepDef
 			mainRecord.setMD_Candidate_BusinessCase(businessCaseCode);
 			mainRecord.setQty(qty);
 			mainRecord.setDateProjected(dateProjected);
+			mainRecord.setC_BPartner_Customer_ID(bpartnerCustomerId);
 			InterfaceWrapperHelper.saveRecord(mainRecord);
 			mainRecord.setSeqNo(mainRecord.getMD_Candidate_ID());
 			InterfaceWrapperHelper.saveRecord(mainRecord);
 
-			// Save the paired STOCK candidate (mirrors what the dispo engine would create)
+			// Save the paired STOCK candidate (mirrors what the dispo engine would create).
+			// C_BPartner_Customer_ID must match the main candidate so the view groups them
+			// into the same (subgroup) partition.
 			final I_MD_Candidate stockRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
 			stockRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			stockRecord.setM_Product_ID(productRecord.getM_Product_ID());
@@ -168,6 +184,7 @@ public class MD_Stock_PerWeek_StepDef
 			stockRecord.setSeqNo(mainRecord.getMD_Candidate_ID());
 			stockRecord.setQty(atp);
 			stockRecord.setDateProjected(dateProjected);
+			stockRecord.setC_BPartner_Customer_ID(bpartnerCustomerId);
 
 			final boolean isDemand = type.isDecreasingStock();
 			final boolean isSupply = type.isIncreasingStock();

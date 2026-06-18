@@ -13,6 +13,7 @@ import de.metas.distribution.mobileui.external_services.product.DistributionProd
 import de.metas.distribution.mobileui.external_services.sourcedoc.DistributionSourceDocService;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
 import de.metas.distribution.mobileui.job.model.DDOrderReference;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
@@ -41,7 +42,6 @@ import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -55,8 +55,11 @@ public class DistributionLauncherCaptionProvider
 
 	public WorkflowLauncherCaption compute(@NonNull final DDOrderReference ddOrderReference)
 	{
-		final Context context = toContext(ddOrderReference);
+		return compute(toContext(ddOrderReference));
+	}
 
+	private WorkflowLauncherCaption compute(@NonNull final Context context)
+	{
 		final MobileUIDistributionConfig config = configRepository.getConfig();
 		final DistributionJobCaptionFormat format = config.getCaptionFormat();
 
@@ -79,11 +82,11 @@ public class DistributionLauncherCaptionProvider
 
 			if (!fieldValues.containsKey(field.getCode()))
 			{
-				final ITranslatableString captionItem = computeSortingItem(context, field);
+				final ITranslatableString captionItem = computeItem(context, field);
 				fieldValues.put(field.getCode(), captionItem);
 			}
 
-			final Comparable<?> comparableKey = computeComparableKey(ddOrderReference, field);
+			final Comparable<?> comparableKey = computeComparableKey(context, field);
 			if (comparableKey != null)
 			{
 				comparingKeys.put(field.getCode(), comparableKey);
@@ -119,7 +122,7 @@ public class DistributionLauncherCaptionProvider
 			case Plant:
 				return extractPlant(context);
 			case PickDate:
-				return extractDisplayDate(context);
+				return TranslatableStrings.dateAndTime(context.getDisplayDate());
 			case Qty:
 				return extractQty(context);
 			case ProductGTIN:
@@ -137,14 +140,17 @@ public class DistributionLauncherCaptionProvider
 		}
 	}
 
-	private ITranslatableString computeSortingItem(final @NonNull Context context, final DistributionJobSortingField field)
+	@NonNull
+	private ITranslatableString computeItem(final @NonNull Context context, final DistributionJobSortingField field)
 	{
 		switch (field)
 		{
 			case Priority:
 				return extractPriority(context);
+			case LocatorPriority:
+				return TranslatableStrings.number(context.getFromLocatorPriorityNo());
 			case DatePromised:
-				return extractDisplayDate(context);
+				return TranslatableStrings.dateAndTime(context.getDisplayDate());
 			case SeqNo:
 				return TranslatableStrings.number(context.getSeqNo().toInt());
 			default:
@@ -152,11 +158,15 @@ public class DistributionLauncherCaptionProvider
 		}
 	}
 
-	private Comparable<?> computeComparableKey(final @NonNull DDOrderReference ddOrderReference, final DistributionJobSortingField field)
+	private Comparable<?> computeComparableKey(@NonNull final Context context, @NonNull final DistributionJobSortingField field)
 	{
-		if (Objects.requireNonNull(field) == DistributionJobSortingField.SeqNo)
+		if (field == DistributionJobSortingField.SeqNo)
 		{
-			return ddOrderReference.getSeqNo();
+			return context.getSeqNo();
+		}
+		else if (field == DistributionJobSortingField.LocatorPriority)
+		{
+			return context.getFromLocatorPriorityNo();
 		}
 		else
 		{
@@ -166,9 +176,9 @@ public class DistributionLauncherCaptionProvider
 
 	private ITranslatableString extractLocatorFrom(@NonNull final Context context)
 	{
-		final LocatorId fromLocatorId = context.getFromLocatorId();
-		return fromLocatorId != null
-				? TranslatableStrings.anyLanguage(warehouseService.getLocatorName(fromLocatorId))
+		final LocatorInfo fromLocator = context.getFromLocator();
+		return fromLocator != null
+				? TranslatableStrings.anyLanguage(fromLocator.getCaption())
 				: TranslatableStrings.empty();
 	}
 
@@ -180,6 +190,7 @@ public class DistributionLauncherCaptionProvider
 				: TranslatableStrings.empty();
 	}
 
+	@NonNull
 	private static ITranslatableString extractPriority(@NonNull final Context context)
 	{
 		final String priority = StringUtils.trimBlankToNull(context.getPriority());
@@ -218,11 +229,6 @@ public class DistributionLauncherCaptionProvider
 		{
 			return TranslatableStrings.empty();
 		}
-	}
-
-	private ITranslatableString extractDisplayDate(@NonNull final Context context)
-	{
-		return TranslatableStrings.dateAndTime(context.getDisplayDate());
 	}
 
 	private ITranslatableString extractPlant(@NonNull final Context context)
@@ -297,14 +303,19 @@ public class DistributionLauncherCaptionProvider
 		return pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
 	}
 
-	private static Context toContext(@NonNull DDOrderReference ddOrderReference)
+	private Context toContext(@NonNull DDOrderReference ddOrderReference)
 	{
+		final LocatorId fromLocatorId = ddOrderReference.getFromLocatorId();
+		final LocatorInfo fromLocator = fromLocatorId != null
+				? warehouseService.getLocatorInfoById(fromLocatorId)
+				: null;
+
 		return Context.builder()
 				.seqNo(ddOrderReference.getSeqNo())
 				.displayDate(ddOrderReference.getDisplayDate())
 				.pickingInstruction(ddOrderReference.getPickingInstruction())
 				.pickFromWarehouseId(ddOrderReference.getFromWarehouseId())
-				.fromLocatorId(ddOrderReference.getFromLocatorId())
+				.fromLocator(fromLocator)
 				.dropToWarehouseId(ddOrderReference.getToWarehouseId())
 				.toLocatorId(ddOrderReference.getToLocatorId())
 				.manufacturingOrderId(ddOrderReference.getPpOrderId())
@@ -316,14 +327,19 @@ public class DistributionLauncherCaptionProvider
 				.build();
 	}
 
-	private static Context toContext(@NonNull DistributionJob job)
+	private Context toContext(@NonNull DistributionJob job)
 	{
+		final LocatorId fromLocatorId = job.getSinglePickFromLocatorIdOrNull();
+		final LocatorInfo fromLocator = fromLocatorId != null
+				? warehouseService.getLocatorInfoById(fromLocatorId)
+				: null;
+
 		return Context.builder()
 				.seqNo(job.getSeqNo())
 				.displayDate(job.getPickDate())
 				.pickingInstruction(job.getPickingInstruction())
 				.pickFromWarehouse(job.getPickFromWarehouse())
-				.fromLocatorId(job.getSinglePickFromLocatorIdOrNull())
+				.fromLocator(fromLocator)
 				.dropToWarehouse(job.getDropToWarehouse())
 				.toLocatorId(job.getSingleDropToLocatorIdOrNull())
 				.manufacturingOrderId(job.getManufacturingOrderRef() != null ? job.getManufacturingOrderRef().getId() : null)
@@ -354,7 +370,7 @@ public class DistributionLauncherCaptionProvider
 		@Nullable ITranslatableString pickingInstruction;
 		@Nullable WarehouseInfo pickFromWarehouse;
 		@Nullable WarehouseId pickFromWarehouseId;
-		@Nullable LocatorId fromLocatorId;
+		@Nullable LocatorInfo fromLocator;
 		@Nullable WarehouseInfo dropToWarehouse;
 		@Nullable WarehouseId dropToWarehouseId;
 		@Nullable LocatorId toLocatorId;
@@ -365,5 +381,10 @@ public class DistributionLauncherCaptionProvider
 		@Nullable PlantInfo plant;
 		@Nullable ResourceId plantId;
 		@Nullable String priority;
+
+		public int getFromLocatorPriorityNo()
+		{
+			return fromLocator != null ? fromLocator.getPriorityNo() : Integer.MAX_VALUE;
+		}
 	}
 }
