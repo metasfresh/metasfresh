@@ -51,6 +51,15 @@ public class HUGraiService
 		return newLoader().loadByIds(huIds);
 	}
 
+	/** Returns the GRAIs currently assigned across all of the HU's TU slots (empty if none / no snapshot). */
+	@NonNull
+	public GRAISet getGrais(@NonNull final HuId huId)
+	{
+		return getSnapshot(huId)
+				.map(HUGraiSnapshot::getAllGrais)
+				.orElse(GRAISet.EMPTY);
+	}
+
 	private HUGraiSnapshotLoader newLoader()
 	{
 		return HUGraiSnapshotLoader.builder()

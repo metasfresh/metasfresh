@@ -58,6 +58,9 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
+    qrLoginPlaceholder: 'QR-Code zum Anmelden scannen',
+    username: 'Benutzername',
+    password: 'Passwort',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Passwort',
@@ -81,6 +84,14 @@ const translations = {
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
       scanTrolleyPlaceholder: 'Wagen scannen...',
+      scanPrompt: 'Barcode scannen',
+      scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {
@@ -142,6 +153,15 @@ const translations = {
       graiScan: {
         multipleScanned:
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+        count: '%(scanned)s / %(total)s GRAIs gescannt',
+        countExtra: '(%(extra)s extra)',
+        save: {
+          buttonCaption: 'Speichern',
+        },
+        clearAll: {
+          buttonCaption: 'Alle löschen',
+          confirmQuestion: 'Alle %(count)s GRAIs entfernen?',
+        },
       },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',

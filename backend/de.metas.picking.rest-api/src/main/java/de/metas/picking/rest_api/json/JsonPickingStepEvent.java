@@ -32,6 +32,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Value
 @Builder
@@ -70,6 +71,8 @@ public class JsonPickingStepEvent
 	boolean setLotNo;
 	@Nullable String lotNo;
 	boolean isCloseTarget;
+	boolean setGrais;
+	@Nullable List<String> graiCodes;
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;

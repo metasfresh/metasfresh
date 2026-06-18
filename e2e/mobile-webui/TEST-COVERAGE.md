@@ -7,9 +7,9 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 59 | 95% |
-| Distribution | 27 | 30 | 90% |
+| Barcode Scanner Modes | 7 | 12 | 58% |
+| Picking | 59 | 62 | 95% |
+| Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
@@ -67,8 +68,11 @@
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode and renders `<video>` (feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
+| ❌ Footer — "Enter manually": shows only when manual mode enabled and activeMode ≠ MANUAL; clicking sets activeMode to MANUAL | — |
+| ❌ Footer — "Back to scanner": shows when activeMode=MANUAL and at least one of hw/camera enabled; clicking returns to HARDWARE (or CAMERA if only camera enabled) | — |
 
-**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
+**5/10 — 50%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis`, `triggerOnChangeIfLengthGreaterThan`, and two footer buttons not yet covered)
 
 ---
 
@@ -163,14 +167,8 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
-| DO_NOT_CREATE: fully-picked order completed with no shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| DO_NOT_CREATE: partially-picked order (qty still open) → must STAY in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| DO_NOT_CREATE: picked qty fully bound to a draft shipment → must NOT appear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
-| Reverse (void) an aggregate-HU shipment → recreate must not collide on duplicate QtyPicked rows | `picking/recreate_shipment_after_void.spec.js` |
-| Reverse an aggregate-HU shipment TWICE (recreate via Generate Shipments between) → picked qty must survive every void so the shipment stays recreatable | `picking/recreate_shipment_after_void.spec.js` |
 
-
-**9/9 — 100%**
+**5/5 — 100%**
 
 ### Product-based picking
 
@@ -187,16 +185,26 @@
 
 | Scenario | Test |
 |---|---|
-| Scan one GRAI → TU auto-created with GRAI attribute (TC1) | `picking/picking-grai-scan.spec.js` |
-| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error (TC2) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error (TC3) | `picking/picking-grai-scan.spec.js` |
-| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list (TC4) | `picking/picking-grai-scan.spec.js` |
-| Unparseable barcode → scanner ignores it, stays live for valid scan (TC5) | `picking/picking-grai-scan.spec.js` |
-| Resolved TU has no capacity for product → GRAINoCapacityForProduct error (TC6) | `picking/picking-grai-scan.spec.js` |
-| BPartner GRAIRequired=No → no GRAI scanner shown (TC7) | `picking/picking-grai-scan.spec.js` |
-| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete (TC9) | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI → TU auto-created with GRAI attribute | `picking/picking-grai-scan.spec.js` |
+| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error | `picking/picking-grai-scan.spec.js` |
+| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error | `picking/picking-grai-scan.spec.js` |
+| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list | `picking/picking-grai-scan.spec.js` |
+| Unparseable barcode → scanner ignores it, stays live for valid scan | `picking/picking-grai-scan.spec.js` |
+| Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
+| BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
 
 **8/8 — 100%**
+
+### Inline GRAI capture in Flow Through (LU_TU) picking
+
+| Scenario | Test |
+|---|---|
+| Pick 10 crates onto one LU; confirming the quantity auto-invokes the inline GRAI capture; capture all 10 GRAIs (one typed via manual entry, the rest scanned) → save enabled, the atomic pick is sent and the job completes | `picking/picking-grai-flowthrough.spec.js` |
+| Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
+| Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
+
+**3/3 — 100%**
 
 ---
 
