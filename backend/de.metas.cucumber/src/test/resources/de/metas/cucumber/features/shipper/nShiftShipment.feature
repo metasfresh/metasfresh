@@ -1188,12 +1188,18 @@ Feature: nShift Shipment
 
   @from:cucumber
   @Id:S0355_DeliveryOrder_210
-  Scenario: Carrier-advise guard — picking job completion blocked on divergent non-manual carrier products (E2)
+  Scenario: Carrier-advise guard — picking job completion blocked on divergent non-manual carrier products, selection rules OFF (E2)
     # Two non-manual schedules on one LU. On order completion both auto-advise to cp1. Re-advising
     # schedule 2 against a cp2 stub (while still un-picked) makes its carrier product diverge (cp1 vs
-    # cp2) → E2 guard rejects completion. (The convergent-then-succeeds counterpart is covered by the OK
-    # scenario; a picked schedule is no longer eligible for re-advise, so it cannot be re-unified here.)
+    # cp2). The shipper's Carrier_Config.IsSelectionRules='N' → the explicit carrier product is
+    # authoritative → the E2 guard rejects completion. (The convergent-then-succeeds counterpart is
+    # covered by the OK scenario; a picked schedule is no longer eligible for re-advise, so it cannot be
+    # re-unified here.)
     Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    # Selection rules OFF on the nShift shipper: the explicit carrier product is authoritative, so divergence blocks completion.
+    And metasfresh contains Carrier_Configs:
+      | M_Shipper_ID | IsSelectionRules |
+      | nShift       | N                |
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
@@ -1237,47 +1243,61 @@ Feature: nShift Shipment
     Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"
 
   @from:cucumber
-  @Id:S0355_DeliveryOrder_220
-  Scenario: Carrier-advise guard — picking job completion blocked when one LU spans more than one advise-enabled shipper (E3)
-    # Two schedules on one nShift order. The second order line carries a second advise-enabled shipper
-    # (nShift2, also IsApiCarrierAdvise=Y); the schedule derives its shipper from the order line, so the
-    # value survives recompute. Picked into one LU → two advise-enabled shippers on a single HU → E3
-    # guard rejects completion.
+  @Id:S0355_DeliveryOrder_215
+  Scenario: Carrier-advise guard — picking job completes on divergent non-manual carrier products when selection rules are ON (E2 skipped)
+    # Same divergent-non-manual-products-on-one-LU setup as 210, but the shipper's
+    # Carrier_Config.IsSelectionRules='Y' (the column default). With selection rules ON, nShift resolves
+    # the carrier via its rules and a re-advise harmonises it, so the explicit carrier product is not
+    # authoritative → the E2 guard is skipped and completion creates the shipment.
     Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
-    And contains M_Shippers
-      | Identifier | Value   | Name    | OPT.ShipperGateway | OPT.IsApiCarrierAdvise |
-      | nShift2    | nshift2 | nShift2 | nshift             | Y                      |
+    # Selection rules ON on the nShift shipper (explicit default 'Y'): divergence is NOT a completion blocker.
+    And metasfresh contains Carrier_Configs:
+      | M_Shipper_ID | IsSelectionRules |
+      | nShift       | Y                |
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
     And metasfresh contains M_PickingSlot:
       | Identifier | PickingSlot | IsDynamic |
-      | slot_e3    | guard_e3    | Y         |
+      | slot_e2y   | guard_e2y   | Y         |
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp1                | cgt1                  | cs1                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
-      | so_e3      | true    | customer      | 2025-04-01  | wh             | nShift       |
+      | so_e2y     | true    | customer      | 2025-04-01  | wh             | nShift       |
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID | M_Shipper_ID |
-      | so_e3_l1   | so_e3      | product      | 10         | product_TU_10CU         | nShift       |
-      | so_e3_l2   | so_e3      | product_2    | 10         | product_2_TU_10CU       | nShift2      |
-    When the order identified by so_e3 is completed
-    # ss_e3_1 derives shipper nShift, ss_e3_2 derives shipper nShift2 — both advise-enabled
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_e2y_l1  | so_e2y     | product      | 10         | product_TU_10CU         |
+      | so_e2y_l2  | so_e2y     | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_e2y is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | OPT.M_Shipper_ID.Identifier |
-      | ss_e3_1    | so_e3_l1       | N             | nShift                      |
-      | ss_e3_2    | so_e3_l2       | N             | nShift2                     |
-    # Pick both lines into the same LU
-    When start picking job for sales order identified by so_e3
-    And scan picking slot identified by slot_e3
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e2y_1   | so_e2y_l1      | N             | cp1                |
+      | ss_e2y_2   | so_e2y_l2      | N             | cp1                |
+    # Re-stub the advisor to cp2 and re-advise schedule 2 only → ss_e2y_1=cp1, ss_e2y_2=cp2 (divergent, both non-manual)
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp2                | cgt2                  | cs2                |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_e2y_2              |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e2y_2   | so_e2y_l2      | N             | cp2                |
+    # Pick both schedules into the same LU — ss_e2y_1 has cp1, ss_e2y_2 has cp2 (divergent)
+    When start picking job for sales order identified by so_e2y
+    And scan picking slot identified by slot_e2y
     And set picking target as new LU identified by LU
     And pick lines
       | PickingLine.byProduct | PickFromHU   | QtyPicked |
       | product               | hu_1         | 10        |
       | product_2             | hu_product_2 | 10        |
-    Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_MultipleShippersOnHU"
+    # Selection rules ON → E2 skipped → completion succeeds and creates the shipment
+    When complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID | DocStatus |
+      | ss_e2y_1              | inout_e2y  | CO        |
 
   @from:cucumber
   @Id:S0355_DeliveryOrder_230

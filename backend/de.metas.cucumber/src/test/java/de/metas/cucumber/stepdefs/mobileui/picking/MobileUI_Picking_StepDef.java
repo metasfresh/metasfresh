@@ -293,7 +293,7 @@ public class MobileUI_Picking_StepDef
 	 * @cucumber.depends StepDefData: context (active WFProcess)
 	 * @cucumber.example
 	 * <pre>
-	 * Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_MultipleShippersOnHU"
+	 * Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"
 	 * </pre>
 	 */
 	@Then("completing the picking job is rejected with AD_Message {string}")

@@ -95,6 +95,22 @@ public class ShipperConfigRepository
 		return config;
 	}
 
+	/**
+	 * {@code Carrier_Config.IsSelectionRules} for the given shipper — does nShift resolve the carrier via its
+	 * selection rules (the explicit carrier product is not authoritative)? Defaults to the column default {@code 'Y'}
+	 * (rules ON) when the shipper has no {@code Carrier_Config} row.
+	 */
+	public boolean isSelectionRules(@NonNull final ShipperId shipperId)
+	{
+		final ShipperConfig config = getMap().get(shipperId);
+		if (config == null)
+		{
+			// no config row → column default 'Y' (rules ON)
+			return true;
+		}
+		return StringUtils.toBoolean(config.getAdditionalProperties().get(I_Carrier_Config.COLUMNNAME_IsSelectionRules), true);
+	}
+
 	@NonNull
 	private ImmutableMap<ShipperId, ShipperConfig> getMap()
 	{

@@ -13,6 +13,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
+import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
@@ -48,15 +49,17 @@ public class CarrierAdviseConsistencyService
 
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ShipperRepository shipperRepository;
+	@NonNull private final ShipperConfigRepository shipperConfigRepository;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@VisibleForTesting
 	public static CarrierAdviseConsistencyService newInstanceForUnitTesting(
 			@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver,
-			@NonNull final ShipperRepository shipperRepository)
+			@NonNull final ShipperRepository shipperRepository,
+			@NonNull final ShipperConfigRepository shipperConfigRepository)
 	{
 		Adempiere.assertUnitTestMode();
-		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository);
+		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository, shipperConfigRepository);
 	}
 
 	/**
@@ -116,10 +119,13 @@ public class CarrierAdviseConsistencyService
 		// restrict to advise-enabled schedules that have a corresponding line in this job; read each
 		// schedule's carrier VALUES + manual flag from its picking-job LINE. A schedule with no line in
 		// this job is not part of this job's picked state, so it is skipped.
-		final ImmutableSet<PickingJobLine> adviseEnabledLines = schedulesById.values().stream()
+		final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
 				.filter(s -> isAdviseEnabled(s, shippersById))
+				.filter(s -> linesByScheduleId.get(s.getId()) != null)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<PickingJobLine> adviseEnabledLines = adviseEnabledSchedules.stream()
 				.map(s -> linesByScheduleId.get(s.getId()))
-				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (adviseEnabledLines.isEmpty())
@@ -155,6 +161,17 @@ public class CarrierAdviseConsistencyService
 		}
 		else
 		{
+			// (E2) all non-manual: the divergence check applies ONLY when the HU's shipper has selection rules
+			// OFF (Carrier_Config.IsSelectionRules='N') — then the explicit carrier product is authoritative and
+			// divergence is a real problem the picker must fix. When selection rules are ON (the column default
+			// 'Y', incl. no config row), nShift resolves the carrier via its rules and a re-advise harmonises it,
+			// so divergence is not a completion blocker → skip E2 (the job completes silently). E1 (manual) is
+			// unaffected — manual overrides are authoritative regardless of selection rules.
+			if (anyShipperHasSelectionRulesOn(adviseEnabledSchedules))
+			{
+				return;
+			}
+
 			// (E2) all non-manual: check for divergent CarrierProductId or CarrierGoodsTypeId.
 			// A carrier product/goods-type is set whenever advise succeeded; it is null when advise failed
 			// (the QtyToDeliver=0 case never reaches here — it has no picked records).
@@ -194,6 +211,20 @@ public class CarrierAdviseConsistencyService
 		}
 		final Shipper shipper = shippersById.get(shipperId);
 		return shipper != null && shipper.isApiCarrierAdvise();
+	}
+
+	/**
+	 * True if at least one of the given advise-enabled schedules has a shipper with selection rules ON
+	 * ({@code Carrier_Config.IsSelectionRules='Y'} / no config row → default 'Y'). One shipper per HU is the
+	 * norm post-E3; with selection rules ON nShift auto-resolves the carrier, so the E2 divergence check is
+	 * skipped. Schedules carry a non-null shipper id here (they passed {@link #isAdviseEnabled}).
+	 */
+	private boolean anyShipperHasSelectionRulesOn(@NonNull final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules)
+	{
+		return adviseEnabledSchedules.stream()
+				.map(ShipmentSchedule::getShipperId)
+				.filter(Objects::nonNull)
+				.anyMatch(shipperConfigRepository::isSelectionRules);
 	}
 
 	@NonNull

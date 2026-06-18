@@ -15,6 +15,7 @@ import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
@@ -59,6 +60,7 @@ class CarrierAdviseConsistencyServiceTest
 	@Mock private HUShipmentScheduleResolver resolver;
 	@Mock private IHandlingUnitsBL handlingUnitsBL;
 	@Mock private ShipperRepository shipperRepository;
+	@Mock private ShipperConfigRepository shipperConfigRepository;
 
 	private CarrierAdviseConsistencyService service;
 
@@ -71,7 +73,11 @@ class CarrierAdviseConsistencyServiceTest
 		AdempiereTestHelper.get().init();
 		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
 
-		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(resolver, shipperRepository);
+		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(resolver, shipperRepository, shipperConfigRepository);
+
+		// Default: selection rules OFF (Carrier_Config.IsSelectionRules='N') → the E2 divergence check is active.
+		// The new IsSelectionRules='Y' (rules ON → skip E2) case overrides this per-test via stubSelectionRules(...).
+		when(shipperConfigRepository.isSelectionRules(any())).thenReturn(false);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
@@ -115,6 +121,12 @@ class CarrierAdviseConsistencyServiceTest
 			}
 			return result;
 		});
+	}
+
+	/** Stub the shipper's Carrier_Config.IsSelectionRules value (true = rules ON → E2 skipped). */
+	private void stubSelectionRules(final ShipperId shipperId, final boolean selectionRules)
+	{
+		when(shipperConfigRepository.isSelectionRules(shipperId)).thenReturn(selectionRules);
 	}
 
 	/**
@@ -313,6 +325,80 @@ class CarrierAdviseConsistencyServiceTest
 		assertThrowsWithKey(
 				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
 				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
+	}
+
+	// --------------------------------------------------
+	// (E2 gate) divergent non-manual products + IsSelectionRules='N' (rules OFF) → still throws
+	//
+	// The explicit carrier product is authoritative when selection rules are off, so divergence on one HU
+	// is a real completion blocker. Same divergence as e2_nonManual_divergentProduct_throwsNonManualDivergent,
+	// pinned explicitly to rules='N'.
+	// --------------------------------------------------
+
+	@Test
+	void e2_divergentProduct_selectionRulesOff_throwsNonManualDivergent()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubSelectionRules(SHIPPER_1, false);
+
+		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
+		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
+
+		assertThrowsWithKey(
+				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
+				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
+	}
+
+	// --------------------------------------------------
+	// (E2 gate — RED) divergent non-manual products + IsSelectionRules='Y' (rules ON) → does NOT throw
+	//
+	// With selection rules ON (the column default; also the no-config case), nShift resolves the carrier via its
+	// rules and a re-advise harmonises it, so divergent carrier products on one HU are NOT a completion blocker —
+	// the job completes silently. This is the RED case: current (pre-gate) code throws unconditionally regardless
+	// of the flag.
+	// --------------------------------------------------
+
+	@Test
+	void e2_divergentProduct_selectionRulesOn_doesNotThrow()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubSelectionRules(SHIPPER_1, true);
+
+		// divergent non-manual carrier products on one HU — would throw E2 if rules were OFF
+		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
+		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
+
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
+				.doesNotThrowAnyException();
+	}
+
+	// --------------------------------------------------
+	// (E2 gate) divergent non-manual goods-types + IsSelectionRules='Y' (rules ON) → does NOT throw
+	//
+	// The gate covers goods-type divergence the same way as product divergence.
+	// --------------------------------------------------
+
+	@Test
+	void e2_divergentGoodsType_selectionRulesOn_doesNotThrow()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubSelectionRules(SHIPPER_1, true);
+
+		// same product, divergent goods-type — would throw E2 if rules were OFF
+		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
+		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of());
+
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
+				.doesNotThrowAnyException();
 	}
 
 	// --------------------------------------------------
