@@ -7,7 +7,6 @@ import { distributionJobScreenLocation, distributionLineScreenLocation } from '.
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { resolveDistributionScannedBarcodeToParsedQRCode } from '../../../apps/distribution/services/barcodeResolverService';
 import { useSearchParams } from '../../../hooks/useSearchParams';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { getLineByIdFromActivity, useWFActivity } from '../../../reducers/wfProcesses';
 import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distribution/computeQtyToPickRemaining';
@@ -154,39 +153,15 @@ const useDistributionScreenDefinition = () => {
   const huQRCode = urlParams.get('huQRCode');
 
   const activity = useWFActivity({ wfProcessId, activityId });
-  const { productName, uom, qtyToMove, pickFromLocator } = getLineInfo({ activity, lineId });
-  const lineHeaders = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
+  const headers = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
 
   const { history } = useScreenDefinition({
     screenId: 'DistributionLinePickFromScreen',
     captionKey: 'activities.distribution.scanHU',
-    back:
-      lineId != null
-        ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
-        : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
-    values: [
-      ...lineHeaders,
-      {
-        id: 'ProductValueAndName', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
-        caption: trl('general.Product'),
-        value: productName,
-        bold: true,
-        hidden: productName == null,
-      },
-      {
-        id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
-        caption: trl('general.QtyToMove'),
-        value: qtyToMove != null ? formatQtyToHumanReadableStr({ qty: qtyToMove, uom }) : null,
-        bold: true,
-        hidden: qtyToMove == null,
-      },
-      {
-        id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
-        caption: trl('general.LocatorFrom'),
-        value: pickFromLocator?.caption,
-        bold: true,
-      },
-    ],
+    back: lineId
+      ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
+      : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
+    values: headers,
   });
 
   return { history, applicationId, wfProcessId, activityId, activity, lineId, huQRCode };

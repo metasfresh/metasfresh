@@ -67,6 +67,8 @@ const DistributionLineScreen = () => {
 
 const useDistributionLineProps = ({ wfProcessId, activityId, lineId }) => {
   return useSelector((state) => {
+    if (!lineId) return {};
+
     const line = getLineById(state, wfProcessId, activityId, lineId);
     const stepsArray = getStepsArrayFromLine(line);
     return {
@@ -101,28 +103,33 @@ export const useDistributionLineHeaders = ({ wfProcessId, activityId, lineId }) 
     lineId,
   });
   const jobHeaders = useWFProcessHeaders({ wfProcessId });
-
-  return [
-    ...jobHeaders,
-    {
+  const headers = [...jobHeaders];
+  if (productName) {
+    headers.push({
       id: 'ProductValueAndName', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
       caption: trl('general.Product'),
       value: productName,
       bold: true,
-    },
-    {
+    });
+  }
+  if (qtyToMove != null) {
+    headers.push({
       id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
       caption: trl('general.QtyToMove'),
       value: formatQtyToHumanReadableStr({ qty: qtyToMove, uom }),
       bold: true,
-    },
-    {
+    });
+  }
+  if (pickFromLocator?.caption) {
+    headers.push({
       id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
       caption: trl('general.LocatorFrom'),
       value: pickFromLocator?.caption,
       bold: true,
-    },
-  ];
+    });
+  }
+
+  return headers;
 };
 
 //
