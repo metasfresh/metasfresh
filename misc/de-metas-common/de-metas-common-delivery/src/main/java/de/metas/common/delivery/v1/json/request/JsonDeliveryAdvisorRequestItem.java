@@ -25,7 +25,6 @@ package de.metas.common.delivery.v1.json.request;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonMoney;
-import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
 import lombok.Builder;
 import lombok.NonNull;
@@ -34,19 +33,23 @@ import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Optional;
 
+/**
+ * Per-product line item within a {@link JsonDeliveryAdvisorRequest}. Mirrors the ship path's
+ * {@link JsonDeliveryOrderLineContents}: carries only the per-product (commercial / content) fields.
+ * The PARCEL-level fields (gross weight, package dimensions, top-level type) live on the
+ * {@link JsonDeliveryAdvisorRequest} itself.
+ */
 @Value
 @Builder(toBuilder = true)
 @Jacksonized
 public class JsonDeliveryAdvisorRequestItem
 {
 	int numberOfItems;
-	@NonNull BigDecimal grossWeightKg;
 	@NonNull String productName;
 	@NonNull String productValue;
-	@Nullable JsonPackageDimensions packageDimensions;
-	@Nullable String topLevelType;
 	@Nullable String countryOfOrigin;
 	// Commercial content — keep in sync with JsonDeliveryOrderLineContents (delivery-order path)
 	@Nullable JsonMoney unitPrice;
@@ -64,10 +67,6 @@ public class JsonDeliveryAdvisorRequestItem
 				return Optional.of(productValue);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME:
 				return Optional.of(productName);
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_GROSS_WEIGHT_KG:
-				return Optional.of(grossWeightKg.toPlainString());
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE:
-				return Optional.ofNullable(topLevelType);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
 				return Optional.ofNullable(countryOfOrigin);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE:
@@ -84,28 +83,16 @@ public class JsonDeliveryAdvisorRequestItem
 				return Optional.ofNullable(customsTariff);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_KG:
 				return totalWeightInKg != null && shippedQuantity != null && shippedQuantity.getValue().signum() != 0
-						? Optional.of(totalWeightInKg.divide(shippedQuantity.getValue(), 6, java.math.RoundingMode.HALF_UP).stripTrailingZeros().toPlainString())
+						? Optional.of(totalWeightInKg.divide(shippedQuantity.getValue(), 6, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString())
 						: Optional.empty();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G:
 				return totalWeightInKg != null && shippedQuantity != null && shippedQuantity.getValue().signum() != 0
-						? Optional.of(totalWeightInKg.divide(shippedQuantity.getValue(), 6, java.math.RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).stripTrailingZeros().toPlainString())
+						? Optional.of(totalWeightInKg.divide(shippedQuantity.getValue(), 6, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(1000)).stripTrailingZeros().toPlainString())
 						: Optional.empty();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_KG:
 				return Optional.ofNullable(totalWeightInKg).map(BigDecimal::toPlainString);
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_WEIGHT_G:
 				return Optional.ofNullable(totalWeightInKg).map(w -> w.multiply(BigDecimal.valueOf(1000)).stripTrailingZeros().toPlainString());
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getLengthInCM())) : Optional.empty();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_LENGTH_MM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getLengthInCM() * 10)) : Optional.empty();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_CM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getWidthInCM())) : Optional.empty();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_WIDTH_MM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getWidthInCM() * 10)) : Optional.empty();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_CM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getHeightInCM())) : Optional.empty();
-			case DeliveryMappingConstants.ATTRIBUTE_VALUE_PACKAGE_HEIGHT_MM:
-				return packageDimensions != null ? Optional.of(Integer.toString(packageDimensions.getHeightInCM() * 10)) : Optional.empty();
 			default:
 				return Optional.empty();
 		}
