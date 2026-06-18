@@ -152,10 +152,14 @@ test('Packing-table operator: orders sorted by priority then locator priority an
     // substring on THIS order's qty number (i*10), robust to the UOM symbol while still proving the
     // qty advanced with the order.
     const assertJobHeader = async (screen, i) => {
-        await screen.expectHeaderProperty({ caption: 'From Locator', value: `L${i}` });
+        // exact:true for locator + product on BOTH screens (the job screen's method defaults to
+        // substring, so it is passed explicitly here) — so the leftover/stale-header guard and the
+        // L1 ⊂ L10 protection hold uniformly on every order.
+        await screen.expectHeaderProperty({ caption: 'From Locator', value: `L${i}`, exact: true });
         await screen.expectHeaderProperty({
             caption: 'Product Value and Name',
             value: masterdata.products[`P${i}`].productCode + "_" + masterdata.products[`P${i}`].productName,
+            exact: true,
         });
         await screen.expectHeaderProperty({ caption: 'Quantity', value: `${i * 10}`, exact: false });
     };
