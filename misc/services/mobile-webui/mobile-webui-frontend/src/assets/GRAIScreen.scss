@@ -2,6 +2,22 @@
 
 $grai-extra-orange: #e67e22;
 
+// The GRAI panel renders the BarcodeScannerComponent (whose footer buttons are pinned to an
+// exact 3rem height via .barcode-scanner-btn) directly above its own Save / Clear-all action
+// buttons. Those action buttons are plain ButtonWithIndicator (.complete-btn, font-size 1.5rem),
+// so Bulma's default `.button { height: 2.5em }` resolves to 3.75rem — taller than the scanner
+// footer buttons, giving a non-homogeneous control-height cluster on the handheld. Pin them to
+// the SAME exact 3rem height so Save / Clear-all line up with the scanner footer buttons.
+// $btn-height (3rem) is defined in BarcodeScannerComponent.scss; mirrored here as a literal to
+// keep this file self-contained (GRAIScreen.scss is imported directly by the JSX, not via index).
+.grai-screen .section {
+  .button,
+  .button .full-size-btn {
+    height: 3rem;
+    min-height: 3rem;
+  }
+}
+
 .grai-count {
   text-align: center;
   font-size: 1.1rem;

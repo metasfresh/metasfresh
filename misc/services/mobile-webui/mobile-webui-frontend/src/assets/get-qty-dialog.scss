@@ -11,17 +11,30 @@
       tbody {
         tr {
           th {
-            min-width: 38vw !important;
+            // Sized to the label, not the longest scanned value: a fixed share of the
+            // narrow handheld width so the label column gets room, but capped so the value
+            // column (qty input, date, lot, weight) keeps usable width.
+            width: 45%;
 
             text-align: left !important;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            // Wrap the full label onto multiple lines instead of clipping it — the longer
+            // German captions ("Mindesthaltbarkeitsdatum", "Gewicht/Fanggewicht") otherwise
+            // overflowed the old nowrap+ellipsis cell and showed as "efore" / "g".
+            // Use break-word (not "anywhere"): "anywhere" also collapses the cell's min-content
+            // width, letting this 45% column shrink and break the long German words at arbitrary
+            // points; break-word breaks a too-long word only when needed and keeps the column at
+            // its 45%, so the labels wrap at "/" and word boundaries rather than mid-word. hyphens
+            // adds clean hyphenation where the document language supports it.
+            white-space: normal;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            vertical-align: middle;
           }
 
           td {
             text-align: right;
             white-space: pre-wrap;
+            vertical-align: middle;
 
             input {
               text-align: right

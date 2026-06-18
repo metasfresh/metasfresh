@@ -153,6 +153,15 @@ const translations = {
       graiScan: {
         multipleScanned:
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+        count: '%(scanned)s / %(total)s GRAIs gescannt',
+        countExtra: '(%(extra)s extra)',
+        save: {
+          buttonCaption: 'Speichern',
+        },
+        clearAll: {
+          buttonCaption: 'Alle löschen',
+          confirmQuestion: 'Alle %(count)s GRAIs entfernen?',
+        },
       },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
