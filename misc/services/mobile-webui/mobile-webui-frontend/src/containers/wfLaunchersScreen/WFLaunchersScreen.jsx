@@ -24,7 +24,7 @@ import { useCurrentTrolley } from '../../api/trolley';
 import { toastError } from '../../utils/toast';
 
 const WFLaunchersScreen = () => {
-  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/', isHomeStop: true });
   const dispatch = useDispatch();
   const { url, applicationId } = useMobileLocation();
 
