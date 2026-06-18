@@ -2,10 +2,10 @@ package de.metas.shipper.gateway.commons;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.inoutcandidate.CarrierServiceId;
-import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.product.PackageDimensions;
@@ -18,6 +18,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
@@ -42,7 +43,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -77,7 +80,6 @@ public class ShipperGatewayFacade
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
-	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
@@ -90,6 +92,8 @@ public class ShipperGatewayFacade
 		final LocalTime timeTo = request.getTimeTo();
 		final AsyncBatchId asyncBatchId = request.getAsyncBatchId();
 
+		final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = request.getCarrierByScheduleId();
+
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
@@ -98,7 +102,8 @@ public class ShipperGatewayFacade
 						pickupDate,
 						timeFrom,
 						timeTo,
-						asyncBatchId)))
+						asyncBatchId,
+						carrierByScheduleId)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -119,14 +124,23 @@ public class ShipperGatewayFacade
 			@NonNull final LocalDate pickupDate,
 			@NonNull final LocalTime timeFrom,
 			@NonNull final LocalTime timeTo,
-			@Nullable final AsyncBatchId asyncBatchId)
+			@Nullable final AsyncBatchId asyncBatchId,
+			@NonNull final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId)
 	{
 		final List<ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedulesByPackageId(PackageId.ofRepoId(mpackage.getM_Package_ID()));
 		if (shipmentSchedules.isEmpty())
 		{
 			throw new ShipperGatewayException("No shipment schedules found for package " + mpackage);
 		}
-		final Set<CarrierServiceId> carrierServices = retrieveCarrierServiceIdsForShipmentSchedules(shipmentSchedules);
+
+		// Carrier values come from the request, where they were resolved LINE-FIRST / SCHEDULE-FALLBACK in
+		// de.metas.handlingunits.base. This module no longer reads the carrier from the shipment schedule
+		// (commons must not depend on the picking-job line, which lives in handlingunits.base).
+		final List<ResolvedCarrier> resolvedCarriers = shipmentSchedules.stream()
+				.map(ShipmentSchedule::getId)
+				.map(carrierByScheduleId::get)
+				.filter(Objects::nonNull)
+				.collect(Collectors.toList());
 
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
@@ -138,51 +152,51 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
-				.carrierProductId(getCommonCarrierProductIdOrNull(shipmentSchedules))
-				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(shipmentSchedules))
-				.carrierServices(carrierServices)
+				.carrierProductId(getCommonCarrierProductIdOrNull(resolvedCarriers))
+				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(resolvedCarriers))
+				.carrierServices(getCarrierServices(resolvedCarriers))
 				.asyncBatchId(asyncBatchId)
 				.build();
 	}
 
 	@Nullable
-	private CarrierGoodsTypeId getCommonCarrierGoodsTypeIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
+	private CarrierGoodsTypeId getCommonCarrierGoodsTypeIdOrNull(final List<ResolvedCarrier> resolvedCarriers)
 	{
-		final Set<CarrierGoodsTypeId> goodsTypeIds = shipmentSchedules.stream()
-				.map(ShipmentSchedule::getCarrierGoodsTypeId)
+		final Set<CarrierGoodsTypeId> goodsTypeIds = resolvedCarriers.stream()
+				.map(ResolvedCarrier::getCarrierGoodsTypeId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		if (goodsTypeIds.size() > 1)
 		{
-			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for shipment schedules: " + shipmentSchedules);
+			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for resolved carriers: " + resolvedCarriers);
 		}
 		return goodsTypeIds.stream().findFirst().orElse(null);
 	}
 
 	@Nullable
-	private CarrierProductId getCommonCarrierProductIdOrNull(final List<ShipmentSchedule> shipmentSchedules)
+	private CarrierProductId getCommonCarrierProductIdOrNull(final List<ResolvedCarrier> resolvedCarriers)
 	{
-		final Set<CarrierProductId> carrierProductIds = shipmentSchedules.stream()
-				.map(ShipmentSchedule::getCarrierProductId)
+		final Set<CarrierProductId> carrierProductIds = resolvedCarriers.stream()
+				.map(ResolvedCarrier::getCarrierProductId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
 		if (carrierProductIds.size() > 1)
 		{
-			throw new ShipperGatewayException("No common CarrierProductId found for shipment schedules: " + shipmentSchedules);
+			throw new ShipperGatewayException("No common CarrierProductId found for resolved carriers: " + resolvedCarriers);
 		}
 		return carrierProductIds.stream().findFirst().orElse(null);
+	}
+
+	private Set<CarrierServiceId> getCarrierServices(final List<ResolvedCarrier> resolvedCarriers)
+	{
+		return resolvedCarriers.stream()
+				.flatMap(resolvedCarrier -> resolvedCarrier.getCarrierServices().stream())
+				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
 	private List<ShipmentSchedule> retrieveShipmentSchedulesByPackageId(@NonNull final PackageId packageId)
 	{
 		return shipmentScheduleRepository.loadByPackageId(packageId);
-	}
-
-	private Set<CarrierServiceId> retrieveCarrierServiceIdsForShipmentSchedules(@NonNull final List<ShipmentSchedule> schedules)
-	{
-		return carrierServiceRepository.getAssignedServiceIdsByShipmentScheduleIds(schedules.stream()
-				.map(ShipmentSchedule::getId)
-				.collect(Collectors.toSet()));
 	}
 
 	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)

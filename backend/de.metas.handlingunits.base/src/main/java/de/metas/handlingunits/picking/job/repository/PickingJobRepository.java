@@ -1,7 +1,9 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
@@ -11,18 +13,24 @@ import de.metas.handlingunits.model.I_M_Picking_Job_Step;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
+import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
+import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
@@ -31,6 +39,7 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -52,6 +61,7 @@ import java.util.stream.Stream;
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final PickingJobLineCarrierServiceRepository pickingJobLineCarrierServiceRepository = PickingJobLineCarrierServiceRepository.getInstance();
 
 	/**
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
@@ -289,6 +299,80 @@ public class PickingJobRepository
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
 						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
 								Collectors.toList())));
+	}
+
+	/**
+	 * Resolves, per shipment schedule, the carrier (product + goods-type + services) carried by the
+	 * picking-job <b>line</b> referencing that schedule — the source of truth at SEND time.
+	 * <p>
+	 * Unlike the sibling line lookups in this class, this query carries <b>no doc-status / active filter</b>:
+	 * at send (delivery-order creation) the picking job is already <b>Completed</b>, so a Drafted/active filter
+	 * would find nothing.
+	 * <p>
+	 * A schedule with <b>no</b> line is absent from the returned map (the caller falls back to the shipment
+	 * schedule's own carrier). For a schedule with <b>N</b> lines, the lines' carriers are reduced to one:
+	 * when they are all equal it is used; when they <b>diverge</b> we abort with an {@link AdempiereException}
+	 * (mirrors the multi-distinct-product abort on the advise path) rather than silently guess.
+	 */
+	@NonNull
+	public ImmutableMap<ShipmentScheduleId, ResolvedCarrier> getCarrierByScheduleIds(
+			@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_M_Picking_Job_Line> lines = queryBL.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds)
+				.create()
+				.list();
+		if (lines.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSetMultimap<PickingJobLineId, CarrierServiceId> servicesByLineId =
+				pickingJobLineCarrierServiceRepository.getAssignedServiceIdsMapByLineIds(
+						lines.stream()
+								.map(line -> PickingJobLineId.ofRepoId(line.getM_Picking_Job_Line_ID()))
+								.collect(ImmutableSet.toImmutableSet()));
+
+		final Map<ShipmentScheduleId, List<I_M_Picking_Job_Line>> linesBySchedule = lines.stream()
+				.collect(Collectors.groupingBy(
+						line -> ShipmentScheduleId.ofRepoId(line.getM_ShipmentSchedule_ID())));
+
+		final ImmutableMap.Builder<ShipmentScheduleId, ResolvedCarrier> result = ImmutableMap.builder();
+		for (final Map.Entry<ShipmentScheduleId, List<I_M_Picking_Job_Line>> entry : linesBySchedule.entrySet())
+		{
+			result.put(entry.getKey(), reduceToSingleCarrier(entry.getKey(), entry.getValue(), servicesByLineId));
+		}
+		return result.build();
+	}
+
+	@NonNull
+	private static ResolvedCarrier reduceToSingleCarrier(
+			@NonNull final ShipmentScheduleId scheduleId,
+			@NonNull final List<I_M_Picking_Job_Line> lines,
+			@NonNull final ImmutableSetMultimap<PickingJobLineId, CarrierServiceId> servicesByLineId)
+	{
+		final Set<ResolvedCarrier> distinctCarriers = lines.stream()
+				.map(line -> {
+					final PickingJobLineId lineId = PickingJobLineId.ofRepoId(line.getM_Picking_Job_Line_ID());
+					return ResolvedCarrier.builder()
+							.carrierProductId(CarrierProductId.ofRepoIdOrNull(line.getCarrier_Product_ID()))
+							.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoIdOrNull(line.getCarrier_Goods_Type_ID()))
+							.carrierServices(servicesByLineId.get(lineId))
+							.build();
+				})
+				.collect(Collectors.toCollection(LinkedHashSet::new));
+
+		if (distinctCarriers.size() > 1)
+		{
+			throw new AdempiereException("Picking-job lines for shipment schedule " + scheduleId
+					+ " carry divergent carriers; cannot resolve a single send-time carrier: " + distinctCarriers);
+		}
+		return distinctCarriers.iterator().next();
 	}
 
 	@NonNull
