@@ -65,4 +65,23 @@ public class EInvoiceConfigServiceTest
 
 		assertThat(result).isEmpty();
 	}
+
+	@Test
+	public void givenEInvoiceRecipientWithNoType_whenResolveForInvoice_thenReturnEmpty()
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setIsEInvoiceRecipeint(true);
+		// EInvoiceType not set — remains null
+		saveRecord(bpartner);
+
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setC_BPartner_ID(bpartner.getC_BPartner_ID());
+		saveRecord(invoice);
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		final Optional<EInvoiceRecipientConfig> result = service.resolveForInvoice(invoiceId);
+
+		assertThat(result).isEmpty();
+	}
 }

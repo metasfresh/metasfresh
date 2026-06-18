@@ -1,13 +1,16 @@
 package de.metas.einvoice;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 
+@RequiredArgsConstructor
 public enum EInvoiceFormat implements ReferenceListAwareEnum
 {
 	ZUGFeRD("Z"),
@@ -15,16 +18,9 @@ public enum EInvoiceFormat implements ReferenceListAwareEnum
 	PEPPOL("P"),
 	;
 
-	@Getter
-	@NonNull
-	private final String code;
+	@NonNull @Getter private final String code;
 
-	EInvoiceFormat(@NonNull final String code)
-	{
-		this.code = code;
-	}
-
-	private static final ValuesIndex<EInvoiceFormat> index = ReferenceListAwareEnums.index(values());
+	@NonNull private static final ValuesIndex<EInvoiceFormat> index = ReferenceListAwareEnums.index(values());
 
 	public static EInvoiceFormat ofCode(@NonNull final String code)
 	{
@@ -35,5 +31,11 @@ public enum EInvoiceFormat implements ReferenceListAwareEnum
 	public static EInvoiceFormat ofNullableCode(@Nullable final String code)
 	{
 		return index.ofNullableCode(code);
+	}
+
+	@JsonValue
+	public String toJson()
+	{
+		return getCode();
 	}
 }
