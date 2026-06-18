@@ -142,6 +142,7 @@ const getLineInfo = ({ activity, lineId }) => {
     uom: line.uom,
     qtyToMove: line.qtyToMove,
     qtyToPickRemaining: computeQtyToPickRemaining({ line }),
+    pickFromLocator: line.pickFromLocator,
   };
 };
 
@@ -152,7 +153,7 @@ const useDistributionScreenDefinition = () => {
   const huQRCode = urlParams.get('huQRCode');
 
   const activity = useWFActivity({ wfProcessId, activityId });
-  const { productName, uom, qtyToMove } = getLineInfo({ activity, lineId });
+  const { productName, uom, qtyToMove, pickFromLocator } = getLineInfo({ activity, lineId });
 
   const { history } = useScreenDefinition({
     screenId: 'DistributionLinePickFromScreen',
@@ -163,16 +164,24 @@ const useDistributionScreenDefinition = () => {
         : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
     values: [
       {
+        id: 'ProductValueAndName', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.Product'),
         value: productName,
         bold: true,
         hidden: productName == null,
       },
       {
+        id: 'Qty', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.QtyToMove'),
         value: qtyToMove != null ? formatQtyToHumanReadableStr({ qty: qtyToMove, uom }) : null,
         bold: true,
         hidden: qtyToMove == null,
+      },
+      {
+        id: 'LocatorFrom', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
+        caption: trl('general.Locator'),
+        value: pickFromLocator?.caption,
+        bold: true,
       },
     ],
   });
