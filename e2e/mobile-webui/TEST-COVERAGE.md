@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 58 | 62 | 94% |
+| Picking | 59 | 63 | 94% |
 | Distribution | 39 | 40 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -202,6 +202,14 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### Navigation — device/browser Back
+
+| Scenario | Test |
+|---|---|
+| Device/browser Back mirrors the footer Back button: from a picking job → jobs list, from the jobs list → Home (app list) | `picking/deviceBackMirrorsFooterBack.spec.js` |
+
+**1/1 — 100%**
 
 ---
 

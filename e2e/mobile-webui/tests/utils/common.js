@@ -24,7 +24,7 @@ export const step = async (title, func) => await test.step(title, async () => aw
  * on-screen footer Back button.
  */
 export const pressDeviceBack = async () => await step(`Press device/browser Back button`, async () => {
-    await page.goBack();
+    await page.goBack({ timeout: SLOW_ACTION_TIMEOUT });
 });
 
 let nextErrorWatcherId = 101;
