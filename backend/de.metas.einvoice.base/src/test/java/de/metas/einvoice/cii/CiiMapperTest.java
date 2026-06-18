@@ -24,6 +24,7 @@ import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -124,7 +125,7 @@ public class CiiMapperTest
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setDocumentNo("RE-2024-00042");
-		invoice.setDateInvoiced(Timestamp.valueOf(LocalDate.of(2024, 6, 15).atStartOfDay()));
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		invoice.setC_Currency_ID(currency.getC_Currency_ID());
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setC_BPartner_ID(buyerBPartner.getC_BPartner_ID());
