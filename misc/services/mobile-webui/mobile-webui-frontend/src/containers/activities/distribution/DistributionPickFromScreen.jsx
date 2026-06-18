@@ -14,6 +14,7 @@ import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distrib
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { isRequireScanningProductCode } from '../../../reducers/wfProcesses/distribution/getDistributionJobCompleteStatus';
 import { postDistributionPickFromThunk } from '../../../apps/distribution/redux/postDistributionPickFromThunk';
+import { useDistributionLineHeaders } from './DistributionLineScreen';
 
 const DistributionPickFromScreen = () => {
   const {
@@ -154,6 +155,7 @@ const useDistributionScreenDefinition = () => {
 
   const activity = useWFActivity({ wfProcessId, activityId });
   const { productName, uom, qtyToMove, pickFromLocator } = getLineInfo({ activity, lineId });
+  const lineHeaders = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
 
   const { history } = useScreenDefinition({
     screenId: 'DistributionLinePickFromScreen',
@@ -163,6 +165,7 @@ const useDistributionScreenDefinition = () => {
         ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
         : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
     values: [
+      ...lineHeaders,
       {
         id: 'ProductValueAndName', // shall match the de.metas.distribution.mobileui.config.DistributionJobCaptionField#getCode
         caption: trl('general.Product'),

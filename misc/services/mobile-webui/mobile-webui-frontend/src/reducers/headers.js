@@ -25,6 +25,8 @@ const isLaunchersPathname = (pathname) => launchersUrlRegExp.test(pathname);
 const getHeaderEntries = (state) => state.headers.entries ?? [];
 
 const getEntryItemsFromState = (state) => {
+  // console.group('getEntryItemsFromState');
+
   const headersEntries = getHeaderEntries(state);
 
   let nextUniqueId = 1;
@@ -42,6 +44,7 @@ const getEntryItemsFromState = (state) => {
       if (entryItem.hideField) {
         if (!hiddenFields.includes(key)) {
           hiddenFields.push(key);
+          // console.log(`getEntryItemsFromState - considering ${key} hidden from now on`, { entryItem, key, itemsByKey });
         }
         isFieldRemoved = true;
       } else {
@@ -50,11 +53,15 @@ const getEntryItemsFromState = (state) => {
 
       if (isFieldRemoved) {
         delete itemsByKey[key];
+        // console.log('getEntryItemsFromState - removed item', { entryItem, key, itemsByKey });
       } else {
         itemsByKey[key] = entryItem;
+        // console.log('getEntryItemsFromState - added item', { entryItem, key, itemsByKey });
       }
     });
 
+  // console.log('getEntryItemsFromState - final result', { result: Object.values(itemsByKey) });
+  // console.groupEnd();
   return Object.values(itemsByKey);
 };
 
@@ -251,37 +258,43 @@ const mergeEntries = (entry, newValues) => {
 };
 
 const mergeEntryValues = (valuesArray, newValuesArray) => {
+  // console.log('mergeEntryValues', { valuesArray, newValuesArray });
   if (!newValuesArray?.length) return valuesArray ? [...valuesArray] : [];
   if (!valuesArray?.length) return [...newValuesArray];
 
-  const newValuesByCaption = newValuesArray.reduce((accum, value) => {
+  const newValuesById = newValuesArray.reduce((accum, value) => {
     const entryId = value.id ?? value.caption;
     accum[entryId] = value;
     return accum;
   }, {});
+  // console.log('mergeEntryValues - 2', { newValuesById });
 
   const result = [];
 
   valuesArray.forEach((value) => {
     const entryId = value.id ?? value.caption;
-    const newValue = newValuesByCaption[entryId];
-    delete newValuesByCaption[entryId];
+    const newValue = newValuesById[entryId];
+    delete newValuesById[entryId];
     if (newValue) {
       result.push(newValue);
+      // console.log('mergeEntryValues - replaced current with newValue', { value, newValue, result, newValuesById });
     } else {
       result.push(value);
+      // console.log('mergeEntryValues - preserved current value', { value, result, newValuesById });
     }
   });
 
   newValuesArray.forEach((value) => {
     const entryId = value.id ?? value.caption;
-    const newValue = newValuesByCaption[entryId];
-    delete newValuesByCaption[entryId];
+    const newValue = newValuesById[entryId];
+    delete newValuesById[entryId];
     if (newValue) {
       result.push(newValue);
+      // console.log('mergeEntryValues - added newValue', { newValue, result, newValuesById });
     }
   });
 
+  // console.log('mergeEntryValues - final result', { result });
   return result;
 };
 
