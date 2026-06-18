@@ -76,13 +76,6 @@ export const parseGraiFromRawInput = (inputString) => {
 };
 
 /**
- * Validate a GRAI string in dot-separated format.
- * Expected format: {companyPrefix}.{assetType}.{serial}
- *
- * @param {string} graiString
- * @returns {boolean}
- */
-/**
  * Parse a raw input string that may contain one or more GRAIs
  * separated by newlines or tabs (e.g., RFID scanner batch output).
  *
@@ -100,6 +93,13 @@ export const parseGraiArrayFromRawInput = (rawInput) => {
     .filter(Boolean);
 };
 
+/**
+ * Validate a GRAI string in dot-separated format.
+ * Expected format: {companyPrefix}.{assetType}.{serial}
+ *
+ * @param {string} graiString
+ * @returns {boolean}
+ */
 export const isValidGrai = (graiString) => {
   if (!graiString || typeof graiString !== 'string') return false;
 

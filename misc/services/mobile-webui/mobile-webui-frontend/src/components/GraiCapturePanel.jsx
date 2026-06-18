@@ -127,7 +127,7 @@ GraiCapturePanel.propTypes = {
   children: PropTypes.node,
 };
 
-const GraiChip = ({ grai, extra, onRemove }) => {
+const GraiChip = ({ grai, extra = false, onRemove }) => {
   return (
     <div
       className={extra ? 'grai-chip grai-chip--extra' : 'grai-chip'}
