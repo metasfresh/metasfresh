@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2112206447L;
+	private static final long serialVersionUID = 1018604301L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -234,6 +234,33 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_Charge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_ElementValue getC_ElementValue_Override()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_ElementValue_Override_ID, org.compiere.model.I_C_ElementValue.class);
+	}
+
+	@Override
+	public void setC_ElementValue_Override(final org.compiere.model.I_C_ElementValue C_ElementValue_Override)
+	{
+		set_ValueFromPO(COLUMNNAME_C_ElementValue_Override_ID, org.compiere.model.I_C_ElementValue.class, C_ElementValue_Override);
+	}
+
+	@Override
+	public void setC_ElementValue_Override_ID (final int C_ElementValue_Override_ID)
+	{
+		if (C_ElementValue_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_ElementValue_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_ElementValue_Override_ID, C_ElementValue_Override_ID);
+	}
+
+	@Override
+	public int getC_ElementValue_Override_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_ElementValue_Override_ID);
 	}
 
 	@Override

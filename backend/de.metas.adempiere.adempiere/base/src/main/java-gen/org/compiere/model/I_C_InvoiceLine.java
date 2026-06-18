@@ -300,6 +300,33 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
+	 * Set Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_ElementValue_Override_ID (int C_ElementValue_Override_ID);
+
+	/**
+	 * Get Account (Override).
+	 * The GL account to which this invoice or invoice line is posted.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_ElementValue_Override_ID();
+
+	@Nullable org.compiere.model.I_C_ElementValue getC_ElementValue_Override();
+
+	void setC_ElementValue_Override(@Nullable org.compiere.model.I_C_ElementValue C_ElementValue_Override);
+
+	ModelColumn<I_C_InvoiceLine, org.compiere.model.I_C_ElementValue> COLUMN_C_ElementValue_Override_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_ElementValue_Override_ID", org.compiere.model.I_C_ElementValue.class);
+	String COLUMNNAME_C_ElementValue_Override_ID = "C_ElementValue_Override_ID";
+
+	/**
 	 * Set Flatrate Term.
 	 *
 	 * <br>Type: TableDir
