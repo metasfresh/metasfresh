@@ -145,3 +145,9 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2026-06-18 15:08:44.379000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=652311
 ;
 
+-- UI Element: Rücknahme Gebinde(542164,D) -> Rücknahme Gebinde(549320,D) -> main -> 20 -> default.Mandant
+-- Column: C_Order_ReturnPackage.AD_Client_ID
+-- 2026-06-18T15:40:35.292Z
+UPDATE AD_UI_Element SET IsAdvancedField='N',Updated=TO_TIMESTAMP('2026-06-18 15:40:35.292000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=652312
+;
+
