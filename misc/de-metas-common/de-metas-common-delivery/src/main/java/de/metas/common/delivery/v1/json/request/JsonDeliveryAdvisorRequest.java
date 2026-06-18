@@ -154,17 +154,20 @@ public class JsonDeliveryAdvisorRequest
 				// Empty Strings should be filtered out by gateway implementation
 				return items.stream().map(JsonDeliveryAdvisorRequestItem::getCustomsTariff).filter(Objects::nonNull).collect(Collectors.joining(","));
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_COUNTRY_OF_ORIGIN:
+				// null if the items disagree (undefined for a mixed-origin parcel) — mirror JsonDeliveryOrderParcel
 				final ImmutableSet<String> countriesOfOrigin = items.stream()
 						.map(JsonDeliveryAdvisorRequestItem::getCountryOfOrigin)
 						.filter(Objects::nonNull)
 						.collect(ImmutableSet.toImmutableSet());
 				return countriesOfOrigin.size() == 1 ? countriesOfOrigin.iterator().next() : null;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE:
-				final ImmutableSet<BigDecimal> totalValueAmounts = items.stream()
+				// Sum every item's total value — must NOT deduplicate (two items with the same amount sum to 2x),
+				// mirroring JsonDeliveryOrderParcel.getValue. null when no item carries a total value.
+				final List<BigDecimal> totalValueAmounts = items.stream()
 						.map(JsonDeliveryAdvisorRequestItem::getTotalValue)
 						.filter(Objects::nonNull)
 						.map(JsonMoney::getAmount)
-						.collect(ImmutableSet.toImmutableSet());
+						.collect(Collectors.toList());
 				if (totalValueAmounts.isEmpty())
 				{
 					return null;

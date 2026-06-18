@@ -208,12 +208,14 @@ public class NShiftShipAdvisorServiceTest
 		final Map<Integer, String> refsByKind = line.getReferences().stream()
 				.collect(Collectors.toMap(JsonReference::getKind, JsonReference::getValue));
 
-		// kind 23 = product name (LINE_REFERENCE_KIND_CONTENTS) — both products present, space-joined
-		assertThat(refsByKind.get(23)).as("both product names present").isEqualTo("Product A Product B");
-		// kind 132 = product value (CUSTOM_FIELD_4) — both products present
-		assertThat(refsByKind.get(132)).as("both product values present").isEqualTo("ValueA ValueB");
-		// kind 130 = total value (CUSTOM_FIELD_2) — per-item totals, both present
-		assertThat(refsByKind.get(130)).as("both total values present").isEqualTo("10 15");
+		// kind 23 = product name (LINE_REFERENCE_KIND_CONTENTS) — both products aggregated (comma-joined by getValue)
+		assertThat(refsByKind.get(23)).as("both product names present").isEqualTo("Product A,Product B");
+		// kind 132 = product value (CUSTOM_FIELD_4) — both products aggregated
+		assertThat(refsByKind.get(132)).as("both product values present").isEqualTo("ValueA,ValueB");
+		// kind 130 = total value (CUSTOM_FIELD_2) — per-item totals summed (10 + 15 = 25)
+		assertThat(refsByKind.get(130)).as("total value summed across items").isEqualTo("25");
+		// kind 134 = gross weight kg (CUSTOM_FIELD_6) — PARCEL-level, resolved ONCE (not duplicated per item)
+		assertThat(refsByKind.get(134)).as("parcel gross weight resolved once").isEqualTo("12");
 	}
 
 	@Test

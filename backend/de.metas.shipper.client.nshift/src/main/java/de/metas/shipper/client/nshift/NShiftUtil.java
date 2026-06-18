@@ -25,21 +25,15 @@ package de.metas.shipper.client.nshift;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
-import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonReference;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -102,10 +96,11 @@ public class NShiftUtil
 	 * <ul>
 	 *   <li>PARCEL level — weight (kg→g) and dimensions (cm→mm) come from the request's parcel fields
 	 *       ({@link JsonDeliveryAdvisorRequest#getGrossWeightKg()} / {@code getPackageDimensions()}).</li>
-	 *   <li>PER-ITEM level — line references are resolved per {@link JsonDeliveryAdvisorRequestItem} via the
-	 *       {@code item.getValue → request.getValue} fallback chain (mirror of
-	 *       {@code NShiftShipmentService#buildLineLevelDetailGroups}'s {@code content::getValue → parcel → request}
-	 *       chain) and merged across items by reference kind.</li>
+	 *   <li>LINE references — resolved ONCE via {@link JsonDeliveryAdvisorRequest#getValue(String)}, exactly as the
+	 *       ship path resolves line references via {@code JsonDeliveryOrderParcel.getValue}. The request's
+	 *       {@code getValue} already aggregates the per-product attributes over its items (product name/value,
+	 *       customs tariff, total value, …), so parcel-level attributes resolve once (no per-item duplication) and
+	 *       per-product attributes are aggregated consistently with the ship path.</li>
 	 * </ul>
 	 * Shared by {@code NShiftShipAdvisorService} and {@code NShiftOrderAdvisorService} — the two advise
 	 * endpoints must build the line identically; keep this the single source for advise-line building.
@@ -118,9 +113,10 @@ public class NShiftUtil
 			@NonNull final NShiftMappingConfigs mappingConfigs)
 	{
 		final int weightGrams = request.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
+		final Function<String, String> lineValueProvider = request::getValue;
 		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
 				.lineWeight(weightGrams)
-				.references(buildAdvisorLineReferences(request, mappingConfigs));
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
 		if (request.getPackageDimensions() != null)
 		{
 			final int lengthMM = request.getPackageDimensions().getLengthInCM() * 10;
@@ -132,48 +128,6 @@ public class NShiftUtil
 			lineBuilder.height(heightMM);
 		}
 		return lineBuilder.build();
-	}
-
-	/**
-	 * Resolves the line-level references by iterating the request's items (each with the
-	 * {@code item.getValue → request.getValue} fallback chain) and merging the resulting references by kind,
-	 * concatenating multiple items' values with a single space — matching {@link NShiftMappingConfigs}'
-	 * own per-kind value concatenation. For a single item this returns exactly the references that the previous
-	 * single-item path produced.
-	 */
-	private static List<JsonReference> buildAdvisorLineReferences(
-			@NonNull final JsonDeliveryAdvisorRequest request,
-			@NonNull final NShiftMappingConfigs mappingConfigs)
-	{
-		// LinkedHashMap to keep the reference kinds in first-seen order (stable wire output).
-		final Map<Integer, StringBuilder> valuesByKind = new LinkedHashMap<>();
-		for (final JsonDeliveryAdvisorRequestItem item : request.getItems())
-		{
-			final Function<String, Optional<String>> chain = withFallback(
-					item::getValue,
-					attributeValue -> Optional.ofNullable(request.getValue(attributeValue)));
-			final Function<String, String> lineValueProvider = attributeValue -> chain.apply(attributeValue).orElse(null);
-
-			for (final JsonReference reference : mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider))
-			{
-				final StringBuilder sb = valuesByKind.get(reference.getKind());
-				if (sb == null)
-				{
-					valuesByKind.put(reference.getKind(), new StringBuilder(reference.getValue()));
-				}
-				else
-				{
-					sb.append(" ").append(reference.getValue());
-				}
-			}
-		}
-
-		final List<JsonReference> references = new ArrayList<>();
-		valuesByKind.forEach((kind, sb) -> references.add(JsonReference.builder()
-				.kind(kind)
-				.value(sb.toString())
-				.build()));
-		return references;
 	}
 
 	public static <T, R> Function<T, Optional<R>> withFallback(

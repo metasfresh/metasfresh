@@ -22,6 +22,7 @@
 
 package de.metas.common.delivery.v1.json.request;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,6 +39,7 @@ import java.util.List;
  * advise builders hand to {@link JsonDeliveryAdvisorRequest} (parcel fields are copied onto the request and the
  * items become the request's item list).
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 @Value
 @Builder(toBuilder = true)
 @Jacksonized

@@ -339,6 +339,7 @@ public class NShiftGateway_StepDef
 		assertContact(softly, capturedAdvisorRequest.getDeliveryContact(), row, "Receiver", "deliveryContact");
 
 		// PARCEL-level fields live on the request; per-product fields live on the (single) item.
+		assertThat(capturedAdvisorRequest.getItems()).as("advisor request items").isNotEmpty();
 		final JsonDeliveryAdvisorRequestItem firstItem = capturedAdvisorRequest.getItems().get(0);
 
 		row.getAsOptionalInt("numberOfItems").ifPresent(expected -> softly
