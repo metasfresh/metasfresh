@@ -7,6 +7,7 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Expectation for a sales order (C_Order), keyed by the order's identifier string in the
@@ -54,7 +55,7 @@ public class JsonSalesOrderExpectation
 	 * Carrier-advise expectation per shipment schedule of this order. Keyed by the product identifier
 	 * of the schedule's order line (one schedule per order line). Null means no carrier-advise assertion.
 	 */
-	@Nullable java.util.Map<String, JsonCarrierAdviseExpectation> carrierAdvise;
+	@Nullable Map<String, JsonCarrierAdviseExpectation> carrierAdvise;
 
 	/**
 	 * Assert the total shipped quantity for this order, summed across all PROCESSED

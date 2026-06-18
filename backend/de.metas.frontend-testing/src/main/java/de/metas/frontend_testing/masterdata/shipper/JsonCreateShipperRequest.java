@@ -16,7 +16,8 @@ public class JsonCreateShipperRequest
 
 	// When true, M_Shipper.IsApiCarrierAdvise='Y'. Combined with no gateway, the carrier advise is
 	// resolved locally from the shipper name (no external nShift API call needed).
-	@Nullable Boolean isApiCarrierAdvise;
+	// Primitive boolean: an omitted JSON value defaults to false.
+	boolean isApiCarrierAdvise;
 
 	// DHL-specific config (optional — only needed when gateway=dhl)
 	@Nullable DhlConfig dhlConfig;

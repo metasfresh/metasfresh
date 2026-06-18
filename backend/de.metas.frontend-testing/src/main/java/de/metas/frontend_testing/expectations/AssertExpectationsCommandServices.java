@@ -31,6 +31,9 @@ import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
+import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
+import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +43,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -62,6 +66,7 @@ public class AssertExpectationsCommandServices
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final CarrierProductRepository carrierProductRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -178,15 +183,14 @@ public class AssertExpectationsCommandServices
 		return ProductId.ofRepoId(schedule.getM_Product_ID());
 	}
 
-	@javax.annotation.Nullable
-	public String getCarrierProductName(final int carrierProductRepoId)
+	@Nullable
+	public String getCarrierProductName(@Nullable final CarrierProductId carrierProductId)
 	{
-		if (carrierProductRepoId <= 0)
+		if (carrierProductId == null)
 		{
 			return null;
 		}
-		final org.compiere.model.I_Carrier_Product carrierProduct = org.adempiere.model.InterfaceWrapperHelper.load(
-				carrierProductRepoId, org.compiere.model.I_Carrier_Product.class);
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
 		return carrierProduct != null ? carrierProduct.getName() : null;
 	}
 }

@@ -10,6 +10,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.shipping.CarrierProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -261,15 +262,16 @@ class AssertSalesOrderExpectationsCommand
 							.as("Carrier_Advising_Status of schedule for product " + productIdentifier)
 							.isEqualTo(exp.getAdvisingStatus());
 				}
+				final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(schedule.getCarrier_Product_ID());
 				if (exp.getCarrierProductSet() != null)
 				{
-					assertThat(schedule.getCarrier_Product_ID() > 0)
+					assertThat(carrierProductId != null)
 							.as("Carrier_Product_ID set on schedule for product " + productIdentifier)
 							.isEqualTo(exp.getCarrierProductSet());
 				}
 				if (exp.getCarrierProductName() != null)
 				{
-					assertThat(services.getCarrierProductName(schedule.getCarrier_Product_ID()))
+					assertThat(services.getCarrierProductName(carrierProductId))
 							.as("Carrier_Product.Name on schedule for product " + productIdentifier)
 							.isEqualTo(exp.getCarrierProductName());
 				}
@@ -282,15 +284,16 @@ class AssertSalesOrderExpectationsCommand
 			@NonNull final de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation exp)
 	{
 		InterfaceWrapperHelper.refresh(schedule);
+		final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(schedule.getCarrier_Product_ID());
 		if (exp.getAdvisingStatus() != null && !exp.getAdvisingStatus().equals(schedule.getCarrier_Advising_Status()))
 		{
 			return false;
 		}
-		if (exp.getCarrierProductSet() != null && exp.getCarrierProductSet() != (schedule.getCarrier_Product_ID() > 0))
+		if (exp.getCarrierProductSet() != null && exp.getCarrierProductSet() != (carrierProductId != null))
 		{
 			return false;
 		}
-		if (exp.getCarrierProductName() != null && !exp.getCarrierProductName().equals(services.getCarrierProductName(schedule.getCarrier_Product_ID())))
+		if (exp.getCarrierProductName() != null && !exp.getCarrierProductName().equals(services.getCarrierProductName(carrierProductId)))
 		{
 			return false;
 		}

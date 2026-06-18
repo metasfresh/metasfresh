@@ -28,7 +28,7 @@ public class CreateShipperCommand
 		shipper.setAD_Org_ID(MasterdataContext.ORG_ID.getRepoId());
 		shipper.setName(name);
 		shipper.setIsActive(true);
-		shipper.setIsApiCarrierAdvise(Boolean.TRUE.equals(request.getIsApiCarrierAdvise()));
+		shipper.setIsApiCarrierAdvise(request.isApiCarrierAdvise());
 		shipper.setPickupTimeFrom(Timestamp.valueOf("2025-01-01 08:00:00"));
 		shipper.setPickupTimeTo(Timestamp.valueOf("2025-01-01 18:00:00"));
 		// No ShipperGateway is set here: with IsApiCarrierAdvise='Y' and no gateway, CarrierAdviseCommand
