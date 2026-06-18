@@ -637,6 +637,29 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_Incoterms_ID = "C_Incoterms_ID";
 
 	/**
+	 * Set Überschreibungskonto (aufgelöst).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setC_Invoice_Acct_OverrideAcct_Display (@Nullable java.lang.String C_Invoice_Acct_OverrideAcct_Display);
+
+	/**
+	 * Get Überschreibungskonto (aufgelöst).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getC_Invoice_Acct_OverrideAcct_Display();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_Invoice_Acct_OverrideAcct_Display = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_Invoice_Acct_OverrideAcct_Display", null);
+	String COLUMNNAME_C_Invoice_Acct_OverrideAcct_Display = "C_Invoice_Acct_OverrideAcct_Display";
+
+	/**
 	 * Set Aggregator.
 	 * Definiert Richtlinien zur Aggregation von Datensätzen mit ggf. unterschiedlichen Produkten zu einem einzigen Datensatz
 	 *

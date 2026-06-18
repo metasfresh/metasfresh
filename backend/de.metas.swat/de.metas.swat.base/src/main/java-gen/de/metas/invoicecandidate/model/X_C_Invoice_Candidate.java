@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -2132507024L;
+	private static final long serialVersionUID = 1422627239L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -496,6 +496,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_Incoterms_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
+	public void setC_Invoice_Acct_OverrideAcct_Display (final @Nullable java.lang.String C_Invoice_Acct_OverrideAcct_Display)
+	{
+		throw new IllegalArgumentException ("C_Invoice_Acct_OverrideAcct_Display is virtual column");	}
+
+	@Override
+	public java.lang.String getC_Invoice_Acct_OverrideAcct_Display() 
+	{
+		return get_ValueAsString(COLUMNNAME_C_Invoice_Acct_OverrideAcct_Display);
 	}
 
 	@Override
