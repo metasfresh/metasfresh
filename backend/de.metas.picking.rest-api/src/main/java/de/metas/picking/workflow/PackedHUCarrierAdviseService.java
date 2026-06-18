@@ -171,7 +171,6 @@ public class PackedHUCarrierAdviseService
 			return pickingJob;
 		}
 
-		// Resolve to top-level HUs and deduplicate by HuId
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
 		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuId(pickedHuIds);
 
