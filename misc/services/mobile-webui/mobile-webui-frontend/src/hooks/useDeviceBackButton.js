@@ -19,8 +19,10 @@ import { useBackLocationFromHeaders } from '../reducers/headers';
  * declares no back (home / launchers) we just re-push the sentinel — a deliberate no-op so the
  * operator can't accidentally leave the PWA mid-job.
  *
- * Note: this intentionally does NOT fall through to history.go(-1) the way useMobileNavigation.goBack
- * does when no backLocation is set — that go(-1) is the browser-stack back we are neutralizing here.
+ * Note: this intentionally does NOT fall through to history.go(-1) (the browser-stack back this
+ * trap neutralizes). useMobileNavigation.goBack no longer uses go(-1) either — it goes Home when
+ * no backLocation is set — precisely so the footer Back can't be swallowed by this trap. See
+ * useMobileNavigation.js.
  *
  * Known characteristic: a sentinel trap grows the browser history by ~1 entry per forward
  * navigation (Back navigation is net-neutral: it pops the sentinel and the replace+re-prime nets to
