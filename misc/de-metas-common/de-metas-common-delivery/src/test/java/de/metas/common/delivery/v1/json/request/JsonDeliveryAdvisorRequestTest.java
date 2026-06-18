@@ -189,6 +189,29 @@ class JsonDeliveryAdvisorRequestTest {
         assertThat(req.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UOM_CODE)).isEqualTo("PCE");
     }
 
+    @Test
+    void getValue_totalValue_sumsEqualAmounts_doesNotDeduplicate() {
+        // Two items with the SAME total value must sum to 2x — not be collapsed to one (the ImmutableSet trap).
+        final JsonDeliveryAdvisorRequestItem item = JsonDeliveryAdvisorRequestItem.builder()
+                .numberOfItems(1)
+                .productName("Prod")
+                .productValue("P-1")
+                .totalValue(JsonMoney.builder().amount(new BigDecimal("10.00")).currencyCode("EUR").build())
+                .build();
+
+        final JsonDeliveryAdvisorRequest req = baseRequest()
+                .items(ImmutableList.of(item, item))
+                .build();
+
+        assertThat(req.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)).isEqualTo("20.00");
+    }
+
+    @Test
+    void getValue_totalValue_nullWhenNoItemCarriesValue() {
+        final JsonDeliveryAdvisorRequest req = baseRequest().build(); // anItem() has no totalValue
+        assertThat(req.getValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)).isNull();
+    }
+
     private static JsonDeliveryAdvisorRequest.JsonDeliveryAdvisorRequestBuilder baseRequest() {
         return JsonDeliveryAdvisorRequest.builder()
                 .id("ADV-1")
