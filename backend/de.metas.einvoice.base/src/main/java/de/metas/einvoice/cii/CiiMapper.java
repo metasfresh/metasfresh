@@ -1,6 +1,7 @@
 package de.metas.einvoice.cii;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.einvoice.EInvoiceFormat;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.CodeType;
 import de.metas.einvoice.cii.model.CountryIDType;
@@ -27,7 +28,6 @@ import de.metas.einvoice.cii.model.UniversalCommunicationType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -39,23 +39,32 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
  *
- * <p>Scope (task B3): ExchangedDocument header, seller / buyer trade parties,
- * and document-level references.
- * Invoice lines, VAT breakdown, and monetary totals are populated by later tasks (B4/B5).
+ * <p>Scope: ExchangedDocument header, seller / buyer trade parties, and document-level references.
+ * Invoice lines, VAT breakdown, and monetary totals are populated by subsequent mapper passes.
  */
 public class CiiMapper
 {
-	/** ZUGFeRD / Factur-X EN16931 guideline ID used in ExchangedDocumentContext. */
-	private static final String GUIDELINE_ID_EN16931 =
+	/** EN 16931 guideline IDs per invoice format. */
+	private static final String GUIDELINE_ID_ZUGFERD =
 			"urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931";
+	private static final String GUIDELINE_ID_XRECHNUNG =
+			"urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0";
+	private static final String GUIDELINE_ID_PEPPOL =
+			"urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:international:aunz:3.0";
 
 	/** CII date format code for yyyyMMdd (UNCL2379 code 102). */
 	private static final String DATE_FORMAT_102 = "102";
+
+	// Service fields — declared at class level per metasfresh convention
+	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@NonNull
 	public CrossIndustryInvoiceType map(
@@ -64,7 +73,7 @@ public class CiiMapper
 	{
 		final CrossIndustryInvoiceType cii = new CrossIndustryInvoiceType();
 
-		cii.setExchangedDocumentContext(buildDocumentContext());
+		cii.setExchangedDocumentContext(buildDocumentContext(recipientConfig.getFormat()));
 		cii.setExchangedDocument(buildExchangedDocument(invoice));
 		cii.setSupplyChainTradeTransaction(buildTradeTransaction(invoice, recipientConfig));
 
@@ -73,12 +82,27 @@ public class CiiMapper
 
 	// ===== ExchangedDocumentContext =====
 
-	private ExchangedDocumentContextType buildDocumentContext()
+	private ExchangedDocumentContextType buildDocumentContext(@NonNull final EInvoiceFormat format)
 	{
 		final ExchangedDocumentContextType ctx = new ExchangedDocumentContextType();
 
+		final String guidelineId;
+		if (format.isXRechnung())
+		{
+			guidelineId = GUIDELINE_ID_XRECHNUNG;
+		}
+		else if (format.isPeppol())
+		{
+			guidelineId = GUIDELINE_ID_PEPPOL;
+		}
+		else
+		{
+			// ZUGFeRD / Factur-X (default)
+			guidelineId = GUIDELINE_ID_ZUGFERD;
+		}
+
 		final DocumentContextParameterType guidelineParam = new DocumentContextParameterType();
-		guidelineParam.setID(id(GUIDELINE_ID_EN16931));
+		guidelineParam.setID(id(guidelineId));
 		ctx.setGuidelineSpecifiedDocumentContextParameter(guidelineParam);
 
 		return ctx;
@@ -108,16 +132,7 @@ public class CiiMapper
 		final String docBaseType = docType != null ? docType.getDocBaseType() : "ARI";
 
 		// CII_MAPPING.md §6: ARI → 380, ARC → 381
-		final String typeCodeValue;
-		if ("ARC".equals(docBaseType))
-		{
-			typeCodeValue = "381";
-		}
-		else
-		{
-			// ARI (and any other — eligibility check in EInvoiceConfigService is upstream)
-			typeCodeValue = "380";
-		}
+		final String typeCodeValue = "ARC".equals(docBaseType) ? "381" : "380";
 
 		final DocumentCodeType typeCode = new DocumentCodeType();
 		typeCode.setValue(typeCodeValue);
@@ -132,7 +147,7 @@ public class CiiMapper
 	{
 		final SupplyChainTradeTransactionType tx = new SupplyChainTradeTransactionType();
 
-		// Lines are populated in later task B4; no IncludedSupplyChainTradeLineItem added here.
+		// Invoice lines are added by the line mapper; not populated here.
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
 		tx.setApplicableHeaderTradeDelivery(new HeaderTradeDeliveryType());
@@ -158,10 +173,10 @@ public class CiiMapper
 			agreement.setBuyerReference(ref);
 		}
 
-		// Seller (BG-4/BG-5)
+		// BG-4/BG-5 Seller
 		agreement.setSellerTradeParty(buildSellerParty(invoice));
 
-		// Buyer (BG-7/BG-8)
+		// BG-7/BG-8 Buyer
 		agreement.setBuyerTradeParty(buildBuyerParty(invoice));
 
 		// BT-13 Purchase order reference
@@ -176,11 +191,10 @@ public class CiiMapper
 		return agreement;
 	}
 
-	// ===== Seller trade party =====
+	// ===== Seller trade party (BG-4/BG-5) =====
 
 	private TradePartyType buildSellerParty(@NonNull final I_C_Invoice invoice)
 	{
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 		final I_C_BPartner sellerBP = bPartnerDAO.retrieveOrgBPartner(
 				Env.getCtx(),
 				invoice.getAD_Org_ID(),
@@ -195,14 +209,14 @@ public class CiiMapper
 				? companyName
 				: sellerBP.getName()));
 
-		// BT-30 Legal registration (SpecifiedLegalOrganization.ID with blank scheme — GAP-5 default)
+		// BT-30 Legal registration (SpecifiedLegalOrganization.ID, scheme blank — GAP-5 default)
 		final String regNumber = sellerBP.getCommercialRegisterNumber();
 		if (regNumber != null && !regNumber.isEmpty())
 		{
 			final LegalOrganizationType legalOrg = new LegalOrganizationType();
 			final IDType regId = new IDType();
 			regId.setValue(regNumber);
-			// GAP-5: scheme blank as workaround (no scheme-ID column available)
+			// GAP-5: no scheme-ID column exists on C_BPartner; blank scheme is CII-compliant
 			legalOrg.setID(regId);
 			seller.setSpecifiedLegalOrganization(legalOrg);
 		}
@@ -219,48 +233,22 @@ public class CiiMapper
 			seller.getSpecifiedTaxRegistration().add(vatReg);
 		}
 
-		// BT-34 Seller electronic address (email with scheme EM — GAP-4 default)
+		// BT-34 Seller electronic address (email, scheme EM — GAP-4 default)
 		final String email = sellerBP.getEMail();
 		if (email != null && !email.isEmpty())
 		{
-			final UniversalCommunicationType uri = new UniversalCommunicationType();
-			final IDType uriId = new IDType();
-			uriId.setValue(email);
-			uriId.setSchemeID("EM");
-			uri.setURIID(uriId);
-			seller.setURIUniversalCommunication(uri);
+			seller.setURIUniversalCommunication(uriCommunication(email));
 		}
 
-		// Seller postal address (BG-5)
-		seller.setPostalTradeAddress(buildSellerAddress(invoice));
+		// BG-5 Seller postal address
+		seller.setPostalTradeAddress(buildSellerAddress(sellerBP));
 
 		return seller;
 	}
 
-	private TradeAddressType buildSellerAddress(@NonNull final I_C_Invoice invoice)
+	private TradeAddressType buildSellerAddress(@NonNull final I_C_BPartner sellerBP)
 	{
-		// Resolve seller BPartner location via AD_OrgInfo
-		final I_AD_OrgInfo orgInfo = loadOrgInfo(invoice.getAD_Org_ID());
-		if (orgInfo == null)
-		{
-			return new TradeAddressType();
-		}
-
-		final int orgBPartnerId = orgInfo.getOrg_BPartner_ID();
-		if (orgBPartnerId <= 0)
-		{
-			return new TradeAddressType();
-		}
-
-		// Find a bill-to location for the seller BPartner
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-		final I_C_BPartner orgBP = InterfaceWrapperHelper.load(orgBPartnerId, I_C_BPartner.class);
-		if (orgBP == null)
-		{
-			return new TradeAddressType();
-		}
-
-		final java.util.List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(orgBP);
+		final List<I_C_BPartner_Location> locations = bPartnerDAO.retrieveBPartnerLocations(sellerBP);
 		I_C_BPartner_Location sellerBPLoc = null;
 		for (final I_C_BPartner_Location loc : locations)
 		{
@@ -279,10 +267,10 @@ public class CiiMapper
 			return new TradeAddressType();
 		}
 
-		return buildAddress(sellerBPLoc.getC_Location());
+		return buildAddress(InterfaceWrapperHelper.load(sellerBPLoc.getC_Location_ID(), I_C_Location.class));
 	}
 
-	// ===== Buyer trade party =====
+	// ===== Buyer trade party (BG-7/BG-8) =====
 
 	private TradePartyType buildBuyerParty(@NonNull final I_C_Invoice invoice)
 	{
@@ -314,25 +302,18 @@ public class CiiMapper
 			}
 		}
 
-		// BT-49 Buyer electronic address (from BPartnerLocation email — GAP default: EM scheme)
 		if (buyerBPLoc != null)
 		{
+			// BT-49 Buyer electronic address (BPartnerLocation email, scheme EM — GAP default)
 			final String email = buyerBPLoc.getEMail();
 			if (email != null && !email.isEmpty())
 			{
-				final UniversalCommunicationType uri = new UniversalCommunicationType();
-				final IDType uriId = new IDType();
-				uriId.setValue(email);
-				uriId.setSchemeID("EM");
-				uri.setURIID(uriId);
-				buyer.setURIUniversalCommunication(uri);
+				buyer.setURIUniversalCommunication(uriCommunication(email));
 			}
-		}
 
-		// Buyer postal address (BG-8)
-		if (buyerBPLoc != null)
-		{
-			buyer.setPostalTradeAddress(buildAddress(buyerBPLoc.getC_Location()));
+			// BG-8 Buyer postal address
+			buyer.setPostalTradeAddress(
+					buildAddress(InterfaceWrapperHelper.load(buyerBPLoc.getC_Location_ID(), I_C_Location.class)));
 		}
 
 		return buyer;
@@ -353,15 +334,7 @@ public class CiiMapper
 			settlement.setInvoiceCurrencyCode(currencyCode);
 		}
 
-		// BT-9 Due date
-		final Timestamp dueDate = invoice.getDueDate();
-		if (dueDate != null)
-		{
-			// SpecifiedTradePaymentTerms.DueDateDateTime is populated in later tasks (B5)
-			// Here we leave it intentionally for the settlement builder to fill
-		}
-
-		// BT-25/BT-26 Preceding invoice reference (for credit notes)
+		// BT-25/BT-26 Preceding invoice reference (credit notes)
 		final int refInvoiceId = invoice.getRef_Invoice_ID();
 		if (refInvoiceId > 0)
 		{
@@ -419,8 +392,8 @@ public class CiiMapper
 			address.setPostcodeCode(postCode);
 		}
 
-		// BT-40 / BT-55 Country code
-		final I_C_Country country = location.getC_Country();
+		// BT-40 / BT-55 Country code — load explicitly to avoid implicit DB traversal
+		final I_C_Country country = InterfaceWrapperHelper.load(location.getC_Country_ID(), I_C_Country.class);
 		if (country != null)
 		{
 			final CountryIDType countryId = new CountryIDType();
@@ -431,7 +404,7 @@ public class CiiMapper
 		return address;
 	}
 
-	// ===== Helper builders =====
+	// ===== Shared helpers =====
 
 	private IDType id(@NonNull final String value)
 	{
@@ -445,6 +418,16 @@ public class CiiMapper
 		final TextType textType = new TextType();
 		textType.setValue(value);
 		return textType;
+	}
+
+	private UniversalCommunicationType uriCommunication(@NonNull final String email)
+	{
+		final IDType uriId = new IDType();
+		uriId.setValue(email);
+		uriId.setSchemeID("EM");
+		final UniversalCommunicationType uri = new UniversalCommunicationType();
+		uri.setURIID(uriId);
+		return uri;
 	}
 
 	private DateTimeType toDateTime(@Nullable final Timestamp timestamp)
@@ -461,20 +444,17 @@ public class CiiMapper
 		return dt;
 	}
 
+	/**
+	 * Formats a timestamp as yyyyMMdd.
+	 *
+	 * <p>Metasfresh date columns (DateInvoiced, DateAcct, …) are stored as midnight UTC in the DB.
+	 * Reading them via {@code Timestamp.toInstant().atOffset(ZoneOffset.UTC)} is therefore correct
+	 * and avoids any JVM-timezone-dependent shift.
+	 */
 	private String formatDate(@NonNull final Timestamp timestamp)
 	{
-		return timestamp.toLocalDateTime().toLocalDate()
-				.format(DateTimeFormatter.BASIC_ISO_DATE);
+		final LocalDate date = timestamp.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+		return date.format(DateTimeFormatter.BASIC_ISO_DATE);
 	}
 
-	@Nullable
-	private I_AD_OrgInfo loadOrgInfo(final int orgId)
-	{
-		// Query via IQueryBL — standard metasfresh pattern
-		final org.adempiere.ad.dao.IQueryBL queryBL = Services.get(org.adempiere.ad.dao.IQueryBL.class);
-		return queryBL.createQueryBuilder(I_AD_OrgInfo.class)
-				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, orgId)
-				.create()
-				.firstOnly(I_AD_OrgInfo.class);
-	}
 }

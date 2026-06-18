@@ -10,6 +10,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
@@ -23,6 +24,8 @@ import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -66,7 +69,7 @@ public class CiiMapperTest
 		saveRecord(sellerBPLocation);
 
 		// Org and OrgInfo setup
-		final org.compiere.model.I_AD_Org org = newInstance(org.compiere.model.I_AD_Org.class);
+		final I_AD_Org org = newInstance(I_AD_Org.class);
 		org.setValue("MUSTER");
 		org.setName("Muster GmbH Org");
 		saveRecord(org);
@@ -157,7 +160,7 @@ public class CiiMapperTest
 		assertThat(xml).as("XML must not be empty").isNotEmpty();
 
 		// Namespaces for XPath evaluation
-		final java.util.Map<String, String> ns = new java.util.HashMap<>();
+		final Map<String, String> ns = new HashMap<>();
 		ns.put("rsm", "urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100");
 		ns.put("ram", "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100");
 		ns.put("udt", "urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100");
