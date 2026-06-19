@@ -82,9 +82,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 class OLCandOrderFactoryCustomColumnPropagationTest
 {
 	/** Column that should propagate to C_Order (header). */
-	static final String HEADER_COL = "TestHeaderCustomCol";
+	private static final String HEADER_COL = "TestHeaderCustomCol";
 	/** Column that should propagate to C_OrderLine (line). */
-	static final String LINE_COL = "TestLineCustomCol";
+	private static final String LINE_COL = "TestLineCustomCol";
 
 	private CountryId countryDE;
 	private I_C_UOM uomKg;
@@ -183,14 +183,11 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		factory.addOLCand(olCand);
 		factory.closeCurrentOrderLine();
 
-		// Then: line column is on at least one C_OrderLine (we check via the factory's current order)
+		// Then: an order was created
 		final I_C_Order order = factory.getOrder();
 		Assertions.assertThat(order).isNotNull();
 
-		// The order line was saved internally; retrieve it via InterfaceWrapperHelper query
-		// Instead, use the factory's package-private order field to get the order,
-		// then query the order lines that were saved.
-		// Since we can only access via POJO wrappers, retrieve via POJOLookupMap.
+		// The created order line was saved into the in-memory store; retrieve it via POJOLookupMap.
 		final I_C_OrderLine savedLine = org.adempiere.ad.wrapper.POJOLookupMap.get()
 				.getFirstOnly(I_C_OrderLine.class, ol -> true);
 
