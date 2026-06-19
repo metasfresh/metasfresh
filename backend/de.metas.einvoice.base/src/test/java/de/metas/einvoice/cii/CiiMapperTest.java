@@ -14,7 +14,11 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xmlunit.assertj.XmlAssert;
@@ -23,6 +27,7 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -386,6 +391,147 @@ public class CiiMapperTest
 								+ "/ram:ApplicableHeaderTradeSettlement/ram:InvoiceReferencedDocument"
 								+ "/ram:FormattedIssueDateTime/qdt:DateTimeString/@format")
 				.isEqualTo("102");
+	}
+
+	/**
+	 * Verifies BG-25 invoice lines: BT-126 line id, BT-153 item name, BT-129/BT-130 qty + unit,
+	 * BT-146 net price, BT-131 line net amount, BT-151 VAT category, BT-152 VAT rate.
+	 */
+	@Test
+	void lines() throws Exception
+	{
+		// === Minimal seller org (required by CiiMapper seller-party logic) ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+
+		// === DocType ===
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00100");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		// === UOM (BT-130 unit code) ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		// === Product (BT-153 item name) ===
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt Alpha");
+		product.setValue("TP-001");
+		saveRecord(product);
+
+		// === Tax with EN16931VATCategory = 'S', Rate = 19 (BT-151 + BT-152) ===
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("Normale MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		saveRecord(tax);
+
+		// === Invoice line ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("5"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("500.00"));
+		saveRecord(line);
+
+		// === Map ===
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+
+		// BT-126 Line id
+		xmlAssert.valueByXPath(lineBase + "/ram:AssociatedDocumentLineDocument/ram:LineID")
+				.isEqualTo("10");
+
+		// BT-153 Item name
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedTradeProduct/ram:Name")
+				.isEqualTo("Testprodukt Alpha");
+
+		// BT-129 Billed quantity value
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity")
+				.isEqualTo("5");
+
+		// BT-130 Unit code attribute
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode")
+				.isEqualTo("PCE");
+
+		// BT-146 Net price (ChargeAmount of NetPriceProductTradePrice)
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("100.00");
+
+		// BT-131 Line net amount
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement"
+				+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
+				.isEqualTo("500.00");
+
+		// BT-151 VAT category code
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:CategoryCode")
+				.isEqualTo("S");
+
+		// BT-152 VAT rate
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent")
+				.isEqualTo("19");
 	}
 
 	// ===== Shared helpers =====

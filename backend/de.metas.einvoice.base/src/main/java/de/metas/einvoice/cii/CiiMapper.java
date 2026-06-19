@@ -4,8 +4,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.einvoice.EInvoiceFormat;
-import de.metas.invoice.InvoiceId;
 import de.metas.einvoice.EInvoiceRecipientConfig;
+import de.metas.einvoice.cii.model.AmountType;
 import de.metas.einvoice.cii.model.CodeType;
 import de.metas.einvoice.cii.model.CountryIDType;
 import de.metas.einvoice.cii.model.CrossIndustryInvoiceType;
@@ -13,6 +13,7 @@ import de.metas.einvoice.cii.model.CurrencyCodeType;
 import de.metas.einvoice.cii.model.DateTimeType;
 import de.metas.einvoice.cii.model.DocumentCodeType;
 import de.metas.einvoice.cii.model.DocumentContextParameterType;
+import de.metas.einvoice.cii.model.DocumentLineDocumentType;
 import de.metas.einvoice.cii.model.ExchangedDocumentContextType;
 import de.metas.einvoice.cii.model.ExchangedDocumentType;
 import de.metas.einvoice.cii.model.FormattedDateTimeType;
@@ -21,14 +22,28 @@ import de.metas.einvoice.cii.model.HeaderTradeDeliveryType;
 import de.metas.einvoice.cii.model.HeaderTradeSettlementType;
 import de.metas.einvoice.cii.model.IDType;
 import de.metas.einvoice.cii.model.LegalOrganizationType;
+import de.metas.einvoice.cii.model.LineTradeAgreementType;
+import de.metas.einvoice.cii.model.LineTradeDeliveryType;
+import de.metas.einvoice.cii.model.LineTradeSettlementType;
+import de.metas.einvoice.cii.model.PercentType;
+import de.metas.einvoice.cii.model.QuantityType;
 import de.metas.einvoice.cii.model.ReferencedDocumentType;
+import de.metas.einvoice.cii.model.SupplyChainTradeLineItemType;
 import de.metas.einvoice.cii.model.SupplyChainTradeTransactionType;
+import de.metas.einvoice.cii.model.TaxCategoryCodeType;
 import de.metas.einvoice.cii.model.TaxRegistrationType;
+import de.metas.einvoice.cii.model.TaxTypeCodeType;
 import de.metas.einvoice.cii.model.TextType;
 import de.metas.einvoice.cii.model.TradeAddressType;
 import de.metas.einvoice.cii.model.TradePartyType;
 import de.metas.einvoice.cii.model.TradePaymentTermsType;
+import de.metas.einvoice.cii.model.TradePriceType;
+import de.metas.einvoice.cii.model.TradeProductType;
+import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
+import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,7 +54,11 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
@@ -70,6 +89,7 @@ public class CiiMapper
 	private static final String DATE_FORMAT_102 = "102";
 
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@NonNull
 	public CrossIndustryInvoiceType map(
@@ -152,13 +172,110 @@ public class CiiMapper
 	{
 		final SupplyChainTradeTransactionType tx = new SupplyChainTradeTransactionType();
 
-		// Invoice lines are added by the line mapper; not populated here.
+		// BG-25 Invoice lines
+		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
+		for (final I_C_InvoiceLine line : lines)
+		{
+			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(line));
+		}
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
 		tx.setApplicableHeaderTradeDelivery(new HeaderTradeDeliveryType());
 		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice));
 
 		return tx;
+	}
+
+	// ===== BG-25 Invoice line item =====
+
+	private SupplyChainTradeLineItemType buildLineItem(@NonNull final I_C_InvoiceLine line)
+	{
+		final SupplyChainTradeLineItemType item = new SupplyChainTradeLineItemType();
+
+		// BT-126 Line id
+		final DocumentLineDocumentType lineDoc = new DocumentLineDocumentType();
+		lineDoc.setLineID(id(String.valueOf(line.getLine())));
+		item.setAssociatedDocumentLineDocument(lineDoc);
+
+		// BT-153 Item name: use productDescription if set, fall back to product name
+		final TradeProductType product = new TradeProductType();
+		final String productDescription = line.getProductDescription();
+		if (productDescription != null && !productDescription.isEmpty())
+		{
+			product.setName(text(productDescription));
+		}
+		else
+		{
+			final I_M_Product mProduct = InterfaceWrapperHelper.load(line.getM_Product_ID(), I_M_Product.class);
+			final String productName = mProduct != null ? mProduct.getName() : "";
+			product.setName(text(productName != null ? productName : ""));
+		}
+		item.setSpecifiedTradeProduct(product);
+
+		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount)
+		final LineTradeAgreementType tradeAgreement = new LineTradeAgreementType();
+		final TradePriceType netPrice = new TradePriceType();
+		final AmountType priceAmount = new AmountType();
+		priceAmount.setValue(line.getPriceActual());
+		netPrice.setChargeAmount(priceAmount);
+		tradeAgreement.setNetPriceProductTradePrice(netPrice);
+		item.setSpecifiedLineTradeAgreement(tradeAgreement);
+
+		// BT-129 Billed quantity + BT-130 unit code
+		final LineTradeDeliveryType delivery = new LineTradeDeliveryType();
+		final QuantityType qty = new QuantityType();
+		qty.setValue(line.getQtyInvoiced());
+		final I_C_UOM uom = InterfaceWrapperHelper.load(line.getC_UOM_ID(), I_C_UOM.class);
+		if (uom != null)
+		{
+			final String unitCode = uom.getX12DE355();
+			if (unitCode != null && !unitCode.isEmpty())
+			{
+				qty.setUnitCode(unitCode);
+			}
+		}
+		delivery.setBilledQuantity(qty);
+		item.setSpecifiedLineTradeDelivery(delivery);
+
+		// BT-151 VAT category code (fail fast if null) + BT-152 VAT rate + BT-131 line net amount
+		final I_C_Tax tax = InterfaceWrapperHelper.load(line.getC_Tax_ID(), I_C_Tax.class);
+		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
+		if (vatCategory == null || vatCategory.isEmpty())
+		{
+			final int taxId = tax != null ? tax.getC_Tax_ID() : line.getC_Tax_ID();
+			throw new AdempiereException(
+					"CII mapping: line tax has no EN16931 VAT category — set C_Tax.EN16931VATCategory"
+							+ " [C_Tax_ID=" + taxId
+							+ ", C_InvoiceLine_ID=" + line.getC_InvoiceLine_ID() + "]");
+		}
+
+		final LineTradeSettlementType settlement = new LineTradeSettlementType();
+
+		final TradeTaxType tradeTax = new TradeTaxType();
+		final TaxTypeCodeType taxTypeCode = new TaxTypeCodeType();
+		taxTypeCode.setValue("VAT");
+		tradeTax.setTypeCode(taxTypeCode);
+		final TaxCategoryCodeType categoryCode = new TaxCategoryCodeType();
+		categoryCode.setValue(vatCategory);
+		tradeTax.setCategoryCode(categoryCode);
+		if (tax.getRate() != null)
+		{
+			final PercentType rate = new PercentType();
+			rate.setValue(tax.getRate());
+			tradeTax.setRateApplicablePercent(rate);
+		}
+		settlement.setApplicableTradeTax(tradeTax);
+
+		// BT-131 Line net amount
+		final TradeSettlementLineMonetarySummationType monetarySummation = new TradeSettlementLineMonetarySummationType();
+		final AmountType lineTotal = new AmountType();
+		lineTotal.setValue(line.getLineNetAmt());
+		monetarySummation.setLineTotalAmount(lineTotal);
+		settlement.setSpecifiedTradeSettlementLineMonetarySummation(monetarySummation);
+
+		item.setSpecifiedLineTradeSettlement(settlement);
+
+		return item;
 	}
 
 	// ===== HeaderTradeAgreement =====
