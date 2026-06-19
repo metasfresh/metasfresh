@@ -151,8 +151,10 @@ public class BPartnerRecordsUtil
 
 			final I_C_Postal postalRecord = newInstance(I_C_Postal.class);
 			postalRecord.setC_Country(countryRecord);
-			postalRecord.setPostal("postalRecord.postal" + idOffSetStr);
+			postalRecord.setPostal("locationRecord.postal" + idOffSetStr);
 			postalRecord.setDistrict("postalRecord.district" + idOffSetStr);
+			postalRecord.setCity("locationRecord.city" + idOffSetStr);
+			postalRecord.setRegionName("locationRecord.regionName" + idOffSetStr);
 			saveRecord(postalRecord);
 
 			final I_C_Location locationRecord = newInstance(I_C_Location.class);
@@ -174,6 +176,12 @@ public class BPartnerRecordsUtil
 			bpartnerLocationRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 			bpartnerLocationRecord.setC_Location(locationRecord);
 			bpartnerLocationRecord.setGLN(C_BPARTNER_LOCATION_GLN + idOffSetStr);
+			bpartnerLocationRecord.setIsBillTo(true);
+			bpartnerLocationRecord.setIsBillToDefault(true);
+			bpartnerLocationRecord.setIsShipTo(true);
+			bpartnerLocationRecord.setIsShipToDefault(true);
+			bpartnerLocationRecord.setVisitorsAddress(true);
+			bpartnerLocationRecord.setIsDefaultVisitorAddress(true);
 			setCreatedByAndWhen(bpartnerLocationRecord, adUserId); // have to do it manually because we are setting the record ID too
 			saveRecord(bpartnerLocationRecord);
 

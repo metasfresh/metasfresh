@@ -22,15 +22,11 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -41,12 +37,15 @@ import org.adempiere.util.trxConstraints.api.IOpenTrxBL;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * Abstract {@link ITrx} implementation which has no dependencies on any native implementation.
@@ -56,8 +55,7 @@ import javax.annotation.Nullable;
  */
 public abstract class AbstractTrx implements ITrx
 {
-	/** Logger */
-	private static final transient Logger log = LogManager.getLogger(AbstractTrx.class);
+	private static final Logger log = LogManager.getLogger(AbstractTrx.class);
 
 	private final ITrxManager trxManager;
 	private final String m_trxName;
@@ -66,6 +64,7 @@ public abstract class AbstractTrx implements ITrx
 	 * set to <code>true</code> by {@link #start()}.
 	 */
 	private boolean m_active = false;
+	@Getter private boolean isCommittedOK = false;
 	private long m_startTime;
 
 	private final boolean autoCommit;
@@ -129,13 +128,13 @@ public abstract class AbstractTrx implements ITrx
 	{
 		if (m_active)
 		{
-			log.warn("Trx in progress " + m_trxName);
+			log.warn("Trx in progress {}", m_trxName);
 			return false;
 		}
 		m_active = true;
 		m_startTime = System.currentTimeMillis();
 		return true;
-	}	// startTrx
+	}
 
 	@Override
 	public Date getStartTime()
@@ -147,7 +146,7 @@ public abstract class AbstractTrx implements ITrx
 	public boolean isActive()
 	{
 		return m_active;
-	}	// isActive
+	}    // isActive
 
 	@Override
 	public boolean isAutoCommit()
@@ -156,9 +155,8 @@ public abstract class AbstractTrx implements ITrx
 	}
 
 	/**
-	 * Returns true if the transaction was just started but no actual actions were performed on this transaction.
-	 *
-	 * NOTE: This method shall be overwritten by actual transaction implementations and it's used for optimizations.
+	 * Returns true if the transaction was just started, but no actual actions were performed on this transaction.
+	 * NOTE: This method shall be overwritten by actual transaction implementations, and it's used for optimizations.
 	 *
 	 * @return true if the transaction was just started
 	 */
@@ -241,13 +239,14 @@ public abstract class AbstractTrx implements ITrx
 		final ITrxListenerManager trxListenerManager = getTrxListenerManager(false);
 
 		boolean success = false;
+		isCommittedOK = false;
 		try
 		{
 			// Fire before-commit listeners
 			trxListenerManager.fireBeforeCommit(this);
 
 			// Actual native commit
-			success = commitNative(throwException);
+			success = this.isCommittedOK = commitNative(throwException);
 			return success;
 		}
 		finally
@@ -256,7 +255,7 @@ public abstract class AbstractTrx implements ITrx
 
 			Services.get(IOpenTrxBL.class).onCommit(this); // metas 02367
 
-			// 04265: If transaction was successfully committed fire listeners
+			// 04265: If transaction was successfully committed, fire listeners
 			if (success)
 			{
 				trxListenerManager.fireAfterCommit(this);
@@ -431,20 +430,18 @@ public abstract class AbstractTrx implements ITrx
 
 		sb.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Current {@link ITrxListenerManager}
-	 *
+	 * <p>
 	 * Task 04265
 	 */
 	private ITrxListenerManager trxListenerManager = null;
 
 	/**
 	 * Gets the {@link ITrxListenerManager} associated with this transaction.
-	 *
 	 * If no {@link ITrxListenerManager} was already created and <code>create</code> is true, a new transaction listener manager will be created and returned
-	 *
 	 * Task 04265
 	 */
 	private ITrxListenerManager getTrxListenerManager(final boolean create)
@@ -477,11 +474,11 @@ public abstract class AbstractTrx implements ITrx
 
 	private Map<String, Object> getPropertiesMap()
 	{
-		if(_properties == null)
+		if (_properties == null)
 		{
 			synchronized (this)
 			{
-				if(_properties == null)
+				if (_properties == null)
 				{
 					_properties = new ConcurrentHashMap<>();
 				}
@@ -505,22 +502,20 @@ public abstract class AbstractTrx implements ITrx
 		Check.assumeNotEmpty(name, "name is not empty");
 
 		// Handle null value case
-		if(value == null)
+		if (value == null)
 		{
 			final Map<String, Object> properties = getPropertiesMapOrNull();
-			if(properties == null)
+			if (properties == null)
 			{
 				return null;
 			}
 
-			@SuppressWarnings("unchecked")
-			final T valueOld = (T)properties.remove(name);
+			@SuppressWarnings("unchecked") final T valueOld = (T)properties.remove(name);
 			return valueOld;
 		}
 		else
 		{
-			@SuppressWarnings("unchecked")
-			final T valueOld = (T)getPropertiesMap().put(name, value);
+			@SuppressWarnings("unchecked") final T valueOld = (T)getPropertiesMap().put(name, value);
 			return valueOld;
 		}
 	}
@@ -528,24 +523,21 @@ public abstract class AbstractTrx implements ITrx
 	@Override
 	public final <T> T getProperty(final String name)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)getPropertiesMap().get(name);
+		@SuppressWarnings("unchecked") final T value = (T)getPropertiesMap().get(name);
 		return value;
 	}
 
 	@Override
 	public <T> T getProperty(final String name, final Supplier<T> valueInitializer)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.get());
+		@SuppressWarnings("unchecked") final T value = (T)getPropertiesMap().computeIfAbsent(name, key -> valueInitializer.get());
 		return value;
 	}
 
 	@Override
 	public <T> T getProperty(final String name, final Function<ITrx, T> valueInitializer)
 	{
-		@SuppressWarnings("unchecked")
-		final T value = (T)getPropertiesMap().computeIfAbsent(name, key->valueInitializer.apply(this));
+		@SuppressWarnings("unchecked") final T value = (T)getPropertiesMap().computeIfAbsent(name, key -> valueInitializer.apply(this));
 		return value;
 	}
 
@@ -553,18 +545,15 @@ public abstract class AbstractTrx implements ITrx
 	public <T> T setAndGetProperty(@NonNull final String name, @NonNull final Function<T, T> valueRemappingFunction)
 	{
 		final BiFunction<? super String, ? super Object, ?> remappingFunction = (propertyName, oldValue) -> {
-			@SuppressWarnings("unchecked")
-			final T oldValueCasted = (T)oldValue;
+			@SuppressWarnings("unchecked") final T oldValueCasted = (T)oldValue;
 
 			return valueRemappingFunction.apply(oldValueCasted);
 		};
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)getPropertiesMap().compute(name, remappingFunction);
+		@SuppressWarnings("unchecked") final T value = (T)getPropertiesMap().compute(name, remappingFunction);
 		return value;
 
 	}
-
 
 	protected final void setDebugConnectionBackendId(final String debugConnectionBackendId)
 	{

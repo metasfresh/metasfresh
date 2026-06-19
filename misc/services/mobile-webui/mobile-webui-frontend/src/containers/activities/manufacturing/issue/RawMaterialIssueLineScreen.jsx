@@ -33,6 +33,7 @@ const RawMaterialIssueLineScreen = () => {
     qtyToIssueTolerance,
     qtyToIssueRemaining,
     qtyIssued,
+    readOnly,
     steps,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
@@ -65,7 +66,9 @@ const RawMaterialIssueLineScreen = () => {
 
   return (
     <div className="section pt-2">
-      <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} testId="scanQRCode-button" />
+      {!readOnly && (
+        <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} testId="scanQRCode-button" />
+      )}
       {steps.length > 0 &&
         steps.map((stepItem, stepIdx) => {
           return (
@@ -73,7 +76,7 @@ const RawMaterialIssueLineScreen = () => {
               key={stepItem.id}
               testId={`step-${stepIdx + 1}-button`}
               caption={stepItem.locatorName + ' - ' + (toQRCodeDisplayable(stepItem.huQRCode) ?? '')}
-              completeStatus={stepItem.completeStatus}
+              completeStatus={readOnly ? undefined : stepItem.completeStatus}
               onClick={() => onStepButtonClick({ stepId: stepItem.id })}
             >
               <ButtonQuantityProp
@@ -106,6 +109,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     // qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,
     qtyIssued: line?.qtyIssued,
+    readOnly: line?.readOnly,
     steps: getStepsArrayFromLine(line),
   };
 };

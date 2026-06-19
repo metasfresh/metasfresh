@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_MobileUI_MFG_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 896845343L;
+	private static final long serialVersionUID = -1002726728L;
 
     /** Standard Constructor */
     public X_MobileUI_MFG_Config (final Properties ctx, final int MobileUI_MFG_Config_ID, @Nullable final String trxName)
@@ -71,5 +71,26 @@ public class X_MobileUI_MFG_Config extends org.compiere.model.PO implements I_Mo
 	public int getMobileUI_MFG_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MobileUI_MFG_Config_ID);
+	}
+
+	/** 
+	 * ReceiveUnitType AD_Reference_ID=542051
+	 * Reference name: ReceiveUnitType
+	 */
+	public static final int RECEIVEUNITTYPE_AD_Reference_ID=542051;
+	/** CU = CU */
+	public static final String RECEIVEUNITTYPE_CU = "CU";
+	/** TU = TU */
+	public static final String RECEIVEUNITTYPE_TU = "TU";
+	@Override
+	public void setReceiveUnitType (final java.lang.String ReceiveUnitType)
+	{
+		set_Value (COLUMNNAME_ReceiveUnitType, ReceiveUnitType);
+	}
+
+	@Override
+	public java.lang.String getReceiveUnitType() 
+	{
+		return get_ValueAsString(COLUMNNAME_ReceiveUnitType);
 	}
 }

@@ -513,6 +513,7 @@ class TableRow extends PureComponent {
       changeListenOnFalse,
       fieldsByName,
       isShowComments,
+      columnWidths,
     } = this.props;
     const {
       edited,
@@ -539,7 +540,6 @@ class TableRow extends PureComponent {
               ? fieldsByName[property]
               : undefined;
             const isEditable = isCellEditable(item, fieldsByName);
-            const isEdited = edited === property;
             const extendLongText = multilineText ? multilineTextLines : 0;
             const widgetData = getCellWidgetData(
               fieldsByName,
@@ -547,8 +547,9 @@ class TableRow extends PureComponent {
               isEditable,
               supportFieldEdit
             );
-            const isReadonly = widgetData[0].readonly;
-            const isMandatory = widgetData[0].mandatory;
+            const isReadonly = !!widgetData[0].readonly;
+            const isMandatory = !!widgetData[0].mandatory;
+            const isEdited = edited === property && !isReadonly;
             const tdValue = getTdValue({
               widgetData,
               item,
@@ -560,6 +561,11 @@ class TableRow extends PureComponent {
               item,
               widgetData
             );
+
+            const columnWidth =
+              columnWidths && columnWidths[property]
+                ? columnWidths[property]
+                : null;
 
             return (
               <TableCell
@@ -596,6 +602,7 @@ class TableRow extends PureComponent {
                   tableCellData,
                   description,
                   updateHeight,
+                  columnWidth,
                 }}
                 ref={(c) => {
                   if (c && isSelected) {
@@ -713,6 +720,7 @@ class TableRow extends PureComponent {
         <tr
           onClick={this.handleClick}
           onDoubleClick={this.handleDoubleClick}
+          data-testid={`table-row-${keyProperty}`}
           className={classnames(dataKey, `table-row row-${keyProperty}`, {
             'row-selected': isSelected,
             'tr-odd': odd,
@@ -787,6 +795,7 @@ TableRow.propTypes = {
   navigationActive: PropTypes.bool,
   isModal: PropTypes.bool,
   isShowComments: PropTypes.bool,
+  columnWidths: PropTypes.object,
 };
 
 export default TableRow;

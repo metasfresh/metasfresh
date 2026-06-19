@@ -16,7 +16,6 @@
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
         <!-- empty property because the sql migration dir already contains a list of base directories -->
-        <migration-sql-basedir/>
     </properties>
 
     <dependencies>
@@ -98,6 +97,11 @@
             <version>${metasfresh.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.base</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
         <dependency>
             <groupId>de.metas.handlingunits</groupId>
             <artifactId>de.metas.handlingunits.base</artifactId>

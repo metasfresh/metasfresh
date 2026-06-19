@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implements I_MobileUI_UserProfile_Picking, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -207925167L;
+	private static final long serialVersionUID = 744373757L;
 
     /** Standard Constructor */
     public X_MobileUI_UserProfile_Picking (final Properties ctx, final int MobileUI_UserProfile_Picking_ID, @Nullable final String trxName)
@@ -228,6 +228,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
+	public void setIsCompleteJobAutomatically (final boolean IsCompleteJobAutomatically)
+	{
+		set_Value (COLUMNNAME_IsCompleteJobAutomatically, IsCompleteJobAutomatically);
+	}
+
+	@Override
+	public boolean isCompleteJobAutomatically() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCompleteJobAutomatically);
+	}
+
+	@Override
 	public void setIsConsideredOnlyScheduledJobs (final boolean IsConsideredOnlyScheduledJobs)
 	{
 		set_Value (COLUMNNAME_IsConsideredOnlyScheduledJobs, IsConsideredOnlyScheduledJobs);
@@ -273,6 +285,18 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	public boolean isFilterByBarcode() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsFilterByBarcode);
+	}
+
+	@Override
+	public void setIsMassPrinting (final boolean IsMassPrinting)
+	{
+		set_Value (COLUMNNAME_IsMassPrinting, IsMassPrinting);
+	}
+
+	@Override
+	public boolean isMassPrinting() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMassPrinting);
 	}
 
 	@Override

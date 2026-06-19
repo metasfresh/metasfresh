@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Location
  *  @author metasfresh (generated) 
@@ -98,6 +97,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
 
 	/**
+	 * Set Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAttention (@Nullable java.lang.String Attention);
+
+	/**
+	 * Get Attention.
+	 * Attention, door code or additional mandatory information for the shipping label (max. 30 characters)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAttention();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_Attention = new ModelColumn<>(I_C_BPartner_Location.class, "Attention", null);
+	String COLUMNNAME_Attention = "Attention";
+
+	/**
 	 * Set Partner Name.
 	 *
 	 * <br>Type: String
@@ -117,6 +139,27 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName", null);
 	String COLUMNNAME_BPartnerName = "BPartnerName";
+
+	/**
+	 * Set Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName2 (@Nullable java.lang.String BPartnerName2);
+
+	/**
+	 * Get Name of BPartner 2.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName2();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_BPartnerName2 = new ModelColumn<>(I_C_BPartner_Location.class, "BPartnerName2", null);
+	String COLUMNNAME_BPartnerName2 = "BPartnerName2";
 
 	/**
 	 * Set Business Partner.
@@ -371,6 +414,29 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_GLN = "GLN";
 
 	/**
+	 * Set GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setGLN_GCPLength (int GLN_GCPLength);
+
+	/**
+	 * Get GLN-GCP Length.
+	 * Length of the GCP (GS1 Company Prefix) in the GLN
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getGLN_GCPLength();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_GLN_GCPLength = new ModelColumn<>(I_C_BPartner_Location.class, "GLN_GCPLength", null);
+	String COLUMNNAME_GLN_GCPLength = "GLN_GCPLength";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -480,6 +546,29 @@ public interface I_C_BPartner_Location
 
 	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsCommissionToDefault = new ModelColumn<>(I_C_BPartner_Location.class, "IsCommissionToDefault", null);
 	String COLUMNNAME_IsCommissionToDefault = "IsCommissionToDefault";
+
+	/**
+	 * Set Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultVisitorAddress (boolean IsDefaultVisitorAddress);
+
+	/**
+	 * Get Default Visitor Address.
+	 * Indicates whether this address is the default visitor address.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultVisitorAddress();
+
+	ModelColumn<I_C_BPartner_Location, Object> COLUMN_IsDefaultVisitorAddress = new ModelColumn<>(I_C_BPartner_Location.class, "IsDefaultVisitorAddress", null);
+	String COLUMNNAME_IsDefaultVisitorAddress = "IsDefaultVisitorAddress";
 
 	/**
 	 * Set ISDN.
@@ -708,7 +797,7 @@ public interface I_C_BPartner_Location
 	String COLUMNNAME_IsShipToDefault = "IsShipToDefault";
 
 	/**
-	 * Set Abo Adresse.
+	 * Set isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo
@@ -718,7 +807,7 @@ public interface I_C_BPartner_Location
 	void setIsSubscriptionTo (boolean IsSubscriptionTo);
 
 	/**
-	 * Get Abo Adresse.
+	 * Get isSubscriptionTo.
 	 * An diese Adresse werden Abos geschickt
 	 *
 	 * <br>Type: YesNo

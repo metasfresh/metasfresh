@@ -11,6 +11,7 @@ import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_HUAlternative;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
@@ -58,6 +59,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -369,7 +371,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{
@@ -404,7 +407,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		final PickingJobOptions pickingJobOptions = getPickingJobOptions(deliveryBPLocationId.getBpartnerId());
 
 		final String salesOrderDocumentNo = loadingSupportingServices.getSalesOrderDocumentNo(salesOrderAndLineId.getOrderId());
-		final ITranslatableString productName = loadingSupportingServices.getProductName(productId);
+		final ProductValueAndName productValueAndName = loadingSupportingServices.getProductValueAndName(productId);
 		final CurrentPickingTarget currentPickingTarget = extractCurrentPickingTarget(record);
 
 		final ITranslatableString caption;
@@ -412,7 +415,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		{
 			case SALES_ORDER:
 			{
-				caption = productName;
+				caption = productValueAndName.getName();
 				break;
 			}
 			case PRODUCT:
@@ -427,7 +430,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 			case DELIVERY_LOCATION:
 			{
 				caption = TranslatableStrings.builder()
-						.append(productName)
+						.append(productValueAndName.getName())
 						.appendIfNotEmpty(", ")
 						.append(salesOrderDocumentNo)
 						.build();
@@ -445,7 +448,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.productId(productId)
 				.productNo(loadingSupportingServices.getProductNo(productId))
 				.gs1ProductCodes(loadingSupportingServices.getGS1ProductCodes(productId, deliveryBPLocationId.getBpartnerId()).orElse(null))
-				.productName(productName)
+				.productValueAndName(productValueAndName)
 				.productCategoryId(loadingSupportingServices.getProductCategoryId(productId))
 				.packingInfo(packingInfo)
 				.qtyToPick(extractQtyToPick(record))
@@ -523,7 +526,8 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		else if (tuPIId != null)
 		{
 			final String caption = loadingSupportingServices.getPICaption(tuPIId);
-			return TUPickingTarget.ofPackingInstructions(tuPIId, caption);
+			final GRAI grai = GRAI.ofNullableCanonicalString(record.getCurrent_PickTo_TU_GRAI());
+			return TUPickingTarget.ofPackingInstructions(tuPIId, caption, grai);
 		}
 		else
 		{
@@ -582,7 +586,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				//
 				// What?
 				.productId(productId)
-				.productName(loadingSupportingServices.getProductName(productId))
+				.productValueAndName(loadingSupportingServices.getProductValueAndName(productId))
 				.qtyToPick(Quantitys.of(record.getQtyToPick(), uomId))
 				//
 				// Pick From
@@ -808,7 +812,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 			final ProductId productId = extractProductId(line);
 			collector.collect(
 					productId,
-					() -> loadingSupportingServices.getProductName(productId),
+					() -> loadingSupportingServices.getProductValueAndName(productId),
 					extractQtyToPick(line)
 			);
 		}

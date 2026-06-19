@@ -52,28 +52,6 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Set Component Type.
 	 * Component Type for a Bill of Material or Formula
 	 *
@@ -122,6 +100,28 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -168,7 +168,7 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_IsCritical = "IsCritical";
 
 	/**
-	 * Set Is Qty Percentage.
+	 * Set Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: Quantity
@@ -178,7 +178,7 @@ public interface I_RV_PP_Order_BOMLine
 	void setIsQtyPercentage (@Nullable BigDecimal IsQtyPercentage);
 
 	/**
-	 * Get Is Qty Percentage.
+	 * Get Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: Quantity
@@ -335,7 +335,7 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_QtyAvailable = "QtyAvailable";
 
 	/**
-	 * Set Quantity in %.
+	 * Set % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -345,7 +345,7 @@ public interface I_RV_PP_Order_BOMLine
 	void setQtyBatch (@Nullable BigDecimal QtyBatch);
 
 	/**
-	 * Get Quantity in %.
+	 * Get % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -379,7 +379,7 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_QtyBatchSize = "QtyBatchSize";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -389,7 +389,7 @@ public interface I_RV_PP_Order_BOMLine
 	void setQtyBOM (@Nullable BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -402,7 +402,7 @@ public interface I_RV_PP_Order_BOMLine
 	String COLUMNNAME_QtyBOM = "QtyBOM";
 
 	/**
-	 * Set Bestand.
+	 * Set Stock.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity
@@ -412,7 +412,7 @@ public interface I_RV_PP_Order_BOMLine
 	void setQtyOnHand (@Nullable BigDecimal QtyOnHand);
 
 	/**
-	 * Get Bestand.
+	 * Get Stock.
 	 * Bestand
 	 *
 	 * <br>Type: Quantity

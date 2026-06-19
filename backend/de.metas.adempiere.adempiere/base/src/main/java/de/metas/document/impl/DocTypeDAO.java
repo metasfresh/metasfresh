@@ -11,6 +11,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.invoicingpool.DocTypeInvoicingPoolId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -121,6 +122,15 @@ public class DocTypeDAO implements IDocTypeDAO
 	}
 
 	@Override
+	@NonNull
+	public ITranslatableString getDocTypeNameTrl(@NonNull final DocTypeId docTypeId)
+	{
+		final I_C_DocType docType = getById(docTypeId);
+		return InterfaceWrapperHelper.getModelTranslationMap(docType)
+				.getColumnTrl(I_C_DocType.COLUMNNAME_Name, docType.getName());
+	}
+
+	@Override
 	@Nullable
 	public DocTypeId getDocTypeIdOrNull(@NonNull final DocTypeQuery query)
 	{
@@ -204,6 +214,11 @@ public class DocTypeDAO implements IDocTypeDAO
 		if (query.getDefaultDocType() != null)
 		{
 			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsDefault, query.getDefaultDocType());
+		}
+
+		if (query.getIsPartialInvoice() != null)
+		{
+			filters.addEqualsFilter(I_C_DocType.COLUMNNAME_IsPartialInvoice, query.getIsPartialInvoice());
 		}
 
 		if (!Check.isEmpty(query.getName(), true))
@@ -354,6 +369,7 @@ public class DocTypeDAO implements IDocTypeDAO
 		return DocBaseType.ofCode(docTypeRecord.getDocBaseType());
 	}
 
+	@NonNull
 	@Override
 	public DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
 	{

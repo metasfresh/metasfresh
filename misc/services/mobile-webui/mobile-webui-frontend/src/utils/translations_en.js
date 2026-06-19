@@ -2,6 +2,7 @@ const translations = {
   appName: 'metasfresh mobile',
   error: {
     PleaseTryAgain: 'Please try again',
+    InternalError: 'Please try again. If the problem persists, contact support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Connection error',
     },
@@ -48,10 +49,17 @@ const translations = {
     },
     workplace: 'Workplace',
     workstation: 'Workstation',
+    trolley: 'Trolley',
+    releaseTrolley: {
+      buttonCaption: 'Release trolley',
+    },
   },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Switch to...',
+    qrLoginPlaceholder: 'Scan your login QR code',
+    username: 'Username',
+    password: 'Password',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Password',
@@ -74,6 +82,15 @@ const translations = {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Scan workplace...',
       scanWorkstationPlaceholder: 'Scan workstation...',
+      scanTrolleyPlaceholder: 'Scan trolley...',
+      scanPrompt: 'Scan barcode',
+      scanInProgress: 'Scanning in progress...',
+      enterManually: 'Enter manually',
+      scanWithCamera: 'Scan with camera',
+      useHardwareScanner: 'Use hardware scanner',
+      manualInputPlaceholder: 'Enter barcode...',
+      manualInputSubmit: 'Submit',
+      cameraError: 'Camera could not be started. Please check camera permissions.',
     },
   },
   activities: {
@@ -84,6 +101,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Target QR Code must be scanned first!',
       scanLuOrLocator: 'Scan LU or locator',
+      action: {
+        bulkActions: {
+          windowName: 'Bulk Actions',
+          closeScanner: 'Close scanner',
+          move: 'Move',
+          moveSuccess: 'HU moved successfully',
+          scanHUPlaceholder: 'Scan HU',
+          scanTargetPlaceholder: 'Scan target location',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packing line',
@@ -104,7 +131,7 @@ const translations = {
       switchToQrCodeInput: 'Scan',
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
-      qtyRejectedIgnoreReason: 'Do not record a reason',
+      qtyRejectedIgnoreReason: 'Without reason',
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',
@@ -122,22 +149,40 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Close',
       },
+      graiScan: {
+        multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
+      },
       overPickConfirmationPrompt: 'Do you really want to pack more than ordered?',
       reopenLU: 'Reopen LU',
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
+      noMatchingLines: 'No matching lines found',
+      massPrinting: {
+        triggerButton: 'Mass Print Labels',
+        scanCaption: 'Scan LU',
+        doneButton: 'Done',
+        noResults: 'No eligible products found on this LU',
+        product: 'Product',
+        unitsPacked: 'Units packed',
+        unitsLeftOnLU: 'Units left on LU',
+        unitsOfOpenDemandRemaining: 'Open demand remaining',
+        skippedProducts: 'Skipped products',
+      },
     },
     distribution: {
       DistributionLine: 'Distribution Line',
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanLocator: 'Scan drop to Locator',
+      scanProduct: 'Scan Product',
+      scanDropToLocator: 'Scan drop to Locator',
+      switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
       },
+      printMaterialInTransitReport: 'In Transit Report',
     },
     confirmButton: {
       default: {
@@ -148,6 +193,11 @@ const translations = {
       },
       abort: 'Abort',
       notFound: 'Not found',
+      error: {
+        title: 'Could not send confirmation',
+        retry: 'Retry',
+        cancel: 'Cancel',
+      },
     },
     mfg: {
       ProductName: 'Product Name',

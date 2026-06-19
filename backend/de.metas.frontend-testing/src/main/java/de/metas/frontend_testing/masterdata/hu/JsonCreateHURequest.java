@@ -16,9 +16,12 @@ public class JsonCreateHURequest
 {
 	@Nullable Identifier product;
 	@Nullable Identifier warehouse;
+	/** Optional: when set, the HU is created on this specific locator (must belong to {@link #warehouse}); when null, the warehouse's default locator is used. */
+	@Nullable Identifier locator;
 	@Nullable BigDecimal qty;
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
+	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;
 	@Nullable String lotNo;
 	@Nullable String bestBeforeDate;
@@ -26,4 +29,7 @@ public class JsonCreateHURequest
 
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
+
+	@JsonIgnore
+	public boolean isSourceHU() { return sourceHU != null && sourceHU;}
 }

@@ -2,18 +2,30 @@ import React, { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 import BarcodeReader from './BarcodeReader';
 import { trl } from '../../../../utils/translations';
+import { useBooleanSetting } from '../../../../reducers/settings';
 import './ProductSearchBar.scss';
 
 const _ = (key) => trl(`pos.products.searchBar.${key}`);
 
 const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
   const [isBarcodeScannerDisplayed, setBarcodeScannerDisplayed] = useState(false);
+  // Camera scanning is hidden when the device camera is disabled (e.g. handheld hardware-scanner
+  // deployments). Shares the global barcodeScanner.mode.camera.enabled switch.
+  const isCameraEnabled = useBooleanSetting('barcodeScanner.mode.camera.enabled', true);
   const queryStringRef = useRef();
 
   useEffect(() => {
     if (!isEnabled) return;
     queryStringRef?.current?.focus();
   }, [isEnabled]);
+
+  // If the camera gets disabled while the scanner overlay is open, close it — otherwise it would
+  // stay visible with no button to dismiss it (the toggle button is hidden when the camera is off).
+  useEffect(() => {
+    if (!isCameraEnabled && isBarcodeScannerDisplayed) {
+      setBarcodeScannerDisplayed(false);
+    }
+  }, [isCameraEnabled, isBarcodeScannerDisplayed]);
 
   const handleQueryStringFocus = () => {
     queryStringRef?.current?.select();
@@ -56,11 +68,13 @@ const ProductSearchBar = ({ queryString, onQueryStringChanged, isEnabled }) => {
           onBlur={handleQueryStringBlur}
           onChange={handleQueryStringChanged}
         />
-        <button className="button" disabled={!isEnabled} onClick={handleScannerButtonClicked}>
-          <i className="fa-solid fa-barcode"></i>
-        </button>
+        {isCameraEnabled && (
+          <button className="button" disabled={!isEnabled} onClick={handleScannerButtonClicked}>
+            <i className="fa-solid fa-barcode"></i>
+          </button>
+        )}
       </div>
-      {isBarcodeScannerDisplayed && <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />}
+      {isCameraEnabled && isBarcodeScannerDisplayed && <BarcodeReader onBarcodeScanned={handleBarcodeScanned} />}
     </div>
   );
 };

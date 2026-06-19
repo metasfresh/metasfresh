@@ -16,6 +16,9 @@ import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
+import de.metas.handlingunits.picking.job.service.PickingJobGraiTargetService;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -151,6 +154,9 @@ public class PickingJobTestHelper
 	public final PickingSlotId pickingSlotId;
 	public final Workplace workplace;
 
+	/** Exposes the single internal {@link HUTestHelper} so tests share ONE AdempiereTestHelper context (a second instance would re-init and wipe the master data created here, e.g. the locator). */
+	public HUTestHelper getHuTestHelper() {return huTestHelper;}
+
 	public PickingJobTestHelper()
 	{
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
@@ -201,21 +207,24 @@ public class PickingJobTestHelper
 				new HULabelConfigService(new HULabelConfigRepository()),
 				huQRCodeService
 		);
+		final PickingJobProductService productService = PickingJobProductService.newInstanceForUnitTesting();
 
 		this.huService = new PickingJobHUService(
 				configService,
 				warehouseService,
+				productService,
 				huQRCodeService,
 				huLabelService,
 				huReservationService,
-				inventoryService);
+				inventoryService,
+				new HUGraiService(new HUPIGraiRepository()));
 
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
 				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
-				new PickingJobProductService(),
+				productService,
 				pickingJobSlotService,
 				pickingJobLockService,
 				huService
@@ -224,8 +233,8 @@ public class PickingJobTestHelper
 		pickingJobService = new PickingJobService(
 				bpartnerService,
 				warehouseService,
-				new PickingJobProductService(),
-				new PickingJobShipmentScheduleService(),
+				productService,
+				PickingJobShipmentScheduleService.newInstanceForUnitTesting(),
 				pickingJobRepository,
 				pickingJobLockService,
 				pickingJobSlotService,
@@ -234,7 +243,8 @@ public class PickingJobTestHelper
 				PickingShipmentService.newInstanceForUnitTesting(),
 				configService,
 				pickingJobScheduleService,
-				huService
+				huService,
+				new PickingJobGraiTargetService(huService)
 		);
 
 		huTracer = new HUTracerInstance()
@@ -299,7 +309,7 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
-	public void updateMobileProfile(UnaryOperator<MobileUIPickingUserProfile> updater)
+	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
 	}
@@ -334,7 +344,7 @@ public class PickingJobTestHelper
 			@NonNull final String qtyToDeliver,
 			@Nullable final Instant date,
 			@Nullable final UserId lockedBy,
-			boolean assignToWorkplace)
+			final boolean assignToWorkplace)
 	{
 		final BPartnerLocationId shipToBPLocationIdEffective = shipToBPLocationId != null ? shipToBPLocationId : this.shipToBPLocationId;
 		final BigDecimal qtyToDeliverBD = new BigDecimal(qtyToDeliver);
@@ -377,6 +387,7 @@ public class PickingJobTestHelper
 		final String bpName = bpartnerService.getBPartnerName(shipToBPLocationId.getBpartnerId());
 
 		final ProductId productId = ProductId.ofRepoId(sched.getM_Product_ID());
+		final I_M_Product product = productBL.getById(productId);
 		final UomId uomId = productBL.getStockUOMId(productId);
 
 		final I_M_Packageable_V item = InterfaceWrapperHelper.newInstance(I_M_Packageable_V.class);
@@ -394,6 +405,8 @@ public class PickingJobTestHelper
 		item.setM_Warehouse_ID(sched.getM_Warehouse_ID());
 		item.setShipmentAllocation_BestBefore_Policy(ShipmentAllocationBestBeforePolicy.Expiring_First.getCode());
 		item.setM_Product_ID(productId.getRepoId());
+		item.setProductValue(product.getValue());
+		item.setProductName(product.getName());
 		item.setPackTo_HU_PI_Item_Product_ID(CoalesceUtil.firstGreaterThanZero(
 				sched.getM_HU_PI_Item_Product_Override_ID(),
 				sched.getM_HU_PI_Item_Product_ID()));

@@ -61,6 +61,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
 import static de.metas.camel.externalsystems.common.RouteBuilderHelper.setupJacksonDataFormatFor;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PREFIX_IMPORT_AUTHORITY;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_ENDPOINT_NAME;
@@ -166,34 +167,69 @@ public class ScriptedImportConversionRestAPIRouteBuilder extends RouteBuilder im
 	private void prepareResponse(@NonNull final Exchange exchange)
 	{
 		@SuppressWarnings("unchecked") final List<Object> list = exchange.getIn().getBody(List.class);
-		if (list == null)
+		if (Check.isEmpty(list))
 		{
 			throw new RuntimeCamelException("Nothing has been processed!");
 		}
 
-		if (list.size() == 1)
+		final List<String> responses = list.stream()
+				.map(String::valueOf)
+				.toList();
+
+		if (responses.size() == 1)
 		{
-			final String singleResponse = String.valueOf(list.get(0));
-			if (singleResponse.contains(FIELD_ERROR_MESSAGE))
-			{
-				throw new RuntimeCamelException(singleResponse);
-			}
-			exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.OK.value());
+			handleSingleResponse(responses.get(0), exchange);
 		}
 		else
 		{
-			final boolean hasErrors = list.stream()
-					.map(String::valueOf)
-					.anyMatch(responseStr -> responseStr.contains(FIELD_ERROR_MESSAGE));
-			if (hasErrors)
-			{
-				exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.MULTI_STATUS.value());
-			}
-			else
-			{
-				exchange.getIn().setHeader(HTTP_RESPONSE_CODE, HttpStatus.OK.value());
-			}
+			handleMultipleResponses(responses, exchange);
 		}
+	}
+
+	private void handleSingleResponse(@NonNull final String response,
+									  @NonNull final Exchange exchange)
+	{
+		if (isErrorResponse(response))
+		{
+			throw new RuntimeCamelException(response);
+		}
+		setHttpStatus(exchange, HttpStatus.OK);
+	}
+
+	private void handleMultipleResponses(@NonNull final List<String> responses,
+										 @NonNull final Exchange exchange)
+	{
+		final long errorCount = responses.stream()
+				.filter(this::isErrorResponse)
+				.count();
+
+		final HttpStatus status;
+		if (errorCount == 0)
+		{
+			status = HttpStatus.OK;
+		}
+		else if (errorCount == responses.size())
+		{
+			status = HttpStatus.INTERNAL_SERVER_ERROR;
+		}
+		else
+		{
+			status = HttpStatus.MULTI_STATUS;
+		}
+
+		setHttpStatus(exchange, status);
+	}
+
+	private boolean isErrorResponse(@NonNull final String response)
+	{
+		return response.contains(FIELD_ERROR_MESSAGE) ||
+				response.startsWith(EXCEPTION_PREFIX);
+	}
+
+	private void setHttpStatus(@NonNull final Exchange exchange,
+							   @NonNull final HttpStatus status)
+	{
+		exchange.getIn().setHeader(HTTP_RESPONSE_CODE, status.value());
 	}
 
 	private void prepareHttpErrorResponse(@NonNull final Exchange exchange)

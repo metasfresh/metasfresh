@@ -277,13 +277,12 @@ const GetQuantityDialog = ({
               userInfo.map((item) => (
                 <tr key={computeKeyFromUserInfoItem(item)}>
                   <th>{computeCaptionFromUserInfoItem(item)}</th>
-                  <td>{item.value}</td>
+                  <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                 </tr>
               ))}
             <tr>
               <td colSpan="2">
                 <BarcodeScannerComponent
-                  continuousRunning={true}
                   customQRCodeFormats={customQRCodeFormats}
                   onResolvedResult={readQtyFromQrCode}
                 />
@@ -343,7 +342,7 @@ const GetQuantityDialog = ({
                     userInfo.map((item) => (
                       <tr key={computeKeyFromUserInfoItem(item)}>
                         <th>{computeCaptionFromUserInfoItem(item)}</th>
-                        <td>{item.value}</td>
+                        <td data-testid={computeKeyFromUserInfoItem(item)}>{item.value}</td>
                       </tr>
                     ))}
                   {!hideQtyInput && (

@@ -76,14 +76,39 @@ public class CampaignPriceImportTableSqlUpdater
 
 	private static void dbUpdateBPartner(final ImportRecordsSelection selection)
 	{
-		StringBuilder sql = new StringBuilder("UPDATE ")
+		// Step 1: resolve where exactly one BPartner matches
+		StringBuilder sqlUnique = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET C_BPartner_ID=(SELECT C_BPartner_ID FROM C_BPartner p")
-				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID) ORDER BY p.AD_Client_ID DESC, p.AD_Org_ID DESC LIMIT 1) ")
-				.append("WHERE C_BPartner_ID IS NULL")
+				.append(" SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner p")
+				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID)")
+				.append(" HAVING count(*)=1) ")
+				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));
-		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sqlUnique.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Step 2: disambiguate — campaign prices are sales-only, prefer IsCustomer='Y'
+		StringBuilder sqlDisambiguate = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET C_BPartner_ID=(SELECT MAX(C_BPartner_ID) FROM C_BPartner p")
+				.append(" WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID)")
+				.append(" AND p.IsCustomer='Y'")
+				.append(" HAVING count(*)=1) ")
+				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sqlDisambiguate.toString(), ITrx.TRXNAME_ThreadInherited);
+
+		// Step 3: mark remaining ambiguous rows as errors
+		StringBuilder sqlError = new StringBuilder("UPDATE ")
+				.append(targetTableName + " i ")
+				.append(" SET " + COLUMNNAME_I_IsImported + "='E',")
+				.append(" I_ErrorMsg=COALESCE(I_ErrorMsg,'')||'ERR: Multiple BPartners found for Value=\"'||i.BPartner_Value||'\"' ")
+				.append("WHERE C_BPartner_ID IS NULL AND BPartner_Value IS NOT NULL")
+				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
+				.append(" AND (SELECT count(*) FROM C_BPartner p WHERE p.isActive='Y' AND i.BPartner_Value=p.Value AND p.AD_Client_ID in (i.AD_Client_ID, 0) AND p.AD_Org_ID IN (0, i.AD_Org_ID)) > 1")
+				.append(selection.toSqlWhereClause("i"));
+		DB.executeUpdateAndThrowExceptionOnFail(sqlError.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private static void dbUpdateBpGroup(final ImportRecordsSelection selection)

@@ -51,6 +51,22 @@
       "windowName": "Print labels",
       "print": "Print",
       "noPrintingOptionSelected": "No printing option has been selected!"
+    },
+    "scanGRAI": {
+      "buttonCaption": "Scan GRAI",
+      "windowName": "Scan GRAI",
+      "count": "%(scanned)s / %(total)s GRAIs scanned",
+      "countExtra": "(%(extra)s extra)",
+      "clearAll": {
+        "buttonCaption": "Clear All",
+        "confirmQuestion": "Remove all %(count)s GRAIs?"
+      },
+      "send": {
+        "buttonCaption": "Send"
+      },
+      "undo": {
+        "buttonCaption": "Undo"
+      }
     }
   }
 }

@@ -107,7 +107,6 @@ public class BatchProcessBOMCostCalculatorRepository implements BOMCostCalculato
 				.find(ProductPlanningQuery.builder()
 							  .orgId(orgId)
 							  .productId(productId)
-							  .includeWithNullProductId(false)
 							  .build())
 				.orElse(null);
 

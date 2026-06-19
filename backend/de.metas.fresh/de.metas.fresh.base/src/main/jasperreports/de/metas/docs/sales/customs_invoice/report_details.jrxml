@@ -21,31 +21,52 @@
 		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Details ($P{C_Customs_Invoice_Id}, $P{ad_language});]]>
 	</queryString>
 	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="name"/>
 		<property name="com.jaspersoft.studio.field.label" value="name"/>
 	</field>
 	<field name="invoicedqty" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="invoicedqty"/>
 		<property name="com.jaspersoft.studio.field.label" value="invoicedqty"/>
 	</field>
 	<field name="uom" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="uom"/>
 		<property name="com.jaspersoft.studio.field.label" value="uom"/>
 	</field>
 	<field name="linenetamt" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="linenetamt"/>
 		<property name="com.jaspersoft.studio.field.label" value="linenetamt"/>
 	</field>
 	<field name="customstariff" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="customstariff"/>
 		<property name="com.jaspersoft.studio.field.label" value="customstariff"/>
 	</field>
 	<field name="cursymbol" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="cursymbol"/>
 		<property name="com.jaspersoft.studio.field.label" value="cursymbol"/>
 	</field>
 	<field name="invoicedocno" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="invoicedocno"/>
 		<property name="com.jaspersoft.studio.field.label" value="invoicedocno"/>
 	</field>
 	<field name="qtypattern" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="qtypattern"/>
 		<property name="com.jaspersoft.studio.field.label" value="qtypattern"/>
 	</field>
 	<field name="bruttoweight" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="bruttoweight"/>
 		<property name="com.jaspersoft.studio.field.label" value="bruttoweight"/>
+	</field>
+	<field name="description" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="description"/>
+		<property name="com.jaspersoft.studio.field.label" value="description"/>
+	</field>
+	<field name="sscc18" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="sscc18"/>
+		<property name="com.jaspersoft.studio.field.label" value="sscc18"/>
+	</field>
+	<field name="priceactual" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="priceactual"/>
+		<property name="com.jaspersoft.studio.field.label" value="priceactual"/>
 	</field>
 	<variable name="TOTAL" class="java.math.BigDecimal" calculation="Sum">
 		<variableExpression><![CDATA[$F{linenetamt}]]></variableExpression>
@@ -58,27 +79,20 @@
 		<band splitType="Stretch"/>
 	</title>
 	<pageHeader>
-		<band height="19" splitType="Stretch">
+		<band height="20" splitType="Stretch">
 			<textField>
-				<reportElement key="textField-16" x="150" y="3" width="247" height="12" forecolor="#000000" uuid="bfc989ec-072f-4b4e-839f-dfc61387f8de"/>
+				<reportElement key="textField-16" x="150" y="3" width="210" height="12" forecolor="#000000" uuid="bfc989ec-072f-4b4e-839f-dfc61387f8de"/>
 				<textElement markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Article}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement key="textField-19" x="400" y="3" width="54" height="12" forecolor="#000000" uuid="eea9f049-df88-44d6-b192-5f9f36604e70"/>
+				<reportElement key="textField-19" x="375" y="3" width="54" height="12" forecolor="#000000" uuid="eea9f049-df88-44d6-b192-5f9f36604e70"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{Quantity}]]></textFieldExpression>
-			</textField>
-			<textField>
-				<reportElement key="textField-20" x="456" y="3" width="33" height="12" forecolor="#000000" uuid="fa02bcc4-c1b8-4d51-80bf-a527068a675d"/>
-				<textElement textAlignment="Right" markup="none">
-					<font fontName="Arial" size="9" isBold="true"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$R{Unit}]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement key="textField-20" x="490" y="3" width="48" height="12" forecolor="#000000" uuid="fecb23cd-5d71-4c4c-bec6-ffc76fd262db"/>
@@ -101,11 +115,18 @@
 				<reportElement x="60" y="16" width="478" height="1" forecolor="#7A7676" uuid="a7f18fb5-9daa-48c0-ab26-17e64b40d6b9"/>
 			</line>
 			<textField>
-				<reportElement key="textField-19" x="350" y="3" width="54" height="12" forecolor="#000000" uuid="f5f3785d-f7b2-489d-8c6b-09384dd575cc"/>
+				<reportElement key="textField-19" x="325" y="3" width="54" height="12" forecolor="#000000" uuid="f5f3785d-f7b2-489d-8c6b-09384dd575cc"/>
 				<textElement textAlignment="Right" markup="none">
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$R{BrutQty}]]></textFieldExpression>
+			</textField>
+			<textField>
+				<reportElement key="textField-20" x="429" y="3" width="59" height="12" forecolor="#000000" uuid="163fd47a-36bb-4c82-bb7e-a06cd706e0ac"/>
+				<textElement textAlignment="Right" markup="none">
+					<font fontName="Arial" size="9" isBold="true"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$R{PriceActual}]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>
@@ -115,7 +136,7 @@
 	<detail>
 		<band height="17" splitType="Stretch">
 			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
-				<reportElement key="textField-24" mode="Transparent" x="150" y="0" width="247" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
+				<reportElement key="textField-24" mode="Transparent" x="150" y="0" width="210" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="097beb53-5e78-4dd1-9c25-efb41d796b05"/>
 				<box rightPadding="3">
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -127,21 +148,8 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{name}]]></textFieldExpression>
 			</textField>
-			<textField isBlankWhenNull="false">
-				<reportElement key="textField-20" x="456" y="0" width="33" height="12" forecolor="#000000" uuid="118a78d4-035b-4396-877b-f4e9c74bf281"/>
-				<box>
-					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
-				</box>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="9" isBold="false"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$F{uom}]]></textFieldExpression>
-			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="400" y="0" width="54" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
+				<reportElement key="textField-33" mode="Transparent" x="375" y="0" width="54" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="c96fe649-67d2-4f91-ad99-6153fff5b63b"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -181,7 +189,7 @@
 				<textFieldExpression><![CDATA[$F{customstariff}]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" isBlankWhenNull="true">
-				<reportElement key="textField-33" mode="Transparent" x="350" y="0" width="54" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="4648a47c-9772-49f8-b597-d19e1ff62428"/>
+				<reportElement key="textField-33" mode="Transparent" x="325" y="0" width="54" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="4648a47c-9772-49f8-b597-d19e1ff62428"/>
 				<box>
 					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
 					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
@@ -193,6 +201,53 @@
 				</textElement>
 				<textFieldExpression><![CDATA[$F{bruttoweight}]]></textFieldExpression>
 				<patternExpression><![CDATA[$F{qtypattern}]]></patternExpression>
+			</textField>
+			<textField pattern="#,##0.00" isBlankWhenNull="false">
+				<reportElement key="textField-20" x="429" y="0" width="59" height="12" forecolor="#000000" uuid="5aa1b584-833b-4aff-a76e-3d17e6421192"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{priceactual}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="17">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{sscc18}!=null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="150" y="0" width="247" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="e2ab2532-1c82-4ff2-a00a-f0d18a94f2b7"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA["SSCC18: "+$F{sscc18}]]></textFieldExpression>
+			</textField>
+		</band>
+		<band height="17">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
+			<printWhenExpression><![CDATA[$F{description}!=null]]></printWhenExpression>
+			<textField isStretchWithOverflow="true" pattern="" isBlankWhenNull="true">
+				<reportElement key="textField-24" mode="Transparent" x="150" y="0" width="247" height="12" forecolor="#000000" backcolor="#FFFFFF" uuid="2755e0b9-467d-4508-a42f-a7a156e9918b"/>
+				<box rightPadding="3">
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement>
+					<font fontName="Arial" size="9" isBold="false"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{description}]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>

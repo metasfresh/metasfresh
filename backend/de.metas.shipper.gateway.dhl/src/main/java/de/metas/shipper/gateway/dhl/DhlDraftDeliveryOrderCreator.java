@@ -2,7 +2,7 @@
  * #%L
  * de.metas.shipper.gateway.dhl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2025 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -209,7 +209,7 @@ public class DhlDraftDeliveryOrderCreator implements DraftDeliveryOrderCreator
 				.customDeliveryData(customDeliveryData)
 				//
 				// Pickup aka Shipper
-				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation,pickupFromBPartner)
+				.pickupAddress(DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner)
 						.build())
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)

@@ -1,0 +1,2 @@
+Field <de.metas.dunning.process.C_Dunning_Candidate_Create.p_DunningDate> has raw type java.sql.Timestamp in (C_Dunning_Candidate_Create.java:0)
+Field <de.metas.dunning.process.C_Dunning_Candidate_SetDunningGrace.p_DunningGrace> has raw type java.sql.Timestamp in (C_Dunning_Candidate_SetDunningGrace.java:0)

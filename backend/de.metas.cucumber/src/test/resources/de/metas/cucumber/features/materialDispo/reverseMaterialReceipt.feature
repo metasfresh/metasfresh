@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Reversal of material receipt
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -40,6 +43,8 @@ Feature: Reversal of material receipt
 # ######################################################################################################################
 # ######################################################################################################################
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: Check Material Dispo
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | C_PaymentTerm_ID | DocBaseType | M_PricingSystem_ID | DatePromised        |

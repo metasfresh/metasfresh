@@ -12,6 +12,7 @@ import de.metas.lang.SOTrx;
 import de.metas.order.IOrderBL;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestId;
 import de.metas.request.RequestTypeId;
 import de.metas.request.api.IRequestBL;
@@ -30,7 +31,6 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_R_Request;
-import org.compiere.model.X_R_Request;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_Order;
@@ -105,7 +105,7 @@ public class RequestBL implements IRequestBL
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(summary)
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.confidentialType(RequestConfidentialType.Internal)
 				.orgId(OrgId.ofRepoId(line.getAD_Org_ID()))
 				.productId(ProductId.ofRepoId(line.getM_Product_ID()))
 				.recordRef(TableRecordReference.of(inout))
@@ -173,7 +173,7 @@ public class RequestBL implements IRequestBL
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(ddOrderLine.getDescription()) // TODO: Decide what to put here
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.confidentialType(RequestConfidentialType.Internal)
 				.orgId(OrgId.ofRepoId(ddOrderLine.getAD_Org_ID()))
 				.productId(ProductId.ofRepoId(ddOrderLine.getM_Product_ID()))
 				.recordRef(TableRecordReference.of(ddOrder))
@@ -193,7 +193,7 @@ public class RequestBL implements IRequestBL
 
 		final RequestCandidate requestCandidate = RequestCandidate.builder()
 				.summary(order.getDescription() != null ? order.getDescription() : " ")
-				.confidentialType(X_R_Request.CONFIDENTIALTYPE_Internal)
+				.confidentialType(RequestConfidentialType.Internal)
 				.orgId(OrgId.ofRepoId(order.getAD_Org_ID()))
 				.recordRef(TableRecordReference.of(order))
 				.requestTypeId(requestType.orElseGet(() -> getRequestTypeId(SOTrx.ofBoolean(order.isSOTrx()))))

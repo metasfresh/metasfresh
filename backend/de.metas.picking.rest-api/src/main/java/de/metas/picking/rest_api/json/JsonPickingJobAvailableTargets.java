@@ -15,4 +15,7 @@ public class JsonPickingJobAvailableTargets
 {
 	@NonNull @Singular List<JsonLUPickingTarget> targets;
 	@NonNull @Singular List<JsonTUPickingTarget> tuTargets;
+
+	/** When {@code true}, the mobile UI may offer the GRAI-scan TU-target flow for this job/line. */
+	boolean graiScanEnabled;
 }

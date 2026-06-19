@@ -4,19 +4,22 @@ import { toUrl, unboxAxiosResponse } from '../utils';
 import { QTY_REJECTED_REASON_TO_IGNORE_KEY } from '../reducers/wfProcesses';
 import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
+import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
   const isTU = type === PickingTargetType.TU;
-  const { isPending: isTargetsLoading, data: targets } = useQuery({
+  const { isPending: isTargetsLoading, data: responseData } = useQuery({
     queryKey: [wfProcessId, lineId, type],
-    queryFn: () => {
-      return getAvailablePickingTargets({ wfProcessId, lineId }).then((data) => (isTU ? data.tuTargets : data.targets));
-    },
+    queryFn: () => getAvailablePickingTargets({ wfProcessId, lineId }),
   });
+
+  const targets = responseData ? (isTU ? responseData.tuTargets : responseData.targets) : undefined;
+  const graiScanEnabled = isTU ? responseData?.graiScanEnabled ?? false : false;
 
   return {
     isTargetsLoading,
     targets,
+    graiScanEnabled,
     setPickingTarget: ({ target }) => {
       return isTU
         ? setTUPickingTarget({ wfProcessId, lineId, target })
@@ -40,6 +43,12 @@ export const setLUPickingTarget = ({ wfProcessId, lineId, target }) => {
 const setTUPickingTarget = ({ wfProcessId, lineId, target }) => {
   return axios
     .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), target)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const setTUPickingTargetFromGrai = ({ wfProcessId, lineId, graiString }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/tu`, { lineId }), { grai: graiString })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -151,14 +160,36 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const getScannedHUQRCodeInfo = ({ qrCode }) => {
+export const getScannedHUQRCodeInfo = ({ qrCode, productNo }) => {
   return axios
-    .get(toUrl(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode }))
+    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const getNextEligibleLineToPack = ({ wfProcessId, huScannedCode, excludeLineId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/nextEligibleLineToPack`, {
+      wfProcessId,
+      huScannedCode: toQRCodeString(huScannedCode),
+      excludeLineId,
+    })
     .then((response) => unboxAxiosResponse(response));
 };
 
 export const getQtyAvailable = ({ wfProcessId }) => {
   return axios
     .get(`${apiBasePath}/picking/job/${wfProcessId}/qtyAvailable`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const completePickingJob = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/picking/job/${wfProcessId}/complete`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postMassPrintingScan = ({ scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/massPrinting/scan`, { scannedCode })
     .then((response) => unboxAxiosResponse(response));
 };

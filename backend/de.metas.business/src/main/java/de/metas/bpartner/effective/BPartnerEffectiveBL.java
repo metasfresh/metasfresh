@@ -27,6 +27,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -38,6 +41,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
@@ -46,12 +50,15 @@ import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import static org.compiere.model.CalloutOrder.SYSCONFIG_DEFAULT_INVOICE_RULE;
 
 @Service
+@RequiredArgsConstructor
 public class BPartnerEffectiveBL
 {
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -60,15 +67,45 @@ public class BPartnerEffectiveBL
 	@NonNull private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
+	@NonNull private final IncotermsRepository incotermsRepository;
+
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new BPartnerEffectiveBL();
+		return new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting());
 	}
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)
 	{
 		return getByRecord(bpartnerDAO.getById(bPartnerId));
+	}
+
+	/**
+	 * Returns the vendor-level default purchase transport days as configured on
+	 * {@code C_BPartner.PO_TransportDays}, preserving the "is set?" distinction.
+	 * <p>
+	 * Return-value semantics — required contract for callers that chain this with
+	 * a lower-priority fallback:
+	 * <ul>
+	 *   <li>{@code Optional.empty()} — the column is NULL on {@code C_BPartner}; the caller
+	 *       may fall through to a lower-priority source (e.g. {@code PP_Product_Planning}).</li>
+	 *   <li>{@code Optional.of(0)} — the vendor was <b>explicitly</b> set to 0 transport days.
+	 *       Callers <b>must</b> use this 0 and <b>must not</b> fall through to a lower tier;
+	 *       conflating "set to 0" with "not set" is a behavioural bug.</li>
+	 *   <li>{@code Optional.of(n)} for {@code n &gt; 0} — explicit configured value.</li>
+	 * </ul>
+	 *
+	 * @see de.metas.bpartner_product.BPartnerProductEffectiveBL#getPurchaseTransportDaysIfSet(BPartnerId, de.metas.product.ProductId, OrgId)
+	 *      for the higher-priority vendor-product variant that chains into this method.
+	 */
+	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
+	{
+		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+	}
+
+	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
+	{
+		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
@@ -154,6 +191,24 @@ public class BPartnerEffectiveBL
 				() -> PaymentRule.OnCredit) // same as bPartnerRecord mandatory column default
 		);
 
+		final OrgId orgId = OrgId.ofRepoId(bPartnerRecord.getAD_Org_ID());
+		setIncoterms(bPartnerRecord, bpGroup, bpParentGroup, orgId,
+				I_C_BPartner::getC_Incoterms_Customer_ID,
+				I_C_BP_Group::getC_Incoterms_ID,
+				I_C_BPartner::getIncotermLocation,
+				I_C_BP_Group::getIncotermLocation,
+				bPartnerBuilder::incoterms);
+
+		setIncoterms(bPartnerRecord, bpGroup, bpParentGroup, orgId,
+				I_C_BPartner::getC_Incoterms_Vendor_ID,
+				I_C_BP_Group::getPO_Incoterms_ID,
+				I_C_BPartner::getPO_IncotermLocation,
+				I_C_BP_Group::getPO_IncotermLocation,
+				bPartnerBuilder::poIncoterms);
+
+		bPartnerBuilder.purchaseTransportDays(
+				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+
 		return bPartnerBuilder.build();
 	}
 
@@ -167,8 +222,6 @@ public class BPartnerEffectiveBL
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		return parentGroupId != null ? bpGroupDAO.getById(parentGroupId) : null;
 	}
-
-
 
 	@Nullable
 	private <T, V> T getEffectiveValue(
@@ -236,5 +289,63 @@ public class BPartnerEffectiveBL
 		return StringUtils.trimBlankToOptional(invoiceRule)
 				.map(InvoiceRule::ofCode)
 				.orElse(InvoiceRule.AfterDelivery);
+	}
+
+	private void setIncoterms(
+			@NonNull final I_C_BPartner bPartnerRecord,
+			@NonNull final I_C_BP_Group bpGroup,
+			@Nullable final I_C_BP_Group bpParentGroup,
+			@NonNull final OrgId orgId,
+			final Function<I_C_BPartner, Integer> bpartnerIncotermsIdGetter,
+			final Function<I_C_BP_Group, Integer> bpGroupIncotermsIdGetter,
+			final Function<I_C_BPartner, String> bpartnerLocationGetter,
+			final Function<I_C_BP_Group, String> bpGroupLocationGetter,
+			final Consumer<Incoterms> incotermsConsumer)
+	{
+		final Incoterms incoterms = getEffectiveValue(
+				bPartnerRecord, bpGroup, bpParentGroup,
+				bpartnerIncotermsIdGetter,
+				bpGroupIncotermsIdGetter,
+				this::getIncoterms,
+				() -> incotermsRepository.getDefaultIncoterms(orgId));
+
+		if (incoterms == null)
+		{
+			return;
+		}
+
+		final String location = getEffectiveValue(
+				bPartnerRecord, bpGroup, bpParentGroup,
+				bpartnerLocationGetter,
+				bpGroupLocationGetter,
+				StringUtils::trimBlankToNull,
+				() -> getDefaultIncotermsLocation(orgId));
+
+		incotermsConsumer.accept(incoterms.withLocationEffective(location));
+	}
+
+
+	@Nullable
+	private Incoterms getIncoterms(final int incotermsId)
+	{
+		final IncotermsId id = IncotermsId.ofRepoIdOrNull(incotermsId);
+		if (id == null)
+		{
+			return null;
+		}
+
+		return incotermsRepository.getById(id);
+	}
+
+	@Nullable
+	private String getDefaultIncotermsLocation(@NonNull final OrgId orgId)
+	{
+		final Incoterms incoterms = incotermsRepository.getDefaultIncoterms(orgId);
+		if (incoterms == null)
+		{
+			return null;
+		}
+
+		return StringUtils.trimBlankToNull(incoterms.getDefaultLocation());
 	}
 }

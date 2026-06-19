@@ -24,12 +24,11 @@ package de.metas.rest_api.v2.bpartner;
 
 import au.com.origin.snapshots.Expect;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
-import de.metas.bpartner.BPGroupRepository;
-import de.metas.bpartner.BPGroupService;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestContact;
@@ -43,19 +42,11 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.time.SystemTime;
-import de.metas.currency.CurrencyRepository;
-import de.metas.externalreference.ExternalReferenceRepository;
-import de.metas.externalreference.ExternalReferenceTypes;
-import de.metas.externalsystem.ExternalSystemRepository;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalsystem.ExternalSystemTestHelper;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.job.JobRepository;
-import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.user.UserRepository;
 import de.metas.util.lang.UIDStringUtil;
@@ -124,24 +115,12 @@ class ContactRestControllerTest
 
 		ExternalSystemTestHelper.createExternalSystemIfNotExists(ExternalSystemType.Other);
 
-		final ExternalReferenceRestControllerService externalReferenceRestControllerService =
-				new ExternalReferenceRestControllerService(ExternalReferenceRepository.newInstanceForUnitTesting(new ExternalReferenceTypes()), ExternalSystemRepository.newInstanceForUnitTesting(), new ExternalReferenceTypes());
-
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository());
-		final BPGroupRepository bpGroupRepository = new BPGroupRepository();
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, recordChangeLogRepository, new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		
-		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
-				new JsonRequestConsolidateService(),
-				new BPartnerQueryService(),
-				bpartnerCompositeRepository,
-				bpGroupRepository,
-				new BPGroupService(bpGroupRepository),
-				new GreetingRepository(),
-				new TitleRepository(),
-				new CurrencyRepository(),
-				new JobRepository(),
-				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+		final JsonServiceFactory jsonServiceFactory = JsonServiceFactory.newInstanceForUnitTesting(
+				recordChangeLogRepository,
+				Mockito.mock(AlbertaBPartnerCompositeService.class)
+		);
 
 		contactRestController = new ContactRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
@@ -151,6 +130,7 @@ class ContactRestControllerTest
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
 		bpGroupRecord.setName(BP_GROUP_RECORD_NAME);
+		bpGroupRecord.setValue(BP_GROUP_RECORD_NAME);
 		saveRecord(bpGroupRecord);
 
 		createBPartnerData(0);

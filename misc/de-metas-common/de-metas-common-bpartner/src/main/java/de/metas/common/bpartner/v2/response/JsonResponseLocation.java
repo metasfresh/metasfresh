@@ -62,6 +62,7 @@ public class JsonResponseLocation
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
 	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String VISITORS_ADDRESS_DEFAULT  = "visitorsAddressDefault";
 
 	public static final String SETUP_PLACE_NO = "setupPlaceNo";
 	public static final String HANDOVER_LOCATION = "handoverLocation";
@@ -69,6 +70,8 @@ public class JsonResponseLocation
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
 	public static final String VAT_ID = "vatId";
+
+	public static final String ATTENTION = "attention";
 
 	public static final String EPHEMERAL = "ephemeral";
 
@@ -144,6 +147,9 @@ public class JsonResponseLocation
 	boolean visitorsAddress;
 
 	@ApiModelProperty
+	boolean visitorsAddressDefault;
+
+	@ApiModelProperty
 	boolean handoverLocation;
 
 	@ApiModelProperty
@@ -151,6 +157,9 @@ public class JsonResponseLocation
 
 	@ApiModelProperty
 	String vatId;
+
+	@JsonInclude(Include.NON_NULL)
+	@Nullable String attention;
 
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
@@ -182,6 +191,7 @@ public class JsonResponseLocation
 			@JsonProperty(BILL_TO_DEFAULT) final boolean billToDefault,
 			@JsonProperty(EPHEMERAL)  final boolean ephemeral,
 			@JsonProperty(VISITORS_ADDRESS) final boolean visitorsAddress,
+			@JsonProperty(VISITORS_ADDRESS_DEFAULT) final boolean visitorsAddressDefault,
 
 			@JsonProperty(SETUP_PLACE_NO) @Nullable final String setupPlaceNo,
 			@JsonProperty(HANDOVER_LOCATION)  final boolean handoverLocation,
@@ -189,6 +199,8 @@ public class JsonResponseLocation
 			@JsonProperty(REPLICATION_LOOKUP_DEFAULT)  final boolean replicationLookupDefault,
 
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
+
+			@JsonProperty(ATTENTION) @Nullable final String attention,
 
 			@JsonProperty("changeInfo") @Nullable final JsonChangeInfo changeInfo)
 	{
@@ -220,6 +232,7 @@ public class JsonResponseLocation
 		this.shipToDefault = shipToDefault;
 		this.shipTo = shipTo;
 		this.visitorsAddress = visitorsAddress;
+		this.visitorsAddressDefault = visitorsAddressDefault;
 
 		this.setupPlaceNo = setupPlaceNo;
 		this.remitTo = remitTo;
@@ -228,8 +241,10 @@ public class JsonResponseLocation
 
 		this.vatId = vatId;
 
+		this.attention = attention;
+
 		this.ephemeral = ephemeral;
-		
+
 		this.changeInfo = changeInfo;
 	}
 }

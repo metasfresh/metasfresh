@@ -90,6 +90,7 @@ import static de.metas.externalreference.model.X_S_ExternalReference.TYPE_UserID
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_AD_User.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_AD_User.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 
 @RequiredArgsConstructor
@@ -187,6 +188,14 @@ public class S_ExternalReference_StepDef
 				assertThat(shipper).isNotNull();
 
 				externalReferenceRecord.setRecord_ID(shipper.getM_Shipper_ID());
+			}
+			else if (type.getCode().equals(BPartnerExternalReferenceType.BPARTNER.getCode()))
+			{
+				final String partnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, COLUMNNAME_C_BPartner_ID);
+				assertThat(partnerIdentifier).isNotNull();
+
+				final I_C_BPartner partnerRecord = bpartnerTable.get(partnerIdentifier);
+				externalReferenceRecord.setRecord_ID(partnerRecord.getC_BPartner_ID());
 			}
 			else
 			{

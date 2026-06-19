@@ -32,6 +32,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -213,6 +214,15 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	{
 		final IHUContext huContext = HUContextHolder.getCurrentOrNull();
 		return huContext != null ? huContext.getHUStorageFactory() : storageFactory;
+	}
+
+	@Override
+	public Set<ProductId> getStoredProducts(final Collection<HuId> huIds)
+	{
+		final List<I_M_HU> hus = getByIds(huIds);
+		return getStorageFactory().streamHUProductStorages(hus)
+				.map(IHUProductStorage::getProductId)
+				.collect(Collectors.toSet());
 	}
 
 	@Override
@@ -1022,6 +1032,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersionId(piId);
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		return handlingUnitsRepo.retrievePIItemMaterial(version);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
@@ -1373,6 +1411,58 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public boolean setReservedRecursively(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		// Validate first: check if all HUs in the hierarchy can be reserved/unreserved
+		if (reserved)
+		{
+			if (!canReserveRecursively(hu))
+			{
+				return false;
+			}
+		}
+
+		// If validation passes (or unreserving), proceed with reservation
+		setReservedRecursivelyWithoutValidation(hu, reserved);
+		return true;
+	}
+
+	private boolean canReserveRecursively(@NonNull final I_M_HU hu)
+	{
+		if (hu.isReserved())
+		{
+			return false;
+		}
+
+		// Recursively validate all children
+		return handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.stream()
+				.allMatch(this::canReserveRecursively);
+	}
+
+	private void setReservedRecursivelyWithoutValidation(@NonNull final I_M_HU hu, final boolean reserved)
+	{
+		hu.setIsReserved(reserved);
+		handlingUnitsRepo.saveHU(hu);
+		handlingUnitsRepo.retrieveIncludedHUs(hu)
+				.forEach(includedHU -> setReservedRecursivelyWithoutValidation(includedHU, reserved));
+	}
+
+	@Override
+	public void setReservedByHUIds(@NonNull final Set<HuId> huIds, final boolean reserved)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		for (final I_M_HU hu : getByIds(huIds))
+		{
+			setReservedRecursively(hu, reserved);
+		}
+	}
+
+
+	@Override
 	public boolean isHUHierarchyCleared(@NonNull final HuId huId)
 	{
 		return isWholeHierarchyCleared(getTopLevelParent(huId));
@@ -1500,6 +1590,18 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	public List<I_M_HU> retrieveIncludedHUs(final I_M_HU huId)
 	{
 		return handlingUnitsRepo.retrieveIncludedHUs(huId);
+	}
+
+	@Override
+	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu, final HUItemType type)
+	{
+		return handlingUnitsRepo.retrieveItems(hu, type);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
 	}
 
 	@Override

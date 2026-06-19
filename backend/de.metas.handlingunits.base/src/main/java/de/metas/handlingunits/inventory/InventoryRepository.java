@@ -66,6 +66,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -146,7 +147,7 @@ public final class InventoryRepository
 		return newLoaderAndSaver().extractDocBaseAndSubTypeOrNull(inventoryRecord);
 	}
 
-	public Map<InventoryAndLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@NonNull InventoryAndLineIdSet inventoryAndLineIds)
+	public Map<InventoryAndLineId, I_M_InventoryLine> getInventoryLineRecordsByIds(@NonNull final InventoryAndLineIdSet inventoryAndLineIds)
 	{
 		return newLoaderAndSaver().getLineRecords(inventoryAndLineIds);
 	}
@@ -316,17 +317,27 @@ public final class InventoryRepository
 		);
 	}
 
+	public Set<HuId> getAssignedHUIds(@NonNull final InventoryLineId inventoryLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_InventoryLine_HU.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InventoryLine_HU.COLUMNNAME_M_InventoryLine_ID, inventoryLineId)
+				.andCollect(I_M_InventoryLine_HU.COLUMN_M_HU_ID)
+				.create()
+				.idsAsSet(HuId::ofRepoId);
+	}
+
 	private static InventoryAndLineId extractInventoryAndLineId(final I_M_InventoryLine_HU inventoryLineHU)
 	{
 		return InventoryAndLineId.ofRepoIds(inventoryLineHU.getM_Inventory_ID(), inventoryLineHU.getM_InventoryLine_ID());
 	}
 
-	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, UnaryOperator<InventoryLine> updater)
+	public void updateInventoryLineByRecord(final I_M_InventoryLine inventoryLineRecord, final UnaryOperator<InventoryLine> updater)
 	{
 		trxManager.runInThreadInheritedTrx(() -> newLoaderAndSaver().updateInventoryLineByRecord(inventoryLineRecord, updater));
 	}
 
-	public Inventory updateById(final InventoryId inventoryId, UnaryOperator<Inventory> updater)
+	public Inventory updateById(final InventoryId inventoryId, final UnaryOperator<Inventory> updater)
 	{
 		return trxManager.callInThreadInheritedTrx(() -> newLoaderAndSaver().updateById(inventoryId, updater));
 	}

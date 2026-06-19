@@ -17,9 +17,6 @@ export const manufacturingReducer = ({ draftState, action }) => {
     case types.UPDATE_MANUFACTURING_TU_RECEIPT_TARGET: {
       return reduceOnUpdateTUReceiptTarget(draftState, action.payload);
     }
-    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
-      return reduceOnUpdateQtyReceived(draftState, action.payload);
-    }
     default: {
       return draftState;
     }
@@ -90,23 +87,6 @@ const getAggregateToTU = ({ tuTarget }) => {
   return {
     newTU: { ...tuTarget },
   };
-};
-
-const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {
-  if (qtyReceived > 0) {
-    const draftWFProcess = draftState[wfProcessId];
-    const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
-
-    draftActivityLine.qtyReceived = qtyReceived;
-
-    updateLineStatusAndRollup({
-      draftWFProcess,
-      activityId,
-      lineId,
-    });
-  }
-
-  return draftState;
 };
 
 const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {

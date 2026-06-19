@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { useDispatch } from 'react-redux';
 
 import * as CompleteStatus from '../../../constants/CompleteStatus';
 
@@ -7,15 +8,23 @@ import DistributionLineButton from './DistributionLineButton';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { trl } from '../../../utils/translations';
-import { distributionDropAllToScreenLocation } from '../../../routes/distribution';
+import { distributionDropAllToScreenLocation, distributionPickFromScreenLocation } from '../../../routes/distribution';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import { postDistributionSwitchPickFromLocatorThunk } from '../../../apps/distribution/redux/postDistributionSwitchPickFromLocatorThunk';
+import { toastError } from '../../../utils/toast';
 
 const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
   const history = useMobileNavigation();
+  const dispatch = useDispatch();
   const lines = getLinesArrayFromActivity(activityState);
   const {
-    dataStored: { isUserEditable, hasLinesInTransit },
+    dataStored: { isUserEditable, hasLinesInTransit, canSwitchPickFromLocator },
   } = activityState;
+
+  const onScannedCode = ({ scannedBarcode: huQRCode }) => {
+    history.goTo(distributionPickFromScreenLocation({ applicationId, wfProcessId, activityId, huQRCode }));
+  };
 
   const onDropAllToLocator = () => {
     history.push(
@@ -27,8 +36,15 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
     );
   };
 
+  const onSwitchPickFromLocator = () => {
+    dispatch(postDistributionSwitchPickFromLocatorThunk({ wfProcessId })).catch((axiosError) => {
+      toastError({ axiosError });
+    });
+  };
+
   return (
     <div className="mt-5">
+      <BarcodeScannerComponent invisible onResolvedResult={onScannedCode} />
       {lines.map((line, lineIdx) => {
         const lineId = line.lineId;
         return (
@@ -48,9 +64,18 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
           />
         );
       })}
+      {canSwitchPickFromLocator && (
+        <ButtonWithIndicator
+          testId="switchPickFromLocator-button"
+          data-pickfromlocator={lines[0]?.pickFromLocator?.id}
+          caption={trl('activities.distribution.switchPickFromLocator')}
+          disabled={!isUserEditable}
+          onClick={onSwitchPickFromLocator}
+        />
+      )}
       <ButtonWithIndicator
         testId="scanDropToLocator-button"
-        caption={trl('activities.distribution.scanLocator')}
+        caption={trl('activities.distribution.scanDropToLocator')}
         disabled={!isUserEditable || !hasLinesInTransit}
         onClick={onDropAllToLocator}
       />

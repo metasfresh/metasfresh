@@ -24,7 +24,6 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.Profiles;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
@@ -34,6 +33,7 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.logging.LogManager;
 import de.metas.rest_api.utils.v2.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -71,7 +71,7 @@ public class OrderCandidatesRestController
 	@NonNull private final JsonRetrieverService jsonRetrieverService;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private PermissionServiceFactory permissionServiceFactory;
-	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	public OrderCandidatesRestController(
 			@NonNull final JsonServiceFactory jsonServiceFactory,
@@ -79,7 +79,7 @@ public class OrderCandidatesRestController
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final OrderCandidateRestControllerService orderCandidateRestControllerService,
 			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final BPartnerEffectiveBL bpartnerEffectiveBL)
+			@NonNull final BPartnerMasterdataProvider bPartnerMasterdataProvider)
 	{
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 		this.bpartnerRestController = bpartnerRestController;
@@ -87,7 +87,7 @@ public class OrderCandidatesRestController
 		this.orderCandidateRestControllerService = orderCandidateRestControllerService;
 		this.permissionServiceFactory = PermissionServiceFactories.currentContext();
 		this.externalSystemRepository = externalSystemRepository;
-		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
+		this.bPartnerMasterdataProvider = bPartnerMasterdataProvider;
 	}
 
 	@VisibleForTesting
@@ -115,7 +115,7 @@ public class OrderCandidatesRestController
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
 					.externalSystemRepository(externalSystemRepository)
-					.bPartnerEffectiveBL(bpartnerEffectiveBL)
+					.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 					.build();
 
 			final ITrxManager trxManager = Services.get(ITrxManager.class);

@@ -23,6 +23,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -37,6 +38,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
@@ -52,6 +54,7 @@ public class CreateHUCommand
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final SourceHUsService sourceHUsService;
 
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonCreateHURequest request;
@@ -64,12 +67,15 @@ public class CreateHUCommand
 	private CreateHUCommand(
 			@NonNull final InventoryService inventoryService,
 			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final MasterdataContext context,
 			@NonNull final JsonCreateHURequest request,
 			@Nullable final String identifier)
 	{
 		this.inventoryService = inventoryService;
 		this.huQRCodesService = huQRCodesService;
+		this.sourceHUsService = sourceHUsService;
+		
 		this.context = context;
 		this.request = request;
 
@@ -96,6 +102,11 @@ public class CreateHUCommand
 			huQRCodeStr = null;
 		}
 
+		if (request.isSourceHU())
+		{
+			sourceHUsService.addSourceHuMarker(huId);
+		}
+
 		return JsonCreateHUResponse.builder()
 				.huId(String.valueOf(huId.getRepoId()))
 				.qrCode(huQRCodeStr)
@@ -117,6 +128,7 @@ public class CreateHUCommand
 								.clientId(ClientId.METASFRESH)
 								.orgId(MasterdataContext.ORG_ID)
 								.warehouseId(warehouseId)
+								.locatorId(getLocatorIdOrNull())
 								.productId(productId)
 								.qty(Quantity.of(getTotalQtyCUs(), uom))
 								.movementDate(SystemTime.asZonedDateTime())
@@ -124,6 +136,15 @@ public class CreateHUCommand
 								.build()
 				)
 		);
+	}
+
+	@Nullable
+	private LocatorId getLocatorIdOrNull()
+	{
+		final Identifier locatorIdentifier = request.getLocator();
+		return locatorIdentifier != null
+				? context.getId(locatorIdentifier, LocatorId.class)
+				: null;
 	}
 
 	@NonNull

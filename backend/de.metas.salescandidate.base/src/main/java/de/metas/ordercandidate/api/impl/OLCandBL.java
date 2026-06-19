@@ -292,12 +292,18 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public ShipperId getShipperId(
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,
 			@Nullable final OLCandOrderDefaults orderDefaults,
 			@Nullable final I_C_OLCand orderCandidateRecord)
 	{
 		final ShipperId orderCandiateShipperId = orderCandidateRecord == null ? null : ShipperId.ofRepoIdOrNull(orderCandidateRecord.getM_Shipper_ID());
+
+		final ShipperId locationShipperId = orderCandidateRecord == null ? null : bpartnerBL.getEffectiveShipperId(
+				effectiveValuesBL.getDropShipLocationEffectiveId(orderCandidateRecord),
+						effectiveValuesBL.getLocationEffectiveId(orderCandidateRecord)
+		);
 
 		final ShipperId bpartnerOrderParamsShipperId = bPartnerOrderParams == null ? null
 				: bPartnerOrderParams.getShipperId().orElse(null);
@@ -306,6 +312,7 @@ public class OLCandBL implements IOLCandBL
 				: orderDefaults.getShipperId();
 
 		return coalesce(orderCandiateShipperId,
+				locationShipperId,
 				bpartnerOrderParamsShipperId,
 				orderDefaultsShipperId);
 	}
@@ -324,6 +331,7 @@ public class OLCandBL implements IOLCandBL
 				orderDefaultsDocTypeId);
 	}
 
+	@Nullable
 	@Override
 	public I_C_OLCand invokeOLCandCreator(final PO po, final IOLCandCreator olCandCreator)
 	{
@@ -453,6 +461,7 @@ public class OLCandBL implements IOLCandBL
 		return pricingResult;
 	}
 
+	@NonNull
 	@Override
 	public BPartnerOrderParams getBPartnerOrderParams(@NonNull final I_C_OLCand olCandRecord)
 	{

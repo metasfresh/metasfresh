@@ -1,6 +1,7 @@
 package de.metas.workflow.rest_api.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.scannable_code.PrintableScannedCode;
 import lombok.Builder;
@@ -16,6 +17,7 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static de.metas.workflow.rest_api.model.WorkflowLauncherCaption.OrderBy;
@@ -27,6 +29,7 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
 	@NonNull @Getter private final ImmutableList<OrderBy> orderByFields;
 	@Nullable @Getter private final PrintableScannedCode filterByQRCode;
+	@Nullable @Getter private final ImmutableSet<String> actions;
 	@NonNull @Getter private final Instant timestamp;
 
 	@Builder
@@ -34,11 +37,13 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 			@NonNull final List<WorkflowLauncher> launchers,
 			@NonNull @Singular final ImmutableList<OrderBy> orderByFields,
 			@Nullable final PrintableScannedCode filterByQRCode,
+			@Nullable final Set<String> actions,
 			@Nullable final Instant timestamp)
 	{
 		this.launchers = ImmutableList.copyOf(launchers);
 		this.orderByFields = orderByFields;
 		this.filterByQRCode = filterByQRCode;
+		this.actions = actions != null ? ImmutableSet.copyOf(actions) : null;
 		this.timestamp = timestamp != null ? timestamp : SystemTime.asInstant();
 	}
 

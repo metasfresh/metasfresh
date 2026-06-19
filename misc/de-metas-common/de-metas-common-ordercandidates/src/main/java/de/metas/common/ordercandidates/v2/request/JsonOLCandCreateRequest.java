@@ -266,7 +266,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 420, //
-			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capcity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
+			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capacity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -298,9 +298,17 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	Boolean isAutoInvoice;
 
-	@ApiModelProperty(position = 480)
+	@ApiModelProperty(position = 490)
 	@JsonInclude(Include.NON_NULL)
 	String invoiceRule;
+
+	@ApiModelProperty(position = 500)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsValue;
+
+	@ApiModelProperty(position = 510)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsLocation;
 
 
 	@JsonCreator
@@ -354,7 +362,9 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("email") final @Nullable String email,
 			@JsonProperty("phone") final @Nullable String phone,
 			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
-			@JsonProperty("invoiceRule") final @Nullable String invoiceRule)
+			@JsonProperty("invoiceRule") final @Nullable String invoiceRule,
+			@JsonProperty("incotermsValue") final @Nullable String incotermsValue,
+			@JsonProperty("incotermsLocation") final @Nullable String incotermsLocation)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -407,6 +417,9 @@ public class JsonOLCandCreateRequest
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 		this.isAutoInvoice = isAutoInvoice;
 		this.invoiceRule = invoiceRule;
+
+		this.incotermsValue = incotermsValue;
+		this.incotermsLocation = incotermsLocation;
 	}
 
 	/**

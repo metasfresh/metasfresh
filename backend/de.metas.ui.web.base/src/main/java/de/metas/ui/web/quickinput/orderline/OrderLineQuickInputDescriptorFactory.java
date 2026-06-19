@@ -41,6 +41,7 @@ import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.DisplayType;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -73,6 +74,7 @@ import java.util.Set;
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
 	private static final String SYS_CONFIG_FilterFlatrateConditionsADValRule = "OrderLineQuickInputDescriptorFactory.FilterFlatrateConditionsADValRule";
+	private static final String SYSCONFIG_FALLBACK_TO_BASE_PRICELIST = "FallbackToBasePricelist";
 	public static final AdValRuleId VAL_RULE_M_HU_PI_Item_Product_For_Org_and_Product_and_DatePromised = AdValRuleId.ofRepoId(540365);
 	public static final AdValRuleId VAL_RULE_M_HU_PI_Only_LUs = AdValRuleId.ofRepoId(540737);
 	public static final AdValRuleId VAL_RULE_M_HU_PI_Item_Product_for_BP_M_LU_HU_PI_ID = AdValRuleId.ofRepoId(540738);
@@ -175,6 +177,7 @@ import java.util.Set;
 
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
+		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, Env.getClientAndOrgId());
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
 			return ProductLookupDescriptor
@@ -186,6 +189,7 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
+					.isFallbackToBasePricelist(isFallbackToBasePriceList)
 					.build();
 		}
 		else
@@ -199,6 +203,7 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
+					.isFallbackToBasePricelist(isFallbackToBasePriceList)
 					.build();
 		}
 	}

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Label_Config extends org.compiere.model.PO implements I_M_HU_Label_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1626239778L;
+	private static final long serialVersionUID = 1919196409L;
 
     /** Standard Constructor */
     public X_M_HU_Label_Config (final Properties ctx, final int M_HU_Label_Config_ID, @Nullable final String trxName)
@@ -84,6 +84,8 @@ public class X_M_HU_Label_Config extends org.compiere.model.PO implements I_M_HU
 	public static final String HU_SOURCEDOCTYPE_MaterialReceipt = "MR";
 	/** Picking = PI */
 	public static final String HU_SOURCEDOCTYPE_Picking = "PI";
+	/** Inventory = MI */
+	public static final String HU_SOURCEDOCTYPE_Inventory = "MI";
 	@Override
 	public void setHU_SourceDocType (final @Nullable java.lang.String HU_SourceDocType)
 	{
@@ -142,18 +144,6 @@ public class X_M_HU_Label_Config extends org.compiere.model.PO implements I_M_HU
 	public boolean isAutoPrint() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAutoPrint);
-	}
-
-	@Override
-	public org.compiere.model.I_AD_Process getLabelReport_Process()
-	{
-		return get_ValueAsPO(COLUMNNAME_LabelReport_Process_ID, org.compiere.model.I_AD_Process.class);
-	}
-
-	@Override
-	public void setLabelReport_Process(final org.compiere.model.I_AD_Process LabelReport_Process)
-	{
-		set_ValueFromPO(COLUMNNAME_LabelReport_Process_ID, org.compiere.model.I_AD_Process.class, LabelReport_Process);
 	}
 
 	@Override

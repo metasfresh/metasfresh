@@ -3,6 +3,7 @@
     "purchaseCandidates": [
       {
         "orgCode": "orgCode",
+        "externalSystemCode": "ProCareManagement",
         "externalHeaderId": "extHeader_2",
         "poReference": "poRef_2",
         "externalPurchaseOrderUrl": null,

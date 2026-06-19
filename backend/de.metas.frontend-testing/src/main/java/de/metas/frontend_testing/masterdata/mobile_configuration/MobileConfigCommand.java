@@ -1,6 +1,6 @@
 package de.metas.frontend_testing.masterdata.mobile_configuration;
 
-import de.metas.distribution.config.MobileUIDistributionConfigRepository;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;

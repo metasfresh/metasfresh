@@ -35,6 +35,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
+import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -44,8 +45,10 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.DeliveryRule;
 import de.metas.order.InvoiceRule;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery;
@@ -85,18 +88,18 @@ import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_Pr
 import static de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg_ProcessHelper.PARAM_IS_SHOW_MEMBERSHIP_PARAMETER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient;
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IncotermLocation;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsAllowActionPrice;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsCustomer;
-import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsSalesRep;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsTaxExempt;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsVendor;
@@ -105,6 +108,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_DiscountSchema_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_InvoiceRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_PricingSystem_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_PO_TransportDays;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_PaymentRulePO;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -117,6 +121,7 @@ public class C_BPartner_StepDef
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
 	@NonNull private final C_BPartner_StepDefData bPartnerTable;
+	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
 	@NonNull private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	@NonNull private final M_PricingSystem_StepDefData pricingSystemTable;
 	@NonNull private final M_Product_StepDefData productTable;
@@ -133,8 +138,15 @@ public class C_BPartner_StepDef
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
+	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 
+	/**
+	 * Creates {@code C_BPartner} records with their default location.
+	 * <p>
+	 * The {@code C_BP_Group_ID} column resolves a known {@link C_BP_Group_StepDefData} identifier first, then
+	 * falls back to a raw repo-id, then to the default group.
+	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
 	{
@@ -221,7 +233,10 @@ public class C_BPartner_StepDef
 	{
 		final ValueAndName valueAndName = row.suggestValueAndName();
 
-		final int bpGroupId = row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID);
+		final int bpGroupId = row.getAsOptionalIdentifier(COLUMNNAME_C_BP_Group_ID)
+				.flatMap(bpGroupTable::getIdOptional)
+				.map(BPGroupId::getRepoId)
+				.orElseGet(() -> row.getAsOptionalInt(COLUMNNAME_C_BP_Group_ID).orElse(BP_GROUP_ID));
 
 		final int orgId = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_Org_ID)
 				.map(orgTable::get)
@@ -235,6 +250,7 @@ public class C_BPartner_StepDef
 
 		bPartnerRecord.setName(valueAndName.getName());
 		bPartnerRecord.setValue(valueAndName.getValue());
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(COLUMNNAME_Lookup_Label).ifPresent(bPartnerRecord::setLookup_Label);
 
 		bPartnerRecord.setC_BP_Group_ID(bpGroupId);
@@ -287,12 +303,6 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
 
-		final boolean isEdiDesadvRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiDesadvRecipient).orElseFalse();
-		final boolean isEdiInvoicRecipient = row.getAsOptionalBoolean(COLUMNNAME_IsEdiInvoicRecipient).orElseFalse();
-
-		bPartnerRecord.setIsEdiDesadvRecipient(isEdiDesadvRecipient);
-		bPartnerRecord.setIsEdiInvoicRecipient(isEdiInvoicRecipient);
-
 		final String companyName = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CompanyName).orElse(null);
 		if (EmptyUtil.isNotBlank(companyName))
 		{
@@ -315,10 +325,6 @@ public class C_BPartner_StepDef
 					.build()).getRepoId());
 		}
 
-		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID)
-				.map(paymentTermTable::getId)
-				.ifPresent(paymentTermId -> bPartnerRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId()));
-
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRule, PaymentRule.class).ifPresent(paymentRule -> bPartnerRecord.setPaymentRule(paymentRule.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
@@ -327,6 +333,21 @@ public class C_BPartner_StepDef
 		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID)
 				.map(orgTable::getIdAsInt)
 				.ifPresent(bPartnerRecord::setAD_OrgBP_ID);
+
+		row.getAsOptionalString(COLUMNNAME_C_Incoterms_Customer_ID + ".Value")
+				.ifPresent(incotermValue -> bPartnerRecord.setC_Incoterms_Customer_ID(incotermsRepository.getByValue(incotermValue, OrgId.ofRepoId(orgId)).getId().getRepoId()));
+		row.getAsOptionalString(COLUMNNAME_IncotermLocation).ifPresent(bPartnerRecord::setIncotermLocation);
+		row.getAsOptionalInt(COLUMNNAME_PO_TransportDays).ifPresent(bPartnerRecord::setPO_TransportDays);
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::getId)
+				.ifPresent(aggregationId -> bPartnerRecord.setSO_Invoice_Aggregation_ID(aggregationId.getRepoId()));
+
+		// Delivery / order stop fields (gh#28631)
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(bPartnerRecord::setDeliveryStopReason);
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -394,14 +415,13 @@ public class C_BPartner_StepDef
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name2).ifPresent(bPartnerRecord::setName2);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId)));
 
-		bPartnerRecord.setIsEdiDesadvRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient).orElseFalse());
-
-		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN).ifPresent(ediDesadvRecipientGLN -> bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN)));
-		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN).ifPresent(ediInvoicRecipientGLN -> bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN)));
-
-		bPartnerRecord.setIsEdiInvoicRecipient(row.getAsOptionalBoolean(de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient).orElseFalse());
-
 		row.getAsOptionalString(de.metas.edi.model.I_C_BPartner.COLUMNNAME_DeliveryRule).ifPresent(deliveryRule -> bPartnerRecord.setDeliveryRule(DataTableUtil.nullToken2Null(deliveryRule)));
+
+		// Delivery / order stop fields (gh#28631) — allow toggling Y/N via "the following c_bpartner is changed"
+		row.getAsOptionalString(de.metas.interfaces.I_C_BPartner.COLUMNNAME_DeliveryStopReason)
+				.ifPresent(reason -> bPartnerRecord.setDeliveryStopReason(DataTableUtil.nullToken2Null(reason)));
+		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(bPartnerRecord::setIsDeliveryStop);
 
 		InterfaceWrapperHelper.save(bPartnerRecord);
 	}
@@ -422,8 +442,11 @@ public class C_BPartner_StepDef
 
 	private void load_bpartner(@NonNull final Map<String, String> row)
 	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
+		// I don't dare to open the can of worms of overhauling this entirely,
+		// because we have "C_BPartner_ID.Identifier" and "OPT.C_BPartner_ID"
+		final DataTableRow tableRow = DataTableRow.singleRow(row);
 
+		final String identifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + ".Identifier");
 		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + COLUMNNAME_C_BPartner_ID);
 
 		if (id != null)
@@ -432,17 +455,23 @@ public class C_BPartner_StepDef
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
 
 		final String value = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Value);
-
 		if (Check.isNotBlank(value))
 		{
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), value);
 			assertThat(bPartnerRecord).isNotNull();
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
+
+			tableRow.getAsOptionalIdentifier("REST.Context")
+					.ifPresent(ident -> restTestContext.setVariable(ident.getAsString(), bPartnerRecord.getC_BPartner_ID()));
 		}
+
 	}
 
 	private void updateBPartner(@NonNull final Map<String, String> tableRow)

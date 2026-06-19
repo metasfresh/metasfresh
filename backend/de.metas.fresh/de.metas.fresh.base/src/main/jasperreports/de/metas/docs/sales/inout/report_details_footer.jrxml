@@ -112,7 +112,8 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 				<textFieldExpression><![CDATA[$F{deliveryviarule}]]></textFieldExpression>
 			</textField>
 		</band>
-		<band height="15">
+		<band height="30">
+			<property name="com.jaspersoft.studio.unit.height" value="px"/>
 			<printWhenExpression><![CDATA[new Boolean ($F{incoterms} != null && !$F{incoterms}.isEmpty())]]></printWhenExpression>
 			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
 				<reportElement key="textField-1" style="Test" x="36" y="0" width="112" height="12" isPrintWhenDetailOverflows="true" uuid="697342bc-1c0f-47dd-bf52-a2bd56f93b01"/>
@@ -138,7 +139,20 @@ de_metas_endcustomer_fresh_reports.Docs_Inout_Details_Footer($P{m_inout_id}, $P{
 				<textElement markup="none">
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{incoterms}+" "+$F{incotermlocation}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{incoterms}]]></textFieldExpression>
+			</textField>
+			<textField textAdjust="StretchHeight" isBlankWhenNull="true">
+				<reportElement key="textField-1" style="Test" x="148" y="12" width="372" height="12" isPrintWhenDetailOverflows="true" uuid="ba009cec-a53c-4416-9c10-3042e1ea8433"/>
+				<box>
+					<topPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<leftPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<bottomPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+					<rightPen lineWidth="0.0" lineStyle="Solid" lineColor="#000000"/>
+				</box>
+				<textElement markup="none">
+					<font fontName="Arial" size="9"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{incotermlocation}]]></textFieldExpression>
 			</textField>
 		</band>
 		<band height="15">

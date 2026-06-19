@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.api.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.inoutcandidate.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
@@ -103,6 +103,8 @@ public abstract class ReceiptScheduleTestBase
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
+		SpringContextHolder.registerJUnitBean(new ReceiptScheduleDeliveryStopGuard());
+		
 		//
 		// Mimic ModelValidator behaviour
 		// Services.get(IModelInterceptorRegistry.class).addModelInterceptor(ReceiptScheduleValidator.instance);
@@ -206,11 +208,13 @@ public abstract class ReceiptScheduleTestBase
 		dimensionFactories.add(new ReceiptScheduleDimensionFactory());
 		dimensionFactories.add(new InOutLineDimensionFactory());
 
-		final DimensionService dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		SpringContextHolder.registerJUnitBean(new ReceiptScheduleDeliveryStopGuard());
+		
 		//
 		final I_C_Activity activity = InterfaceWrapperHelper.newInstance(I_C_Activity.class, org);
 		saveRecord(activity);

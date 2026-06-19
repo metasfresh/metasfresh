@@ -10,8 +10,6 @@ import { pickingRoutes } from './picking';
 import { getApplicationRoutes } from '../apps';
 
 export const routesArray = [
-  ...launchersRoutes,
-  ...workflowRoutes,
   ...scanRoutes,
   ...distributionRoutes,
   ...generateHUQRCodesRoutes,
@@ -19,5 +17,7 @@ export const routesArray = [
   ...manufacturingIssueAdjustmentRoutes,
   ...manufacturingReceiptRoutes,
   ...pickingRoutes,
+  ...launchersRoutes,
+  ...workflowRoutes,
   ...getApplicationRoutes(),
 ];

@@ -47,6 +47,7 @@ public class GroupTemplate
 	@Nullable GroupTemplateId id;
 	@NonNull String name;
 	boolean isNamePrinted;
+	boolean isInheritPackingInstruction;
 	@Nullable ActivityId activityId;
 	@Nullable ProductCategoryId productCategoryId;
 
@@ -58,6 +59,7 @@ public class GroupTemplate
 			@Nullable final GroupTemplateId id,
 			@NonNull final String name,
 			@Nullable final Boolean isNamePrinted,
+			final boolean isInheritPackingInstruction,
 			@Nullable final ActivityId activityId,
 			@Nullable final ProductCategoryId productCategoryId,
 			@NonNull final List<GroupTemplateRegularLine> regularLinesToAdd,
@@ -66,6 +68,7 @@ public class GroupTemplate
 		this.id = id;
 		this.name = name;
 		this.isNamePrinted = OptionalBoolean.ofNullableBoolean(isNamePrinted).orElseTrue();
+		this.isInheritPackingInstruction = isInheritPackingInstruction;
 		this.activityId = activityId;
 		this.productCategoryId = productCategoryId;
 		this.regularLinesToAdd = ImmutableList.copyOf(regularLinesToAdd);

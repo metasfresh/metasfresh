@@ -11,7 +11,6 @@ import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Singular;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.warehouse.LocatorId;
@@ -26,19 +25,22 @@ import java.util.Set;
 @Builder
 public class DDOrderQuery
 {
-	@NonNull @Singular ImmutableList<OrderBy> orderBys;
+	@NonNull ImmutableList<OrderBy> orderBys;
 
 	@Nullable DocStatus docStatus;
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
 	@Nullable InSetPredicate<LocatorId> locatorToIds;
+	/** Plain {@link Set} (not {@link InSetPredicate}) because the exclude filter uses a NOT-IN subquery via {@code DD_OrderLine}; there is no meaningful "exclude all" wildcard case. */
+	@Nullable Set<LocatorId> excludeLocatorToIds;
 	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;
 	@Nullable Set<LocalDate> datesPromised;
 	@Nullable Set<ProductId> productIds;
 	@Nullable Set<Quantity> qtysEntered;
 	@Nullable Set<ResourceId> plantIds;
+	@Nullable Set<DDOrderId> onlyDDOrderIds;
 
 	//
 	//
@@ -53,6 +55,7 @@ public class DDOrderQuery
 	public enum OrderByField
 	{
 		PriorityRule,
+		LocatorPriority,
 		DatePromised,
 		SeqNo,
 	}

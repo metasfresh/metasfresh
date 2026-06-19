@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -437627729L;
+	private static final long serialVersionUID = -1988281162L;
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -59,6 +59,18 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsPackingPlace (final boolean IsPackingPlace)
+	{
+		set_Value (COLUMNNAME_IsPackingPlace, IsPackingPlace);
+	}
+
+	@Override
+	public boolean isPackingPlace() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPackingPlace);
 	}
 
 	@Override
@@ -176,5 +188,17 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public java.lang.String getPriorityRule() 
 	{
 		return get_ValueAsString(COLUMNNAME_PriorityRule);
+	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 }

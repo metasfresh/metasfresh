@@ -85,4 +85,6 @@ public class SwaggerDocConstants
 			+ "* or something like `ext-<ExternalSystemName>-<ExternalReference>` where `<ExternalReference>` translates to an identifier of the warehouse within the given `<ExternalSystem>`";
 
 	public static final String EXTERNAL_SYSTEM_NAME = "Identifies an external system.";
+
+	public static final String ORG_CODE_PARAMETER_DOC = "`AD_Org.Value` of the Product(s) identified by the productIdentifier";
 }

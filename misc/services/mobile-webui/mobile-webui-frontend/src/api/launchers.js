@@ -14,7 +14,9 @@ export const getLaunchers = ({
   filters,
   facetIds: facetIdsParam,
   facets: facetsParam,
+  excludeAlreadyStarted,
   countOnly = false,
+  limit,
 }) => {
   let facetIds = null;
   if (facetIdsParam) {
@@ -29,7 +31,9 @@ export const getLaunchers = ({
       applicationId,
       filterByQRCode: filterByQRCodeString,
       facetIds,
+      excludeAlreadyStarted,
       countOnly,
+      limit,
     })
     .then((response) => unboxAxiosResponse(response));
 };
@@ -106,7 +110,7 @@ export const useLaunchersWebsocket = ({
         facetIds,
       })}`;
 
-      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
+      // console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCodeString, filters, facetIds });
       client = ws.connectAndSubscribe({
         topic,
         debug: !!window?.debug_ws,
@@ -121,8 +125,8 @@ export const useLaunchersWebsocket = ({
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
+        // console.debug('WS disconnected', { applicationId, filterByQRCode, filters });
       }
     };
-  }, [enabled, userToken, applicationId, filterByQRCodeString, filters, facetIds]);
+  }, [enabled, userToken, applicationId, filterByQRCodeString, JSON.stringify(filters), facetIds]);
 };

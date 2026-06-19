@@ -24,22 +24,28 @@ package de.metas.acct.impexp;
 
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AcctSchemaId;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.impexp.processing.ImportRecordsSelection;
 import de.metas.impexp.processing.SimpleImportProcessTemplate;
 import de.metas.logging.LogManager;
-import de.metas.organization.OrgId;
+import de.metas.money.CurrencyId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.compiere.model.I_GL_Journal;
+import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.I_I_GLJournal;
 import org.compiere.model.MAccount;
 import org.compiere.model.MJournal;
 import org.compiere.model.MJournalBatch;
 import org.compiere.model.MJournalLine;
+import org.compiere.model.X_GL_JournalLine;
 import org.compiere.model.X_I_GLJournal;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
@@ -50,6 +56,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Properties;
 
 /**
@@ -58,555 +65,24 @@ import java.util.Properties;
 public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJournal>
 {
 	private static final Logger log = LogManager.getLogger(GLJournalImportProcess.class);
-
-	private int m_AD_Client_ID = -1;
-	private int m_AD_Org_ID = -1;
-	private int m_C_AcctSchema_ID = -1;
-	private Timestamp m_DateAcct = null;
-
-	private void getGLJournalImportProcessParameter()
-	{
-		m_AD_Client_ID = getParameters().getParameterAsInt("AD_Client_ID", ClientId.METASFRESH.getRepoId());
-		m_AD_Org_ID = getParameters().getParameterAsInt("AD_Org_ID", OrgId.MAIN.getRepoId());
-		m_C_AcctSchema_ID = getParameters().getParameterAsInt("C_AcctSchema_ID", -1);
-		m_DateAcct = getParameters().getParameterAsTimestamp("DateAcct");
-	}
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	@Override
 	protected void updateAndValidateImportRecordsImpl()
 	{
-		final String trxName = ITrx.TRXNAME_ThreadInherited;
 		final ImportRecordsSelection selection = getImportRecordsSelection();
 
 		// get process parameters
-		getGLJournalImportProcessParameter();
+		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(getParameters().getParameterAsInt(I_GL_Journal.COLUMNNAME_C_AcctSchema_ID, -1));
+		final Instant dateAcct = getParameters().getParameterAsInstant(I_GL_Journal.COLUMNNAME_DateAcct);
 
-		// Set IsActive, Created/Updated
-		StringBuilder sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET IsActive = COALESCE (IsActive, 'Y'),"
-				+ " Created = COALESCE (Created, now()),"
-				+ " CreatedBy = COALESCE (CreatedBy, 0),"
-				+ " Updated = COALESCE (Updated, now()),"
-				+ " UpdatedBy = COALESCE (UpdatedBy, 0),"
-				+ " I_ErrorMsg = ' ',"
-				+ " I_IsImported = 'N' "
-				+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.info("Reset=" + no);
-
-		// Set Client from Name
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AD_Client_ID=(SELECT c.AD_Client_ID FROM AD_Client c WHERE c.Value=i.ClientValue) "
-				+ " WHERE (AD_Client_ID IS NULL OR AD_Client_ID=0) AND ClientValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'");
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Client from Value=" + no);
-
-		// Set Default Client, Doc Org, AcctSchema, DatAcct
-		sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AD_Client_ID = COALESCE (AD_Client_ID,").append(m_AD_Client_ID).append("),"
-				+ " AD_OrgDoc_ID = COALESCE (AD_OrgDoc_ID,").append(m_AD_Org_ID).append("),");
-		if (m_C_AcctSchema_ID > 0)
-		{
-			sql.append(" C_AcctSchema_ID = COALESCE (C_AcctSchema_ID,").append(m_C_AcctSchema_ID).append("),");
-		}
-		if (m_DateAcct != null)
-		{
-			sql.append(" DateAcct = COALESCE (DateAcct,").append(DB.TO_DATE(m_DateAcct)).append("),");
-		}
-		sql.append(" Updated = COALESCE (Updated, now()) "
-						+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL")
-				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Client/DocOrg/Default=" + no);
-
-		// Error Doc Org
-		sql = new StringBuilder("UPDATE I_GLJournal o "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Doc Org, '"
-				+ " WHERE (AD_OrgDoc_ID IS NULL OR AD_OrgDoc_ID=0"
-				+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_OrgDoc_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("o"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Doc Org=" + no);
-		}
-
-		// Set AcctSchema
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_AcctSchema_ID=(SELECT a.C_AcctSchema_ID FROM C_AcctSchema a"
-				+ " WHERE i.AcctSchemaName=a.Name AND i.AD_Client_ID=a.AD_Client_ID) "
-				+ "WHERE C_AcctSchema_ID IS NULL AND AcctSchemaName IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set AcctSchema from Name=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_AcctSchema_ID=(SELECT c.C_AcctSchema1_ID FROM AD_ClientInfo c WHERE c.AD_Client_ID=i.AD_Client_ID) "
-				+ "WHERE C_AcctSchema_ID IS NULL AND AcctSchemaName IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set AcctSchema from Client=" + no);
-		// Error AcctSchema
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid AcctSchema, '"
-				+ " WHERE (C_AcctSchema_ID IS NULL OR C_AcctSchema_ID=0"
-				+ " OR NOT EXISTS (SELECT * FROM C_AcctSchema a WHERE i.AD_Client_ID=a.AD_Client_ID))"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid AcctSchema=" + no);
-		}
-
-		// Set DateAcct (mandatory)
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET DateAcct=now() "
-				+ "WHERE DateAcct IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set DateAcct=" + no);
-
-		// Document Type
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_DocType_ID=(SELECT d.C_DocType_ID FROM C_DocType d"
-				+ " WHERE d.Name=i.DocTypeName AND d.DocBaseType='GLJ' AND i.AD_Client_ID=d.AD_Client_ID) "
-				+ "WHERE C_DocType_ID IS NULL AND DocTypeName IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set DocType=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid DocType, '"
-				+ " WHERE (C_DocType_ID IS NULL OR C_DocType_ID=0"
-				+ " OR NOT EXISTS (SELECT * FROM C_DocType d WHERE i.AD_Client_ID=d.AD_Client_ID AND d.DocBaseType='GLJ'))"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid DocType=" + no);
-		}
-
-		// GL Category
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET GL_Category_ID=(SELECT c.GL_Category_ID FROM GL_Category c"
-				+ " WHERE c.Name=i.CategoryName AND i.AD_Client_ID=c.AD_Client_ID) "
-				+ "WHERE GL_Category_ID IS NULL AND CategoryName IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set DocType=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Category, '"
-				+ " WHERE (GL_Category_ID IS NULL OR GL_Category_ID=0)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid GLCategory=" + no);
-		}
-
-		// Set Currency
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_Currency_ID=(SELECT c.C_Currency_ID FROM C_Currency c"
-				+ " WHERE c.ISO_Code=i.ISO_Code AND c.AD_Client_ID IN (0,i.AD_Client_ID)) "
-				+ "WHERE C_Currency_ID IS NULL AND ISO_Code IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Currency from ISO=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_Currency_ID=(SELECT a.C_Currency_ID FROM C_AcctSchema a"
-				+ " WHERE a.C_AcctSchema_ID=i.C_AcctSchema_ID AND a.AD_Client_ID=i.AD_Client_ID)"
-				+ " WHERE C_Currency_ID IS NULL AND ISO_Code IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Default Currency=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Currency, '"
-				+ " WHERE (C_Currency_ID IS NULL OR C_Currency_ID=0)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Currency=" + no);
-		}
-
-		// Set Conversion Type
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET ConversionTypeValue='S' "
-				+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NULL"
-				+ " AND I_IsImported='N'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set CurrencyType Value to Spot =" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_ConversionType_ID=(SELECT c.C_ConversionType_ID FROM C_ConversionType c"
-				+ " WHERE c.Value=i.ConversionTypeValue AND c.AD_Client_ID IN (0,i.AD_Client_ID)) "
-				+ "WHERE C_ConversionType_ID IS NULL AND ConversionTypeValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set CurrencyType from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid CurrencyType, '"
-				+ " WHERE (C_ConversionType_ID IS NULL OR C_ConversionType_ID=0) AND ConversionTypeValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid CurrencyTypeValue=" + no);
-		}
-
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No ConversionType, '"
-				+ " WHERE (C_ConversionType_ID IS NULL OR C_ConversionType_ID=0)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("No CourrencyType=" + no);
-		}
-
-		// Set/Overwrite Home Currency Rate
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET CurrencyRate=1"
-				+ " WHERE EXISTS (SELECT * FROM C_AcctSchema a"
-				+ " WHERE a.C_AcctSchema_ID=i.C_AcctSchema_ID AND a.C_Currency_ID=i.C_Currency_ID)"
-				+ " AND C_Currency_ID IS NOT NULL AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Home CurrencyRate=" + no);
-		// Set Currency Rate
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET CurrencyRate=(SELECT MAX(r.MultiplyRate) FROM C_Conversion_Rate r, C_AcctSchema s"
-				+ " WHERE s.C_AcctSchema_ID=i.C_AcctSchema_ID AND s.AD_Client_ID=i.AD_Client_ID"
-				+ " AND r.C_Currency_ID=i.C_Currency_ID AND r.C_Currency_ID_TO=s.C_Currency_ID"
-				+ " AND r.AD_Client_ID=i.AD_Client_ID AND r.AD_Org_ID=i.AD_OrgDoc_ID"
-				+ " AND r.C_ConversionType_ID=i.C_ConversionType_ID"
-				+ " AND i.DateAcct BETWEEN r.ValidFrom AND r.ValidTo "
-				// ORDER BY ValidFrom DESC
-				+ ") WHERE CurrencyRate IS NULL OR CurrencyRate=0 AND C_Currency_ID>0"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Org Rate=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET CurrencyRate=(SELECT MAX(r.MultiplyRate) FROM C_Conversion_Rate r, C_AcctSchema s"
-				+ " WHERE s.C_AcctSchema_ID=i.C_AcctSchema_ID AND s.AD_Client_ID=i.AD_Client_ID"
-				+ " AND r.C_Currency_ID=i.C_Currency_ID AND r.C_Currency_ID_TO=s.C_Currency_ID"
-				+ " AND r.AD_Client_ID=i.AD_Client_ID"
-				+ " AND r.C_ConversionType_ID=i.C_ConversionType_ID"
-				+ " AND i.DateAcct BETWEEN r.ValidFrom AND r.ValidTo "
-				// ORDER BY ValidFrom DESC
-				+ ") WHERE CurrencyRate IS NULL OR CurrencyRate=0 AND C_Currency_ID>0"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Client Rate=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=No Rate, '"
-				+ " WHERE CurrencyRate IS NULL OR CurrencyRate=0"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("No Rate=" + no);
-		}
-
-		// Set Period
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_Period_ID=(SELECT MAX(p.C_Period_ID) FROM C_Period p"
-				+ " INNER JOIN C_Year y ON (y.C_Year_ID=p.C_Year_ID)"
-				+ " INNER JOIN AD_ClientInfo c ON (c.C_Calendar_ID=y.C_Calendar_ID)"
-				+ " WHERE c.AD_Client_ID=i.AD_Client_ID"
-				// globalqss - cruiz - Bug [ 1577712 ] Financial Period Bug
-				+ " AND i.DateAcct BETWEEN p.StartDate AND p.EndDate AND p.IsActive='Y' AND p.PeriodType='S') "
-				+ " WHERE C_Period_ID IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Period=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Period, '"
-				+ " WHERE C_Period_ID IS NULL OR C_Period_ID NOT IN"
-				+ " (SELECT C_Period_ID FROM C_Period p"
-				+ " INNER JOIN C_Year y ON (y.C_Year_ID=p.C_Year_ID)"
-				+ " INNER JOIN AD_ClientInfo c ON (c.C_Calendar_ID=y.C_Calendar_ID) "
-				+ " WHERE c.AD_Client_ID=i.AD_Client_ID"
-				// globalqss - cruiz - Bug [ 1577712 ] Financial Period Bug
-				+ " AND i.DateAcct BETWEEN p.StartDate AND p.EndDate AND p.IsActive='Y' AND p.PeriodType='S')"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Period=" + no);
-		}
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Period Closed, ' "
-				+ "WHERE C_Period_ID IS NOT NULL AND NOT EXISTS"
-				+ " (SELECT * FROM C_PeriodControl pc WHERE pc.C_Period_ID=i.C_Period_ID AND DocBaseType='GLJ' AND PeriodStatus='O') "
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Period Closed=" + no);
-		}
-
-		// Posting Type
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET PostingType='A' "
-				+ "WHERE PostingType IS NULL AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Actual PostingType=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid PostingType, ' "
-				+ "WHERE PostingType IS NULL OR NOT EXISTS"
-				+ " (SELECT * FROM AD_Ref_List r WHERE r.AD_Reference_ID=125 AND i.PostingType=r.Value)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid PostingTypee=" + no);
-		}
-
-		// Set Org from Name (* is overwritten and default)
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AD_Org_ID=COALESCE((SELECT o.AD_Org_ID FROM AD_Org o"
-				+ " WHERE o.Value=i.OrgValue AND o.IsSummary='N' AND i.AD_Client_ID=o.AD_Client_ID),AD_Org_ID) "
-				+ "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0) AND OrgValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Org from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AD_Org_ID=AD_OrgDoc_ID "
-				+ "WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0) AND OrgValue IS NULL AND AD_OrgDoc_ID IS NOT NULL AND AD_OrgDoc_ID<>0"
-				+ "  AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Org from Doc Org=" + no);
-		// Error Org
-		sql = new StringBuilder("UPDATE I_GLJournal o "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Org, '"
-				+ " WHERE (AD_Org_ID IS NULL OR AD_Org_ID=0"
-				+ " OR EXISTS (SELECT * FROM AD_Org oo WHERE o.AD_Org_ID=oo.AD_Org_ID AND (oo.IsSummary='Y' OR oo.IsActive='N')))"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("o"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Org=" + no);
-		}
-
-		// Set AccountFrom
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AccountFrom_ID=(SELECT MAX(ev.C_ElementValue_ID) FROM C_ElementValue ev"
-				+ " INNER JOIN C_Element e ON (e.C_Element_ID=ev.C_Element_ID)"
-				+ " INNER JOIN C_AcctSchema_Element ase ON (e.C_Element_ID=ase.C_Element_ID AND ase.ElementType='AC')"
-				+ " WHERE ev.Value=i.AccountValueFrom AND ev.IsSummary='N'"
-				+ " AND i.C_AcctSchema_ID=ase.C_AcctSchema_ID AND i.AD_Client_ID=ev.AD_Client_ID) "
-				+ "WHERE AccountFrom_ID IS NULL AND AccountValueFrom IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set AccountFrom from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account From, '"
-				+ " WHERE (AccountFrom_ID IS NULL OR AccountFrom_ID=0)"
-				+ " AND AccountValueFrom IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Account From=" + no);
-		}
-
-		// Set AccountTo
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AccountTo_ID=(SELECT MAX(ev.C_ElementValue_ID) FROM C_ElementValue ev"
-				+ " INNER JOIN C_Element e ON (e.C_Element_ID=ev.C_Element_ID)"
-				+ " INNER JOIN C_AcctSchema_Element ase ON (e.C_Element_ID=ase.C_Element_ID AND ase.ElementType='AC')"
-				+ " WHERE ev.Value=i.AccountValueTo AND ev.IsSummary='N'"
-				+ " AND i.C_AcctSchema_ID=ase.C_AcctSchema_ID AND i.AD_Client_ID=ev.AD_Client_ID) "
-				+ "WHERE AccountTo_ID IS NULL AND AccountValueTo IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set AccountTo from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Account To, '"
-				+ " WHERE (AccountTo_ID IS NULL OR AccountTo_ID=0)"
-				+ " AND AccountValueTo IS NOT NULL "
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Account To=" + no);
-		}
-
-		//  make sure that at least one account is set
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=At least one account shall be set, '"
-				+ " WHERE AccountValueTo IS NULL AND AccountValueFrom IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("At least one account shall be set=" + no);
-		}
-
-		// Set BPartner
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_BPartner_ID=(SELECT bp.C_BPartner_ID FROM C_BPartner bp"
-				+ " WHERE bp.Value=i.BPartnerValue AND bp.IsSummary='N' AND i.AD_Client_ID=bp.AD_Client_ID) "
-				+ "WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set BPartner from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid BPartner, '"
-				+ " WHERE C_BPartner_ID IS NULL AND BPartnerValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid BPartner=" + no);
-		}
-
-		// Set Product
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET M_Product_ID=(SELECT MAX(p.M_Product_ID) FROM M_Product p"
-				+ " WHERE (p.Value=i.ProductValue OR p.UPC=i.UPC OR p.SKU=i.SKU)"
-				+ " AND p.IsSummary='N' AND i.AD_Client_ID=p.AD_Client_ID) "
-				+ "WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Product from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Product, '"
-				+ " WHERE M_Product_ID IS NULL AND (ProductValue IS NOT NULL OR UPC IS NOT NULL OR SKU IS NOT NULL)"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Product=" + no);
-		}
-
-		// Set Project
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET C_Project_ID=(SELECT p.C_Project_ID FROM C_Project p"
-				+ " WHERE p.Value=i.ProjectValue AND p.IsSummary='N' AND i.AD_Client_ID=p.AD_Client_ID) "
-				+ "WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set Project from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid Project, '"
-				+ " WHERE C_Project_ID IS NULL AND ProjectValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid Project=" + no);
-		}
-
-		// Set TrxOrg
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET AD_OrgTrx_ID=(SELECT o.AD_Org_ID FROM AD_Org o"
-				+ " WHERE o.Value=i.OrgValue AND o.IsSummary='N' AND i.AD_Client_ID=o.AD_Client_ID) "
-				+ "WHERE AD_OrgTrx_ID IS NULL AND OrgTrxValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set OrgTrx from Value=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid OrgTrx, '"
-				+ " WHERE AD_OrgTrx_ID IS NULL AND OrgTrxValue IS NOT NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Invalid OrgTrx=" + no);
-		}
-
-		// Source Amounts
-		sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AmtSourceDr = 0 "
-				+ "WHERE AmtSourceDr IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set 0 Source Dr=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AmtSourceCr = 0 "
-				+ "WHERE AmtSourceCr IS NULL"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Set 0 Source Cr=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Zero Source Balance, ' "
-				+ "WHERE (AmtSourceDr-AmtSourceCr)=0"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Zero Source Balance=" + no);
-		}
-
-		// Accounted Amounts (Only if No Error)
-		sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AmtAcctDr = ROUND(AmtSourceDr * CurrencyRate, 2) "    // HARDCODED rounding
-				+ "WHERE AmtAcctDr IS NULL OR AmtAcctDr=0"
-				+ " AND I_IsImported <>'Y'")
-				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Calculate Acct Dr=" + no);
-
-		sql = new StringBuilder("UPDATE I_GLJournal "
-				+ "SET AmtAcctCr = ROUND(AmtSourceCr * CurrencyRate, 2) "
-				+ "WHERE AmtAcctCr IS NULL OR AmtAcctCr=0"
-				+ " AND I_IsImported <> 'Y'")
-				.append(selection.toSqlWhereClause());
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		log.debug("Calculate Acct Cr=" + no);
-		sql = new StringBuilder("UPDATE I_GLJournal i "
-				+ "SET I_ErrorMsg=I_ErrorMsg||'WARN=Zero Acct Balance, ' "
-				+ "WHERE (AmtSourceDr-AmtSourceCr)<>0 AND (AmtAcctDr-AmtAcctCr)=0"
-				+ " AND I_IsImported<>'Y'")
-				.append(selection.toSqlWhereClause("i"));
-		no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), trxName);
-		if (no != 0)
-		{
-			log.warn("Zero Acct Balance=" + no);
-		}
+		GLJournalImportTableSqlUpdater.builder()
+				.selection(selection)
+				.acctSchemaId(acctSchemaId)
+				.dateAcct(dateAcct)
+				.build()
+				.updateGLJournal();
 
 		checkBalance();
 	}
@@ -714,8 +190,8 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 			{
 				context.batch.setDocumentNo(importRecord.getBatchDocumentNo());
 			}
-			context.batch.setDateAcct(m_DateAcct);
-			context.batch.setDateDoc(m_DateAcct);
+			context.batch.setDateAcct(importRecord.getDateAcct());
+			context.batch.setDateDoc(importRecord.getDateAcct());
 			context.batch.setC_DocType_ID(importRecord.getC_DocType_ID());
 			context.batch.setPostingType(importRecord.getPostingType());
 			String description = importRecord.getBatchDescription();
@@ -802,6 +278,9 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		//
 		line.setDescription(importRecord.getDescription());
 		line.setCurrency(importRecord.getC_Currency_ID(), importRecord.getC_ConversionType_ID(), importRecord.getCurrencyRate());
+		line.setC_Activity_ID(importRecord.getC_Activity_ID());
+		line.setCR_Tax_ID(importRecord.getCR_Tax_ID());
+		line.setDR_Tax_ID(importRecord.getDR_Tax_ID());
 
 		//
 		line.setLine(importRecord.getLine());
@@ -851,6 +330,7 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 				importRecord.setC_ValidCombinationTo_ID(acct.get_ID());
 			}
 		}
+
 		//
 		line.setAccount_DR_ID(importRecord.getC_ValidCombinationFrom_ID());
 		line.setAccount_CR_ID(importRecord.getC_ValidCombinationTo_ID());
@@ -859,6 +339,75 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		line.setQty(importRecord.getQty());
 		line.setDescription(importRecord.getDescription());
 		//
+
+		// Set/Get Tax Account Combination From (Debit)
+		if (importRecord.getDR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxFrom_ID() <= 0)
+		{
+			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getDR_Tax_Acct_ID());
+			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
+
+			importRecord.setC_ValidCombinationTaxFrom_ID(taxAcct.get_ID());
+			InterfaceWrapperHelper.save(importRecord);
+		}
+
+		// Set/Get Tax Account Combination To (Credit)
+		if (importRecord.getCR_Tax_Acct_ID() > 0 && importRecord.getC_ValidCombinationTaxTo_ID() <= 0)
+		{
+			final AccountDimension taxAcctDim = newMinimalAccountDimension(importRecord, importRecord.getCR_Tax_Acct_ID());
+			final MAccount taxAcct = MAccount.get(getCtx(), taxAcctDim);
+
+			importRecord.setC_ValidCombinationTaxTo_ID(taxAcct.get_ID());
+			InterfaceWrapperHelper.save(importRecord);
+		}
+
+		// Add tax accunt and amounts if exists
+		if ((importRecord.getDR_TaxTotalAmt().signum() != 0 && line.getDR_Tax_ID() > 0)
+				|| (importRecord.getCR_TaxTotalAmt().signum() != 0 && line.getCR_Tax_ID() > 0))
+		{
+			if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0 || importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+			{
+				final CurrencyPrecision precision = getPrecision(line);
+
+				// Set tax amounts
+				if (importRecord.getDR_TaxTotalAmt().signum() != 0)
+				{
+					final Tax drTax = taxDAO.getTaxById(line.getDR_Tax_ID());
+					final BigDecimal taxTotalAmt = importRecord.getDR_TaxTotalAmt();
+					final BigDecimal taxAmt = drTax.calculateTax(taxTotalAmt, true, precision.toInt()).getTaxAmount();
+					final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
+
+					line.setDR_TaxTotalAmt(taxTotalAmt);
+					line.setDR_TaxAmt(taxAmt);
+					line.setDR_TaxBaseAmt(taxBaseAmt);
+				}
+				if (importRecord.getCR_TaxTotalAmt().signum() != 0)
+				{
+
+					final Tax crTax = taxDAO.getTaxById(line.getCR_Tax_ID());
+					final BigDecimal taxTotalAmt = importRecord.getCR_TaxTotalAmt();
+					final BigDecimal taxAmt = crTax.calculateTax(taxTotalAmt, true, precision.toInt()).getTaxAmount();
+					final BigDecimal taxBaseAmt = taxTotalAmt.subtract(taxAmt);
+
+					line.setCR_TaxTotalAmt(taxTotalAmt);
+					line.setCR_TaxAmt(taxAmt);
+					line.setCR_TaxBaseAmt(taxBaseAmt);
+				}
+
+				// Set tax account combinations
+				if (importRecord.getC_ValidCombinationTaxFrom_ID() > 0)
+				{
+					line.setDR_Tax_Acct_ID(importRecord.getC_ValidCombinationTaxFrom_ID());
+					line.setDR_AutoTaxAccount(true);
+				}
+				if (importRecord.getC_ValidCombinationTaxTo_ID() > 0)
+				{
+					line.setCR_Tax_Acct_ID(importRecord.getC_ValidCombinationTaxTo_ID());
+					line.setCR_AutoTaxAccount(true);
+				}
+
+				line.setType(X_GL_JournalLine.TYPE_Tax);
+			}
+		}
 
 		if (line.save())
 		{
@@ -875,6 +424,14 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 		}
 
 		return wasInsert ? ImportRecordResult.Inserted : ImportRecordResult.Updated;
+	}
+
+	private CurrencyPrecision getPrecision(@NonNull final I_GL_JournalLine glJournalLine)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(glJournalLine.getC_Currency_ID());
+		return currencyId != null
+				? currencyDAO.getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 	}
 
 	private AccountDimension newMinimalAccountDimension(final I_I_GLJournal importRecord, final int accountId)

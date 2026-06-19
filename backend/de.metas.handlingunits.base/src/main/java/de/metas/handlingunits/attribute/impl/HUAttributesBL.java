@@ -23,6 +23,7 @@
 package de.metas.handlingunits.attribute.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -33,6 +34,7 @@ import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IHUContextProcessorExecutor;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
@@ -60,10 +62,13 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeValueType;
 import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
@@ -75,7 +80,14 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class HUAttributesBL implements IHUAttributesBL
 {
@@ -167,16 +179,44 @@ public class HUAttributesBL implements IHUAttributesBL
 	}
 
 	@Override
-	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final AttributeCode attributeCode, @Nullable final Object attributeValue, @Nullable final String onlyHUStatus)
+	public void updateHUAttributeRecursive(@NonNull final HuId huId, @NonNull final HUAttributeUpdateRequest request)
 	{
-		final I_M_Attribute attribute = attributeDAO.retrieveActiveAttributeByValueOrNull(attributeCode);
+		final I_M_Attribute attribute = resolveAttributeOrNull(request.getAttributeCode());
 		if (attribute == null)
 		{
-			logger.debug("M_Attribute with Value={} does not exis of is inactive; -> do nothing", attributeCode.getCode());
 			return;
 		}
 		final I_M_HU hu = handlingUnitsDAO.getById(huId);
-		updateHUAttributeRecursive(hu, attribute, attributeValue, onlyHUStatus);
+		updateHUAttributeRecursive0(hu, attribute, request);
+	}
+
+	@Override
+	public void updateHUAttributeRecursive(@NonNull final I_M_HU hu, @NonNull final HUAttributeUpdateRequest request)
+	{
+		final I_M_Attribute attribute = resolveAttributeOrNull(request.getAttributeCode());
+		if (attribute == null)
+		{
+			return;
+		}
+		updateHUAttributeRecursive0(hu, attribute, request);
+	}
+
+	@Override
+	public void updateHUAttributeRecursive(@NonNull final Collection<HuId> huIds, @NonNull final HUAttributeUpdateRequest request)
+	{
+		if (huIds.isEmpty())
+		{
+			return;
+		}
+		final I_M_Attribute attribute = resolveAttributeOrNull(request.getAttributeCode());
+		if (attribute == null)
+		{
+			return;
+		}
+		for (final I_M_HU hu : handlingUnitsDAO.getByIds(huIds))
+		{
+			updateHUAttributeRecursive0(hu, attribute, request);
+		}
 	}
 
 	@Override
@@ -186,6 +226,31 @@ public class HUAttributesBL implements IHUAttributesBL
 										   final Object attributeValue,
 										   final String onlyHUStatus)
 	{
+		updateHUAttributeRecursive0(hu, attribute, HUAttributeUpdateRequest.builder()
+				.attributeCode(AttributeCode.ofString(attribute.getValue()))
+				.attributeValue(attributeValue)
+				.onlyHUStatus(onlyHUStatus)
+				.build());
+	}
+
+	@Nullable
+	private I_M_Attribute resolveAttributeOrNull(@NonNull final AttributeCode attributeCode)
+	{
+		final I_M_Attribute attribute = attributeDAO.retrieveActiveAttributeByValueOrNull(attributeCode);
+		if (attribute == null)
+		{
+			logger.debug("M_Attribute with Value={} does not exist or is inactive; -> do nothing", attributeCode.getCode());
+		}
+		return attribute;
+	}
+
+	private void updateHUAttributeRecursive0(@NonNull final I_M_HU rootHU,
+											 @NonNull final I_M_Attribute attribute,
+											 @NonNull final HUAttributeUpdateRequest request)
+	{
+		final Object attributeValue = request.getAttributeValue();
+		final String onlyHUStatus = request.getOnlyHUStatus();
+		final boolean onlyIfNotSet = request.isOnlyIfNotSet();
 		final ILoggable loggable = Loggables.get();
 
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
@@ -204,7 +269,8 @@ public class HUAttributesBL implements IHUAttributesBL
 				{
 					final IAttributeStorage attributeStorage = huAttributeStorageFactory.getAttributeStorage(currentHU);
 
-					if (attributeStorage.hasAttribute(attribute))
+					if (attributeStorage.hasAttribute(attribute)
+							&& (!onlyIfNotSet || Check.isEmpty(attributeStorage.getValue(attribute))))
 					{
 						attributeStorage.setValueNoPropagate(attribute, attributeValue);
 						attributeStorage.saveChangesIfNeeded();
@@ -216,7 +282,7 @@ public class HUAttributesBL implements IHUAttributesBL
 				return Result.CONTINUE;
 			}
 		});
-		iterator.iterate(hu);
+		iterator.iterate(rootHU);
 	}
 
 	@Override
@@ -245,11 +311,10 @@ public class HUAttributesBL implements IHUAttributesBL
 		return qualityDiscountPercent.divide(Env.ONEHUNDRED);
 	}
 
-	private final IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
+	private IAttributeStorage getAttributeStorage(final IHUContext huContext, final I_M_HU hu)
 	{
 		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
-		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
-		return attributeStorage;
+		return attributeStorageFactory.getAttributeStorage(hu);
 	}
 
 	@Override
@@ -298,6 +363,93 @@ public class HUAttributesBL implements IHUAttributesBL
 				final String productName = productBL.getProductName(productId);
 				throw new AdempiereException(messageKey, attribute.getDisplayName(), productName);
 			}
+		}
+	}
+
+	@Override
+	public Optional<String> extractCommonAttributeValue(final ImmutableSet<HuId> huIds, final AttributeCode attributeCode)
+	{
+		if (huIds.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final AttributeId attributeId = attributeDAO.retrieveActiveAttributeIdByValueOrNull(attributeCode);
+		if (attributeId == null)
+		{
+			return Optional.empty();
+		}
+
+		return huAttributesDAO.extractCommonStringAttributeValue(huIds, attributeId);
+	}
+
+	@Override
+	public ImmutableAttributeSet extractCommonStorageRelevantAttributeSet(final ImmutableSet<HuId> huIds)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableAttributeSet.EMPTY;
+		}
+
+		final Map<AttributeId, List<I_M_HU_Attribute>> huAttributesByAttributeId = huAttributesDAO.retrieveAllAttributesNoCache(huIds)
+				.stream()
+				.collect(Collectors.groupingBy(a -> AttributeId.ofRepoId(a.getM_Attribute_ID())));
+
+		final Map<AttributeId, I_M_Attribute> attributeRecordsById = attributeDAO.getAttributeRecordsByIds(huAttributesByAttributeId.keySet())
+				.stream()
+				.collect(Collectors.toMap(a -> AttributeId.ofRepoId(a.getM_Attribute_ID()), a -> a));
+
+		final ImmutableAttributeSet.Builder builder = ImmutableAttributeSet.builder();
+		for (final Map.Entry<AttributeId, List<I_M_HU_Attribute>> entry : huAttributesByAttributeId.entrySet())
+		{
+			final I_M_Attribute attribute = attributeRecordsById.get(entry.getKey());
+			if (attribute == null || !attribute.isStorageRelevant())
+			{
+				continue;
+			}
+
+			final AttributeValueType valueType = AttributeValueType.ofCode(attribute.getAttributeValueType());
+			extractCommonValue(valueType, entry.getValue())
+					.ifPresent(commonValue -> builder.attributeValue(attribute, commonValue));
+		}
+
+		return builder.build();
+	}
+
+	private static Optional<Object> extractCommonValue(
+			@NonNull final AttributeValueType valueType,
+			@NonNull final List<I_M_HU_Attribute> huAttributes)
+	{
+		switch (valueType)
+		{
+			case STRING:
+			case LIST:
+			{
+				final Set<String> distinctValues = huAttributes.stream()
+						.map(I_M_HU_Attribute::getValue)
+						.filter(Objects::nonNull)
+						.collect(Collectors.toSet());
+				return distinctValues.size() == 1 ? Optional.of(distinctValues.iterator().next()) : Optional.empty();
+			}
+			case DATE:
+			{
+				final Set<Timestamp> distinctValues = huAttributes.stream()
+						.map(I_M_HU_Attribute::getValueDate)
+						.filter(Objects::nonNull)
+						.collect(Collectors.toSet());
+				return distinctValues.size() == 1 ? Optional.of(distinctValues.iterator().next()) : Optional.empty();
+			}
+			case NUMBER:
+			{
+				final Set<BigDecimal> distinctValues = huAttributes.stream()
+						.map(I_M_HU_Attribute::getValueNumber)
+						.filter(Objects::nonNull)
+						.map(BigDecimal::stripTrailingZeros)
+						.collect(Collectors.toSet());
+				return distinctValues.size() == 1 ? Optional.of(distinctValues.iterator().next()) : Optional.empty();
+			}
+			default:
+				return Optional.empty();
 		}
 	}
 
@@ -404,4 +556,20 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
 		return attributeStorage.getAttributeValue(attributeCode);
 	}
+
+	@Override
+	public Optional<IAttributeValue> getAttributeValueIfExists(@NonNull final I_M_HU hu, @NonNull final AttributeCode attributeCode)
+	{
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext(PlainContextAware.newWithThreadInheritedTrx());
+
+		final IAttributeStorageFactory attributeStorageFactory = huContext.getHUAttributeStorageFactory();
+		final IAttributeStorage attributeStorage = attributeStorageFactory.getAttributeStorage(hu);
+		if (!attributeStorage.hasAttribute(attributeCode))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(attributeStorage.getAttributeValue(attributeCode));
+	}
+
 }

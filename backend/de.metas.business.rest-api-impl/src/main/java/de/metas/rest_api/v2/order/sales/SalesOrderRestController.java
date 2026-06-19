@@ -28,7 +28,6 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.rest_api.v1.JsonError;
@@ -48,6 +47,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.JsonErrors;
+import de.metas.rest_api.v2.bpartner.BPartnerMasterdataProvider;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -105,7 +105,7 @@ public class SalesOrderRestController
 	@NonNull private final JsonRetrieverService jsonRetrieverService;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final PermissionServiceFactory permissionServiceFactory = PermissionServiceFactories.currentContext();
-	@NonNull private final BPartnerEffectiveBL bPartnerEffectiveBL;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
 	public SalesOrderRestController(
 			@NonNull final OrderService orderService,
@@ -114,7 +114,7 @@ public class SalesOrderRestController
 			@NonNull final BpartnerRestController bpartnerRestController,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final BPartnerEffectiveBL bPartnerEffectiveBL)
+			@NonNull final BPartnerMasterdataProvider bPartnerMasterdataProvider)
 	{
 		this.orderService = orderService;
 		this.attachmentEntryService = attachmentEntryService;
@@ -122,7 +122,7 @@ public class SalesOrderRestController
 		this.bpartnerRestController = bpartnerRestController;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
 		this.externalSystemRepository = externalSystemRepository;
-		this.bPartnerEffectiveBL = bPartnerEffectiveBL;
+		this.bPartnerMasterdataProvider = bPartnerMasterdataProvider;
 	}
 
 	@ApiOperation("Create new order payment")
@@ -234,7 +234,7 @@ public class SalesOrderRestController
 					.externalReferenceRestControllerService(externalReferenceRestControllerService)
 					.jsonRetrieverService(jsonRetrieverService)
 					.externalSystemRepository(externalSystemRepository)
-					.bPartnerEffectiveBL(bPartnerEffectiveBL)
+					.bPartnerMasterdataProvider(bPartnerMasterdataProvider)
 					.build();
 
 			return orderService.getOrderId(request, masterdataProvider)

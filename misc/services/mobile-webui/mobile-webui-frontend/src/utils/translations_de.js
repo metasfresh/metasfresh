@@ -5,6 +5,8 @@ const translations = {
       differentProduct: 'The scanned QR Product does not match',
     },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    InternalError:
+      'Bitte erneut versuchen. Sollte das Problem weiterhin auftreten, wenden Sie sich an den Support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Verbindung Fehler',
     },
@@ -51,10 +53,17 @@ const translations = {
     },
     workplace: 'Arbeitsplatz',
     workstation: 'Arbeitsstation',
+    trolley: 'Wagen',
+    releaseTrolley: {
+      buttonCaption: 'Wagen freigeben',
+    },
   },
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
+    qrLoginPlaceholder: 'QR-Code zum Anmelden scannen',
+    username: 'Benutzername',
+    password: 'Passwort',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Passwort',
@@ -77,6 +86,15 @@ const translations = {
       scanTextPlaceholder: 'scan...',
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
+      scanTrolleyPlaceholder: 'Wagen scannen...',
+      scanPrompt: 'Barcode scannen',
+      scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {
@@ -87,6 +105,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
+      action: {
+        bulkActions: {
+          windowName: 'Massenaktionen',
+          closeScanner: 'Scanner schließen',
+          move: 'Verschieben',
+          moveSuccess: 'HU erfolgreich verschoben',
+          scanHUPlaceholder: 'HU scannen',
+          scanTargetPlaceholder: 'Ziellagerplatz scannen',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packzeile',
@@ -107,7 +135,7 @@ const translations = {
       switchToQrCodeInput: 'Scannen',
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
-      qtyRejectedIgnoreReason: 'Keinen Grund eintragen',
+      qtyRejectedIgnoreReason: 'Ohne Grund',
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -125,22 +153,41 @@ const translations = {
         Current: 'Current',
         CloseTarget: 'Schließen',
       },
+      graiScan: {
+        multipleScanned:
+          'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
+      },
       overPickConfirmationPrompt: 'Möchten Sie wirklich mehr verpacken als beauftragt wurde?',
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
+      noMatchingLines: 'Keine passende Packzeile gefunden',
+      massPrinting: {
+        triggerButton: 'Massendruck Etiketten',
+        scanCaption: 'LU scannen',
+        doneButton: 'Fertig',
+        noResults: 'Keine passenden Produkte auf dieser LU gefunden',
+        product: 'Produkt',
+        unitsPacked: 'Verpackte Einheiten',
+        unitsLeftOnLU: 'Restmengen auf LU',
+        unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
+        skippedProducts: 'Übersprungene Produkte',
+      },
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanLocator: 'Ziel-Lagerplatz scannen',
+      scanProduct: 'Artikel scannen',
+      scanDropToLocator: 'Ziel-Lagerplatz scannen',
+      switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',
       qrcode: {
         differentProduct: 'Das gescannte QR Produkt stimmt nicht mit dem im Pickauftrag überein',
       },
+      printMaterialInTransitReport: 'Materialbegleitschein',
     },
     confirmButton: {
       default: {
@@ -151,6 +198,11 @@ const translations = {
       },
       abort: 'Rückgängig',
       notFound: 'Nicht gefunden',
+      error: {
+        title: 'Bestätigung konnte nicht gesendet werden',
+        retry: 'Erneut senden',
+        cancel: 'Abbrechen',
+      },
     },
     mfg: {
       ProductName: 'Produkt',

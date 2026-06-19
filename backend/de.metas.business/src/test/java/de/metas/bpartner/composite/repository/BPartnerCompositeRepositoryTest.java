@@ -26,12 +26,14 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.GLN;
+import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -50,11 +52,14 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDate;
 
@@ -75,7 +80,8 @@ class BPartnerCompositeRepositoryTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
-				new UserRoleRepository());
+				new UserRoleRepository(),
+				new BPartnerCreditLimitRepository());
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -112,6 +118,8 @@ class BPartnerCompositeRepositoryTest
 								.shipTo(true)
 								.billToDefault(true)
 								.billTo(true)
+								.visitorsAddressDefault(true)
+								.visitorsAddress(true)
 								.build())
 						.gln(GLN.ofString("GLN"))
 						.externalId(ExternalId.of("externalId"))
@@ -189,7 +197,7 @@ class BPartnerCompositeRepositoryTest
 	void save_and_load_existingLocationId()
 	{
 		final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
-		final LocationId existingLocationId = locationDAO.createLocation(LocationCreateRequest.builder()
+		final LocationId existingLocationId = locationDAO.createOrReuseLocation(LocationCreateRequest.builder()
 				.address1("address1")
 				.address2("address2")
 				.address3("address3")
@@ -228,5 +236,70 @@ class BPartnerCompositeRepositoryTest
 						"locations.changeLog",
 						"locations.original")
 				.isEqualTo(bpartnerComposite);
+	}
+
+	@Test
+	void getSingleByQuery_throwsUserFriendlyError_whenMultipleBPartnersMatchByValue()
+	{
+		// Given: two BPartners with same Value (customer + vendor)
+		final BPartnerComposite customer = BPartnerComposite.builder()
+				.orgId(orgId)
+				.bpartner(BPartner.builder()
+						.value("SHARED_VAL")
+						.name("Customer BP")
+						.groupId(BPGroupId.STANDARD)
+						.customer(true)
+						.vendor(false)
+						.build())
+				.build();
+		bpartnerCompositeRepository.save(customer, true);
+
+		final BPartnerComposite vendor = BPartnerComposite.builder()
+				.orgId(orgId)
+				.bpartner(BPartner.builder()
+						.value("SHARED_VAL")
+						.name("Vendor BP")
+						.groupId(BPGroupId.STANDARD)
+						.customer(false)
+						.vendor(true)
+						.build())
+				.build();
+		bpartnerCompositeRepository.save(vendor, true);
+
+		// When/Then: getSingleByQuery should throw user-friendly error
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("SHARED_VAL")
+				.onlyOrgId(orgId)
+				.build();
+
+		assertThatThrownBy(() -> bpartnerCompositeRepository.getSingleByQuery(query))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SHARED_VAL");
+	}
+
+	@Test
+	void getSingleByQuery_returnsOne_whenSingleBPartnerMatchesByValue()
+	{
+		// Given: a single BPartner
+		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
+				.orgId(orgId)
+				.bpartner(BPartner.builder()
+						.value("UNIQUE_VAL")
+						.name("Unique BP")
+						.groupId(BPGroupId.STANDARD)
+						.build())
+				.build();
+		bpartnerCompositeRepository.save(bpartnerComposite, true);
+
+		// When
+		final BPartnerQuery query = BPartnerQuery.builder()
+				.bpartnerValue("UNIQUE_VAL")
+				.onlyOrgId(orgId)
+				.build();
+		final BPartnerComposite result = bpartnerCompositeRepository.getSingleByQuery(query).orElse(null);
+
+		// Then
+		Assertions.assertThat(result).isNotNull();
+		Assertions.assertThat(result.getBpartner().getValue()).isEqualTo("UNIQUE_VAL");
 	}
 }

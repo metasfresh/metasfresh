@@ -88,7 +88,9 @@ const QtyInputField = ({
         />
         {uom && <span className="icon is-small is-right">{uom}</span>}
       </div>
-      <p className="help is-danger">{qtyInfo.notValidMessage}&nbsp;</p>
+      <p data-testid="qty-validation-error" className="help is-danger">
+        {qtyInfo.notValidMessage}&nbsp;
+      </p>
     </div>
   );
 };

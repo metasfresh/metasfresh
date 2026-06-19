@@ -330,7 +330,11 @@ public class AdempiereException extends RuntimeException
 		// so we can consider those user-friendly errors
 		this.userValidationError = true;
 
-		this.errorCode = errorCode;
+		this.errorCode = errorCode != null
+				? errorCode
+				: message.getAdMessageKey()
+						.map(key -> coalesce(msgBL.getErrorCode(key), key.toAD_Message()))
+						.orElse(null);
 	}
 
 	public AdempiereException(@NonNull final AdMessageKey messageKey)

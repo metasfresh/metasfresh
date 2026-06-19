@@ -78,6 +78,18 @@ class WebuiHUProcessDescriptor
 				.build();
 	}
 
+	public WebuiRelatedProcessDescriptor toWebuiRelatedProcessDescriptorForSingleDocument()
+	{
+		return WebuiRelatedProcessDescriptor.builder()
+				.processId(processDescriptor.getProcessId())
+				.internalName(processDescriptor.getInternalName())
+				.processCaption(processDescriptor.getCaption())
+				.processDescription(processDescriptor.getDescription())
+				.displayPlace(DisplayPlace.SingleDocumentActionsMenu)
+				.preconditionsResolutionSupplier(ProcessPreconditionsResolution::accept)
+				.build();
+	}
+
 	public boolean appliesToHUUnitType(final HuUnitType huUnitType)
 	{
 		return huProcessDescriptor.appliesToHUUnitType(huUnitType);

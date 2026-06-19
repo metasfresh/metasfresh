@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.invalidation.segments;
  * #L%
  */
 
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -62,9 +63,21 @@ public final class ShipmentScheduleSegmentBuilder
 		return this;
 	}
 
+	public ShipmentScheduleSegmentBuilder productId(@NonNull final ProductId productId)
+	{
+		return productId(productId.getRepoId());
+	}
+
 	public ShipmentScheduleSegmentBuilder bpartnerId(final int bpartnerId)
 	{
 		bpartnerIds.add(bpartnerId);
+		return this;
+	}
+
+	public ShipmentScheduleSegmentBuilder anyBPartnerId()
+	{
+		bpartnerIds.clear();
+		bpartnerIds.add(0);
 		return this;
 	}
 

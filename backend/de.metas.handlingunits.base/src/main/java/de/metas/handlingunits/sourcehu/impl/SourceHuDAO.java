@@ -11,6 +11,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Source_HU;
 import de.metas.handlingunits.sourcehu.ISourceHuDAO;
 import de.metas.handlingunits.sourcehu.SourceHUsService.MatchingSourceHusQuery;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
@@ -20,11 +21,15 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.util.proxy.Cached;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 /*
  * #%L
@@ -50,7 +55,25 @@ import java.util.Set;
 
 public class SourceHuDAO implements ISourceHuDAO
 {
+	private static final Logger logger = LogManager.getLogger(SourceHuDAO.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@Override
+	public void addSourceHuMarker(@NonNull final HuId huId)
+	{
+		if(isSourceHu(huId))
+		{
+			logger.debug("Skipping adding M_Source_HU record for M_HU_ID={}; already exists", huId);
+			return;
+		}
+
+		final I_M_Source_HU sourceHU = newInstance(I_M_Source_HU.class);
+		sourceHU.setM_HU_ID(huId.getRepoId());
+		save(sourceHU);
+
+		logger.info("Created one M_Source_HU record for M_HU_ID={}", huId);
+	}
 
 	@Override
 	@Cached(cacheName = I_M_Source_HU.Table_Name + "#by#" + I_M_Source_HU.COLUMNNAME_M_HU_ID)

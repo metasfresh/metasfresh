@@ -519,31 +519,6 @@ public interface I_C_Doc_Outbound_Log
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setIsEdiEnabled (boolean IsEdiEnabled);
-
-	/**
-	 * Get Document to be sent via EDI.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	boolean isEdiEnabled();
-
-	ModelColumn<I_C_Doc_Outbound_Log, Object> COLUMN_IsEdiEnabled = new ModelColumn<>(I_C_Doc_Outbound_Log.class, "IsEdiEnabled", null);
-	String COLUMNNAME_IsEdiEnabled = "IsEdiEnabled";
-
-	/**
 	 * Set Invoice Email Enabled.
 	 *
 	 * <br>Type: YesNo

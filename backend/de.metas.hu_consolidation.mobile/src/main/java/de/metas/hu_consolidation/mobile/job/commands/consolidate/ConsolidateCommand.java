@@ -9,6 +9,7 @@ import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
@@ -110,7 +111,7 @@ public class ConsolidateCommand
 		{
 			if (!fromPickingSlotQueue.containsHuId(huId))
 			{
-				throw new AdempiereException("No HU with ID " + huId + " was found in picking slot " + fromPickingSlotQueue.getPickingSlotId() + "!");
+				throw new AdempiereException(MobileQRCodeMessages.LU_NOT_AT_SLOT);
 			}
 			return ImmutableSet.of(huId);
 		}

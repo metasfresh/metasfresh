@@ -20,7 +20,6 @@ import de.metas.handlingunits.picking.job.service.external.product.ProductInfo;
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
@@ -30,6 +29,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductValueAndName;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -142,9 +142,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
-	public ITranslatableString getProductName(@NonNull final ProductId productId)
+	public ProductValueAndName getProductValueAndName(@NonNull final ProductId productId)
 	{
-		return getProductInfo(productId).getName();
+		return getProductInfo(productId).getProductValueAndName();
 	}
 
 	private ProductInfo getProductInfo(@NonNull final ProductId productId)

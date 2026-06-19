@@ -8,6 +8,8 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -118,7 +120,6 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobHUService huService;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
-	@NonNull private final PickFromHUQRCodeResolver pickFromHUQRCodeResolver;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
 
 	//
@@ -185,10 +186,6 @@ public class PickingJobPickCommand
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
-		this.pickFromHUQRCodeResolver = PickFromHUQRCodeResolver.builder()
-				.productService(productService)
-				.huService(huService)
-				.build();
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.build();
@@ -197,7 +194,7 @@ public class PickingJobPickCommand
 		this._lineId = pickingJobLineId;
 		this._stepId = pickingJobStepId;
 		this.stepPickFromKey = pickFromKey != null ? pickFromKey : PickingJobStepPickFromKey.MAIN;
-		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parse(pickFromQRCode) : null;
+		this.pickFromHUQRCode = pickFromQRCode != null ? huService.parsePickFromScannedCode(pickFromQRCode) : null;
 
 		final PickingJobLine line = getLine();
 		final PickingJobStep step = pickingJobStepId != null ? pickingJob.getStepById(pickingJobStepId) : null;
@@ -210,7 +207,8 @@ public class PickingJobPickCommand
 		if (this.pickingUnit.isTU())
 		{
 			final TUPickingTarget tuPickingTarget = pickingJob.getTuPickingTargetEffective(this._lineId).orElse(null);
-			if (tuPickingTarget != null)
+			// Block picking into a pre-existing physical TU; a new (GRAI-based) target is materialised lazily after the pick.
+			if (tuPickingTarget != null && !tuPickingTarget.isNewTU())
 			{
 				throw new AdempiereException(TU_CANNOT_BE_PICKED_ERROR_MSG)
 						.appendParametersToMessage()
@@ -490,17 +488,35 @@ public class PickingJobPickCommand
 			{
 				if (result.isSingleTopLevelTUOnly())
 				{
-					setPickingTUTarget(result.getSingleTopLevelTU());
+					final TU tu = result.getSingleTopLevelTU();
+					stampGraiIfPresent(tuPickingTarget, tu.getId());
+					setPickingTUTarget(tu);
 				}
 				else if (result.isSingleLU())
 				{
 					final LU lu = result.getSingleLU();
 					if (lu.getTus().isSingleTU())
 					{
-						setPickingTUTarget(lu.getTus().getSingleTU());
+						final TU tu = lu.getTus().getSingleTU();
+						stampGraiIfPresent(tuPickingTarget, tu.getId());
+						setPickingTUTarget(tu);
 					}
 				}
 			}
+		}
+	}
+
+	/**
+	 * Stamps the GRAI carried by a new-TU picking target onto the physical TU that the framework just materialized,
+	 * so the operator-scanned GRAI ends up on the real HU. No-op when the source target carries no GRAI.
+	 */
+	private void stampGraiIfPresent(@NonNull final TUPickingTarget sourceTarget, @NonNull final HuId newTuId)
+	{
+		final GRAI grai = sourceTarget.getGrai();
+		if (grai != null)
+		{
+			// Must be called inside the pick transaction so the attribute write commits together with the pick.
+			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
 	}
 
@@ -528,6 +544,21 @@ public class PickingJobPickCommand
 	private Optional<PickingJobStepId> getStepIdIfExists()
 	{
 		return Optional.ofNullable(this._stepId);
+	}
+
+	private ImmutableSet<HuId> getAllowedReservedVhuIds()
+	{
+		return getReservationDocRef()
+				.map(huService::getVHUIdsByDocumentRef)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	private Optional<HUReservationDocRef> getReservationDocRef()
+	{
+		return Optionals.firstPresentOfSuppliers(
+				() -> getStepIdIfExists().map(HUReservationDocRef::ofPickingJobStepId),
+				() -> getShipmentScheduleInfo().getSalesOrderLineId().map(HUReservationDocRef::ofSalesOrderLineId)
+		);
 	}
 
 	private PickingJobStepId createStep()
@@ -628,7 +659,8 @@ public class PickingJobPickCommand
 			final ShipmentScheduleInfo shipmentScheduleInfo = getShipmentScheduleInfo();
 			final BPartnerId customerId = shipmentScheduleInfo.getBpartnerId();
 			final WarehouseId warehouseId = shipmentScheduleInfo.getWarehouseId();
-			return pickFromHUQRCodeResolver.resolve(pickFromHUQRCode, productId, customerId, warehouseId);
+			return huService.resolvePickFromHUQRCode(pickFromHUQRCode, productId, customerId, warehouseId)
+					.orElseThrow();
 		}
 	}
 
@@ -668,7 +700,6 @@ public class PickingJobPickCommand
 		if (qtyToPickCUs.isZero() && !isPickWholeTU)
 		{
 			throw new AdempiereException("qtyToPickCUs shall not be zero if isPickWholeTU is false");
-			// return ImmutableList.of();
 		}
 
 		final PickingJobStep step = getStep();
@@ -773,6 +804,7 @@ public class PickingJobPickCommand
 
 	private void addShipmentScheduleQtyPicked(@NonNull final TU tu, @NonNull final Quantity qtyPicked)
 	{
+		// Record the destination TU; createCandidatesForQtyPicked expands it into per-VHU COO candidates at shipment generation time.
 		addShipmentScheduleQtyPicked(tu.toHU(), qtyPicked);
 	}
 
@@ -790,7 +822,7 @@ public class PickingJobPickCommand
 				.scheduleId(getScheduleId())
 				.cachedShipmentSchedule(shipmentScheduleInfo.getRecord())
 				.qtyPicked(CatchWeightHelper.extractQtys(huContext, getProductId(), qtyPicked, hu))
-				.tuOrVHU(hu)
+				.hu(hu)
 				.huContext(huContext)
 				.anonymousHuPickedOnTheFly(false)
 				.build());
@@ -886,7 +918,9 @@ public class PickingJobPickCommand
 			@NonNull final I_M_HU pickFromHU,
 			@NonNull final QtyTU qtyToPickTUs)
 	{
-		final HUTransformService huTransformService = HUTransformService.newInstance();
+		final HUTransformService huTransformService = HUTransformService.builder()
+				.allowedReservedVhuIds(getAllowedReservedVhuIds())
+				.build();
 
 		final LUPickingTarget pickingTarget = getLUPickingTarget().orElse(null);
 		final LUTUResult result;
@@ -984,6 +1018,7 @@ public class PickingJobPickCommand
 						.documentRef(getLineId().toTableRecordReference())
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
+						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.build()
 		);
 	}

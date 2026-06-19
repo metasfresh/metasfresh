@@ -13,7 +13,7 @@ export const getAvailableApplicationsArray = (state) => {
   return availableApplicationsById ? Object.values(availableApplicationsById) : [];
 };
 
-const getApplicationInfoById = ({ state, applicationId }) => {
+export const getApplicationInfoById = ({ state, applicationId }) => {
   return state.applications?.availableApplications?.[applicationId] ?? {};
 };
 

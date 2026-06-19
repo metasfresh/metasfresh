@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -469375936L;
+	private static final long serialVersionUID = -77376146L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -457,6 +457,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setDepartment (final @Nullable java.lang.String Department)
+	{
+		set_Value (COLUMNNAME_Department, Department);
+	}
+
+	@Override
+	public java.lang.String getDepartment() 
+	{
+		return get_ValueAsString(COLUMNNAME_Department);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -597,6 +609,8 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public static final String FRESH_XMAS_GIFT_Karte = "K";
 	/** Geschenk = G */
 	public static final String FRESH_XMAS_GIFT_Geschenk = "G";
+	/** Kein Geschenk = S */
+	public static final String FRESH_XMAS_GIFT_KeinGeschenk = "S";
 	@Override
 	public void setFresh_xmas_Gift (final @Nullable java.lang.String Fresh_xmas_Gift)
 	{

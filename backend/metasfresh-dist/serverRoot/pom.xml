@@ -109,11 +109,15 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.handlingunits</groupId>
+            <artifactId>de.metas.handlingunits.mobileui</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
             <groupId>de.metas.manufacturing</groupId>
             <artifactId>de.metas.manufacturing.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
-
         <dependency>
             <groupId>de.metas.workflow</groupId>
             <artifactId>de.metas.workflow.rest-api</artifactId>

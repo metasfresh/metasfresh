@@ -892,6 +892,7 @@ public class FreightCostTest
 	{
 		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
 		bpGroup.setName(name);
+		bpGroup.setValue(name);
 
 		save(bpGroup);
 

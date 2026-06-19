@@ -17,10 +17,12 @@ public class JsonWarehouseResponse
 	int warehouseId;
 	String warehouseCode;
 	String warehouseName;
+	boolean inTransit;
+	
 	int locatorId;
 	String locatorCode;
 	String locatorQRCode;
-
+	
 	@Nullable Map<String, JsonWarehouseResponse.Locator> locators;
 
 	//
@@ -36,11 +38,14 @@ public class JsonWarehouseResponse
 	{
 		int id;
 		@NonNull String code;
+		@NonNull String qrCode;
 		@JsonProperty("isDefault") boolean isDefault;
 		@NonNull String x;
 		@NonNull String y;
 		@NonNull String z;
 		@NonNull String x1;
+		@Nullable Integer priorityNo;
+		@Nullable Boolean isGroundLocator;
 	}
 
 }

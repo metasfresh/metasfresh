@@ -15,8 +15,9 @@ import {
 import { getViewAttributeTypeahead } from '../../../api';
 import { openModal } from '../../../actions/WindowActions';
 import SelectionDropdown from '../SelectionDropdown';
-import { isBlank } from '../../../utils';
+import { doThen, isBlank } from '../../../utils';
 import { getViewFieldTypeahead } from '../../../api/view';
+import { getSettingFromStateAsBoolean } from '../../../utils/settings';
 
 const KEY_None = null;
 const KEY_New = 'NEW';
@@ -35,11 +36,36 @@ const computeInputTextFromSelectedItem = (
     : fallbackTextIfNullOrNone;
 };
 
-const executeAfterPromise = (promise, afterCallback) => {
-  if (promise) {
-    promise.then(afterCallback);
-  } else {
-    afterCallback();
+/**
+ * Play a short beep sound using the Web Audio API.
+ * Used for error feedback in fast-entry scenarios where the user doesn't watch the screen.
+ */
+let beepAudioCtx = null;
+const playBeep = () => {
+  try {
+    if (!beepAudioCtx) {
+      beepAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    // Resume suspended context (Chrome autoplay policy)
+    if (beepAudioCtx.state === 'suspended') {
+      beepAudioCtx.resume().catch(() => {}); // best-effort
+    }
+
+    const gainNode = beepAudioCtx.createGain();
+    gainNode.connect(beepAudioCtx.destination);
+    gainNode.gain.value = 0.3;
+
+    const oscillator = beepAudioCtx.createOscillator();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(800, beepAudioCtx.currentTime);
+    oscillator.connect(gainNode);
+
+    oscillator.start();
+    oscillator.stop(beepAudioCtx.currentTime + 0.08);
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('Could not play beep sound:', e);
   }
 };
 
@@ -249,10 +275,21 @@ export class RawLookup extends Component {
       ? mainProperty.parameterName
       : mainProperty.field;
 
-    executeAfterPromise(
-      onChange(fieldName, selectedItemNorm), //
-      () => setNextProperty(fieldName)
-    );
+    // NOTE: When onChange returns a Promise (async path, typical for regular documents),
+    // the callback inside executeAfterPromise runs AFTER this.focus() below.
+    // In that case shouldKeepFocus is always true at the this.focus() call site,
+    // preserving the original behavior (always refocus). The "don't refocus" path
+    // only takes effect when onChange is synchronous (returns null/undefined).
+    // For quick input, focus advance is handled by a completely different code path
+    // (resolveAndSelectOnEnter → handleAutoSelectAndAdvance → focusNextFieldInForm).
+    let shouldKeepFocus = true;
+
+    doThen(onChange(fieldName, selectedItemNorm), () => {
+      const hasNextSubField = setNextProperty(fieldName);
+      if (!hasNextSubField) {
+        shouldKeepFocus = false;
+      }
+    });
 
     // see FiltersItem.updateItems
     updateItems &&
@@ -266,7 +303,9 @@ export class RawLookup extends Component {
 
     handleInputEmptyStatus && handleInputEmptyStatus(false);
 
-    this.focus();
+    if (shouldKeepFocus) {
+      this.focus();
+    }
 
     this.handleDropdownBlur(isMouseEvent);
   };
@@ -329,7 +368,7 @@ export class RawLookup extends Component {
   };
 
   handleInputTextKeyDown = (e) => {
-    const { isOpen } = this.props;
+    const { isOpen, subentity } = this.props;
 
     if (e.key === 'ArrowDown') {
       if (!isOpen) {
@@ -337,6 +376,235 @@ export class RawLookup extends Component {
         e.stopPropagation();
         this.handleInputTextChange();
       }
+    }
+
+    // Quick input: handle Enter for immediate product resolution
+    if (e.key === 'Enter' && subentity === 'quickInput') {
+      e.preventDefault();
+      e.stopPropagation();
+
+      this.resolveAndSelectOnEnter();
+    }
+  };
+
+  /**
+   * @method resolveAndSelectOnEnter
+   * @summary Quick input: when Enter is pressed, immediately resolve the lookup value
+   * and auto-select the first match. If no match found, play a beep sound.
+   * After selection, advance focus to the next field in the quick input form.
+   */
+  resolveAndSelectOnEnter = () => {
+    const { list, loading } = this.state;
+
+    // If typeahead results are already loaded, use them — even for blank/space
+    // queries (e.g. user pressed space to open the list, then Enter to confirm).
+    if (!loading && list.length > 0) {
+      const regularItems = list.filter(
+        (item) =>
+          item.key !== KEY_New &&
+          item.key !== KEY_AdvancedSearch &&
+          !isNoneItem(item)
+      );
+      this.resolveItems(regularItems);
+      return;
+    }
+
+    const query = this.inputSearch.value;
+    if (!query || !query.trim()) {
+      return;
+    }
+
+    // Fire an immediate typeahead request (bypass debounce)
+    this.buildTypeaheadRequestForQuery(query)
+      .then((response) => {
+        const values = response.data.values || [];
+        this.resolveItems(values);
+      })
+      .catch(() => {
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
+      });
+  };
+
+  /**
+   * @method resolveItems
+   * @summary Given the typeahead results, auto-select if exactly one match,
+   * beep if no match, or beep and keep dropdown open if multiple matches.
+   *
+   * When `enterRequiresSingleMatch` is false (sysconfig N), multiple matches
+   * will select the currently highlighted item (or the first one) instead of
+   * keeping the dropdown open.
+   */
+  resolveItems = (items) => {
+    if (items.length === 1) {
+      this.handleAutoSelectAndAdvance(items[0]);
+    } else if (items.length > 1) {
+      if (!this.props.enterRequiresSingleMatch) {
+        // Select the highlighted item (arrow-key navigated) or the first one
+        const selected = this.state.selected || items[0];
+        this.handleAutoSelectAndAdvance(selected);
+      } else {
+        // Default: beep and keep dropdown open so user can pick
+        if (this.props.beepOnInvalidProduct) {
+          playBeep();
+        }
+      }
+    } else {
+      // No match
+      if (this.props.beepOnInvalidProduct) {
+        playBeep();
+      }
+    }
+  };
+
+  /**
+   * @method buildTypeaheadRequestForQuery
+   * @summary Build and fire a typeahead request for the given query string.
+   * Returns the axios promise. This is a non-debounced version of typeaheadRequest.
+   */
+  buildTypeaheadRequestForQuery = (query) => {
+    const {
+      windowType,
+      dataId,
+      filterWidget,
+      attribute,
+      parameterName,
+      tabId,
+      rowId,
+      entity,
+      subentity,
+      subentityId,
+      viewId,
+      mainProperty,
+      typeaheadSupplier,
+    } = this.props;
+
+    if (!query) {
+      query = ' ';
+    }
+
+    const typeaheadParams = {
+      entity,
+      docType: windowType,
+      docId: filterWidget ? viewId : dataId,
+      propertyName: filterWidget ? parameterName : mainProperty.field,
+      query,
+      rowId,
+      tabId,
+    };
+
+    if (typeaheadSupplier) {
+      return typeaheadSupplier({
+        ...typeaheadParams,
+        subentity,
+        subentityId,
+      });
+    } else if (entity === 'documentView' && attribute) {
+      return getViewAttributeTypeahead(
+        windowType,
+        viewId,
+        dataId,
+        mainProperty.field,
+        query
+      );
+    } else if (entity === 'documentView' && !attribute) {
+      return getViewFieldTypeahead({
+        windowId: windowType,
+        viewId,
+        rowId,
+        fieldName: mainProperty.field,
+        query,
+      });
+    } else if (viewId && !filterWidget) {
+      return autocompleteModalRequest({
+        ...typeaheadParams,
+        entity: 'documentView',
+        viewId,
+      });
+    } else {
+      return autocompleteRequest({
+        ...typeaheadParams,
+        subentity,
+        subentityId,
+      });
+    }
+  };
+
+  /**
+   * @method handleAutoSelectAndAdvance
+   * @summary Select the given item and advance focus to the next field in the quick input form.
+   * Unlike handleSelect_RegularItem, this does NOT refocus the current lookup input.
+   */
+  handleAutoSelectAndAdvance = (selectedItem) => {
+    const { onChange, handleInputEmptyStatus, mainProperty, filterWidget } =
+      this.props;
+
+    const fieldName = filterWidget
+      ? mainProperty.parameterName
+      : mainProperty.field;
+
+    this.inputSearch.value = computeInputTextFromSelectedItem(selectedItem);
+    this.setState({ inputTextOnFocus: this.inputSearch.value });
+
+    handleInputEmptyStatus?.(false);
+
+    this.handleDropdownBlur();
+
+    // Call onChange (PATCH) and advance focus AFTER the server responds
+    // and React re-renders. We intentionally skip setNextProperty here
+    // because it manages focus within composed lookups (e.g. BPartner →
+    // Location → Contact) and would call onBlurWidget, stealing focus.
+    doThen(onChange(fieldName, selectedItem), () =>
+      this.focusNextFieldInForm()
+    );
+  };
+
+  /**
+   * @method focusNextFieldInForm
+   * @summary Find the next focusable input in the parent form and focus it.
+   * Used after auto-selecting a product in quick input to advance to the quantity field.
+   * Retries up to 10 times (every 100ms) because the PATCH response triggers a React
+   * re-render that may make the next field focusable asynchronously.
+   */
+  focusNextFieldInForm = (retriesLeft = 10) => {
+    if (!this.inputSearch) {
+      return;
+    }
+
+    const form = this.inputSearch.closest('form');
+    if (!form) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'RawLookup.focusNextFieldInForm: no parent <form> found. Focus advance requires the quick input to be wrapped in a <form> element (see TableQuickInput).'
+      );
+      return;
+    }
+
+    const inputs = Array.from(
+      form.querySelectorAll(
+        'input:not([disabled]):not([type="hidden"]):not([readonly])'
+      )
+    );
+    const idx = inputs.indexOf(this.inputSearch);
+    if (idx < 0) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        'RawLookup.focusNextFieldInForm: current input not found in form input list. This may indicate a DOM structure issue.'
+      );
+    }
+    if (idx >= 0 && idx < inputs.length - 1) {
+      const nextInput = inputs[idx + 1];
+      nextInput.focus();
+
+      if (document.activeElement === nextInput) {
+        return;
+      }
+    }
+
+    // Retry: the next field may not be focusable yet (React re-render pending)
+    if (retriesLeft > 0) {
+      setTimeout(() => this.focusNextFieldInForm(retriesLeft - 1), 100);
     }
   };
 
@@ -685,6 +953,16 @@ export class RawLookup extends Component {
 
 const mapStateToProps = (state) => ({
   filter: state.windowHandler.filter,
+  beepOnInvalidProduct: getSettingFromStateAsBoolean(
+    state,
+    'quickinput.beepOnInvalidProduct',
+    false
+  ),
+  enterRequiresSingleMatch: getSettingFromStateAsBoolean(
+    state,
+    'quickinput.enterRequiresSingleMatch',
+    false
+  ),
 });
 
 RawLookup.propTypes = {
@@ -742,6 +1020,8 @@ RawLookup.propTypes = {
     visible: PropTypes.bool,
     boundingRect: PropTypes.object,
   }),
+  beepOnInvalidProduct: PropTypes.bool,
+  enterRequiresSingleMatch: PropTypes.bool,
 };
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(
