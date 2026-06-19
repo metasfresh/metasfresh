@@ -26,6 +26,10 @@ import javax.annotation.Nullable;
  * <p>Repository Tables: C_DocType, M_Product, C_UOM, C_Tax, C_Location, C_Country,
  * C_Currency, C_Invoice.
  *
+ * <p>Repository Cluster: CiiMappingRepository only — these are read-only FK lookups for CII
+ * serialisation; write operations on these tables belong to their authoritative DAOs
+ * (IDocTypeDAO, IProductDAO, ITaxDAO, etc.).
+ *
  * <p>{@link InterfaceWrapperHelper#load} is the correct primitive here — it works against both
  * the live DB and the in-memory test environment provided by {@code AdempiereTestHelper}.
  */
