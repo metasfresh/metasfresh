@@ -1,5 +1,6 @@
 package de.metas.einvoice.cii;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -42,7 +43,6 @@ import de.metas.einvoice.cii.model.TradeProductType;
 import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
 import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;

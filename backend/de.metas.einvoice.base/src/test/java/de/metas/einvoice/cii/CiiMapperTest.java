@@ -1,5 +1,6 @@
 package de.metas.einvoice.cii;
 
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.einvoice.EInvoiceFormat;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.CrossIndustryInvoiceType;
@@ -14,7 +15,6 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
