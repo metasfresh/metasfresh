@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_Job_Schedule_view.sql
 -- Run mode: SWING_CLIENT
 
 -- IDs from idserver.metas.de on 2026-06-19:
@@ -6,9 +7,11 @@
 --   AD_UI_Element_ID 652340
 
 -- Step 1: Extend view DDL to expose C_DocType_ID
--- (also updated in the DDL file M_Picking_Job_Schedule_view.sql)
 -- 2026-06-19T09:00:00.000Z
-CREATE OR REPLACE VIEW M_Picking_Job_Schedule_view AS
+DROP VIEW IF EXISTS M_Picking_Job_Schedule_view$new
+;
+
+CREATE OR REPLACE VIEW M_Picking_Job_Schedule_view$new AS
 WITH base_schedule AS (SELECT s.m_shipmentschedule_id,
 
                               s.c_bpartner_customer_id,
@@ -101,10 +104,21 @@ FROM base_schedule b
 WHERE b.qtytoscheduleforpicking > 0
 ;
 
+SELECT db_alter_view(
+    'M_Picking_Job_Schedule_view',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('M_Picking_Job_Schedule_view$new'))
+)
+;
+
+DROP VIEW IF EXISTS M_Picking_Job_Schedule_view$new
+;
+
 -- Step 2: Register C_DocType_ID column in AD
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:01.000Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592858,196,0,19,542514,'XX','C_DocType_ID',TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Belegart oder Verarbeitungsvorgaben','de.metas.handlingunits',0,10,'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.','Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N',0,'Belegart',0,0,TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592858 /*From ID Server*/,196,0,19,542514,'XX','C_DocType_ID',TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Belegart oder Verarbeitungsvorgaben','de.metas.handlingunits',0,10,'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.','Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N',0,'Belegart','NP',0,0,TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-06-19T09:00:01.100Z
@@ -118,14 +132,14 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Step 3: Make C_DocType_ID a filter column
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:02.000Z
-UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2026-06-19 09:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592858
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2026-06-19 09:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592858 /*From ID Server*/
 ;
 
 -- Step 4: Add field to Traffic Management window → Kommissionierplan tab (548377)
 -- Field: Traffic Management(541929,de.metas.handlingunits) -> Kommissionierplan(548377,de.metas.handlingunits) -> Belegart
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:03.000Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,592858,781230,0,548377,0,TO_TIMESTAMP('2026-06-19 09:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.handlingunits',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Belegart',0,0,55,0,1,1,TO_TIMESTAMP('2026-06-19 09:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,FacetFilterSeqNo,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsHideGridColumnIfEmpty,IsOverrideFilterDefaultValue,IsReadOnly,IsSameLine,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,592858 /*From ID Server*/,781230 /*From ID Server*/,0,548377,0,TO_TIMESTAMP('2026-06-19 09:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0,'de.metas.handlingunits',0,0,'Y','Y','Y','N','N','N','N','N','N','N',0,'Belegart',0,0,55,0,1,1,TO_TIMESTAMP('2026-06-19 09:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- 2026-06-19T09:00:03.100Z
@@ -148,5 +162,5 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781230
 -- UI Element: Traffic Management(541929) -> Kommissionierplan(548377) -> primary -> 10 -> sales order.Belegart
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:04.000Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781230,0,548377,553423,652340,'F',TO_TIMESTAMP('2026-06-19 09:00:04.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N',0,'Belegart',80,55,0,TO_TIMESTAMP('2026-06-19 09:00:04.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781230 /*From ID Server*/,0,548377,553423,652340 /*From ID Server*/,'F',TO_TIMESTAMP('2026-06-19 09:00:04.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','N','N','Y','Y','N','N',0,'Belegart',80,55,0,TO_TIMESTAMP('2026-06-19 09:00:04.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;

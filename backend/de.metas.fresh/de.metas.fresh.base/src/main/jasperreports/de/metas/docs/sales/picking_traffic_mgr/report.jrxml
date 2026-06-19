@@ -36,9 +36,12 @@ LEFT JOIN C_Workplace w
 LEFT JOIN M_HU_Stock_Detail_V sd
     ON sd.M_Product_ID = ss.M_Product_ID
     AND sd.Qty > 0
+    AND sd.M_Locator_ID IN (
+        SELECT M_Locator_ID FROM M_Locator
+        WHERE M_Warehouse_ID = ss.M_Warehouse_ID
+    )
 LEFT JOIN M_Locator l
     ON l.M_Locator_ID = sd.M_Locator_ID
-    AND l.M_Warehouse_ID = ss.M_Warehouse_ID
 ORDER BY p.Value, l.Value]]>
 	</queryString>
 	<field name="artikel" class="java.lang.String">
@@ -68,9 +71,13 @@ ORDER BY p.Value, l.Value]]>
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
 	</field>
-	<variable name="zu_packen_group_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="product" calculation="Sum">
-		<variableExpression><![CDATA[$F{zu_packen}]]></variableExpression>
-		<initialValueExpression><![CDATA[new java.math.BigDecimal(0)]]></initialValueExpression>
+	<!-- Capture first-row values for page header; evaluationTime="Report" on the text fields
+	     ensures every page shows the same (first) workplace and prep_date. -->
+	<variable name="workplace_header" class="java.lang.String" resetType="None" calculation="First">
+		<variableExpression><![CDATA[$F{workplace}]]></variableExpression>
+	</variable>
+	<variable name="prep_date_header" class="java.sql.Timestamp" resetType="None" calculation="First">
+		<variableExpression><![CDATA[$F{prep_date}]]></variableExpression>
 	</variable>
 	<group name="product" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
@@ -120,7 +127,7 @@ ORDER BY p.Value, l.Value]]>
 					</textElement>
 					<text><![CDATA[zu packen:]]></text>
 				</staticText>
-				<!-- zu_packen value (first row value; total shown in footer) -->
+				<!-- QtyToPick for this picking job schedule -->
 				<textField isBlankWhenNull="true" pattern="#,##0.##">
 					<reportElement x="483" y="2" width="72" height="14" uuid="11111111-1111-1111-1111-111111111107"/>
 					<textElement textAlignment="Right">
@@ -133,21 +140,21 @@ ORDER BY p.Value, l.Value]]>
 	</group>
 	<pageHeader>
 		<band height="28" splitType="Stretch">
-			<!-- Workplace -->
-			<textField isBlankWhenNull="true">
+			<!-- Workplace — evaluationTime="Report" uses the first-row variable so all pages show the same value -->
+			<textField isBlankWhenNull="true" evaluationTime="Report">
 				<reportElement x="0" y="4" width="200" height="14" uuid="22222222-2222-2222-2222-222222222201"/>
 				<textElement>
 					<font fontName="Arial" size="9" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{workplace} != null ? $F{workplace} : ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{workplace_header} != null ? $V{workplace_header} : ""]]></textFieldExpression>
 			</textField>
-			<!-- Prep date -->
-			<textField isBlankWhenNull="true" pattern="dd.MM.yyyy">
+			<!-- Prep date — evaluationTime="Report" uses the first-row variable so all pages show the same value -->
+			<textField isBlankWhenNull="true" pattern="dd.MM.yyyy" evaluationTime="Report">
 				<reportElement x="205" y="4" width="100" height="14" uuid="22222222-2222-2222-2222-222222222202"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{prep_date}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{prep_date_header}]]></textFieldExpression>
 			</textField>
 			<!-- Pickliste label -->
 			<staticText>
@@ -170,14 +177,14 @@ ORDER BY p.Value, l.Value]]>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " / "]]></textFieldExpression>
 			</textField>
 			<textField evaluationTime="Report">
-				<reportElement x="489" y="4" width="10" height="14" uuid="22222222-2222-2222-2222-222222222206"/>
+				<reportElement x="489" y="4" width="66" height="14" uuid="22222222-2222-2222-2222-222222222206"/>
 				<textElement>
 					<font fontName="Arial" size="9"/>
 				</textElement>
-				<textFieldExpression><![CDATA["/" + $V{PAGE_NUMBER}]]></textFieldExpression>
+				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
 			</textField>
 			<!-- Separator line -->
 			<line>
@@ -243,24 +250,10 @@ ORDER BY p.Value, l.Value]]>
 		</band>
 	</detail>
 	<pageFooter>
-		<band height="20" splitType="Stretch">
+		<band height="10" splitType="Stretch">
 			<line>
 				<reportElement x="0" y="0" width="555" height="1" uuid="55555555-5555-5555-5555-555555555501"/>
 			</line>
-			<textField pattern="" isBlankWhenNull="false">
-				<reportElement x="440" y="4" width="30" height="12" uuid="55555555-5555-5555-5555-555555555502"/>
-				<textElement textAlignment="Right">
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA[$V{PAGE_NUMBER} + " / "]]></textFieldExpression>
-			</textField>
-			<textField evaluationTime="Report" pattern="" isBlankWhenNull="false">
-				<reportElement x="470" y="4" width="30" height="12" uuid="55555555-5555-5555-5555-555555555503"/>
-				<textElement>
-					<font fontName="Arial" size="8"/>
-				</textElement>
-				<textFieldExpression><![CDATA["" + $V{PAGE_NUMBER}]]></textFieldExpression>
-			</textField>
 		</band>
 	</pageFooter>
 	<summary>
