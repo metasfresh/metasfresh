@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.accounting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.acct.AccountConceptualName;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.acct.vatcode.VATCode;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -14,6 +15,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.acct.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;
@@ -44,6 +46,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final C_VAT_Code_StepDefData vatCodeTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
+	@NonNull private final C_ElementValue_StepDefData elementValueTable;
 
 	public FactAcctMatchers createLineMatchers(@NonNull final DataTable table)
 	{
@@ -91,6 +94,7 @@ public class FactAcctMatchersFactory
 				.bpartnerId(extractBPartnerId(row))
 				.productId(extractProductId(row))
 				.invoiceId(extractInvoiceId(row))
+				.accountId(extractAccountId(row))
 				.build();
 	}
 
@@ -204,6 +208,18 @@ public class FactAcctMatchersFactory
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Invoice_ID").orElse(null);
 		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(invoiceTable));
+	}
+
+	/**
+	 * Resolves the optional {@code Account_ID} column to an {@link ElementValueId}.
+	 * Returns {@code null} (skip check) when the column is absent; {@code Optional.of(id)} otherwise.
+	 */
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
+	private Optional<ElementValueId> extractAccountId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier(I_Fact_Acct.COLUMNNAME_Account_ID).orElse(null);
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(elementValueTable));
 	}
 
 }

@@ -6,6 +6,7 @@ import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.acct.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.money.MoneyService;
 import de.metas.tax.api.ITaxDAO;
@@ -32,7 +33,8 @@ public class Fact_Acct_StepDef
 			@NonNull final C_Tax_StepDefData taxTable,
 			@NonNull final C_VAT_Code_StepDefData vatCodeTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Invoice_StepDefData invoiceTable
+			@NonNull final C_Invoice_StepDefData invoiceTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable
 	)
 	{
 		this.identifiersResolver = identifiersResolver;
@@ -50,6 +52,7 @@ public class Fact_Acct_StepDef
 				.vatCodeTable(vatCodeTable)
 				.productTable(productTable)
 				.invoiceTable(invoiceTable)
+				.elementValueTable(elementValueTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)

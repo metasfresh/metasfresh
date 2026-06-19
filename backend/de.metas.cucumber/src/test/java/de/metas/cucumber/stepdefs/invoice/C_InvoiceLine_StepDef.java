@@ -33,6 +33,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.acct.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -111,6 +112,8 @@ public class C_InvoiceLine_StepDef
 	private final C_Activity_StepDefData activityTable;
 	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
 	private final C_OrderLine_StepDefData orderLineTable;
+	// for setting a per-line GL account override (C_ElementValue_Override_ID) on draft invoice lines
+	private final C_ElementValue_StepDefData elementValueTable;
 
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
@@ -427,6 +430,11 @@ public class C_InvoiceLine_StepDef
 		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
 				.map(inOutLineTable::getId)
 				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
+
+		// Per-line GL account override for purchase invoices
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_ElementValue_Override_ID)
+				.map(elementValueTable::getId)
+				.ifPresent(elementValueId -> invoiceLine.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
 
 		row.getAsOptionalIdentifier("C_Tax_ID$set")
 				.ifPresent(taxIdentifier -> {

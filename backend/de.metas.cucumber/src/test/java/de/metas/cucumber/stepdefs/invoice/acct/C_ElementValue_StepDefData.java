@@ -1,0 +1,25 @@
+package de.metas.cucumber.stepdefs.invoice.acct;
+
+import de.metas.acct.api.impl.ElementValueId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import org.compiere.model.I_C_ElementValue;
+
+/**
+ * Stores {@link I_C_ElementValue} records (GL accounts) by identifier alias,
+ * enabling cross-step references to override accounts in accounting assertions.
+ */
+public class C_ElementValue_StepDefData extends StepDefData<I_C_ElementValue>
+		implements StepDefDataGetIdAware<ElementValueId, I_C_ElementValue>
+{
+	public C_ElementValue_StepDefData()
+	{
+		super(I_C_ElementValue.class);
+	}
+
+	@Override
+	public ElementValueId extractIdFromRecord(final I_C_ElementValue record)
+	{
+		return ElementValueId.ofRepoId(record.getC_ElementValue_ID());
+	}
+}
