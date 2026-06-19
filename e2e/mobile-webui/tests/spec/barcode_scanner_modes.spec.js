@@ -105,8 +105,9 @@ test('#input-text HTML: type=text, inputMode=none, readOnly absent, CSS-hidden',
 //   no <video> element    — mode.camera.enabled=N → device camera should never render
 //
 // Asserts on HU Manager so BarcodeScannerComponent renders from SysConfig (no hardcoded prop) —
-// ApplicationsListScreen hardcodes both isShowInputText={false} and isShowVideo={false}, which
-// would short-circuit the sysconfig path and make readOnly + camera-absent checks vacuously pass.
+// ApplicationsListScreen hardcodes `invisible` (headless hardware variant: off-screen input only,
+// no footer, no video), which would short-circuit the sysconfig path and make readOnly +
+// camera-absent checks vacuously pass.
 //
 // IF THIS TEST FAILS after a change to BarcodeScannerComponent.jsx: the CODE broke the contract.
 // Fix the code, do NOT relax these expected values. Any change to readOnly / inputMode / type /
@@ -222,8 +223,9 @@ test.describe('Scan paths', () => {
         const masterdata = await createMasterdataWithHU({
             // manual mode: mode.manual.enabled=Y + defaultMode=manual renders a visible editable
             // input so Playwright can locate and fill it. inputMode attribute is absent (keyboard enabled).
+            // hardware stays enabled (the handheld's scanner is always present in real deployments).
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -234,7 +236,7 @@ test.describe('Scan paths', () => {
         await ApplicationsListScreen.expectVisible();
 
         // Navigate to HU Manager so the barcode scanner renders from SysConfig (no hardcoded prop).
-        // The ApplicationsListScreen hardcodes isShowInputText={false}, which would override the
+        // The ApplicationsListScreen hardcodes `invisible`, which would override the
         // SysConfig and make the attribute assertion below meaningless.
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
@@ -355,10 +357,13 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectFooterAbsent();
     });
 
-    // manual mode: mode.manual.enabled=Y + defaultMode=manual →
+    // manual mode: mode.manual.enabled=Y + defaultMode=manual, hardware always enabled →
     //   • visible editable input (data-testid="manual-entry-input") IS rendered
     //   • off-screen #input-text IS still present (keyboard listener stays mounted)
     //   • manual-entry-input has no readOnly attribute (keyboard must be enabled)
+    //   • the "Use hardware scanner" button IS shown (hardware is an enabled scanner mode to
+    //     return to) — this mirrors the real deployment, where the handheld's hardware scanner
+    //     is always present, so manual mode always offers a way back to it.
     // noinspection JSUnusedLocalSymbols
     test('manual mode — visible editable input rendered, off-screen input present, no readOnly', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
@@ -368,7 +373,7 @@ test.describe('Modes', () => {
 
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
-                hardwareEnabled: 'N',
+                hardwareEnabled: 'Y',
                 cameraEnabled: 'N',
                 manualEnabled: 'Y',
                 defaultMode: 'manual',
@@ -386,6 +391,9 @@ test.describe('Modes', () => {
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
         await BarcodeScannerComponent.expectCameraVideoAbsent();
+        // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
+        // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-back-to-scanner');
     });
 
     // camera toggle: hardware + camera both enabled →
@@ -417,6 +425,52 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.clickFooterButton('barcode-scanner-toggle-hw-camera');
         // After toggle, <video> element must be rendered.
         await BarcodeScannerComponent.expectCameraVideoPresent();
+    });
+
+    // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is
+    // an available fallback, the device camera is OFF, and the off-screen input is readOnly
+    // (keyboard-suppress for firmware that ignores inputMode=none). The footer must therefore offer
+    // the manual-entry fallback but NOT a camera toggle, and the manual fallback must actually
+    // forward a typed barcode.
+    test('hardware default + manual fallback, camera off — footer shows manual, hides camera toggle', async ({ page }) => {
+        await allure.epic('E0295: Frontend MobileUI');
+        await allure.feature('F12000: Frontend MobileUI');
+        await allure.story('Barcode scanning modes');
+        await allure.severity('critical');
+
+        const masterdata = await createMasterdataWithHU({
+            extraSysconfigs: modeSysconfigs({
+                hardwareEnabled: 'Y',
+                cameraEnabled: 'N',
+                manualEnabled: 'Y',
+                defaultMode: 'hardware',
+                hardwareInputMode: 'none',
+                hardwareInputReadOnly: 'Y',
+            }),
+        });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huManager');
+        await HUManagerScreen.waitForScreen();
+
+        // Boots in hardware mode: off-screen scan input present, device camera absent.
+        await BarcodeScannerComponent.expectAttached({});
+        await BarcodeScannerComponent.expectCameraVideoAbsent();
+
+        // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
+        // (camera toggle needs BOTH hardware and camera enabled).
+        await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectButtonAbsent('barcode-scanner-toggle-hw-camera');
+
+        // Manual fallback works: tap "enter manually" → visible editable input → type + Enter forwards.
+        await BarcodeScannerComponent.clickFooterButton('barcode-scanner-enter-manually');
+        await BarcodeScannerComponent.expectManualEntryInputPresent();
+        await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
+        await BarcodeScannerComponent.typeManually(masterdata.handlingUnits.HU1.qrCode);
+
+        await HUManagerScreen.waitForHUInfoPanel();
+        await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
     });
 
 });
