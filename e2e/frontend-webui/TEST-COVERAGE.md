@@ -1061,10 +1061,11 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up the newly-added field
 3. Navigate to Tax record 540010 (OSS CY 19%) in window 137
 4. Assert `EN16931VATCategory` field is present and has `widgetType-List` CSS class
-5. Read current value; choose a different one (S ↔ AE) to stay idempotent across retries
-6. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
-7. Wait for auto-save; read back via WebAPI — assert `fieldData.value.key` matches
-8. Restore original value and verify
+5. Assert the record is valid (`assertRecordIsValid`) before editing — else UI changes won't persist
+6. Read current value via WebAPI `getFieldData`; choose a different known code to stay idempotent across retries
+7. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
+8. Wait for auto-save; read back via WebAPI `getFieldData` — assert `fieldData.value.key` matches
+9. Restore original value and verify via WebAPI
 
 **Key Validations**:
 - The `form-field-EN16931VATCategory` wrapper is rendered as a `widgetType-List`
