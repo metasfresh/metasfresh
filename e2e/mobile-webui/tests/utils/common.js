@@ -27,6 +27,17 @@ export const pressDeviceBack = async () => await step(`Press device/browser Back
     await page.goBack({ timeout: SLOW_ACTION_TIMEOUT });
 });
 
+// Simulates the operator mashing the hardware/browser Back button rapidly: several back traversals
+// dispatched within a single event-loop tick (the worst case — exactly what happens on a busy handheld
+// when queued hardware-Back presses are delivered in a burst before the page can react). page.goBack()
+// awaits each navigation and so cannot reproduce this; firing window.history.back() synchronously can.
+export const mashDeviceBack = async (times = 12) => await step(`Mash device/browser Back ${times}x rapidly`, async () => {
+    await page.evaluate((n) => {
+        for (let i = 0; i < n; i++) window.history.back();
+    }, times);
+    await page.waitForTimeout(FAST_ACTION_TIMEOUT);
+});
+
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
 const runAndWatchForErrors = async (func) => {

@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from "../../common";
 import { test } from "../../../../playwright.config";
 
 const NAME = 'SelectPickTargetScreen';
@@ -9,6 +9,10 @@ export const SelectPickTargetLUScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back (footer Back button)`, async () => {
+        await page.locator(ID_BACK_BUTTON).tap();
     }),
 
     clickLUButton: async ({ lu }) => await test.step(`${NAME} - Click LU button`, async () => {

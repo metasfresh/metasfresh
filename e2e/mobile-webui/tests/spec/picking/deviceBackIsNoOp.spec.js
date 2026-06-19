@@ -1,9 +1,10 @@
 import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
-import { pressDeviceBack } from "../../utils/common";
+import { pressDeviceBack, mashDeviceBack } from "../../utils/common";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { SelectPickTargetLUScreen } from "../../utils/screens/picking/SelectPickTargetLUScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 
@@ -53,7 +54,10 @@ const createMasterdata = async () => {
     });
 };
 
-test('Device/browser Back is a pure no-op; only the footer Back navigates', async () => {
+// `page` param is required even though unused here: it triggers the playwright.config `page` fixture,
+// which calls setCurrentPage() so the screen objects' module-global `page` is wired up.
+// noinspection JSUnusedLocalSymbols
+test('Device/browser Back is a pure no-op; only the footer Back navigates', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
@@ -99,4 +103,45 @@ test('Device/browser Back is a pure no-op; only the footer Back navigates', asyn
     // The footer Back button on the jobs list navigates Home (the app list).
     await PickingJobsListScreen.goBack();
     await ApplicationsListScreen.expectVisible();
+});
+
+// `page` param is required even though unused here — see the note on the first test.
+// noinspection JSUnusedLocalSymbols
+test('Rapidly mashing device/browser Back stays put and never leaves the app', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Hammering the device/browser Back button many times in a row never moves the screen or drops the operator out of the app');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    //
+    // Log in and go deep: Home -> Picking jobs list -> a picking job -> the "Neues LU" / select-target screen.
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.waitForScreen();
+    await PickingJobScreen.clickLUTargetButton();
+    await SelectPickTargetLUScreen.waitForScreen();
+
+    //
+    // Mash the device/browser Back button rapidly — the reported failure was that several quick presses
+    // popped through into earlier screens and eventually out of the PWA. It must stay a no-op: still the
+    // SAME screen, still inside the app.
+    await mashDeviceBack(12);
+    await SelectPickTargetLUScreen.waitForScreen();
+
+    //
+    // The footer Back button still works after the mashing — back to the job screen.
+    await SelectPickTargetLUScreen.goBack();
+    await PickingJobScreen.waitForScreen();
+
+    //
+    // Mash again on the job screen — still a no-op, still in the app.
+    await mashDeviceBack(12);
+    await PickingJobScreen.waitForScreen();
 });
