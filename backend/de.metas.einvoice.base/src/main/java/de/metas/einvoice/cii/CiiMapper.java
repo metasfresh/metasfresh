@@ -1,6 +1,8 @@
 package de.metas.einvoice.cii;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.banking.BankAccount;
+import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -51,9 +53,10 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -73,17 +76,21 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
  *
- * <p>Scope: ExchangedDocument header, seller / buyer trade parties, document-level references,
- * and BG-25 invoice lines (BT-126 through BT-152).
- * VAT breakdown and monetary totals are populated by a subsequent pass (B5).
+ * <p>Covers: ExchangedDocument header (BT-1, BT-2, BT-3), seller/buyer trade parties (BG-4/BG-5,
+ * BG-7/BG-8), document-level references (BT-13, BT-25/BT-26), BG-25 invoice lines
+ * (BT-126 through BT-152), BG-23 VAT breakdown, BG-22 monetary totals, and BG-16 payment means.
  */
 public class CiiMapper
 {
+	private static final Logger log = LoggerFactory.getLogger(CiiMapper.class);
+
 	/** EN 16931 guideline IDs per invoice format. */
 	private static final String GUIDELINE_ID_ZUGFERD =
 			"urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931";
@@ -98,7 +105,7 @@ public class CiiMapper
 
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 
 	@NonNull
 	public CrossIndustryInvoiceType map(
@@ -472,14 +479,15 @@ public class CiiMapper
 		}
 
 		// BG-16 Payment means
-		buildPaymentMeans(invoice).forEach(pm -> settlement.getSpecifiedTradeSettlementPaymentMeans().add(pm));
+		final I_C_BPartner sellerBP = bPartnerDAO.retrieveOrgBPartner(
+				Env.getCtx(), invoice.getAD_Org_ID(), I_C_BPartner.class, null);
+		final BPartnerId sellerBPartnerId = sellerBP != null
+				? BPartnerId.ofRepoId(sellerBP.getC_BPartner_ID())
+				: null;
+		buildPaymentMeans(invoice, sellerBPartnerId).forEach(pm -> settlement.getSpecifiedTradeSettlementPaymentMeans().add(pm));
 
 		// BG-23 VAT breakdown — one ApplicableTradeTax per C_InvoiceTax row
-		final List<I_C_InvoiceTax> invoiceTaxes = queryBL.createQueryBuilder(I_C_InvoiceTax.class)
-				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
+		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			settlement.getApplicableTradeTax().add(buildHeaderTradeTax(invoiceTax));
@@ -539,7 +547,7 @@ public class CiiMapper
 
 		final TradeTaxType tradeTax = new TradeTaxType();
 
-		// TypeCode is always VAT
+		// BT-118 TypeCode = VAT (EN 16931 §6.4.2: only "VAT" is valid)
 		final TaxTypeCodeType taxTypeCode = new TaxTypeCodeType();
 		taxTypeCode.setValue("VAT");
 		tradeTax.setTypeCode(taxTypeCode);
@@ -653,19 +661,46 @@ public class CiiMapper
 
 	// ===== BG-16 Payment means =====
 
-	private List<TradeSettlementPaymentMeansType> buildPaymentMeans(@NonNull final I_C_Invoice invoice)
+	private List<TradeSettlementPaymentMeansType> buildPaymentMeans(
+			@NonNull final I_C_Invoice invoice,
+			@Nullable final BPartnerId sellerBPartnerId)
 	{
 		final String paymentRule = invoice.getPaymentRule();
 		if (paymentRule == null || paymentRule.isEmpty())
 		{
-			return java.util.Collections.emptyList();
+			return Collections.emptyList();
 		}
 
 		final String uncl4461Code = mapPaymentRuleToUncl4461(paymentRule);
 		if (uncl4461Code == null)
 		{
-			// Unmapped PaymentRule — skip rather than emit invalid code (flagged in report)
-			return java.util.Collections.emptyList();
+			// Unmapped PaymentRule — skip rather than emit invalid code
+			return Collections.emptyList();
+		}
+
+		// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
+		// Resolve the org's default bank account to obtain the IBAN.
+		String iban = null;
+		if (sellerBPartnerId != null)
+		{
+			final Optional<BankAccount> bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId);
+			if (bankAccount.isPresent())
+			{
+				final String candidateIban = bankAccount.get().getIBAN();
+				if (candidateIban != null && !candidateIban.trim().isEmpty())
+				{
+					iban = candidateIban;
+				}
+			}
+		}
+
+		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN
+		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+		if (isCreditTransfer && iban == null)
+		{
+			log.warn("CII mapping: PaymentMeans code {} (credit transfer) suppressed — no IBAN on seller BPartner [C_BPartner_ID={}]. "
+					+ "EN 16931 BR-61 requires BT-84 for code 30/58.", uncl4461Code, sellerBPartnerId);
+			return Collections.emptyList();
 		}
 
 		final TradeSettlementPaymentMeansType paymentMeans = new TradeSettlementPaymentMeansType();
@@ -675,11 +710,15 @@ public class CiiMapper
 		meansCode.setValue(uncl4461Code);
 		paymentMeans.setTypeCode(meansCode);
 
-		// BT-84 Payee IBAN (org bank account) — flagged as GAP; no reliable API to retrieve
-		// the org's default bank account without additional service wiring in this mapper.
-		// BT-84 is conditional in EN 16931 — omitting it is valid when not available.
+		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes)
+		if (iban != null)
+		{
+			final CreditorFinancialAccountType creditorAccount = new CreditorFinancialAccountType();
+			creditorAccount.setIBANID(id(iban));
+			paymentMeans.setPayeePartyCreditorFinancialAccount(creditorAccount);
+		}
 
-		return java.util.Collections.singletonList(paymentMeans);
+		return Collections.singletonList(paymentMeans);
 	}
 
 	/**

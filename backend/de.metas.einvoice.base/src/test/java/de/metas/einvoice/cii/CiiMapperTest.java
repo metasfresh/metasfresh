@@ -8,6 +8,7 @@ import de.metas.einvoice.cii.model.ObjectFactory;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -855,10 +856,205 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * Verifies BG-23 VAT breakdown (2 groups: 19% S and 0% AE), BG-22 monetary totals, and BG-16 payment means.
+	 * Verifies BG-23 VAT breakdown (2 groups: 19% S and 0% AE), BG-22 monetary totals, BG-16 payment means,
+	 * and BT-84 payee IBAN.
+	 *
+	 * <p>Fixture is internally consistent with EN 16931 BR-CO-13: GrandTotal = TaxBasisTotal + sum(TaxAmt).
+	 * S group: base 1000 @19% = 190 tax; AE group: base 500 @0% = 0 tax;
+	 * TotalLines=1500, TaxTotal=190, GrandTotal=1690.
 	 */
 	@Test
 	void vat_breakdown_totals_payment() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Seller bank account with IBAN (required for BR-61: code 30 must carry BT-84) ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === DocType ===
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: BR-CO-13 consistent — GrandTotal = TaxBasisTotal + sum(TaxAmt)
+		//   S group: base 1000, tax 190 (19%)
+		//   AE group: base 500, tax 0 (0%)
+		//   TotalLines = 1500, TaxTotal = 190, GrandTotal = 1690 ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00500");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setTotalLines(new BigDecimal("1500.00"));
+		invoice.setGrandTotal(new BigDecimal("1690.00"));
+		invoice.setPaymentRule("T"); // DirectDeposit → UNCL4461 code 30 (credit transfer)
+		saveRecord(invoice);
+
+		// === Tax 1: 19% standard 'S' ===
+		final I_C_Tax taxS = newInstance(I_C_Tax.class);
+		taxS.setName("MWSt 19%");
+		taxS.setEN16931VATCategory("S");
+		taxS.setRate(new BigDecimal("19"));
+		saveRecord(taxS);
+
+		// === Tax 2: 0% reverse charge 'AE' ===
+		final I_C_Tax taxAE = newInstance(I_C_Tax.class);
+		taxAE.setName("Reverse Charge 0%");
+		taxAE.setEN16931VATCategory("AE");
+		taxAE.setRate(new BigDecimal("0"));
+		saveRecord(taxAE);
+
+		// === C_InvoiceTax rows: group 1 = S (1000 base, 190 tax), group 2 = AE (500 base, 0 tax) ===
+		final I_C_InvoiceTax invoiceTaxS = newInstance(I_C_InvoiceTax.class);
+		invoiceTaxS.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTaxS.setC_Tax_ID(taxS.getC_Tax_ID());
+		invoiceTaxS.setTaxBaseAmt(new BigDecimal("1000.00")); // BT-116
+		invoiceTaxS.setTaxAmt(new BigDecimal("190.00"));      // BT-117 (1000 * 19%)
+		saveRecord(invoiceTaxS);
+
+		final I_C_InvoiceTax invoiceTaxAE = newInstance(I_C_InvoiceTax.class);
+		invoiceTaxAE.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTaxAE.setC_Tax_ID(taxAE.getC_Tax_ID());
+		invoiceTaxAE.setTaxBaseAmt(new BigDecimal("500.00")); // BT-116
+		invoiceTaxAE.setTaxAmt(new BigDecimal("0.00"));       // BT-117
+		saveRecord(invoiceTaxAE);
+
+		// === UOM + Product + line (needed to pass invoice mapping) ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-500");
+		saveRecord(product);
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(taxS.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("1500.00"));
+		line.setLineNetAmt(new BigDecimal("1500.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String settlement = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
+
+		// BG-23 VAT breakdown: expect exactly 2 ApplicableTradeTax groups
+		// Group 1: S / 19%
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:BasisAmount")
+				.isEqualTo("1000.00");
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:CalculatedAmount")
+				.isEqualTo("190.00");
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:RateApplicablePercent")
+				.isEqualTo("19");
+		// No exemption reason for S category
+
+		// Group 2: AE / 0% reverse charge
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:BasisAmount")
+				.isEqualTo("500.00");
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:CalculatedAmount")
+				.isEqualTo("0.00");
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:RateApplicablePercent")
+				.isEqualTo("0");
+		// BT-120 exemption reason for AE
+		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:ExemptionReason")
+				.isEqualTo("Reverse charge");
+
+		// BG-22 monetary totals
+		final String summation = settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
+		// BT-106 sum of line net = TotalLines
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("1500.00");
+		// BT-109 total without VAT = TotalLines (no header charges/allowances)
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("1500.00");
+		// BT-110 total VAT = sum of BT-117 (190 + 0)
+		xmlAssert.valueByXPath(summation + "/ram:TaxTotalAmount").isEqualTo("190.00");
+		// BT-112 total with VAT = GrandTotal
+		xmlAssert.valueByXPath(summation + "/ram:GrandTotalAmount").isEqualTo("1690.00");
+		// BT-115 amount due for payment = GrandTotal
+		xmlAssert.valueByXPath(summation + "/ram:DuePayableAmount").isEqualTo("1690.00");
+
+		// EN 16931 BR-CO-13: GrandTotal = TaxBasisTotal + sum(TaxAmt)
+		// 1690 = 1500 + 190  ✓ (verified numerically; XPath arithmetic asserts the relationship)
+		xmlAssert.valueByXPath(
+						"number(" + summation + "/ram:GrandTotalAmount)"
+								+ " - number(" + summation + "/ram:TaxBasisTotalAmount)"
+								+ " - number(" + summation + "/ram:TaxTotalAmount)")
+				.isEqualTo("0");
+
+		// BG-16 payment means: PaymentRule=T → UNCL4461 code 30 (credit transfer)
+		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementPaymentMeans/ram:TypeCode")
+				.isEqualTo("30");
+
+		// BT-84 Payee IBAN (BR-61: mandatory for code 30/58)
+		xmlAssert.valueByXPath(settlement
+						+ "/ram:SpecifiedTradeSettlementPaymentMeans/ram:PayeePartyCreditorFinancialAccount/ram:IBANID")
+				.isEqualTo("DE89370400440532013000");
+	}
+
+	/**
+	 * Header-level fail-fast: when a {@code C_InvoiceTax} row references a {@code C_Tax} with a NULL
+	 * {@code EN16931VATCategory}, the mapper must throw {@link org.adempiere.exceptions.AdempiereException}
+	 * with a message naming the C_Tax_ID (mirrors the existing line-level test).
+	 */
+	@Test
+	void header_vat_missing_category_throwsWithTaxId()
 	{
 		// === Minimal seller org ===
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -905,119 +1101,68 @@ public class CiiMapperTest
 		docType.setDocBaseType("ARI");
 		saveRecord(docType);
 
-		// === Invoice: TotalLines=1000, GrandTotal=1190 (1000 net + 190 VAT), PaymentRule=T ===
+		// === Invoice ===
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
-		invoice.setDocumentNo("RE-2024-00500");
+		invoice.setDocumentNo("RE-2024-00600");
 		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		invoice.setC_Currency_ID(currency.getC_Currency_ID());
 		invoice.setC_DocType_ID(docType.getC_DocType_ID());
 		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
-		invoice.setTotalLines(new BigDecimal("1000.00"));
-		invoice.setGrandTotal(new BigDecimal("1190.00"));
-		invoice.setPaymentRule("T"); // DirectDeposit → UNCL4461 code 30
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
 		saveRecord(invoice);
 
-		// === Tax 1: 19% standard 'S' ===
-		final I_C_Tax taxS = newInstance(I_C_Tax.class);
-		taxS.setName("MWSt 19%");
-		taxS.setEN16931VATCategory("S");
-		taxS.setRate(new BigDecimal("19"));
-		saveRecord(taxS);
-
-		// === Tax 2: 0% reverse charge 'AE' ===
-		final I_C_Tax taxAE = newInstance(I_C_Tax.class);
-		taxAE.setName("Reverse Charge 0%");
-		taxAE.setEN16931VATCategory("AE");
-		taxAE.setRate(new BigDecimal("0"));
-		saveRecord(taxAE);
-
-		// === C_InvoiceTax rows: group 1 = 19% S, group 2 = 0% AE ===
-		final I_C_InvoiceTax invoiceTaxS = newInstance(I_C_InvoiceTax.class);
-		invoiceTaxS.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceTaxS.setC_Tax_ID(taxS.getC_Tax_ID());
-		invoiceTaxS.setTaxBaseAmt(new BigDecimal("800.00")); // BT-116
-		invoiceTaxS.setTaxAmt(new BigDecimal("152.00"));     // BT-117 (800 * 19%)
-		saveRecord(invoiceTaxS);
-
-		final I_C_InvoiceTax invoiceTaxAE = newInstance(I_C_InvoiceTax.class);
-		invoiceTaxAE.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceTaxAE.setC_Tax_ID(taxAE.getC_Tax_ID());
-		invoiceTaxAE.setTaxBaseAmt(new BigDecimal("200.00")); // BT-116
-		invoiceTaxAE.setTaxAmt(new BigDecimal("0.00"));       // BT-117
-		saveRecord(invoiceTaxAE);
-
-		// === UOM + Product + line (needed to pass invoice mapping) ===
+		// === UOM + Product + line (so the mapper reaches the settlement / VAT breakdown phase) ===
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setName("Stück");
 		uom.setX12DE355("PCE");
 		saveRecord(uom);
 		final I_M_Product product = newInstance(I_M_Product.class);
 		product.setName("Testprodukt");
-		product.setValue("TP-500");
+		product.setValue("TP-600");
 		saveRecord(product);
+
+		// A line-level tax with a valid category (so BG-25 succeeds and we reach BG-23)
+		final I_C_Tax lineTax = newInstance(I_C_Tax.class);
+		lineTax.setName("MWSt 19%");
+		lineTax.setEN16931VATCategory("S");
+		lineTax.setRate(new BigDecimal("19"));
+		saveRecord(lineTax);
+
 		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
 		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		line.setLine(10);
 		line.setM_Product_ID(product.getM_Product_ID());
 		line.setC_UOM_ID(uom.getC_UOM_ID());
-		line.setC_Tax_ID(taxS.getC_Tax_ID());
+		line.setC_Tax_ID(lineTax.getC_Tax_ID());
 		line.setQtyInvoiced(new BigDecimal("1"));
-		line.setPriceActual(new BigDecimal("1000.00"));
-		line.setLineNetAmt(new BigDecimal("1000.00"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
 		saveRecord(line);
+
+		// === C_InvoiceTax row referencing a tax WITHOUT EN16931VATCategory ===
+		final I_C_Tax taxWithoutCategory = newInstance(I_C_Tax.class);
+		taxWithoutCategory.setName("Unbekannte Steuer");
+		// EN16931VATCategory intentionally left null
+		taxWithoutCategory.setRate(new BigDecimal("0"));
+		saveRecord(taxWithoutCategory);
+
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(taxWithoutCategory.getC_Tax_ID());
+		invoiceTax.setTaxBaseAmt(new BigDecimal("100.00"));
+		invoiceTax.setTaxAmt(new BigDecimal("0.00"));
+		saveRecord(invoiceTax);
 
 		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
 				.format(EInvoiceFormat.ZUGFeRD)
 				.build();
 
-		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
-		final XmlAssert xmlAssert = toXmlAssert(cii);
-
-		final String settlement = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeSettlement";
-
-		// BG-23 VAT breakdown: expect exactly 2 ApplicableTradeTax groups
-		// Group 1: S / 19%
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:BasisAmount")
-				.isEqualTo("800.00");
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:CalculatedAmount")
-				.isEqualTo("152.00");
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='S']/ram:RateApplicablePercent")
-				.isEqualTo("19");
-		// No exemption reason for S category
-
-		// Group 2: AE / 0% reverse charge
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:BasisAmount")
-				.isEqualTo("200.00");
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:CalculatedAmount")
-				.isEqualTo("0.00");
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:RateApplicablePercent")
-				.isEqualTo("0");
-		// BT-120 exemption reason for AE
-		xmlAssert.valueByXPath(settlement + "/ram:ApplicableTradeTax[ram:CategoryCode='AE']/ram:ExemptionReason")
-				.isEqualTo("Reverse charge");
-
-		// BG-22 monetary totals
-		// BT-106 sum of line net = TotalLines
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:LineTotalAmount")
-				.isEqualTo("1000.00");
-		// BT-109 total without VAT = TotalLines (no header charges/allowances)
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxBasisTotalAmount")
-				.isEqualTo("1000.00");
-		// BT-110 total VAT = sum of BT-117 (152 + 0)
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:TaxTotalAmount")
-				.isEqualTo("152.00");
-		// BT-112 total with VAT = GrandTotal
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:GrandTotalAmount")
-				.isEqualTo("1190.00");
-		// BT-115 amount due for payment = GrandTotal
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementHeaderMonetarySummation/ram:DuePayableAmount")
-				.isEqualTo("1190.00");
-
-		// BG-16 payment means: PaymentRule=T → UNCL4461 code 30
-		xmlAssert.valueByXPath(settlement + "/ram:SpecifiedTradeSettlementPaymentMeans/ram:TypeCode")
-				.isEqualTo("30");
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("C_Tax_ID=" + taxWithoutCategory.getC_Tax_ID());
 	}
 
 	// ===== Shared helpers =====
