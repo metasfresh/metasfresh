@@ -15,7 +15,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
-import de.metas.cucumber.stepdefs.invoice.acct.C_ElementValue_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;

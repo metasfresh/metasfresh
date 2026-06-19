@@ -3,9 +3,9 @@
 @allure.label.feature:F00700_Invoicing
 @ghActions:run_on_executor5
 Feature: Per-line GL account override on purchase invoices
-## Verifies that a per-line C_ElementValue_Override_ID set on a purchase invoice line:
-## (A) materializes C_Invoice_Acct rows on completion and posts to the override account,
-## (B) does not bleed into payment-allocation posting, which always uses V_Liability_Acct.
+# A per-line C_ElementValue_Override_ID on a purchase invoice line:
+# - materializes C_Invoice_Acct rows on completion and posts to the override account;
+# - must not leak into payment-allocation posting (which uses V_Liability_Acct).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -55,13 +55,8 @@ Feature: Per-line GL account override on purchase invoices
       | org_EUR_account | EUR           | DE89370400440532013000  |
 
 
-# ######################################
-# Scenario A — core override-posting assertion
-# Purchase invoice line carries C_ElementValue_Override_ID.
-# On completion:
-#   (a) C_Invoice_Acct rows are materialized for P_Expense_Acct and P_InventoryClearing_Acct.
-#   (b) The expense Fact_Acct line posts to overrideAccount, NOT the product-default P_Expense_Acct.
-# ######################################
+  # Scenario A: the per-line override materializes C_Invoice_Acct (P_Expense + P_InventoryClearing)
+  # and the expense Fact_Acct leg posts to overrideAccount, not the product-default P_Expense_Acct.
   @Id:S30443_TC1
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
@@ -88,12 +83,8 @@ Feature: Per-line GL account override on purchase invoices
       | P_Expense_Acct        | 100 EUR     |             | vendor        | invoice   | overrideAccount |
 
 
-# ######################################
-# Scenario B — allocation regression guard
-# Pay the override invoice; allocate payment.
-# The allocation's Fact_Acct must post to V_Liability_Acct (NOT to overrideAccount).
-# This guards against the override leaking into Doc_AllocationHdr posting.
-# ######################################
+  # Scenario B (regression guard): paying + allocating the override invoice must post the allocation
+  # to V_Liability_Acct / B_PaymentSelect_Acct — the override must NOT leak into Doc_AllocationHdr posting.
   @Id:S30443_TC2
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
@@ -120,7 +111,8 @@ Feature: Per-line GL account override on purchase invoices
       | C_Payment_ID | C_AllocationHdr_ID |
       | payment      | alloc              |
 
-    # Allocation posts to V_Liability_Acct — the override P_Expense_Acct must NOT appear
+    # Allocation posts to V_Liability_Acct / B_PaymentSelect_Acct. Fact_Acct matching is strict:
+    # any unexpected P_Expense_Acct (override) row for this allocation would fail this step.
     And Fact_Acct records are matching
       | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID |
       | V_Liability_Acct      | 100 EUR     |             | vendor        | alloc     |

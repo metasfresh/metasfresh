@@ -4,6 +4,7 @@ import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.invoice.InvoiceId;
@@ -67,7 +68,10 @@ public class C_Invoice_Acct_StepDef
 		final ElementValueId expectedElementValueId = row.getAsIdentifier(I_C_Invoice_Acct.COLUMNNAME_C_ElementValue_ID)
 				.lookupNotNullIdIn(elementValueTable);
 
-		// Query the C_Invoice_Acct table for the exact (invoice, line, accountName) tuple
+		// Query the C_Invoice_Acct table for the exact (invoice, line, accountName) tuple.
+		// Active-only is intentional and load-bearing: surgical materialization deactivates the
+		// contradicting rows it replaces, so we assert the live materialized override row — a
+		// wrongly-deactivated materialized row must fail this assertion, not silently satisfy it.
 		final List<I_C_Invoice_Acct> found = queryBL.createQueryBuilder(I_C_Invoice_Acct.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_Invoice_ID, invoiceId)

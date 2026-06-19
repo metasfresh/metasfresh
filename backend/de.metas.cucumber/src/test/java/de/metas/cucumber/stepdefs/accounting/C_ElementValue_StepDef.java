@@ -1,7 +1,13 @@
-package de.metas.cucumber.stepdefs.invoice.acct;
+package de.metas.cucumber.stepdefs.accounting;
 
+import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.elementvalue.ElementValue;
+import de.metas.elementvalue.ElementValueCreateOrUpdateRequest;
+import de.metas.elementvalue.ElementValueService;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -10,26 +16,25 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.util.Env;
 
-import java.util.List;
-
 /**
  * Step definitions for creating and registering {@link I_C_ElementValue} (GL account) records.
- * Used to set up override GL accounts in cucumber accounting tests.
  */
 @RequiredArgsConstructor
 public class C_ElementValue_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 
 	private final C_ElementValue_StepDefData elementValueTable;
 
 	/**
-	 * Creates or looks up a {@code C_ElementValue} (GL account) record by {@code Value},
-	 * anchored to the first active {@code C_Element} (chart of accounts) for the current client.
+	 * Creates (or looks up by {@code Value}) a {@code C_ElementValue} (GL account) record,
+	 * anchored to the first active {@code C_Element} (chart of accounts) of the current client.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -59,37 +64,28 @@ public class C_ElementValue_StepDef
 		final String value = row.getAsOptionalString("Value")
 				.orElseGet(() -> row.getAsOptionalIdentifier()
 						.map(id -> "TEST_" + id.getAsString())
-						.orElse("TEST_ACCOUNT_" + System.currentTimeMillis()));
+						.orElse("TEST_ACCOUNT"));
 
-		// Check if already exists
-		final List<I_C_ElementValue> existing = queryBL.createQueryBuilder(I_C_ElementValue.class)
-				.addEqualsFilter(I_C_ElementValue.COLUMNNAME_Value, value)
-				.addOnlyActiveRecordsFilter()
-				.create()
-				.list();
-
-		if (!existing.isEmpty())
-		{
-			return existing.get(0);
-		}
-
-		final String name = row.getAsOptionalString("Name").orElse(value);
-
-		// Find the first C_Element for the current client
 		final I_C_Element element = findDefaultElement();
+		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(element.getC_Element_ID());
 
-		final I_C_ElementValue record = InterfaceWrapperHelper.newInstance(I_C_ElementValue.class);
-		record.setAD_Org_ID(0);
-		record.setValue(value);
-		record.setName(name);
-		record.setC_Element_ID(element.getC_Element_ID());
-		record.setAccountType("E"); // Expense — suitable for P_Expense_Acct overrides
-		record.setAccountSign("N"); // Natural
-		record.setIsActive(true);
-		record.setIsSummary(false);
-		InterfaceWrapperHelper.save(record);
+		final ElementValueId elementValueId = elementValueService.getByAccountNo(value, chartOfAccountsId)
+				.map(ElementValue::getId)
+				.orElseGet(() -> {
+					final String name = row.getAsOptionalString("Name").orElse(value);
+					return elementValueService.createOrUpdate(ElementValueCreateOrUpdateRequest.builder()
+							.orgId(OrgId.ANY)
+							.chartOfAccountsId(chartOfAccountsId)
+							.value(value)
+							.name(name)
+							.accountSign("N") // Natural
+							.accountType("E") // Expense — suitable for P_Expense_Acct overrides
+							.isSummary(false)
+							.build())
+							.getId();
+				});
 
-		return record;
+		return InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class);
 	}
 
 	private I_C_Element findDefaultElement()
