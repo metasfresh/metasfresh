@@ -1025,6 +1025,8 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("1500.00");
 		// BT-110 total VAT = sum of BT-117 (190 + 0)
 		xmlAssert.valueByXPath(summation + "/ram:TaxTotalAmount").isEqualTo("190.00");
+		// BR-CO-15: TaxTotalAmount/@currencyID must match invoice currency
+		xmlAssert.valueByXPath(summation + "/ram:TaxTotalAmount/@currencyID").isEqualTo("EUR");
 		// BT-112 total with VAT = GrandTotal
 		xmlAssert.valueByXPath(summation + "/ram:GrandTotalAmount").isEqualTo("1690.00");
 		// BT-115 amount due for payment = GrandTotal

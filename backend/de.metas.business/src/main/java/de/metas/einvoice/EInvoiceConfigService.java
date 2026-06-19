@@ -18,9 +18,22 @@ public class EInvoiceConfigService
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
+	/**
+	 * Resolves the e-invoice recipient configuration for the given invoice ID.
+	 * Loads the invoice and delegates to {@link #resolveForInvoice(I_C_Invoice)}.
+	 */
 	public Optional<EInvoiceRecipientConfig> resolveForInvoice(@NonNull final InvoiceId invoiceId)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		return resolveForInvoice(invoice);
+	}
+
+	/**
+	 * Resolves the e-invoice recipient configuration for an already-loaded invoice record.
+	 * Use this overload when the caller has already loaded the invoice to avoid a redundant DB fetch.
+	 */
+	public Optional<EInvoiceRecipientConfig> resolveForInvoice(@NonNull final I_C_Invoice invoice)
+	{
 		// I_C_Invoice has no getBill_BPartner_ID(); C_BPartner_ID is the bill partner on standard invoices
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(invoice.getC_BPartner_ID());
 

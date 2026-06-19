@@ -10,6 +10,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -42,17 +43,31 @@ import java.util.Optional;
  * so callers do not need to check eligibility themselves.
  */
 @Service
+@RequiredArgsConstructor
 public class EInvoiceCiiService
 {
 	private static final Logger log = LoggerFactory.getLogger(EInvoiceCiiService.class);
 
+	/**
+	 * JAXBContext is thread-safe once built and expensive to construct (full classpath scan).
+	 * Build it once at class-load time and reuse across calls.
+	 */
+	private static final JAXBContext JAXB_CTX;
+
+	static
+	{
+		try
+		{
+			JAXB_CTX = JAXBContext.newInstance(CrossIndustryInvoiceType.class, ObjectFactory.class);
+		}
+		catch (final JAXBException ex)
+		{
+			throw new ExceptionInInitializerError(ex);
+		}
+	}
+
 	@NonNull private final EInvoiceConfigService configService;
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-
-	public EInvoiceCiiService(@NonNull final EInvoiceConfigService configService)
-	{
-		this.configService = configService;
-	}
 
 	/**
 	 * Generates a CII XML e-invoice for the given invoice and validates it against EN16931 rules.
@@ -64,7 +79,10 @@ public class EInvoiceCiiService
 	@NonNull
 	public Optional<GenerateAndValidateResult> generateAndValidate(@NonNull final InvoiceId invoiceId)
 	{
-		final Optional<EInvoiceRecipientConfig> configOpt = configService.resolveForInvoice(invoiceId);
+		// Load the invoice once and pass it to both config resolution and mapping.
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+
+		final Optional<EInvoiceRecipientConfig> configOpt = configService.resolveForInvoice(invoice);
 		if (!configOpt.isPresent())
 		{
 			log.debug("Invoice {} is not an e-invoice recipient — skipping CII generation.", invoiceId);
@@ -72,7 +90,6 @@ public class EInvoiceCiiService
 		}
 
 		final EInvoiceRecipientConfig config = configOpt.get();
-		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
 		// Map invoice to CII domain object
 		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, config);
@@ -103,8 +120,8 @@ public class EInvoiceCiiService
 	{
 		try
 		{
-			final JAXBContext ctx = JAXBContext.newInstance(CrossIndustryInvoiceType.class, ObjectFactory.class);
-			final Marshaller marshaller = ctx.createMarshaller();
+			// Marshaller is NOT thread-safe — create a new one per call, reuse the shared JAXBContext.
+			final Marshaller marshaller = JAXB_CTX.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
 			final StringWriter sw = new StringWriter();

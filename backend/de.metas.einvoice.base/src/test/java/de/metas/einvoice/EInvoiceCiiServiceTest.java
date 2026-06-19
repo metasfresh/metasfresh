@@ -255,13 +255,9 @@ public class EInvoiceCiiServiceTest
 		final CiiValidationResult validationResult = result.getValidationResult();
 		assertThat(validationResult).isNotNull();
 
-		// Report any mapper gaps as information (not as failures — the CiiValidatorTest is the
-		// definitive gate for EN16931 compliance). This test focuses on the pipeline wiring.
-		if (!validationResult.getFatalAndErrorRuleIds().isEmpty())
-		{
-			// Non-empty list here is a concern but doesn't fail this test — CiiValidatorTest owns that gate
-			System.out.println("EInvoiceCiiServiceTest: FATAL/ERROR EN16931 rules fired (mapper gaps): "
-					+ validationResult.getFatalAndErrorRuleIds());
-		}
+		// The full pipeline (mapper → marshal → Schematron) must produce a valid CII document.
+		assertThat(result.isValid())
+				.as("EN16931 Schematron validation must pass; violations: %s", validationResult.getFatalAndErrorRuleIds())
+				.isTrue();
 	}
 }
