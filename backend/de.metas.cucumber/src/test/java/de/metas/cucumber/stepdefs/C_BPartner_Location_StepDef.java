@@ -72,7 +72,6 @@ public class C_BPartner_Location_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
-	/** Holds the exception thrown by the most recent {@code update C_BPartner_Location expecting error:} step. */
 	@Nullable private AdempiereException lastUpdateException = null;
 
 	@Given("metasfresh contains C_BPartner_Locations:")

@@ -7,7 +7,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.vatid.VATaxIDValidationService;
+import de.metas.bpartner.vatid.VATaxIDValidationUtil;
 import de.metas.copy_with_details.CopyRecordFactory;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
@@ -207,6 +207,6 @@ public class C_BPartner
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
 	{
-		VATaxIDValidationService.validateIfEnabled(bpartner.getVATaxID());
+		VATaxIDValidationUtil.validateIfEnabled(bpartner.getVATaxID());
 	}
 }

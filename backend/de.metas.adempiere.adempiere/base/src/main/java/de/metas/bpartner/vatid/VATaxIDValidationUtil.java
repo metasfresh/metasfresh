@@ -30,19 +30,19 @@ import org.adempiere.service.ISysConfigBL;
 import javax.annotation.Nullable;
 
 /**
- * Stateless service that validates the structural format of a VAT-ID value before it is persisted.
+ * Stateless helper that validates the structural format of a VAT-ID value before it is persisted.
  *
  * <p>Validation is guarded by the {@code C_BPartner.validateVATaxID} system-configuration entry
  * (default {@code Y}).  When the entry is {@code N}, every value passes regardless of format.
  *
  * <p>Format checking is delegated to {@link EUVatIdFormatValidator#isValidFormat(String)}.
  */
-public final class VATaxIDValidationService
+public final class VATaxIDValidationUtil
 {
 	private static final AdMessageKey MSG_VATaxID_Invalid_Format = AdMessageKey.of("VATaxID_Invalid_Format");
 	private static final String SYSCONFIG_validateVATaxID = "C_BPartner.validateVATaxID";
 
-	private VATaxIDValidationService()
+	private VATaxIDValidationUtil()
 	{
 	}
 

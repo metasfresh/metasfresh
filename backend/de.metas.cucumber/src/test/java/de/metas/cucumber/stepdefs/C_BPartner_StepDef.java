@@ -144,7 +144,6 @@ public class C_BPartner_StepDef
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 
-	/** Holds the exception thrown by the most recent {@code update C_BPartner expecting error:} step. */
 	@Nullable private AdempiereException lastUpdateException = null;
 
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
