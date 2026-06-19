@@ -79,6 +79,10 @@ export const MaterialReceiptLineScreen = {
         await ManufacturingJobScreen.waitForScreen();
     }),
 
+    expectNoGebindeHintVisible: async () => await test.step(`${NAME} - Expect no-Gebinde hint near disabled Produzieren`, async () => {
+        await expect(page.getByTestId('receive-no-gebinde-hint')).toBeVisible();
+    }),
+
     expectHeaderProperty:  async ({ caption, value }) => await test.step(`${NAME} - Check header property "${caption}" = "${value}"`, async () => {
         const row = await page.locator(
             `tr:has(th:text-is("${caption}")):has(td:has-text("${value}"))`
