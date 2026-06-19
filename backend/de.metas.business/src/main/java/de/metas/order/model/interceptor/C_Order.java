@@ -79,7 +79,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -235,16 +234,11 @@ public class C_Order
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+					I_C_Order.COLUMNNAME_C_BPartner_ID
+			})
 	public void setIncoterms(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
-		if (bpartner == null)
-		{
-			return; // nothing to do yet
-		}
-		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		if (order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
 		{
 			return; // prevent updating value from OLCand
 		}

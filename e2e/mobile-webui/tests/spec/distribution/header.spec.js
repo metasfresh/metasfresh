@@ -69,7 +69,7 @@ test('Header reflects the configured caption items (incl. Product Value and Name
 
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.expectHeaderProperty({ caption: 'From Locator', value: 'wh1_l1' });
-    await DistributionJobScreen.expectHeaderProperty({ caption: 'To Locator', value: 'wh2_l1' });
+    await DistributionJobScreen.expectHeaderProperty({ caption: 'Drop to locator', value: 'wh2_l1' });
     await DistributionJobScreen.expectHeaderProperty({
         caption: 'Product Value and Name',
         value: masterdata.products.P1.productCode + "_" + masterdata.products.P1.productName,

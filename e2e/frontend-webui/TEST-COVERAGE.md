@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-04
+**Last Updated**: 2026-06-19
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1049,6 +1049,32 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
 - The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
 
+### 41. Tax — EN16931 VAT Category field (`tax-en16931-vat-category.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up the newly-added field
+3. Navigate to Tax record 540010 (OSS CY 19%) in window 137
+4. Assert `EN16931VATCategory` field is present and has `widgetType-List` CSS class
+5. Assert the record is valid (`assertRecordIsValid`) before editing — else UI changes won't persist
+6. Read current value via WebAPI `getFieldData`; choose a different known code to stay idempotent across retries
+7. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
+8. Wait for auto-save; read back via WebAPI `getFieldData` — assert `fieldData.value.key` matches
+9. Restore original value and verify via WebAPI
+
+**Key Validations**:
+- The `form-field-EN16931VATCategory` wrapper is rendered as a `widgetType-List`
+- Dropdown options use stable `data-testid="option-S"`, `option-AE"` etc.
+- WebAPI returns `{ key, caption }` for List fields (not a bare string)
+- The test is fully idempotent: it reads current value and round-trips, not depending on a fixed initial state
+
+---
+
 ### 4. HU Label Configuration — Create Record
 **File**: `tests/spec/hu-label-config-create.spec.js`
 **Status**: ✅ Passing (German)
@@ -1147,8 +1173,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 34 files
-- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 57 files
+- **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
