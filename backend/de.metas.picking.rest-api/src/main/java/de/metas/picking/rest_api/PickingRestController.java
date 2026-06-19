@@ -362,4 +362,5 @@ public class PickingRestController
 		assertApplicationAccess();
 		return pickingMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
+
 }

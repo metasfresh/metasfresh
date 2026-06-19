@@ -135,6 +135,8 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
+	private final boolean isSetGrais;
+	@Nullable private final GRAISet graiCodes;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -174,7 +176,9 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
-			final boolean isCloseTarget)
+			final boolean isCloseTarget,
+			final boolean isSetGrais,
+			final @Nullable GRAISet graiCodes)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -270,6 +274,8 @@ public class PickingJobPickCommand
 				.build();
 
 		this.isCloseTarget = isCloseTarget;
+		this.isSetGrais = isSetGrais;
+		this.graiCodes = graiCodes;
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -336,6 +342,7 @@ public class PickingJobPickCommand
 		{
 
 			pickedHUs = splitOutPickToHUs();
+			stampGraisIfRequired();
 		}
 
 		changeStep(step -> updateStepFromPickedHUs(step, pickedHUs));
@@ -518,6 +525,42 @@ public class PickingJobPickCommand
 			// Must be called inside the pick transaction so the attribute write commits together with the pick.
 			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
+	}
+
+	/**
+	 * Stamps the event's {@code graiCodes} onto the picked LU's TU slots, unioned with the GRAIs already on the LU.
+	 * Must be called inside the ambient pick HU context so the attribute writes commit with the pick transaction.
+	 * No-op when {@code isSetGrais} is false or {@code graiCodes} is empty.
+	 */
+	private void stampGraisIfRequired()
+	{
+		if (!isSetGrais || graiCodes == null || graiCodes.isEmpty())
+		{
+			return;
+		}
+
+		// Resolve the picked LU via the current line's effective target (after splitOutPickToHUs → updatePickingTarget):
+		// PRODUCT-agg → the line's just-materialised LU; SALES_ORDER/DELIVERY_LOCATION-agg → the header LU. Resolving
+		// per current line (not findFirst over all lines) avoids stamping the wrong LU in a multi-line PRODUCT-agg job
+		// where a prior line's LU is already materialised.
+		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			// No materialised LU for this line (e.g. CU-only pick without an LU target) — nothing to stamp.
+			return;
+		}
+
+		// Union with the GRAIs already on the LU: setGrais treats its argument as the LU's COMPLETE desired set
+		// (HUGraiSnapshot.computeDelta), so on a shared SALES_ORDER-agg LU a later product's pick would otherwise
+		// WIPE an earlier product's GRAIs. Existing-first preserves each VHU's slot order; for a single-product LU
+		// the existing set is empty, so the union is a no-op.
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		final GRAISet desiredGrais = existingGrais.union(graiCodes);
+		huService.setGrais(pickedLuId, desiredGrais);
 	}
 
 	private void closeLUAndTUPickingTargets()

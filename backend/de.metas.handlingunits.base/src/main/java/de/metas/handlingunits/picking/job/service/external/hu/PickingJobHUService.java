@@ -147,6 +147,10 @@ public class PickingJobHUService
 	 */
 	public void setGrais(@NonNull final HuId huId, @NonNull final GRAISet graiSet) {huGraiService.setGraisInAmbientContext(huId, graiSet);}
 
+	/** Returns the GRAIs currently stamped across the HU's TU slots (empty if none). */
+	@NonNull
+	public GRAISet getGrais(@NonNull final HuId huId) {return huGraiService.getGrais(huId);}
+
 	/**
 	 * Returns the TU packing instruction configured for the given GRAI (matched by company-prefix and asset-type).
 	 *

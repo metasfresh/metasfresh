@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 58 | 62 | 94% |
+| Picking | 59 | 62 | 95% |
 | Distribution | 39 | 40 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -205,6 +205,31 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### GRAI-scan picking (product aggregation)
+
+| Scenario | Test |
+|---|---|
+| Scan one GRAI → TU auto-created with GRAI attribute | `picking/picking-grai-scan.spec.js` |
+| Scanned GRAI has no M_HU_PI_GRAI mapping → GRAINoMatchingTUType error | `picking/picking-grai-scan.spec.js` |
+| Resolved TU not allowed on picking-target LU → GRAITUNotAllowedOnLU error | `picking/picking-grai-scan.spec.js` |
+| Two distinct GRAIs before debounce → GRAIMultipleScanned error, no list | `picking/picking-grai-scan.spec.js` |
+| Unparseable barcode → scanner ignores it, stays live for valid scan | `picking/picking-grai-scan.spec.js` |
+| Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
+| BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
+| Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
+
+**8/8 — 100%**
+
+### Inline GRAI capture in Flow Through (LU_TU) picking
+
+| Scenario | Test |
+|---|---|
+| Pick 10 crates onto one LU; confirming the quantity auto-invokes the inline GRAI capture; capture all 10 GRAIs (one typed via manual entry, the rest scanned) → save enabled, the atomic pick is sent and the job completes | `picking/picking-grai-flowthrough.spec.js` |
+| Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
+| Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
+
+**3/3 — 100%**
 
 ---
 

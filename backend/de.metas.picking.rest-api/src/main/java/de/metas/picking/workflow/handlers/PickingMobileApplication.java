@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -462,6 +463,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.isSetLotNo(json.isSetLotNo())
 				.lotNo(json.getLotNo())
 				.isCloseTarget(json.isCloseTarget())
+				.isSetGrais(json.isSetGrais())
+				// Parse the raw scanned strings (canonical or GS1 AI 8003) into a GRAISet once, here at the
+				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
+				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
