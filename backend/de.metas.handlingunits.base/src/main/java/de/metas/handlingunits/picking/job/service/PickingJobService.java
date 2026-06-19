@@ -343,6 +343,8 @@ public class PickingJobService implements PickingSlotListener
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
 						.isCloseTarget(event.isCloseTarget())
+						.isSetGrais(event.isSetGrais())
+						.graiCodes(event.getGraiCodes())
 						//
 						.build()
 						.execute();

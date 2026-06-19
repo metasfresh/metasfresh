@@ -10,6 +10,7 @@ import { PickFromHUScanScreen } from './PickFromHUScanScreen';
 import { expect } from '@playwright/test';
 import { PickLineScanScreen } from './PickLineScanScreen';
 import { PickingJobLineScreen } from './PickingJobLineScreen';
+import { PickGraiScreen } from './PickGraiScreen';
 import { test } from '../../../../playwright.config';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityErrorPanel';
@@ -158,6 +159,9 @@ export const PickingJobScreen = {
             await PickingJobScreen.waitForScreen();
         } else if (expectNextScreen === 'PickingJobsListScreen') {
             await PickingJobsListScreen.waitForScreen();
+        } else if (expectNextScreen === 'PickGraiScreen') {
+            // GRAIRequired customer: confirming the qty auto-invokes the inline GRAI capture.
+            await PickGraiScreen.waitForScreen();
         } else {
             throw new Error(`Invalid expectNextScreen: ${expectNextScreen}`);
         }

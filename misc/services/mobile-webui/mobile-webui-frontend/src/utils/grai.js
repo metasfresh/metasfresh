@@ -35,10 +35,14 @@ export const parseGraiFromGs1Barcode = (barcodeString) => {
     const base = graiData.substring(1, 13);
     const serial = graiData.substring(14);
 
-    // For GRAI, the company prefix is typically 7 digits (GS1 standard for most European prefixes)
-    // We use a heuristic: GS1 prefixes starting with 76 (Switzerland) are 7 digits
-    const companyPrefix = base.substring(0, 7);
-    const assetType = base.substring(7);
+    // The 12-digit base is split into a fixed 7-digit company prefix + the remaining asset type,
+    // matching the backend parser (de.metas.handlingunits.grai.GRAI.GS1_COMPANY_PREFIX_LENGTH = 7).
+    // GS1 allows variable-length company prefixes, but this scan path is calibrated for the 7-digit
+    // prefixes in use; the frontend and backend MUST stay on the same split so a scanned GRAI parses
+    // to the same canonical value on both sides.
+    const COMPANY_PREFIX_LENGTH = 7;
+    const companyPrefix = base.substring(0, COMPANY_PREFIX_LENGTH);
+    const assetType = base.substring(COMPANY_PREFIX_LENGTH);
 
     if (!serial) return null;
 
@@ -72,13 +76,6 @@ export const parseGraiFromRawInput = (inputString) => {
 };
 
 /**
- * Validate a GRAI string in dot-separated format.
- * Expected format: {companyPrefix}.{assetType}.{serial}
- *
- * @param {string} graiString
- * @returns {boolean}
- */
-/**
  * Parse a raw input string that may contain one or more GRAIs
  * separated by newlines or tabs (e.g., RFID scanner batch output).
  *
@@ -96,6 +93,13 @@ export const parseGraiArrayFromRawInput = (rawInput) => {
     .filter(Boolean);
 };
 
+/**
+ * Validate a GRAI string in dot-separated format.
+ * Expected format: {companyPrefix}.{assetType}.{serial}
+ *
+ * @param {string} graiString
+ * @returns {boolean}
+ */
 export const isValidGrai = (graiString) => {
   if (!graiString || typeof graiString !== 'string') return false;
 
@@ -104,4 +108,54 @@ export const isValidGrai = (graiString) => {
 
   const [companyPrefix, assetType, serial] = parts;
   return companyPrefix.length > 0 && assetType.length > 0 && serial.length > 0;
+};
+
+//
+// GRAI list helpers (shared between picking and HU-Manager hooks)
+//
+
+/**
+ * Return the GRAIs that fill the assigned slots (first `tuCount` entries).
+ * When tuCount is 0 (unknown/unlimited), all captured GRAIs are "assigned".
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getAssignedGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(0, tuCount) : graiCodes);
+
+/**
+ * Return the GRAIs beyond the assigned slots (overflow / extras).
+ * When tuCount is 0, there are no extras.
+ *
+ * @param {string[]} graiCodes - current accumulated list
+ * @param {number} tuCount - expected number of TUs (0 = unlimited)
+ * @returns {string[]}
+ */
+export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.slice(tuCount) : []);
+
+/**
+ * Merge newGrais into the existing list, deduplicating by value — both against the existing list
+ * AND within newGrais itself. Preserves existing order; appends new items at the end.
+ * Returns the same array reference if nothing was added (no unnecessary re-render).
+ *
+ * Within-batch dedup matters for RFID mass-scan: a single burst can re-read the same physical
+ * crate's tag more than once, and a GRAI uniquely identifies one returnable asset — so a repeated
+ * code in one batch is the same crate, not a second one, and must collapse to a single entry.
+ *
+ * @param {string[]} prev - existing GRAI list
+ * @param {string[]} newGrais - GRAIs to add
+ * @returns {string[]}
+ */
+export const mergeGraiArrays = (prev, newGrais) => {
+  const seen = new Set(prev);
+  const toAdd = [];
+  for (const g of newGrais) {
+    if (!seen.has(g)) {
+      seen.add(g);
+      toAdd.push(g);
+    }
+  }
+  if (toAdd.length === 0) return prev;
+  return [...prev, ...toAdd];
 };
