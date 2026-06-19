@@ -37,7 +37,7 @@ UPDATE AD_Process_Trl SET IsTranslated='Y', Name='Pickliste drucken (Traffic Man
 ;
 
 -- 2026-06-19T09:00:12.000Z
-INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_QuickAction,WEBUI_QuickAction_Default) VALUES (0,0,585640,542514,TO_TIMESTAMP('2026-06-19 09:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y',TO_TIMESTAMP('2026-06-19 09:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','N')
+INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy) VALUES (0,0,585640,542514,TO_TIMESTAMP('2026-06-19 09:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y',TO_TIMESTAMP('2026-06-19 09:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
 
 -- Scope the process to Window 541929 so it only appears in the Traffic Management window

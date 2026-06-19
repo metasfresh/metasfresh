@@ -115,10 +115,16 @@ SELECT db_alter_view(
 DROP VIEW IF EXISTS M_Picking_Job_Schedule_view$new
 ;
 
--- Step 2: Register C_DocType_ID column in AD
+-- Step 2: Val rule — limit C_DocType_ID filter to sales order doc types
+-- AD_Val_Rule_ID 540791 (From ID Server)
+-- 2026-06-19T09:00:00.500Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540791 /*From ID Server*/,'C_DocType.DocBaseType=''SOO'' AND C_DocType.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',TO_TIMESTAMP('2026-06-19 09:00:00.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'de.metas.handlingunits','Y','C_DocType SO (Traffic Manager)','S',TO_TIMESTAMP('2026-06-19 09:00:00.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- Step 3: Register C_DocType_ID column in AD
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:01.000Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592858 /*From ID Server*/,196,0,19,542514,'XX','C_DocType_ID',TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Belegart oder Verarbeitungsvorgaben','de.metas.handlingunits',0,10,'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.','Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N',0,'Belegart','NP',0,0,TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,AD_Val_Rule_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592858 /*From ID Server*/,196,0,19,542514,540791 /*From ID Server*/,'XX','C_DocType_ID',TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','Belegart oder Verarbeitungsvorgaben','de.metas.handlingunits',0,10,'Die Belegart bestimmt den Nummernkreis und die Vorgaben für die Belegverarbeitung.','Y','N','Y','N','N','N','Y','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N',0,'Belegart','NP',0,0,TO_TIMESTAMP('2026-06-19 09:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-06-19T09:00:01.100Z
@@ -129,13 +135,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(196)
 ;
 
--- Step 3: Make C_DocType_ID a filter column
+-- Step 4: Make C_DocType_ID a filter column
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:02.000Z
 UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2026-06-19 09:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592858 /*From ID Server*/
 ;
 
--- Step 4: Add field to Traffic Management window → Kommissionierplan tab (548377)
+-- Step 5: Add field to Traffic Management window → Kommissionierplan tab (548377)
 -- Field: Traffic Management(541929,de.metas.handlingunits) -> Kommissionierplan(548377,de.metas.handlingunits) -> Belegart
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:03.000Z
@@ -158,7 +164,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781230
 /* DDL */ select AD_Element_Link_Create_Missing_Field(781230)
 ;
 
--- Step 5: Place field in UI — "sales order" element group (553423) in tab 548377
+-- Step 6: Place field in UI — "sales order" element group (553423) in tab 548377
 -- UI Element: Traffic Management(541929) -> Kommissionierplan(548377) -> primary -> 10 -> sales order.Belegart
 -- Column: M_Picking_Job_Schedule_view.C_DocType_ID
 -- 2026-06-19T09:00:04.000Z
