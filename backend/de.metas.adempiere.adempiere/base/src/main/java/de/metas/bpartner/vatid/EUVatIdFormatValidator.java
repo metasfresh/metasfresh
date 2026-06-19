@@ -1,11 +1,3 @@
-package de.metas.bpartner.vatid;
-
-import com.google.common.collect.ImmutableMap;
-
-import javax.annotation.Nullable;
-import java.util.Map;
-import java.util.regex.Pattern;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,6 +20,14 @@ import java.util.regex.Pattern;
  * #L%
  */
 
+package de.metas.bpartner.vatid;
+
+import com.google.common.collect.ImmutableMap;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.regex.Pattern;
+
 /**
  * Pure format validator for EU VAT identification numbers.
  *
@@ -43,7 +43,7 @@ public final class EUVatIdFormatValidator
 	/**
 	 * EU VAT number structural formats (format-only, no checksum).
 	 * Keys are the 2-letter country prefix; patterns are anchored full-match.
-	 * Normalised input (trimmed, spaces/dots removed, uppercased) is matched against these.
+	 * Normalised input (trimmed, spaces/dots/hyphens removed, uppercased) is matched against these.
 	 */
 	private static final Map<String, Pattern> PATTERNS_BY_PREFIX = ImmutableMap.<String, Pattern>builder()
 			.put("AT", Pattern.compile("ATU\\d{8}"))
@@ -89,7 +89,7 @@ public final class EUVatIdFormatValidator
 	 * </ul>
 	 *
 	 * <p>Normalisation applied before checking (does not mutate the input):
-	 * trim → remove all spaces and dots → uppercase.
+	 * trim → remove all spaces, dots, and hyphens → uppercase.
 	 */
 	public static boolean isValidFormat(@Nullable final String vatId)
 	{
@@ -118,13 +118,14 @@ public final class EUVatIdFormatValidator
 
 	/**
 	 * Normalises a VAT-ID value for structural matching:
-	 * trims leading/trailing whitespace, removes all embedded spaces and dots, and uppercases the result.
+	 * trims leading/trailing whitespace, removes all embedded spaces, dots, and hyphens, and uppercases the result.
 	 */
 	private static String normalise(final String vatId)
 	{
 		return vatId.trim()
 				.replace(" ", "")
 				.replace(".", "")
+				.replace("-", "")   // strip formatted-number separators (e.g. PL-123-456-78-90)
 				.toUpperCase();
 	}
 }

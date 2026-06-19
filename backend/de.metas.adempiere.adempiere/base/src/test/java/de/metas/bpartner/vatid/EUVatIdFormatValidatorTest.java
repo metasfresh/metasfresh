@@ -1,13 +1,3 @@
-package de.metas.bpartner.vatid;
-
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.NullSource;
-import org.junit.jupiter.params.provider.ValueSource;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -29,6 +19,15 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.bpartner.vatid;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.ValueSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EUVatIdFormatValidatorTest
 {
@@ -61,12 +60,13 @@ class EUVatIdFormatValidatorTest
 		assertThat(EUVatIdFormatValidator.isValidFormat(vatId)).isTrue();
 	}
 
-	// ----- Formatting tolerance (spaces / dots stripped, case-insensitive) -----
+	// ----- Formatting tolerance (spaces / dots / hyphens stripped, case-insensitive) -----
 
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"DE 123 456 789",   // spaces between groups
-			" DE123456789 "     // leading/trailing whitespace
+			" DE123456789 ",    // leading/trailing whitespace
+			"de123456789"       // lowercase prefix — normalised to uppercase before check
 	})
 	void formattingVariants_areValid(final String vatId)
 	{
@@ -83,6 +83,15 @@ class EUVatIdFormatValidatorTest
 		assertThat(EUVatIdFormatValidator.isValidFormat("DE999999999")).isTrue();
 	}
 
+	// ----- Hyphen tolerance -----
+
+	@Test
+	void hyphenatedInput_isNormalisedBeforeCheck()
+	{
+		// Hyphens are stripped during normalisation — formatted national inputs are accepted
+		assertThat(EUVatIdFormatValidator.isValidFormat("PL-123-456-78-90")).isTrue();
+	}
+
 	// ----- Per-country parametrised: one valid + one invalid example per code -----
 	// Format: vatId, expectedValid
 	// Valid examples satisfy the structural regex; invalid examples clearly do not.
@@ -95,7 +104,7 @@ class EUVatIdFormatValidatorTest
 
 			// BE  BE[01]\d{9}
 			"BE0123456789,  true",
-			"BE123456789,   false",   // second char not 0/1, too short
+			"BE123456789,   false",   // only 8 trailing digits after the leading digit (needs 9)
 
 			// BG  BG\d{9,10}
 			"BG123456789,   true",
@@ -135,7 +144,7 @@ class EUVatIdFormatValidatorTest
 
 			// FR  FR[A-Z0-9]{2}\d{9}
 			"FRAB123456789, true",
-			"FR1234567890,  false",   // second char not alphanumeric class (only 10 chars total, missing one)
+			"FR1234567890,  false",   // too short: 12 chars, needs 13 (FR + 2 alphanums + 9 digits)
 
 			// HR  HR\d{11}
 			"HR12345678901, true",
