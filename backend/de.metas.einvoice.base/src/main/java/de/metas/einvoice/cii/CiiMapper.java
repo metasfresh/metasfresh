@@ -42,6 +42,7 @@ import de.metas.einvoice.cii.model.TradeProductType;
 import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
 import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
@@ -54,7 +55,6 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import de.metas.adempiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -71,8 +71,9 @@ import java.util.List;
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
  *
- * <p>Scope: ExchangedDocument header, seller / buyer trade parties, and document-level references.
- * Invoice lines, VAT breakdown, and monetary totals are populated by subsequent mapper passes.
+ * <p>Scope: ExchangedDocument header, seller / buyer trade parties, document-level references,
+ * and BG-25 invoice lines (BT-126 through BT-152).
+ * VAT breakdown and monetary totals are populated by a subsequent pass (B5).
  */
 public class CiiMapper
 {
@@ -208,7 +209,7 @@ public class CiiMapper
 		{
 			final I_M_Product mProduct = InterfaceWrapperHelper.load(line.getM_Product_ID(), I_M_Product.class);
 			final String productName = mProduct != null ? mProduct.getName() : "";
-			product.setName(text(productName != null ? productName : ""));
+			product.setName(text(productName));
 		}
 		item.setSpecifiedTradeProduct(product);
 
@@ -221,19 +222,22 @@ public class CiiMapper
 		tradeAgreement.setNetPriceProductTradePrice(netPrice);
 		item.setSpecifiedLineTradeAgreement(tradeAgreement);
 
-		// BT-129 Billed quantity + BT-130 unit code
+		// BT-129 Billed quantity + BT-130 unit code (mandatory EN16931 — fail fast if missing)
 		final LineTradeDeliveryType delivery = new LineTradeDeliveryType();
 		final QuantityType qty = new QuantityType();
 		qty.setValue(line.getQtyInvoiced());
-		final I_C_UOM uom = InterfaceWrapperHelper.load(line.getC_UOM_ID(), I_C_UOM.class);
-		if (uom != null)
+		final I_C_UOM uom = line.getC_UOM_ID() != 0
+				? InterfaceWrapperHelper.load(line.getC_UOM_ID(), I_C_UOM.class)
+				: null;
+		final String unitCode = uom != null ? uom.getX12DE355() : null;
+		if (unitCode == null || unitCode.isEmpty())
 		{
-			final String unitCode = uom.getX12DE355();
-			if (unitCode != null && !unitCode.isEmpty())
-			{
-				qty.setUnitCode(unitCode);
-			}
+			throw new AdempiereException(
+					"CII mapping: line UOM has no X12DE355 unit code — set C_UOM.X12DE355"
+							+ " [C_UOM_ID=" + line.getC_UOM_ID()
+							+ ", C_InvoiceLine_ID=" + line.getC_InvoiceLine_ID() + "]");
 		}
+		qty.setUnitCode(unitCode);
 		delivery.setBilledQuantity(qty);
 		item.setSpecifiedLineTradeDelivery(delivery);
 

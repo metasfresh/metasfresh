@@ -14,7 +14,7 @@ import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -37,6 +37,7 @@ import java.util.Map;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class CiiMapperTest
 {
@@ -532,6 +533,324 @@ public class CiiMapperTest
 		// BT-152 VAT rate
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement/ram:ApplicableTradeTax/ram:RateApplicablePercent")
 				.isEqualTo("19");
+	}
+
+	/**
+	 * BT-153 override path: when {@code ProductDescription} is set on the line, it takes
+	 * precedence over {@code M_Product.Name}.
+	 */
+	@Test
+	void lines_bt153_productDescription_override() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00200");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		// === UOM with X12DE355 ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		// === Product — name would be used as fallback; ProductDescription on the line overrides ===
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Generischer Produktname");
+		product.setValue("GP-001");
+		saveRecord(product);
+
+		// === Tax ===
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		saveRecord(tax);
+
+		// === Invoice line — ProductDescription set → must override M_Product.Name (BT-153) ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setProductDescription("Spezifische Artikelbeschreibung");
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("50.00"));
+		line.setLineNetAmt(new BigDecimal("50.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+
+		// BT-153 must reflect ProductDescription, not M_Product.Name
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedTradeProduct/ram:Name")
+				.isEqualTo("Spezifische Artikelbeschreibung");
+	}
+
+	/**
+	 * BT-130 fail-fast: when the line's UOM has no X12DE355 unit code, the mapper must throw
+	 * with a message naming C_UOM_ID and C_InvoiceLine_ID.
+	 */
+	@Test
+	void lines_bt130_missingUnitCode_throwsWithIds()
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00300");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		// === UOM WITHOUT X12DE355 ===
+		final I_C_UOM uomWithoutCode = newInstance(I_C_UOM.class);
+		uomWithoutCode.setName("Karton");
+		// X12DE355 intentionally left empty/null
+		saveRecord(uomWithoutCode);
+
+		// === Product ===
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-002");
+		saveRecord(product);
+
+		// === Tax ===
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		saveRecord(tax);
+
+		// === Invoice line with UOM that has no X12DE355 ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uomWithoutCode.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("2"));
+		line.setPriceActual(new BigDecimal("10.00"));
+		line.setLineNetAmt(new BigDecimal("20.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("C_UOM_ID=" + uomWithoutCode.getC_UOM_ID())
+				.hasMessageContaining("C_InvoiceLine_ID=" + line.getC_InvoiceLine_ID());
+	}
+
+	/**
+	 * BT-151 fail-fast: when the line's tax has no EN16931VATCategory, the mapper must throw
+	 * with a message naming C_Tax_ID and C_InvoiceLine_ID.
+	 */
+	@Test
+	void lines_bt151_missingVatCategory_throwsWithIds()
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00400");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		// === UOM with X12DE355 (so BT-130 does not trigger first) ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+
+		// === Product ===
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-003");
+		saveRecord(product);
+
+		// === Tax WITHOUT EN16931VATCategory ===
+		final I_C_Tax taxWithoutCategory = newInstance(I_C_Tax.class);
+		taxWithoutCategory.setName("Unbekannte Steuer");
+		// EN16931VATCategory intentionally left null
+		taxWithoutCategory.setRate(new BigDecimal("7"));
+		saveRecord(taxWithoutCategory);
+
+		// === Invoice line ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(taxWithoutCategory.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("3"));
+		line.setPriceActual(new BigDecimal("30.00"));
+		line.setLineNetAmt(new BigDecimal("90.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("C_Tax_ID=" + taxWithoutCategory.getC_Tax_ID())
+				.hasMessageContaining("C_InvoiceLine_ID=" + line.getC_InvoiceLine_ID());
 	}
 
 	// ===== Shared helpers =====
