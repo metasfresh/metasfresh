@@ -35,7 +35,7 @@ import javax.annotation.Nullable;
  * <p>Validation is guarded by the {@code C_BPartner.validateVATaxID} system-configuration entry
  * (default {@code Y}).  When the entry is {@code N}, every value passes regardless of format.
  *
- * <p>Format checking is delegated to {@link EUVatIdFormatValidator#isValidFormat(String)}.
+ * <p>Validation is delegated to {@link EUVatIdValidator#isValid(String)}.
  */
 public final class VATaxIDValidationUtil
 {

@@ -133,6 +133,13 @@ class EUVatIdValidatorTest
 			"CZ25123892, false",
 
 			//
+			// CZ — Czech Republic (9-digit special entity, first digit 6)
+			// Source: stdnum/cz/dic.py — valid: CZ640903926  (listed in module doctest as '640903926')
+			// Invalid: mutate last digit 6→7
+			"CZ640903926, true",
+			"CZ640903927, false",
+
+			//
 			// DE — Germany
 			// Source: stdnum/de/vat.py — valid: DE136695976  (compact of 'DE 136,695 976')
 			// Invalid: stdnum invalid example 136695978 → DE136695978
@@ -203,11 +210,18 @@ class EUVatIdValidatorTest
 			"HU12892313, false",
 
 			//
-			// IE — Ireland (7-digit + check letter)
+			// IE — Ireland (new 7-digit format + check letter)
 			// Source: stdnum/ie/vat.py — valid: IE6433435F
 			// Invalid: mutate check letter F→G
 			"IE6433435F, true",
 			"IE6433435G, false",
+
+			//
+			// IE — Ireland (old format: digit + letter + 5 digits + check letter)
+			// Source: stdnum/ie/vat.py — valid: IE8D79739I  (listed in module doctest)
+			// Invalid: mutate check letter I→J
+			"IE8D79739I, true",
+			"IE8D79739J, false",
 
 			//
 			// IT — Italy
@@ -236,6 +250,13 @@ class EUVatIdValidatorTest
 			// Invalid: mutate last digit 0→1
 			"LV40003521600, true",
 			"LV40003521601, false",
+
+			//
+			// LV — Latvia (personal code, first digit 0-3)
+			// Source: stdnum/lv/pvn.py — valid: LV16117519997  (compact of '161175-19997')
+			// Invalid: mutate last digit 7→8
+			"LV16117519997, true",
+			"LV16117519998, false",
 
 			//
 			// MT — Malta

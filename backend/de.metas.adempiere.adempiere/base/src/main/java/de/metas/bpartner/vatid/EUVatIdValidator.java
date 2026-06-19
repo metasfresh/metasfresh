@@ -385,7 +385,9 @@ public final class EUVatIdValidator
 			sum += (8 - i) * Character.getNumericValue(middle.charAt(i));
 		}
 		final int rem = sum % 11;
-		final int check = (8 - (10 - rem) % 11) % 10;
+		// Python: (8 - (10 - rem) % 11) % 10  — use Math.floorMod to match Python's floor-division % semantics
+		// (10 - rem) can be negative (when rem > 10), and (8 - ...) can also be negative
+		final int check = Math.floorMod(8 - (10 - rem) % 11, 10);
 		return check == Character.getNumericValue(digits.charAt(8));
 	}
 
@@ -695,36 +697,40 @@ public final class EUVatIdValidator
 	private static boolean checkIe(final String n)
 	{
 		final String body = n.substring(2); // 8 or 9 chars
+		final boolean isOldFormat = !Character.isDigit(body.charAt(1));
 
-		// Normalise: if char[1] is not a digit (old format), convert to comparable form
-		final String sevenDigitsAndCheck;
-		if (!Character.isDigit(body.charAt(1)))
+		// Build the 7-digit computation string and the position of the check letter.
+		// Old format (e.g. "8D79739I"): char[1] is a letter.
+		//   python-stdnum zfill(7)-pads "0" + body[2:7] + body[0] to get the 7 computation digits.
+		//   The check letter stays at body[7].
+		// New format 8 chars (e.g. "6433435F"): the 7 computation digits are body[0:7], check = body[7].
+		// New format 9 chars (e.g. "6433435OA"): computation digits are body[0:7], extra weight body[8], check = body[7].
+		final String sevenDigits;
+		if (isOldFormat)
 		{
-			// Old format: digit α ddddd check → for check: use "0" + digits[2..6] + char[0]
-			sevenDigitsAndCheck = "0" + body.substring(2, 7) + body.charAt(0);
-		}
-		else if (body.length() == 9)
-		{
-			sevenDigitsAndCheck = body.substring(0, 8);
+			// "0" + body[2..6] (5 chars) + body[0] = 7 chars; check letter is body[7]
+			sevenDigits = "0" + body.substring(2, 7) + body.charAt(0);
 		}
 		else
 		{
-			sevenDigitsAndCheck = body;
+			sevenDigits = body.substring(0, 7);
 		}
 
 		// Compute check via mod23
 		int sum = 0;
 		for (int i = 0; i < 7; i++)
 		{
-			sum += (8 - i) * Character.getNumericValue(sevenDigitsAndCheck.charAt(i));
+			sum += (8 - i) * Character.getNumericValue(sevenDigits.charAt(i));
 		}
-		if (body.length() == 9)
+		// 9-char new format: extra trailing letter carries a 9× weight
+		if (!isOldFormat && body.length() == 9)
 		{
 			final char extra = body.charAt(8);
 			sum += 9 * IE_ALPHABET.indexOf(extra);
 		}
 		final char expected = IE_ALPHABET.charAt(sum % 23);
-		return expected == sevenDigitsAndCheck.charAt(7);
+		// Check letter is always at body[7] regardless of format
+		return expected == body.charAt(7);
 	}
 
 	// ------------------------------------------------------------------ IT (Italy)
