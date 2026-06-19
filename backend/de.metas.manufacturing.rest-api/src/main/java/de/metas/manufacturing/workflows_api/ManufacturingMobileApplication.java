@@ -2,9 +2,15 @@ package de.metas.manufacturing.workflows_api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.labels.HULabelConfig;
+import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.labels.HULabelConfigRepository;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.manufacturing.config.MobileUIManufacturingConfig;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
@@ -15,12 +21,14 @@ import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceive
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.mobile.application.MobileApplicationInfo;
+import de.metas.process.AdProcessId;
 import de.metas.product.ResourceId;
 import de.metas.report.PrintCopies;
 import de.metas.resource.UserWorkstationService;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperties;
 import de.metas.workflow.rest_api.model.WFProcessHeaderProperty;
@@ -55,18 +63,22 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
 	private final UserWorkstationService userWorkstationService;
+	private final HULabelConfigRepository huLabelConfigRepository;
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ManufacturingMobileApplication(
 			@NonNull final MobileUIManufacturingConfigRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
 			@NonNull final HUQRCodesService huQRCodesService,
-			@NonNull final UserWorkstationService userWorkstationService)
+			@NonNull final UserWorkstationService userWorkstationService,
+			@NonNull final HULabelConfigRepository huLabelConfigRepository)
 	{
 		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
 		this.userWorkstationService = userWorkstationService;
+		this.huLabelConfigRepository = huLabelConfigRepository;
 	}
 
 	@Override
@@ -241,7 +253,18 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 				? PrintCopies.ofInt(request.getNumberOfCopies()).minimumOne()
 				: PrintCopies.ONE;
 
-		huQRCodesService.print(qrCodes, copies);
+		final HuUnitType huUnitType = HuUnitType.ofCode(
+				handlingUnitsBL.getHU_UnitType(request.getHuPackingInstructionsId()));
+		final AdProcessId labelProcessId = huLabelConfigRepository.getFirstMatching(
+						HULabelConfigQuery.builder()
+								.sourceDocType(HULabelSourceDocType.Manufacturing)
+								.huUnitType(huUnitType)
+								.bpartnerId(null)
+								.build())
+				.map(HULabelConfig::getPrintFormatProcessId)
+				.orElse(null);
+
+		huQRCodesService.print(qrCodes, labelProcessId, copies);
 
 		return JsonFinishGoodsReceiveQRCodesGenerateResponse.builder()
 				.qrCodes(qrCodes.stream()
