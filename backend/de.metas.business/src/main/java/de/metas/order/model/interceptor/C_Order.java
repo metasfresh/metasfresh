@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -62,6 +63,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -117,6 +119,7 @@ public class C_Order
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 	@NonNull private final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService;
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -250,6 +253,28 @@ public class C_Order
 		}
 
 		orderBL.setIncoterms(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
+	public void setSalesRepFromBPartner(final I_C_Order order)
+	{
+		if (!order.isSOTrx())
+		{
+			return;
+		}
+
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final UserId salesRepId = bpartnerEffectiveBL.getById(bpartnerId).getSalesRepId();
+		if (salesRepId != null)
+		{
+			order.setSalesRep_ID(salesRepId.getRepoId());
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },

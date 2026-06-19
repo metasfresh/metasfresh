@@ -136,6 +136,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_SalesRep_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -814,6 +815,10 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
 				.map(userTable::get)
 				.ifPresent(user -> softly.assertThat(order.getAD_User_ID()).as("AD_User_ID for Identifier=%s", identifierStr).isEqualTo(user.getAD_User_ID()));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SalesRep_ID)
+				.map(userTable::get)
+				.ifPresent(salesRepUser -> softly.assertThat(order.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(salesRepUser.getAD_User_ID()));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
 				.map(bpartnerTable::get)

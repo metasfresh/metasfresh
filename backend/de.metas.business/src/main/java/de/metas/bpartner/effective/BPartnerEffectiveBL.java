@@ -38,6 +38,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -208,6 +209,8 @@ public class BPartnerEffectiveBL
 
 		bPartnerBuilder.purchaseTransportDays(
 				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+
+		bPartnerBuilder.salesRepId(UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID()));
 
 		return bPartnerBuilder.build();
 	}
