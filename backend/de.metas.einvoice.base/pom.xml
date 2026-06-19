@@ -65,6 +65,25 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!--
+			EN16931 Schematron validation via ph-schematron (Apache-2.0).
+			Version 6.3.4 is the last release that targets Java 1.8 (confirmed: maven.compiler.source=8
+			in ph-schematron-parent-pom-6.3.4.pom).
+			ph-schematron-xslt provides SchematronResourceXSLT for running precompiled XSLT-based rules.
+			Saxon-HE 9.9.1-8 provides XSLT 2.0 support required by the EN16931-CII-validation.xslt;
+			it also targets Java 1.8 (maven.compiler.source=1.8 in Saxon-HE-9.9.1-8.pom).
+		-->
+		<dependency>
+			<groupId>com.helger.schematron</groupId>
+			<artifactId>ph-schematron-xslt</artifactId>
+			<version>6.3.4</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.saxon</groupId>
+			<artifactId>Saxon-HE</artifactId>
+			<version>9.9.1-8</version>
+		</dependency>
+
 	</dependencies>
 
 	<profiles>
