@@ -23,19 +23,28 @@
 package de.metas.bpartner.model.interceptor;
 
 import de.metas.bpartner.vatid.VATaxIDValidationUtil;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_BPartner_Location.class)
+@Component
 public class C_BPartner_Location
 {
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner_Location.COLUMNNAME_VATaxID)
 	public void validateVATaxID(@NonNull final I_C_BPartner_Location bpLocation)
 	{
-		VATaxIDValidationUtil.validateIfEnabled(bpLocation.getVATaxID());
+		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
+		{
+			VATaxIDValidationUtil.validate(bpLocation.getVATaxID());
+		}
 	}
 }

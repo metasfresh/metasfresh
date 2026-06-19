@@ -23,39 +23,34 @@
 package de.metas.bpartner.vatid;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.util.Services;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 
 import javax.annotation.Nullable;
 
 /**
- * Stateless helper that validates the structural format of a VAT-ID value before it is persisted.
+ * Stateless helper for VAT-ID validation.
  *
- * <p>Validation is guarded by the {@code C_BPartner.validateVATaxID} system-configuration entry
- * (default {@code Y}).  When the entry is {@code N}, every value passes regardless of format.
- *
- * <p>Validation is delegated to {@link EUVatIdValidator#isValid(String)}.
+ * <p>{@link #SYSCONFIG_validateVATaxID} is the gate; reading it is the caller's responsibility (the
+ * interceptors hold an {@code ISysConfigBL} instance field), so this helper itself stays free of any
+ * service-locator call. {@link #validate(String)} performs the actual check via
+ * {@link EUVatIdValidator#isValid(String)} and throws a user-validation error when the value is invalid.
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VATaxIDValidationUtil
 {
+	public static final String SYSCONFIG_validateVATaxID = "C_BPartner.validateVATaxID";
 	private static final AdMessageKey MSG_VATaxID_Invalid_Format = AdMessageKey.of("VATaxID_Invalid_Format");
-	private static final String SYSCONFIG_validateVATaxID = "C_BPartner.validateVATaxID";
-
-	private VATaxIDValidationUtil()
-	{
-	}
 
 	/**
-	 * Validates the given VAT-ID value when the system-config gate is enabled.
-	 *
-	 * @param vatId value to validate (null and blank are always accepted)
-	 * @throws AdempiereException (user-validation error) when validation is enabled and the format is invalid
+	 * Throws a user-validation {@link AdempiereException} if {@code vatId} is not a valid VAT-ID.
+	 * Null/blank, and values whose prefix is outside the supported country set, are accepted.
+	 * The caller is responsible for checking the {@link #SYSCONFIG_validateVATaxID} gate first.
 	 */
-	public static void validateIfEnabled(@Nullable final String vatId)
+	public static void validate(@Nullable final String vatId)
 	{
-		final boolean enabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_validateVATaxID, true);
-		if (enabled && !EUVatIdValidator.isValid(vatId))
+		if (!EUVatIdValidator.isValid(vatId))
 		{
 			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatId).markAsUserValidationError();
 		}

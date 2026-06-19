@@ -3,9 +3,9 @@
 @allure.label.epic:E2200_Automatic_Tax_Determination
 @allure.label.feature:F66030_Partner_Location_VAT_ID
 Feature: VAT-ID format is validated when saving a Business Partner
-  When a Business Partner (or its location) is saved, the VAT-ID is checked against EU VAT-ID
-  structural patterns. Invalid formats are rejected with a user error; values with an unknown
-  (non-EU) prefix or an empty value are accepted. The check can be switched off per system.
+  When a Business Partner (or its location) is saved, the VAT-ID is checked against the country's
+  format and check digit. Invalid values are rejected with a user error; values with an unsupported
+  (non-EU/non-listed) prefix or an empty value are accepted. The check can be switched off per system.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -17,8 +17,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
   Scenario: validation enabled — invalid DE format is rejected on update
     Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
-      | Identifier | Value      | OPT.VATaxID |
-      | bp_tc1     | VatTC1Test | null        |
+      | Identifier | Value      | VATaxID |
+      | bp_tc1     | VatTC1Test | null    |
     When update C_BPartner expecting error:
       | Identifier | VATaxID |
       | bp_tc1     | DE12345 |
@@ -26,7 +26,7 @@ Feature: VAT-ID format is validated when saving a Business Partner
 
   @from:cucumber
   @Id:S0613_020
-  Scenario: validation enabled — valid DE format is accepted and stored
+  Scenario: validation enabled — valid DE VAT-ID is accepted and stored
     Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      |
@@ -35,7 +35,7 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | VATaxID     |
       | bp_tc2     | DE136695976 |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | OPT.VATaxID |
+      | C_BPartner_ID.Identifier | Value      | VATaxID     |
       | bp_tc2                   | VatTC2Test | DE136695976 |
 
   @from:cucumber
@@ -49,8 +49,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | VATaxID |
       | bp_tc8     | DE12345 |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | OPT.VATaxID |
-      | bp_tc8                   | VatTC8Test | DE12345     |
+      | C_BPartner_ID.Identifier | Value      | VATaxID |
+      | bp_tc8                   | VatTC8Test | DE12345 |
 
   @from:cucumber
   @Id:S0613_040
@@ -67,8 +67,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | Name          |
       | bp_tc7     | VatTC7Renamed |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | OPT.VATaxID |
-      | bp_tc7                   | VatTC7Test | DE12345     |
+      | C_BPartner_ID.Identifier | Value      | VATaxID |
+      | bp_tc7                   | VatTC7Test | DE12345 |
 
   @from:cucumber
   @Id:S0613_050
@@ -87,7 +87,7 @@ Feature: VAT-ID format is validated when saving a Business Partner
 
   @from:cucumber
   @Id:S0613_060
-  Scenario: C_BPartner_Location — validation enabled — valid AT format is accepted and stored
+  Scenario: C_BPartner_Location — validation enabled — valid AT VAT-ID is accepted and stored
     Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value         |
@@ -96,8 +96,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | C_BPartner_ID.Identifier | GLN           |
       | bpl_tc2    | bp_loc_tc2               | 0285601001051 |
     When update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | OPT.VATaxID |
+      | C_BPartner_Location_ID.Identifier | VATaxID     |
       | bpl_tc2                           | ATU13585627 |
     Then validate C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | OPT.VATaxID |
+      | C_BPartner_Location_ID.Identifier | VATaxID     |
       | bpl_tc2                           | ATU13585627 |

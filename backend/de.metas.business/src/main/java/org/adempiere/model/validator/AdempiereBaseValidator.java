@@ -184,7 +184,8 @@ public final class AdempiereBaseValidator extends AbstractModuleInterceptor
 		//
 		// BPartner
 		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner());
-		engine.addModelValidator(new de.metas.bpartner.model.interceptor.C_BPartner_Location());
+		// C_BPartner_Location interceptor auto-registers via @Interceptor + @Component (ModelValidationEngine
+		// getBeansWithAnnotation), so no legacy engine.addModelValidator(...) is needed here.
 
 		// #2895
 		engine.addModelValidator(AD_Ref_Table.instance);

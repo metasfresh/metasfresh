@@ -24,6 +24,8 @@ package de.metas.bpartner.vatid;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -41,13 +43,10 @@ import java.util.regex.Pattern;
  * Algorithms are ported from python-stdnum
  * (<a href="https://github.com/arthurdejong/python-stdnum">arthurdejong/python-stdnum</a>).
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class EUVatIdValidator
 {
 	private static final Logger logger = LogManager.getLogger(EUVatIdValidator.class);
-
-	private EUVatIdValidator()
-	{
-	}
 
 	// ------------------------------------------------------------------ patterns
 

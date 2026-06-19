@@ -20,6 +20,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_PrintFormat;
@@ -63,6 +64,7 @@ public class C_BPartner
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 
 	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
@@ -207,6 +209,9 @@ public class C_BPartner
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
 	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
 	{
-		VATaxIDValidationUtil.validateIfEnabled(bpartner.getVATaxID());
+		if (sysConfigBL.getBooleanValue(VATaxIDValidationUtil.SYSCONFIG_validateVATaxID, true))
+		{
+			VATaxIDValidationUtil.validate(bpartner.getVATaxID());
+		}
 	}
 }
