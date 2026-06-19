@@ -23,6 +23,8 @@
 package de.metas.bpartner.vatid;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigInteger;
@@ -41,6 +43,8 @@ import java.util.regex.Pattern;
  */
 public final class EUVatIdValidator
 {
+	private static final Logger logger = LogManager.getLogger(EUVatIdValidator.class);
+
 	private EUVatIdValidator()
 	{
 	}
@@ -175,8 +179,12 @@ public final class EUVatIdValidator
 		{
 			return checkDigitValidator.test(normalised);
 		}
-		catch (final Exception e)
+		catch (final RuntimeException e)
 		{
+			// A check-digit function should never throw on regex-gated input; if one does it is a bug
+			// in that algorithm (e.g. an off-by-one substring index). Reject the value but log so the
+			// defect is visible rather than silently swallowed.
+			logger.warn("Unexpected exception validating VAT-ID for prefix {} — treating as invalid", prefix, e);
 			return false;
 		}
 	}
