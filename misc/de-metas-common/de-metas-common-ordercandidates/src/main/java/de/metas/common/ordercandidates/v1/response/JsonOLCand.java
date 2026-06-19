@@ -9,8 +9,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 /*
  * #%L
@@ -88,6 +90,12 @@ public class JsonOLCand
 
 	private int warehouseDestId;
 
+	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
+			+ "Keys are column names; values are the column values.")
+	@JsonProperty("extendedProps")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Map<String, Object> extendedProps;
+
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -112,7 +120,8 @@ public class JsonOLCand
 			@JsonProperty("pricingSystemId") final int pricingSystemId,
 			@JsonProperty("price") final BigDecimal price,
 			@JsonProperty("discount") final BigDecimal discount,
-			@JsonProperty("warehouseDestId") final int warehouseDestId)
+			@JsonProperty("warehouseDestId") final int warehouseDestId,
+			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -136,6 +145,7 @@ public class JsonOLCand
 		this.price = price;
 		this.discount = discount;
 		this.warehouseDestId = warehouseDestId;
+		this.extendedProps = extendedProps;
 	}
 
 }

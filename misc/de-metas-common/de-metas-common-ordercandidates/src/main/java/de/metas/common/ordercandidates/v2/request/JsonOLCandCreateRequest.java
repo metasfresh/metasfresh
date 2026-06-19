@@ -42,6 +42,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER_DOC;
@@ -310,6 +311,17 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String incotermsLocation;
 
+	/**
+	 * Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y').
+	 * Keys are column names; values are the column values.
+	 * Unknown columns cause a user-validation error.
+	 * A null or missing map is treated as a no-op.
+	 */
+	@ApiModelProperty(position = 520, value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
+			+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+			+ "A null or empty map is treated as a no-op.")
+	@JsonInclude(Include.NON_NULL)
+	Map<String, Object> extendedProps;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -364,7 +376,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
 			@JsonProperty("invoiceRule") final @Nullable String invoiceRule,
 			@JsonProperty("incotermsValue") final @Nullable String incotermsValue,
-			@JsonProperty("incotermsLocation") final @Nullable String incotermsLocation)
+			@JsonProperty("incotermsLocation") final @Nullable String incotermsLocation,
+			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -420,6 +433,7 @@ public class JsonOLCandCreateRequest
 
 		this.incotermsValue = incotermsValue;
 		this.incotermsLocation = incotermsLocation;
+		this.extendedProps = extendedProps;
 	}
 
 	/**

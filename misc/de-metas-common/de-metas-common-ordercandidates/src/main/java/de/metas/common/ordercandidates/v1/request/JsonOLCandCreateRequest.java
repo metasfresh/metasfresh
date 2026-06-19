@@ -23,6 +23,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 /*
  * #%L
@@ -229,6 +230,18 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
 
+	/**
+	 * Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y').
+	 * Keys are column names; values are the column values.
+	 * Unknown columns cause a user-validation error.
+	 * A null or missing map is treated as a no-op.
+	 */
+	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
+			+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+			+ "A null or empty map is treated as a no-op.")
+	@JsonInclude(Include.NON_NULL)
+	Map<String, Object> extendedProps;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -264,7 +277,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
-			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
+			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -301,6 +315,7 @@ public class JsonOLCandCreateRequest
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
+		this.extendedProps = extendedProps;
 	}
 
 	/**
