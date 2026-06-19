@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_DD, MobileUI_UserProfile_DD_Sort, MobileUI_UserProfile_DD_CaptionItem
+ * Repository Cluster: MobileUIDistributionConfigRepository
+ */
 @Repository
 public class MobileUIDistributionConfigRepository
 {
@@ -26,6 +30,8 @@ public class MobileUIDistributionConfigRepository
 
 	private final CCache<Integer, MobileUIDistributionConfig> cache = CCache.<Integer, MobileUIDistributionConfig>builder()
 			.tableName(I_MobileUI_UserProfile_DD.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_Sort.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_CaptionItem.Table_Name)
 			.build();
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()

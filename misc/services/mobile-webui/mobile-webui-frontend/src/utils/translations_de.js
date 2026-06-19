@@ -25,6 +25,7 @@ const translations = {
     Product: 'Produkt',
     ProductValue: 'Artikelnummer',
     Locator: 'Lagerplatz',
+    LocatorFrom: 'Quell-Lagerplatz',
     QRCode: 'QR-Code',
     QtyToPick: 'Packmenge',
     QtyToPick_Total: 'Packmenge (total)',

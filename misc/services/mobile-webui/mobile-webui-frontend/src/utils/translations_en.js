@@ -21,6 +21,7 @@ const translations = {
     Product: 'Product',
     ProductValue: 'Product Value',
     Locator: 'Locator',
+    LocatorFrom: 'From Locator',
     QRCode: 'QR Code',
     QtyToPick: 'Qty to pick',
     QtyToPick_Total: 'Qty to pick (total)',
