@@ -55,7 +55,7 @@ public final class VATaxIDValidationUtil
 	public static void validateIfEnabled(@Nullable final String vatId)
 	{
 		final boolean enabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_validateVATaxID, true);
-		if (enabled && !EUVatIdFormatValidator.isValidFormat(vatId))
+		if (enabled && !EUVatIdValidator.isValid(vatId))
 		{
 			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatId).markAsUserValidationError();
 		}
