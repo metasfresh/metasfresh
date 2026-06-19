@@ -208,6 +208,7 @@ public class JsonConverters
 				.salesRepId(salesRepId)
 
 				.paymentTermId(paymentTermId)
+				.extendedProps(request.getExtendedProps())
 				;
 		//
 	}

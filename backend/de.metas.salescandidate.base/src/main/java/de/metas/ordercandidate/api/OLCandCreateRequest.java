@@ -50,6 +50,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Value
 public class OLCandCreateRequest
@@ -150,6 +151,8 @@ public class OLCandCreateRequest
 	String email;
 	String phone;
 
+	@Nullable Map<String, Object> extendedProps;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -206,7 +209,8 @@ public class OLCandCreateRequest
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
-			@Nullable final String phone)
+			@Nullable final String phone,
+			@Nullable final Map<String, Object> extendedProps)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -278,5 +282,6 @@ public class OLCandCreateRequest
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+		this.extendedProps = extendedProps;
 	}
 }

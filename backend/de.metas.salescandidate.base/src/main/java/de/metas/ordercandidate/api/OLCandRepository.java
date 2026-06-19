@@ -53,7 +53,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Location;
@@ -80,6 +82,7 @@ public class OLCandRepository
     private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
 	private final ExternalSystemRepository externalSystemRepository;
+	private final CustomColumnService customColumnService;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -350,6 +353,17 @@ public class OLCandRepository
 		}
 
 		saveRecord(olCandWithIssuesInterface);
+
+		// wire extendedProps: set custom REST API columns on the saved C_OLCand record
+		if (request.getExtendedProps() != null
+				&& !request.getExtendedProps().isEmpty()
+				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
+		{
+			customColumnService.setCustomColumns(
+					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
+					request.getExtendedProps());
+			saveRecord(olCandWithIssuesInterface);
+		}
 
 		return olCandWithIssuesInterface;
 	}
