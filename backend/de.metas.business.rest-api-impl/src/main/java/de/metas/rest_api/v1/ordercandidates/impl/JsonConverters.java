@@ -1,6 +1,7 @@
 package de.metas.rest_api.v1.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -20,6 +21,7 @@ import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest.OLCandCreateRequestBuilder;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -40,7 +42,10 @@ import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -77,6 +82,7 @@ public class JsonConverters
 	private final CurrencyService currencyService;
 	private final DocTypeService docTypeService;
 	private final ExternalSystemRepository externalSystemRepository;
+	private final CustomColumnService customColumnService;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -84,11 +90,13 @@ public class JsonConverters
 	public JsonConverters(
 			@NonNull final CurrencyService currencyService,
 			@NonNull final DocTypeService docTypeService,
-			@NonNull final ExternalSystemRepository externalSystemRepository)
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final CustomColumnService customColumnService)
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
 		this.externalSystemRepository = externalSystemRepository;
+		this.customColumnService = customColumnService;
 
 	}
 
@@ -324,6 +332,21 @@ public class JsonConverters
 				//
 				.warehouseDestId(WarehouseId.toRepoId(olCand.getWarehouseDestId()))
 				//
+				.extendedProps(getExtendedPropsOrNull(olCand))
+				//
 				.build();
+	}
+
+	@Nullable
+	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final OLCand olCand)
+	{
+		final I_C_OLCand olCandRecord = olCand.unbox();
+		if (POJOWrapper.isHandled(olCandRecord))
+		{
+			return null;  // POJOWrapper-backed record (unit-test mode) — no custom columns
+		}
+		final ImmutableMap<String, Object> extProps =
+				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(olCandRecord)).toMap();
+		return extProps.isEmpty() ? null : extProps;
 	}
 }
