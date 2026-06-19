@@ -26,7 +26,7 @@
 --   6. AD_Field_Trl skeleton + update_FieldTranslation_From_AD_Name_Element(585020)
 --   7. AD_Element_Link rebuild for field 781211
 --   8. AD_UI_ElementField 542540 — type='tooltip', tooltipiconname='text',
---      on AD_UI_Element 639389 (M_Product_ID), pointing at AD_Field 781211
+--      on AD_UI_Element 542663 (M_Product_ID, core tab 291), pointing at AD_Field 781211
 --
 -- IDs (pre-allocated from idserver.metas.de):
 --   AD_Element_ID                     = 585020
@@ -34,7 +34,7 @@
 --   AD_SQLColumn_SourceTableColumn_ID = 540208 (C_Invoice_Acct source)
 --   AD_SQLColumn_SourceTableColumn_ID = 540209 (C_ElementValue source)
 --   AD_Field_ID                       = 781211
---   AD_UI_Element_ID                  = 652323 (spare — NOT used; tooltip rides on 639389)
+--   AD_UI_Element_ID                  = 652323 (spare — NOT used; tooltip rides on 542663)
 --   AD_UI_ElementField_ID             = 542540
 --
 -- Tables touched: C_InvoiceLine (333) — model regen required after apply.
@@ -217,10 +217,10 @@ VALUES (
 ON CONFLICT (AD_SQLColumn_SourceTableColumn_ID) DO NOTHING;
 
 -- ============================================================================
--- 4) AD_Field — read-only tooltip field on tab 548568
+-- 4) AD_Field — read-only tooltip field on CORE tab 291
 --    IsReadOnly='Y': the tooltip value must not be editable.
 --    IsDisplayed='Y', IsDisplayedGrid='N': shown in form (tooltip only); not a grid col.
---    SeqNo=145 (after ExternalIds at 140), SeqNoGrid=0.
+--    SeqNo=270 (core tab 291, after existing max 260), SeqNoGrid=0.
 --    AD_Column_ID=592834 links to the virtual column.
 --    No AD_Name_ID override — the column's element (585020) is the source.
 -- ============================================================================
@@ -259,6 +259,17 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y'
 
 -- Propagate element translations → field (pass column's element ID for standard case)
 SELECT update_FieldTranslation_From_AD_Name_Element(585020);
+
+-- Durable en_US/de propagation (guard-bypass): copy translated element texts into the
+-- field _Trl directly (the function above no-ops when the _Trl timestamps coincide).
+UPDATE AD_Field_Trl ft
+SET    Name=et.Name, Description=et.Description, Help=et.Help, IsTranslated=et.IsTranslated,
+       Updated=TO_TIMESTAMP('2026-06-19 10:07:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+FROM   AD_Element_Trl et
+WHERE  et.AD_Element_ID=585020 /*From ID Server*/
+  AND  ft.AD_Field_ID=781211 /*From ID Server*/
+  AND  ft.AD_Language=et.AD_Language
+  AND  et.IsTranslated='Y';
 
 -- Rebuild AD_Element_Link for this field
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781211;

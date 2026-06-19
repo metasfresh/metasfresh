@@ -323,8 +323,8 @@ VALUES
      'IsAccountOverridden', -- Name
      80,                  -- SeqNo (group 540304 max was 70)
      'Y',                 -- IsDisplayed
-     'N',                 -- IsDisplayedGrid
-     0,                   -- SeqNoGrid
+     'Y',                 -- IsDisplayedGrid (AC9: scannable in the accounting-facts grid)
+     75,                  -- SeqNoGrid (after PostingType grid 70, before Periode 80)
      NULL,                -- UIStyle
      'F'                  -- AD_UI_ElementType: Field
     )
@@ -337,6 +337,19 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585021, 'de_DE');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585021, 'de_CH');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585021, 'en_US');
 SELECT update_FieldTranslation_From_AD_Name_Element(585021);
+
+-- Durable en_US/de propagation: update_FieldTranslation_From_AD_Name_Element has a
+-- timestamp guard (f_trl.updated <> e_trl.updated) that no-ops when the field _Trl and
+-- element _Trl share a timestamp (element 585021 + field 781213 are created in this same
+-- script). Copy the translated element texts into the field _Trl directly to be safe.
+UPDATE AD_Field_Trl ft
+SET    Name=et.Name, Description=et.Description, Help=et.Help, IsTranslated=et.IsTranslated,
+       Updated=TO_TIMESTAMP('2026-06-19 10:05:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+FROM   AD_Element_Trl et
+WHERE  et.AD_Element_ID=585021 /*From ID Server*/
+  AND  ft.AD_Field_ID=781213 /*From ID Server*/
+  AND  ft.AD_Language=et.AD_Language
+  AND  et.IsTranslated='Y';
 
 -- Rebuild AD_Element_Link for field 781213 (CORE accounting window 162)
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781213;

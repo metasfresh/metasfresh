@@ -126,6 +126,18 @@ WHERE l.IsActive = 'Y'
 /* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(585015)
 ;
 
+-- Durable en_US/de propagation (guard-bypass): the function above no-ops when field _Trl
+-- and element _Trl share a timestamp. Copy the translated element texts in directly.
+UPDATE AD_Field_Trl ft
+SET    Name=et.Name, Description=et.Description, Help=et.Help, IsTranslated=et.IsTranslated,
+       Updated=TO_TIMESTAMP('2026-06-19 10:06:00','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+FROM   AD_Element_Trl et
+WHERE  et.AD_Element_ID=585015 /*From ID Server*/
+  AND  ft.AD_Field_ID=781215 /*From ID Server*/
+  AND  ft.AD_Language=et.AD_Language
+  AND  et.IsTranslated='Y'
+;
+
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781215
 ;
 
