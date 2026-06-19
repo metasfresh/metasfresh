@@ -35,15 +35,19 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +72,9 @@ public class C_BPartner_Location_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
+	/** Holds the exception thrown by the most recent {@code update C_BPartner_Location expecting error:} step. */
+	@Nullable private AdempiereException lastUpdateException = null;
+
 	@Given("metasfresh contains C_BPartner_Locations:")
 	public void createC_BPartner_Location(@NonNull final DataTable dataTable)
 	{
@@ -82,6 +89,55 @@ public class C_BPartner_Location_StepDef
 		{
 			updateCBPartnerLocation(tableRow);
 		}
+	}
+
+	/**
+	 * Attempts to update a C_BPartner_Location and expects an {@link AdempiereException} to be thrown.
+	 * The exception is stored in {@link #lastUpdateException} for subsequent assertion steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_BPartner_Location_ID.Identifier</b> — (required) step-def identifier of the C_BPartner_Location to update<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value (expected to fail validation)<br>
+	 * @cucumber.example
+	 * <pre>
+	 * When update C_BPartner_Location expecting error:
+	 *   | C_BPartner_Location_ID.Identifier | VATaxID  |
+	 *   | bpl_tc1                           | ATU1234  |
+	 * </pre>
+	 */
+	@When("update C_BPartner_Location expecting error:")
+	public void update_c_bpartner_location_expecting_error(@NonNull final DataTable dataTable)
+	{
+		lastUpdateException = null;
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		try
+		{
+			for (final Map<String, String> tableRow : tableRows)
+			{
+				updateCBPartnerLocation(tableRow);
+			}
+		}
+		catch (final AdempiereException e)
+		{
+			lastUpdateException = e;
+		}
+	}
+
+	/**
+	 * Asserts that the most recent {@code update C_BPartner_Location expecting error:} step did throw an {@link AdempiereException}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then an AdempiereException was thrown during the last C_BPartner_Location update
+	 * </pre>
+	 */
+	@Then("an AdempiereException was thrown during the last C_BPartner_Location update")
+	public void assertLastLocationUpdateExceptionWasThrown()
+	{
+		assertThat(lastUpdateException)
+				.as("Expected an AdempiereException to be thrown during the last C_BPartner_Location update, but none was thrown")
+				.isNotNull();
 	}
 
 	@Given("update C_Location of the following C_BPartner_Location")
@@ -246,6 +302,14 @@ public class C_BPartner_Location_StepDef
 		if (Check.isNotBlank(gln))
 		{
 			bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln));
+		}
+
+		final String vataxId = de.metas.common.util.CoalesceUtil.coalesceSuppliers(
+				() -> DataTableUtil.extractNullableStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_VATaxID),
+				() -> DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_VATaxID));
+		if (vataxId != null)
+		{
+			bPartnerLocation.setVATaxID(DataTableUtil.nullToken2Null(vataxId));
 		}
 
 		saveRecord(bPartnerLocation);
