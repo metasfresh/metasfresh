@@ -244,15 +244,15 @@ public class CiiMapper
 		final I_C_UOM uom = line.getC_UOM_ID() != 0
 				? InterfaceWrapperHelper.load(line.getC_UOM_ID(), I_C_UOM.class)
 				: null;
-		final String unitCode = uom != null ? uom.getX12DE355() : null;
-		if (unitCode == null || unitCode.isEmpty())
+		final String x12UnitCode = uom != null ? uom.getX12DE355() : null;
+		if (x12UnitCode == null || x12UnitCode.isEmpty())
 		{
 			throw new AdempiereException(
 					"CII mapping: line UOM has no X12DE355 unit code — set C_UOM.X12DE355"
 							+ " [C_UOM_ID=" + line.getC_UOM_ID()
 							+ ", C_InvoiceLine_ID=" + line.getC_InvoiceLine_ID() + "]");
 		}
-		qty.setUnitCode(unitCode);
+		qty.setUnitCode(toEn16931UnitCode(x12UnitCode));
 		delivery.setBilledQuantity(qty);
 		item.setSpecifiedLineTradeDelivery(delivery);
 
@@ -503,7 +503,8 @@ public class CiiMapper
 		}
 
 		// BG-22 Document totals
-		settlement.setSpecifiedTradeSettlementHeaderMonetarySummation(buildMonetarySummation(invoice, invoiceTaxes));
+		final String invoiceCurrencyIso = currency != null ? currency.getISO_Code() : null;
+		settlement.setSpecifiedTradeSettlementHeaderMonetarySummation(buildMonetarySummation(invoice, invoiceTaxes, invoiceCurrencyIso));
 
 		// BT-25/BT-26 Preceding invoice reference (credit notes)
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
@@ -616,7 +617,8 @@ public class CiiMapper
 
 	private TradeSettlementHeaderMonetarySummationType buildMonetarySummation(
 			@NonNull final I_C_Invoice invoice,
-			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes,
+			@Nullable final String invoiceCurrencyIso)
 	{
 		final TradeSettlementHeaderMonetarySummationType summation = new TradeSettlementHeaderMonetarySummationType();
 
@@ -631,6 +633,7 @@ public class CiiMapper
 		summation.setTaxBasisTotalAmount(taxBasisTotal);
 
 		// BT-110 Invoice total VAT amount = sum of C_InvoiceTax.TaxAmt
+		// BR-CO-15: TaxTotalAmount/@currencyID must equal InvoiceCurrencyCode (mandatory per EN16931 schematron)
 		BigDecimal totalVat = BigDecimal.ZERO;
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
@@ -642,6 +645,10 @@ public class CiiMapper
 		}
 		final AmountType taxTotalAmt = new AmountType();
 		taxTotalAmt.setValue(totalVat);
+		if (invoiceCurrencyIso != null)
+		{
+			taxTotalAmt.setCurrencyID(invoiceCurrencyIso);
+		}
 		summation.getTaxTotalAmount().add(taxTotalAmt);
 
 		// BT-112 Invoice total with VAT = C_Invoice.GrandTotal
@@ -796,6 +803,31 @@ public class CiiMapper
 	}
 
 	// ===== Shared helpers =====
+
+	/**
+	 * Normalizes a metasfresh X12DE355 unit code to a valid EN16931 UN/ECE Rec 20/21 code.
+	 *
+	 * <p>BR-CL-23: unit codes must be in the EN16931 UN/ECE Recommendation 20 with Rec 21 extension.
+	 * Some metasfresh X12DE355 values diverge from the EN16931 codelist:
+	 * <ul>
+	 *   <li>{@code PCE} (metasfresh "Stück") → {@code C62} (one / piece, the correct Rec 20 code)</li>
+	 * </ul>
+	 * All codes already present in the EN16931 codelist are passed through unchanged.
+	 *
+	 * <p>Note: other potentially divergent X12DE355 codes (e.g. EA — each) map directly to EA which
+	 * IS in the EN16931 codelist, so no mapping is needed for them.
+	 */
+	@NonNull
+	private static String toEn16931UnitCode(@NonNull final String x12UnitCode)
+	{
+		switch (x12UnitCode)
+		{
+			case "PCE": // metasfresh "Stück" — PCE is NOT in EN16931 Rec 20/21; C62 = one/piece is
+				return "C62";
+			default:
+				return x12UnitCode; // pass through; assume already valid
+		}
+	}
 
 	private IDType id(@NonNull final String value)
 	{

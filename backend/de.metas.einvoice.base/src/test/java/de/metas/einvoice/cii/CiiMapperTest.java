@@ -515,9 +515,9 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity")
 				.isEqualTo("5");
 
-		// BT-130 Unit code attribute
+		// BT-130 Unit code attribute — PCE (metasfresh X12DE355) maps to C62 (EN16931 UN/ECE Rec 20 "one/piece")
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeDelivery/ram:BilledQuantity/@unitCode")
-				.isEqualTo("PCE");
+				.isEqualTo("C62");
 
 		// BT-146 Net price (ChargeAmount of NetPriceProductTradePrice)
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")

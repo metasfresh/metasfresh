@@ -245,23 +245,26 @@ public class CiiValidatorTest
 	}
 
 	/**
-	 * Invalid case: seller name cleared (BT-27 mandatory per BR-6) → validator reports invalid
+	 * Invalid case: seller name cleared (BT-27 mandatory per BR-06) → validator reports invalid
 	 * with at least one failed assertion.
 	 *
-	 * <p>We inject an invalid XML that has an empty seller Name element to trigger BR-6.
+	 * <p>The seller name is cleared directly on the CII object model to avoid any
+	 * namespace-prefix dependency in string-replacement approaches.
 	 */
 	@Test
 	void invalidFixture_missingSellerName_reportsBrViolation() throws Exception
 	{
 		final FixtureResult fixture = buildCompleteFixture();
 		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
-		final String validXml = marshalToXml(cii);
 
-		// Corrupt the seller name: replace the Name value with empty string to trigger BR-6
-		// BR-6: "An Invoice shall contain the Seller name (BT-27)."
-		final String invalidXml = validXml.replace(
-				"<ram:Name>Muster GmbH</ram:Name>",
-				"<ram:Name></ram:Name>");
+		// Corrupt the seller name via the object model — avoids namespace-prefix issues with string replace.
+		// BR-06: "An Invoice shall contain the Seller name (BT-27)."
+		cii.getSupplyChainTradeTransaction()
+				.getApplicableHeaderTradeAgreement()
+				.getSellerTradeParty()
+				.setName(null);
+
+		final String invalidXml = marshalToXml(cii);
 
 		final CiiValidator validator = new CiiValidator();
 		final CiiValidationResult result = validator.validate(invalidXml);
