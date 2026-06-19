@@ -334,7 +334,18 @@ class OLCandOrderFactory
 			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
 		}
 
-		copyCustomColumns(candidateOfGroup.unbox(), org.compiere.model.I_C_Order.Table_Name, order);
+		// First-class field propagation: promotion codes from OLCand to order header
+		final de.metas.ordercandidate.model.I_C_OLCand olCandRecord = candidateOfGroup.unbox();
+		if (olCandRecord.getC_PromotionCode_ID() > 0)
+		{
+			order.setC_PromotionCode_ID(olCandRecord.getC_PromotionCode_ID());
+		}
+		if (olCandRecord.getC_PromotionCode2_ID() > 0)
+		{
+			order.setC_PromotionCode2_ID(olCandRecord.getC_PromotionCode2_ID());
+		}
+
+		copyCustomColumns(olCandRecord, org.compiere.model.I_C_Order.Table_Name, order);
 
 		save(order);
 		return order;
@@ -612,7 +623,14 @@ class OLCandOrderFactory
 		// Fire listeners
 		olCandListeners.onOrderLineCreated(candidate, currentOrderLine);
 
-		copyCustomColumns(candidate.unbox(), org.compiere.model.I_C_OrderLine.Table_Name, currentOrderLine);
+		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
+		{
+			final de.metas.ordercandidate.model.I_C_OLCand olCandRecord = candidate.unbox();
+			currentOrderLine.setIsWithoutCharge(olCandRecord.isWithoutCharge());
+			currentOrderLine.setReason(olCandRecord.getReason());
+
+			copyCustomColumns(olCandRecord, org.compiere.model.I_C_OrderLine.Table_Name, currentOrderLine);
+		}
 
 		//
 		// Save the current order line
