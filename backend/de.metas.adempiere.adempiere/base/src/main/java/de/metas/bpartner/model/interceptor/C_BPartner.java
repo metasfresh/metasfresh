@@ -205,7 +205,7 @@ public class C_BPartner
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
-	public void validateVATaxID(final I_C_BPartner bpartner)
+	public void validateVATaxID(@NonNull final I_C_BPartner bpartner)
 	{
 		VATaxIDValidationService.validateIfEnabled(bpartner.getVATaxID());
 	}

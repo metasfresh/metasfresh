@@ -1,5 +1,7 @@
 @from:cucumber
 @ghActions:run_on_executor3
+@allure.label.epic:E2200_Automatic_Tax_Determination
+@allure.label.feature:F66030_Partner_Location_VAT_ID
 Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on save
   The SysConfig C_BPartner.validateVATaxID (default Y) controls whether the VATaxID column
   is validated against EU VAT-ID structural patterns when saving a C_BPartner record.
@@ -12,7 +14,7 @@ Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on
 
   @from:cucumber
   @Id:S0613_010
-  Scenario: TC1 - validation ON, invalid DE VAT-ID format is rejected on update
+  Scenario: validation enabled — invalid DE format is rejected on update
     Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      | OPT.VATaxID |
@@ -24,7 +26,7 @@ Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on
 
   @from:cucumber
   @Id:S0613_020
-  Scenario: TC2 - validation ON, valid DE VAT-ID is accepted and stored
+  Scenario: validation enabled — valid DE format is accepted and stored
     Given set sys config boolean value true for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      |
@@ -38,7 +40,7 @@ Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on
 
   @from:cucumber
   @Id:S0613_030
-  Scenario: TC8 - validation OFF, invalid DE VAT-ID is accepted
+  Scenario: validation disabled — any value is accepted
     Given set sys config boolean value false for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      |
@@ -52,7 +54,7 @@ Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on
 
   @from:cucumber
   @Id:S0613_040
-  Scenario: TC7 - validation ON, update non-VATaxID column does not trigger validation even when VATaxID is invalid
+  Scenario: validation enabled — changing a non-VATaxID column does not re-check the stored invalid value
     Given set sys config boolean value false for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      |
