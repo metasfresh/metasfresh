@@ -49,6 +49,9 @@ BEGIN
         SELECT av.M_AttributeValue_ID INTO v_attrvalue_id
           FROM M_AttributeValue av
          WHERE av.M_Attribute_ID = p_M_Attribute_ID AND av.Value = p_value;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'M_AttributeValue with Value=% not found for M_Attribute %', p_value, p_M_Attribute_ID;
+        END IF;
     END IF;
 
     UPDATE M_AttributeInstance ai

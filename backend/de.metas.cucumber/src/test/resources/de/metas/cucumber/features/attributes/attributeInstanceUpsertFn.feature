@@ -1,4 +1,5 @@
 @from:cucumber
+@allure.label.epic:E2300_Attributes
 @ghActions:run_on_executor1
 Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
   The de_metas_attributes.upsert_attributeinstance function writes one attribute value
@@ -16,9 +17,9 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
       | attr_date  | testdat | D                  |
       | attr_list  | testlst | L                  |
     And metasfresh contains M_AttributeValues:
-      | M_Attribute_ID | M_AttributeValue_ID | Value | IsNullFieldValue |
-      | attr_list      | av_red              | red   | N                |
-      | attr_list      | av_blue             | blue  | N                |
+      | M_Attribute_ID | M_AttributeValue_ID | Value | Name | IsNullFieldValue |
+      | attr_list      | av_red              | red   | Red  | N                |
+      | attr_list      | av_blue             | blue  | Blue | N                |
 
   Scenario: UPSERT writes each value type and creates the ASI on demand
     # asi_1 does not exist yet -> the function creates it and returns its id
@@ -59,3 +60,16 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
     And validate M_AttributeSetInstance:
       | M_AttributeSetInstance_ID | Description |
       | asi_2                     | updated     |
+
+  Scenario: A list value writes the attribute-value label into the Description
+    When invoke de_metas_attributes.upsert_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_3                     | attr_list      | red   |
+    Then validate M_AttributeSetInstance:
+      | M_AttributeSetInstance_ID | Description |
+      | asi_3                     | Red         |
+
+  Scenario: An unknown list value is rejected
+    Then invoke de_metas_attributes.upsert_attributeinstance expecting error:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value         |
+      | asi_err                   | attr_list      | does_not_exist |

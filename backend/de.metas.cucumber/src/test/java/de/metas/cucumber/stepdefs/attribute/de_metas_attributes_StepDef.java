@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,13 +30,15 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceDAO;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_M_Attribute.COLUMNNAME_M_Attribute_ID;
 import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_AttributeSetInstance_ID;
 
@@ -52,7 +54,7 @@ import static org.compiere.model.I_M_AttributeSetInstance.COLUMNNAME_M_Attribute
 @RequiredArgsConstructor
 public class de_metas_attributes_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAttributeSetInstanceDAO attributeSetInstanceDAO = Services.get(IAttributeSetInstanceDAO.class);
 
 	@NonNull private final M_Attribute_StepDefData attributeTable;
 	@NonNull private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
@@ -93,10 +95,7 @@ public class de_metas_attributes_StepDef
 
 			if (existingAsi == null)
 			{
-				final I_M_AttributeSetInstance newAsi = queryBL.createQueryBuilder(I_M_AttributeSetInstance.class)
-						.addEqualsFilter(COLUMNNAME_M_AttributeSetInstance_ID, returnedAsiId)
-						.create()
-						.firstOnlyNotNull(I_M_AttributeSetInstance.class);
+				final I_M_AttributeSetInstance newAsi = attributeSetInstanceDAO.getRecordById(AttributeSetInstanceId.ofRepoId(returnedAsiId));
 				attributeSetInstanceTable.putOrReplace(asiIdentifier, newAsi);
 			}
 		});
@@ -130,6 +129,39 @@ public class de_metas_attributes_StepDef
 					asiId, attributeId.getRepoId());
 
 			assertThat(actual).as("get_attributeinstance_value for M_Attribute_ID=%s", attributeId.getRepoId()).isEqualTo(expected);
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts de_metas_attributes.upsert_attributeinstance fails for the given row
+	 *   (e.g. a list value whose code does not exist on the attribute).
+	 * @cucumber.columns
+	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI (or a new identifier).<br>
+	 *   <b>M_Attribute_ID</b> &mdash; (required, identifier-ref) the attribute to set.<br>
+	 *   <b>Value</b> &mdash; (required) the value the function must reject.<br>
+	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData, M_Attribute_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then invoke de_metas_attributes.upsert_attributeinstance expecting error:
+	 *   | M_AttributeSetInstance_ID | M_Attribute_ID | Value          |
+	 *   | asi_err                   | attr_list      | does_not_exist |
+	 * </pre>
+	 */
+	@Then("invoke de_metas_attributes.upsert_attributeinstance expecting error:")
+	public void invoke_upsert_attributeinstance_expecting_error(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_AttributeSetInstance existingAsi = attributeSetInstanceTable.getOptional(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)).orElse(null);
+			final int asiIdInput = existingAsi != null ? existingAsi.getM_AttributeSetInstance_ID() : 0;
+			final AttributeId attributeId = attributeTable.getId(row.getAsIdentifier(COLUMNNAME_M_Attribute_ID));
+			final String value = row.getAsString("Value");
+
+			assertThatThrownBy(() -> DB.getSQLValueEx(
+					ITrx.TRXNAME_ThreadInherited,
+					"SELECT de_metas_attributes.upsert_attributeinstance(?::numeric, ?::numeric, ?::text)",
+					asiIdInput, attributeId.getRepoId(), value))
+					.as("upsert_attributeinstance must reject value '%s'", value)
+					.isInstanceOf(Exception.class);
 		});
 	}
 }
