@@ -95,6 +95,22 @@ public class JsonOLCand
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Map<String, Object> extendedProps;
 
+	@ApiModelProperty(value = "Value of the promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String promotionCode;
+
+	@ApiModelProperty(value = "Value of the second promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String promotionCode2;
+
+	@ApiModelProperty(value = "If true, the order line candidate was created without charge.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private Boolean isWithoutCharge;
+
+	@ApiModelProperty(value = "Free-text reason associated with the order line candidate.")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private String reason;
+
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -120,7 +136,11 @@ public class JsonOLCand
 			@JsonProperty("price") final BigDecimal price,
 			@JsonProperty("discount") final BigDecimal discount,
 			@JsonProperty("warehouseDestId") final int warehouseDestId,
-			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps)
+			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps,
+			@JsonProperty("promotionCode") final @Nullable String promotionCode,
+			@JsonProperty("promotionCode2") final @Nullable String promotionCode2,
+			@JsonProperty("isWithoutCharge") final @Nullable Boolean isWithoutCharge,
+			@JsonProperty("reason") final @Nullable String reason)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -145,6 +165,10 @@ public class JsonOLCand
 		this.discount = discount;
 		this.warehouseDestId = warehouseDestId;
 		this.extendedProps = extendedProps;
+		this.promotionCode = promotionCode;
+		this.promotionCode2 = promotionCode2;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 
 }

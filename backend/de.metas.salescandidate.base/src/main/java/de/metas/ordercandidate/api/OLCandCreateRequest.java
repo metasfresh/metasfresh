@@ -38,6 +38,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -153,6 +154,14 @@ public class OLCandCreateRequest
 
 	@Nullable Map<String, Object> extendedProps;
 
+	@Nullable PromotionCodeId promotionCodeId;
+
+	@Nullable PromotionCodeId promotionCode2Id;
+
+	@Nullable Boolean isWithoutCharge;
+
+	@Nullable String reason;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -210,7 +219,11 @@ public class OLCandCreateRequest
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
 			@Nullable final String phone,
-			@Nullable final Map<String, Object> extendedProps)
+			@Nullable final Map<String, Object> extendedProps,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			@Nullable final Boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -283,5 +296,9 @@ public class OLCandCreateRequest
 		this.email = email;
 		this.phone = phone;
 		this.extendedProps = extendedProps;
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 }
