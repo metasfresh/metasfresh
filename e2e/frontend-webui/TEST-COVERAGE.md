@@ -1049,6 +1049,31 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
 - The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
 
+### 41. Tax — EN16931 VAT Category field (`tax-en16931-vat-category.spec.js`)
+
+**Features Tested**:
+- EInvoicing / EN16931 VAT Category on Tax (C_Tax)
+
+**Epic**: E-Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up the newly-added field
+3. Navigate to Tax record 540010 (OSS CY 19%) in window 137
+4. Assert `EN16931VATCategory` field is present and has `widgetType-List` CSS class
+5. Read current value; choose a different one (S ↔ AE) to stay idempotent across retries
+6. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
+7. Wait for auto-save; read back via WebAPI — assert `fieldData.value.key` matches
+8. Restore original value and verify
+
+**Key Validations**:
+- The `form-field-EN16931VATCategory` wrapper is rendered as a `widgetType-List`
+- Dropdown options use stable `data-testid="option-S"`, `option-AE"` etc.
+- WebAPI returns `{ key, caption }` for List fields (not a bare string)
+- The test is fully idempotent: it reads current value and round-trips, not depending on a fixed initial state
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -1122,8 +1147,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 34 files
-- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 35 files
+- **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
