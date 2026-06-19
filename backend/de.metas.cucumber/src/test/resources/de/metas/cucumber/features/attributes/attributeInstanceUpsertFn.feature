@@ -71,5 +71,5 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
 
   Scenario: An unknown list value is rejected
     Then invoke de_metas_attributes.upsert_attributeinstance expecting error:
-      | M_AttributeSetInstance_ID | M_Attribute_ID | Value         |
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value          |
       | asi_err                   | attr_list      | does_not_exist |

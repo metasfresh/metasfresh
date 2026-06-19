@@ -30,11 +30,12 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceDAO;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.util.DB;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -161,7 +162,8 @@ public class de_metas_attributes_StepDef
 					"SELECT de_metas_attributes.upsert_attributeinstance(?::numeric, ?::numeric, ?::text)",
 					asiIdInput, attributeId.getRepoId(), value))
 					.as("upsert_attributeinstance must reject value '%s'", value)
-					.isInstanceOf(Exception.class);
+					.isInstanceOf(DBException.class)
+					.hasMessageContaining("M_AttributeValue with Value=");
 		});
 	}
 }
