@@ -60,8 +60,13 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
+import org.adempiere.exceptions.AdempiereException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -137,6 +142,9 @@ public class C_BPartner_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
+
+	/** Holds the exception thrown by the most recent {@code update C_BPartner expecting error:} step. */
+	@Nullable private AdempiereException lastUpdateException = null;
 
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
@@ -227,6 +235,55 @@ public class C_BPartner_StepDef
 		{
 			updateBPartner(tableRow);
 		}
+	}
+
+	/**
+	 * Attempts to update a C_BPartner and expects an {@link AdempiereException} to be thrown.
+	 * The exception is stored in {@link #lastUpdateException} for subsequent assertion steps.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>Identifier</b> — (required) step-def identifier of the C_BPartner to update<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value (expected to fail validation)<br>
+	 * @cucumber.example
+	 * <pre>
+	 * When update C_BPartner expecting error:
+	 *   | Identifier | VATaxID  |
+	 *   | bp_tc1     | DE12345  |
+	 * </pre>
+	 */
+	@When("update C_BPartner expecting error:")
+	public void update_c_bpartner_expecting_error(@NonNull final DataTable dataTable)
+	{
+		lastUpdateException = null;
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		try
+		{
+			for (final Map<String, String> tableRow : tableRows)
+			{
+				updateBPartner(tableRow);
+			}
+		}
+		catch (final AdempiereException e)
+		{
+			lastUpdateException = e;
+		}
+	}
+
+	/**
+	 * Asserts that the most recent {@code update C_BPartner expecting error:} step did throw an {@link AdempiereException}.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then an AdempiereException was thrown during the last C_BPartner update
+	 * </pre>
+	 */
+	@Then("an AdempiereException was thrown during the last C_BPartner update")
+	public void assertLastUpdateExceptionWasThrown()
+	{
+		assertThat(lastUpdateException)
+				.as("Expected an AdempiereException to be thrown during the last C_BPartner update, but none was thrown")
+				.isNotNull();
 	}
 
 	private void createC_BPartner(@NonNull final DataTableRow row, final boolean addDefaultLocationIfNewBPartner)
@@ -348,6 +405,9 @@ public class C_BPartner_StepDef
 				.ifPresent(bPartnerRecord::setDeliveryStopReason);
 		row.getAsOptionalBoolean(de.metas.interfaces.I_C_BPartner.COLUMNNAME_IsDeliveryStop)
 				.ifPresent(bPartnerRecord::setIsDeliveryStop);
+
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
+				.ifPresent(vatId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vatId)));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
@@ -513,6 +573,18 @@ public class C_BPartner_StepDef
 		{
 			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
 			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
+		}
+
+		final String vataxId = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_VATaxID);
+		if (vataxId != null)
+		{
+			bPartner.setVATaxID(DataTableUtil.nullToken2Null(vataxId));
+		}
+
+		final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_Name);
+		if (EmptyUtil.isNotBlank(name))
+		{
+			bPartner.setName(name);
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

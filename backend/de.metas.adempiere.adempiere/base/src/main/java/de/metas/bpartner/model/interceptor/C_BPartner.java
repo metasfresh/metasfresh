@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
+import de.metas.bpartner.vatid.VATaxIDValidationService;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.copy_with_details.CopyRecordFactory;
@@ -200,5 +201,12 @@ public class C_BPartner
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(partner.getC_BPartner_ID());
 		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(partner.getC_BPartner_SalesRep_ID());
 		bPartnerBL.validateSalesRep(bPartnerId, salesRepId);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_C_BPartner.COLUMNNAME_VATaxID)
+	public void validateVATaxID(final I_C_BPartner bpartner)
+	{
+		VATaxIDValidationService.validateIfEnabled(bpartner.getVATaxID());
 	}
 }
