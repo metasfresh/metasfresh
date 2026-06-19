@@ -76,7 +76,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_M_DiscountSchema;
 import org.compiere.model.I_M_PricingSystem;
@@ -227,14 +226,29 @@ public class C_BPartner_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing {@code C_BPartner} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>Identifier</b> — (required) step-def identifier of the C_BPartner to update<br>
+	 *                   <b>InvoiceRule</b> — (optional) new invoice rule code<br>
+	 *                   <b>PO_InvoiceRule</b> — (optional) new PO invoice rule code<br>
+	 *                   <b>M_PricingSystem_ID</b> — (optional) step-def identifier of the pricing system to assign<br>
+	 *                   <b>SO_Invoice_Aggregation_ID</b> — (optional) step-def identifier of the SO invoice aggregation<br>
+	 *                   <b>C_Dunning_ID</b> — (optional) step-def identifier of the dunning schema<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
+	 *                   <b>Name</b> — (optional) new partner name<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_BPartner:
+	 *   | Identifier | OPT.SO_Invoice_Aggregation_ID.Identifier |
+	 *   | customer_1 | aggPerShip                               |
+	 * </pre>
+	 */
 	@Given("update C_BPartner:")
 	public void update_c_bpartner(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateBPartner(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateBPartner);
 	}
 
 	/**
@@ -255,13 +269,9 @@ public class C_BPartner_StepDef
 	public void update_c_bpartner_expecting_error(@NonNull final DataTable dataTable)
 	{
 		lastUpdateException = null;
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		try
 		{
-			for (final Map<String, String> tableRow : tableRows)
-			{
-				updateBPartner(tableRow);
-			}
+			DataTableRows.of(dataTable).forEach(this::updateBPartner);
 		}
 		catch (final AdempiereException e)
 		{
@@ -534,58 +544,40 @@ public class C_BPartner_StepDef
 
 	}
 
-	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	private void updateBPartner(@NonNull final DataTableRow row)
 	{
-		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+		final StepDefDataIdentifier bPartnerIdentifier = row.getAsIdentifier();
 
 		final de.metas.invoicecandidate.model.I_C_BPartner bPartner = InterfaceWrapperHelper.create(bPartnerTable.get(bPartnerIdentifier), de.metas.invoicecandidate.model.I_C_BPartner.class);
 
 		assertThat(bPartner).isNotNull();
 
-		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
-		if (EmptyUtil.isNotBlank(invoiceRule))
-		{
-			bPartner.setInvoiceRule(invoiceRule);
-		}
+		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
+				.filter(EmptyUtil::isNotBlank)
+				.ifPresent(bPartner::setInvoiceRule);
 
-		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
-		if (EmptyUtil.isNotBlank(poInvoiceRule))
-		{
-			bPartner.setPO_InvoiceRule(poInvoiceRule);
-		}
+		row.getAsOptionalString(COLUMNNAME_PO_InvoiceRule)
+				.filter(EmptyUtil::isNotBlank)
+				.ifPresent(bPartner::setPO_InvoiceRule);
 
-		final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (EmptyUtil.isNotBlank(pricingSystemIdentifier))
-		{
-			final I_M_PricingSystem pricingSystem = pricingSystemTable.get(pricingSystemIdentifier);
-			bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_M_PricingSystem_ID)
+				.map(pricingSystemTable::get)
+				.ifPresent(pricingSystem -> bPartner.setM_PricingSystem_ID(pricingSystem.getM_PricingSystem_ID()));
 
-		final String soInvoiceAggregationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_SO_Invoice_Aggregation_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(soInvoiceAggregationIdentifier))
-		{
-			final I_C_Aggregation aggregationRecord = aggregationTable.get(soInvoiceAggregationIdentifier);
-			bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
-		}
+		row.getAsOptionalIdentifier(COLUMNNAME_SO_Invoice_Aggregation_ID)
+				.map(aggregationTable::get)
+				.ifPresent(aggregationRecord -> bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID()));
 
-		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_C_Dunning_ID);
-		if (EmptyUtil.isNotBlank(dunningIdentifier))
-		{
-			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
-			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
-		}
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_Dunning_ID)
+				.map(dunningTable::get)
+				.ifPresent(dunning -> bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID()));
 
-		final String vataxId = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_VATaxID);
-		if (vataxId != null)
-		{
-			bPartner.setVATaxID(DataTableUtil.nullToken2Null(vataxId));
-		}
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
+				.ifPresent(vataxId -> bPartner.setVATaxID(DataTableUtil.nullToken2Null(vataxId)));
 
-		final String name = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_C_BPartner.COLUMNNAME_Name);
-		if (EmptyUtil.isNotBlank(name))
-		{
-			bPartner.setName(name);
-		}
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_Name)
+				.filter(EmptyUtil::isNotBlank)
+				.ifPresent(bPartner::setName);
 
 		InterfaceWrapperHelper.save(bPartner);
 

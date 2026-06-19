@@ -80,14 +80,25 @@ public class C_BPartner_Location_StepDef
 		DataTableRows.of(dataTable).forEach(this::createC_BPartner_Location);
 	}
 
+	/**
+	 * Updates existing {@code C_BPartner_Location} records.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns <b>C_BPartner_Location_ID.Identifier</b> — (required) step-def identifier of the C_BPartner_Location to update<br>
+	 *                   <b>EMail</b> — (optional) new email address; use {@code null} token to clear<br>
+	 *                   <b>GLN</b> — (optional) new GLN; use {@code null} token to clear<br>
+	 *                   <b>VATaxID</b> — (optional) new VAT-ID value; use {@code null} token to clear<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_BPartner_Location:
+	 *   | C_BPartner_Location_ID.Identifier | OPT.GLN       |
+	 *   | bpLocation                        | 1234567890123 |
+	 * </pre>
+	 */
 	@Given("update C_BPartner_Location:")
 	public void update_C_BPartner_Location(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateCBPartnerLocation(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::updateCBPartnerLocation);
 	}
 
 	/**
@@ -108,13 +119,9 @@ public class C_BPartner_Location_StepDef
 	public void update_c_bpartner_location_expecting_error(@NonNull final DataTable dataTable)
 	{
 		lastUpdateException = null;
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		try
 		{
-			for (final Map<String, String> tableRow : tableRows)
-			{
-				updateCBPartnerLocation(tableRow);
-			}
+			DataTableRows.of(dataTable).forEach(this::updateCBPartnerLocation);
 		}
 		catch (final AdempiereException e)
 		{
@@ -280,36 +287,26 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationTable.put(bpartnerLocationIdentifier, bpartnerLocation);
 	}
 
-	private void updateCBPartnerLocation(@NonNull final Map<String, String> tableRow)
+	private void updateCBPartnerLocation(@NonNull final DataTableRow row)
 	{
-		final String bPartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final StepDefDataIdentifier bPartnerLocationIdentifier = row.getAsIdentifier(I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 
 		final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bPartnerLocationIdentifier)
 				.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
-				.orElseGet(() -> Integer.parseInt(bPartnerLocationIdentifier));
+				.orElseGet(() -> Integer.parseInt(bPartnerLocationIdentifier.getAsString()));
 
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(bPartnerLocationID, I_C_BPartner_Location.class);
 
-		final String email = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
-		if (Check.isNotBlank(email))
-		{
-			bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email));
-		}
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_EMail)
+				.filter(Check::isNotBlank)
+				.ifPresent(email -> bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email)));
 
-		final String gln = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_GLN)
+				.filter(Check::isNotBlank)
+				.ifPresent(gln -> bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln)));
 
-		if (Check.isNotBlank(gln))
-		{
-			bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln));
-		}
-
-		final String vataxId = de.metas.common.util.CoalesceUtil.coalesceSuppliers(
-				() -> DataTableUtil.extractNullableStringForColumnName(tableRow, I_C_BPartner_Location.COLUMNNAME_VATaxID),
-				() -> DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_VATaxID));
-		if (vataxId != null)
-		{
-			bPartnerLocation.setVATaxID(DataTableUtil.nullToken2Null(vataxId));
-		}
+		row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_VATaxID)
+				.ifPresent(vataxId -> bPartnerLocation.setVATaxID(DataTableUtil.nullToken2Null(vataxId)));
 
 		saveRecord(bPartnerLocation);
 		bPartnerLocationTable.putOrReplace(bPartnerLocationIdentifier, bPartnerLocation);
