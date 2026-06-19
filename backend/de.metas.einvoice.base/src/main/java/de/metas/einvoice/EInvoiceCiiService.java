@@ -30,7 +30,7 @@ import java.util.Optional;
  *
  * <p>Orchestrates the pipeline:
  * <ol>
- *   <li>{@link EInvoiceConfigService#resolveForInvoice(InvoiceId)} — determine if the invoice's
+ *   <li>{@link EInvoiceConfigService#resolveForInvoice(I_C_Invoice)} — determine if the invoice's
  *       BPartner is an e-invoice recipient and resolve the format configuration.</li>
  *   <li>{@link CiiMapper#map(I_C_Invoice, EInvoiceRecipientConfig)} — map the invoice to a CII
  *       {@link CrossIndustryInvoiceType} domain object.</li>
