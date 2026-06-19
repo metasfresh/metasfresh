@@ -269,7 +269,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting(), Mockito.mock(org.adempiere.ad.persistence.custom_columns.CustomColumnService.class)),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 
