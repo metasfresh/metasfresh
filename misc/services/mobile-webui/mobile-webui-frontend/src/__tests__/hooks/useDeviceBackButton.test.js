@@ -3,11 +3,6 @@ import { act, render } from '@testing-library/react';
 import { Router } from 'react-router-dom';
 import { createMemoryHistory } from 'history';
 import { useDeviceBackButton } from '../../hooks/useDeviceBackButton';
-import { useMobileNavigation } from '../../hooks/useMobileNavigation';
-
-jest.mock('../../hooks/useMobileNavigation', () => ({ useMobileNavigation: jest.fn() }));
-
-const goBack = jest.fn();
 
 function renderTrap({ history = createMemoryHistory() } = {}) {
   function TestComponent() {
@@ -28,12 +23,11 @@ function firePopState() {
   });
 }
 
-describe('useDeviceBackButton (browser Back mirrors the footer Back button)', () => {
+describe('useDeviceBackButton (device/browser Back is a pure no-op)', () => {
   let pushStateSpy;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    useMobileNavigation.mockReturnValue({ goBack });
     pushStateSpy = jest.spyOn(window.history, 'pushState');
   });
 
@@ -47,24 +41,40 @@ describe('useDeviceBackButton (browser Back mirrors the footer Back button)', ()
     expect(pushStateSpy).toHaveBeenCalledWith(null, '', window.location.href);
   });
 
-  it('on device/browser Back, re-primes the sentinel and invokes the in-app goBack (footer Back behavior)', () => {
+  it('on device/browser Back, ONLY re-primes the sentinel — it does not navigate (pure no-op)', () => {
     renderTrap();
     pushStateSpy.mockClear();
 
     firePopState();
 
-    expect(goBack).toHaveBeenCalledTimes(1); // replays the in-app Back navigation
-    expect(pushStateSpy).toHaveBeenCalledTimes(1); // sentinel re-primed so the stack never escapes the app
+    // sentinel re-primed so the stack never escapes the app, and nothing else happens
+    expect(pushStateSpy).toHaveBeenCalledTimes(1);
     expect(pushStateSpy).toHaveBeenCalledWith(null, '', window.location.href);
   });
 
-  it('delegates Back to useMobileNavigation.goBack, never window.history.go(-1)', () => {
+  it('never calls window.history.go / back (no in-app navigation is replayed)', () => {
     const goSpy = jest.spyOn(window.history, 'go');
+    const backSpy = jest.spyOn(window.history, 'back');
     renderTrap();
+
     firePopState();
+
     expect(goSpy).not.toHaveBeenCalled();
-    expect(goBack).toHaveBeenCalledTimes(1);
+    expect(backSpy).not.toHaveBeenCalled();
     goSpy.mockRestore();
+    backSpy.mockRestore();
+  });
+
+  it('keeps a sentinel on top across repeated Back presses (so a 2nd/3rd Back can never pop a real entry)', () => {
+    renderTrap();
+    pushStateSpy.mockClear();
+
+    firePopState();
+    firePopState();
+    firePopState();
+
+    // one re-prime per Back press → there is always a fresh sentinel on top
+    expect(pushStateSpy).toHaveBeenCalledTimes(3);
   });
 
   it('re-primes the sentinel after a real forward navigation (PUSH / REPLACE)', () => {
@@ -82,7 +92,6 @@ describe('useDeviceBackButton (browser Back mirrors the footer Back button)', ()
     const { history } = renderTrap();
     act(() => history.push('/screen/b')); // PUSH → primes
     pushStateSpy.mockClear();
-    goBack.mockClear();
 
     act(() => history.goBack()); // memory-history POP → must NOT prime via the listener
 

@@ -1,34 +1,35 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useMobileNavigation } from './useMobileNavigation';
 
 /**
- * Routes the device / browser Back button through the app's own navigation: pressing it does exactly
- * what the on-screen footer Back button does — navigate to the current screen's declared backLocation,
- * or Home when the screen declares none (useMobileNavigation.goBack).
+ * Neutralises the device / browser Back button: pressing it does NOTHING. It never leaves the PWA and
+ * never changes the visible screen. Operators navigate exclusively with the on-screen footer Back
+ * button (which goes to the screen's declared backLocation, else Home) and the Home button.
  *
- * Why: the app navigates with history.replace, so the browser history stack holds *arrival order*, not
- * the app's logical screen flow. A raw browser Back (history.go(-1)) is therefore meaningless — it used
- * to drop the operator out of the PWA or jump to the wrong screen. So we intercept the browser/device
- * Back and replay the in-app Back navigation, making hardware/browser Back and the footer Back behave
- * identically and consistently on every screen.
+ * Why a pure no-op — and explicitly NOT "replay the footer Back" (a design we tried and reverted):
+ *  - The app navigates with history.replace, so the browser history stack holds *arrival order*, not
+ *    the app's logical screen flow. A raw browser Back (history.go(-1)) is therefore meaningless and
+ *    used to drop the operator out of the PWA / jump to the wrong screen.
+ *  - Replaying the footer Back from HERE cannot be done correctly: this trap is mounted ONCE (in
+ *    ApplicationRoot) and has no access to the active screen's declared back target. A screen passes
+ *    its own backLocation to its OWN useMobileNavigation({ backLocation }) instance (via
+ *    useScreenDefinition); this hook, calling useMobileNavigation() with no argument, only ever sees
+ *    the headers-derived backLocation — which is pushed in a useEffect and so lags the active screen.
+ *    So mirroring navigated to a stale / wrong target, and the extra history.replace it issued
+ *    mismanaged the sentinel stack below, so a *second* Back could pop a real entry and exit the PWA —
+ *    the exact failure this feature exists to prevent.
+ *  - Therefore: absorb the Back and do nothing. The footer Back, which lives inside each screen and
+ *    holds the correct screen-local backLocation, owns all real navigation.
  *
  * Mechanism: a popstate cannot be cancelled (the navigation already happened by the time it fires), so
  * we keep a throwaway "sentinel" entry on top of the browser history. A Back press pops the sentinel —
- * never a real app entry, so the browser never leaves the PWA — and in the popstate handler we re-prime
- * the sentinel and invoke goBack(). goBack() navigates via history.replace, which the history.listen
- * below re-primes too. The sentinel is (re)primed on mount and after every real navigation (history
- * PUSH / REPLACE) but explicitly NOT on POP (POP is the Back press we are handling; connected-react-router
- * also emits a POP when the sentinel itself is popped).
- *
- * goBack is read through a ref so the popstate handler always uses the current screen's backLocation
- * (the handler is registered once, but goBack is re-created on every render as the location changes).
+ * never a real app entry, so the browser never leaves the PWA and the screen never changes — and the
+ * popstate handler simply re-primes the sentinel. The sentinel is (re)primed on mount and after every
+ * real navigation (history PUSH / REPLACE) but NOT on POP (POP is the Back press we are handling;
+ * connected-react-router also emits a POP when the sentinel itself is popped).
  */
 export const useDeviceBackButton = () => {
   const history = useHistory();
-  const { goBack } = useMobileNavigation();
-  const goBackRef = useRef(goBack);
-  goBackRef.current = goBack;
 
   useEffect(() => {
     primeSentinel();
@@ -39,11 +40,16 @@ export const useDeviceBackButton = () => {
       }
     });
 
-    // Device / browser Back: re-prime the sentinel (so the browser stack never escapes the app) and
-    // replay the in-app Back navigation — identical to tapping the on-screen footer Back button.
+    // Device / browser Back: re-prime the sentinel and do nothing else. The sentinel is therefore
+    // always on top of the browser history, so a Back press can only ever pop the sentinel — never a
+    // real app entry → the operator can never be dropped out of the PWA, and the current screen is
+    // left untouched. Real navigation is the footer Back button's job.
     const onPopState = () => {
       primeSentinel();
-      goBackRef.current();
+      // Field diagnostic for handheld debugging: proves every device/browser Back is a no-op. If the
+      // app ever exits or changes screen on Back, this line (captured from the device console) shows
+      // it was not this handler.
+      console.log(`[deviceBack] Back pressed on ${window.location.pathname} → no-op (PWA unchanged)`);
     };
     window.addEventListener('popstate', onPopState);
 

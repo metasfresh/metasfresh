@@ -54,12 +54,12 @@ const createMasterdata = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Device/browser Back navigates like the footer Back button', async ({ page }) => {
+test('Device/browser Back is a pure no-op; only the footer Back navigates', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');  // Standalone tag for Tags section;
-    allure.story('Device/browser Back replays the in-app footer Back navigation');
+    allure.story('Device/browser Back does nothing — the operator never leaves the app and stays on the current screen');
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
@@ -75,21 +75,29 @@ test('Device/browser Back navigates like the footer Back button', async ({ page 
     await PickingJobScreen.waitForScreen();
 
     //
-    // Establish the footer Back target of the job screen: it goes back to the jobs list.
+    // The device/browser Back button does NOTHING on the job screen: the job screen stays put.
+    // Press it twice — the reported failure was that the SECOND press dropped the operator out of
+    // the app entirely. It must remain a no-op on every press.
+    await pressDeviceBack();
+    await PickingJobScreen.waitForScreen();
+    await pressDeviceBack();
+    await PickingJobScreen.waitForScreen();
+
+    //
+    // The on-screen footer Back button still navigates — back to the jobs list.
     await PickingJobScreen.goBack();
     await PickingJobsListScreen.waitForScreen();
 
     //
-    // Re-open the job, then press the device/browser Back: it must do the SAME thing as the footer
-    // Back button — go back to the jobs list.
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await PickingJobScreen.waitForScreen();
+    // The device/browser Back button is likewise a no-op on the jobs list: still the jobs list,
+    // never out of the app — again, two presses.
+    await pressDeviceBack();
+    await PickingJobsListScreen.waitForScreen();
     await pressDeviceBack();
     await PickingJobsListScreen.waitForScreen();
 
     //
-    // Device/browser Back from the jobs list goes Home (the app list) — again exactly like the
-    // footer Back button on that screen (the jobs list declares its back target as Home).
-    await pressDeviceBack();
+    // The footer Back button on the jobs list navigates Home (the app list).
+    await PickingJobsListScreen.goBack();
     await ApplicationsListScreen.expectVisible();
 });
