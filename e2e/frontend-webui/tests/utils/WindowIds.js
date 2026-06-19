@@ -107,6 +107,19 @@ export const SALES_INVOICE_WINDOW_ID = 167;
 export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
 
 // ============================================================================
+// TAX WINDOWS
+// ============================================================================
+
+/**
+ * Tax window (Steuersatz)
+ * Table: C_Tax
+ * AD_Window_ID: 137
+ * Tab: Steuer (AD_Tab_ID 174)
+ * Description: Define tax rates and their EN16931 VAT category for e-invoicing
+ */
+export const TAX_WINDOW_ID = 137;
+
+// ============================================================================
 // PAYMENT WINDOWS
 // ============================================================================
 

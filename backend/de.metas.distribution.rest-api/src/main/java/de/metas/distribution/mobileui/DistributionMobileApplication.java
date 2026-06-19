@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.mobileui.config.DistributionJobCaptionFormat;
+import de.metas.distribution.mobileui.config.DistributionJobCaptionFormatItem;
 import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
@@ -181,15 +182,21 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 		final ImmutableList<WFProcessHeaderProperty> entries = captionFormat.getItems()
 				.stream()
-				.map(field -> WFProcessHeaderProperty.builder()
-						.caption(field.getCaption())
-						.value(displayValueProvider.computeItem(job, field.getField()))
-						.build())
+				.map(field -> computeHeaderProperty(field, job))
 				.filter(WFProcessHeaderProperty::isValueNotBlank)
 				.collect(ImmutableList.toImmutableList());
 
 		return WFProcessHeaderProperties.builder()
 				.entries(entries)
+				.build();
+	}
+
+	private WFProcessHeaderProperty computeHeaderProperty(final DistributionJobCaptionFormatItem field, final DistributionJob job)
+	{
+		return WFProcessHeaderProperty.builder()
+				.id(field.getField().getCode())
+				.caption(field.getCaption())
+				.value(displayValueProvider.computeItem(job, field.getField()))
 				.build();
 	}
 
