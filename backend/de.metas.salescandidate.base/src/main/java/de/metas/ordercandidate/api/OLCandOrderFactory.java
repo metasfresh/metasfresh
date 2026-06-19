@@ -85,8 +85,11 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
+import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -102,6 +105,7 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
+import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
@@ -155,6 +159,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
+	private final CustomColumnRepository customColumnRepository = SpringContextHolder.instance.getBean(CustomColumnRepository.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -328,6 +333,8 @@ class OLCandOrderFactory
 			order.setC_Incoterms_ID(candidateOfGroup.getIncotermsId().getRepoId());
 			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
 		}
+
+		copyCustomColumns(candidateOfGroup.unbox(), org.compiere.model.I_C_Order.Table_Name, order);
 
 		save(order);
 		return order;
@@ -605,6 +612,8 @@ class OLCandOrderFactory
 		// Fire listeners
 		olCandListeners.onOrderLineCreated(candidate, currentOrderLine);
 
+		copyCustomColumns(candidate.unbox(), org.compiere.model.I_C_OrderLine.Table_Name, currentOrderLine);
+
 		//
 		// Save the current order line
 		InterfaceWrapperHelper.save(currentOrderLine);
@@ -730,6 +739,56 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
+	}
+
+	/**
+	 * Copies every {@code IsRestAPICustomColumn='Y'} column from the given {@code source} (C_OLCand)
+	 * to {@code target} (C_Order or C_OrderLine), if and only if the same column name is also flagged
+	 * as a custom REST API column on the target table.
+	 * <p>
+	 * Values are transferred untyped so that any future custom column is handled automatically
+	 * without a Java change.
+	 */
+	private void copyCustomColumns(
+			@NonNull final de.metas.ordercandidate.model.I_C_OLCand source,
+			@NonNull final String targetTableName,
+			@NonNull final Object target)
+	{
+		final RESTApiTableInfo sourceTableInfo = customColumnRepository.getByTableNameOrNull(de.metas.ordercandidate.model.I_C_OLCand.Table_Name);
+		if (sourceTableInfo == null)
+		{
+			return;
+		}
+		final RESTApiTableInfo targetTableInfo = customColumnRepository.getByTableNameOrNull(targetTableName);
+		if (targetTableInfo == null)
+		{
+			return;
+		}
+
+		for (final String colName : sourceTableInfo.getCustomRestAPIColumnNames())
+		{
+			if (!targetTableInfo.isCustomRestAPIColumn(colName))
+			{
+				continue;
+			}
+
+			// Read from source — works for both real PO and test POJO (value is in innerValues map)
+			final Object value = InterfaceWrapperHelper.getValueOrNull(source, colName);
+
+			// Write to target — dual-path: POJO (tests) vs real PO (production)
+			if (POJOWrapper.isHandled(target))
+			{
+				POJOWrapper.getWrapper(target).setValue(colName, value);
+			}
+			else
+			{
+				final PO targetPO = InterfaceWrapperHelper.getPO(target);
+				if (targetPO.getPOInfo().hasColumnName(colName))
+				{
+					targetPO.set_ValueOfColumn(colName, value);
+				}
+			}
+		}
 	}
 
 	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)

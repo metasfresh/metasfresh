@@ -13,6 +13,9 @@ import org.compiere.model.POInfoColumn;
 public class RESTApiTableInfo
 {
 	@NonNull String tableName;
+	/** Original (canonical-case) column names as supplied, e.g. "Dt204_POReference2". */
+	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNames;
+	/** Upper-cased for fast case-insensitive membership checks. */
 	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNamesUC;
 
 	@Builder
@@ -21,6 +24,7 @@ public class RESTApiTableInfo
 			@NonNull @Singular final ImmutableSet<String> customRestAPIColumnNames)
 	{
 		this.tableName = tableName;
+		this.customRestAPIColumnNames = customRestAPIColumnNames;
 		this.customRestAPIColumnNamesUC = customRestAPIColumnNames.stream()
 				.map(String::toUpperCase)
 				.collect(ImmutableSet.toImmutableSet());
@@ -39,6 +43,16 @@ public class RESTApiTableInfo
 	public boolean isCustomRestAPIColumn(@NonNull final String columnName)
 	{
 		return customRestAPIColumnNamesUC.contains(columnName.toUpperCase());
+	}
+
+	/**
+	 * Returns the custom REST API column names in their original canonical case
+	 * (e.g. "Dt204_POReference2"), suitable for use as column identifiers when
+	 * reading/writing PO or POJOWrapper records.
+	 */
+	public ImmutableSet<String> getCustomRestAPIColumnNames()
+	{
+		return customRestAPIColumnNames;
 	}
 
 }
