@@ -281,7 +281,7 @@ public final class EUVatIdValidator
 	}
 
 	// ------------------------------------------------------------------ CH (Switzerland)
-	// Source: stdnum/ch/uid.py — weights = (5,4,3,2,7,6,5,4); check = (11 - sum) % 11
+	// Source: stdnum/ch/uid.py — weights = (5,4,3,2,7,6,5,4); check = (11 - sum%11) % 11
 	// Valid example: CHE100155212
 
 	private static boolean checkCh(final String n)
@@ -294,7 +294,7 @@ public final class EUVatIdValidator
 		{
 			sum += weights[i] * Character.getNumericValue(digits.charAt(i));
 		}
-		// Use mod-11 of the sum (not of 11 - raw sum) to avoid negative values
+		// double-mod: when sum%11==0, (11-0)%11==0 gives check digit 0 correctly
 		final int check = (11 - sum % 11) % 11;
 		return check == Character.getNumericValue(digits.charAt(8));
 	}
