@@ -131,7 +131,7 @@ VALUES
      10,  -- String
      540270,
      'XX', 'C_Invoice_Acct_OverrideAcct_Display',
-     '(SELECT ev.Value || '' - '' || ev.Name FROM C_ElementValue ev WHERE ev.C_ElementValue_ID = @JoinTableNameOrAliasIncludingDot@C_ElementValue_Override_ID)',
+     '(SELECT ev.Value || '' - '' || ev.Name FROM C_ElementValue ev WHERE ev.C_ElementValue_ID = C_Invoice_Candidate.C_ElementValue_Override_ID)',
      TO_TIMESTAMP('2026-06-18 12:01:00', 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC', 100,
      'N', 'de.metas.invoicecandidate',
      0, 60,

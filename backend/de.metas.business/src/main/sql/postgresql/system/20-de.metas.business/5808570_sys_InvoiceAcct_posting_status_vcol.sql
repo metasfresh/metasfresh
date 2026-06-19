@@ -109,7 +109,7 @@ VALUES (
   'N', 'N', 'NP', 255,
   'N', 'N', 'N',
   'N', 'N',
-  '(select case when i.posted = ''Y'' then ''Gebucht / Posted'' else ''Nicht gebucht / Not Posted'' end || '' | '' || i.docstatus from c_invoice i where i.c_invoice_id = @JoinTableNameOrAliasIncludingDot@C_Invoice_ID)',
+  '(select case when i.posted = ''Y'' then ''Gebucht / Posted'' else ''Nicht gebucht / Not Posted'' end || '' | '' || i.docstatus from c_invoice i where i.c_invoice_id = C_Invoice_Acct.C_Invoice_ID)',
   'N', 'N' /* IsSyncDatabase=N → virtual, no physical column */)
 ON CONFLICT (AD_Column_ID) DO NOTHING;
 

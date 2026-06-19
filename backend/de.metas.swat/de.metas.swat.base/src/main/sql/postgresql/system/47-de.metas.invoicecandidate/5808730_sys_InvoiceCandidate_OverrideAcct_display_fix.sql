@@ -7,7 +7,7 @@
 --      so its translations fully propagate to all dependent _Trl tables.
 
 UPDATE AD_Column
-SET    ColumnSQL = '(select ev.Value || '' - '' || ev.Name from c_elementvalue ev where ev.C_ElementValue_ID = @JoinTableNameOrAliasIncludingDot@C_ElementValue_Override_ID)',
+SET    ColumnSQL = '(select ev.Value || '' - '' || ev.Name from c_elementvalue ev where ev.C_ElementValue_ID = C_Invoice_Candidate.C_ElementValue_Override_ID)',
        Updated   = TO_TIMESTAMP('2026-06-18 14:00:00', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy = 100
 WHERE  AD_Column_ID = 592842 /*From ID Server*/;

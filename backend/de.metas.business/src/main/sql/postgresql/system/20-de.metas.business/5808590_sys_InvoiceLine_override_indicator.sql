@@ -139,8 +139,8 @@ VALUES (
     join c_elementvalue ev on ev.c_elementvalue_id = ia.c_elementvalue_id
     where ia.isactive = ''Y''
       and (
-            (ia.c_invoiceline_id = @JoinTableNameOrAliasIncludingDot@C_InvoiceLine_ID)
-            or (    ia.c_invoice_id     = @JoinTableNameOrAliasIncludingDot@C_Invoice_ID
+            (ia.c_invoiceline_id = C_InvoiceLine.C_InvoiceLine_ID)
+            or (    ia.c_invoice_id     = C_InvoiceLine.C_Invoice_ID
                 and ia.c_invoiceline_id is null)
           ))',
   'N', 'N' /* IsSyncDatabase=N → virtual, no physical column */)
