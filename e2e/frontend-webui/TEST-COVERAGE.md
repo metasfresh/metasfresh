@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-04
+**Last Updated**: 2026-06-19
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1052,9 +1052,9 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 ### 41. Tax — EN16931 VAT Category field (`tax-en16931-vat-category.spec.js`)
 
 **Features Tested**:
-- EInvoicing / EN16931 VAT Category on Tax (C_Tax)
+- F00751: e-Invoicing Germany
 
-**Epic**: E-Invoicing
+**Epic**: E0340: Invoicing
 
 **Workflow** (en_US, requires port 8282):
 1. Login via `Backend.createMasterdata()` user
@@ -1147,7 +1147,7 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 35 files
+- **Total test specs**: 57 files
 - **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing

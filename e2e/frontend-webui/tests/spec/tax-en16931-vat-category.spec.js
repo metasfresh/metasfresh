@@ -6,7 +6,7 @@ import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { TAX_WINDOW_ID } from '../utils/WindowIds';
-import { getFieldData } from '../utils/WebAPIValidation';
+import { assertRecordIsValid, getFieldData, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * E-Invoicing — EN16931 VAT Category field on Tax window (C_Tax).
@@ -20,11 +20,9 @@ import { getFieldData } from '../utils/WebAPIValidation';
  * 2. Reset the webui metadata cache so the newly-added field is visible
  * 3. Navigate to Tax record 540010 (OSS CY 19%, currently EN16931VATCategory=S)
  * 4. Assert the EN16931 VAT Category field is present and is a List widget
- * 5. Assert the current value is "S" (Standard rate)
- * 6. Change the value to "AE" (VAT Reverse Charge) via the dropdown
- * 7. Wait for auto-save
- * 8. Read back via WebAPI and assert the persisted value is "AE"
- * 9. Restore the original value "S" to leave the DB in a clean state
+ * 5. Assert the record is valid before editing (assertRecordIsValid guard)
+ * 6. Read current value; pick a different one to change; verify persistence via WebAPI
+ * 7. Restore the original value to leave the DB in a clean state
  */
 
 /**
@@ -36,22 +34,31 @@ import { getFieldData } from '../utils/WebAPIValidation';
 const TEST_TAX_RECORD_ID = 540010;
 
 /**
- * List values available on the EN16931VATCategory widget (UNTDID 5305 / EN16931).
- * data-testid attributes used on the dropdown options: option-{value}.
+ * All seven UNTDID 5305 / EN16931 VAT category codes supported by the field.
+ * data-testid attributes used on the dropdown options: option-{code}.
+ * Labels match the AD_Reference list values rendered by the frontend.
  */
 const VAT_CATEGORY = {
   S: { testid: 'option-S', label: 'Standard rate' },
+  Z: { testid: 'option-Z', label: 'Zero rated goods' },
+  E: { testid: 'option-E', label: 'Exempt from tax' },
   AE: { testid: 'option-AE', label: 'VAT Reverse Charge' },
+  K: { testid: 'option-K', label: 'intra-community supply' },
+  G: { testid: 'option-G', label: 'Free export item' },
+  O: { testid: 'option-O', label: 'Services outside scope' },
 };
 
 /**
  * Reset the webui metadata cache via the cache/reset endpoint.
  * This is required whenever a new AD_Field is added to ensure the
  * running webui picks up the new layout without a server restart.
+ *
+ * Uses the env-driven WEBAPI_BASE_URL constant from WebAPIValidation
+ * to stay consistent with all other WebAPI calls in this suite.
  */
 async function resetWebuiCache(page) {
   console.log('[INFO] Resetting webui metadata cache...');
-  const resp = await page.request.get('http://localhost:8080/rest/api/cache/reset');
+  const resp = await page.request.get(`${WEBAPI_BASE_URL}/cache/reset`);
   const status = resp.status();
   const body = await resp.text();
   console.log(`[INFO] Cache reset response: HTTP ${status}`);
@@ -65,11 +72,12 @@ async function resetWebuiCache(page) {
 test.describe('Tax window — EN16931 VAT Category field (E-Invoicing)', () => {
   test('EN16931 VAT Category field is present, editable, and persists correctly', async ({ page }) => {
     // === ALLURE METADATA ===
-    allure.epic('E-Invoicing');
-    allure.feature('EN16931 VAT Category on Tax');
+    allure.epic('E0340: Invoicing');
+    allure.feature('F00751: e-Invoicing Germany');
+    allure.tag('F00751: e-Invoicing Germany');
+    allure.tag('F00751');
     allure.story('List widget EN16931VATCategory on Tax window renders and saves');
     allure.severity('critical');
-    allure.tag('EInvoicing');
     allure.tag('Tax');
     allure.tag('EN16931');
     allure.description(`
@@ -84,11 +92,11 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
 2. Reset webui metadata cache (so newly-added field is visible without server restart)
 3. Navigate to Tax record ${TEST_TAX_RECORD_ID} (OSS CY 19%, EN16931VATCategory=S)
 4. Assert EN16931 VAT Category field is present and is a List/dropdown widget
-5. Assert current value is "S" (Standard rate)
-6. Change value to "AE" (VAT Reverse Charge) via dropdown
-7. Wait for auto-save
-8. Read back via WebAPI — assert persisted value is "AE"
-9. Restore original value "S"
+5. Assert record is valid (assertRecordIsValid guard — saves must not be lost)
+6. Read current value; choose a different known code to change to (round-trip stays idempotent)
+7. Change value via dropdown; wait for auto-save
+8. Read back via WebAPI — assert persisted value matches what was selected
+9. Restore original value and verify
     `);
 
     test.setTimeout(120000); // 2 minutes
@@ -130,14 +138,17 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
     await page.locator('.rotating, .indicator-pending')
       .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
-    await page.waitForTimeout(1500);
 
     console.log('[INFO] Tax record loaded. URL:', page.url());
 
     const screenshotInitial = await page.screenshot();
     allure.attachment('Tax Record — Initial State', screenshotInitial, 'image/png');
 
-    // === STEP 5: Assert EN16931 VAT Category field is present and is a List widget ===
+    // === STEP 5: Assert record is valid before editing (MANDATORY guard) ===
+    // Per CLAUDE.md: "If valid: false, changes made in the UI WILL NOT BE SAVED!"
+    await assertRecordIsValid(String(TAX_WINDOW_ID), String(TEST_TAX_RECORD_ID), 'before editing EN16931VATCategory');
+
+    // === STEP 6: Assert EN16931 VAT Category field is present and is a List widget ===
     await test.step('Assert EN16931 VAT Category field is present as a List widget', async () => {
       // The field renders inside a div with class form-field-EN16931VATCategory
       // and widgetType-List (set by the frontend's RawWidget renderer).
@@ -153,30 +164,31 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
       console.log('[PASS] EN16931 VAT Category field present and rendered as List widget');
     });
 
-    // === STEP 6: Read current value and determine which value to set ===
+    // === STEP 7: Read current value and determine which value to set ===
     // The test is designed to be idempotent: it reads the current value, picks a
     // different one to set, verifies the change persisted, then restores the original.
+    // We use the WebAPI (authoritative) rather than parsing the input value string.
     let originalValueKey;
 
-    await test.step('Read current EN16931VATCategory value', async () => {
-      const fieldInput = page.locator('.form-field-EN16931VATCategory input.input-field');
-      await fieldInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('Read current EN16931VATCategory value via WebAPI', async () => {
+      const fieldData = await getFieldData(
+        String(TAX_WINDOW_ID),
+        String(TEST_TAX_RECORD_ID),
+        'EN16931VATCategory'
+      );
+      console.log('[INFO] WebAPI field data (initial):', JSON.stringify(fieldData));
 
-      const currentVal = await fieldInput.inputValue();
-      console.log(`[INFO] Current EN16931VATCategory value: "${currentVal}"`);
-
-      // Input value for list widgets is "{code}_{label}", e.g. "S_Standard rate"
-      // Extract the code part (before the first underscore)
-      originalValueKey = currentVal.split('_')[0];
+      // List widgets return value as { key, caption }
+      originalValueKey = String(fieldData.value?.key ?? fieldData.value ?? '');
       console.log(`[INFO] Original value key: "${originalValueKey}"`);
 
-      // The field must display a known VAT category code
+      // The field must display a known VAT category code — catches DB drift early
       expect(
         Object.keys(VAT_CATEGORY),
-        `Current value "${originalValueKey}" must be one of the known VAT category codes`
+        `Current value "${originalValueKey}" must be one of the known VAT category codes: ${Object.keys(VAT_CATEGORY).join(', ')}`
       ).toContain(originalValueKey);
 
-      allure.parameter('Original Value', currentVal);
+      allure.parameter('Original Value', originalValueKey);
     });
 
     // Pick a different value to set (if current is S, set AE; otherwise set S)
@@ -185,15 +197,14 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
     console.log(`[INFO] Will change from "${originalValueKey}" to "${targetKey}"`);
     allure.parameter('Target Value', targetKey);
 
-    // === STEP 7: Change value to the target category via dropdown ===
+    // === STEP 8: Change value to the target category via dropdown ===
     await test.step(`Change value to ${targetKey} (${targetCategory.label})`, async () => {
       const fieldInput = page.locator('.form-field-EN16931VATCategory input.input-field');
 
       // Click to open the dropdown
       await fieldInput.click();
-      await page.waitForTimeout(500);
 
-      // Wait for dropdown list to appear
+      // Wait for dropdown list to appear (no bare sleep — waitFor is the anchor)
       const dropdownList = page.locator('.input-dropdown-list');
       await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
@@ -209,22 +220,20 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
 
       // Press Tab to confirm selection and trigger auto-save
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(500);
 
       console.log(`[INFO] Selected ${targetKey} (${targetCategory.label})`);
     });
 
-    // === STEP 8: Wait for auto-save ===
+    // === STEP 9: Wait for auto-save ===
     await test.step('Wait for auto-save to complete', async () => {
       await page.locator('.rotating, .indicator-pending')
         .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
         .catch(() => {});
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(1000);
       console.log('[INFO] Auto-save complete');
     });
 
-    // === STEP 9: Read back via WebAPI and assert persisted value is the target ===
+    // === STEP 10: Read back via WebAPI and assert persisted value is the target ===
     await test.step(`Read back via WebAPI — assert persisted value is ${targetKey}`, async () => {
       const fieldData = await getFieldData(
         String(TAX_WINDOW_ID),
@@ -232,13 +241,13 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
         'EN16931VATCategory'
       );
 
-      console.log('[INFO] WebAPI field data:', JSON.stringify(fieldData));
+      console.log('[INFO] WebAPI field data (after change):', JSON.stringify(fieldData));
       // For List widgets the API returns value as an object { key: "AE", caption: "..." }
-      const persistedKey = fieldData.value?.key ?? fieldData.value;
-      allure.parameter('Persisted Value Key (WebAPI)', String(persistedKey));
+      const persistedKey = String(fieldData.value?.key ?? fieldData.value ?? '');
+      allure.parameter('Persisted Value Key (WebAPI)', persistedKey);
 
       expect(
-        String(persistedKey),
+        persistedKey,
         `WebAPI must return the persisted value key ${targetKey}`
       ).toBe(targetKey);
 
@@ -248,13 +257,12 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
     const screenshotAfterChange = await page.screenshot();
     allure.attachment(`Tax Record — After Setting ${targetKey}`, screenshotAfterChange, 'image/png');
 
-    // === STEP 10: Restore original value ===
+    // === STEP 11: Restore original value ===
     await test.step(`Restore original value ${originalValueKey}`, async () => {
       const fieldInput = page.locator('.form-field-EN16931VATCategory input.input-field');
       await fieldInput.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
       await fieldInput.click();
-      await page.waitForTimeout(500);
 
       const dropdownList = page.locator('.input-dropdown-list');
       await dropdownList.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
@@ -265,22 +273,20 @@ The field exposes the UNTDID 5305 / EN16931 VAT category code used in e-invoice 
 
       await dropdownList.waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
       await page.keyboard.press('Tab');
-      await page.waitForTimeout(500);
 
       await page.locator('.rotating, .indicator-pending')
         .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
         .catch(() => {});
       await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page.waitForTimeout(1000);
 
-      // Verify restored — List widget returns { key, caption }
+      // Verify restored via WebAPI (authoritative)
       const fieldDataRestored = await getFieldData(
         String(TAX_WINDOW_ID),
         String(TEST_TAX_RECORD_ID),
         'EN16931VATCategory'
       );
-      const restoredKey = fieldDataRestored.value?.key ?? fieldDataRestored.value;
-      expect(String(restoredKey), `Restored value must be ${originalValueKey}`).toBe(originalValueKey);
+      const restoredKey = String(fieldDataRestored.value?.key ?? fieldDataRestored.value ?? '');
+      expect(restoredKey, `Restored value must be ${originalValueKey}`).toBe(originalValueKey);
       console.log(`[PASS] Value restored to ${originalValueKey}`);
     });
 
