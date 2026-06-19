@@ -32,6 +32,7 @@ import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
 import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
@@ -110,6 +111,7 @@ public class MobileUIPickingUserProfile_StepDef
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
+			row.getAsOptionalEnum("PickingJobAggregationType", PickingJobAggregationType.class).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 
 			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder profileBuilder = profile.toBuilder()
 					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
