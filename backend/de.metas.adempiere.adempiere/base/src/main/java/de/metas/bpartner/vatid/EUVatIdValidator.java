@@ -206,7 +206,8 @@ public final class EUVatIdValidator
 	private static boolean checkAt(final String n)
 	{
 		// n = "ATU" + 8 digits; last digit is the check digit
-		// compact form (no AT prefix) = "U" + 8 digits; calc_check_digit uses number[1:] of the 8-char prefix
+		// compact form (no AT prefix) = "U" + 8 digits (7 body + 1 check digit = 9 chars total);
+		// calc_check_digit receives only the body ("U" + 7 digits = 8 chars) and calls luhn.checksum(number[1:])
 		// i.e. luhn.checksum("U1358562"[1:]) = luhn.checksum("1358562") — 7 digits
 		final String digits = n.substring(2); // "U" + 8 digits
 		final String body = digits.substring(1, 8); // 7 digits: positions [1..7] of the "U########" string

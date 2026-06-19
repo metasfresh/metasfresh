@@ -112,6 +112,14 @@ class EUVatIdValidatorTest
 			"BG175074753, false",
 
 			//
+			// BG — Bulgaria (10-digit personal / other)
+			// Source: stdnum/bg/vat.py — checkBgPersonal: weights(4,3,2,7,6,5,4,3,2); check=(11-sum%11)%11
+			// Generated: body=752316926, sum=158, sum%11=4, check=7 → BG7523169267
+			// Invalid: mutate check digit 7→8
+			"BG7523169267, true",
+			"BG7523169268, false",
+
+			//
 			// CH — Switzerland (UID)
 			// Source: stdnum/ch/uid.py — valid: CHE100155212
 			// Invalid: stdnum invalid example CHE100155213
@@ -138,6 +146,20 @@ class EUVatIdValidatorTest
 			// Invalid: mutate last digit 6→7
 			"CZ640903926, true",
 			"CZ640903927, false",
+
+			//
+			// CZ — Czech Republic (9-digit pre-1954 birth number, first digit != 6)
+			// Source: stdnum/cz/dic.py — no check digit; any well-formed 9-digit non-6-prefixed number is valid
+			// Always returns true (no check-digit validation for this sub-path)
+			"CZ520101111, true",
+
+			//
+			// CZ — Czech Republic (10-digit post-1954 birth number)
+			// Source: stdnum/cz/dic.py — valid iff Long.parseLong(digits) % 11 == 0
+			// Generated: 8101010060 % 11 = 0 (month=01 is valid)
+			// Invalid: 8101010061 % 11 != 0
+			"CZ8101010060, true",
+			"CZ8101010061, false",
 
 			//
 			// DE — Germany
@@ -175,6 +197,20 @@ class EUVatIdValidatorTest
 			"ESB58378432, false",
 
 			//
+			// ES — Spain (DNI: 8 digits + check letter, first char is digit)
+			// Source: stdnum/es/nif.py — valid: ES54362315K  (54362315 % 23 = 21 → 'K')
+			// Invalid: mutate check letter K→L
+			"ES54362315K, true",
+			"ES54362315L, false",
+
+			//
+			// ES — Spain (K/L/M prefix — uses DNI check on 7 middle digits)
+			// Source: stdnum/es/nif.py — valid: ESM1234567L  (1234567 % 23 = 19 → 'L')
+			// Invalid: mutate check letter L→M
+			"ESM1234567L, true",
+			"ESM1234567M, false",
+
+			//
 			// FI — Finland
 			// Source: stdnum/fi/alv.py — valid: FI20774740
 			// Invalid: stdnum invalid example FI20774741
@@ -194,6 +230,14 @@ class EUVatIdValidatorTest
 			// Invalid: stdnum invalid example 802311781 → GB802311781
 			"GB980780684, true",
 			"GB802311781, false",
+
+			//
+			// GB — United Kingdom (12-digit: first 9 validated, last 3 ignored)
+			// Source: stdnum/gb/vat.py — same check-digit logic as 9-digit, trailing 3 digits irrelevant
+			// Valid: GB980780684123 (first 9 = GB980780684 which is valid; sum%97=0)
+			// Invalid: prefix with invalid first-9 (GB802311781) + any 3 trailing digits
+			"GB980780684123, true",
+			"GB802311781456, false",
 
 			//
 			// HR — Croatia
@@ -243,6 +287,17 @@ class EUVatIdValidatorTest
 			// Invalid: mutate last digit 5→6
 			"LT119511515, true",
 			"LT119511516, false",
+
+			//
+			// LT — Lithuania (12-digit temporarily registered — different checksum path)
+			// Source: stdnum/lt/pvm.py — valid: LT100001919017  (doctest example)
+			//   calc_check_digit(100001919001..1) = 7 (primary path: sum%11 < 10)
+			// Source: stdnum/lt/pvm.py — valid: LT100004801610  (doctest: 'second step in check digit calculation')
+			//   primary sum%11 = 10 triggers fallback; calc_check_digit(...) = 0
+			// Invalid: stdnum invalid example LT100001919018
+			"LT100001919017, true",
+			"LT100004801610, true",
+			"LT100001919018, false",
 
 			//
 			// LU — Luxembourg
