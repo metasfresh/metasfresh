@@ -51,6 +51,8 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
+import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
@@ -83,6 +85,17 @@ class OLCandOrderFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// OLCandOrderFactory eagerly fetches CustomColumnRepository; register a no-op stub so the
+		// factory can be built in this unit test (returns no custom columns -> propagation is a no-op).
+		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, new CustomColumnRepository()
+		{
+			@Override
+			public RESTApiTableInfo getByTableNameOrNull(final String tableName)
+			{
+				return null;
+			}
+		});
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
