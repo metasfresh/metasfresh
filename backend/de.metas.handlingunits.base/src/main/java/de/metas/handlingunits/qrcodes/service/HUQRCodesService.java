@@ -189,6 +189,17 @@ public class HUQRCodesService
 		print(createPDF(qrCodes), copies);
 	}
 
+	public void print(@NonNull final List<HUQRCode> qrCodes, @Nullable final AdProcessId qrCodeProcessId, @NonNull final PrintCopies copies)
+	{
+		final QRCodePDFResource pdf = globalQRCodeService.createPDF(
+				qrCodes.stream()
+						.map(HUQRCode::toPrintableQRCode)
+						.collect(ImmutableList.toImmutableList()),
+				null,
+				qrCodeProcessId);
+		print(pdf, copies);
+	}
+
 	public void print(@NonNull final QRCodePDFResource pdf)
 	{
 		print(pdf, PrintCopies.ONE);
