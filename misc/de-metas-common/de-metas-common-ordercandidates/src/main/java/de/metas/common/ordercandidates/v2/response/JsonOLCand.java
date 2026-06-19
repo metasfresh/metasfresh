@@ -10,10 +10,8 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 
 /*
  * #%L
@@ -103,12 +101,6 @@ public class JsonOLCand
 	String description;
 	Integer line;
 
-	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
-			+ "Keys are column names; values are the column values.")
-	@JsonProperty("extendedProps")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	Map<String, Object> extendedProps;
-
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -138,8 +130,7 @@ public class JsonOLCand
 			@JsonProperty("warehouseDestId") final int warehouseDestId,
 			@JsonProperty("jsonOrderLineGroup") final JsonOrderLineGroup jsonOrderLineGroup,
 			@JsonProperty("description") final String description,
-			@JsonProperty("line") final Integer line,
-			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps)
+			@JsonProperty("line") final Integer line)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -168,7 +159,6 @@ public class JsonOLCand
 		this.jsonOrderLineGroup = jsonOrderLineGroup;
 		this.description = description;
 		this.line = line;
-		this.extendedProps = extendedProps;
 	}
 
 }
