@@ -40,13 +40,18 @@ import de.metas.einvoice.cii.model.TradePartyType;
 import de.metas.einvoice.cii.model.TradePaymentTermsType;
 import de.metas.einvoice.cii.model.TradePriceType;
 import de.metas.einvoice.cii.model.TradeProductType;
+import de.metas.einvoice.cii.model.CreditorFinancialAccountType;
+import de.metas.einvoice.cii.model.PaymentMeansCodeType;
+import de.metas.einvoice.cii.model.TradeSettlementHeaderMonetarySummationType;
 import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
+import de.metas.einvoice.cii.model.TradeSettlementPaymentMeansType;
 import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
@@ -55,6 +60,7 @@ import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
@@ -62,6 +68,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -91,6 +98,7 @@ public class CiiMapper
 
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
 	public CrossIndustryInvoiceType map(
@@ -463,6 +471,20 @@ public class CiiMapper
 			settlement.setInvoiceCurrencyCode(currencyCode);
 		}
 
+		// BG-16 Payment means
+		buildPaymentMeans(invoice).forEach(pm -> settlement.getSpecifiedTradeSettlementPaymentMeans().add(pm));
+
+		// BG-23 VAT breakdown — one ApplicableTradeTax per C_InvoiceTax row
+		final List<I_C_InvoiceTax> invoiceTaxes = queryBL.createQueryBuilder(I_C_InvoiceTax.class)
+				.addEqualsFilter(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID, invoice.getC_Invoice_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			settlement.getApplicableTradeTax().add(buildHeaderTradeTax(invoiceTax));
+		}
+
 		// BT-9 Payment due date
 		final java.sql.Timestamp dueDate = invoice.getDueDate();
 		if (dueDate != null)
@@ -471,6 +493,9 @@ public class CiiMapper
 			paymentTerms.setDueDateDateTime(toDateTime(dueDate));
 			settlement.setSpecifiedTradePaymentTerms(paymentTerms);
 		}
+
+		// BG-22 Document totals
+		settlement.setSpecifiedTradeSettlementHeaderMonetarySummation(buildMonetarySummation(invoice, invoiceTaxes));
 
 		// BT-25/BT-26 Preceding invoice reference (credit notes)
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
@@ -495,6 +520,195 @@ public class CiiMapper
 		}
 
 		return settlement;
+	}
+
+	// ===== BG-23 VAT breakdown (one per C_InvoiceTax row) =====
+
+	private TradeTaxType buildHeaderTradeTax(@NonNull final I_C_InvoiceTax invoiceTax)
+	{
+		final I_C_Tax tax = InterfaceWrapperHelper.load(invoiceTax.getC_Tax_ID(), I_C_Tax.class);
+		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
+		if (vatCategory == null || vatCategory.isEmpty())
+		{
+			final int taxId = tax != null ? tax.getC_Tax_ID() : invoiceTax.getC_Tax_ID();
+			throw new AdempiereException(
+					"CII mapping: invoice tax has no EN16931 VAT category — set C_Tax.EN16931VATCategory"
+							+ " [C_Tax_ID=" + taxId
+							+ ", C_InvoiceTax_ID=" + invoiceTax.getC_InvoiceTax_ID() + "]");
+		}
+
+		final TradeTaxType tradeTax = new TradeTaxType();
+
+		// TypeCode is always VAT
+		final TaxTypeCodeType taxTypeCode = new TaxTypeCodeType();
+		taxTypeCode.setValue("VAT");
+		tradeTax.setTypeCode(taxTypeCode);
+
+		// BT-116 Taxable amount (BasisAmount in CII)
+		final AmountType basisAmt = new AmountType();
+		basisAmt.setValue(invoiceTax.getTaxBaseAmt());
+		tradeTax.setBasisAmount(basisAmt);
+
+		// BT-117 Tax amount (CalculatedAmount in CII)
+		final AmountType calcAmt = new AmountType();
+		calcAmt.setValue(invoiceTax.getTaxAmt());
+		tradeTax.setCalculatedAmount(calcAmt);
+
+		// BT-118 Category code
+		final TaxCategoryCodeType categoryCode = new TaxCategoryCodeType();
+		categoryCode.setValue(vatCategory);
+		tradeTax.setCategoryCode(categoryCode);
+
+		// BT-119 VAT rate
+		if (tax.getRate() != null)
+		{
+			final PercentType rate = new PercentType();
+			rate.setValue(tax.getRate());
+			tradeTax.setRateApplicablePercent(rate);
+		}
+
+		// BT-120 Exemption reason — hardcoded default per category (GAP-2)
+		final String exemptionReason = exemptionReasonDefault(vatCategory);
+		if (exemptionReason != null)
+		{
+			tradeTax.setExemptionReason(text(exemptionReason));
+		}
+
+		return tradeTax;
+	}
+
+	/**
+	 * Returns the default BT-120 exemption reason text for the given EN 16931 VAT category code.
+	 * Required when category ∈ {E, AE, K, G, O}; null for S and Z (taxable categories).
+	 *
+	 * <p>GAP-2: metasfresh has no dedicated C_Tax/C_TaxCategory field for BT-120.
+	 * These texts are hardcoded defaults pending a dedicated column.
+	 */
+	@Nullable
+	private static String exemptionReasonDefault(@NonNull final String vatCategory)
+	{
+		switch (vatCategory)
+		{
+			case "E":
+				return "Exempt from VAT";
+			case "AE":
+				return "Reverse charge";
+			case "K":
+				return "Intra-community supply";
+			case "G":
+				return "Export outside the EU";
+			case "O":
+				return "Not subject to VAT";
+			default:
+				return null; // S and Z: no exemption reason
+		}
+	}
+
+	// ===== BG-22 Document monetary totals =====
+
+	private TradeSettlementHeaderMonetarySummationType buildMonetarySummation(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+	{
+		final TradeSettlementHeaderMonetarySummationType summation = new TradeSettlementHeaderMonetarySummationType();
+
+		// BT-106 Sum of line net amounts = C_Invoice.TotalLines
+		final AmountType lineTotal = new AmountType();
+		lineTotal.setValue(invoice.getTotalLines());
+		summation.setLineTotalAmount(lineTotal);
+
+		// BT-109 Invoice total without VAT = TotalLines (no header charges/allowances in current scope)
+		final AmountType taxBasisTotal = new AmountType();
+		taxBasisTotal.setValue(invoice.getTotalLines());
+		summation.setTaxBasisTotalAmount(taxBasisTotal);
+
+		// BT-110 Invoice total VAT amount = sum of C_InvoiceTax.TaxAmt
+		BigDecimal totalVat = BigDecimal.ZERO;
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			final BigDecimal taxAmt = invoiceTax.getTaxAmt();
+			if (taxAmt != null)
+			{
+				totalVat = totalVat.add(taxAmt);
+			}
+		}
+		final AmountType taxTotalAmt = new AmountType();
+		taxTotalAmt.setValue(totalVat);
+		summation.getTaxTotalAmount().add(taxTotalAmt);
+
+		// BT-112 Invoice total with VAT = C_Invoice.GrandTotal
+		final AmountType grandTotal = new AmountType();
+		grandTotal.setValue(invoice.getGrandTotal());
+		summation.setGrandTotalAmount(grandTotal);
+
+		// BT-115 Amount due for payment = GrandTotal (for freshly completed invoices; no prepayment offset)
+		// Risk: for partially paid invoices, OpenAmt would be more accurate, but EN 16931 BR-CO-16
+		// defines BT-115 = BT-112 − BT-113 (prepaid), not the running balance.
+		final AmountType duePayable = new AmountType();
+		duePayable.setValue(invoice.getGrandTotal());
+		summation.setDuePayableAmount(duePayable);
+
+		return summation;
+	}
+
+	// ===== BG-16 Payment means =====
+
+	private List<TradeSettlementPaymentMeansType> buildPaymentMeans(@NonNull final I_C_Invoice invoice)
+	{
+		final String paymentRule = invoice.getPaymentRule();
+		if (paymentRule == null || paymentRule.isEmpty())
+		{
+			return java.util.Collections.emptyList();
+		}
+
+		final String uncl4461Code = mapPaymentRuleToUncl4461(paymentRule);
+		if (uncl4461Code == null)
+		{
+			// Unmapped PaymentRule — skip rather than emit invalid code (flagged in report)
+			return java.util.Collections.emptyList();
+		}
+
+		final TradeSettlementPaymentMeansType paymentMeans = new TradeSettlementPaymentMeansType();
+
+		// BT-81 Payment means type code
+		final PaymentMeansCodeType meansCode = new PaymentMeansCodeType();
+		meansCode.setValue(uncl4461Code);
+		paymentMeans.setTypeCode(meansCode);
+
+		// BT-84 Payee IBAN (org bank account) — flagged as GAP; no reliable API to retrieve
+		// the org's default bank account without additional service wiring in this mapper.
+		// BT-84 is conditional in EN 16931 — omitting it is valid when not available.
+
+		return java.util.Collections.singletonList(paymentMeans);
+	}
+
+	/**
+	 * Maps metasfresh {@code PaymentRule} code to UNCL4461 payment means code.
+	 *
+	 * <p>Codes K, U (credit card), L/V (PayPal), R (Sofortüberweisung), M (mixed):
+	 * no reliable standard mapping — returns null (omit the payment means element).
+	 */
+	@Nullable
+	private static String mapPaymentRuleToUncl4461(@NonNull final String paymentRule)
+	{
+		switch (paymentRule)
+		{
+			case "T": // DirectDeposit — bank transfer
+			case "P": // OnCredit — bank transfer
+				return "30"; // Credit transfer
+			case "D": // DirectDebit — SEPA direct debit
+				return "59";
+			case "B": // Cash
+				return "10";
+			case "S": // Check
+				return "20";
+			case "E": // Reimbursement/netting
+			case "F": // Netting
+				return "97"; // Other
+			default:
+				// K, U (credit card), L, V (PayPal), R (Sofort), M (mixed): UNCERTAIN
+				return null;
+		}
 	}
 
 	// ===== Shared address builder =====
