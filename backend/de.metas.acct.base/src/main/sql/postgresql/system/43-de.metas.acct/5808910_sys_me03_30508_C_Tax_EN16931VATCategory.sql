@@ -392,6 +392,8 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y')
 ALTER TABLE C_Tax ADD COLUMN IF NOT EXISTS EN16931VATCategory VARCHAR(2);
 
 -- Check constraint to enforce valid UNTDID 5305 values
+-- DROP-IF-EXISTS + ADD = idempotent on re-run (raw ADD or db_alter_table would error "already exists")
+ALTER TABLE C_Tax DROP CONSTRAINT IF EXISTS EN16931VATCategory_Check;
 ALTER TABLE C_Tax ADD CONSTRAINT EN16931VATCategory_Check
   CHECK (EN16931VATCategory IN ('S','Z','E','AE','K','G','O'));
 
