@@ -53,8 +53,7 @@ const createMasterdata = async () => {
     });
 };
 
-// noinspection JSUnusedLocalSymbols
-test('Device/browser Back is a pure no-op; only the footer Back navigates', async ({ page }) => {
+test('Device/browser Back is a pure no-op; only the footer Back navigates', async () => {
     // === ALLURE METADATA ===
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');

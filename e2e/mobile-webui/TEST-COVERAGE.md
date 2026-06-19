@@ -208,7 +208,7 @@
 
 | Scenario | Test |
 |---|---|
-| Device/browser Back mirrors the footer Back button: from a picking job → jobs list, from the jobs list → Home (app list) | `picking/deviceBackMirrorsFooterBack.spec.js` |
+| Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
 
 **1/1 — 100%**
 
