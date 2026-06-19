@@ -66,7 +66,6 @@ public class C_BPartner
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
-
 	private final static Logger logger = LogManager.getLogger(C_BPartner.class);
 
 	@Init
