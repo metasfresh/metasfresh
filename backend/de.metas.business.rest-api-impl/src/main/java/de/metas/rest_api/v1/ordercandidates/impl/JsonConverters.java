@@ -19,6 +19,8 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.impexp.InputDataSourceId;
 import de.metas.money.CurrencyId;
+import de.metas.promotioncode.PromotionCodeId;
+import de.metas.promotioncode.PromotionCodeRepository;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -83,6 +85,7 @@ public class JsonConverters
 	private final DocTypeService docTypeService;
 	private final ExternalSystemRepository externalSystemRepository;
 	private final CustomColumnService customColumnService;
+	private final PromotionCodeRepository promotionCodeRepository;
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -91,13 +94,14 @@ public class JsonConverters
 			@NonNull final CurrencyService currencyService,
 			@NonNull final DocTypeService docTypeService,
 			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final CustomColumnService customColumnService)
+			@NonNull final CustomColumnService customColumnService,
+			@NonNull final PromotionCodeRepository promotionCodeRepository)
 	{
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
 		this.externalSystemRepository = externalSystemRepository;
 		this.customColumnService = customColumnService;
-
+		this.promotionCodeRepository = promotionCodeRepository;
 	}
 
 	public final OLCandCreateRequestBuilder fromJson(
@@ -146,6 +150,14 @@ public class JsonConverters
 		final PaymentRule paymentRule = masterdataProvider.getPaymentRule(request);
 
 		final PaymentTermId paymentTermId = masterdataProvider.getPaymentTermId(request, orgId);
+
+		final PromotionCodeId promotionCodeId = !Check.isBlank(request.getPromotionCode())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode())
+				: null;
+
+		final PromotionCodeId promotionCode2Id = !Check.isBlank(request.getPromotionCode2())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode2())
+				: null;
 
 		final UomId uomId;
 		if (!Check.isBlank(request.getUomCode()))
@@ -217,6 +229,10 @@ public class JsonConverters
 
 				.paymentTermId(paymentTermId)
 				.extendedProps(request.getExtendedProps())
+				.promotionCodeId(promotionCodeId)
+				.promotionCode2Id(promotionCode2Id)
+				.isWithoutCharge(request.getIsWithoutCharge())
+				.reason(request.getReason())
 				;
 		//
 	}

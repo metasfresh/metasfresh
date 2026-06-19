@@ -44,6 +44,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -363,6 +364,31 @@ public class OLCandRepository
 					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
 					request.getExtendedProps());
 			saveRecord(olCandWithIssuesInterface);
+		}
+
+		// set first-class promo code / charge fields
+		if (request.getPromotionCodeId() != null)
+		{
+			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
+		}
+		if (request.getPromotionCode2Id() != null)
+		{
+			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
+		}
+		if (request.getIsWithoutCharge() != null)
+		{
+			olCandPO.setIsWithoutCharge(request.getIsWithoutCharge());
+		}
+		if (request.getReason() != null)
+		{
+			olCandPO.setReason(request.getReason());
+		}
+		if (request.getPromotionCodeId() != null
+				|| request.getPromotionCode2Id() != null
+				|| request.getIsWithoutCharge() != null
+				|| request.getReason() != null)
+		{
+			saveRecord(olCandPO);
 		}
 
 		return olCandWithIssuesInterface;
