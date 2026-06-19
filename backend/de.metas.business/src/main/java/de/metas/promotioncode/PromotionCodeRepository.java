@@ -29,6 +29,10 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_PromotionCode;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository Tables: C_PromotionCode
+ * Repository Cluster: PromotionCodeRepository
+ */
 @Repository
 public class PromotionCodeRepository
 {
