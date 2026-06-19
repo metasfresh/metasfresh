@@ -211,6 +211,13 @@ class EUVatIdValidatorTest
 			"ESM1234567M, false",
 
 			//
+			// ES — Spain (NIE: X/Y/Z prefix — replace X=0,Y=1,Z=2 then DNI check)
+			// Source: stdnum/es/nif.py — valid: ESX2482300W  (X→0: 02482300=2482300, 2482300 % 23 = 2 → 'W')
+			// Invalid: mutate check letter W→Q (Q is at index 16 ≠ 2)
+			"ESX2482300W, true",
+			"ESX2482300Q, false",
+
+			//
 			// FI — Finland
 			// Source: stdnum/fi/alv.py — valid: FI20774740
 			// Invalid: stdnum invalid example FI20774741
