@@ -38,28 +38,37 @@ public class CiiValidator
 			"de/metas/einvoice/cii/schematron/EN16931-CII-validation.xslt";
 
 	/**
+	 * Compiled EN16931 XSLT schematron resource, shared and compiled once at class load time.
+	 * {@link SchematronResourceXSLT} is thread-safe after compilation; {@code applySchematronValidationToSVRL}
+	 * is safe to call concurrently on the same instance.
+	 */
+	private static final SchematronResourceXSLT SCHEMATRON;
+
+	static
+	{
+		SCHEMATRON = SchematronResourceXSLT.fromClassPath(XSLT_CLASSPATH);
+		if (!SCHEMATRON.isValidSchematron())
+		{
+			throw new ExceptionInInitializerError(
+					"EN16931 CII Schematron XSLT could not be loaded from classpath: " + XSLT_CLASSPATH
+							+ ". Ensure the resource is on the classpath and Saxon-HE is available.");
+		}
+	}
+
+	/**
 	 * Validates the given CII XML string against the EN16931 Schematron rules.
 	 *
 	 * @param ciiXml marshalled CII XML (UTF-8 string); must be non-null and non-empty.
 	 * @return validation result with list of failed assertions; never null.
-	 * @throws AdempiereException if the XSLT resource cannot be loaded or the XML cannot be parsed.
+	 * @throws AdempiereException if the XML cannot be parsed.
 	 */
 	@NonNull
 	public CiiValidationResult validate(@NonNull final String ciiXml)
 	{
-		final SchematronResourceXSLT schematron = SchematronResourceXSLT.fromClassPath(XSLT_CLASSPATH);
-
-		if (!schematron.isValidSchematron())
-		{
-			throw new AdempiereException(
-					"EN16931 CII Schematron XSLT could not be loaded from classpath: " + XSLT_CLASSPATH
-							+ ". Ensure the resource is on the classpath and Saxon-HE is available.");
-		}
-
 		final SchematronOutputType svrl;
 		try
 		{
-			svrl = schematron.applySchematronValidationToSVRL(new StreamSource(new StringReader(ciiXml)));
+			svrl = SCHEMATRON.applySchematronValidationToSVRL(new StreamSource(new StringReader(ciiXml)));
 		}
 		catch (final Exception ex)
 		{

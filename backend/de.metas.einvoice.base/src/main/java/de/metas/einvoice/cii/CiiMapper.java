@@ -78,7 +78,6 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
@@ -634,17 +633,17 @@ public class CiiMapper
 
 		// BT-110 Invoice total VAT amount = sum of C_InvoiceTax.TaxAmt
 		// BR-CO-15: TaxTotalAmount/@currencyID must equal InvoiceCurrencyCode (mandatory per EN16931 schematron)
-		BigDecimal totalVat = BigDecimal.ZERO;
+		BigDecimal totalVatBD = BigDecimal.ZERO;
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
-			final BigDecimal taxAmt = invoiceTax.getTaxAmt();
-			if (taxAmt != null)
+			final BigDecimal taxAmtBD = invoiceTax.getTaxAmt();
+			if (taxAmtBD != null)
 			{
-				totalVat = totalVat.add(taxAmt);
+				totalVatBD = totalVatBD.add(taxAmtBD);
 			}
 		}
 		final AmountType taxTotalAmt = new AmountType();
-		taxTotalAmt.setValue(totalVat);
+		taxTotalAmt.setValue(totalVatBD);
 		if (invoiceCurrencyIso != null)
 		{
 			taxTotalAmt.setCurrencyID(invoiceCurrencyIso);
@@ -690,10 +689,10 @@ public class CiiMapper
 		String iban = null;
 		if (sellerBPartnerId != null)
 		{
-			final Optional<BankAccount> bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId);
-			if (bankAccount.isPresent())
+			final BankAccount bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId).orElse(null);
+			if (bankAccount != null)
 			{
-				final String candidateIban = bankAccount.get().getIBAN();
+				final String candidateIban = bankAccount.getIBAN();
 				if (candidateIban != null && !candidateIban.trim().isEmpty())
 				{
 					iban = candidateIban;

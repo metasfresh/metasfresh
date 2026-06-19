@@ -82,14 +82,12 @@ public class EInvoiceCiiService
 		// Load the invoice once and pass it to both config resolution and mapping.
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 
-		final Optional<EInvoiceRecipientConfig> configOpt = configService.resolveForInvoice(invoice);
-		if (!configOpt.isPresent())
+		final EInvoiceRecipientConfig config = configService.resolveForInvoice(invoice).orElse(null);
+		if (config == null)
 		{
 			log.debug("Invoice {} is not an e-invoice recipient — skipping CII generation.", invoiceId);
 			return Optional.empty();
 		}
-
-		final EInvoiceRecipientConfig config = configOpt.get();
 
 		// Map invoice to CII domain object
 		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, config);
