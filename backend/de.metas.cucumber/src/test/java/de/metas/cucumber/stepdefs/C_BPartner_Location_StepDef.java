@@ -55,7 +55,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_BPartner_Location_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID;
 
 @RequiredArgsConstructor
