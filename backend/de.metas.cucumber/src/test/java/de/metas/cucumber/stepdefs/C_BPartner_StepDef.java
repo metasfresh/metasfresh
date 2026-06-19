@@ -589,26 +589,19 @@ public class C_BPartner_StepDef
 	{
 		final SoftAssertions softly = new SoftAssertions();
 
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_C_BPartner bPartnerRecord = bPartnerTable.get(bpIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_BPartner bPartnerRecord = bPartnerTable.get(row.getAsIdentifier(COLUMNNAME_C_BPartner_ID));
 
-			final String bpValue = DataTableUtil.extractStringForColumnName(row, I_C_BPartner.COLUMNNAME_Value);
-			softly.assertThat(bPartnerRecord.getValue()).as("Value").isEqualTo(bpValue);
+			softly.assertThat(bPartnerRecord.getValue()).as("Value").isEqualTo(row.getAsString(COLUMNNAME_Value));
 
-			final String companyName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_CompanyName);
-			if (Check.isNotBlank(companyName))
-			{
-				softly.assertThat(bPartnerRecord.getCompanyName()).as("CompanyName").isEqualTo(companyName);
-			}
+			row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CompanyName)
+					.filter(EmptyUtil::isNotBlank)
+					.ifPresent(companyName -> softly.assertThat(bPartnerRecord.getCompanyName()).as("CompanyName").isEqualTo(companyName));
 
-			final String vaTaxID = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BPartner.COLUMNNAME_VATaxID);
-			if (Check.isNotBlank(vaTaxID))
-			{
-				softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID);
-			}
-		}
+			row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
+					.filter(EmptyUtil::isNotBlank)
+					.ifPresent(vaTaxID -> softly.assertThat(bPartnerRecord.getVATaxID()).as("VATaxID").isEqualTo(vaTaxID));
+		});
 
 		softly.assertAll();
 	}
