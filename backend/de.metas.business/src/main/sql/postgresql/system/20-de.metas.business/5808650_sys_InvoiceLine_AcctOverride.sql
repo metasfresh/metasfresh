@@ -21,12 +21,15 @@
 --
 -- IDs allocated from idserver.metas.de:
 --   AD_Column_ID  = 592837  (C_InvoiceLine.C_ElementValue_Override_ID)
---   AD_Field_ID   = 781215  tab 548568 (Rechnungsposition in Eingangsrechnung 541976)
---   AD_UI_Element_ID = 652327  tab 548568, group 553880 (default)
+--   AD_Field_ID   = 781215  CORE standard purchase-invoice line tab 291
+--                           (window 183 "Eingangsrechnung" — C_Invoice.po_window_id=183)
+--   AD_UI_Element_ID = 652327  tab 291, group 540219 (default)
+-- NOTE: this is the CORE standard window. dt204's override window (541976/tab 548568)
+--       gets the same field via a separate customer-repo script.
 --
--- Placement: SeqNo=147, after field 781211 (Konto-Überschreibung tooltip at 145).
+-- Placement: AD_Field SeqNo=280 (after indicator field 781211 at 270 on tab 291).
 -- Form-view only (IsDisplayedGrid='N', SeqNoGrid=0).
--- UI SeqNo=150 (after max=140 in current UI elements, placed after tooltip group).
+-- UI SeqNo=160 (group 540219 had max 140; indicator UI at 150).
 --
 -- Tables touched: C_InvoiceLine (333) — model regen required after apply.
 
@@ -62,8 +65,8 @@ WHERE l.IsActive = 'Y'
 ;
 
 -- ============================================================
--- AD_Field: Tab 548568 (Rechnungsposition in Eingangsrechnung 541976)
--- Placed at SeqNo=147, right after InvoiceAcctOverride_Indicator tooltip field (SeqNo=145).
+-- AD_Field: CORE tab 291 (Rechnungsposition, window 183 "Eingangsrechnung")
+-- Placed at SeqNo=280, right after the InvoiceAcctOverride_Indicator field (SeqNo=270).
 -- Form view only (IsDisplayedGrid='N', SeqNoGrid=0).
 -- ReadOnlyLogic='@Processed@=Y': editable on draft, read-only once completed.
 -- IsReadOnly='N' + ReadOnlyLogic is the correct pattern for conditional read-only.
@@ -85,7 +88,7 @@ INSERT INTO AD_Field
      SpanX, SpanY,
      Updated, UpdatedBy)
 VALUES
-    (0, 592837, 781215 /*From ID Server*/, 0, 548568,
+    (0, 592837, 781215 /*From ID Server*/, 0, 291,
      0,
      TO_TIMESTAMP('2026-06-18 13:00:00', 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC', 100,
      0, 'D',
@@ -96,7 +99,7 @@ VALUES
      'N', 'N',
      0, 'Konto (Überschreibung)',
      '@Processed@=Y',
-     0, 147, 0, 0,
+     0, 280, 0, 0,
      1, 1,
      TO_TIMESTAMP('2026-06-18 13:00:00', 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC', 100)
 ;
@@ -131,7 +134,7 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781215
 
 -- ============================================================
 -- AD_UI_Element: pair for AD_Field 781215
--- Group 553880 ("default") on tab 548568, seqno=150 (after existing max 140 for External IDs)
+-- Group 540219 ("default") on CORE tab 291, seqno=160 (group max was 140; indicator UI at 150)
 -- Form-view only (SeqNoGrid=0, IsDisplayedGrid='N')
 -- ============================================================
 
@@ -149,7 +152,7 @@ INSERT INTO AD_UI_Element
      Updated, UpdatedBy)
 VALUES
     (0, 0,
-     652327 /*From ID Server*/, 548568, 553880,
+     652327 /*From ID Server*/, 291, 540219,
      781215,
      'F',
      TO_TIMESTAMP('2026-06-18 13:00:00', 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC', 100,
@@ -157,6 +160,6 @@ VALUES
      'N',
      'Y', 'N', 'N',
      'Konto (Überschreibung)',
-     150, 0,
+     160, 0,
      TO_TIMESTAMP('2026-06-18 13:00:00', 'YYYY-MM-DD HH24:MI:SS') AT TIME ZONE 'UTC', 100)
 ;

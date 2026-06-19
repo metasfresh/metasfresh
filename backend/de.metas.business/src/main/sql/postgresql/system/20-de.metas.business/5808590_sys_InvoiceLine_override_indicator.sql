@@ -9,8 +9,9 @@
 --
 -- The tooltip is surfaced via the standard AD_UI_ElementField type='tooltip' pattern
 -- (same as C_BPartner_Memo, M_Product_DocumentNote — reused ~19x in the codebase).
--- It attaches to the M_Product_ID AD_UI_Element (639389) on tab 548568
--- ("Rechnungsposition", window 541976 "Eingangsrechnung" — Overrides_Window_ID=183).
+-- It attaches to the M_Product_ID AD_UI_Element (542663) on CORE tab 291
+-- ("Rechnungsposition", standard window 183 "Eingangsrechnung", C_Invoice.po_window_id=183).
+-- dt204's override window (541976/tab 548568) gets the same via a separate customer-repo script.
 --
 -- This script does NOT touch C_InvoiceLine.Account_ID (dropped in Task 8).
 -- It does NOT change posting logic (read-time derived only).
@@ -21,7 +22,7 @@
 --      Returns STRING_AGG(ev.name) of matched C_ElementValue rows, or NULL.
 --   3. AD_SQLColumn_SourceTableColumn 540208 — cache link to C_Invoice_Acct
 --   4. AD_SQLColumn_SourceTableColumn 540209 — cache link to C_ElementValue
---   5. AD_Field 781211 — IsReadOnly='Y', on tab 548568
+--   5. AD_Field 781211 — IsReadOnly='Y', on CORE tab 291
 --   6. AD_Field_Trl skeleton + update_FieldTranslation_From_AD_Name_Element(585020)
 --   7. AD_Element_Link rebuild for field 781211
 --   8. AD_UI_ElementField 542540 — type='tooltip', tooltipiconname='text',
@@ -235,10 +236,10 @@ VALUES (
   TO_TIMESTAMP('2026-06-18 11:03:00','YYYY-MM-DD HH24:MI:SS'), 100,
   TO_TIMESTAMP('2026-06-18 11:03:00','YYYY-MM-DD HH24:MI:SS'), 100,
   'Konto-Überschreibung',
-  548568 /* AD_Tab — Rechnungsposition in Eingangsrechnung */,
+  291 /* AD_Tab — Rechnungsposition, CORE window 183 "Eingangsrechnung" */,
   592834 /* InvoiceAcctOverride_Indicator virtual column */,
   'Y', 'Y' /* IsReadOnly=Y */, 'N', 'N' /* not in grid */,
-  145, 0,
+  270, 0,
   'D', 'N', 'N', 'N', 'N')
 ON CONFLICT (AD_Field_ID) DO NOTHING;
 
@@ -265,8 +266,8 @@ SELECT AD_Element_Link_Create_Missing_Field(781211);
 
 -- ============================================================================
 -- 5) AD_UI_ElementField — tooltip attachment
---    The tooltip rides on the existing M_Product_ID AD_UI_Element (639389)
---    on tab 548568. We add a type='tooltip' elementfield pointing at field 781211.
+--    The tooltip rides on the existing M_Product_ID AD_UI_Element (542663)
+--    on CORE tab 291. We add a type='tooltip' elementfield pointing at field 781211.
 --    TooltipIconName='text' matches all other tooltip examples in the codebase.
 --    SeqNo=20 (after the existing widget elementfield at seqno=10 for M_HU_PI_Item_Product_ID).
 --
@@ -282,7 +283,7 @@ VALUES (
   542540 /*From ID Server*/, 0, 0, 'Y',
   TO_TIMESTAMP('2026-06-18 11:04:00','YYYY-MM-DD HH24:MI:SS'), 100,
   TO_TIMESTAMP('2026-06-18 11:04:00','YYYY-MM-DD HH24:MI:SS'), 100,
-  639389 /* AD_UI_Element: M_Product_ID on tab 548568 */,
+  542663 /* AD_UI_Element: M_Product_ID on CORE tab 291 */,
   781211 /* AD_Field: InvoiceAcctOverride_Indicator */,
   'tooltip', 20, 'text')
 ON CONFLICT (AD_UI_ElementField_ID) DO NOTHING;

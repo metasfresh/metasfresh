@@ -247,7 +247,7 @@ WHERE l.IsActive = 'Y'
 ;
 
 -- ============================================================
--- 4. AD_Field 781213 — on tab 548578
+-- 4. AD_Field 781213 — on CORE accounting tab 242 (window 162)
 -- ============================================================
 INSERT INTO AD_Field
     (AD_Field_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
@@ -260,7 +260,7 @@ VALUES
      100,
      TO_TIMESTAMP('2026-06-18 10:02:00', 'YYYY-MM-DD HH24:MI:SS'),
      100,
-     548578,   -- AD_Tab_ID: Buchführung tab
+     242,   -- AD_Tab_ID: Buchführung tab (CORE accounting window 162)
      592835,   -- AD_Column_ID: IsAccountOverridden
      'Konto überschrieben',
      'Das Konto dieser Buchungszeile stammt aus einer Rechnungs-Konto-Überschreibung.',
@@ -303,7 +303,7 @@ WHERE l.IsActive = 'Y'
 
 -- ============================================================
 -- 5. AD_UI_Element 652325 — type 'F', paired with AD_Field 781213
--- Place in 'document' group (553891), SeqNo=70 (after Referenz=60)
+-- Place in 'default' group (540304) on CORE tab 242, SeqNo=80 (group max was 70)
 -- Grid: not shown (override marker, informational)
 -- ============================================================
 INSERT INTO AD_UI_Element
@@ -317,11 +317,11 @@ VALUES
      100,
      TO_TIMESTAMP('2026-06-18 10:02:30', 'YYYY-MM-DD HH24:MI:SS'),
      100,
-     548578,              -- AD_Tab_ID
+     242,              -- AD_Tab_ID (CORE accounting window 162, "Buchführung")
      781213,              -- AD_Field_ID
-     553891,              -- AD_UI_ElementGroup_ID: 'document' group
+     540304,              -- AD_UI_ElementGroup_ID: 'default' group (CORE tab 242)
      'IsAccountOverridden', -- Name
-     70,                  -- SeqNo (after Referenz=60 in that group)
+     80,                  -- SeqNo (group 540304 max was 70)
      'Y',                 -- IsDisplayed
      'N',                 -- IsDisplayedGrid
      0,                   -- SeqNoGrid
@@ -338,7 +338,7 @@ SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585021, 'de_CH');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585021, 'en_US');
 SELECT update_FieldTranslation_From_AD_Name_Element(585021);
 
--- Rebuild AD_Element_Link for field 781213 (window 541977)
+-- Rebuild AD_Element_Link for field 781213 (CORE accounting window 162)
 DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781213;
 INSERT INTO AD_Element_Link (AD_Element_Link_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Element_ID, AD_Field_ID, AD_Window_ID)
 VALUES
@@ -349,6 +349,6 @@ VALUES
      100,
      585021,
      781213,
-     541977)
+     162)
 ;
 
