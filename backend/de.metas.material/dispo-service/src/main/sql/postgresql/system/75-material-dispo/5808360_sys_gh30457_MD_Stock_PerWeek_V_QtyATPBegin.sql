@@ -1,66 +1,23 @@
--- View MD_Stock_PerWeek_V (me03 25618 / F19100 — "Stock per week").
+-- me03 30457 — add QtyATPBegin (projected ATP as-of the START of each week) to MD_Stock_PerWeek_V.
+-- Source DDL: backend/de.metas.material/dispo-service/src/main/sql/postgresql/ddl/de_metas_material/MD_Stock_PerWeek_V.sql
+-- IDs allocated from idserver.metas.de on 2026-06-17:
+--   AD_MigrationScript sequence: 5808360 (filename prefix)
 --
--- Derives, per product x warehouse x ISO calendar week (Monday-anchored), the material
--- outlook straight from the dispo engine's MD_Candidate timeline:
---   QtyATPBegin          : projected stock as-of the START of the week (the Monday) —
---                          latest STOCK candidate with DateProjected < WeekStartDate,
---                          summed across attribute/customer subgroups. By construction,
---                          QtyATPBegin(W) == QtyATP(W-1): the ATP at a week's start equals
---                          the ATP at the prior week's end (same Monday boundary).
---   QtyExpectedShipments : reserved demand   (DEMAND / SHIPMENT,  ABS(Qty))
---   QtyExpectedReceipts  : purchased supply  (SUPPLY / PURCHASE,  Qty)
---   QtyATP               : projected stock as-of the END of the week — latest STOCK
---                          candidate at/before week-end (DateProjected < WeekStartDate + 7),
---                          summed across attribute/customer subgroups — the authoritative
---                          available-to-promise number; it reflects ALL streams (shipment,
---                          purchase, production, distribution, forecast, inventory), so its
---                          row-to-row delta need NOT equal receipts - shipments.
+-- Adds a new measure column QtyATPBegin alongside the existing QtyATP:
+--   QtyATP      = projected ATP as-of week END   (latest STOCK candidate with DateProjected < WeekStartDate + 7)
+--   QtyATPBegin = projected ATP as-of week START (latest STOCK candidate with DateProjected < WeekStartDate)
+-- Both reuse the same atp_steps half-open-interval machinery (collapse-per-DateProjected + LEAD);
+-- the only difference is the week boundary (WeekStartDate vs WeekStartDate + 7).
+-- By construction QtyATPBegin(W) == QtyATP(W-1) (a week's start ATP equals the prior week's end ATP).
 --
--- Horizon: current week .. current+N, where N = SysConfig
---   'de.metas.material.stockperweek.HorizonWeeks' (default 12 => 13 rows).
--- Overdue activity (dated before the current week) is rolled into the current-week row
--- via GREATEST(week-of(DateProjected), current-week) so backlog is never hidden.
--- Only active, non-'simulated' candidates are considered.
---
--- Aggregation defaults (DESIGN.md §7 — confirm with customer at UAT):
---   * attributes : summed across StorageAttributesKey (latest STOCK per key, then SUM)
---   * customer   : the customer dimension (C_BPartner_Customer_ID) is summed in too, i.e.
---                  the overall projected stock is shown — no per-customer reserve carve-out.
---
--- Single-scan rewrite (me03 30457):
---   Replaces 3 correlated per-row subqueries (each scanning MD_Candidate) with pre-aggregated
---   CTEs that scan MD_Candidate essentially once per measure:
---
---   Shipments / Receipts:
---     One grouped scan each, bucketed by the overdue-rollup week
---     GREATEST(date_trunc('week',DateProjected), date_trunc('week',current_date)).
---     Joined to the week skeleton by (product, warehouse, week).
---
---   QtyATP / QtyATPBegin single-pass technique:
---     1. atp_collapsed: per (pw, subgroup, DateProjected) keep the Qty of the
---        max-SeqNo candidate (DISTINCT ON ... ORDER BY SeqNo DESC). This makes the
---        carry-forward exact under ties.
---     2. atp_steps: LEAD(DateProjected) over each subgroup gives a half-open validity
---        interval [DateProjected, next_DateProjected). A step owns week W (end) iff
---            DateProjected < W+7  AND  (next IS NULL OR next >= W+7);
---        it owns week W (begin) iff
---            DateProjected < W    AND  (next IS NULL OR next >= W).
---        The inequalities are the same timestamp comparisons as the original; the only
---        difference between end-of-week (QtyATP) and start-of-week (QtyATPBegin) is the
---        boundary: WeekStartDate + 7 (next Monday) vs WeekStartDate (this Monday).
---     3. Join steps to the week skeleton on that interval and SUM Qty per (pw, week).
---
---   Weeks come from generate_series LATERAL-joined to the per-pw aggregates (not a
---   CROSS JOIN that would explode all candidates).
---
--- Push-down-friendly synthetic primary key: a deterministic hash of (M_Product_ID, M_Warehouse_ID,
--- WeekStartDate) encoded as a 32-bit integer via MD5 truncation. This is a per-row scalar
--- expression — unlike row_number() OVER (...), it does NOT force the planner to materialise every
--- row before outer predicates are applied, so a single-product zoom (WHERE M_Product_ID = @x@)
--- is as cheap as ~94k planner cost (vs. ~1.05M with the row_number regression).
--- Canonical metasfresh-db pattern: ABS(('x'||SUBSTR(MD5(...),1,10))::bit(32)::int).
--- 10 hex digits → ~4 billion values; collision probability negligible below ~77k distinct combos.
-CREATE OR REPLACE VIEW MD_Stock_PerWeek_V AS
+-- QtyATPBegin is placed BEFORE QtyExpectedShipments so the view's natural column order matches the
+-- UI order: ATP Beginn | Erw. Lieferungen | Erw. Wareneingänge | ATP Ende.
+-- The hash PK and all existing columns/values are UNCHANGED.
+-- (The AD_Column / AD_Field / labels for QtyATPBegin are added in a separate AD-metadata migration.)
+
+DROP VIEW IF EXISTS MD_Stock_PerWeek_V$new;
+
+CREATE OR REPLACE VIEW MD_Stock_PerWeek_V$new AS
 WITH horizon AS (
   SELECT GREATEST(1, COALESCE(NULLIF(
            (SELECT Value FROM AD_SysConfig
@@ -195,3 +152,12 @@ LEFT JOIN atp  ON atp.M_Product_ID = w.M_Product_ID
 LEFT JOIN atp_begin ON atp_begin.M_Product_ID = w.M_Product_ID
               AND atp_begin.M_Warehouse_ID = w.M_Warehouse_ID
               AND atp_begin.WeekStartDate = w.WeekStartDate;
+
+SELECT db_alter_view(
+    'MD_Stock_PerWeek_V',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('MD_Stock_PerWeek_V$new'))
+);
+
+DROP VIEW IF EXISTS MD_Stock_PerWeek_V$new;

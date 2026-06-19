@@ -138,7 +138,31 @@ public interface I_MD_Stock_PerWeek_V
 	String COLUMNNAME_QtyATP = "QtyATP";
 
 	/**
-	 * Set Expected receipts.
+	 * Set ATP Begin.
+	 * Available-to-Promise quantity at the beginning of the week. Reflects all material streams.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setQtyATPBegin (@Nullable BigDecimal QtyATPBegin);
+
+	/**
+	 * Get ATP Begin.
+	 * Available-to-Promise quantity at the beginning of the week. Reflects all material streams.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQtyATPBegin();
+
+	ModelColumn<I_MD_Stock_PerWeek_V, Object> COLUMN_QtyATPBegin = new ModelColumn<>(I_MD_Stock_PerWeek_V.class, "QtyATPBegin", null);
+	String COLUMNNAME_QtyATPBegin = "QtyATPBegin";
+
+	/**
+	 * Set Expected Receipts.
+	 * Expected inbound quantity in this week.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -147,7 +171,8 @@ public interface I_MD_Stock_PerWeek_V
 	void setQtyExpectedReceipts (@Nullable BigDecimal QtyExpectedReceipts);
 
 	/**
-	 * Get Expected receipts.
+	 * Get Expected Receipts.
+	 * Expected inbound quantity in this week.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -159,7 +184,8 @@ public interface I_MD_Stock_PerWeek_V
 	String COLUMNNAME_QtyExpectedReceipts = "QtyExpectedReceipts";
 
 	/**
-	 * Set Expected shipments.
+	 * Set Expected Shipments.
+	 * Expected outbound quantity in this week.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -168,7 +194,8 @@ public interface I_MD_Stock_PerWeek_V
 	void setQtyExpectedShipments (@Nullable BigDecimal QtyExpectedShipments);
 
 	/**
-	 * Get Expected shipments.
+	 * Get Expected Shipments.
+	 * Expected outbound quantity in this week.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -181,21 +208,23 @@ public interface I_MD_Stock_PerWeek_V
 
 	/**
 	 * Set Week start.
+	 * Monday of the ISO calendar week.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setWeekStartDate (@Nullable java.sql.Timestamp WeekStartDate);
+	void setWeekStartDate (java.sql.Timestamp WeekStartDate);
 
 	/**
 	 * Get Week start.
+	 * Monday of the ISO calendar week.
 	 *
 	 * <br>Type: Date
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getWeekStartDate();
+	java.sql.Timestamp getWeekStartDate();
 
 	ModelColumn<I_MD_Stock_PerWeek_V, Object> COLUMN_WeekStartDate = new ModelColumn<>(I_MD_Stock_PerWeek_V.class, "WeekStartDate", null);
 	String COLUMNNAME_WeekStartDate = "WeekStartDate";
