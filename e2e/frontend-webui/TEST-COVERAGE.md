@@ -1049,6 +1049,31 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
 - The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
 
+### 4. HU Label Configuration — Create Record
+**File**: `tests/spec/hu-label-config-create.spec.js`
+**Status**: ✅ Passing (German)
+**Duration**: ~6 seconds
+
+**Workflow**:
+1. Navigate to HU Label Configuration window (541647) → new record
+2. Set the label report process (the only mandatory field without a default)
+3. Leave IsAutoPrint at its `N` default (so the AutoPrintCopies field stays hidden)
+4. Verify the record becomes valid, persists, and AutoPrintCopies defaulted to `1`
+
+**Key Validations**:
+- New record creation in a grid window
+- A mandatory field hidden by DisplayLogic must still get a default (regression guard
+  for the AutoPrintCopies default — without it the WebUI saves the record with
+  AutoPrintCopies = `0`, i.e. "print zero copies"; the direct-INSERT path fails with a
+  NOT-NULL violation)
+- `validStatus.valid` + `saveStatus.saved` polling
+
+**Components Tested**:
+- HU Label Configuration window (541647) / M_HU_Label_Config
+- AutoPrintCopies default
+
+---
+
 ## Test Architecture
 
 ### Page Objects
