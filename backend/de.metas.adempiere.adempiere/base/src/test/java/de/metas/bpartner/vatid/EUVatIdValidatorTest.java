@@ -224,6 +224,13 @@ class EUVatIdValidatorTest
 			"IE8D79739J, false",
 
 			//
+			// IE — Ireland (9-char new format: 7 digits + check letter + A or H suffix)
+			// Source: stdnum/ie/vat.py — valid: IE6433435OA  (listed in module doctest as '6433435OA')
+			// Invalid: mutate check letter O→P
+			"IE6433435OA, true",
+			"IE6433435PA, false",
+
+			//
 			// IT — Italy
 			// Source: stdnum/it/iva.py — valid: IT00743110157
 			// Invalid: stdnum invalid example 00743110158 → IT00743110158
@@ -352,7 +359,7 @@ class EUVatIdValidatorTest
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"AT12345678",      // missing U prefix
-			"BE123456789",     // only 9 chars (needs 12)
+			"BE123456789",     // only 9 digit chars (needs 10 digits after BE prefix)
 			"DE12345",         // too short
 			"FRX12345678",     // only 8 SIREN digits (needs 9)
 	})

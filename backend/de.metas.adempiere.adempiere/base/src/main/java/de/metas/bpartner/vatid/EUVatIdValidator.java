@@ -386,7 +386,9 @@ public final class EUVatIdValidator
 		}
 		final int rem = sum % 11;
 		// Python: (8 - (10 - rem) % 11) % 10  — use Math.floorMod to match Python's floor-division % semantics
-		// (10 - rem) can be negative (when rem > 10), and (8 - ...) can also be negative
+		// rem = sum % 11 ∈ [0..10], so (10 - rem) ∈ [0..10] — always non-negative.
+		// However when rem ∈ {0, 1}: inner = (10-rem) % 11 ∈ {9, 10}, making (8 - inner) ∈ {-2, -1} (negative).
+		// Math.floorMod handles those negative values correctly (e.g. floorMod(-2, 10) = 8).
 		final int check = Math.floorMod(8 - (10 - rem) % 11, 10);
 		return check == Character.getNumericValue(digits.charAt(8));
 	}

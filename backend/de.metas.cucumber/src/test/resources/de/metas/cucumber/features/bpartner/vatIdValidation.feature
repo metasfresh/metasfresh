@@ -33,10 +33,10 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | bp_tc2     | VatTC2Test |
     When update C_BPartner:
       | Identifier | VATaxID     |
-      | bp_tc2     | DE123456789 |
+      | bp_tc2     | DE136695976 |
     Then validate C_BPartner:
       | C_BPartner_ID.Identifier | Value      | OPT.VATaxID |
-      | bp_tc2                   | VatTC2Test | DE123456789 |
+      | bp_tc2                   | VatTC2Test | DE136695976 |
 
   @from:cucumber
   @Id:S0613_030
@@ -97,7 +97,7 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | bpl_tc2    | bp_loc_tc2               | 0285601001051 |
     When update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.VATaxID |
-      | bpl_tc2                           | ATU12345678 |
+      | bpl_tc2                           | ATU13585627 |
     Then validate C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.VATaxID |
-      | bpl_tc2                           | ATU12345678 |
+      | bpl_tc2                           | ATU13585627 |
