@@ -45,6 +45,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_Order;
@@ -73,7 +74,7 @@ public class BPartnerEffectiveBL
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting());
+		return SpringContextHolder.getBeanOrSupply(BPartnerEffectiveBL.class, () -> new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting()));
 	}
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)

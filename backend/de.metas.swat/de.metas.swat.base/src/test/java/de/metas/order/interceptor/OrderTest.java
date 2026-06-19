@@ -26,7 +26,6 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
@@ -75,7 +74,6 @@ public class OrderTest
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
-		SpringContextHolder.registerJUnitBean(BPartnerEffectiveBL.newInstanceForUnitTesting());
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
