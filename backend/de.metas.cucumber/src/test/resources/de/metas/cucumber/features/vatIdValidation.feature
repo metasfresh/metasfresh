@@ -54,7 +54,7 @@ Feature: C_BPartner.validateVATaxID SysConfig gates VATaxID format validation on
 
   @from:cucumber
   @Id:S0613_040
-  Scenario: validation enabled — changing a non-VATaxID column does not re-check the stored invalid value
+  Scenario: updating a non-VATaxID column does not trigger re-validation of a stored value
     Given set sys config boolean value false for sys config C_BPartner.validateVATaxID
     And metasfresh contains C_BPartners:
       | Identifier | Value      |
