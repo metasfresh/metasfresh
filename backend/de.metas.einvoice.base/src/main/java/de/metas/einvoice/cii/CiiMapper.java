@@ -54,7 +54,6 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.compiere.model.I_C_BPartner;
@@ -105,6 +104,7 @@ public class CiiMapper
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final CiiMappingRepository repo = new CiiMappingRepository();
 
 	@NonNull
 	public CrossIndustryInvoiceType map(
@@ -168,7 +168,7 @@ public class CiiMapper
 
 	private DocumentCodeType buildTypeCode(@NonNull final I_C_Invoice invoice)
 	{
-		final I_C_DocType docType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+		final I_C_DocType docType = repo.getDocType(invoice.getC_DocType_ID());
 		final String docBaseType = docType != null ? docType.getDocBaseType() : "ARI";
 
 		// EN 16931 §6.3.4: commercial invoice → type code 380, credit note → 381
@@ -221,7 +221,7 @@ public class CiiMapper
 		}
 		else
 		{
-			final I_M_Product mProduct = InterfaceWrapperHelper.load(line.getM_Product_ID(), I_M_Product.class);
+			final I_M_Product mProduct = repo.getProduct(line.getM_Product_ID());
 			final String productName = mProduct != null ? mProduct.getName() : "";
 			product.setName(text(productName));
 		}
@@ -240,9 +240,7 @@ public class CiiMapper
 		final LineTradeDeliveryType delivery = new LineTradeDeliveryType();
 		final QuantityType qty = new QuantityType();
 		qty.setValue(line.getQtyInvoiced());
-		final I_C_UOM uom = line.getC_UOM_ID() != 0
-				? InterfaceWrapperHelper.load(line.getC_UOM_ID(), I_C_UOM.class)
-				: null;
+		final I_C_UOM uom = repo.getUOM(line.getC_UOM_ID());
 		final String x12UnitCode = uom != null ? uom.getX12DE355() : null;
 		if (x12UnitCode == null || x12UnitCode.isEmpty())
 		{
@@ -256,7 +254,7 @@ public class CiiMapper
 		item.setSpecifiedLineTradeDelivery(delivery);
 
 		// BT-151 VAT category code (fail fast if null) + BT-152 VAT rate + BT-131 line net amount
-		final I_C_Tax tax = InterfaceWrapperHelper.load(line.getC_Tax_ID(), I_C_Tax.class);
+		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
 		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
 		if (vatCategory == null || vatCategory.isEmpty())
 		{
@@ -408,7 +406,7 @@ public class CiiMapper
 					+ " has no postal address (EN16931 BG-5/BG-8 mandatory)");
 		}
 
-		return buildAddress(InterfaceWrapperHelper.load(sellerBPLoc.getC_Location_ID(), I_C_Location.class));
+		return buildAddress(repo.getLocation(sellerBPLoc.getC_Location_ID()));
 	}
 
 	// ===== Buyer trade party (BG-7/BG-8) =====
@@ -456,7 +454,7 @@ public class CiiMapper
 
 			// BG-8 Buyer postal address
 			buyer.setPostalTradeAddress(
-					buildAddress(InterfaceWrapperHelper.load(buyerBPLoc.getC_Location_ID(), I_C_Location.class)));
+					buildAddress(repo.getLocation(buyerBPLoc.getC_Location_ID())));
 		}
 
 		return buyer;
@@ -469,7 +467,7 @@ public class CiiMapper
 		final HeaderTradeSettlementType settlement = new HeaderTradeSettlementType();
 
 		// BT-5 Invoice currency code
-		final I_C_Currency currency = InterfaceWrapperHelper.load(invoice.getC_Currency_ID(), I_C_Currency.class);
+		final I_C_Currency currency = repo.getCurrency(invoice.getC_Currency_ID());
 		if (currency != null)
 		{
 			final CurrencyCodeType currencyCode = new CurrencyCodeType();
@@ -509,7 +507,7 @@ public class CiiMapper
 		final InvoiceId refInvoiceId = InvoiceId.ofRepoIdOrNull(invoice.getRef_Invoice_ID());
 		if (refInvoiceId != null)
 		{
-			final I_C_Invoice refInvoice = InterfaceWrapperHelper.load(refInvoiceId, I_C_Invoice.class);
+			final I_C_Invoice refInvoice = repo.getInvoice(refInvoiceId);
 			if (refInvoice != null)
 			{
 				final ReferencedDocumentType invoiceRef = new ReferencedDocumentType();
@@ -534,7 +532,7 @@ public class CiiMapper
 
 	private TradeTaxType buildHeaderTradeTax(@NonNull final I_C_InvoiceTax invoiceTax)
 	{
-		final I_C_Tax tax = InterfaceWrapperHelper.load(invoiceTax.getC_Tax_ID(), I_C_Tax.class);
+		final I_C_Tax tax = repo.getTax(invoiceTax.getC_Tax_ID());
 		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
 		if (vatCategory == null || vatCategory.isEmpty())
 		{
@@ -790,7 +788,7 @@ public class CiiMapper
 		}
 
 		// BT-40 / BT-55 Country code — load explicitly to avoid implicit DB traversal
-		final I_C_Country country = InterfaceWrapperHelper.load(location.getC_Country_ID(), I_C_Country.class);
+		final I_C_Country country = repo.getCountry(location.getC_Country_ID());
 		if (country != null)
 		{
 			final CountryIDType countryId = new CountryIDType();
