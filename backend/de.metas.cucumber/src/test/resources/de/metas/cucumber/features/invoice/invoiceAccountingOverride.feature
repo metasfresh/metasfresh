@@ -21,6 +21,10 @@ Feature: Per-line GL account override on purchase invoices
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | zeroTax    | taxCategory      | 0    | DE                       | DE                        |
 
+    And metasfresh contains C_PaymentTerm
+      | Identifier  |
+      | paymentTerm |
+
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | pricingSystem |
@@ -64,7 +68,7 @@ Feature: Per-line GL account override on purchase invoices
   Scenario: Purchase invoice with per-line GL override posts to the override account
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
-      | invoice    | vendor        | Eingangsrechnung        | 2022-06-15   | false   | EUR           | 1                |
+      | invoice    | vendor        | Eingangsrechnung        | 2022-06-15   | false   | EUR           | paymentTerm      |
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID | C_ElementValue_Override_ID |
       | invoiceLine | invoice      | product      | 1 PCE       | zeroTax  | overrideAccount            |
@@ -92,7 +96,7 @@ Feature: Per-line GL account override on purchase invoices
   Scenario: Payment allocation for a per-line override invoice posts to V_Liability, not the override account
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
-      | invoice    | vendor        | Eingangsrechnung        | 2022-06-15   | false   | EUR           | 1                |
+      | invoice    | vendor        | Eingangsrechnung        | 2022-06-15   | false   | EUR           | paymentTerm      |
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID | M_Product_ID | QtyInvoiced | C_Tax_ID | C_ElementValue_Override_ID |
       | invoiceLine | invoice      | product      | 1 PCE       | zeroTax  | overrideAccount            |
