@@ -52,6 +52,7 @@ public class BPartnerEffective
 	@Nullable Incoterms poIncoterms;
 	boolean isAutoInvoice;
 	@Getter int purchaseTransportDays;
+	// sales-only: C_BPartner.SalesRep_ID has no purchase counterpart, hence no SOTrx split
 	@Getter @Nullable UserId salesRepId;
 
 	@Nullable
