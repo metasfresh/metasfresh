@@ -38,6 +38,9 @@ describe('useDeviceBackButton (device/browser Back is a pure no-op, robust to ma
   it('primes a BUFFER of sentinel history entries on mount (so a burst of Back presses has plenty to absorb)', () => {
     renderTrap();
     expect(pushStateSpy).toHaveBeenCalledTimes(SENTINEL_BUFFER);
+    // jsdom's window.history.state is always null, so the cloned state is null here. In a real browser
+    // it is the connected-react-router location state (so a popped sentinel keeps the same location
+    // key) — that state-clone behaviour is covered by the e2e spec, not assertable in jsdom.
     expect(pushStateSpy).toHaveBeenLastCalledWith(null, '', window.location.href);
   });
 

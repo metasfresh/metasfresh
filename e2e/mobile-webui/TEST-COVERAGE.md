@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 59 | 63 | 94% |
+| Picking | 60 | 64 | 94% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -209,8 +209,9 @@
 | Scenario | Test |
 |---|---|
 | Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put and never leaves the app | `picking/deviceBackIsNoOp.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ---
 

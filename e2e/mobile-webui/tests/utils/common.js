@@ -20,8 +20,10 @@ export const step = async (title, func) => await test.step(title, async () => aw
 
 /**
  * Simulate a device / browser Back button press (the hardware Back key on a handheld, or the browser
- * Back). The app routes this through its own navigation (useDeviceBackButton), so it behaves like the
- * on-screen footer Back button.
+ * Back). This is a pure NO-OP in the app — useDeviceBackButton absorbs it, so the screen does not change
+ * and the operator stays where they are. It explicitly does NOT behave like the on-screen footer Back
+ * button. Use this to assert the no-op contract; for real Back navigation use a screen object's
+ * goBack() (e.g. PickingJobScreen.goBack() / SelectPickTargetLUScreen.goBack()).
  */
 export const pressDeviceBack = async () => await step(`Press device/browser Back button`, async () => {
     await page.goBack({ timeout: SLOW_ACTION_TIMEOUT });

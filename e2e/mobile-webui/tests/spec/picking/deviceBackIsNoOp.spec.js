@@ -120,6 +120,7 @@ test('Rapidly mashing device/browser Back stays put and never leaves the app', a
     //
     // Log in and go deep: Home -> Picking jobs list -> a picking job -> the "Neues LU" / select-target screen.
     await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);

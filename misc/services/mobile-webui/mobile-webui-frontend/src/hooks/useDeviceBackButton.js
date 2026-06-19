@@ -53,8 +53,12 @@ export const useDeviceBackButton = () => {
     // entry → the screen never changes and the operator can never leave the PWA.
     const onPopState = () => {
       primeSentinel();
-      // Field diagnostic for handheld debugging: proves every device/browser Back is a no-op.
-      console.log(`[deviceBack] Back pressed on ${window.location.pathname} → no-op (PWA unchanged)`);
+      // Field diagnostic for handheld debugging: proves every device/browser Back is a no-op. Gated
+      // behind the app's diagnostics flag (set from the showAllErrorMessages SysConfig) so it is silent
+      // in normal operation but can be switched on to capture the line from a device console.
+      if (window.showAllErrorMessages) {
+        console.log(`[deviceBack] Back pressed on ${window.location.pathname} → no-op (PWA unchanged)`);
+      }
     };
     window.addEventListener('popstate', onPopState);
 
