@@ -92,7 +92,6 @@ public class JsonOLCand
 
 	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
 			+ "Keys are column names; values are the column values.")
-	@JsonProperty("extendedProps")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Map<String, Object> extendedProps;
 
