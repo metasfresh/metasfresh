@@ -361,18 +361,10 @@ public class CiiValidatorTest
 		final CiiValidationResult result = validator.validate(xml, EInvoiceFormat.XRECHNUNG);
 
 		final List<String> fatalErrors = result.getFatalAndErrorRuleIds();
-		if (!fatalErrors.isEmpty())
-		{
-			// Print XML for diagnostics when there are failures
-			System.out.println("=== DIAGNOSTIC XML (XRechnung validation failed) ===");
-			System.out.println(xml);
-			System.out.println("=== END DIAGNOSTIC XML ===");
-			System.out.println("All failed assertions:");
-			result.getFailedAssertions().forEach(a -> System.out.println("  " + a.getSeverity() + " [" + a.getRuleId() + "] at " + a.getLocation() + ": " + a.getMessage()));
-		}
 		assertThat(fatalErrors)
 				.as("Expected ZERO fatal/error KoSIT (BR-DE-*) rule violations on the valid XRechnung fixture. "
-						+ "Firing rules (mapper gaps): " + fatalErrors)
+						+ "Firing rules (mapper gaps): " + fatalErrors
+						+ ". All failed assertions: " + result.getFailedAssertions())
 				.isEmpty();
 	}
 

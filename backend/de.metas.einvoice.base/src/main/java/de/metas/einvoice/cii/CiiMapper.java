@@ -483,6 +483,8 @@ public class CiiMapper
 		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
 		if (contacts.isEmpty())
 		{
+			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+					sellerBP.getC_BPartner_ID());
 			return null;
 		}
 
@@ -509,6 +511,11 @@ public class CiiMapper
 		if (contactName != null && !contactName.trim().isEmpty())
 		{
 			tradeContact.setPersonName(text(contactName));
+		}
+		else
+		{
+			log.warn("Seller BPartner {} has a contact (AD_User_ID={}) with no name — XRechnung BR-DE-5 (PersonName) will fail validation",
+					sellerBP.getC_BPartner_ID(), contact.getAD_User_ID());
 		}
 
 		// BT-42 Contact telephone (CompleteNumber — must contain ≥3 digits per BR-DE-27)
