@@ -1,6 +1,8 @@
 package de.metas.cucumber.stepdefs.accounting;
 
+import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.ChartOfAccountsId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -13,11 +15,8 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Element;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.util.Env;
 
@@ -27,14 +26,16 @@ import org.compiere.util.Env;
 @RequiredArgsConstructor
 public class C_ElementValue_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 	private final ElementValueService elementValueService = SpringContextHolder.instance.getBean(ElementValueService.class);
 
 	private final C_ElementValue_StepDefData elementValueTable;
 
 	/**
-	 * Creates (or looks up by {@code Value}) a {@code C_ElementValue} (GL account) record,
-	 * anchored to the first active {@code C_Element} (chart of accounts) of the current client.
+	 * Creates (or looks up by {@code Value}) a {@code C_ElementValue} (GL account) record in the
+	 * chart of accounts of the current client's primary accounting schema — so the account is a
+	 * valid posting account for that schema (a GL-account override only resolves at posting when
+	 * the account belongs to the posting schema's chart of accounts).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -66,8 +67,11 @@ public class C_ElementValue_StepDef
 						.map(id -> "TEST_" + id.getAsString())
 						.orElse("TEST_ACCOUNT"));
 
-		final I_C_Element element = findDefaultElement();
-		final ChartOfAccountsId chartOfAccountsId = ChartOfAccountsId.ofRepoId(element.getC_Element_ID());
+		// Anchor the override account to the posting schema's chart of accounts, otherwise the
+		// override does not resolve at posting (InvoiceAcctRuleMatcher resolves per acct schema and
+		// the account must be valid in that schema's chart).
+		final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrg(Env.getCtx());
+		final ChartOfAccountsId chartOfAccountsId = acctSchema.getChartOfAccountsId();
 
 		final ElementValueId elementValueId = elementValueService.getByAccountNo(value, chartOfAccountsId)
 				.map(ElementValue::getId)
@@ -86,27 +90,5 @@ public class C_ElementValue_StepDef
 				});
 
 		return InterfaceWrapperHelper.load(elementValueId.getRepoId(), I_C_ElementValue.class);
-	}
-
-	private I_C_Element findDefaultElement()
-	{
-		// Find the first natural-account element (ElementType='A') for the current client (Chart of Accounts).
-		// Use .first() rather than .firstOnly() — a client may have more than one element; we pick the lowest ID.
-		final int clientId = Env.getAD_Client_ID(Env.getCtx());
-
-		final I_C_Element element = queryBL.createQueryBuilder(I_C_Element.class)
-				.addEqualsFilter(I_C_Element.COLUMNNAME_AD_Client_ID, clientId)
-				.addEqualsFilter(I_C_Element.COLUMNNAME_ElementType, "A") // Account
-				.addOnlyActiveRecordsFilter()
-				.orderBy().addColumnAscending(I_C_Element.COLUMNNAME_C_Element_ID).endOrderBy()
-				.create()
-				.first(I_C_Element.class);
-
-		if (element == null)
-		{
-			throw new AdempiereException("No active C_Element with ElementType='A' found for client " + clientId);
-		}
-
-		return element;
 	}
 }
