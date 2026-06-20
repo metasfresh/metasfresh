@@ -40,9 +40,7 @@ import java.nio.charset.StandardCharsets;
  * then a fresh attachment is created — avoiding duplicate entries.
  *
  * <p><b>Spring registration</b>: {@code @Component} + {@code @Interceptor} is sufficient when
- * the application context component-scans {@code de.metas.einvoice}. If the einvoice module is
- * not auto-scanned by the host app, an {@code AbstractModuleInterceptor} subclass that explicitly
- * registers this interceptor via {@code engine.addModelValidator(...)} will be required.
+ * the application context component-scans {@code de.metas.einvoice}.
  */
 @Interceptor(I_C_Invoice.class)
 @Component

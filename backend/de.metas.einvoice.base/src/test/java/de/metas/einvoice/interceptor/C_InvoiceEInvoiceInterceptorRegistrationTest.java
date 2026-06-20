@@ -145,7 +145,7 @@ public class C_InvoiceEInvoiceInterceptorRegistrationTest
 							.isTrue();
 					assertThat(ade.getMessage())
 							.as("Exception message must contain a BR-DE-* rule id (KoSIT XRechnung rule)")
-							.containsPattern("BR-DE");
+							.containsPattern("BR-DE-\\d+");
 				});
 	}
 

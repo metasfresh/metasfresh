@@ -155,8 +155,8 @@ public class CiiMapper
 		}
 
 		// BT-23 Business process (BusinessProcessSpecifiedDocumentContextParameter/ID)
-		// Required by the XRechnung schematron (PEPPOL-EN16931-R001) and Peppol BIS.
-		if (format.isXRechnung() || format.isPeppol())
+		// Required by the XRechnung schematron (PEPPOL-EN16931-R001).
+		if (format.isXRechnung())
 		{
 			final DocumentContextParameterType bpParam = new DocumentContextParameterType();
 			bpParam.setID(id(BUSINESS_PROCESS_ID_PEPPOL_BILLING));

@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
  * <p>Precompiled XSLT bundled at {@code de/metas/einvoice/cii/schematron/XRechnung-CII-validation.xslt}.
  * Source: itplr-kosit/xrechnung-schematron release v2.5.0
  * (asset {@code xrechnung-3.0.2-schematron-2.5.0.zip}), file {@code schematron/cii/XRechnung-CII-validation.xsl},
- * compatible with XRechnung 3.0.2 / guideline {@code urn:xoev-de:kosit:standard:xrechnung_3.0}.
+ * compatible with XRechnung 3.0.2 / guideline {@code urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0}.
  * Licence: Apache-2.0.
  *
  * <h2>Runtime requirements</h2>

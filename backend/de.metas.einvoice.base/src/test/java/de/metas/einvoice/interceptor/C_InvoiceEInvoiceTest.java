@@ -95,7 +95,7 @@ public class C_InvoiceEInvoiceTest
 							.isTrue();
 					assertThat(ade.getMessage())
 							.as("Exception message must contain at least one BR-DE-* rule id")
-							.containsPattern("BR-DE");
+							.containsPattern("BR-DE-\\d+");
 				});
 	}
 
