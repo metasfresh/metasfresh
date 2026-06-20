@@ -45,13 +45,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p>Calls the interceptor method directly — no document engine needed.
  *
- * <p>Three cases:
+ * <p>Five cases:
  * <ol>
  *   <li>Invalid XRechnung (missing Leitweg-ID) → throws {@link AdempiereException} that is a user-validation-error
  *       and whose message names a BR-DE-* rule id.</li>
  *   <li>Valid XRechnung → no throw; exactly one attachment named {@code <DocumentNo>_xrechnung.xml}
  *       is created, tagged {@code Send_via_Email=true}.</li>
- *   <li>Non-recipient / ZUGFeRD buyer → no throw, no attachment.</li>
+ *   <li>Non-recipient buyer → no throw, no attachment.</li>
+ *   <li>ZUGFeRD buyer → scope guard exits early; no throw, no attachment.</li>
+ *   <li>Idempotency: re-completing (simulating reactivate + re-complete) produces exactly one attachment.</li>
  * </ol>
  */
 public class C_InvoiceEInvoiceTest
@@ -67,9 +69,10 @@ public class C_InvoiceEInvoiceTest
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10);
 
 		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		interceptor = new C_Invoice(
-				new EInvoiceConfigService(),
-				new EInvoiceCiiService(new EInvoiceConfigService()),
+				configService,
+				new EInvoiceCiiService(configService),
 				attachmentEntryService);
 	}
 
@@ -146,7 +149,7 @@ public class C_InvoiceEInvoiceTest
 	@Test
 	void onComplete_zugferd_noThrowNoAttachment()
 	{
-		final I_C_Invoice invoice = buildCompleteInvoice(EInvoiceFormat.ZUGFeRD, /* clearBuyerReference */ true);
+		final I_C_Invoice invoice = buildCompleteInvoice(EInvoiceFormat.ZUGFeRD, /* clearBuyerReference */ false);
 
 		// Should not throw
 		interceptor.onComplete_generateXRechnung(invoice);

@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -40,10 +41,10 @@ import java.nio.charset.StandardCharsets;
  *
  * <p><b>Spring registration</b>: {@code @Component} + {@code @Interceptor} is sufficient when
  * the application context component-scans {@code de.metas.einvoice}. If the einvoice module is
- * not auto-scanned by the host app, a {@code AbstractModuleInterceptor} subclass that explicitly
- * registers this interceptor will be needed (Task 5).
+ * not auto-scanned by the host app, an {@code AbstractModuleInterceptor} subclass that explicitly
+ * registers this interceptor via {@code engine.addModelValidator(...)} will be required.
  */
-@Interceptor(org.compiere.model.I_C_Invoice.class)
+@Interceptor(I_C_Invoice.class)
 @Component
 @RequiredArgsConstructor
 public class C_Invoice
@@ -55,19 +56,17 @@ public class C_Invoice
 	/**
 	 * After invoice completion: generate and validate the XRechnung XML, then block or attach.
 	 *
-	 * <p>Scope guard: returns immediately if the buyer is not an XRechnung recipient.
+	 * <p>Returns immediately if the buyer is not configured as an XRechnung recipient.
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
-	public void onComplete_generateXRechnung(@NonNull final org.compiere.model.I_C_Invoice invoice)
+	public void onComplete_generateXRechnung(@NonNull final I_C_Invoice invoice)
 	{
-		// Scope guard: only act for XRechnung recipients
 		final EInvoiceRecipientConfig cfg = configService.resolveForInvoice(invoice).orElse(null);
 		if (cfg == null || !cfg.getFormat().isXRechnung())
 		{
 			return;
 		}
 
-		// Generate and validate CII XML
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final GenerateAndValidateResult result = eInvoiceCiiService.generateAndValidate(invoiceId)
 				.orElseThrow(() -> new AdempiereException(
@@ -75,7 +74,6 @@ public class C_Invoice
 								+ " — this should not happen when config resolution already succeeded")
 						.markAsUserValidationError());
 
-		// Block completion if validation failed
 		if (!result.isValid())
 		{
 			throw new AdempiereException(
@@ -84,22 +82,20 @@ public class C_Invoice
 					.markAsUserValidationError();
 		}
 
-		// Attach the valid XML, tagged for email dispatch
 		final String filename = invoice.getDocumentNo() + "_xrechnung.xml";
 		final byte[] xmlBytes = result.getCiiXml().getBytes(StandardCharsets.UTF_8);
 
 		// Idempotency: if an attachment with this filename already exists (re-complete after reactivate),
-		// remove it first so we don't accumulate duplicates. Then create a fresh one below.
-		// Choice: unattach-and-recreate rather than updateData, because AttachmentEntryService.updateData
-		// delegates to AttachmentEntryRepository.updateAttachmentEntryData which has a type guard that would
-		// reject Data entries if the condition were ever corrected; unattach+recreate is simpler and always safe.
+		// unattach it first so we don't accumulate duplicates, then create a fresh one below.
+		// Unattach+recreate is chosen over updateData because
+		// AttachmentEntryRepository.updateAttachmentEntryData has an inverted type guard that throws
+		// for Data entries — the only type we create here. Unattach+recreate is always safe.
 		final AttachmentEntry existing = attachmentEntryService.getByFilenameOrNull(invoice, filename);
 		if (existing != null)
 		{
 			attachmentEntryService.unattach(invoice, existing);
 		}
 
-		// Create new attachment and tag it Send_via_Email=true
 		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(invoice, filename, xmlBytes);
 		attachmentEntryService.save(newEntry.withAdditionalTag(
 				AttachmentTags.TAGNAME_SEND_VIA_EMAIL, "true"));
