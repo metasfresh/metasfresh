@@ -8,6 +8,7 @@ import de.metas.einvoice.cii.model.ObjectFactory;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -100,6 +101,17 @@ public class CiiValidatorTest
 		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
 		saveRecord(orgInfo);
 
+		// === Seller contact (AD_User) — required for XRechnung BG-6 / BR-DE-2/5/6/7 ===
+		// BR-DE-5: PersonName or DepartmentName required
+		// BR-DE-6: TelephoneUniversalCommunication/CompleteNumber required (≥3 digits per BR-DE-27)
+		// BR-DE-7: EmailURIUniversalCommunication/URIID required (valid email per BR-DE-28)
+		final I_AD_User sellerContact = newInstance(I_AD_User.class);
+		sellerContact.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerContact.setName("Max Mustermann");
+		sellerContact.setPhone("+49 30 123456789");
+		sellerContact.setEMail("max.mustermann@muster.de");
+		saveRecord(sellerContact);
+
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
@@ -134,6 +146,8 @@ public class CiiValidatorTest
 		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
 		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
 		buyerBPLoc.setIsBillTo(true);
+		// BT-49 Buyer electronic address — required by XRechnung (PEPPOL-EN16931-R010)
+		buyerBPLoc.setEMail("einkauf@kaeufer.de");
 		saveRecord(buyerBPLoc);
 
 		// === DocType (ARI = commercial invoice) ===
@@ -326,6 +340,40 @@ public class CiiValidatorTest
 						+ "EN16931-only failures: %s, XRechnung failures: %s",
 						en16931Only.getFatalAndErrorRuleIds(), withKoSIT.getFatalAndErrorRuleIds())
 				.isGreaterThanOrEqualTo(en16931Only.getFailedAssertions().size());
+	}
+
+	/**
+	 * Valid XRechnung fixture → KoSIT produces ZERO fatal/error BR-DE rule ids.
+	 *
+	 * <p>This test verifies that {@link CiiMapper} emits all XRechnung-mandatory fields
+	 * (BG-6 seller contact BR-DE-2/5/6/7, BT-34 seller electronic address BR-DE-2 precondition,
+	 * correct guideline ID BR-DE-21, payment means BR-DE-1, buyer reference BR-DE-15, etc.)
+	 * so that a fully-populated sales invoice passes KoSIT validation with no fatal or error assertions.
+	 */
+	@Test
+	void validate_xrechnung_validInvoice_noFatalErrors() throws Exception
+	{
+		final FixtureResult fixture = buildXRechnungFixture();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+		final String xml = marshalToXml(cii);
+
+		final CiiValidator validator = new CiiValidator();
+		final CiiValidationResult result = validator.validate(xml, EInvoiceFormat.XRECHNUNG);
+
+		final List<String> fatalErrors = result.getFatalAndErrorRuleIds();
+		if (!fatalErrors.isEmpty())
+		{
+			// Print XML for diagnostics when there are failures
+			System.out.println("=== DIAGNOSTIC XML (XRechnung validation failed) ===");
+			System.out.println(xml);
+			System.out.println("=== END DIAGNOSTIC XML ===");
+			System.out.println("All failed assertions:");
+			result.getFailedAssertions().forEach(a -> System.out.println("  " + a.getSeverity() + " [" + a.getRuleId() + "] at " + a.getLocation() + ": " + a.getMessage()));
+		}
+		assertThat(fatalErrors)
+				.as("Expected ZERO fatal/error KoSIT (BR-DE-*) rule violations on the valid XRechnung fixture. "
+						+ "Firing rules (mapper gaps): " + fatalErrors)
+				.isEmpty();
 	}
 
 	/**
