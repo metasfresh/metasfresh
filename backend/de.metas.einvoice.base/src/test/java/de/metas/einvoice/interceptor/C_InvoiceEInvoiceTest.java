@@ -30,10 +30,14 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.adempiere.util.lang.impl.TableRecordReference;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -45,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *
  * <p>Calls the interceptor method directly — no document engine needed.
  *
- * <p>Five cases:
+ * <p>Six cases:
  * <ol>
  *   <li>Invalid XRechnung (missing Leitweg-ID) → throws {@link AdempiereException} that is a user-validation-error
  *       and whose message names a BR-DE-* rule id.</li>
@@ -54,6 +58,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *   <li>Non-recipient buyer → no throw, no attachment.</li>
  *   <li>ZUGFeRD buyer → scope guard exits early; no throw, no attachment.</li>
  *   <li>Idempotency: re-completing (simulating reactivate + re-complete) produces exactly one attachment.</li>
+ *   <li>Mailer selection query ({@code streamEmailAttachments}) finds the XRechnung XML — proves the
+ *       attachment is reachable by the email-delivery path.</li>
  * </ol>
  */
 public class C_InvoiceEInvoiceTest
@@ -181,6 +187,35 @@ public class C_InvoiceEInvoiceTest
 		assertThat(attachmentCount)
 				.as("Exactly one xrechnung.xml attachment should exist even after two completions")
 				.isEqualTo(1);
+	}
+
+	// =========================================================================
+	// Case 6: Mailer selection query finds the XRechnung XML
+	// =========================================================================
+
+	/**
+	 * Asserts that the exact query {@code MailWorkpackageProcessor} runs —
+	 * {@code streamEmailAttachments(ofReferenced(docOutboundLog) = invoice, Send_via_Email)} —
+	 * returns the XRechnung XML produced by the interceptor.
+	 * The XRechnung XML therefore rides along on the invoice email; actual SMTP transmission is covered at UAT.
+	 */
+	@Test
+	void onComplete_xrechnung_valid_attachmentIsSelectableForEmail()
+	{
+		final I_C_Invoice invoice = buildCompleteInvoice(EInvoiceFormat.XRECHNUNG, /* clearBuyerReference */ false);
+		interceptor.onComplete_generateXRechnung(invoice);
+
+		final String expectedFilename = invoice.getDocumentNo() + "_xrechnung.xml";
+
+		final List<String> emailAttachmentFilenames = attachmentEntryService
+				.streamEmailAttachments(TableRecordReference.of(invoice), AttachmentTags.TAGNAME_SEND_VIA_EMAIL)
+				.map(de.metas.attachments.EmailAttachment::getFilename)
+				.collect(Collectors.toList());
+
+		assertThat(emailAttachmentFilenames)
+				.as("streamEmailAttachments(invoice, Send_via_Email) must include the XRechnung XML — "
+						+ "this is the query MailWorkpackageProcessor runs to collect email attachments")
+				.contains(expectedFilename);
 	}
 
 	// =========================================================================
