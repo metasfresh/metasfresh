@@ -116,6 +116,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.einvoice</groupId>
+			<artifactId>de.metas.einvoice.base</artifactId>
+			<version>${metasfresh.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.externalreference</groupId>
 			<artifactId>de.metas.externalreference</artifactId>
 			<version>${metasfresh.version}</version>
