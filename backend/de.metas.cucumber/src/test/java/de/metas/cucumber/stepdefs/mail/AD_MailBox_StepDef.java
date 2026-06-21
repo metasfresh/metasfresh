@@ -24,8 +24,8 @@ package de.metas.cucumber.stepdefs.mail;
 
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -39,8 +39,6 @@ import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.X_AD_MailBox;
 
 import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
 /**
  * Step definitions for {@link I_AD_MailBox} — the "from" mailbox a document mail is sent through.
@@ -77,18 +75,15 @@ public class AD_MailBox_StepDef
 	@Given("metasfresh contains AD_MailBox:")
 	public void metasfresh_contains_AD_MailBox(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			createOrUpdateMailBox(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::createOrUpdateMailBox);
 		// the MailboxRepository caches the mailbox map keyed by AD_MailBox table changes;
 		// reset so the freshly created mailbox is visible to the mail workpackage processor
 		CacheMgt.get().reset(I_AD_MailBox.Table_Name);
 	}
 
-	private void createOrUpdateMailBox(@NonNull final Map<String, String> row)
+	private void createOrUpdateMailBox(@NonNull final DataTableRow row)
 	{
-		final String email = DataTableUtil.extractStringForColumnName(row, I_AD_MailBox.COLUMNNAME_EMail);
+		final String email = row.getAsString(I_AD_MailBox.COLUMNNAME_EMail);
 
 		final I_AD_MailBox mailBox = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_AD_MailBox.class)
@@ -101,8 +96,7 @@ public class AD_MailBox_StepDef
 		mailBox.setType(X_AD_MailBox.TYPE_SMTP);
 		mailBox.setSMTPHost(resolveEnv(row, I_AD_MailBox.COLUMNNAME_SMTPHost));
 		mailBox.setSMTPPort(Integer.parseInt(resolveEnv(row, I_AD_MailBox.COLUMNNAME_SMTPPort)));
-		mailBox.setIsSmtpAuthorization(StringUtils.toBoolean(
-				DataTableUtil.extractStringOrNullForColumnName(row, I_AD_MailBox.COLUMNNAME_IsSmtpAuthorization)));
+		mailBox.setIsSmtpAuthorization(row.getAsOptionalBoolean(I_AD_MailBox.COLUMNNAME_IsSmtpAuthorization).orElseFalse());
 
 		final String userName = StringUtils.trimBlankToNull(resolveEnvOrNull(row, I_AD_MailBox.COLUMNNAME_UserName));
 		if (userName != null)
@@ -115,17 +109,11 @@ public class AD_MailBox_StepDef
 			mailBox.setPassword(password);
 		}
 
-		final Integer orgId = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_AD_MailBox.COLUMNNAME_AD_Org_ID);
-		if (orgId != null)
-		{
-			mailBox.setAD_Org_ID(orgId);
-		}
+		row.getAsOptionalInt(I_AD_MailBox.COLUMNNAME_AD_Org_ID).ifPresent(mailBox::setAD_Org_ID);
 
 		InterfaceWrapperHelper.save(mailBox);
 
-		final String identifier = DataTableUtil.extractStringForColumnName(
-				row, I_AD_MailBox.COLUMNNAME_AD_MailBox_ID + "." + TABLECOLUMN_IDENTIFIER);
-		mailBoxTable.putOrReplace(identifier, mailBox);
+		row.getAsIdentifier(I_AD_MailBox.COLUMNNAME_AD_MailBox_ID).putOrReplace(mailBoxTable, mailBox);
 	}
 
 	/**
@@ -133,16 +121,18 @@ public class AD_MailBox_StepDef
 	 * system property / environment variable named in the {@code <name>$env} cell.
 	 * Mirrors {@code Mail_StepDef#resolveEnv} so SMTP settings can point at the running Mailpit.
 	 */
-	private static String resolveEnv(@NonNull final Map<String, String> row, @NonNull final String name)
+	private static String resolveEnv(@NonNull final DataTableRow row, @NonNull final String name)
 	{
-		final String value = StringUtils.trimBlankToNull(row.get(name));
+		final Map<String, String> map = row.asMap();
+
+		final String value = StringUtils.trimBlankToNull(map.get(name));
 		if (value != null)
 		{
 			return value;
 		}
 
 		final String envColumn = name + "$env";
-		final String env = StringUtils.trimBlankToNull(row.get(envColumn));
+		final String env = StringUtils.trimBlankToNull(map.get(envColumn));
 		if (env != null)
 		{
 			return CoalesceUtil.coalesceSuppliers(
@@ -159,14 +149,16 @@ public class AD_MailBox_StepDef
 	 * {@code <name>$env} column is present (for optional columns such as username/password).
 	 */
 	@org.jetbrains.annotations.Nullable
-	private static String resolveEnvOrNull(@NonNull final Map<String, String> row, @NonNull final String name)
+	private static String resolveEnvOrNull(@NonNull final DataTableRow row, @NonNull final String name)
 	{
-		final String value = StringUtils.trimBlankToNull(row.get(name));
+		final Map<String, String> map = row.asMap();
+
+		final String value = StringUtils.trimBlankToNull(map.get(name));
 		if (value != null)
 		{
 			return value;
 		}
-		final String env = StringUtils.trimBlankToNull(row.get(name + "$env"));
+		final String env = StringUtils.trimBlankToNull(map.get(name + "$env"));
 		if (env != null)
 		{
 			return CoalesceUtil.coalesceSuppliers(() -> System.getProperty(env), () -> System.getenv(env));

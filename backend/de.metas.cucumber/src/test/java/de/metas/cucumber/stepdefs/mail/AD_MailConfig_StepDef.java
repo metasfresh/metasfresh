@@ -24,10 +24,10 @@ package de.metas.cucumber.stepdefs.mail;
 
 import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -37,10 +37,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_MailBox;
 import org.compiere.model.I_AD_MailConfig;
-
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
 /**
  * Step definitions for {@link I_AD_MailConfig} — routes a document mail to a mailbox.
@@ -80,10 +76,7 @@ public class AD_MailConfig_StepDef
 	@Given("metasfresh contains AD_MailConfig:")
 	public void metasfresh_contains_AD_MailConfig(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			createOrUpdateMailConfig(row);
-		}
+		DataTableRows.of(dataTable).forEach(this::createOrUpdateMailConfig);
 		// MailboxRepository caches the routing table keyed by AD_MailConfig table changes; reset it
 		CacheMgt.get().reset(I_AD_MailConfig.Table_Name);
 	}
@@ -120,13 +113,11 @@ public class AD_MailConfig_StepDef
 		CacheMgt.get().reset(I_AD_MailConfig.Table_Name);
 	}
 
-	private void createOrUpdateMailConfig(@NonNull final Map<String, String> row)
+	private void createOrUpdateMailConfig(@NonNull final DataTableRow row)
 	{
-		final String mailBoxIdentifier = DataTableUtil.extractStringForColumnName(
-				row, I_AD_MailConfig.COLUMNNAME_AD_MailBox_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_AD_MailBox mailBox = mailBoxTable.get(mailBoxIdentifier);
+		final I_AD_MailBox mailBox = mailBoxTable.get(row.getAsIdentifier(I_AD_MailConfig.COLUMNNAME_AD_MailBox_ID));
 
-		final String docBaseType = DataTableUtil.extractStringForColumnName(row, I_AD_MailConfig.COLUMNNAME_DocBaseType);
+		final String docBaseType = row.getAsString(I_AD_MailConfig.COLUMNNAME_DocBaseType);
 
 		final I_AD_MailConfig mailConfig = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_AD_MailConfig.class)
@@ -139,46 +130,28 @@ public class AD_MailConfig_StepDef
 		mailConfig.setAD_MailBox_ID(mailBox.getAD_MailBox_ID());
 		mailConfig.setDocBaseType(docBaseType);
 
-		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_MailConfig.COLUMNNAME_DocSubType);
-		if (Check.isNotBlank(docSubType))
+		row.getAsOptionalString(I_AD_MailConfig.COLUMNNAME_DocSubType).ifPresent(mailConfig::setDocSubType);
+		row.getAsOptionalInt(I_AD_MailConfig.COLUMNNAME_AD_Process_ID).ifPresent(mailConfig::setAD_Process_ID);
+		row.getAsOptionalString(I_AD_MailConfig.COLUMNNAME_CustomType).ifPresent(mailConfig::setCustomType);
+		row.getAsOptionalString(I_AD_MailConfig.COLUMNNAME_ColumnUserTo).ifPresent(mailConfig::setColumnUserTo);
+
+		// AD_Org_ID may be given either as an AD_Org identifier (the `.Identifier`-suffixed column,
+		// resolved via the org table) or as a raw int (the bare column). Keep these two paths distinct:
+		// the org-table lookup requires a registered identifier and must not see a raw repo-id.
+		final StepDefDataIdentifier orgIdentifier = row.getAsOptionalIdentifier(
+				I_AD_MailConfig.COLUMNNAME_AD_Org_ID + "." + StepDefDataIdentifier.SUFFIX).orElse(null);
+		if (orgIdentifier != null)
 		{
-			mailConfig.setDocSubType(docSubType);
+			mailConfig.setAD_Org_ID(orgTable.getIdAsInt(orgIdentifier));
 		}
-		final Integer adProcessId = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_AD_MailConfig.COLUMNNAME_AD_Process_ID);
-		if (adProcessId != null)
+		else
 		{
-			mailConfig.setAD_Process_ID(adProcessId);
-		}
-		final String customType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_MailConfig.COLUMNNAME_CustomType);
-		if (Check.isNotBlank(customType))
-		{
-			mailConfig.setCustomType(customType);
-		}
-		final String columnUserTo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_MailConfig.COLUMNNAME_ColumnUserTo);
-		if (Check.isNotBlank(columnUserTo))
-		{
-			mailConfig.setColumnUserTo(columnUserTo);
-		}
-		// AD_Org_ID may be given either as an AD_Org identifier (resolved here) or as a raw int.
-		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(
-				row, "OPT." + I_AD_MailConfig.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final Integer orgIdRaw = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_AD_MailConfig.COLUMNNAME_AD_Org_ID);
-		if (Check.isNotBlank(orgIdentifier))
-		{
-			mailConfig.setAD_Org_ID(orgTable.getIdAsInt(de.metas.cucumber.stepdefs.StepDefDataIdentifier.ofString(orgIdentifier)));
-		}
-		else if (orgIdRaw != null)
-		{
-			mailConfig.setAD_Org_ID(orgIdRaw);
+			row.getAsOptionalInt(I_AD_MailConfig.COLUMNNAME_AD_Org_ID).ifPresent(mailConfig::setAD_Org_ID);
 		}
 
 		InterfaceWrapperHelper.save(mailConfig);
 
-		final String identifier = DataTableUtil.extractStringOrNullForColumnName(
-				row, I_AD_MailConfig.COLUMNNAME_AD_MailConfig_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(identifier))
-		{
-			mailConfigTable.putOrReplace(identifier, mailConfig);
-		}
+		row.getAsOptionalIdentifier(I_AD_MailConfig.COLUMNNAME_AD_MailConfig_ID)
+				.ifPresent(identifier -> identifier.putOrReplace(mailConfigTable, mailConfig));
 	}
 }

@@ -49,12 +49,12 @@ import java.nio.charset.StandardCharsets;
  * arrived (sender, attachment filename, attachment content).
  *
  * <p>The API base URL is read from the {@code TEST_MAILPIT_API_URL} environment variable (set in the
- * infrastructure env files), defaulting to {@code http://localhost:21408} when absent.
+ * infrastructure env files), defaulting to Mailpit's default management port {@code http://localhost:8025} when absent.
  */
 @RequiredArgsConstructor
 public class Mailpit_StepDef
 {
-	private static final String DEFAULT_API_URL = "http://localhost:21408";
+	private static final String DEFAULT_API_URL = "http://localhost:8025";
 	// The mail is sent by an async workpackage that runs after the C_Doc_Outbound_Log appears and
 	// after the (mocked) PDF archive is produced, so poll generously to absorb that lag.
 	private static final int POLL_ATTEMPTS = 360;

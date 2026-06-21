@@ -311,6 +311,16 @@ public class C_Invoice_StepDef
 
 	/**
 	 * Note that the new invoice's IC is also added to {@link TestContext} for further use in API-requests.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code AD_Org_ID} — org identifier; defaults to the login context org</li>
+	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
+	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
+	 *   <li>{@code AD_User_ID} — contact identifier</li>
+	 *   <li>{@code TotalLines} — the net total ({@link java.math.BigDecimal})</li>
+	 *   <li>{@code GrandTotal} — the gross total ({@link java.math.BigDecimal})</li>
+	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
 	public void addC_Invoices(@NonNull final DataTable dataTable)

@@ -1,4 +1,5 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00751
 @topic:eInvoiceXRechnungEmail
 @ghActions:run_on_executor4
@@ -87,9 +88,9 @@ Feature: XRechnung e-invoice generated, attached and emailed on sales-invoice co
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 | Price | C_Tax_ID$set |
       | invoiceLine | invoice                 | product                 | 1           | PCE               | 100   | tax19        |
-    And metasfresh contains C_InvoiceTax:
-      | C_Invoice_ID.Identifier | C_Tax_ID.Identifier | TaxBaseAmt | TaxAmt |
-      | invoice                 | tax19               | 100.00     | 19.00  |
+    # No explicit C_InvoiceTax row: completion (MInvoice.calculateTaxTotal) deletes and rebuilds the
+    # C_InvoiceTax VAT breakdown (BG-23) from the invoice lines, so a pre-created row would be wiped.
+    # The tax19 line above is what drives the rebuilt C_InvoiceTax the XRechnung mapper reads.
 
     And mailpit inbox is cleared
 

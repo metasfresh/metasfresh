@@ -146,6 +146,14 @@ public class C_BPartner_StepDef
 	 * <p>
 	 * The {@code C_BP_Group_ID} column resolves a known {@link C_BP_Group_StepDefData} identifier first, then
 	 * falls back to a raw repo-id, then to the default group.
+	 * <p>
+	 * E-invoicing columns (all optional):
+	 * <ul>
+	 *   <li>{@code TaxID} — the partner's VAT id (BT-31 seller / BT-48 buyer)</li>
+	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
+	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
+	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
