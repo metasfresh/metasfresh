@@ -8,6 +8,7 @@ import de.metas.einvoice.cii.model.ObjectFactory;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -1165,6 +1166,116 @@ public class CiiMapperTest
 		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
 				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
 				.hasMessageContaining("C_Tax_ID=" + taxWithoutCategory.getC_Tax_ID());
+	}
+
+	/**
+	 * BG-6 Seller contact: when the seller BPartner has an AD_User contact with name, phone, and email,
+	 * the mapper must emit DefinedTradeContact/PersonName (BT-41), TelephoneUniversalCommunication/CompleteNumber
+	 * (BT-42), and EmailURIUniversalCommunication/URIID (BT-43) on SellerTradeParty.
+	 *
+	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact; BR-DE-5 requires PersonName or DepartmentName;
+	 * BR-DE-6 requires a telephone number; BR-DE-7 requires an email URI.
+	 */
+	@Test
+	void seller_contact_mapping_bt41_bt42_bt43() throws Exception
+	{
+		// === Seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setAddress1("Musterstraße 1");
+		sellerLocation.setCity("Berlin");
+		sellerLocation.setPostal("10115");
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Muster GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		sellerBPLoc.setIsBillTo(true);
+		saveRecord(sellerBPLoc);
+
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Seller contact (AD_User) — the subject under test ===
+		final I_AD_User sellerContact = newInstance(I_AD_User.class);
+		sellerContact.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerContact.setName("Max Mustermann");
+		sellerContact.setPhone("+49 30 123456789");
+		sellerContact.setEMail("max.mustermann@muster.de");
+		saveRecord(sellerContact);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00700");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String contactXPath = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:DefinedTradeContact";
+
+		// BT-41 PersonName
+		xmlAssert.valueByXPath(contactXPath + "/ram:PersonName")
+				.as("BT-41: DefinedTradeContact/PersonName must match the seller contact name")
+				.isEqualTo("Max Mustermann");
+
+		// BT-42 phone (CompleteNumber)
+		xmlAssert.valueByXPath(contactXPath + "/ram:TelephoneUniversalCommunication/ram:CompleteNumber")
+				.as("BT-42: TelephoneUniversalCommunication/CompleteNumber must match the seller contact phone")
+				.isEqualTo("+49 30 123456789");
+
+		// BT-43 email (URIID)
+		xmlAssert.valueByXPath(contactXPath + "/ram:EmailURIUniversalCommunication/ram:URIID")
+				.as("BT-43: EmailURIUniversalCommunication/URIID must match the seller contact email")
+				.isEqualTo("max.mustermann@muster.de");
 	}
 
 	// ===== Shared helpers =====

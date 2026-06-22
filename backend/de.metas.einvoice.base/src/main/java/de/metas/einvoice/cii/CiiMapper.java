@@ -31,6 +31,7 @@ import de.metas.einvoice.cii.model.LineTradeSettlementType;
 import de.metas.einvoice.cii.model.PercentType;
 import de.metas.einvoice.cii.model.QuantityType;
 import de.metas.einvoice.cii.model.ReferencedDocumentType;
+import de.metas.einvoice.cii.model.SupplyChainEventType;
 import de.metas.einvoice.cii.model.SupplyChainTradeLineItemType;
 import de.metas.einvoice.cii.model.SupplyChainTradeTransactionType;
 import de.metas.einvoice.cii.model.TaxCategoryCodeType;
@@ -38,6 +39,7 @@ import de.metas.einvoice.cii.model.TaxRegistrationType;
 import de.metas.einvoice.cii.model.TaxTypeCodeType;
 import de.metas.einvoice.cii.model.TextType;
 import de.metas.einvoice.cii.model.TradeAddressType;
+import de.metas.einvoice.cii.model.TradeContactType;
 import de.metas.einvoice.cii.model.TradePartyType;
 import de.metas.einvoice.cii.model.TradePaymentTermsType;
 import de.metas.einvoice.cii.model.TradePriceType;
@@ -56,6 +58,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -92,8 +95,18 @@ public class CiiMapper
 	/** EN 16931 guideline IDs per invoice format. */
 	private static final String GUIDELINE_ID_ZUGFERD =
 			"urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931";
+	/**
+	 * XRechnung 3.0 CIUS ID — as specified by the KoSIT schematron (xeinkauf.de domain).
+	 * Note: the legacy xoev-de domain is NOT accepted by the KoSIT 3.0 schematron (BR-DE-21).
+	 */
 	private static final String GUIDELINE_ID_XRECHNUNG =
-			"urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0";
+			"urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0";
+	/**
+	 * Peppol BIS Billing 3.0 process ID — required by the XRechnung schematron (PEPPOL-EN16931-R001)
+	 * when BusinessProcessSpecifiedDocumentContextParameter/ID is expected.
+	 */
+	private static final String BUSINESS_PROCESS_ID_PEPPOL_BILLING =
+			"urn:fdc:peppol.eu:2017:poacc:billing:01:1.0";
 	/** Peppol BIS Billing 3.0 — European profile. */
 	private static final String GUIDELINE_ID_PEPPOL =
 			"urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0";
@@ -139,6 +152,15 @@ public class CiiMapper
 		{
 			// ZUGFeRD / Factur-X (default)
 			guidelineId = GUIDELINE_ID_ZUGFERD;
+		}
+
+		// BT-23 Business process (BusinessProcessSpecifiedDocumentContextParameter/ID)
+		// Required by the XRechnung schematron (PEPPOL-EN16931-R001).
+		if (format.isXRechnung())
+		{
+			final DocumentContextParameterType bpParam = new DocumentContextParameterType();
+			bpParam.setID(id(BUSINESS_PROCESS_ID_PEPPOL_BILLING));
+			ctx.setBusinessProcessSpecifiedDocumentContextParameter(bpParam);
 		}
 
 		final DocumentContextParameterType guidelineParam = new DocumentContextParameterType();
@@ -195,10 +217,33 @@ public class CiiMapper
 		}
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
-		tx.setApplicableHeaderTradeDelivery(new HeaderTradeDeliveryType());
+		tx.setApplicableHeaderTradeDelivery(buildHeaderTradeDelivery(invoice));
 		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice));
 
 		return tx;
+	}
+
+	// ===== BG-13 Delivery information =====
+
+	/**
+	 * Builds {@code ApplicableHeaderTradeDelivery} with BT-72 (Actual delivery date).
+	 *
+	 * <p>The CII schema requires this element to be present (it is mandatory in EN16931 CII mapping).
+	 * PEPPOL-EN16931-R008 fires if the element is serialised as an empty tag, so we always populate it
+	 * with at least {@code ActualDeliverySupplyChainEvent/OccurrenceDateTime}. When no explicit delivery
+	 * date is known we fall back to the invoice date ({@code DateInvoiced}), which is the common practice
+	 * for German XRechnung invoices.
+	 */
+	private HeaderTradeDeliveryType buildHeaderTradeDelivery(@NonNull final I_C_Invoice invoice)
+	{
+		final HeaderTradeDeliveryType delivery = new HeaderTradeDeliveryType();
+
+		// BT-72 Actual delivery date — fall back to invoice date when no dedicated field is set
+		final SupplyChainEventType event = new SupplyChainEventType();
+		event.setOccurrenceDateTime(toDateTime(invoice.getDateInvoiced()));
+		delivery.setActualDeliverySupplyChainEvent(event);
+
+		return delivery;
 	}
 
 	// ===== BG-25 Invoice line item =====
@@ -378,6 +423,15 @@ public class CiiMapper
 			seller.setURIUniversalCommunication(uriCommunication(email));
 		}
 
+		// BG-6 Seller contact (BT-41 name, BT-42 phone, BT-43 email)
+		// XRechnung BR-DE-2 requires DefinedTradeContact on the seller party.
+		// Source: first AD_User contact associated with the seller BPartner.
+		final TradeContactType sellerContact = buildSellerContact(sellerBP);
+		if (sellerContact != null)
+		{
+			seller.setDefinedTradeContact(sellerContact);
+		}
+
 		// BG-5 Seller postal address
 		seller.setPostalTradeAddress(buildSellerAddress(sellerBP));
 
@@ -407,6 +461,84 @@ public class CiiMapper
 		}
 
 		return buildAddress(repo.getLocation(sellerBPLoc.getC_Location_ID()));
+	}
+
+	/**
+	 * Builds BG-6 Seller contact (DefinedTradeContact) from the first AD_User linked to the seller BPartner.
+	 *
+	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact on the seller party.
+	 * BR-DE-5 requires PersonName or DepartmentName; BR-DE-6 requires a telephone number
+	 * (CompleteNumber matching ≥3 digits); BR-DE-7 requires an email URI.
+	 * BR-DE-27 / BR-DE-28 validate the phone/email format.
+	 *
+	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}. The first contact
+	 * with a non-empty phone number (BT-42) is preferred; if none has a phone, the first contact
+	 * overall is used.
+	 *
+	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no contacts.
+	 */
+	@Nullable
+	private TradeContactType buildSellerContact(@NonNull final I_C_BPartner sellerBP)
+	{
+		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
+		if (contacts.isEmpty())
+		{
+			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+					sellerBP.getC_BPartner_ID());
+			return null;
+		}
+
+		// Prefer the first contact that has a phone number (BR-DE-6 requires a phone)
+		I_AD_User contact = null;
+		for (final I_AD_User u : contacts)
+		{
+			final String phone = u.getPhone();
+			if (phone != null && !phone.trim().isEmpty())
+			{
+				contact = u;
+				break;
+			}
+		}
+		if (contact == null)
+		{
+			contact = contacts.get(0);
+		}
+
+		final TradeContactType tradeContact = new TradeContactType();
+
+		// BT-41 Contact point name (PersonName)
+		final String contactName = contact.getName();
+		if (contactName != null && !contactName.trim().isEmpty())
+		{
+			tradeContact.setPersonName(text(contactName));
+		}
+		else
+		{
+			log.warn("Seller BPartner {} has a contact (AD_User_ID={}) with no name — XRechnung BR-DE-5 (PersonName) will fail validation",
+					sellerBP.getC_BPartner_ID(), contact.getAD_User_ID());
+		}
+
+		// BT-42 Contact telephone (CompleteNumber — must contain ≥3 digits per BR-DE-27)
+		final String phone = contact.getPhone();
+		if (phone != null && !phone.trim().isEmpty())
+		{
+			final UniversalCommunicationType phoneCom = new UniversalCommunicationType();
+			phoneCom.setCompleteNumber(text(phone.trim()));
+			tradeContact.setTelephoneUniversalCommunication(phoneCom);
+		}
+
+		// BT-43 Contact email (URIID — must match email format per BR-DE-28)
+		final String contactEmail = contact.getEMail();
+		if (contactEmail != null && !contactEmail.trim().isEmpty())
+		{
+			final UniversalCommunicationType emailCom = new UniversalCommunicationType();
+			final IDType emailId = new IDType();
+			emailId.setValue(contactEmail.trim());
+			emailCom.setURIID(emailId);
+			tradeContact.setEmailURIUniversalCommunication(emailCom);
+		}
+
+		return tradeContact;
 	}
 
 	// ===== Buyer trade party (BG-7/BG-8) =====

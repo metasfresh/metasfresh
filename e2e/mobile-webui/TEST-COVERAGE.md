@@ -4,16 +4,16 @@
 
 ## Summary
 
-| Module | Covered | Total | %   |
-|---|---------|-------|-----|
-| Login / Home | 8       | 11 | 73% |
-| Barcode Scanner Modes | 7       | 12 | 58% |
-| Picking | 60      | 63    | 95% |
-| Distribution | 40      | 41    | 98% |
-| Manufacturing | 23      | 29    | 79% |
-| HU Manager | 14      | 16    | 88% |
-| HU Consolidation | 4       | 5     | 80% |
-| Inventory | 1       | 3     | 33% |
+| Module | Covered | Total | % |
+|---|---|---|---|
+| Login / Home | 8 | 11 | 73% |
+| Barcode Scanner Modes | 7 | 12 | 58% |
+| Picking | 60 | 64 | 94% |
+| Distribution | 40 | 41 | 98% |
+| Manufacturing | 23 | 29 | 79% |
+| HU Manager | 14 | 16 | 88% |
+| HU Consolidation | 4 | 5 | 80% |
+| Inventory | 1 | 3 | 33% |
 
 ---
 
@@ -231,6 +231,15 @@
 | Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
 
 **3/3 — 100%**
+
+### Navigation — device/browser Back
+
+| Scenario | Test |
+|---|---|
+| Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put, never leaves the app, and the title bar does not revert to the app caption | `picking/deviceBackIsNoOp.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
