@@ -81,6 +81,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
@@ -95,6 +96,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class JsonConverters
 {
 	public static final String DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME = "int-DEST.de.metas.ordercandidate";
@@ -110,20 +112,6 @@ public class JsonConverters
 	@NonNull private final DocTypeService docTypeService;
 	@NonNull private final CustomColumnService customColumnService;
 	@NonNull private final PromotionCodeRepository promotionCodeRepository;
-
-	public JsonConverters(
-			@NonNull final ExternalSystemRepository externalSystemRepository,
-			@NonNull final CurrencyService currencyService,
-			@NonNull final DocTypeService docTypeService,
-			@NonNull final CustomColumnService customColumnService,
-			@NonNull final PromotionCodeRepository promotionCodeRepository)
-	{
-		this.externalSystemRepository = externalSystemRepository;
-		this.currencyService = currencyService;
-		this.docTypeService = docTypeService;
-		this.customColumnService = customColumnService;
-		this.promotionCodeRepository = promotionCodeRepository;
-	}
 
 	@NonNull
 	public final OLCandCreateRequest fromJson(
@@ -464,8 +452,8 @@ public class JsonConverters
 				.line(olCand.getLine())
 				//
 				.extendedProps(getExtendedPropsOrNull(olCand))
-				.promotionCode(getPromotionCodeValueOrNull(olCand.unbox().getC_PromotionCode()))
-				.promotionCode2(getPromotionCodeValueOrNull(olCand.unbox().getC_PromotionCode2()))
+				.promotionCode(promotionCodeRepository.getValueByIdOrNull(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID())))
+				.promotionCode2(promotionCodeRepository.getValueByIdOrNull(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
 				.isWithoutCharge(olCand.unbox().isWithoutCharge())
 				.reason(olCand.unbox().getReason())
 				//
@@ -483,17 +471,6 @@ public class JsonConverters
 		final ImmutableMap<String, Object> extProps =
 				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(olCandRecord)).toMap();
 		return extProps.isEmpty() ? null : extProps;
-	}
-
-	@Nullable
-	private static String getPromotionCodeValueOrNull(@Nullable final org.compiere.model.I_C_PromotionCode promotionCode)
-	{
-		if (promotionCode == null)
-		{
-			return null;
-		}
-		final String value = promotionCode.getValue();
-		return Check.isBlank(value) ? null : value;
 	}
 
 	@NonNull

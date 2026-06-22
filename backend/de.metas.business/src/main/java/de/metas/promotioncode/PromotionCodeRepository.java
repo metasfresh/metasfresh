@@ -22,12 +22,15 @@
 
 package de.metas.promotioncode;
 
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_PromotionCode;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 /**
  * Repository Tables: C_PromotionCode
@@ -52,5 +55,25 @@ public class PromotionCodeRepository
 					.setParameter("Value", value);
 		}
 		return PromotionCodeId.ofRepoId(repoId);
+	}
+
+	@Nullable
+	public String getValueByIdOrNull(@Nullable final PromotionCodeId promotionCodeId)
+	{
+		if (promotionCodeId == null)
+		{
+			return null;
+		}
+		final I_C_PromotionCode record = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
+				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, promotionCodeId.getRepoId())
+				.create()
+				.first();
+		if (record == null)
+		{
+			return null;
+		}
+		final String value = record.getValue();
+		return Check.isBlank(value) ? null : value;
 	}
 }
