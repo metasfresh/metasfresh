@@ -75,9 +75,9 @@ public class LotNumberBL implements ILotNumberBL
 
 		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
 		// Expose it under the standard Record_ID context key. Without a PP_Order the context carries no Record_ID: a
-		// provider such as DBFunctionSequenceNoProvider then reports isApplicable=false and DocumentNoBuilder
-		// (setFailOnError) throws - it does NOT silently fall back. Sequences with no provider are unaffected
-		// (empty context == today's behaviour).
+		// provider such as DBFunctionSequenceNoProvider then reports isApplicable=false, which makes
+		// DocumentNoBuilder.getSequenceNoToUse() throw unconditionally (independent of failOnError) - it does NOT
+		// silently fall back. Sequences with no provider are unaffected (empty context == today's behaviour).
 		final PPOrderId ppOrderId = context.getPpOrderId();
 		final Evaluatee evaluationContext = ppOrderId != null
 				? Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId())
