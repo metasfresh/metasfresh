@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/BusinessPartnerAccountSheetReport.sql
 DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
 CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric,
@@ -117,7 +118,7 @@ BEGIN
                         hal.ad_org_id               ad_org_id
                  FROM c_payment p
                           join C_AllocationLine al on al.c_payment_id = p.c_payment_id and al.paymentwriteoffamt > 0
-						  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
+					  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
                  WHERE TRUE
                    AND p.c_bpartner_id = p_c_bpartner_id
                    AND hal.dateacct >= p_dateFrom
