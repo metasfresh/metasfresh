@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/BusinessPartnerAccountSheetReport.sql
 DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
 CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric = NULL,
@@ -362,3 +363,12 @@ FROM BusinessPartnerAccountSheetReport(NULL,
 ;
 
 */
+
+-- Make Geschäftspartner parameter optional so the report can run across all partners
+-- AD_Process_Para_ID=541752 = C_BPartner_ID on process BusinessPartnerAccountSheetReport (AD_Process_ID=584661)
+UPDATE AD_Process_Para
+SET IsMandatory = 'N',
+    Updated     = now(),
+    UpdatedBy   = 100
+WHERE AD_Process_Para_ID = 541752
+;
