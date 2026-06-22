@@ -23,7 +23,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 
 /*
  * #%L
@@ -230,34 +229,6 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	String paymentTerm;
 
-	/**
-	 * Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y').
-	 * Keys are column names; values are the column values.
-	 * Unknown columns cause a user-validation error.
-	 * A null or missing map is treated as a no-op.
-	 */
-	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
-			+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
-			+ "A null or empty map is treated as a no-op.")
-	@JsonInclude(Include.NON_NULL)
-	Map<String, Object> extendedProps;
-
-	@ApiModelProperty(value = "Translates to `C_PromotionCode.Value`. The looked up promotion code's ID is set to `C_OLCand.C_PromotionCode_ID`.")
-	@JsonInclude(Include.NON_NULL)
-	String promotionCode;
-
-	@ApiModelProperty(value = "Translates to `C_PromotionCode.Value`. The looked up promotion code's ID is set to `C_OLCand.C_PromotionCode2_ID`.")
-	@JsonInclude(Include.NON_NULL)
-	String promotionCode2;
-
-	@ApiModelProperty(value = "If true, the order line candidate will be created without charge. Translates to `C_OLCand.IsWithoutCharge`.")
-	@JsonInclude(Include.NON_NULL)
-	Boolean isWithoutCharge;
-
-	@ApiModelProperty(value = "Free-text reason associated with the order line candidate. Translates to `C_OLCand.Reason`.")
-	@JsonInclude(Include.NON_NULL)
-	String reason;
-
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -293,12 +264,7 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("paymentRule") final @Nullable JSONPaymentRule paymentRule,
 			@JsonProperty("salesPartnerCode") final @Nullable String salesPartnerCode,
 			@JsonProperty("shipper") final @Nullable String shipper,
-			@JsonProperty("paymentTerm") final @Nullable String paymentTerm,
-			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps,
-			@JsonProperty("promotionCode") final @Nullable String promotionCode,
-			@JsonProperty("promotionCode2") final @Nullable String promotionCode2,
-			@JsonProperty("isWithoutCharge") final @Nullable Boolean isWithoutCharge,
-			@JsonProperty("reason") final @Nullable String reason)
+			@JsonProperty("paymentTerm") final @Nullable String paymentTerm)
 	{
 		this.org = org;
 		this.externalLineId = externalLineId;
@@ -335,11 +301,6 @@ public class JsonOLCandCreateRequest
 		this.shipper = shipper;
 
 		this.paymentTerm = paymentTerm;
-		this.extendedProps = extendedProps;
-		this.promotionCode = promotionCode;
-		this.promotionCode2 = promotionCode2;
-		this.isWithoutCharge = isWithoutCharge;
-		this.reason = reason;
 	}
 
 	/**

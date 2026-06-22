@@ -246,7 +246,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		final CurrencyService currencyService = new CurrencyService();
 		final DocTypeService docTypeService = new DocTypeService();
-		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService, ExternalSystemRepository.newInstanceForUnitTesting(), Mockito.mock(org.adempiere.ad.persistence.custom_columns.CustomColumnService.class), Mockito.mock(de.metas.promotioncode.PromotionCodeRepository.class));
+		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService, ExternalSystemRepository.newInstanceForUnitTesting());
 
 		// bpartnerRestController
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());

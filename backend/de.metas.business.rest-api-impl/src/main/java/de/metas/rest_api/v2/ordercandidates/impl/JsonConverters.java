@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -59,12 +60,15 @@ import de.metas.order.impl.DocTypeService;
 import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandCreateRequest;
+import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
+import de.metas.promotioncode.PromotionCodeId;
+import de.metas.promotioncode.PromotionCodeRepository;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.rest_api.utils.IdentifierString;
@@ -77,8 +81,10 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
+import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -89,7 +95,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor
 public class JsonConverters
 {
 	public static final String DEFAULT_DATA_SOURCE_DEST_INTERNAL_NAME = "int-DEST.de.metas.ordercandidate";
@@ -103,6 +108,22 @@ public class JsonConverters
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
 	@NonNull private final CurrencyService currencyService;
 	@NonNull private final DocTypeService docTypeService;
+	@NonNull private final CustomColumnService customColumnService;
+	@NonNull private final PromotionCodeRepository promotionCodeRepository;
+
+	public JsonConverters(
+			@NonNull final ExternalSystemRepository externalSystemRepository,
+			@NonNull final CurrencyService currencyService,
+			@NonNull final DocTypeService docTypeService,
+			@NonNull final CustomColumnService customColumnService,
+			@NonNull final PromotionCodeRepository promotionCodeRepository)
+	{
+		this.externalSystemRepository = externalSystemRepository;
+		this.currencyService = currencyService;
+		this.docTypeService = docTypeService;
+		this.customColumnService = customColumnService;
+		this.promotionCodeRepository = promotionCodeRepository;
+	}
 
 	@NonNull
 	public final OLCandCreateRequest fromJson(
@@ -220,6 +241,14 @@ public class JsonConverters
 		final IncotermsId incotermsId = incoterms != null ? incoterms.getId() : null;
 		final String incotermsLocation = incoterms != null ? incoterms.getLocationEffective() : null;
 
+		final PromotionCodeId promotionCodeId = !Check.isBlank(request.getPromotionCode())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode())
+				: null;
+
+		final PromotionCodeId promotionCode2Id = !Check.isBlank(request.getPromotionCode2())
+				? promotionCodeRepository.getPromotionCodeIdByValue(request.getPromotionCode2())
+				: null;
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -293,6 +322,11 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.extendedProps(request.getExtendedProps())
+				.promotionCodeId(promotionCodeId)
+				.promotionCode2Id(promotionCode2Id)
+				.isWithoutCharge(request.getIsWithoutCharge())
+				.reason(request.getReason())
 				.build()
 				;
 	}
@@ -428,7 +462,38 @@ public class JsonConverters
 						.map(JsonMetasfreshId::of)
 						.orElse(null))
 				.line(olCand.getLine())
+				//
+				.extendedProps(getExtendedPropsOrNull(olCand))
+				.promotionCode(getPromotionCodeValueOrNull(olCand.unbox().getC_PromotionCode()))
+				.promotionCode2(getPromotionCodeValueOrNull(olCand.unbox().getC_PromotionCode2()))
+				.isWithoutCharge(olCand.unbox().isWithoutCharge())
+				.reason(olCand.unbox().getReason())
+				//
 				.build();
+	}
+
+	@Nullable
+	private ImmutableMap<String, Object> getExtendedPropsOrNull(@NonNull final OLCand olCand)
+	{
+		final I_C_OLCand olCandRecord = olCand.unbox();
+		if (POJOWrapper.isHandled(olCandRecord))
+		{
+			return null;  // POJOWrapper-backed record (unit-test mode) — no custom columns
+		}
+		final ImmutableMap<String, Object> extProps =
+				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(olCandRecord)).toMap();
+		return extProps.isEmpty() ? null : extProps;
+	}
+
+	@Nullable
+	private static String getPromotionCodeValueOrNull(@Nullable final org.compiere.model.I_C_PromotionCode promotionCode)
+	{
+		if (promotionCode == null)
+		{
+			return null;
+		}
+		final String value = promotionCode.getValue();
+		return Check.isBlank(value) ? null : value;
 	}
 
 	@NonNull

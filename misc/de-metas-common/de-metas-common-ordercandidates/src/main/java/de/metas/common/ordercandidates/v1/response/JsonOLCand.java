@@ -12,7 +12,6 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Map;
 
 /*
  * #%L
@@ -90,27 +89,6 @@ public class JsonOLCand
 
 	private int warehouseDestId;
 
-	@ApiModelProperty(value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
-			+ "Keys are column names; values are the column values.")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Map<String, Object> extendedProps;
-
-	@ApiModelProperty(value = "Value of the promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String promotionCode;
-
-	@ApiModelProperty(value = "Value of the second promotion code linked to this order line candidate (`C_PromotionCode.Value`).")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String promotionCode2;
-
-	@ApiModelProperty(value = "If true, the order line candidate was created without charge.")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private Boolean isWithoutCharge;
-
-	@ApiModelProperty(value = "Free-text reason associated with the order line candidate.")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String reason;
-
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -135,12 +113,7 @@ public class JsonOLCand
 			@JsonProperty("pricingSystemId") final int pricingSystemId,
 			@JsonProperty("price") final BigDecimal price,
 			@JsonProperty("discount") final BigDecimal discount,
-			@JsonProperty("warehouseDestId") final int warehouseDestId,
-			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps,
-			@JsonProperty("promotionCode") final @Nullable String promotionCode,
-			@JsonProperty("promotionCode2") final @Nullable String promotionCode2,
-			@JsonProperty("isWithoutCharge") final @Nullable Boolean isWithoutCharge,
-			@JsonProperty("reason") final @Nullable String reason)
+			@JsonProperty("warehouseDestId") final int warehouseDestId)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -164,11 +137,6 @@ public class JsonOLCand
 		this.price = price;
 		this.discount = discount;
 		this.warehouseDestId = warehouseDestId;
-		this.extendedProps = extendedProps;
-		this.promotionCode = promotionCode;
-		this.promotionCode2 = promotionCode2;
-		this.isWithoutCharge = isWithoutCharge;
-		this.reason = reason;
 	}
 
 }
