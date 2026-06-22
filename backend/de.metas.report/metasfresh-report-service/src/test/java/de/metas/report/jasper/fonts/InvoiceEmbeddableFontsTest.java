@@ -34,7 +34,7 @@ import java.util.Locale;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * TDD test for ZUGFeRD PDF/A-3 font embedding requirement.
+ * Verifies the invoice font families are registered as embeddable, as PDF/A-3 output requires.
  *
  * <p>The invoice JRXMLs use three font family names:
  * <ul>
