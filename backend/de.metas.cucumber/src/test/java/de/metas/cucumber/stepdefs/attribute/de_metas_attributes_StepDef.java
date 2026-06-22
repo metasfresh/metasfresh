@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.attribute;
 
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -107,7 +108,7 @@ public class de_metas_attributes_StepDef
 	 * @cucumber.columns
 	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI to read from.<br>
 	 *   <b>M_Attribute_ID</b> &mdash; (required, identifier-ref) the attribute to read.<br>
-	 *   <b>Value</b> &mdash; (optional) expected value as text; empty asserts null.<br>
+	 *   <b>Value</b> &mdash; (optional) expected value as text; empty / <code>-</code> / <code>null</code> asserts null.<br>
 	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData, M_Attribute_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -122,8 +123,8 @@ public class de_metas_attributes_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final int asiId = attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)).getRepoId();
 			final AttributeId attributeId = attributeTable.getId(row.getAsIdentifier(COLUMNNAME_M_Attribute_ID));
-			// '-' (the cucumber null placeholder) asserts the value is null
-			final String expected = row.getAsOptionalString("Value").map(v -> "-".equals(v) ? null : v).orElse(null);
+			// '-' / 'null' / empty (the cucumber null placeholders) assert the value is null
+			final String expected = row.getAsOptionalString("Value").map(DataTableUtil::nullToken2Null).orElse(null);
 
 			final String actual = DB.getSQLValueStringEx(
 					ITrx.TRXNAME_ThreadInherited,
