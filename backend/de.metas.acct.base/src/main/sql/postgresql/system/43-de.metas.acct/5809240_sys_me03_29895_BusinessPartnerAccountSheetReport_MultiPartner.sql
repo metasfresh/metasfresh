@@ -372,3 +372,12 @@ SET IsMandatory = 'N',
     UpdatedBy   = 100
 WHERE AD_Process_Para_ID = 541752
 ;
+
+-- Update SQLStatement so that an empty/unset Geschäftspartner field passes NULL (all-partners mode).
+-- NULLIF(@C_BPartner_ID/0@, 0): the /0 suffix defaults to 0 when blank; NULLIF converts 0 → NULL.
+UPDATE AD_Process
+SET SQLStatement = 'SELECT * FROM BusinessPartnerAccountSheetReport(NULLIF(@C_BPartner_ID/0@, 0), ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, ''@IsSOTrx@'')',
+    Updated      = now(),
+    UpdatedBy    = 100
+WHERE AD_Process_ID = 584661
+;
