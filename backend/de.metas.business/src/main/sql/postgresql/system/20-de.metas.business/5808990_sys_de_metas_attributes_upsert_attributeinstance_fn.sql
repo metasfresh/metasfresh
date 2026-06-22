@@ -80,7 +80,7 @@ BEGIN
     UPDATE M_AttributeSetInstance asi
        SET Description = COALESCE((
               SELECT string_agg(
-                       COALESCE(av.Name, ai.Value, ai.ValueNumber::text, to_char(ai.ValueDate, 'YYYY-MM-DD')), '_'
+                       COALESCE(av.Name, ai.Value, ai.ValueNumber::text, to_char(ai.ValueDate, 'DD.MM.YYYY')), '_'
                        ORDER BY ai.M_AttributeInstance_ID)
                 FROM M_AttributeInstance ai
                 LEFT JOIN M_AttributeValue av ON av.M_AttributeValue_ID = ai.M_AttributeValue_ID

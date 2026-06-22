@@ -94,6 +94,14 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
       | asi_4                     | attr_str       | -     |
       | asi_4                     | attr_list      | -     |
 
+  Scenario: A date attribute renders as DD.MM.YYYY in the Description
+    When invoke de_metas_attributes.upsert_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value      |
+      | asi_d                     | attr_date      | 2024-01-15 |
+    Then validate M_AttributeSetInstance:
+      | M_AttributeSetInstance_ID | Description |
+      | asi_d                     | 15.01.2024  |
+
   Scenario: cloneASI copies all attribute values into a new, independent ASI
     When invoke de_metas_attributes.upsert_attributeinstance:
       | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
