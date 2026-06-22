@@ -9,6 +9,7 @@ import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockFailedException;
+import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.OrgId;
@@ -25,6 +26,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -72,6 +74,8 @@ import static java.math.BigDecimal.ZERO;
  */
 public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
+	private static final Logger logger = LogManager.getLogger(MD_Stock_Update_From_M_HUs.class);
+
 	/** Number of diverging rows fetched and corrected per iteration. */
 	private static final int BATCH_SIZE = 500;
 
@@ -173,8 +177,12 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final Runnable release = singleRunGate.tryAcquire();
 		if (release == null)
 		{
-			Loggables.addLog("Another {} run is already active; skipping this run to avoid overlapping resets.",
-					getClass().getSimpleName());
+			final String msg = "Another " + getClass().getSimpleName()
+					+ " run is already active; skipping this run to avoid overlapping resets."
+					+ " If this repeats, check T_Lock for a stale lock on this process's AD_Process record.";
+			// also to the application log so a stuck/never-released lock is visible to ops, not only in the skipped run's AD_PInstance log
+			logger.warn(msg);
+			Loggables.addLog(msg);
 			return MSG_OK;
 		}
 
@@ -284,15 +292,22 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		{
 			final ILock lock = lockManager.lock()
 					.setOwner(LockOwner.newOwner(getClass().getSimpleName()))
-					.setFailIfAlreadyLocked(true)
-					.setAutoCleanup(true)
+					.setFailIfAlreadyLocked(true) // explicit: a concurrent run must fail to acquire, not queue
+					.setAutoCleanup(true)         // explicit: release the lock on crash so it can't block forever
 					.setRecordByModel(processRecord)
 					.acquire();
 			return lock::close;
 		}
 		catch (final LockFailedException ex)
 		{
-			return null; // another run already holds the lock
+			// LockFailedException covers BOTH a genuine concurrent-run collision AND unexpected DB errors
+			// (SqlLockDatabase wraps any failure). Treat only an actual existing lock as "skip"; re-throw
+			// real failures so the scheduler surfaces/retries them instead of silently no-op-ing.
+			if (lockManager.isLocked(I_AD_Process.class, processRecord.getAD_Process_ID(), LockOwner.ANY))
+			{
+				return null; // another run already holds the lock → skip this run
+			}
+			throw ex;
 		}
 	}
 
