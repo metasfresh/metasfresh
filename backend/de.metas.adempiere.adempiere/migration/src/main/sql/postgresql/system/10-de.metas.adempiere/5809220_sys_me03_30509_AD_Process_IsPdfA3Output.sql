@@ -5,8 +5,8 @@
 -- IDs allocated from idserver.metas.de on 2026-06-22:
 --   AD_Element    585042  (IsPdfA3Output)
 --   AD_Column     592875  (AD_Process.IsPdfA3Output)
---   AD_Field      781237  (tab 245, excel element group, SeqNo=350)
---   AD_UI_Element 652355  (tab 245, excel element group, SeqNo=30)
+--   AD_Field      781237  (tab 245, advanced-edit element group, Swing SeqNo=235)
+--   AD_UI_Element 652355  (tab 245, advanced-edit element group, SeqNo=225)
 
 -- ============================================================
 -- 1. Physical column on AD_Process
@@ -142,7 +142,7 @@ VALUES (0,592875 /*From ID Server*/,781237 /*From ID Server*/,0,245,
   'Wenn aktiv, wird der Bericht als PDF/A-3 ausgegeben (für ZUGFeRD e-Rechnung).',
   1,'D','Y','Y','N',
   'N','N','N','N','N',
-  'PDF/A-3 Ausgabe',350 /*after IsFormatExcelFile at 340*/,
+  'PDF/A-3 Ausgabe',235 /*Swing order: between AD_PrintFormat_ID (230) and ShowHelp (240)*/,
   TO_TIMESTAMP('2026-06-22 10:02:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
   100)
 ;
@@ -168,19 +168,21 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781237 /*From ID Server*/
 ;
 
 -- ============================================================
--- 5. AD_UI_Element in the 'excel' element group (546147) on tab 245
+-- 5. AD_UI_Element in the 'advanced edit' element group (541388) on tab 245
 --    (renders in WebUI; Swing uses AD_Field.SeqNo from above)
+--    Placed with the other output-format controls (IsDirectPrint, AD_PrintFormat_ID),
+--    NOT the 'excel' group — IsPdfA3Output is a PDF output flag, not an Excel option.
 -- ============================================================
--- UI Element: Bericht & Prozess(165) -> Bericht & Prozess(245) -> section2 -> excel -> PDF/A-3 Ausgabe
+-- UI Element: Bericht & Prozess(165) -> Bericht & Prozess(245) -> section2 -> advanced edit -> PDF/A-3 Ausgabe
 -- Column: AD_Process.IsPdfA3Output
 -- 2026-06-22T10:02:30.000Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,
   Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,
   Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,781237 /*From ID Server*/,0,245,546147 /*excel group*/,652355 /*From ID Server*/,'F',
+VALUES (0,781237 /*From ID Server*/,0,245,541388 /*advanced-edit group*/,652355 /*From ID Server*/,'F',
   TO_TIMESTAMP('2026-06-22 10:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
-  100,'Y','Y' /*IsAdvancedField=Y: siblings IsTranslateExcelHeaders+IsFormatExcelFile are both Y*/,'Y','N','N',
-  'PDF/A-3 Ausgabe',30 /*after IsFormatExcelFile at SeqNo=20*/,0,0,
+  100,'Y','Y' /*IsAdvancedField=Y: advanced-edit group, consistent with Direct print / Druck-Format*/,'Y','N','N',
+  'PDF/A-3 Ausgabe',225 /*advanced-edit group: between Druck-Format (220) and Show Help (230)*/,0,0,
   TO_TIMESTAMP('2026-06-22 10:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',
   100)
 ;
