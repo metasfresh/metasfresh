@@ -109,7 +109,7 @@ UPDATE AD_Element base SET Description=trl.Description, Help=trl.Help, Updated=t
 
 -- Column: M_ShippingPackage.TransportProductNos
 -- 2026-06-22T14:30:39.698Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterInactiveValues,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592872,585039,0,10,540031,'XX','TransportProductNos','(CASE   WHEN M_ShippingPackage.M_InOut_ID IS NOT NULL THEN     (SELECT string_agg(DISTINCT p.Value, '', '' ORDER BY p.Value)        from M_InOutLine iol        JOIN M_Product p on p.M_Product_ID = iol.M_Product_ID       where iol.M_InOut_ID = M_ShippingPackage.M_InOut_ID         AND iol.IsActive = ''Y'' AND iol.M_Product_ID IS NOT NULL)   WHEN M_ShippingPackage.C_Order_ID IS NOT NULL THEN     (SELECT string_agg(DISTINCT p.Value, '', '' ORDER BY p.Value)        from C_OrderLine ol        JOIN M_Product p on p.M_Product_ID = ol.M_Product_ID       where ol.C_Order_ID = M_ShippingPackage.C_Order_ID         AND ol.IsActive = ''Y'' AND ol.M_Product_ID IS NOT NULL) END)',TO_TIMESTAMP('2026-06-22 14:30:39.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Kommagetrennte Liste aller unterschiedlichen Artikelnummern des zugrunde liegenden Belegs: der Lieferschein-Positionen, falls das Packstück einen Lieferschein referenziert, sonst der Auftrags-Positionen.','METAS_SHIPPING',0,30,'Kommagetrennte Liste aller unterschiedlichen Artikelnummern des zugrunde liegenden Belegs: der Lieferschein-Positionen, falls das Packstück einen Lieferschein referenziert, sonst der Auftrags-Positionen.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N',0,'Produktnummer',0,0,TO_TIMESTAMP('2026-06-22 14:30:39.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterInactiveValues,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592872,585039,0,10,540031,'XX','TransportProductNos','(case when @JoinTableNameOrAliasIncludingDot@M_InOut_ID is not null then (select string_agg(distinct p.Value, '', '' order by p.Value) from m_inoutline iol join m_product p on p.M_Product_ID = iol.M_Product_ID where iol.M_InOut_ID = @JoinTableNameOrAliasIncludingDot@M_InOut_ID and iol.IsActive = ''Y'' and iol.IsPackagingMaterial = ''N'' and iol.M_Product_ID is not null) when @JoinTableNameOrAliasIncludingDot@C_Order_ID is not null then (select string_agg(distinct p.Value, '', '' order by p.Value) from c_orderline ol join m_product p on p.M_Product_ID = ol.M_Product_ID where ol.C_Order_ID = @JoinTableNameOrAliasIncludingDot@C_Order_ID and ol.IsActive = ''Y'' and ol.IsPackagingMaterial = ''N'' and ol.M_Product_ID is not null) end)',TO_TIMESTAMP('2026-06-22 14:30:39.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Kommagetrennte Liste aller unterschiedlichen Artikelnummern des zugrunde liegenden Belegs: der Lieferschein-Positionen, falls das Packstück einen Lieferschein referenziert, sonst der Auftrags-Positionen.','METAS_SHIPPING',0,30,'Kommagetrennte Liste aller unterschiedlichen Artikelnummern des zugrunde liegenden Belegs: der Lieferschein-Positionen, falls das Packstück einen Lieferschein referenziert, sonst der Auftrags-Positionen.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N',0,'Produktnummer',0,0,TO_TIMESTAMP('2026-06-22 14:30:39.269000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-06-22T14:30:39.750Z
@@ -122,7 +122,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 
 -- Column: M_ShippingPackage.TransportQtys
 -- 2026-06-22T14:31:27.154Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterInactiveValues,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592873,585040,0,29,540031,'XX','TransportQtys','(CASE   WHEN M_ShippingPackage.M_InOut_ID IS NOT NULL THEN     (SELECT CASE WHEN COUNT(DISTINCT iol.M_Product_ID) = 1 THEN SUM(iol.QtyEntered) END        from M_InOutLine iol       where iol.M_InOut_ID = M_ShippingPackage.M_InOut_ID         AND iol.IsActive = ''Y'' AND iol.M_Product_ID IS NOT NULL)   WHEN M_ShippingPackage.C_Order_ID IS NOT NULL THEN     (SELECT CASE WHEN COUNT(DISTINCT ol.M_Product_ID) = 1 THEN SUM(ol.QtyEntered) END        from C_OrderLine ol       where ol.C_Order_ID = M_ShippingPackage.C_Order_ID         AND ol.IsActive = ''Y'' AND ol.M_Product_ID IS NOT NULL) END)',TO_TIMESTAMP('2026-06-22 14:31:26.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Gesamtmenge (Summe der erfassten Menge) des zugrunde liegenden Belegs; nur befüllt, wenn der Beleg genau einen Artikel enthält. Bei mehreren Artikeln bleibt die Spalte leer.','METAS_SHIPPING',0,10,'Gesamtmenge (Summe der erfassten Menge) des zugrunde liegenden Belegs; nur befüllt, wenn der Beleg genau einen Artikel enthält. Bei mehreren Artikeln bleibt die Spalte leer.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N',0,'Menge',0,0,TO_TIMESTAMP('2026-06-22 14:31:26.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterInactiveValues,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592873,585040,0,29,540031,'XX','TransportQtys','(case when @JoinTableNameOrAliasIncludingDot@M_InOut_ID is not null then (select case when count(distinct iol.M_Product_ID) = 1 then sum(iol.QtyEntered) end from m_inoutline iol where iol.M_InOut_ID = @JoinTableNameOrAliasIncludingDot@M_InOut_ID and iol.IsActive = ''Y'' and iol.IsPackagingMaterial = ''N'' and iol.M_Product_ID is not null) when @JoinTableNameOrAliasIncludingDot@C_Order_ID is not null then (select case when count(distinct ol.M_Product_ID) = 1 then sum(ol.QtyEntered) end from c_orderline ol where ol.C_Order_ID = @JoinTableNameOrAliasIncludingDot@C_Order_ID and ol.IsActive = ''Y'' and ol.IsPackagingMaterial = ''N'' and ol.M_Product_ID is not null) end)',TO_TIMESTAMP('2026-06-22 14:31:26.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'N','Gesamtmenge (Summe der erfassten Menge) des zugrunde liegenden Belegs; nur befüllt, wenn der Beleg genau einen Artikel enthält. Bei mehreren Artikeln bleibt die Spalte leer.','METAS_SHIPPING',0,10,'Gesamtmenge (Summe der erfassten Menge) des zugrunde liegenden Belegs; nur befüllt, wenn der Beleg genau einen Artikel enthält. Bei mehreren Artikeln bleibt die Spalte leer.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N',0,'Menge',0,0,TO_TIMESTAMP('2026-06-22 14:31:26.744000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 -- 2026-06-22T14:31:27.204Z
@@ -169,7 +169,7 @@ UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=541960, IsExclude
 
 -- Column: M_ShippingPackage.TransportUOM_ID
 -- 2026-06-22T14:38:28.973Z
-UPDATE AD_Column SET ColumnSQL='(CASE   WHEN M_ShippingPackage.M_InOut_ID IS NOT NULL THEN     (SELECT CASE WHEN COUNT(DISTINCT iol.M_Product_ID) = 1 THEN MAX(iol.C_UOM_ID) END        from M_InOutLine iol       where iol.M_InOut_ID = M_ShippingPackage.M_InOut_ID         AND iol.IsActive = ''Y'' AND iol.M_Product_ID IS NOT NULL)   WHEN M_ShippingPackage.C_Order_ID IS NOT NULL THEN     (SELECT CASE WHEN COUNT(DISTINCT ol.M_Product_ID) = 1 THEN MAX(ol.C_UOM_ID) END        from C_OrderLine ol       where ol.C_Order_ID = M_ShippingPackage.C_Order_ID         AND ol.IsActive = ''Y'' AND ol.M_Product_ID IS NOT NULL) END)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2026-06-22 14:38:28.972000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592874
+UPDATE AD_Column SET ColumnSQL='(case when @JoinTableNameOrAliasIncludingDot@M_InOut_ID is not null then (select case when count(distinct iol.M_Product_ID) = 1 then max(iol.C_UOM_ID) end from m_inoutline iol where iol.M_InOut_ID = @JoinTableNameOrAliasIncludingDot@M_InOut_ID and iol.IsActive = ''Y'' and iol.IsPackagingMaterial = ''N'' and iol.M_Product_ID is not null) when @JoinTableNameOrAliasIncludingDot@C_Order_ID is not null then (select case when count(distinct ol.M_Product_ID) = 1 then max(ol.C_UOM_ID) end from c_orderline ol where ol.C_Order_ID = @JoinTableNameOrAliasIncludingDot@C_Order_ID and ol.IsActive = ''Y'' and ol.IsPackagingMaterial = ''N'' and ol.M_Product_ID is not null) end)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2026-06-22 14:38:28.972000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592874
 ;
 
 -- Field: Transport Auftrag(540020,METAS_SHIPPING) -> Versandpackung(540097,METAS_SHIPPING) -> Auftragsposition
@@ -342,5 +342,102 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 -- Column: M_ShippingPackage.Note
 -- 2026-06-22T14:49:55.484Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2026-06-22 14:49:55.483000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=545697
+;
+
+-- AD_SQLColumn_SourceTableColumn: cache invalidation for the three virtual columns on M_ShippingPackage (540031).
+-- The columns read from M_InOutLine / C_OrderLine (and M_Product for TransportProductNos); none of those has a
+-- direct FK to M_ShippingPackage (the link is indirect via M_InOut_ID / C_Order_ID), so all use the SQL fetch
+-- method 'S'. Without these, WebUI grids show stale values until manual reload.
+-- IDs from idserver.metas.de: 540210-540216.
+
+-- TransportProductNos (592872) <- M_InOutLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540210, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592872,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, m_inoutline iol where iol.M_InOutLine_ID = @Record_ID@ and sp.M_InOut_ID = iol.M_InOut_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592872 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'))
+;
+
+-- TransportProductNos (592872) <- C_OrderLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540211, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:01','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:01','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592872,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, c_orderline ol where ol.C_OrderLine_ID = @Record_ID@ and sp.C_Order_ID = ol.C_Order_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592872 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'))
+;
+
+-- TransportProductNos (592872) <- M_Product (reads p.Value)
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540212, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:02','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:02','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592872,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_Product'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp where sp.M_InOut_ID in (select iol.M_InOut_ID from m_inoutline iol where iol.M_Product_ID = @Record_ID@) or sp.C_Order_ID in (select ol.C_Order_ID from c_orderline ol where ol.M_Product_ID = @Record_ID@)',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592872 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_Product'))
+;
+
+-- TransportQtys (592873) <- M_InOutLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540213, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:03','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592873,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, m_inoutline iol where iol.M_InOutLine_ID = @Record_ID@ and sp.M_InOut_ID = iol.M_InOut_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592873 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'))
+;
+
+-- TransportQtys (592873) <- C_OrderLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540214, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:04','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:04','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592873,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, c_orderline ol where ol.C_OrderLine_ID = @Record_ID@ and sp.C_Order_ID = ol.C_Order_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592873 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'))
+;
+
+-- TransportUOM_ID (592874) <- M_InOutLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540215, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:05','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:05','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592874,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, m_inoutline iol where iol.M_InOutLine_ID = @Record_ID@ and sp.M_InOut_ID = iol.M_InOut_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592874 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='M_InOutLine'))
+;
+
+-- TransportUOM_ID (592874) <- C_OrderLine
+INSERT INTO AD_SQLColumn_SourceTableColumn
+	(AD_SQLColumn_SourceTableColumn_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
+	 AD_Table_ID, AD_Column_ID, Source_Table_ID, Sql_GetTargetRecordIdBySourceRecordId, FetchTargetRecordsMethod)
+SELECT 540216, 0, 0, 'Y',
+	TO_TIMESTAMP('2026-06-22 15:00:06','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-22 15:00:06','YYYY-MM-DD HH24:MI:SS'), 100,
+	540031, 592874,
+	(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'),
+	'select distinct sp.M_ShippingPackage_ID from m_shippingpackage sp, c_orderline ol where ol.C_OrderLine_ID = @Record_ID@ and sp.C_Order_ID = ol.C_Order_ID',
+	'S'
+WHERE NOT EXISTS (SELECT 1 FROM AD_SQLColumn_SourceTableColumn WHERE AD_Column_ID=592874 AND Source_Table_ID=(SELECT AD_Table_ID FROM AD_Table WHERE TableName='C_OrderLine'))
 ;
 
