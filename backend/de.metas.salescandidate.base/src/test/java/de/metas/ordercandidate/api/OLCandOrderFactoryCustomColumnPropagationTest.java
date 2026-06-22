@@ -22,7 +22,6 @@
 
 package de.metas.ordercandidate.api;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -45,14 +44,14 @@ import de.metas.product.ProductType;
 import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
-import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
-import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
@@ -68,8 +67,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -111,27 +108,17 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 				new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting())
 		);
 
-		// Register a stub CustomColumnRepository that does NOT hit the DB.
-		// It marks HEADER_COL as custom on C_OLCand + C_Order,
-		// and LINE_COL as custom on C_OLCand + C_OrderLine.
-		final TestCustomColumnRepository stubRepo = new TestCustomColumnRepository(
-				ImmutableMap.of(
-						I_C_OLCand.Table_Name, RESTApiTableInfo.builder()
-								.tableName(I_C_OLCand.Table_Name)
-								.customRestAPIColumnName(HEADER_COL)
-								.customRestAPIColumnName(LINE_COL)
-								.build(),
-						I_C_Order.Table_Name, RESTApiTableInfo.builder()
-								.tableName(I_C_Order.Table_Name)
-								.customRestAPIColumnName(HEADER_COL)
-								.build(),
-						I_C_OrderLine.Table_Name, RESTApiTableInfo.builder()
-								.tableName(I_C_OrderLine.Table_Name)
-								.customRestAPIColumnName(LINE_COL)
-								.build()
-				)
-		);
-		CustomColumnService.newInstanceForUnitTesting(stubRepo);
+		// Register the custom columns as real AD_Column entries (IsRestAPICustomColumn='Y') so the REAL
+		// CustomColumnRepository (querying via IQueryBL) picks them up — no stub needed:
+		// HEADER_COL is custom on C_OLCand + C_Order; LINE_COL is custom on C_OLCand + C_OrderLine.
+		final int olCandTableId = createADTable(I_C_OLCand.Table_Name);
+		final int orderTableId = createADTable(I_C_Order.Table_Name);
+		final int orderLineTableId = createADTable(I_C_OrderLine.Table_Name);
+		createCustomColumn(olCandTableId, HEADER_COL);
+		createCustomColumn(olCandTableId, LINE_COL);
+		createCustomColumn(orderTableId, HEADER_COL);
+		createCustomColumn(orderLineTableId, LINE_COL);
+		CustomColumnService.newInstanceForUnitTesting();
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();
@@ -308,24 +295,25 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 				.build();
 	}
 
-	/**
-	 * A test-only stub for {@link CustomColumnRepository} that returns pre-configured
-	 * {@link RESTApiTableInfo} objects without querying the database.
-	 */
-	static class TestCustomColumnRepository extends CustomColumnRepository
+	private int createADTable(@NonNull final String tableName)
 	{
-		private final Map<String, RESTApiTableInfo> tableInfoByName;
+		final I_AD_Table table = newInstanceOutOfTrx(I_AD_Table.class);
+		table.setTableName(tableName);
+		table.setName(tableName);
+		table.setEntityType("D");
+		table.setIsActive(true);
+		saveRecord(table);
+		return table.getAD_Table_ID();
+	}
 
-		TestCustomColumnRepository(final Map<String, RESTApiTableInfo> tableInfoByName)
-		{
-			this.tableInfoByName = new HashMap<>(tableInfoByName);
-		}
-
-		@Override
-		@Nullable
-		public RESTApiTableInfo getByTableNameOrNull(final String tableName)
-		{
-			return tableInfoByName.get(tableName);
-		}
+	private void createCustomColumn(final int adTableId, @NonNull final String columnName)
+	{
+		final I_AD_Column column = newInstanceOutOfTrx(I_AD_Column.class);
+		column.setAD_Table_ID(adTableId);
+		column.setColumnName(columnName);
+		column.setName(columnName);
+		column.setIsActive(true);
+		column.setIsRestAPICustomColumn(true);
+		saveRecord(column);
 	}
 }

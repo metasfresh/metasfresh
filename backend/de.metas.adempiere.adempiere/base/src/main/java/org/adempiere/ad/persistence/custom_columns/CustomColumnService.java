@@ -41,7 +41,6 @@ import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Map;
@@ -62,26 +61,10 @@ public class CustomColumnService
 	public static CustomColumnService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		final CustomColumnRepository repo = new CustomColumnRepository()
-		{
-			@Override
-			@Nullable
-			public RESTApiTableInfo getByTableNameOrNull(final String tableName)
-			{
-				return null;
-			}
-		};
-		return newInstanceForUnitTesting(repo);
-	}
-
-	@VisibleForTesting
-	public static CustomColumnService newInstanceForUnitTesting(@NonNull final CustomColumnRepository repo)
-	{
-		Adempiere.assertUnitTestMode();
-		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, repo);
-		final CustomColumnService service = new CustomColumnService(repo);
-		SpringContextHolder.registerJUnitBean(CustomColumnService.class, service);
-		return service;
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(
+				CustomColumnService.class,
+				() -> new CustomColumnService(CustomColumnRepository.newInstanceForUnitTesting()));
 	}
 
 	public void setCustomColumns(@NonNull final PO record, @NonNull final Map<String, Object> valuesByColumnName)
