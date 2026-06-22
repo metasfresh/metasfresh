@@ -93,3 +93,24 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
       | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
       | asi_4                     | attr_str       | -     |
       | asi_4                     | attr_list      | -     |
+
+  Scenario: cloneASI copies all attribute values into a new, independent ASI
+    When invoke de_metas_attributes.upsert_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_src                   | attr_str       | M     |
+      | asi_src                   | attr_list      | red   |
+    When invoke cloneASI:
+      | Source_ID | M_AttributeSetInstance_ID |
+      | asi_src   | asi_clone                 |
+    Then validate de_metas_attributes.get_attributeinstance_value:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_clone                 | attr_str       | M     |
+      | asi_clone                 | attr_list      | red   |
+    # the clone is independent: editing it must not change the source ASI
+    When invoke de_metas_attributes.upsert_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_clone                 | attr_str       | X     |
+    Then validate de_metas_attributes.get_attributeinstance_value:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_clone                 | attr_str       | X     |
+      | asi_src                   | attr_str       | M     |

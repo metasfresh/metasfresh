@@ -136,6 +136,35 @@ public class de_metas_attributes_StepDef
 	}
 
 	/**
+	 * @cucumber.stepdef Calls cloneASI: clones the source ASI into a new one and stores it under the given identifier.
+	 * @cucumber.columns
+	 *   <b>Source_ID</b> &mdash; (required, identifier-ref) the ASI to clone.<br>
+	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required) identifier under which the new (cloned) ASI is stored.<br>
+	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When invoke cloneASI:
+	 *   | Source_ID | M_AttributeSetInstance_ID |
+	 *   | asi_src   | asi_clone                 |
+	 * </pre>
+	 */
+	@When("invoke cloneASI:")
+	public void invoke_cloneASI(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int sourceAsiId = attributeSetInstanceTable.getId(row.getAsIdentifier("Source_ID")).getRepoId();
+
+			final int newAsiId = DB.getSQLValueEx(
+					ITrx.TRXNAME_ThreadInherited,
+					"SELECT cloneASI(?::numeric)",
+					sourceAsiId);
+
+			final I_M_AttributeSetInstance clone = attributeSetInstanceDAO.getRecordById(AttributeSetInstanceId.ofRepoId(newAsiId));
+			attributeSetInstanceTable.putOrReplace(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID), clone);
+		});
+	}
+
+	/**
 	 * @cucumber.stepdef Calls de_metas_attributes.clear_attributeinstance once per row (sets the attribute value to null).
 	 * @cucumber.columns
 	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI to clear on.<br>
