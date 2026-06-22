@@ -78,7 +78,7 @@ public class C_InvoiceEInvoiceTest
 		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		interceptor = new C_Invoice(
 				configService,
-				new EInvoiceCiiService(configService),
+				new EInvoiceCiiService(configService, null),
 				attachmentEntryService);
 	}
 

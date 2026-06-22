@@ -65,7 +65,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -99,6 +98,18 @@ import java.util.List;
 public class CiiMapper
 {
 	private static final Logger log = LoggerFactory.getLogger(CiiMapper.class);
+
+	@Nullable private final DocOutboundLogMailRecipientRegistry mailRecipientRegistry;
+
+	public CiiMapper()
+	{
+		this.mailRecipientRegistry = null;
+	}
+
+	public CiiMapper(@Nullable final DocOutboundLogMailRecipientRegistry mailRecipientRegistry)
+	{
+		this.mailRecipientRegistry = mailRecipientRegistry;
+	}
 
 	/** EN 16931 guideline IDs per invoice format. */
 	private static final String GUIDELINE_ID_ZUGFERD =
@@ -619,34 +630,27 @@ public class CiiMapper
 	}
 
 	/**
-	 * Resolves the buyer email for BT-49 via the doc-outbound recipient registry
+	 * Resolves the buyer email for BT-49 via the injected doc-outbound recipient registry
 	 * (same logic that populates C_Doc_Outbound_Log.CurrentEMailAddress).
-	 * Returns {@code null} if the registry is unavailable or returns no address —
-	 * the caller falls back to the BPartnerLocation email in that case.
+	 * Returns {@code null} when the registry was not injected (e.g. unit tests) or when
+	 * the registry returns no address — the caller falls back to the BPartnerLocation email.
 	 */
 	@Nullable
 	private String resolveBuyerEmail(@NonNull final I_C_Invoice invoice)
 	{
-		try
+		if (mailRecipientRegistry == null)
 		{
-			final DocOutboundLogMailRecipientRegistry registry =
-					SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
-			final DocOutboundLogMailRecipientRequest req = DocOutboundLogMailRecipientRequest.builder()
-					.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID()))
-					.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
-					.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
-					.build();
-			return registry.getRecipient(req)
-					.map(DocOutBoundRecipients::getTo)
-					.map(DocOutBoundRecipient::getEmailAddress)
-					.orElse(null);
-		}
-		catch (final Exception ex)
-		{
-			log.debug("Doc-outbound recipient resolver unavailable for invoice {} — falling back to BPartnerLocation email",
-					invoice.getC_Invoice_ID(), ex);
 			return null;
 		}
+		final DocOutboundLogMailRecipientRequest req = DocOutboundLogMailRecipientRequest.builder()
+				.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID()))
+				.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+				.build();
+		return mailRecipientRegistry.getRecipient(req)
+				.map(DocOutBoundRecipients::getTo)
+				.map(DocOutBoundRecipient::getEmailAddress)
+				.orElse(null);
 	}
 
 	// ===== HeaderTradeSettlement =====
