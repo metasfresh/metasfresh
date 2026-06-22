@@ -23,10 +23,15 @@
 package org.adempiere.mm.attributes.api;
 
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.service.ClientId;
+import org.eevolution.api.PPOrderId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -37,5 +42,14 @@ public class LotNoContext
 
 	@NonNull
 	ClientId clientId;
+
+	@Nullable
+	PPOrderId ppOrderId;
+
+	@Nullable
+	Instant generatedAt;
+
+	@Nullable
+	OrgId orgId;
 
 }

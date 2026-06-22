@@ -12,8 +12,10 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.api.LotNoContext;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
+import org.eevolution.api.PPOrderId;
 
 import java.util.Date;
 import java.util.Objects;
@@ -70,10 +72,17 @@ public class LotNumberBL implements ILotNumberBL
 	{
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
+		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
+		// Expose it under the standard "Record_ID" context key; without a PP_Order the context stays empty (= legacy behaviour).
+		final PPOrderId ppOrderId = context.getPpOrderId();
+		final Evaluatee evaluationContext = ppOrderId != null
+				? Evaluatees.ofSingleton("Record_ID", ppOrderId.getRepoId())
+				: Evaluatees.empty();
+
 		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
 				.setFailOnError(true)
 				.setClientId(context.getClientId())
-				.setEvaluationContext(Evaluatees.empty())
+				.setEvaluationContext(evaluationContext)
 				.build();
 
 		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)
