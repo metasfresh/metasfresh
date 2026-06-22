@@ -1,4 +1,4 @@
--- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/functions/de_metas_attributes.get_attributeinstance_value.sql
+-- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/de_metas_attributes/functions/get_attributeinstance_value.sql
 -- Companion reader for de_metas_attributes.upsert_attributeinstance.
 -- Returns one attribute's value off an ASI as text, read from the typed column dictated by
 -- M_Attribute.AttributeValueType (S -> Value, N -> ValueNumber, D -> ValueDate, L -> M_AttributeValue.Value).

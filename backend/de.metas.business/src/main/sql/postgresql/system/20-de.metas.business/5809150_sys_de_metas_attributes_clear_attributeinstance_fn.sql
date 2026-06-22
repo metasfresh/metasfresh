@@ -1,4 +1,4 @@
--- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/functions/de_metas_attributes.clear_attributeinstance.sql
+-- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/de_metas_attributes/functions/clear_attributeinstance.sql
 -- Companion to de_metas_attributes.upsert_attributeinstance: sets an attribute's value to NULL on an ASI.
 -- Nulls every typed column of the (ASI, attribute) M_AttributeInstance (Value / ValueNumber / ValueDate /
 -- M_AttributeValue_ID) — attribute-agnostic, so it also clears List attributes (which upsert cannot, since a NULL

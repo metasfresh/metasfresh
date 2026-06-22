@@ -1,4 +1,4 @@
--- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/functions/de_metas_attributes.cloneASI.sql
+-- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/de_metas_attributes/functions/cloneASI.sql
 -- Copy-on-write helper for the immutable M_AttributeSetInstance: clones an ASI into a brand-new one.
 -- Creates a new M_AttributeSetInstance copying the header (client/org/attribute-set/description) and duplicates every
 -- M_AttributeInstance row, then returns the new id. Use this before changing an attribute on a host whose ASI may be

@@ -1,4 +1,4 @@
--- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/functions/de_metas_attributes.upsert_attributeinstance.sql
+-- Source DDL: backend/de.metas.business/src/main/sql/postgresql/ddl/de_metas_attributes/functions/upsert_attributeinstance.sql
 -- Generic, attribute-agnostic UPSERT of a single M_AttributeInstance.
 -- Writes p_value into the typed column dictated by M_Attribute.AttributeValueType
 --   S -> Value, N -> ValueNumber, D -> ValueDate, L -> M_AttributeValue_ID (+ Value mirror).
