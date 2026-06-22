@@ -29,10 +29,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 
 /**
- * Guards against the me03 #30569 escalation: on intercheese PROD the (now-deactivated)
- * {@code MD_Stock_Update_From_M_HUs} reset loop drove {@code MD_Stock.QtyOnHand} to non-physical
- * 50–1267-digit values. This sanity guard is the backstop that prevents a stock correction from
- * persisting such a value, regardless of which amplifier produced it.
+ * Guards against the runaway escalation in which overlapping {@code MD_Stock_Update_From_M_HUs} reset
+ * runs drove {@code MD_Stock.QtyOnHand} to non-physical 50–1267-digit values. This sanity guard is the
+ * backstop that prevents a stock correction from persisting such a value, regardless of which amplifier
+ * produced it.
  */
 class StockQtySanityGuardTest
 {
@@ -49,11 +49,11 @@ class StockQtySanityGuardTest
 	@Test
 	void nonPhysical_escalatedQuantities_areRejected()
 	{
-		// the exact 2026-06-22 failure mode: QtyOnHand escalated far beyond any physical stock
+		// the failure mode: QtyOnHand escalated far beyond any physical stock
 		assertThat(StockQtySanityGuard.isPlausibleQtyOnHand(new BigDecimal("1E40"))).isFalse();
 		assertThat(StockQtySanityGuard.isPlausibleQtyOnHand(new BigDecimal("-1E40"))).isFalse();
 
-		// a 1267-digit integer like the worst correction in PInstance 14047016
+		// a 1267-digit integer like the worst correction observed in the incident
 		final BigDecimal escalated = new BigDecimal("7905921439873659415476636832212631141029078893757275382149400337485652411120886665843404585035232329381195376075211625359289455509333683310327999370610632729835731551505839897952362125889161400420421792328883907564851401408088928249340993686396299550779771566188978082697707520");
 		assertThat(StockQtySanityGuard.isPlausibleQtyOnHand(escalated)).isFalse();
 	}

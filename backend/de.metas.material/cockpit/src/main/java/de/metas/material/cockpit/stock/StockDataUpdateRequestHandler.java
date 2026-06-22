@@ -1,5 +1,6 @@
 package de.metas.material.cockpit.stock;
 
+import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
@@ -7,18 +8,17 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
-import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.slf4j.Logger;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -70,8 +70,8 @@ public class StockDataUpdateRequestHandler
 		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
 		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(dataRecord.getQtyOnHand().add(qtyOnHandToAdd));
 
-		// me03 #30569 backstop: never persist a non-physical QtyOnHand. Skip + log loudly instead of
-		// escalating (the 2026-06-22 runaway). A legitimate transaction delta never reaches this bound.
+		// Backstop: never persist a non-physical QtyOnHand. Skip + log loudly instead of escalating
+		// (the overlapping-reset-runs runaway). A legitimate transaction delta never reaches this bound.
 		if (!StockQtySanityGuard.isPlausibleQtyOnHand(qtyOnHandNew))
 		{
 			logger.warn("Skipping non-physical stock correction: resulting QtyOnHand={} exceeds sanity bound; dataUpdateRequest={}",
@@ -89,7 +89,7 @@ public class StockDataUpdateRequestHandler
 	 * Idempotently set {@code MD_Stock.QtyOnHand} to an absolute target (the HU-derived truth) — the
 	 * reset semantics used by {@code MD_Stock_Update_From_M_HUs}. Unlike {@link #handleDataUpdateRequest}
 	 * (which ADDS a delta, correct for the transaction-event path), this SETS the value, so overlapping
-	 * concurrent reset runs all converge to the same truth instead of compounding (me03 #30569).
+	 * concurrent reset runs all converge to the same truth instead of compounding into a runaway.
 	 */
 	public void handleResetToQtyOnHand(
 			@NonNull final StockDataRecordIdentifier identifier,

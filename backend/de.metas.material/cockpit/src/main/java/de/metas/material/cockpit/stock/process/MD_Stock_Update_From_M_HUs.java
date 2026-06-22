@@ -54,7 +54,7 @@ import static java.math.BigDecimal.ZERO;
  * The diverging rows are processed as a <b>batched drain</b>: each iteration fetches the top
  * {@link #BATCH_SIZE} still-diverging rows of {@code MD_Stock_From_HUs_V} (NOT an OFFSET page),
  * and then re-queries. Because this process is {@code @RunOutOfTrx}, each
- * {@code handleDataUpdateRequest()} call commits immediately and fires its
+ * {@code handleResetToQtyOnHand()} call commits immediately and fires its
  * {@code StockChangedEvent} immediately — there is no ambient transaction to wait for.
  * The committed corrections set those rows' {@code QtyOnHandChange} to zero, so they drop out of
  * the {@code <> 0} filter and the shrinking set drains to empty. Memory stays flat because only
@@ -205,7 +205,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 			final StockDataRecordIdentifier identifier = toStockDataRecordIdentifier(huBasedDataRecord);
 			// The view's QtyOnHand IS the HU-derived truth, already in the product's stocking UOM
 			// (same UOM as MD_Stock.QtyOnHand). Set MD_Stock to this absolute target — an idempotent
-			// reset, so overlapping concurrent runs converge instead of compounding (me03 #30569).
+			// reset, so overlapping concurrent runs converge instead of compounding into a runaway.
 			final BigDecimal targetQtyOnHand = huBasedDataRecord.getQtyOnHand();
 			Loggables.addLog("Resetting MD_Stock to HU truth: identifier={}, targetQtyOnHand={}", identifier, targetQtyOnHand);
 			dataUpdateRequestHandler.handleResetToQtyOnHand(identifier, targetQtyOnHand, info);

@@ -22,6 +22,9 @@ import java.math.BigDecimal;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
 /*
@@ -47,7 +50,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
  */
 
 /**
- * Covers the me03 #30569 root-cause fix:
+ * Covers the MD_Stock reset root-cause fix:
  * <ul>
  *   <li>the reset path is <b>idempotent</b> (set-to-truth) so overlapping concurrent runs can no
  *       longer compound corrections into a runaway escalation;</li>
@@ -116,16 +119,18 @@ class StockDataUpdateRequestHandlerTest
 		seedMdStock(new BigDecimal("1E40")); // a corrupted, escalated value
 		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
 		assertThat(currentQtyOnHand()).isEqualByComparingTo("100");
+		verify(postMaterialEventService, times(1)).enqueueEventAfterNextCommit(any()); // the change fired a StockChangedEvent
 	}
 
 	@Test
 	void reset_isIdempotent_underRepeatedApplication()
 	{
-		// two overlapping runs applying the same HU-truth must NOT compound (the 2026-06-22 failure mode)
+		// two overlapping runs applying the same HU-truth must NOT compound (the runaway failure mode)
 		seedMdStock(BigDecimal.ZERO);
 		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
 		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
 		assertThat(currentQtyOnHand()).isEqualByComparingTo("100"); // not 200
+		verify(postMaterialEventService, times(1)).enqueueEventAfterNextCommit(any()); // only the first call changed anything
 	}
 
 	// --- Add path: magnitude guard wiring ---
