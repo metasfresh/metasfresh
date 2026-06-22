@@ -7,6 +7,7 @@ import de.metas.einvoice.EInvoiceCiiService;
 import de.metas.einvoice.EInvoiceCiiService.GenerateAndValidateResult;
 import de.metas.einvoice.EInvoiceConfigService;
 import de.metas.einvoice.EInvoiceRecipientConfig;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,9 @@ import java.nio.charset.StandardCharsets;
 @RequiredArgsConstructor
 public class C_Invoice
 {
+	/** User-facing, localized error (AD_Message) shown when the XRechnung is invalid; {0} = failed rule ids. */
+	private static final AdMessageKey MSG_XRechnungInvalid = AdMessageKey.of("EInvoice_XRechnungInvalid");
+
 	@NonNull private final EInvoiceConfigService configService;
 	@NonNull private final EInvoiceCiiService eInvoiceCiiService;
 	@NonNull private final AttachmentEntryService attachmentEntryService;
@@ -74,9 +78,7 @@ public class C_Invoice
 
 		if (!result.isValid())
 		{
-			throw new AdempiereException(
-					"XRechnung validation failed for invoice " + invoice.getDocumentNo()
-							+ ": " + result.getFatalAndErrorRuleIds())
+			throw new AdempiereException(MSG_XRechnungInvalid, result.getFatalAndErrorRuleIds())
 					.markAsUserValidationError();
 		}
 

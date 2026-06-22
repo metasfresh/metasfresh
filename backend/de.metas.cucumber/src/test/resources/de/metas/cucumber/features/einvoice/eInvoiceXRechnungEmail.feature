@@ -88,8 +88,8 @@ Feature: XRechnung e-invoice generated, attached and emailed on sales-invoice co
       | buyer_user | Buyer Clerk | einkauf@kaeufer.de | buyer                        | buyer_location                        |
 
     And metasfresh contains C_Invoice:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | M_PriceList_ID.Identifier | C_DocTypeTarget_ID.Name | C_PaymentTerm_ID.Identifier | DateInvoiced | C_Currency_ID | PaymentRule | TotalLines | GrandTotal |
-      | invoice    | true    | buyer                    | buyer_location                    | buyer_user            | pl_so                     | Ausgangsrechnung        | paymentTerm                 | 2022-02-01   | EUR           | T           | 100.00     | 119.00     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | M_PriceList_ID.Identifier | C_DocTypeTarget_ID.Name | C_PaymentTerm_ID.Identifier | DateInvoiced | C_Currency_ID | PaymentRule |
+      | invoice    | true    | buyer                    | buyer_location                    | buyer_user            | pl_so                     | Ausgangsrechnung        | paymentTerm                 | 2022-02-01   | EUR           | T           |
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 | Price | C_Tax_ID$set |
       | invoiceLine | invoice                 | product                 | 1           | PCE               | 100   | tax19        |

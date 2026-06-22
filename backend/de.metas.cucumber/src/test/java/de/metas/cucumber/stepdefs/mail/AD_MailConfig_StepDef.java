@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.mail;
 
-import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -77,8 +76,6 @@ public class AD_MailConfig_StepDef
 	public void metasfresh_contains_AD_MailConfig(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createOrUpdateMailConfig);
-		// MailboxRepository caches the routing table keyed by AD_MailConfig table changes; reset it
-		CacheMgt.get().reset(I_AD_MailConfig.Table_Name);
 	}
 
 	/**
@@ -109,8 +106,6 @@ public class AD_MailConfig_StepDef
 					mailConfig.setIsActive(false);
 					InterfaceWrapperHelper.save(mailConfig);
 				});
-
-		CacheMgt.get().reset(I_AD_MailConfig.Table_Name);
 	}
 
 	private void createOrUpdateMailConfig(@NonNull final DataTableRow row)

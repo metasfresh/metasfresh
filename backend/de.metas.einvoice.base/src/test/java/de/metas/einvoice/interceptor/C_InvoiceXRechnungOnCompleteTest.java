@@ -74,7 +74,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * What this proves: (a) the annotation is parsed and dispatched correctly, (b) the correct method
  * fires, (c) veto and attachment behaviour are end-to-end verified through the registration layer.
  */
-public class C_InvoiceEInvoiceInterceptorRegistrationTest
+public class C_InvoiceXRechnungOnCompleteTest
 {
 	private AttachmentEntryService attachmentEntryService;
 

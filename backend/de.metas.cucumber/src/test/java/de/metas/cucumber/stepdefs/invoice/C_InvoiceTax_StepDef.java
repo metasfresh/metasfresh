@@ -34,7 +34,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceTax;
@@ -73,44 +72,6 @@ public class C_InvoiceTax_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final C_Invoice_StepDefData invoiceTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
-
-	/**
-	 * Create one {@link I_C_InvoiceTax} (VAT breakdown row, BG-23) per data-table row on an existing invoice.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_Invoice_ID.Identifier</b> — (required, identifier-ref) the invoice<br>
-	 *   <b>C_Tax_ID.Identifier</b> — (required, identifier-ref) the tax<br>
-	 *   <b>TaxBaseAmt</b> — (required) taxable amount (BT-116)<br>
-	 *   <b>TaxAmt</b> — (required) tax amount (BT-117)<br>
-	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, C_Tax_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And metasfresh contains C_InvoiceTax:
-	 *   | C_Invoice_ID.Identifier | C_Tax_ID.Identifier | TaxBaseAmt | TaxAmt |
-	 *   | invoice                 | tax19               | 100.00     | 19.00  |
-	 * </pre>
-	 */
-	@And("metasfresh contains C_InvoiceTax:")
-	public void metasfresh_contains_C_InvoiceTax(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::create_C_InvoiceTax);
-	}
-
-	private void create_C_InvoiceTax(@NonNull final DataTableRow row)
-	{
-		final I_C_Invoice invoice = row.getAsIdentifier(I_C_InvoiceTax.COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
-		final TaxId taxId = taxTable.getId(row.getAsIdentifier(I_C_InvoiceTax.COLUMNNAME_C_Tax_ID));
-
-		final I_C_InvoiceTax invoiceTax = InterfaceWrapperHelper.newInstance(I_C_InvoiceTax.class);
-		invoiceTax.setAD_Org_ID(invoice.getAD_Org_ID());
-		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceTax.setC_Tax_ID(taxId.getRepoId());
-		invoiceTax.setTaxBaseAmt(row.getAsBigDecimal(I_C_InvoiceTax.COLUMNNAME_TaxBaseAmt));
-		invoiceTax.setTaxAmt(row.getAsBigDecimal(I_C_InvoiceTax.COLUMNNAME_TaxAmt));
-
-		InterfaceWrapperHelper.save(invoiceTax);
-	}
 
 	/**
 	 * Validates that C_InvoiceTax records for the given invoice match the expected DataTable rows.

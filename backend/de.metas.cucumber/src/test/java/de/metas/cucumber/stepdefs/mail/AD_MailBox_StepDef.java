@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.mail;
 
-import de.metas.cache.CacheMgt;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -76,9 +75,6 @@ public class AD_MailBox_StepDef
 	public void metasfresh_contains_AD_MailBox(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(this::createOrUpdateMailBox);
-		// the MailboxRepository caches the mailbox map keyed by AD_MailBox table changes;
-		// reset so the freshly created mailbox is visible to the mail workpackage processor
-		CacheMgt.get().reset(I_AD_MailBox.Table_Name);
 	}
 
 	private void createOrUpdateMailBox(@NonNull final DataTableRow row)
@@ -148,7 +144,7 @@ public class AD_MailBox_StepDef
 	 * Like {@link #resolveEnv} but returns {@code null} when neither the literal {@code <name>} nor the
 	 * {@code <name>$env} column is present (for optional columns such as username/password).
 	 */
-	@org.jetbrains.annotations.Nullable
+	@javax.annotation.Nullable
 	private static String resolveEnvOrNull(@NonNull final DataTableRow row, @NonNull final String name)
 	{
 		final Map<String, String> map = row.asMap();

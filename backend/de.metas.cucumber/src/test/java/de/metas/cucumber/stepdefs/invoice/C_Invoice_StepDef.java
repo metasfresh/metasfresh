@@ -318,8 +318,6 @@ public class C_Invoice_StepDef
 	 *   <li>{@code C_BPartner_Location_ID} — bill-to location identifier</li>
 	 *   <li>{@code M_PriceList_ID} — price list identifier</li>
 	 *   <li>{@code AD_User_ID} — contact identifier</li>
-	 *   <li>{@code TotalLines} — the net total ({@link java.math.BigDecimal})</li>
-	 *   <li>{@code GrandTotal} — the gross total ({@link java.math.BigDecimal})</li>
 	 * </ul>
 	 */
 	@And("metasfresh contains C_Invoice:")
@@ -888,9 +886,8 @@ public class C_Invoice_StepDef
 				.map(userTable::get)
 				.ifPresent(contact -> invoice.setAD_User_ID(contact.getAD_User_ID()));
 
-		row.getAsOptionalBigDecimal(COLUMNNAME_TotalLines).ifPresent(invoice::setTotalLines);
-		row.getAsOptionalMoney(COLUMNNAME_GrandTotal, currencyRepository::getCurrencyIdByCurrencyCode)
-				.ifPresent(grandTotal -> invoice.setGrandTotal(grandTotal.toBigDecimal()));
+		// TotalLines/GrandTotal are intentionally NOT set on the header — they are recomputed from
+		// the invoice lines on save/completion, so setting them here would be redundant.
 
 		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
 				.map(warehouseTable::getId)
