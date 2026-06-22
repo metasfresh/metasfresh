@@ -46,6 +46,8 @@ import java.util.Optional;
 @Repository
 public class PromotionCodeRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	/**
 	 * Caches Value → PromotionCodeId for fast by-value lookups.
 	 * Optional.empty() means "not found" so we do NOT re-query on every repeated bad code.
@@ -68,8 +70,7 @@ public class PromotionCodeRepository
 	public PromotionCodeId getPromotionCodeIdByValue(@NonNull final String value)
 	{
 		final Optional<PromotionCodeId> cached = cacheByValue.getOrLoad(value, () -> lookupIdByValue(value));
-		// cached is never null: getOrLoad calls the loader, and the loader always returns an Optional.
-		if (cached == null || !cached.isPresent())
+		if (!cached.isPresent())
 		{
 			throw new AdempiereException("Promotion code not found: " + value)
 					.appendParametersToMessage()
@@ -82,7 +83,7 @@ public class PromotionCodeRepository
 	@NonNull
 	private Optional<PromotionCodeId> lookupIdByValue(@NonNull final String value)
 	{
-		final PromotionCodeId id = Services.get(IQueryBL.class)
+		final PromotionCodeId id = queryBL
 				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_Value, value)
@@ -136,7 +137,7 @@ public class PromotionCodeRepository
 
 		if (!misses.isEmpty())
 		{
-			Services.get(IQueryBL.class)
+			queryBL
 					.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
 					.addInArrayFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, misses)
 					.create()
