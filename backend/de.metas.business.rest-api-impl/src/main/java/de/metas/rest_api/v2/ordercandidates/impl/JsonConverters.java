@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.ordercandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -93,7 +94,9 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -373,8 +376,17 @@ public class JsonConverters
 			@NonNull final List<OLCand> olCands,
 			@NonNull final MasterdataProvider masterdataProvider)
 	{
+		// batch-load promotion-code values up front, so the per-item conversion below avoids an N+1 round-trip
+		final ImmutableSet<PromotionCodeId> promotionCodeIds = olCands.stream()
+				.flatMap(olCand -> Stream.of(
+						PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID()),
+						PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<PromotionCodeId, String> promotionCodeValuesById = promotionCodeRepository.getValuesByIds(promotionCodeIds);
+
 		final List<JsonOLCand> jsonOLCands = olCands.stream()
-				.map(olCand -> toJson(olCand, masterdataProvider))
+				.map(olCand -> toJson(olCand, masterdataProvider, promotionCodeValuesById))
 				.collect(ImmutableList.toImmutableList());
 
 		final List<JsonErrorItem> errorItems = olCands.stream()
@@ -397,7 +409,8 @@ public class JsonConverters
 
 	private JsonOLCand toJson(
 			@NonNull final OLCand olCand,
-			@NonNull final MasterdataProvider masterdataProvider)
+			@NonNull final MasterdataProvider masterdataProvider,
+			@NonNull final ImmutableMap<PromotionCodeId, String> promotionCodeValuesById)
 	{
 		final OrgId orgId = OrgId.ofRepoId(olCand.getAD_Org_ID());
 		final ZoneId orgTimeZone = masterdataProvider.getOrgTimeZone(orgId);
@@ -452,8 +465,8 @@ public class JsonConverters
 				.line(olCand.getLine())
 				//
 				.extendedProps(getExtendedPropsOrNull(olCand))
-				.promotionCode(promotionCodeRepository.getValueByIdOrNull(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID())))
-				.promotionCode2(promotionCodeRepository.getValueByIdOrNull(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
+				.promotionCode(promotionCodeValuesById.get(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode_ID())))
+				.promotionCode2(promotionCodeValuesById.get(PromotionCodeId.ofRepoIdOrNull(olCand.unbox().getC_PromotionCode2_ID())))
 				.isWithoutCharge(olCand.unbox().isWithoutCharge())
 				.reason(olCand.unbox().getReason())
 				//
@@ -466,7 +479,7 @@ public class JsonConverters
 		final I_C_OLCand olCandRecord = olCand.unbox();
 		if (POJOWrapper.isHandled(olCandRecord))
 		{
-			return null;  // POJOWrapper-backed record (unit-test mode) — no custom columns
+			return null;  // POJOWrapper doesn't expose a PO, so custom columns are unavailable
 		}
 		final ImmutableMap<String, Object> extProps =
 				customColumnService.getCustomColumnsJsonValues(InterfaceWrapperHelper.getPO(olCandRecord)).toMap();

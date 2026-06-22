@@ -22,6 +22,8 @@
 
 package de.metas.promotioncode;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -31,6 +33,7 @@ import org.compiere.model.I_C_PromotionCode;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 
 /**
  * Repository Tables: C_PromotionCode
@@ -64,16 +67,36 @@ public class PromotionCodeRepository
 		{
 			return null;
 		}
-		final I_C_PromotionCode record = Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
-				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, promotionCodeId.getRepoId())
-				.create()
-				.first();
-		if (record == null)
+		return getValuesByIds(ImmutableList.of(promotionCodeId)).get(promotionCodeId);
+	}
+
+	/**
+	 * Batch reverse-lookup: maps each given {@link PromotionCodeId} to its {@code C_PromotionCode.Value}
+	 * in a single query, so callers serializing a list of records avoid an N+1 round-trip.
+	 * Note: filters by PK only (no active filter) — the ids come from stored columns, so a since-deactivated
+	 * code is still echoed to reflect the persisted state. Blank values and missing ids are absent from the map.
+	 */
+	@NonNull
+	public ImmutableMap<PromotionCodeId, String> getValuesByIds(@NonNull final Collection<PromotionCodeId> promotionCodeIds)
+	{
+		if (promotionCodeIds.isEmpty())
 		{
-			return null;
+			return ImmutableMap.of();
 		}
-		final String value = record.getValue();
-		return Check.isBlank(value) ? null : value;
+
+		final ImmutableMap.Builder<PromotionCodeId, String> result = ImmutableMap.builder();
+		Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
+				.addInArrayFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, promotionCodeIds)
+				.create()
+				.stream()
+				.forEach(record -> {
+					final String value = record.getValue();
+					if (!Check.isBlank(value))
+					{
+						result.put(PromotionCodeId.ofRepoId(record.getC_PromotionCode_ID()), value);
+					}
+				});
+		return result.build();
 	}
 }
