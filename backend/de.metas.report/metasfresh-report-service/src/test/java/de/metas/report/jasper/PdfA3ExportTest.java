@@ -52,7 +52,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * </ol>
  *
  * <p>Validator approach: OpenPDF's {@link PdfReader} is already on the classpath (transitive through
- * jasperreports). Using it avoids adding veraPDF (heavyweight; available in Task 5 via Mustangproject).
+ * jasperreports). Using it avoids adding a heavyweight conformance-validator dependency.
  * The structural checks — XMP pdfaid namespace, sRGB OutputIntent, font descriptors — are the same
  * invariants that any conformance validator would test first.
  *
