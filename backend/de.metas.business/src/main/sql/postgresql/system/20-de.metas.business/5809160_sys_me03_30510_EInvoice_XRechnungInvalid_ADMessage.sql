@@ -5,7 +5,7 @@
 
 -- Value: EInvoice_XRechnungInvalid
 -- 2026-06-22T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545762,0,TIMESTAMP '2026-06-22 00:00:00',100,'D','Y','Die XRechnung (E-Rechnung) für diese Rechnung ist ungültig; die Rechnung wurde nicht abgeschlossen. Bitte korrigieren Sie die beanstandeten Daten (z. B. Leitweg-ID/Käuferreferenz, Lieferanten-Kontakt und USt-IdNr., Zahlungsangaben) und schließen Sie die Rechnung erneut ab. Nicht erfüllte Regeln: {0}','E',TIMESTAMP '2026-06-22 00:00:00',100,'EInvoice_XRechnungInvalid','EINVOICE_XRECHNUNG_INVALID')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545762,0,TIMESTAMP '2026-06-22 00:00:00',100,'D','Y','Die XRechnung (E-Rechnung) für diese Rechnung ist ungültig; die Rechnung wurde nicht fertiggestellt. Bitte korrigieren Sie die beanstandeten Daten (z. B. Leitweg-ID/Käuferreferenz, Lieferanten-Kontakt und USt-IdNr., Zahlungsangaben) und stellen Sie die Rechnung erneut fertig. Nicht erfüllte Regeln: {0}','E',TIMESTAMP '2026-06-22 00:00:00',100,'EInvoice_XRechnungInvalid','EINVOICE_XRECHNUNG_INVALID')
 ;
 
 -- 2026-06-22T00:00:00Z
