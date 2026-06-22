@@ -4,7 +4,6 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
-import de.metas.material.cockpit.stock.StockDataUpdateRequest;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.stock.ResetStockPInstanceId;
@@ -12,10 +11,6 @@ import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -25,6 +20,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static java.math.BigDecimal.ZERO;
@@ -82,7 +78,6 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 	private static final int MAX_LOOPS = 100_000;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
 
 	/** Seam — in production: {@link #retrieveHuData(int)}. */
@@ -207,29 +202,14 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 
 		for (final I_MD_Stock_From_HUs_V huBasedDataRecord : huBasedDataRecords)
 		{
-			final StockDataUpdateRequest dataUpdateRequest = createDataUpdatedRequest(
-					huBasedDataRecord,
-					info);
-			Loggables.addLog("Handling corrective dataUpdateRequest={}", dataUpdateRequest);
-			dataUpdateRequestHandler.handleDataUpdateRequest(dataUpdateRequest);
+			final StockDataRecordIdentifier identifier = toStockDataRecordIdentifier(huBasedDataRecord);
+			// The view's QtyOnHand IS the HU-derived truth, already in the product's stocking UOM
+			// (same UOM as MD_Stock.QtyOnHand). Set MD_Stock to this absolute target — an idempotent
+			// reset, so overlapping concurrent runs converge instead of compounding (me03 #30569).
+			final BigDecimal targetQtyOnHand = huBasedDataRecord.getQtyOnHand();
+			Loggables.addLog("Resetting MD_Stock to HU truth: identifier={}, targetQtyOnHand={}", identifier, targetQtyOnHand);
+			dataUpdateRequestHandler.handleResetToQtyOnHand(identifier, targetQtyOnHand, info);
 		}
-	}
-
-	private StockDataUpdateRequest createDataUpdatedRequest(
-			@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord,
-			@NonNull final StockChangeSourceInfo stockDataUpdateRequestSourceInfo)
-	{
-		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
-
-		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantitys.of(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
-		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
-
-		return StockDataUpdateRequest.builder()
-				.identifier(recordIdentifier)
-				.onHandQtyChange(qtyInProductUOM.toBigDecimal())
-				.sourceInfo(stockDataUpdateRequestSourceInfo)
-				.build();
 	}
 
 	private static StockDataRecordIdentifier toStockDataRecordIdentifier(@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)

@@ -7,10 +7,12 @@ import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.stock.StockChangedEvent;
 import de.metas.material.event.stock.StockChangedEvent.StockChangeDetails;
+import de.metas.logging.LogManager;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.slf4j.Logger;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -49,6 +51,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Component
 public class StockDataUpdateRequestHandler
 {
+	private static final Logger logger = LogManager.getLogger(StockDataUpdateRequestHandler.class);
+
 	private final PostMaterialEventService postMaterialEventService;
 
 	public StockDataUpdateRequestHandler(
@@ -65,10 +69,55 @@ public class StockDataUpdateRequestHandler
 
 		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
 		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(dataRecord.getQtyOnHand().add(qtyOnHandToAdd));
+
+		// me03 #30569 backstop: never persist a non-physical QtyOnHand. Skip + log loudly instead of
+		// escalating (the 2026-06-22 runaway). A legitimate transaction delta never reaches this bound.
+		if (!StockQtySanityGuard.isPlausibleQtyOnHand(qtyOnHandNew))
+		{
+			logger.warn("Skipping non-physical stock correction: resulting QtyOnHand={} exceeds sanity bound; dataUpdateRequest={}",
+					qtyOnHandNew, dataUpdateRequest);
+			return;
+		}
+
 		dataRecord.setQtyOnHand(qtyOnHandNew);
 		save(dataRecord);
 
 		fireStockChangedEvent(dataRecord, qtyOnHandOld, dataUpdateRequest.getSourceInfo());
+	}
+
+	/**
+	 * Idempotently set {@code MD_Stock.QtyOnHand} to an absolute target (the HU-derived truth) — the
+	 * reset semantics used by {@code MD_Stock_Update_From_M_HUs}. Unlike {@link #handleDataUpdateRequest}
+	 * (which ADDS a delta, correct for the transaction-event path), this SETS the value, so overlapping
+	 * concurrent reset runs all converge to the same truth instead of compounding (me03 #30569).
+	 */
+	public void handleResetToQtyOnHand(
+			@NonNull final StockDataRecordIdentifier identifier,
+			@NonNull final BigDecimal targetQtyOnHand,
+			@NonNull final StockChangeSourceInfo sourceInfo)
+	{
+		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(targetQtyOnHand);
+
+		if (!StockQtySanityGuard.isPlausibleQtyOnHand(qtyOnHandNew))
+		{
+			logger.warn("Skipping non-physical stock reset: target QtyOnHand={} exceeds sanity bound; identifier={}",
+					qtyOnHandNew, identifier);
+			return;
+		}
+
+		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(identifier);
+		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
+
+		// Idempotent: setting to the same truth twice (overlapping reset runs) is a no-op the second time.
+		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
+		{
+			return;
+		}
+
+		dataRecord.setQtyOnHand(qtyOnHandNew);
+		save(dataRecord);
+
+		fireStockChangedEvent(dataRecord, qtyOnHandOld, sourceInfo);
 	}
 
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
