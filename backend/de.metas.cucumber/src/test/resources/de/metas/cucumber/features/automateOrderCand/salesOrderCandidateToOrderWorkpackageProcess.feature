@@ -290,3 +290,142 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And validate C_OLCand is with error
       | C_OLCand_ID.Identifier | ErrorMsg                  |
       | olCand_1               | Preisliste nicht gefunden |
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00101
+  Scenario: OLCands sharing externalHeaderId but with different DatePromised aggregate into ONE order
+  - create 3 olcands with the same externalHeaderId, externalSystemCode and org but DIFFERING DatePromised (dateRequired)
+  - process them
+  - verify that exactly ONE C_Order with 3 order lines is created (DatePromised must no longer split the order)
+    Given metasfresh contains M_PricingSystems
+      | Identifier           | Name                             | Value                            | OPT.IsActive |
+      | ps_scenario_22062026 | pricing_system_scenario_22062026 | pricing_system_scenario_22062026 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier           | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_scenario_22062026 | ps_scenario_22062026          | DE                        | EUR                 | pl_scenario_22062026 | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier            | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
+      | plv_scenario_22062026 | pl_scenario_22062026      | plv_scenario_22062026 | 2021-04-01 |
+    And metasfresh contains M_Products:
+      | Identifier       | Name             |
+      | product_22062026 | product_22062026 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | plv_scenario_22062026             | product_22062026        | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | olCand_Customer | olCand_Customer_22062026 | Y              | N            | ps_scenario_22062026          | olCand_Customer_location   | 9988776655443 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier               | GLN           | C_BPartner_ID.Identifier |
+      | olCand_Customer_location | 9988776655443 | olCand_Customer          |
+
+    # we create 3 OLCands with the same externalHeaderId `22062026`, same externalSystemCode and org, same poReference and dateOrdered,
+    # but DIFFERENT dateRequired (which maps to C_OLCand.DatePromised).
+    # Before the fix, the differing DatePromised splits them into 3 separate C_Orders, each carrying the same
+    # C_Order.ExternalId=22062026 -> the unique index C_Order_ExternalHeader_ID is violated and processing fails.
+    # After the fix, DatePromised is no longer part of the order-split key, so they aggregate into ONE C_Order with 3 lines.
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "22062026",
+            "externalLineId": "22062026_0",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-9988776655443",
+                "bpartnerLocationIdentifier": "gln-9988776655443"
+            },
+            "dateRequired": "2026-07-01",
+            "dateOrdered": "2026-06-22",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_22062026",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "22062026",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "22062026",
+            "externalLineId": "22062026_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-9988776655443",
+                "bpartnerLocationIdentifier": "gln-9988776655443"
+            },
+            "dateRequired": "2026-07-08",
+            "dateOrdered": "2026-06-22",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_22062026",
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "22062026",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "22062026",
+            "externalLineId": "22062026_2",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-9988776655443",
+                "bpartnerLocationIdentifier": "gln-9988776655443"
+            },
+            "dateRequired": "2026-07-15",
+            "dateOrdered": "2026-06-22",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_22062026",
+            "qty": 3,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "22062026",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier              |
+      | olCand_1,olCand_2,olCand_3          |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "22062026",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | order_1               |
+
+    And validate the number of C_Orders by ExternalId
+      | ExternalId | ExternalSystem.Value | Count |
+      | 22062026   | Shopware6            | 1     |
+
+    And validate the created orders
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | order_1               | 22062026   | olCand_Customer          | olCand_Customer_location          | 2026-06-22  | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
+    And validate the created order lines
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | product_22062026        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | product_22062026        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_3               | order_1               | product_22062026        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
