@@ -12,7 +12,16 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
   @from:cucumber
   @Id:S30351_10
   Scenario: Per-partner bill-to relation takes precedence over association group bill partner
-    Given metasfresh contains C_BPartners:
+    Given metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl         | ps                 | DE                    | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv        | pl             |
+    And metasfresh contains C_BPartners:
       | Identifier     |
       | centralBilling |
       | memberBillTo   |
@@ -20,8 +29,8 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
       | Identifier | IsAssociation | Bill_BPartner_ID |
       | assocGroup | Y             | centralBilling   |
     And metasfresh contains C_BPartners:
-      | Identifier | IsCustomer | C_BP_Group_ID |
-      | memberBP   | Y          | assocGroup    |
+      | Identifier | IsCustomer | C_BP_Group_ID | M_PricingSystem_ID |
+      | memberBP   | Y          | assocGroup    | ps                 |
     And metasfresh contains C_BP_Relations:
       | Identifier | C_BPartner_ID | C_BPartnerRelation_ID | C_BPartnerRelation_Location_ID | IsBillTo |
       | rel1       | memberBP      | memberBillTo          | memberBillTo                   | Y        |
