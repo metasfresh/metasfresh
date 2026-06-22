@@ -23,8 +23,8 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
       | Identifier | IsCustomer | C_BP_Group_ID |
       | memberBP   | Y          | assocGroup    |
     And metasfresh contains C_BP_Relations:
-      | Identifier | C_BPartner_ID | C_BPartnerRelation_ID | IsBillTo |
-      | rel1       | memberBP      | memberBillTo          | Y        |
+      | Identifier | C_BPartner_ID | C_BPartnerRelation_ID | C_BPartnerRelation_Location_ID | IsBillTo |
+      | rel1       | memberBP      | memberBillTo          | memberBillTo                   | Y        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered |
       | salesOrder | true    | memberBP      | 2022-05-17  |
