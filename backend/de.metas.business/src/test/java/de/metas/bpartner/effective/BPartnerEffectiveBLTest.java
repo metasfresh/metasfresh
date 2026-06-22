@@ -49,8 +49,6 @@ import javax.annotation.Nullable;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class BPartnerEffectiveBLTest
 {
@@ -60,7 +58,7 @@ public class BPartnerEffectiveBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-        bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
+		bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -101,18 +99,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(PaymentTermId.equals(bPartnerEffectiveAfterDefaultSetup.getPaymentTermId(SOTrx.PURCHASE), paymentTermId)).isTrue();
 
 		final Incoterms incoterms = bPartnerEffectiveAfterDefaultSetup.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), incotermsId)).isTrue();
-		assertEquals("TestIncoterms", incoterms.getName());
-		assertEquals("TestIncotermsValue", incoterms.getValue());
-		assertEquals("TestIncotermsDefaultLocation", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsDefaultLocation");
 
 		final Incoterms poIncoterms = bPartnerEffectiveAfterDefaultSetup.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), incotermsId)).isTrue();
-		assertEquals("TestIncoterms", poIncoterms.getName());
-		assertEquals("TestIncotermsValue", poIncoterms.getValue());
-		assertEquals("TestIncotermsDefaultLocation", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestIncotermsDefaultLocation");
 	}
 
 	@Test
@@ -156,18 +154,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(5))).isTrue();
-		assertEquals("TestIncoterms", incoterms.getName());
-		assertEquals("TestIncotermsValue", incoterms.getValue());
-		assertEquals("TestIncotermsLocation", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(6))).isTrue();
-		assertEquals("TestPoIncoterms", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation");
 	}
 
 	@Test
@@ -233,18 +231,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(11))).isTrue();
-		assertEquals("TestIncoterms2", incoterms.getName());
-		assertEquals("TestIncotermsValue2", incoterms.getValue());
-		assertEquals("TestIncotermsLocation2", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms2");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue2");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation2");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(12))).isTrue();
-		assertEquals("TestPoIncoterms2", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue2", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation2", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms2");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue2");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation2");
 	}
 
 	@Test
@@ -333,18 +331,18 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE)).isFalse();
 
 		final Incoterms incoterms = bPartnerEffective.getIncoterms(SOTrx.SALES);
-		assertNotNull(incoterms);
+		assertThat(incoterms).isNotNull();
 		assertThat(IncotermsId.equals(incoterms.getId(), IncotermsId.ofRepoId(17))).isTrue();
-		assertEquals("TestIncoterms3", incoterms.getName());
-		assertEquals("TestIncotermsValue3", incoterms.getValue());
-		assertEquals("TestIncotermsLocation3", incoterms.getLocationEffective());
+		assertThat(incoterms.getName()).isEqualTo("TestIncoterms3");
+		assertThat(incoterms.getValue()).isEqualTo("TestIncotermsValue3");
+		assertThat(incoterms.getLocationEffective()).isEqualTo("TestIncotermsLocation3");
 
 		final Incoterms poIncoterms = bPartnerEffective.getIncoterms(SOTrx.PURCHASE);
-		assertNotNull(poIncoterms);
+		assertThat(poIncoterms).isNotNull();
 		assertThat(IncotermsId.equals(poIncoterms.getId(), IncotermsId.ofRepoId(18))).isTrue();
-		assertEquals("TestPoIncoterms3", poIncoterms.getName());
-		assertEquals("TestPoIncotermsValue3", poIncoterms.getValue());
-		assertEquals("TestPoIncotermsLocation3", poIncoterms.getLocationEffective());
+		assertThat(poIncoterms.getName()).isEqualTo("TestPoIncoterms3");
+		assertThat(poIncoterms.getValue()).isEqualTo("TestPoIncotermsValue3");
+		assertThat(poIncoterms.getLocationEffective()).isEqualTo("TestPoIncotermsLocation3");
 	}
 
 	@Test
@@ -565,7 +563,6 @@ public class BPartnerEffectiveBLTest
 		saveRecord(bpGroupParent);
 
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		bpGroup.setC_BP_Group_ID(3);
 		bpGroup.setParent_BP_Group_ID(bpGroupParent.getC_BP_Group_ID());
 		bpGroup.setM_PricingSystem_ID(PricingSystemId.toRepoId(bpGroup_PricingSystemId));
 		bpGroup.setPO_PricingSystem_ID(PricingSystemId.toRepoId(bpGroup_poPricingSystemId));

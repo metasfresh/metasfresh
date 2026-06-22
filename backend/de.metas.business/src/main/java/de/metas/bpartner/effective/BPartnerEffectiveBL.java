@@ -230,7 +230,8 @@ public class BPartnerEffectiveBL
 				? bpartnerDAO.getBPartnerLocationById(bPartnerLocationId)
 				: null;
 
-		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(bPartnerRecord, bPartnerRecord, locationRecord);
+		final Object queryCtx = bPartnerRecord; // DAO uses this only for AD_Client_ID / AD_Org_ID query context
+		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(queryCtx, bPartnerRecord, locationRecord);
 		if (billRelation != null)
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());

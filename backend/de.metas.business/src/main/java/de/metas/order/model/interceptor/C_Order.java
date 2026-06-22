@@ -688,7 +688,11 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bPartnerId == null)
+		{
+			return;
+		}
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
 
 		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
