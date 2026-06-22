@@ -35,7 +35,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 
 /**
  * Responsible for creating {@code C_BP_Relation} (business-partner relation) records.
