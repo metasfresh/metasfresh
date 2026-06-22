@@ -22,6 +22,7 @@
 
 package org.adempiere.ad.persistence.custom_columns;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
 import de.metas.organization.IOrgDAO;
@@ -32,12 +33,15 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.Null;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
 import org.compiere.model.POInfoColumn;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Map;
@@ -53,6 +57,32 @@ public class CustomColumnService
 
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final CustomColumnRepository repository;
+
+	@VisibleForTesting
+	public static CustomColumnService newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		final CustomColumnRepository repo = new CustomColumnRepository()
+		{
+			@Override
+			@Nullable
+			public RESTApiTableInfo getByTableNameOrNull(final String tableName)
+			{
+				return null;
+			}
+		};
+		return newInstanceForUnitTesting(repo);
+	}
+
+	@VisibleForTesting
+	public static CustomColumnService newInstanceForUnitTesting(@NonNull final CustomColumnRepository repo)
+	{
+		Adempiere.assertUnitTestMode();
+		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, repo);
+		final CustomColumnService service = new CustomColumnService(repo);
+		SpringContextHolder.registerJUnitBean(CustomColumnService.class, service);
+		return service;
+	}
 
 	public void setCustomColumns(@NonNull final PO record, @NonNull final Map<String, Object> valuesByColumnName)
 	{

@@ -131,8 +131,7 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 								.build()
 				)
 		);
-		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, stubRepo);
-		SpringContextHolder.registerJUnitBean(CustomColumnService.class, new CustomColumnService(stubRepo));
+		CustomColumnService.newInstanceForUnitTesting(stubRepo);
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();
