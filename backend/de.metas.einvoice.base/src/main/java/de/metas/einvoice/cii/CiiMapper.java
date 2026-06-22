@@ -51,13 +51,21 @@ import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
 import de.metas.einvoice.cii.model.TradeSettlementPaymentMeansType;
 import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -404,16 +412,28 @@ public class CiiMapper
 			seller.setSpecifiedLegalOrganization(legalOrg);
 		}
 
-		// BT-31 VAT id (scheme VA)
-		final String taxId = sellerBP.getTaxID();
-		if (taxId != null && !taxId.isEmpty())
+		// BT-31 VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
+		final String vataxId = sellerBP.getVATaxID();
+		if (vataxId != null && !vataxId.isEmpty())
 		{
 			final TaxRegistrationType vatReg = new TaxRegistrationType();
 			final IDType vatId = new IDType();
-			vatId.setValue(taxId);
+			vatId.setValue(vataxId);
 			vatId.setSchemeID("VA");
 			vatReg.setID(vatId);
 			seller.getSpecifiedTaxRegistration().add(vatReg);
+		}
+
+		// BT-32 Tax registration (Steuernummer, scheme FC) — source: TaxID
+		final String steuernummer = sellerBP.getTaxID();
+		if (steuernummer != null && !steuernummer.isEmpty())
+		{
+			final TaxRegistrationType fcReg = new TaxRegistrationType();
+			final IDType fcId = new IDType();
+			fcId.setValue(steuernummer);
+			fcId.setSchemeID("FC");
+			fcReg.setID(fcId);
+			seller.getSpecifiedTaxRegistration().add(fcReg);
 		}
 
 		// BT-34 Seller electronic address (email, scheme EM — GAP-4 default)
@@ -562,13 +582,13 @@ public class CiiMapper
 					? companyName
 					: buyerBP.getName()));
 
-			// BT-48 Buyer VAT id
-			final String taxId = buyerBP.getTaxID();
-			if (taxId != null && !taxId.isEmpty())
+			// BT-48 Buyer VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
+			final String buyerVataxId = buyerBP.getVATaxID();
+			if (buyerVataxId != null && !buyerVataxId.isEmpty())
 			{
 				final TaxRegistrationType vatReg = new TaxRegistrationType();
 				final IDType vatId = new IDType();
-				vatId.setValue(taxId);
+				vatId.setValue(buyerVataxId);
 				vatId.setSchemeID("VA");
 				vatReg.setID(vatId);
 				buyer.getSpecifiedTaxRegistration().add(vatReg);
@@ -577,11 +597,17 @@ public class CiiMapper
 
 		if (buyerBPLoc != null)
 		{
-			// BT-49 Buyer electronic address (BPartnerLocation email, scheme EM — GAP default)
-			final String email = buyerBPLoc.getEMail();
-			if (email != null && !email.isEmpty())
+			// BT-49 Buyer electronic address (scheme EM).
+			// Primary source: doc-outbound recipient resolver (same resolution that sets
+			// C_Doc_Outbound_Log.CurrentEMailAddress). Fallback: BPartnerLocation.EMail.
+			final String resolvedEmail = resolveBuyerEmail(invoice);
+			final String locationEmail = buyerBPLoc.getEMail();
+			final String bt49Email = (resolvedEmail != null && !resolvedEmail.isEmpty())
+					? resolvedEmail
+					: locationEmail;
+			if (bt49Email != null && !bt49Email.isEmpty())
 			{
-				buyer.setURIUniversalCommunication(uriCommunication(email));
+				buyer.setURIUniversalCommunication(uriCommunication(bt49Email));
 			}
 
 			// BG-8 Buyer postal address
@@ -590,6 +616,37 @@ public class CiiMapper
 		}
 
 		return buyer;
+	}
+
+	/**
+	 * Resolves the buyer email for BT-49 via the doc-outbound recipient registry
+	 * (same logic that populates C_Doc_Outbound_Log.CurrentEMailAddress).
+	 * Returns {@code null} if the registry is unavailable or returns no address —
+	 * the caller falls back to the BPartnerLocation email in that case.
+	 */
+	@Nullable
+	private String resolveBuyerEmail(@NonNull final I_C_Invoice invoice)
+	{
+		try
+		{
+			final DocOutboundLogMailRecipientRegistry registry =
+					SpringContextHolder.instance.getBean(DocOutboundLogMailRecipientRegistry.class);
+			final DocOutboundLogMailRecipientRequest req = DocOutboundLogMailRecipientRequest.builder()
+					.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID()))
+					.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
+					.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+					.build();
+			return registry.getRecipient(req)
+					.map(DocOutBoundRecipients::getTo)
+					.map(DocOutBoundRecipient::getEmailAddress)
+					.orElse(null);
+		}
+		catch (final Exception ex)
+		{
+			log.debug("Doc-outbound recipient resolver unavailable for invoice {} — falling back to BPartnerLocation email",
+					invoice.getC_Invoice_ID(), ex);
+			return null;
+		}
 	}
 
 	// ===== HeaderTradeSettlement =====

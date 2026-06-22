@@ -67,7 +67,8 @@ public class CiiMapperTest
 
 		final I_C_BPartner sellerBPartner = newInstance(I_C_BPartner.class);
 		sellerBPartner.setName("Muster GmbH");
-		sellerBPartner.setTaxID("DE123456789");
+		sellerBPartner.setVATaxID("DE123456789");   // BT-31 — Umsatzsteuer-ID (VAT identifier, scheme VA)
+		sellerBPartner.setTaxID("Steuernr-0815");   // BT-32 — Steuernummer (tax registration, scheme FC)
 		sellerBPartner.setEMail("invoice@muster.de");
 		sellerBPartner.setCommercialRegisterNumber("HRB 12345");
 		saveRecord(sellerBPartner);
@@ -113,7 +114,7 @@ public class CiiMapperTest
 
 		final I_C_BPartner buyerBPartner = newInstance(I_C_BPartner.class);
 		buyerBPartner.setName("Käufer AG");
-		buyerBPartner.setTaxID("DE987654321");
+		buyerBPartner.setVATaxID("DE987654321");   // BT-48 — Buyer VAT identifier (scheme VA)
 		saveRecord(buyerBPartner);
 
 		buyerBPLocation.setC_BPartner_ID(buyerBPartner.getC_BPartner_ID());
@@ -226,13 +227,21 @@ public class CiiMapperTest
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedLegalOrganization/ram:ID")
 				.isEqualTo("HRB 12345");
 
-		// Seller VAT id (BT-31) — value and scheme
+		// Seller VAT id (BT-31) — from VATaxID, scheme VA
 		xmlAssert.valueByXPath(
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID")
 				.isEqualTo("DE123456789");
 		xmlAssert.valueByXPath(
 						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[1]/ram:ID/@schemeID")
 				.isEqualTo("VA");
+
+		// Seller tax registration (BT-32) — from TaxID (Steuernummer), scheme FC
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[2]/ram:ID")
+				.isEqualTo("Steuernr-0815");
+		xmlAssert.valueByXPath(
+						"//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:SpecifiedTaxRegistration[2]/ram:ID/@schemeID")
+				.isEqualTo("FC");
 
 		// Buyer name (BT-44)
 		xmlAssert.valueByXPath(
