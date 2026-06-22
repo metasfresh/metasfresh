@@ -81,7 +81,7 @@ public class C_BP_Group_StepDef
 							.ifPresent(bpGroupRecord::setIsAssociation);
 
 					row.getAsOptionalIdentifier(I_C_BP_Group.COLUMNNAME_Bill_BPartner_ID)
-							.flatMap(bpartnerTable::getIdOptional)
+							.map(id -> id.lookupNotNullIdIn(bpartnerTable))
 							.ifPresent(bpId -> bpGroupRecord.setBill_BPartner_ID(bpId.getRepoId()));
 
 					row.getAsOptionalIdentifier(I_C_BP_Group.COLUMNNAME_Bill_Location_ID)

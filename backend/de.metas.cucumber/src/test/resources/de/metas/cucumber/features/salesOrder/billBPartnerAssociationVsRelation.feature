@@ -2,11 +2,7 @@
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00100_Sales_Order
 @ghActions:run_on_executor1
-Feature: Sales order bill-partner resolution: per-partner relation beats association group
-
-  A sales order's bill-to partner is resolved by two mechanisms.
-  The per-partner C_BP_Relation (IsBillTo=Y) is more specific than the
-  association group's central bill partner, so it must win.
+Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beats association group
 
   Background:
     Given infrastructure and metasfresh are running
@@ -14,14 +10,12 @@ Feature: Sales order bill-partner resolution: per-partner relation beats associa
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
-  @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00100_Sales_Order
-  @Id:S30351_TC1
+  @Id:S30351_10
   Scenario: Per-partner bill-to relation takes precedence over association group bill partner
     Given metasfresh contains C_BPartners:
-      | Identifier     | IsCustomer | IsVendor |
-      | centralBilling | N          | N        |
-      | memberBillTo   | N          | N        |
+      | Identifier     |
+      | centralBilling |
+      | memberBillTo   |
     And metasfresh contains C_BP_Groups:
       | Identifier | IsAssociation | Bill_BPartner_ID |
       | assocGroup | Y             | centralBilling   |
