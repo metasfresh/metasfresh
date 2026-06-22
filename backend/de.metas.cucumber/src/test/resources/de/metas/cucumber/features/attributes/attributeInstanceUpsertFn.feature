@@ -74,3 +74,22 @@ Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
     Then invoke de_metas_attributes.upsert_attributeinstance expecting error:
       | M_AttributeSetInstance_ID | M_Attribute_ID | Value          |
       | asi_err                   | attr_list      | does_not_exist |
+
+  Scenario: Clearing an attribute sets its value to null (incl. list attributes)
+    When invoke de_metas_attributes.upsert_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_4                     | attr_str       | M     |
+      | asi_4                     | attr_list      | red   |
+    Then validate de_metas_attributes.get_attributeinstance_value:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_4                     | attr_str       | M     |
+      | asi_4                     | attr_list      | red   |
+    When invoke de_metas_attributes.clear_attributeinstance:
+      | M_AttributeSetInstance_ID | M_Attribute_ID |
+      | asi_4                     | attr_str       |
+      | asi_4                     | attr_list      |
+    # '-' asserts the value is now null
+    Then validate de_metas_attributes.get_attributeinstance_value:
+      | M_AttributeSetInstance_ID | M_Attribute_ID | Value |
+      | asi_4                     | attr_str       | -     |
+      | asi_4                     | attr_list      | -     |

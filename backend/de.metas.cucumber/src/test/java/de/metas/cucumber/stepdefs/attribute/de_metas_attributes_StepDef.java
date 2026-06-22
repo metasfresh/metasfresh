@@ -122,7 +122,8 @@ public class de_metas_attributes_StepDef
 		DataTableRows.of(dataTable).forEach(row -> {
 			final int asiId = attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)).getRepoId();
 			final AttributeId attributeId = attributeTable.getId(row.getAsIdentifier(COLUMNNAME_M_Attribute_ID));
-			final String expected = row.getAsOptionalString("Value").orElse(null);
+			// '-' (the cucumber null placeholder) asserts the value is null
+			final String expected = row.getAsOptionalString("Value").map(v -> "-".equals(v) ? null : v).orElse(null);
 
 			final String actual = DB.getSQLValueStringEx(
 					ITrx.TRXNAME_ThreadInherited,
@@ -130,6 +131,33 @@ public class de_metas_attributes_StepDef
 					asiId, attributeId.getRepoId());
 
 			assertThat(actual).as("get_attributeinstance_value for M_Attribute_ID=%s", attributeId.getRepoId()).isEqualTo(expected);
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef Calls de_metas_attributes.clear_attributeinstance once per row (sets the attribute value to null).
+	 * @cucumber.columns
+	 *   <b>M_AttributeSetInstance_ID</b> &mdash; (required, identifier-ref) the ASI to clear on.<br>
+	 *   <b>M_Attribute_ID</b> &mdash; (required, identifier-ref) the attribute to clear.<br>
+	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData, M_Attribute_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When invoke de_metas_attributes.clear_attributeinstance:
+	 *   | M_AttributeSetInstance_ID | M_Attribute_ID |
+	 *   | asi_1                     | attr_str       |
+	 * </pre>
+	 */
+	@When("invoke de_metas_attributes.clear_attributeinstance:")
+	public void invoke_clear_attributeinstance(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int asiId = attributeSetInstanceTable.getId(row.getAsIdentifier(COLUMNNAME_M_AttributeSetInstance_ID)).getRepoId();
+			final AttributeId attributeId = attributeTable.getId(row.getAsIdentifier(COLUMNNAME_M_Attribute_ID));
+
+			DB.getSQLValueEx(
+					ITrx.TRXNAME_ThreadInherited,
+					"SELECT de_metas_attributes.clear_attributeinstance(?::numeric, ?::numeric)",
+					asiId, attributeId.getRepoId());
 		});
 	}
 
