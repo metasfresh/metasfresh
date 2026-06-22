@@ -691,6 +691,11 @@ public class C_Order_StepDef
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 * </ul>
 	 */
+	/**
+	 * Validates {@code C_Order} records by identifier. Every column is an optional assertion - a column is only
+	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
+	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
+	 */
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)
 	{
@@ -820,6 +825,12 @@ public class C_Order_StepDef
 				.ifPresent(dateOrdered -> {
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 					softly.assertThat(TimeUtil.asLocalDate(order.getDateOrdered(), zoneId)).as("DateOrdered for Identifier=%s", identifierStr).isEqualTo(dateOrdered);
+				});
+
+		row.getAsOptionalLocalDate(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getDatePromised(), zoneId)).as("DatePromised for Identifier=%s", identifierStr).isEqualTo(datePromised);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)

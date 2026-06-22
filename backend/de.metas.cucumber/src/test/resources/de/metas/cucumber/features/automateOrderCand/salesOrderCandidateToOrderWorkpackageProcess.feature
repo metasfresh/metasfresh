@@ -421,11 +421,14 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | ExternalId | ExternalSystem.Value | Count |
       | 22062026   | Shopware6            | 1     |
 
+    # The header DatePromised must equal the EARLIEST DatePromised among the lines (2026-07-01).
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
-      | order_1               | 22062026   | olCand_Customer          | olCand_Customer_location          | 2026-06-22  | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
+      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DatePromised | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | order_1               | 22062026   | olCand_Customer          | olCand_Customer_location          | 2026-06-22  | 2026-07-01   | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
+    # Each order line must keep the DatePromised (dateRequired) of its own source candidate.
+    # The line is matched by QtyOrdered: qty 2 -> 2026-07-01, qty 1 -> 2026-07-08, qty 3 -> 2026-07-15.
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | product_22062026        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | product_22062026        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_3               | order_1               | product_22062026        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DatePromised | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1               | order_1               | 2026-07-01   | product_22062026        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_2               | order_1               | 2026-07-08   | product_22062026        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_3               | order_1               | 2026-07-15   | product_22062026        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |

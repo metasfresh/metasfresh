@@ -331,6 +331,11 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates {@code C_OrderLine} records. The line is located by {@code (C_Order_ID, M_Product_ID, QtyOrdered)},
+	 * then every present column is asserted (each column is an optional assertion). The date columns
+	 * ({@code DateOrdered}, {@code DatePromised}) are compared as a start-of-day {@code Timestamp}.
+	 */
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
@@ -657,6 +662,9 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered));
+
+		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> softly.assertThat(orderLine.getDatePromised()).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised));
 
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())
