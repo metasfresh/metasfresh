@@ -408,8 +408,6 @@ import java.util.Optional;
 						.sequenceId(sequenceId)
 						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
 						.ppOrderId(ppOrderId)
-						.generatedAt(SystemTime.asInstant())
-						.orgId(OrgId.ofRepoId(ppOrderBom.getAD_Org_ID()))
 						.build());
 
 			}

@@ -57,7 +57,7 @@ public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 
 	// The function name is concatenated into SQL (an identifier can't be a bind parameter), so it must be a plain,
 	// optionally single-schema-qualified SQL identifier (e.g. fn_x or sp80.fn_x) - guards against a malformed /
-	// injected SysConfig value. Pattern.matches() anchors the whole string.
+	// injected SysConfig value. Matcher.matches() anchors the whole string.
 	private static final Pattern FUNCTION_NAME_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
