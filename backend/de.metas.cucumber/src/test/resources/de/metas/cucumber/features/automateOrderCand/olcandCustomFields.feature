@@ -13,6 +13,13 @@ Feature: OLCand sales REST API — custom and first-class fields
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-17T13:30:13+02:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # Isolation (setUp, runs before each scenario): clear the runtime IsRestAPICustomColumn flag so a
+    # failed sibling scenario on this executor cannot leak it in. Shared-state cleanup belongs here, not in teardown.
+    And update AD_Column:
+      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
+      | C_OLCand  | Description | false                     |
+      | C_Order   | Description | false                     |
+    And the metasfresh cache is reset
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
@@ -107,13 +114,6 @@ Feature: OLCand sales REST API — custom and first-class fields
     Then validate customColumns:
       | OPT.C_Order_ID.Identifier | CustomColumnJSONValue                     |
       | order_1                   | {"Description":"custom-round-trip-value"} |
-
-    # Restore the column flag so sibling scenarios on the same executor are not affected
-    And update AD_Column:
-      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
-      | C_OLCand  | Description | false                     |
-      | C_Order   | Description | false                     |
-    And the metasfresh cache is reset
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
