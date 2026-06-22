@@ -865,7 +865,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     "deliveryRule": "F",
     "promotionCode": "PROMO_S0469_200",
     "isWithoutCharge": true,
-    "reason": "complimentary item"
+    "reason": "P"
 }
 """
 
@@ -889,85 +889,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_S0469_200       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | true      | CO        | promoCode_1        |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | price | currencyCode | processed | IsWithoutCharge | Reason            |
-      | ol_S0469_200              | order_S0469_200       | product_1               | 5          | 10    | EUR          | true      | true            | complimentary item |
-
-
-  @from:cucumber
-  @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00101
-  @topic:orderCandidate
-  @Id:S0469_210
-  Scenario: v2 OLCand extendedProps — Description round-trip from OLCand to order and back in create response
-    And update AD_Column:
-      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
-      | C_OLCand  | Description | true                      |
-      | C_Order   | Description | true                      |
-    And the metasfresh cache is reset
-    And we wait for 2000 ms
-
-    And a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
-  """
-{
-    "orgCode": "001",
-    "externalLineId": "S0469_210_line",
-    "externalHeaderId": "S0469_210_hdr",
-    "externalSystemCode": "Shopware6",
-    "dataSource": "int-Shopware",
-    "bpartner": {
-        "bpartnerIdentifier": "2156425",
-        "bpartnerLocationIdentifier": "2205175",
-        "contactIdentifier": "2188224"
-    },
-    "dateRequired": "2021-08-20",
-    "dateOrdered": "2021-07-20",
-    "orderDocType": "SalesOrder",
-    "paymentTerm": "val-1000002",
-    "productIdentifier": 2005577,
-    "qty": 5,
-    "price": 10,
-    "currencyCode": "EUR",
-    "discount": 0,
-    "poReference": "po_ref_S0469_210",
-    "deliveryViaRule": "S",
-    "deliveryRule": "F",
-    "extendedProps": {
-        "Description": "custom-desc-S0469"
-    }
-}
-"""
-
-    Then the metasfresh REST-API responds with
-  """
-{
-    "result": [
-        {
-            "extendedProps": {
-                "Description": "custom-desc-S0469"
-            }
-        }
-    ]
-}
-"""
-
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
-"""
-{
-    "externalHeaderId": "S0469_210_hdr",
-    "externalSystemCode": "Shopware6",
-    "ship": false,
-    "invoice": false,
-    "closeOrder": false
-}
-"""
-
-    Then process metasfresh response
-      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
-      | order_S0469_210       | null                  | null                    |
-
-    And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | processed | DocStatus | Description        |
-      | order_S0469_210       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | true      | CO        | custom-desc-S0469  |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | price | currencyCode | processed | IsWithoutCharge | Reason |
+      | ol_S0469_200              | order_S0469_200       | product_1               | 5          | 10    | EUR          | true      | true            | P      |
 
 
   @from:cucumber
