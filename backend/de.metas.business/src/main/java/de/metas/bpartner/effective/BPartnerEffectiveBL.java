@@ -24,6 +24,7 @@ package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -46,6 +47,8 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
@@ -210,6 +213,60 @@ public class BPartnerEffectiveBL
 				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
 
 		return bPartnerBuilder.build();
+	}
+
+	/**
+	 * Resolves the effective bill-to partner for a given order partner + location.
+	 * Precedence: per-partner C_BP_Relation (IsBillTo=Y) → partner's association group Bill_BPartner → parent association group Bill_BPartner → null.
+	 */
+	@Nullable
+	public BillBPartnerResolution getEffectiveBillBPartner(
+			@NonNull final BPartnerId bPartnerId,
+			@Nullable final BPartnerLocationId bPartnerLocationId)
+	{
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
+		final I_C_BPartner_Location locationRecord = bPartnerLocationId != null
+				? bpartnerDAO.getBPartnerLocationById(bPartnerLocationId)
+				: null;
+
+		// 1. Per-partner bill-to C_BP_Relation
+		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(bPartnerRecord, bPartnerRecord, locationRecord);
+		if (billRelation != null)
+		{
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());
+			if (billBPartnerId != null)
+			{
+				return BillBPartnerResolution.of(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID(), 0);
+			}
+		}
+
+		// 2. Association group Bill_BPartner
+		final I_C_BP_Group bpGroup = bpGroupDAO.getByBPartnerId(bPartnerId);
+		if (bpGroup.isAssociation())
+		{
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpGroup.getBill_BPartner_ID());
+			if (billBPartnerId != null)
+			{
+				return BillBPartnerResolution.of(billBPartnerId, bpGroup.getBill_Location_ID(), bpGroup.getBill_User_ID());
+			}
+		}
+
+		// 3. Parent association group Bill_BPartner
+		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
+		if (parentGroupId != null)
+		{
+			final I_C_BP_Group parentGroup = bpGroupDAO.getById(parentGroupId);
+			if (parentGroup.isAssociation())
+			{
+				final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
+				if (billBPartnerId != null)
+				{
+					return BillBPartnerResolution.of(billBPartnerId, parentGroup.getBill_Location_ID(), parentGroup.getBill_User_ID());
+				}
+			}
+		}
+
+		return null;
 	}
 
 	@Nullable

@@ -25,12 +25,12 @@ package de.metas.order.model.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.effective.BillBPartnerResolution;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -78,7 +78,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -109,8 +108,8 @@ public class C_Order
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
 	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
 	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
 	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -124,6 +123,7 @@ public class C_Order
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerEffectiveBL bpartnerEffectiveBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
@@ -131,6 +131,7 @@ public class C_Order
 			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.bpartnerBL = bpartnerBL;
+		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
@@ -684,36 +685,17 @@ public class C_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
-	public void setBillBPartnerIdIfAssociation(final I_C_Order order)
+	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
-		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
-		if (bpartnerGroup.isAssociation())
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
+		if (resolution != null)
 		{
-			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpartnerGroup.getBill_BPartner_ID());
-			if (billBPartnerId != null)
-			{
-				order.setBill_BPartner_ID(billBPartnerId.getRepoId());
-				order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
-				order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
-			}
-		}
-		else
-		{
-			final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpartnerGroup.getParent_BP_Group_ID());
-			if (parentGroupId != null)
-			{
-				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
-				if (parentGroup.isAssociation())
-				{
-					final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
-					if (billBPartnerId != null)
-					{
-						order.setBill_BPartner_ID(billBPartnerId.getRepoId());
-						order.setBill_Location_ID(parentGroup.getBill_Location_ID());
-						order.setBill_User_ID(parentGroup.getBill_User_ID());
-					}
-				}
-			}
+			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
+			order.setBill_Location_ID(resolution.getBillLocationId());
+			order.setBill_User_ID(resolution.getBillUserId());
 		}
 	}
 

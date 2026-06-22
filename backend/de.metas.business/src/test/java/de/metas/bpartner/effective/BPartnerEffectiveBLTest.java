@@ -23,6 +23,7 @@
 package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.lang.SOTrx;
@@ -36,7 +37,9 @@ import lombok.Builder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_PaymentTerm;
 import org.junit.jupiter.api.BeforeEach;
@@ -369,6 +372,143 @@ public class BPartnerEffectiveBLTest
 		saveRecord(partner);
 
 		assertThat(bpartnerEffectiveBL.getPurchaseTransportDays(BPartnerId.ofRepoId(partner.getC_BPartner_ID()))).isEqualTo(5);
+	}
+
+	// ------- getEffectiveBillBPartner tests -------
+
+	@Test
+	public void getEffectiveBillBPartner_relationWinsOverAssociationGroup()
+	{
+		// central billing BP (association group bill-to)
+		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		saveRecord(centralBillingBP);
+		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
+
+		// association group pointing to centralBillingBP
+		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		assocGroup.setIsAssociation(true);
+		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
+		saveRecord(assocGroup);
+
+		// member BP in the association group
+		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		memberBP.setC_BP_Group_ID(assocGroup.getC_BP_Group_ID());
+		saveRecord(memberBP);
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+
+		// per-member-BP bill-to location
+		final I_C_BPartner_Location memberBillToLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		memberBillToLoc.setC_BPartner_ID(memberBP.getC_BPartner_ID());
+		saveRecord(memberBillToLoc);
+		final BPartnerLocationId memberBillToLocId = BPartnerLocationId.ofRepoId(memberBPId, memberBillToLoc.getC_BPartner_Location_ID());
+
+		// per-member-BP bill-to partner (separate from centralBilling)
+		final I_C_BPartner memberBillToBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		saveRecord(memberBillToBP);
+		final BPartnerId memberBillToBPId = BPartnerId.ofRepoId(memberBillToBP.getC_BPartner_ID());
+
+		// per-member-BP bill-to location on the target BP
+		final I_C_BPartner_Location memberBillToBPLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		memberBillToBPLoc.setC_BPartner_ID(memberBillToBP.getC_BPartner_ID());
+		saveRecord(memberBillToBPLoc);
+
+		// C_BP_Relation: memberBP → memberBillToBP (IsBillTo=Y)
+		final I_C_BP_Relation relation = InterfaceWrapperHelper.newInstance(I_C_BP_Relation.class);
+		relation.setC_BPartner_ID(memberBP.getC_BPartner_ID());
+		relation.setC_BPartner_Location_ID(memberBillToLoc.getC_BPartner_Location_ID());
+		relation.setC_BPartnerRelation_ID(memberBillToBP.getC_BPartner_ID());
+		relation.setC_BPartnerRelation_Location_ID(memberBillToBPLoc.getC_BPartner_Location_ID());
+		relation.setIsBillTo(true);
+		relation.setIsActive(true);
+		saveRecord(relation);
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberBillToLocId);
+
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(memberBillToBPId);
+		assertThat(resolution.getBillLocationId()).isEqualTo(memberBillToBPLoc.getC_BPartner_Location_ID());
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_associationGroupUsedWhenNoRelation()
+	{
+		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		saveRecord(centralBillingBP);
+		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
+
+		final I_C_BPartner_Location centralLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		centralLoc.setC_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		saveRecord(centralLoc);
+
+		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		assocGroup.setIsAssociation(true);
+		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
+		assocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
+		saveRecord(assocGroup);
+
+		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		memberBP.setC_BP_Group_ID(assocGroup.getC_BP_Group_ID());
+		saveRecord(memberBP);
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
+		assertThat(resolution.getBillLocationId()).isEqualTo(centralLoc.getC_BPartner_Location_ID());
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_parentAssociationGroupUsedWhenMemberGroupIsNotAssociation()
+	{
+		final I_C_BPartner centralBillingBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		saveRecord(centralBillingBP);
+		final BPartnerId centralBillingId = BPartnerId.ofRepoId(centralBillingBP.getC_BPartner_ID());
+
+		final I_C_BPartner_Location centralLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
+		centralLoc.setC_BPartner_ID(centralBillingBP.getC_BPartner_ID());
+		saveRecord(centralLoc);
+
+		// parent group is the association
+		final I_C_BP_Group parentAssocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		parentAssocGroup.setIsAssociation(true);
+		parentAssocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
+		parentAssocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
+		saveRecord(parentAssocGroup);
+
+		// member's direct group is NOT an association
+		final I_C_BP_Group childGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		childGroup.setIsAssociation(false);
+		childGroup.setParent_BP_Group_ID(parentAssocGroup.getC_BP_Group_ID());
+		saveRecord(childGroup);
+
+		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		memberBP.setC_BP_Group_ID(childGroup.getC_BP_Group_ID());
+		saveRecord(memberBP);
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+
+		assertThat(resolution).isNotNull();
+		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
+		assertThat(resolution.getBillLocationId()).isEqualTo(centralLoc.getC_BPartner_Location_ID());
+	}
+
+	@Test
+	public void getEffectiveBillBPartner_neitherRelationNorAssociationGroup_returnsNull()
+	{
+		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		plainGroup.setIsAssociation(false);
+		saveRecord(plainGroup);
+
+		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		memberBP.setC_BP_Group_ID(plainGroup.getC_BP_Group_ID());
+		saveRecord(memberBP);
+		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+
+		assertThat(resolution).isNull();
 	}
 
 	@Builder(builderMethodName = "setup", builderClassName = "$SetupBuilder")
