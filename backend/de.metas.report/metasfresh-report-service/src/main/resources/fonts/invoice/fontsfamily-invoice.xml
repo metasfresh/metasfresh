@@ -55,6 +55,7 @@
     -->
     <fontFamily name="OCRB">
         <normal><![CDATA[fonts/invoice/OCRB.ttf]]></normal>
+        <pdfEncoding><![CDATA[Cp1252]]></pdfEncoding>
         <pdfEmbedded><![CDATA[true]]></pdfEmbedded>
     </fontFamily>
 
