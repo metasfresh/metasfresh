@@ -45,19 +45,19 @@ public class PromotionCodeRepository
 	@NonNull
 	public PromotionCodeId getPromotionCodeIdByValue(@NonNull final String value)
 	{
-		final Integer repoId = Services.get(IQueryBL.class)
+		final PromotionCodeId id = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_Value, value)
 				.create()
-				.firstId();
-		if (repoId == null || repoId <= 0)
+				.firstIdOnly(PromotionCodeId::ofRepoIdOrNull);
+		if (id == null)
 		{
 			throw new AdempiereException("Promotion code not found: " + value)
 					.appendParametersToMessage()
 					.setParameter("Value", value);
 		}
-		return PromotionCodeId.ofRepoId(repoId);
+		return id;
 	}
 
 	@Nullable

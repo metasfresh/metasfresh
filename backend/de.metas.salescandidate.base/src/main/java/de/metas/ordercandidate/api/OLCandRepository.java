@@ -353,6 +353,21 @@ public class OLCandRepository
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
 		}
 
+		// first-class promo code / charge fields — set before the initial saveRecord so there is only one write
+		if (request.getPromotionCodeId() != null)
+		{
+			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
+		}
+		if (request.getPromotionCode2Id() != null)
+		{
+			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
+		}
+		olCandPO.setIsWithoutCharge(request.isWithoutCharge());
+		if (request.getReason() != null)
+		{
+			olCandPO.setReason(request.getReason());
+		}
+
 		saveRecord(olCandWithIssuesInterface);
 
 		// wire extendedProps: set custom REST API columns on the saved C_OLCand record
@@ -364,31 +379,6 @@ public class OLCandRepository
 					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
 					request.getExtendedProps());
 			saveRecord(olCandWithIssuesInterface);
-		}
-
-		// set first-class promo code / charge fields
-		if (request.getPromotionCodeId() != null)
-		{
-			olCandPO.setC_PromotionCode_ID(request.getPromotionCodeId().getRepoId());
-		}
-		if (request.getPromotionCode2Id() != null)
-		{
-			olCandPO.setC_PromotionCode2_ID(request.getPromotionCode2Id().getRepoId());
-		}
-		if (request.getIsWithoutCharge() != null)
-		{
-			olCandPO.setIsWithoutCharge(request.getIsWithoutCharge());
-		}
-		if (request.getReason() != null)
-		{
-			olCandPO.setReason(request.getReason());
-		}
-		if (request.getPromotionCodeId() != null
-				|| request.getPromotionCode2Id() != null
-				|| request.getIsWithoutCharge() != null
-				|| request.getReason() != null)
-		{
-			saveRecord(olCandPO);
 		}
 
 		return olCandWithIssuesInterface;

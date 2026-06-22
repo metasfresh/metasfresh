@@ -30,6 +30,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.wrapper.POJOWrapper;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.Null;
 import org.compiere.model.PO;
 import org.compiere.model.POInfo;
@@ -165,4 +167,60 @@ public class CustomColumnService
 	}
 
 	private ZoneId extractZoneId(final @NonNull PO record) {return orgDAO.getTimeZone(OrgId.ofRepoId(record.getAD_Org_ID()));}
+
+	/**
+	 * Copies every {@code IsRestAPICustomColumn='Y'} column that is present on both {@code sourceTableName}
+	 * and {@code targetTableName} from the given source record to the target record.
+	 * Values are transferred untyped so that any future custom column is handled automatically
+	 * without a Java change.
+	 * <p>
+	 * No-op if either the source or target table has no custom REST API columns registered.
+	 *
+	 * @param source          the source record (may be a POJO wrapper or a real PO)
+	 * @param sourceTableName AD_Table.TableName of the source record
+	 * @param targetTableName AD_Table.TableName of the target record
+	 * @param target          the target record (may be a POJO wrapper or a real PO)
+	 */
+	public void copyCustomColumns(
+			@NonNull final Object source,
+			@NonNull final String sourceTableName,
+			@NonNull final String targetTableName,
+			@NonNull final Object target)
+	{
+		final RESTApiTableInfo sourceTableInfo = repository.getByTableNameOrNull(sourceTableName);
+		if (sourceTableInfo == null)
+		{
+			return;
+		}
+		final RESTApiTableInfo targetTableInfo = repository.getByTableNameOrNull(targetTableName);
+		if (targetTableInfo == null)
+		{
+			return;
+		}
+
+		for (final String colName : sourceTableInfo.getCustomRestAPIColumnNames())
+		{
+			if (!targetTableInfo.isCustomRestAPIColumn(colName))
+			{
+				continue;
+			}
+
+			// Read from source — works for both real PO and test POJO
+			final Object value = InterfaceWrapperHelper.getValueOrNull(source, colName);
+
+			// Write to target — dual-path: POJO (tests) vs real PO (production)
+			if (POJOWrapper.isHandled(target))
+			{
+				POJOWrapper.getWrapper(target).setValue(colName, value);
+			}
+			else
+			{
+				final PO targetPO = InterfaceWrapperHelper.getPO(target);
+				if (targetPO.getPOInfo().hasColumnName(colName))
+				{
+					targetPO.set_ValueOfColumn(colName, value);
+				}
+			}
+		}
+	}
 }

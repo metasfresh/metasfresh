@@ -316,7 +316,7 @@ public class JsonConverters
 				.extendedProps(request.getExtendedProps())
 				.promotionCodeId(promotionCodeId)
 				.promotionCode2Id(promotionCode2Id)
-				.isWithoutCharge(request.getIsWithoutCharge())
+				.isWithoutCharge(Boolean.TRUE.equals(request.getIsWithoutCharge()))
 				.reason(request.getReason())
 				.build()
 				;

@@ -103,9 +103,15 @@ class OLCandOrderFactoryFirstClassFieldsTest
 		);
 
 		// No custom columns needed for this test (we test first-class typed propagation, not generic)
+		final org.adempiere.ad.persistence.custom_columns.CustomColumnRepository stubRepo =
+				new OLCandOrderFactoryCustomColumnPropagationTest.TestCustomColumnRepository(java.util.Collections.emptyMap());
 		SpringContextHolder.registerJUnitBean(
 				org.adempiere.ad.persistence.custom_columns.CustomColumnRepository.class,
-				new OLCandOrderFactoryCustomColumnPropagationTest.TestCustomColumnRepository(java.util.Collections.emptyMap())
+				stubRepo
+		);
+		SpringContextHolder.registerJUnitBean(
+				org.adempiere.ad.persistence.custom_columns.CustomColumnService.class,
+				new org.adempiere.ad.persistence.custom_columns.CustomColumnService(stubRepo)
 		);
 
 		countryDE = createCountry("DE", "@A1@ @CO@");

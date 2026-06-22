@@ -67,6 +67,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -85,11 +86,9 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
-import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
@@ -105,7 +104,6 @@ import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MNote;
-import org.compiere.model.PO;
 import org.compiere.model.X_C_Order;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
@@ -159,7 +157,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
-	private final CustomColumnRepository customColumnRepository = SpringContextHolder.instance.getBean(CustomColumnRepository.class);
+	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -335,17 +333,17 @@ class OLCandOrderFactory
 		}
 
 		// First-class field propagation: promotion codes from OLCand to order header
-		final de.metas.ordercandidate.model.I_C_OLCand olCandRecord = candidateOfGroup.unbox();
-		if (olCandRecord.getC_PromotionCode_ID() > 0)
+		final I_C_OLCand olCandRecord = candidateOfGroup.unbox();
+		if (PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode_ID()) != null)
 		{
 			order.setC_PromotionCode_ID(olCandRecord.getC_PromotionCode_ID());
 		}
-		if (olCandRecord.getC_PromotionCode2_ID() > 0)
+		if (PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode2_ID()) != null)
 		{
 			order.setC_PromotionCode2_ID(olCandRecord.getC_PromotionCode2_ID());
 		}
 
-		copyCustomColumns(olCandRecord, org.compiere.model.I_C_Order.Table_Name, order);
+		customColumnService.copyCustomColumns(olCandRecord, I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
 
 		save(order);
 		return order;
@@ -625,11 +623,11 @@ class OLCandOrderFactory
 
 		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
 		{
-			final de.metas.ordercandidate.model.I_C_OLCand olCandRecord = candidate.unbox();
+			final I_C_OLCand olCandRecord = candidate.unbox();
 			currentOrderLine.setIsWithoutCharge(olCandRecord.isWithoutCharge());
 			currentOrderLine.setReason(olCandRecord.getReason());
 
-			copyCustomColumns(olCandRecord, org.compiere.model.I_C_OrderLine.Table_Name, currentOrderLine);
+			customColumnService.copyCustomColumns(olCandRecord, I_C_OLCand.Table_Name, I_C_OrderLine.Table_Name, currentOrderLine);
 		}
 
 		//
@@ -757,56 +755,6 @@ class OLCandOrderFactory
 	I_C_Order getOrder()
 	{
 		return order;
-	}
-
-	/**
-	 * Copies every {@code IsRestAPICustomColumn='Y'} column from the given {@code source} (C_OLCand)
-	 * to {@code target} (C_Order or C_OrderLine), if and only if the same column name is also flagged
-	 * as a custom REST API column on the target table.
-	 * <p>
-	 * Values are transferred untyped so that any future custom column is handled automatically
-	 * without a Java change.
-	 */
-	private void copyCustomColumns(
-			@NonNull final de.metas.ordercandidate.model.I_C_OLCand source,
-			@NonNull final String targetTableName,
-			@NonNull final Object target)
-	{
-		final RESTApiTableInfo sourceTableInfo = customColumnRepository.getByTableNameOrNull(de.metas.ordercandidate.model.I_C_OLCand.Table_Name);
-		if (sourceTableInfo == null)
-		{
-			return;
-		}
-		final RESTApiTableInfo targetTableInfo = customColumnRepository.getByTableNameOrNull(targetTableName);
-		if (targetTableInfo == null)
-		{
-			return;
-		}
-
-		for (final String colName : sourceTableInfo.getCustomRestAPIColumnNames())
-		{
-			if (!targetTableInfo.isCustomRestAPIColumn(colName))
-			{
-				continue;
-			}
-
-			// Read from source — works for both real PO and test POJO (value is in innerValues map)
-			final Object value = InterfaceWrapperHelper.getValueOrNull(source, colName);
-
-			// Write to target — dual-path: POJO (tests) vs real PO (production)
-			if (POJOWrapper.isHandled(target))
-			{
-				POJOWrapper.getWrapper(target).setValue(colName, value);
-			}
-			else
-			{
-				final PO targetPO = InterfaceWrapperHelper.getPO(target);
-				if (targetPO.getPOInfo().hasColumnName(colName))
-				{
-					targetPO.set_ValueOfColumn(colName, value);
-				}
-			}
-		}
 	}
 
 	private void setBPSalesRepIdToOrder(@NonNull final I_C_Order order, @NonNull final OLCand olCand)

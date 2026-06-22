@@ -46,6 +46,7 @@ import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -131,6 +132,7 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 				)
 		);
 		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, stubRepo);
+		SpringContextHolder.registerJUnitBean(CustomColumnService.class, new CustomColumnService(stubRepo));
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();

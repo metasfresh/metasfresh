@@ -14,7 +14,7 @@ public class RESTApiTableInfo
 {
 	@NonNull String tableName;
 	/** Original (canonical-case) column names as supplied, e.g. "MyCustom_Column". */
-	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNames;
+	@NonNull ImmutableSet<String> customRestAPIColumnNames;
 	/** Upper-cased for fast case-insensitive membership checks. */
 	@NonNull @Getter(AccessLevel.NONE) ImmutableSet<String> customRestAPIColumnNamesUC;
 
@@ -43,16 +43,6 @@ public class RESTApiTableInfo
 	public boolean isCustomRestAPIColumn(@NonNull final String columnName)
 	{
 		return customRestAPIColumnNamesUC.contains(columnName.toUpperCase());
-	}
-
-	/**
-	 * Returns the custom REST API column names in their original canonical case
-	 * (e.g. "MyCustom_Column"), suitable for use as column identifiers when
-	 * reading/writing PO or POJOWrapper records.
-	 */
-	public ImmutableSet<String> getCustomRestAPIColumnNames()
-	{
-		return customRestAPIColumnNames;
 	}
 
 }

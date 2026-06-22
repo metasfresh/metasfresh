@@ -158,7 +158,7 @@ public class OLCandCreateRequest
 
 	@Nullable PromotionCodeId promotionCode2Id;
 
-	@Nullable Boolean isWithoutCharge;
+	boolean isWithoutCharge;
 
 	@Nullable String reason;
 
@@ -222,7 +222,7 @@ public class OLCandCreateRequest
 			@Nullable final Map<String, Object> extendedProps,
 			@Nullable final PromotionCodeId promotionCodeId,
 			@Nullable final PromotionCodeId promotionCode2Id,
-			@Nullable final Boolean isWithoutCharge,
+			final boolean isWithoutCharge,
 			@Nullable final String reason)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
