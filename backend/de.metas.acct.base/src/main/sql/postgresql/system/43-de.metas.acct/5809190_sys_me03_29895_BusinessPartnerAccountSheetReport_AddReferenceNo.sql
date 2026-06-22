@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/BusinessPartnerAccountSheetReport.sql
 DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
 CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric,
@@ -69,11 +70,11 @@ BEGIN
                  FROM c_invoice i
                   LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
                              FROM C_ReferenceNo_Doc rnd
-                                      LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
-                             WHERE rnd.AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
-                               AND rn.C_ReferenceNo_Type_ID =
-                                   (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y')
-                               AND rnd.isActive = 'Y') rn ON i.C_Invoice_ID = rn.Record_ID
+                                      JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+                                      JOIN AD_Table t ON t.AD_Table_ID = rnd.AD_Table_ID AND t.TableName = 'C_Invoice' AND t.isActive = 'Y'
+                                      JOIN C_ReferenceNo_Type rt ON rt.C_ReferenceNo_Type_ID = rn.C_ReferenceNo_Type_ID
+                                          AND rt.name = 'InvoiceReference' AND rt.isActive = 'Y'
+                             WHERE rnd.isActive = 'Y') rn ON i.C_Invoice_ID = rn.Record_ID
                  WHERE TRUE
                    AND i.c_bpartner_id = p_c_bpartner_id
                    AND i.dateacct >= p_dateFrom
