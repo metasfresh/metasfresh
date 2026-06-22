@@ -143,12 +143,12 @@ public class de_metas_attributes_StepDef
 	 * @cucumber.depends StepDefData: M_AttributeSetInstance_StepDefData
 	 * @cucumber.example
 	 * <pre>
-	 * When invoke cloneASI:
+	 * When invoke de_metas_attributes.cloneASI:
 	 *   | Source_ID | M_AttributeSetInstance_ID |
 	 *   | asi_src   | asi_clone                 |
 	 * </pre>
 	 */
-	@When("invoke cloneASI:")
+	@When("invoke de_metas_attributes.cloneASI:")
 	public void invoke_cloneASI(@NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
@@ -156,7 +156,7 @@ public class de_metas_attributes_StepDef
 
 			final int newAsiId = DB.getSQLValueEx(
 					ITrx.TRXNAME_ThreadInherited,
-					"SELECT cloneASI(?::numeric)",
+					"SELECT de_metas_attributes.cloneASI(?::numeric)",
 					sourceAsiId);
 
 			final I_M_AttributeSetInstance clone = attributeSetInstanceDAO.getRecordById(AttributeSetInstanceId.ofRepoId(newAsiId));

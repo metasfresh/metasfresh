@@ -1,9 +1,11 @@
--- Copy-on-write helper for the immutable M_AttributeSetInstance: clones an ASI into a brand-new one (public schema).
+-- Copy-on-write helper for the immutable M_AttributeSetInstance: clones an ASI into a brand-new one.
 -- Creates a new M_AttributeSetInstance copying the header (client/org/attribute-set/description) and duplicates every
 -- M_AttributeInstance row, then returns the new id. Use this before changing an attribute on a host whose ASI may be
 -- shared: clone → apply the change to the copy → reassign the host's M_AttributeSetInstance_ID, leaving the original ASI
 -- (which other records may reference) untouched. No-op passthrough when the input is null/0 or the source is not found.
-CREATE OR REPLACE FUNCTION public.cloneASI(
+CREATE SCHEMA IF NOT EXISTS de_metas_attributes;
+
+CREATE OR REPLACE FUNCTION de_metas_attributes.cloneASI(
     p_M_AttributeSetInstance_ID numeric
 ) RETURNS numeric AS $$
 DECLARE
