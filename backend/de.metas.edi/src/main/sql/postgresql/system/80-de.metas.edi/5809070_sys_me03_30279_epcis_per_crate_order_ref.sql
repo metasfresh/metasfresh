@@ -1,3 +1,15 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/epcis_json/get_epcis_events_json_fn.sql
+-- me03 #30279: per-crate source-order references for order-pure EPCIS PACKING events.
+--
+-- A crate (Gebinde) in the FT process is order-pure: it belongs to exactly one order. The EPCIS
+-- PACKING event for a crate must therefore carry only that crate's order (one po + one desadv
+-- bizTransaction), not the merged pallet-level set of all orders sharing the SSCC. The export JSON
+-- previously exposed order refs only at the top level, so the scripted adapter emitted every order
+-- on every crate. This adds 'poReference' (the crate's order POReference) and 'shipmentDocumentNo'
+-- (the crate-shipment's M_InOut.DocumentNo = delivery note) to each crate object, resolved per TU
+-- via m_hu_assignment -> m_inoutline -> c_order / m_inout. Picking/commissioning stay pallet-level
+-- (the scripted adapter keeps using the top-level arrays there). Pure CREATE OR REPLACE.
+
 /*
  * #%L
  * de.metas.edi

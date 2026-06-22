@@ -365,7 +365,10 @@ public class ExternalSystem_Config_StepDef
 	 * <p>Accepts the same columns as the base step:
 	 * <b>ExternalSystem_Config_ID</b> (identifier), <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> (identifier),
 	 * <b>AD_Process_OutboundData_ID.Value</b> (the outbound data process producing the export payload),
-	 * <b>TableName</b> (the document table the config triggers on).
+	 * <b>TableName</b> (the document table the config triggers on),
+	 * <b>WhereClause</b> (optional — the config's match clause; defaults to {@code IsActive='Y'}. Override with a
+	 * clause that only matches once the document is committed-complete, e.g. {@code docstatus IN ('CO','CL')},
+	 * to mirror the production EPCIS clause {@code "de.metas.edi".epcis_has_events(m_inout_id)}).
 	 *
 	 * <p>Example:
 	 * <pre>
@@ -450,10 +453,13 @@ public class ExternalSystem_Config_StepDef
 		}
 
 		// The DDL default "IsActive=Y" is not valid PostgreSQL SQL (Y is treated as a column name by
-		// the JDBC driver). Overwrite with the syntactically correct form so that
+		// the JDBC driver). Default to the syntactically correct always-true form so that
 		// ExternalSystemScriptedExportConversionService.isConfigMatchingRecord() can run the WHERE
-		// clause successfully.
-		scriptedExportConversionConfig.setWhereClause("IsActive='Y'");
+		// clause successfully. A scenario may override it via the optional WhereClause column — e.g.
+		// a clause that only matches once the document is committed-complete (docstatus IN ('CO','CL')),
+		// mirroring the production EPCIS clause "de.metas.edi".epcis_has_events(m_inout_id).
+		final String whereClause = row.getAsOptionalString("WhereClause").orElse("IsActive='Y'");
+		scriptedExportConversionConfig.setWhereClause(whereClause);
 
 		InterfaceWrapperHelper.save(scriptedExportConversionConfig);
 

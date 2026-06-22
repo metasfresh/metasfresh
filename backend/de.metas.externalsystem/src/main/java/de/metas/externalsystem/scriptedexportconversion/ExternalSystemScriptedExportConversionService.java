@@ -336,21 +336,36 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * At document complete-time, records an eligibility status for EVERY trigger-on-complete config
-	 * of the record's table, then schedules the after-commit invocation for matching configs only.
+	 * Called from the document's AFTER_COMPLETE interceptor: records an eligibility status for EVERY
+	 * trigger-on-complete config of the record's table and invokes the export for matching configs.
 	 *
 	 * <ul>
 	 *   <li>WhereClause MATCHES → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}
-	 *       + schedules the after-commit invocation (existing behaviour).</li>
+	 *       + invokes the export.</li>
 	 *   <li>WhereClause does NOT match → {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}
 	 *       (EDI-consistency: DontSend is always persisted).</li>
 	 * </ul>
 	 *
-	 * <p>Status writes run in the same transaction (no InNewTrx). The invocation scheduling
-	 * stays after-commit. A status-write failure for one config is logged and swallowed so that
-	 * document completion is never aborted.
+	 * <p><b>Runs entirely after-commit.</b> The eligibility WhereClause may read COMMITTED document
+	 * state — e.g. the EPCIS {@code "de.metas.edi".epcis_has_events(m_inout_id)} clause requires
+	 * {@code M_InOut.DocStatus IN ('CO','CL')}. At AFTER_COMPLETE the document engine has NOT yet
+	 * set+saved {@code DocStatus='CO'} ({@code MInOut.completeIt} fires AFTER_COMPLETE <i>before</i>
+	 * {@code DocumentEngine} assigns the status), so matching in the completing transaction would read
+	 * the pre-complete row and wrongly record DontSend — the export would never fire. Deferring the
+	 * whole match → status-write → invoke step to after-commit makes the clause evaluate against the
+	 * committed state. (The invocation itself was already after-commit; this moves the decision that
+	 * gates it to the same point, removing the in-trx-vs-committed mismatch.)
+	 *
+	 * <p>A status-write failure for one config is logged and swallowed so completion is never aborted.
 	 */
 	public void recordCompleteTimeEligibilityAndScheduleInvocation(
+			@NonNull final AdTableAndClientId tableAndClientId,
+			final int recordId)
+	{
+		trxManager.runAfterCommit(() -> recordEligibilityAndInvokeAfterCommit(tableAndClientId, recordId));
+	}
+
+	private void recordEligibilityAndInvokeAfterCommit(
 			@NonNull final AdTableAndClientId tableAndClientId,
 			final int recordId)
 	{
@@ -369,7 +384,8 @@ public class ExternalSystemScriptedExportConversionService
 
 		recordCompleteTimeEligibilityStatusesOnly(matchingConfigs, nonMatchingConfigs, recordId);
 
-		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionActionAfterCommit(config, recordId));
+		// Already running after-commit — invoke synchronously rather than re-scheduling after-commit.
+		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionAction(config, recordId));
 	}
 
 	/**

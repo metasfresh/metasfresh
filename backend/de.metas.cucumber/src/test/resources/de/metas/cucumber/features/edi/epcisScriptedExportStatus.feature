@@ -212,3 +212,51 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     And after not more than 10s, M_InOut EPCIS_ExportStatus is:
       | M_InOut_ID | EPCIS_ExportStatus |
       | io_030     | S                  |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @Id:S30279_040
+  Scenario: S30279_040 — a WhereClause that depends on the committed-complete state still matches at trigger time
+    ## RED reproduction for the complete-time eligibility timing bug.
+    ## The production EPCIS config gates sending on "de.metas.edi".epcis_has_events(m_inout_id), which
+    ## internally requires the shipment's DocStatus IN ('CO','CL'). This scenario uses the minimal
+    ## equivalent clause `docstatus IN ('CO','CL')` to isolate the timing without LU/SSCC pallet setup.
+    ##
+    ## Today the eligibility WhereClause is evaluated synchronously inside docValidate(AFTER_COMPLETE)
+    ## — fired by MInOut.completeIt() BEFORE the engine sets+saves DocStatus='CO' — so the in-trx SQL
+    ## sees the not-yet-completed row, the clause is false, and the row is recorded DontSend (N): the
+    ## export is never enqueued. Expected once the matching is moved to after-commit: the row reaches
+    ## Enqueued (U). This assertion FAILS on current code (RED) and passes after the fix (GREEN).
+
+    # Override the Background config with one whose match clause only holds once the shipment is committed-complete.
+    # Creating it deactivates the Background's always-true scriptedCfg_es for M_InOut (table-scoped takeover).
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName | WhereClause            |
+      | esConfig_gated           | scriptedCfg_gated                                 | M_InOut_EDI_Export_JSON          | M_InOut   | docstatus IN ('CO','CL') |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference           |
+      | o_040      | true    | bp_es         | 2026-06-09  | PO_S30279_040_@Date@  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_040     | o_040      | product_es   | 10         | pip_es                  |
+    When the order identified by o_040 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_040     | ol_040         | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_040                | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_040                | io_040     |
+
+    # Drain async material/DESADV workpackages from shipment generation (avoid spilling into sibling executor tests).
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # The completed shipment matches the WhereClause (docstatus is now CO) → must be Enqueued, not DontSend.
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_040     | scriptedCfg_gated                                 | U            |
