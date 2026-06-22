@@ -117,7 +117,7 @@ BEGIN
                         hal.ad_org_id               ad_org_id
                  FROM c_payment p
                           join C_AllocationLine al on al.c_payment_id = p.c_payment_id and al.paymentwriteoffamt > 0
-						  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
+					  join c_allocationhdr hal on al.c_allocationhdr_id= hal.c_allocationhdr_id
                  WHERE TRUE
                    AND p.c_bpartner_id = p_c_bpartner_id
                    AND hal.dateacct >= p_dateFrom
