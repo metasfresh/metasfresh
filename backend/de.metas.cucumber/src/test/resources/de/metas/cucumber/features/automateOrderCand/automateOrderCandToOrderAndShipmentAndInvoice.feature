@@ -889,8 +889,10 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_S0469_200       | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | true      | CO        | promoCode_1        |
 
     And validate the created order lines
+      # IsWithoutCharge=true zeroes the line charge → PriceEntered 0 (request price 10 is intentionally not charged).
+      # Non-zero request-price → order-line price propagation is covered by S0469_100 et al. (request price 5 → line price 5).
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | price | currencyCode | processed | IsWithoutCharge | Reason |
-      | ol_S0469_200              | order_S0469_200       | product_1               | 5          | 10    | EUR          | true      | true            | P      |
+      | ol_S0469_200              | order_S0469_200       | product_1               | 5          | 0     | EUR          | true      | true            | P      |
 
 
   @from:cucumber
