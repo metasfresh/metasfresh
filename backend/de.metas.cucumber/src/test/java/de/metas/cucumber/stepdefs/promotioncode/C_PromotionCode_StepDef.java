@@ -13,6 +13,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PromotionCode;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -61,7 +62,7 @@ public class C_PromotionCode_StepDef
 		row.getAsOptionalString(I_C_PromotionCode.COLUMNNAME_Description)
 				.ifPresent(record::setDescription);
 		row.getAsOptionalLocalDate(I_C_PromotionCode.COLUMNNAME_ValidTo)
-				.ifPresent(validTo -> record.setValidTo(java.sql.Timestamp.valueOf(validTo.atStartOfDay())));
+				.ifPresent(validTo -> record.setValidTo(Timestamp.valueOf(validTo.atStartOfDay())));
 
 		saveRecord(record);
 
