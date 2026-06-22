@@ -36,6 +36,7 @@ BEGIN
         endingBalance          NUMERIC,
         dateacct               date,
         description            TEXT,
+        referenceno            TEXT,
         c_doctype_id           NUMERIC,
         documentno             TEXT,
         created                TIMESTAMP,
@@ -58,12 +59,21 @@ BEGIN
                         0                                      endingBalance,
                         i.dateacct                             dateacct,
                         COALESCE(i.poreference, i.description) description,
+                        rn.referenceno,
                         i.c_doctype_id                         c_doctype_id,
                         i.documentno                           documentno,
                         i.created                              created,
                         i.c_currency_id                        c_currency_id,
                         i.ad_org_id                            ad_org_id
                  FROM c_invoice i
+                  --- refno
+                  LEFT JOIN (SELECT rn.referenceNo, rnd.Record_ID
+                             FROM C_ReferenceNo_Doc rnd
+                                      LEFT JOIN C_ReferenceNo rn ON rnd.C_ReferenceNo_ID = rn.C_ReferenceNo_ID AND rn.isActive = 'Y'
+                             WHERE AD_Table_ID = (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_Invoice' AND isActive = 'Y')
+                               AND rn.C_ReferenceNo_Type_ID =
+                                   (SELECT C_ReferenceNo_Type_ID FROM C_ReferenceNo_Type WHERE name = 'InvoiceReference' AND isActive = 'Y')
+                               AND rnd.isActive = 'Y') rn ON i.C_Invoice_ID = rn.Record_ID
                  WHERE TRUE
                    AND i.c_bpartner_id = p_c_bpartner_id
                    AND i.dateacct >= p_dateFrom
@@ -78,6 +88,7 @@ BEGIN
                         0               endingBalance,
                         p.dateacct      dateacct,
                         p.description   description,
+                        NULL as referenceno,
                         p.c_doctype_id  c_doctype_id,
                         p.documentno    documentno,
                         p.created       created,
@@ -98,6 +109,7 @@ BEGIN
                         0                          endingBalance,
                         hal.dateacct               dateacct,
                         hal.description            description,
+                        NULL as referenceno,
                         -1             			   c_doctype_id,
                         hal.documentno             documentno,
                         hal.created                created,
