@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 62 | 66 | 94% |
+| Picking | 64 | 68 | 94% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -213,6 +213,15 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### Navigation — device/browser Back
+
+| Scenario | Test |
+|---|---|
+| Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put, never leaves the app, and the title bar does not revert to the app caption | `picking/deviceBackIsNoOp.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
