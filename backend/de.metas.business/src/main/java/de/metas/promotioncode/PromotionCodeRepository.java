@@ -24,6 +24,7 @@ package de.metas.promotioncode;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cache.CCache;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -33,7 +34,10 @@ import org.compiere.model.I_C_PromotionCode;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Repository Tables: C_PromotionCode
@@ -42,8 +46,41 @@ import java.util.Collection;
 @Repository
 public class PromotionCodeRepository
 {
+	/**
+	 * Caches Value → PromotionCodeId for fast by-value lookups.
+	 * Optional.empty() means "not found" so we do NOT re-query on every repeated bad code.
+	 * Invalidated automatically on any C_PromotionCode table change.
+	 */
+	private final CCache<String, Optional<PromotionCodeId>> cacheByValue = CCache.<String, Optional<PromotionCodeId>>builder()
+			.tableName(I_C_PromotionCode.Table_Name)
+			.build();
+
+	/**
+	 * Caches PromotionCodeId → Value for the reverse direction (used by getValuesByIds).
+	 * null is never put here; ids absent from the DB are simply not cached.
+	 * Invalidated automatically on any C_PromotionCode table change.
+	 */
+	private final CCache<PromotionCodeId, String> cacheById = CCache.<PromotionCodeId, String>builder()
+			.tableName(I_C_PromotionCode.Table_Name)
+			.build();
+
 	@NonNull
 	public PromotionCodeId getPromotionCodeIdByValue(@NonNull final String value)
+	{
+		final Optional<PromotionCodeId> cached = cacheByValue.getOrLoad(value, () -> lookupIdByValue(value));
+		// cached is never null: getOrLoad calls the loader, and the loader always returns an Optional.
+		if (cached == null || !cached.isPresent())
+		{
+			throw new AdempiereException("Promotion code not found: " + value)
+					.appendParametersToMessage()
+					.setParameter("Value", value);
+		}
+		return cached.get();
+	}
+
+	/** Returns Optional.empty() when not found — never returns null. */
+	@NonNull
+	private Optional<PromotionCodeId> lookupIdByValue(@NonNull final String value)
 	{
 		final PromotionCodeId id = Services.get(IQueryBL.class)
 				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
@@ -51,13 +88,7 @@ public class PromotionCodeRepository
 				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_Value, value)
 				.create()
 				.firstIdOnly(PromotionCodeId::ofRepoIdOrNull);
-		if (id == null)
-		{
-			throw new AdempiereException("Promotion code not found: " + value)
-					.appendParametersToMessage()
-					.setParameter("Value", value);
-		}
-		return id;
+		return Optional.ofNullable(id);
 	}
 
 	@Nullable
@@ -75,6 +106,9 @@ public class PromotionCodeRepository
 	 * in a single query, so callers serializing a list of records avoid an N+1 round-trip.
 	 * Note: filters by PK only (no active filter) — the ids come from stored columns, so a since-deactivated
 	 * code is still echoed to reflect the persisted state. Blank values and missing ids are absent from the map.
+	 * <p>
+	 * Cache-aware: ids already cached are served from {@link #cacheById} without a DB round-trip;
+	 * only the misses are fetched in one batch query, and the results are back-filled into the cache.
 	 */
 	@NonNull
 	public ImmutableMap<PromotionCodeId, String> getValuesByIds(@NonNull final Collection<PromotionCodeId> promotionCodeIds)
@@ -85,18 +119,39 @@ public class PromotionCodeRepository
 		}
 
 		final ImmutableMap.Builder<PromotionCodeId, String> result = ImmutableMap.builder();
-		Services.get(IQueryBL.class)
-				.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
-				.addInArrayFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, promotionCodeIds)
-				.create()
-				.stream()
-				.forEach(record -> {
-					final String value = record.getValue();
-					if (!Check.isBlank(value))
-					{
-						result.put(PromotionCodeId.ofRepoId(record.getC_PromotionCode_ID()), value);
-					}
-				});
+		final List<PromotionCodeId> misses = new ArrayList<>();
+
+		for (final PromotionCodeId id : promotionCodeIds)
+		{
+			final String cachedValue = cacheById.get(id);
+			if (cachedValue != null)
+			{
+				result.put(id, cachedValue);
+			}
+			else
+			{
+				misses.add(id);
+			}
+		}
+
+		if (!misses.isEmpty())
+		{
+			Services.get(IQueryBL.class)
+					.createQueryBuilderOutOfTrx(I_C_PromotionCode.class)
+					.addInArrayFilter(I_C_PromotionCode.COLUMNNAME_C_PromotionCode_ID, misses)
+					.create()
+					.stream()
+					.forEach(record -> {
+						final String value = record.getValue();
+						if (!Check.isBlank(value))
+						{
+							final PromotionCodeId id = PromotionCodeId.ofRepoId(record.getC_PromotionCode_ID());
+							cacheById.put(id, value);
+							result.put(id, value);
+						}
+					});
+		}
+
 		return result.build();
 	}
 }
