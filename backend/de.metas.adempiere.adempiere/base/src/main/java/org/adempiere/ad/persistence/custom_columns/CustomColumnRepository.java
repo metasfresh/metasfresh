@@ -8,6 +8,7 @@ import de.metas.cache.CCache;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
@@ -33,7 +34,7 @@ public class CustomColumnRepository
 			.initialCapacity(1)
 			.build();
 
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@VisibleForTesting
 	public static CustomColumnRepository newInstanceForUnitTesting()
