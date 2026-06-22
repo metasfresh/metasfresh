@@ -71,7 +71,6 @@ public class EInvoiceCiiService
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	/**
-	 * Constructor used by Spring DI and directly in tests.
 	 * {@code mailRecipientRegistry} is nullable so that existing tests that do not exercise
 	 * the BT-49 resolver can pass {@code null} without a NPE from a {@code @NonNull} guard.
 	 * In a live Spring context {@code DocOutboundLogMailRecipientRegistry} is always present.
