@@ -64,8 +64,6 @@ public class JasperEngine extends AbstractReportEngine
 	{
 		try
 		{
-			// Read the PDF/A-3 flag from AD_Process before filling — the process is also loaded
-			// later in createJasperReport(), but we resolve it here once to avoid a double-query.
 			final boolean isPdfA3Output = resolvePdfA3Flag(reportContext.getAD_Process_ID());
 			final JasperPrint jasperPrint = createJasperPrint(reportContext);
 			return createOutput(jasperPrint, reportContext.getOutputType(), isPdfA3Output);

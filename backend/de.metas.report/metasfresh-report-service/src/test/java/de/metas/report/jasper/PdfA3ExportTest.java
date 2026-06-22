@@ -41,7 +41,7 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * TDD test for ZUGFeRD Task 4: JasperEngine must emit PDF/A-3B when {@code IsPdfA3Output = true}.
+ * Verifies that JasperEngine emits a valid PDF/A-3B document when {@code IsPdfA3Output = true}.
  *
  * <p>The test builds a synthetic {@link JasperPrint} that uses the three font families required
  * by the invoice JRXMLs ({@code Arial}, {@code SansSerif}, {@code OCRB}) and asserts:
