@@ -39,6 +39,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -229,29 +230,29 @@ public class BPartnerEffectiveBL
 				? bpartnerDAO.getBPartnerLocationById(bPartnerLocationId)
 				: null;
 
-		// 1. Per-partner bill-to C_BP_Relation
 		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(bPartnerRecord, bPartnerRecord, locationRecord);
 		if (billRelation != null)
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());
 			if (billBPartnerId != null)
 			{
-				return BillBPartnerResolution.of(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID(), 0);
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID());
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, null);
 			}
 		}
 
-		// 2. Association group Bill_BPartner
 		final I_C_BP_Group bpGroup = bpGroupDAO.getByBPartnerId(bPartnerId);
 		if (bpGroup.isAssociation())
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpGroup.getBill_BPartner_ID());
 			if (billBPartnerId != null)
 			{
-				return BillBPartnerResolution.of(billBPartnerId, bpGroup.getBill_Location_ID(), bpGroup.getBill_User_ID());
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, bpGroup.getBill_Location_ID());
+				final UserId billUserId = UserId.ofRepoIdOrNull(bpGroup.getBill_User_ID());
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
 			}
 		}
 
-		// 3. Parent association group Bill_BPartner
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		if (parentGroupId != null)
 		{
@@ -261,7 +262,9 @@ public class BPartnerEffectiveBL
 				final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
 				if (billBPartnerId != null)
 				{
-					return BillBPartnerResolution.of(billBPartnerId, parentGroup.getBill_Location_ID(), parentGroup.getBill_User_ID());
+					final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, parentGroup.getBill_Location_ID());
+					final UserId billUserId = UserId.ofRepoIdOrNull(parentGroup.getBill_User_ID());
+					return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
 				}
 			}
 		}

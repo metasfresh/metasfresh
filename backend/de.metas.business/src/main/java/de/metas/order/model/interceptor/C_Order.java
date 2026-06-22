@@ -62,6 +62,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -694,8 +695,8 @@ public class C_Order
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
-			order.setBill_Location_ID(resolution.getBillLocationId());
-			order.setBill_User_ID(resolution.getBillUserId());
+			order.setBill_Location_ID(BPartnerLocationId.toRepoId(resolution.getBillLocationId()));
+			order.setBill_User_ID(UserId.toRepoId(resolution.getBillUserId()));
 		}
 	}
 

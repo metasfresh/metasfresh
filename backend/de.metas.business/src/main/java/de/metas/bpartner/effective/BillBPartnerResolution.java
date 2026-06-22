@@ -23,6 +23,8 @@
 package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -35,13 +37,13 @@ import javax.annotation.Nullable;
 public class BillBPartnerResolution
 {
 	@NonNull BPartnerId billBPartnerId;
-	int billLocationId;
-	int billUserId;
+	@Nullable BPartnerLocationId billLocationId;
+	@Nullable UserId billUserId;
 
 	public static BillBPartnerResolution of(
 			@NonNull final BPartnerId billBPartnerId,
-			final int billLocationId,
-			final int billUserId)
+			@Nullable final BPartnerLocationId billLocationId,
+			@Nullable final UserId billUserId)
 	{
 		return new BillBPartnerResolution(billBPartnerId, billLocationId, billUserId);
 	}

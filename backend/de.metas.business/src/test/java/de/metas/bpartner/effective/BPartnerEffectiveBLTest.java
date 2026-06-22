@@ -424,9 +424,10 @@ public class BPartnerEffectiveBLTest
 
 		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberBillToLocId);
 
+		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(memberBillToBPId, memberBillToBPLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
 		assertThat(resolution.getBillBPartnerId()).isEqualTo(memberBillToBPId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(memberBillToBPLoc.getC_BPartner_Location_ID());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
 	}
 
 	@Test
@@ -453,9 +454,10 @@ public class BPartnerEffectiveBLTest
 
 		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
+		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
 		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(centralLoc.getC_BPartner_Location_ID());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
 	}
 
 	@Test
@@ -489,9 +491,10 @@ public class BPartnerEffectiveBLTest
 
 		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
 
+		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
 		assertThat(resolution.getBillBPartnerId()).isEqualTo(centralBillingId);
-		assertThat(resolution.getBillLocationId()).isEqualTo(centralLoc.getC_BPartner_Location_ID());
+		assertThat(resolution.getBillLocationId()).isEqualTo(expectedBillLocId);
 	}
 
 	@Test
