@@ -52,6 +52,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnRepository;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
@@ -86,16 +87,18 @@ class OLCandOrderFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// OLCandOrderFactory eagerly fetches CustomColumnRepository; register a no-op stub so the
-		// factory can be built in this unit test (returns no custom columns -> propagation is a no-op).
-		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, new CustomColumnRepository()
+		// OLCandOrderFactory eagerly fetches CustomColumnService (which delegates to CustomColumnRepository);
+		// register no-op stubs so the factory can be built in this unit test (no custom columns -> propagation is a no-op).
+		final CustomColumnRepository customColumnRepoStub = new CustomColumnRepository()
 		{
 			@Override
 			public RESTApiTableInfo getByTableNameOrNull(final String tableName)
 			{
 				return null;
 			}
-		});
+		};
+		SpringContextHolder.registerJUnitBean(CustomColumnRepository.class, customColumnRepoStub);
+		SpringContextHolder.registerJUnitBean(CustomColumnService.class, new CustomColumnService(customColumnRepoStub));
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
