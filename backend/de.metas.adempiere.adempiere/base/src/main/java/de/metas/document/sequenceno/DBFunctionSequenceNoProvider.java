@@ -22,15 +22,16 @@
 
 package de.metas.document.sequenceno;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
-import org.compiere.util.Trx;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
@@ -54,17 +55,22 @@ public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 	private static final String SYSCONFIG_PREFIX = "de.metas.document.seqNo.DBFunctionSequenceNoProvider.";
 	private static final String SYSCONFIG_SUFFIX = ".dbFunctionName";
 
-	static final String PARAM_Record_ID = "Record_ID";
-
-	// The function name is concatenated into SQL (an identifier can't be a bind parameter), so it must be a plain
-	// SQL identifier - guards against a malformed / injected SysConfig value.
-	private static final Pattern FUNCTION_NAME_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*");
+	// The function name is concatenated into SQL (an identifier can't be a bind parameter), so it must be a plain,
+	// optionally single-schema-qualified SQL identifier (e.g. fn_x or sp80.fn_x) - guards against a malformed /
+	// injected SysConfig value. Pattern.matches() anchors the whole string.
+	private static final Pattern FUNCTION_NAME_PATTERN = Pattern.compile("[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)?");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static String sysConfigKey(@NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		return SYSCONFIG_PREFIX + docSeqInfo.getName() + SYSCONFIG_SUFFIX;
+	}
+
+	/** @return {@code true} if the (trimmed) function name is a plain or single-schema-qualified SQL identifier. */
+	static boolean isValidFunctionName(@Nullable final String functionName)
+	{
+		return functionName != null && FUNCTION_NAME_PATTERN.matcher(functionName.trim()).matches();
 	}
 
 	/**
@@ -81,7 +87,7 @@ public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 		{
 			return false;
 		}
-		return context.get_ValueAsInt(PARAM_Record_ID, -1) > 0;
+		return context.get_ValueAsInt(IPOReferenceAware.COLUMNNAME_Record_ID, -1) > 0;
 	}
 
 	@Override
@@ -94,17 +100,18 @@ public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 		final String functionName = sysConfigBL.getValue(sysConfigKey, (String)null);
 		Check.assumeNotEmpty(functionName, "{} sysconfig must be set", sysConfigKey);
 
+		Check.assume(isValidFunctionName(functionName),
+				"{}={} must be a plain or single-schema-qualified SQL function identifier", sysConfigKey, functionName);
 		final String functionNameNorm = functionName.trim();
-		Check.assume(FUNCTION_NAME_PATTERN.matcher(functionNameNorm).matches(),
-				"{}={} must be a plain SQL function identifier", sysConfigKey, functionName);
 
-		final int recordId = context.get_ValueAsInt(PARAM_Record_ID, -1);
-		Check.assume(recordId > 0, "context must carry a positive {}", PARAM_Record_ID);
+		final int recordId = context.get_ValueAsInt(IPOReferenceAware.COLUMNNAME_Record_ID, -1);
+		Check.assume(recordId > 0, "context must carry a positive {}", IPOReferenceAware.COLUMNNAME_Record_ID);
 
 		final Timestamp generatedAt = Timestamp.from(SystemTime.asInstant());
-		final String result = DB.getSQLValueStringEx(Trx.TRXNAME_None,
+		final String result = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
 				"SELECT " + functionNameNorm + "(?, ?)", recordId, generatedAt);
-		Check.assumeNotEmpty(result, "DB function {} returned empty for {}={}", functionNameNorm, PARAM_Record_ID, recordId);
+		Check.assumeNotEmpty(result, "DB function {} returned empty for {}={}",
+				functionNameNorm, IPOReferenceAware.COLUMNNAME_Record_ID, recordId);
 		return result;
 	}
 

@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
@@ -73,10 +74,13 @@ public class LotNumberBL implements ILotNumberBL
 		final IDocumentNoBuilderFactory documentNoFactory = Services.get(IDocumentNoBuilderFactory.class);
 
 		// A CustomSequenceNoProvider (opt-in, configured on the sequence) may need the PP_Order behind this lot number.
-		// Expose it under the standard "Record_ID" context key; without a PP_Order the context stays empty (= legacy behaviour).
+		// Expose it under the standard Record_ID context key. Without a PP_Order the context carries no Record_ID: a
+		// provider such as DBFunctionSequenceNoProvider then reports isApplicable=false and DocumentNoBuilder
+		// (setFailOnError) throws - it does NOT silently fall back. Sequences with no provider are unaffected
+		// (empty context == today's behaviour).
 		final PPOrderId ppOrderId = context.getPpOrderId();
 		final Evaluatee evaluationContext = ppOrderId != null
-				? Evaluatees.ofSingleton("Record_ID", ppOrderId.getRepoId())
+				? Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, ppOrderId.getRepoId())
 				: Evaluatees.empty();
 
 		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())

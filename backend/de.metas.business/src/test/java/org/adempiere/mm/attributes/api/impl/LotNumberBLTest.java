@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,6 +22,7 @@
 
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
@@ -87,7 +88,7 @@ class LotNumberBLTest
 		// assert — the captured evaluatee must expose Record_ID = ppOrderRepoId
 		final Evaluatee capturedEvaluatee = evaluateeCaptor.getValue();
 		assertThat(capturedEvaluatee).isNotNull();
-		assertThat(capturedEvaluatee.get_ValueAsInt("Record_ID", -1))
+		assertThat(capturedEvaluatee.get_ValueAsInt(IPOReferenceAware.COLUMNNAME_Record_ID, -1))
 				.as("Evaluatee must expose PP_Order repo-id under key Record_ID")
 				.isEqualTo(ppOrderRepoId);
 	}

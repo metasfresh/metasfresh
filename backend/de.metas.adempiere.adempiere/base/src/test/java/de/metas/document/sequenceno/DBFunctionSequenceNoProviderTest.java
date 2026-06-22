@@ -22,6 +22,7 @@
 
 package de.metas.document.sequenceno;
 
+import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigBL;
@@ -71,7 +72,7 @@ class DBFunctionSequenceNoProviderTest
 	{
 		// the function-name SysConfig is set for THIS sequence's derived key:
 		when(sysConfigBL.getValue(EXPECTED_SYSCONFIG_KEY, (String)null)).thenReturn("fn_lotno_test");
-		final Evaluatee context = Evaluatees.ofSingleton(DBFunctionSequenceNoProvider.PARAM_Record_ID, 12345);
+		final Evaluatee context = Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, 12345);
 
 		assertThat(provider.isApplicable(context, docSeqInfo())).isTrue();
 	}
@@ -80,7 +81,7 @@ class DBFunctionSequenceNoProviderTest
 	void isApplicable_false_whenSysConfigBlank()
 	{
 		// no stub -> getValue returns null -> not configured for this sequence
-		final Evaluatee context = Evaluatees.ofSingleton(DBFunctionSequenceNoProvider.PARAM_Record_ID, 12345);
+		final Evaluatee context = Evaluatees.ofSingleton(IPOReferenceAware.COLUMNNAME_Record_ID, 12345);
 
 		assertThat(provider.isApplicable(context, docSeqInfo())).isFalse();
 	}
@@ -98,5 +99,23 @@ class DBFunctionSequenceNoProviderTest
 	void doesNotUseIncrementSeqNoAsPrefix()
 	{
 		assertThat(provider.isUseIncrementSeqNoAsPrefix()).isFalse();
+	}
+
+	@Test
+	void isValidFunctionName_acceptsPlainAndSchemaQualified()
+	{
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("fn_lotno_soft_panda")).isTrue();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("sp80.fn_lotno")).isTrue();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("  fn_lotno  ")).isTrue(); // trimmed
+	}
+
+	@Test
+	void isValidFunctionName_rejectsMalformedOrInjection()
+	{
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName(null)).isFalse();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("")).isFalse();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("fn_lotno; DROP TABLE ad_sequence")).isFalse();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("fn lotno")).isFalse();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("schema.sub.fn")).isFalse(); // only one schema segment
 	}
 }
