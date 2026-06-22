@@ -69,14 +69,14 @@ public class PromotionCodeRepository
 	@NonNull
 	public PromotionCodeId getPromotionCodeIdByValue(@NonNull final String value)
 	{
-		final Optional<PromotionCodeId> cached = cacheByValue.getOrLoad(value, () -> lookupIdByValue(value));
-		if (!cached.isPresent())
+		final PromotionCodeId id = cacheByValue.getOrLoad(value, () -> lookupIdByValue(value)).orElse(null);
+		if (id == null)
 		{
 			throw new AdempiereException("Promotion code not found: " + value)
 					.appendParametersToMessage()
 					.setParameter("Value", value);
 		}
-		return cached.get();
+		return id;
 	}
 
 	/** Returns Optional.empty() when not found — never returns null. */
