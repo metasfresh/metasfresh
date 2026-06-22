@@ -38,6 +38,11 @@ Feature: XRechnung e-invoice generated, attached and emailed on sales-invoice co
     And metasfresh contains C_Tax
       | Identifier | C_TaxCategory_ID.InternalName | Rate | EN16931VATCategory |
       | tax19      | Normal                        | 19   | S                  |
+    # Create a payment term (immediate, NetDays=0) and reference it by identifier on the invoice.
+    # A clean CI DB has no fixed C_PaymentTerm_ID, so a hardcoded id would violate the FK.
+    And metasfresh contains C_PaymentTerm
+      | Identifier  | NetDays |
+      | paymentTerm | 0       |
 
     # ── Make the main org's org-bpartner BR-DE-conformant (upsert by Value 'dt'): VAT id, DE postal
     #    address, default contact (name/phone/email → C_BPartner.EMail virtual = BT-34), IBAN. ──
@@ -83,8 +88,8 @@ Feature: XRechnung e-invoice generated, attached and emailed on sales-invoice co
       | buyer_user | Buyer Clerk | einkauf@kaeufer.de | buyer                        | buyer_location                        |
 
     And metasfresh contains C_Invoice:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | M_PriceList_ID.Identifier | C_DocTypeTarget_ID.Name | C_PaymentTerm_ID | DateInvoiced | C_Currency_ID | PaymentRule | TotalLines | GrandTotal |
-      | invoice    | true    | buyer                    | buyer_location                    | buyer_user            | pl_so                     | Ausgangsrechnung        | 1                | 2022-02-01   | EUR           | T           | 100.00     | 119.00     |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | M_PriceList_ID.Identifier | C_DocTypeTarget_ID.Name | C_PaymentTerm_ID.Identifier | DateInvoiced | C_Currency_ID | PaymentRule | TotalLines | GrandTotal |
+      | invoice    | true    | buyer                    | buyer_location                    | buyer_user            | pl_so                     | Ausgangsrechnung        | paymentTerm                 | 2022-02-01   | EUR           | T           | 100.00     | 119.00     |
     And metasfresh contains C_InvoiceLines
       | Identifier  | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 | Price | C_Tax_ID$set |
       | invoiceLine | invoice                 | product                 | 1           | PCE               | 100   | tax19        |
