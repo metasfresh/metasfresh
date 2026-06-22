@@ -15,6 +15,12 @@ export const SelectPickTargetLUScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
     }),
 
+    // Asserts the screen's title bar (app caption) shows the expected text. Used to prove a device/browser
+    // Back press does NOT revert the title (e.g. to the app caption "Picking") — it must stay put.
+    expectTitle: async (expected) => await test.step(`${NAME} - Expect title '${expected}'`, async () => {
+        await page.locator('.app-caption', { hasText: expected }).waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     clickLUButton: async ({ lu }) => await test.step(`${NAME} - Click LU button`, async () => {
         await page.locator('button').filter({ hasText: lu }).tap();
     }),

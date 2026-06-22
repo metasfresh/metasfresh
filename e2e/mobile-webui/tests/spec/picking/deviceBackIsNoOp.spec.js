@@ -128,13 +128,16 @@ test('Rapidly mashing device/browser Back stays put and never leaves the app', a
     await PickingJobScreen.waitForScreen();
     await PickingJobScreen.clickLUTargetButton();
     await SelectPickTargetLUScreen.waitForScreen();
+    await SelectPickTargetLUScreen.expectTitle('Select Target');
 
     //
     // Mash the device/browser Back button rapidly — the reported failure was that several quick presses
     // popped through into earlier screens and eventually out of the PWA. It must stay a no-op: still the
-    // SAME screen, still inside the app.
+    // SAME screen, still inside the app, and the title bar must NOT revert (it used to fall back to the
+    // app caption "Picking").
     await mashDeviceBack(12);
     await SelectPickTargetLUScreen.waitForScreen();
+    await SelectPickTargetLUScreen.expectTitle('Select Target');
 
     //
     // The footer Back button still works after the mashing — back to the job screen.
