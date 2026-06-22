@@ -1,5 +1,4 @@
--- me03 30504: Add a "Gedruckt"/"Printed" Yes/No filter+grid column to window "Ausgehende Belege".
--- https://github.com/metasfresh/me03/issues/30504
+-- 30504: Add a "Gedruckt"/"Printed" Yes/No filter+grid column to window "Ausgehende Belege".
 --
 -- New virtual ColumnSQL Yes/No column C_Doc_Outbound_Log.IsAlreadyPrinted:
 --   'Y' when the document has >=1 print line, 'N' otherwise. Same definition as the existing
