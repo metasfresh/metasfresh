@@ -11,6 +11,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -117,6 +118,50 @@ class MD_Stock_Update_From_M_HUsTest
 		// the loop must terminate (not spin forever) after exactly maxLoops iterations
 		assertThat(batchCount.get()).isEqualTo(maxLoops);
 		assertThat(total).isEqualTo(maxLoops); // 1 row per loop
+	}
+
+	// --- single-run gate: prevent overlapping runs (which compounded into the runaway) ---
+
+	@Test
+	void runOncePerGate_skipsTheDrain_whenAnotherRunHoldsTheGate()
+	{
+		final AtomicInteger batchesFetched = new AtomicInteger();
+		final MD_Stock_Update_From_M_HUs.BatchSource src = batchSize -> {
+			batchesFetched.incrementAndGet();
+			return ImmutableList.of();
+		};
+
+		final MD_Stock_Update_From_M_HUs process = new MD_Stock_Update_From_M_HUs(
+				src,
+				batch -> {},
+				100_000 /*maxLoops*/,
+				() -> null /*gate: another run is already active*/);
+
+		process.runOncePerGate();
+
+		assertThat(batchesFetched.get()).isZero(); // the drain must not even start
+	}
+
+	@Test
+	void runOncePerGate_runsTheDrainAndReleases_whenTheGateIsAcquired()
+	{
+		final AtomicInteger batchesFetched = new AtomicInteger();
+		final AtomicBoolean released = new AtomicBoolean(false);
+		final MD_Stock_Update_From_M_HUs.BatchSource src = batchSize -> {
+			batchesFetched.incrementAndGet();
+			return ImmutableList.of();
+		};
+
+		final MD_Stock_Update_From_M_HUs process = new MD_Stock_Update_From_M_HUs(
+				src,
+				batch -> {},
+				100_000 /*maxLoops*/,
+				() -> () -> released.set(true) /*gate acquired; release sets the flag*/);
+
+		process.runOncePerGate();
+
+		assertThat(batchesFetched.get()).isEqualTo(1); // drained (one empty fetch drains immediately)
+		assertThat(released.get()).isTrue();           // the gate was released afterwards
 	}
 
 	@Test

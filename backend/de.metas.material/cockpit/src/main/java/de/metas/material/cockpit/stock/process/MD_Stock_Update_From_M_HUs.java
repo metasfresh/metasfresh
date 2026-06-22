@@ -5,6 +5,10 @@ import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
 import de.metas.material.cockpit.stock.StockDataUpdateRequestHandler;
+import de.metas.lock.api.ILock;
+import de.metas.lock.api.ILockManager;
+import de.metas.lock.api.LockOwner;
+import de.metas.lock.exceptions.LockFailedException;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.stock.ResetStockPInstanceId;
 import de.metas.organization.OrgId;
@@ -16,9 +20,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Process;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -102,6 +108,19 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		void process(@NonNull List<I_MD_Stock_From_HUs_V> batch);
 	}
 
+	/**
+	 * Seam — acquires an exclusive "only one run at a time" token. Returns a release {@link Runnable}
+	 * when this run may proceed, or {@code null} when another run already holds it (then this run
+	 * skips). Prevents overlapping runs from compounding stale corrections into a runaway escalation.
+	 */
+	@FunctionalInterface
+	interface SingleRunGate
+	{
+		Runnable tryAcquire();
+	}
+
+	private final SingleRunGate singleRunGate;
+
 	/** Production constructor: invoked by the process framework via reflection. */
 	@SuppressWarnings("unused")
 	public MD_Stock_Update_From_M_HUs()
@@ -110,6 +129,7 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		this.batchSource = this::retrieveHuData;
 		this.batchProcessor = this::createAndHandleDataUpdateRequests;
 		this.maxLoops = MAX_LOOPS;
+		this.singleRunGate = this::tryAcquireExclusiveRun;
 	}
 
 	/** Test constructor: lets a unit test substitute the loop's seams and shrink the backstop. */
@@ -118,17 +138,54 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 			@NonNull final BatchProcessor batchProcessor,
 			final int maxLoops)
 	{
+		// existing loop-contract tests call drainInBatches() directly; the gate is a no-op here.
+		this(batchSource, batchProcessor, maxLoops, () -> () -> {});
+	}
+
+	/** Test constructor variant that also substitutes the single-run gate. */
+	MD_Stock_Update_From_M_HUs(
+			@NonNull final BatchSource batchSource,
+			@NonNull final BatchProcessor batchProcessor,
+			final int maxLoops,
+			@NonNull final SingleRunGate singleRunGate)
+	{
 		this.dataUpdateRequestHandler = null;       // not used through the injected seams
 		this.batchSource = batchSource;
 		this.batchProcessor = batchProcessor;
 		this.maxLoops = maxLoops;
+		this.singleRunGate = singleRunGate;
 	}
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		drainInBatches();
+		return runOncePerGate();
+	}
+
+	/**
+	 * Runs the drain under the single-run gate: if another instance is already running, skip this run
+	 * (overlapping runs are what compounded corrections into the runaway escalation). Package-visible
+	 * so the gate behaviour is unit-testable without the process framework.
+	 */
+	String runOncePerGate()
+	{
+		final Runnable release = singleRunGate.tryAcquire();
+		if (release == null)
+		{
+			Loggables.addLog("Another {} run is already active; skipping this run to avoid overlapping resets.",
+					getClass().getSimpleName());
+			return MSG_OK;
+		}
+
+		try
+		{
+			drainInBatches();
+		}
+		finally
+		{
+			release.run();
+		}
 		return MSG_OK;
 	}
 
@@ -209,6 +266,33 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 			final BigDecimal targetQtyOnHand = huBasedDataRecord.getQtyOnHand();
 			Loggables.addLog("Resetting MD_Stock to HU truth: identifier={}, targetQtyOnHand={}", identifier, targetQtyOnHand);
 			dataUpdateRequestHandler.handleResetToQtyOnHand(identifier, targetQtyOnHand, info);
+		}
+	}
+
+	/**
+	 * Production single-run gate: exclusively locks this process's own {@code AD_Process} record as a
+	 * mutex. A concurrent run fails to acquire it and skips. {@code autoCleanup} releases the lock if a
+	 * run crashes, so a stale lock can't block the process forever.
+	 *
+	 * @return a release {@link Runnable}, or {@code null} if another run already holds the lock.
+	 */
+	private Runnable tryAcquireExclusiveRun()
+	{
+		final ILockManager lockManager = Services.get(ILockManager.class);
+		final I_AD_Process processRecord = InterfaceWrapperHelper.load(getProcessInfo().getAdProcessId().getRepoId(), I_AD_Process.class);
+		try
+		{
+			final ILock lock = lockManager.lock()
+					.setOwner(LockOwner.newOwner(getClass().getSimpleName()))
+					.setFailIfAlreadyLocked(true)
+					.setAutoCleanup(true)
+					.setRecordByModel(processRecord)
+					.acquire();
+			return lock::close;
+		}
+		catch (final LockFailedException ex)
+		{
+			return null; // another run already holds the lock
 		}
 	}
 
