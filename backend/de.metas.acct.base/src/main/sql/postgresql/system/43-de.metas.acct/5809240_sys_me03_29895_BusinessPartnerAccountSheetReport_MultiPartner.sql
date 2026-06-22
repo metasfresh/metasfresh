@@ -368,7 +368,7 @@ FROM BusinessPartnerAccountSheetReport(NULL,
 -- AD_Process_Para_ID=541752 = C_BPartner_ID on process BusinessPartnerAccountSheetReport (AD_Process_ID=584661)
 UPDATE AD_Process_Para
 SET IsMandatory = 'N',
-    Updated     = now(),
+    Updated     = TO_TIMESTAMP('2026-06-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Process_Para_ID = 541752
 ;
@@ -377,7 +377,7 @@ WHERE AD_Process_Para_ID = 541752
 -- NULLIF(@C_BPartner_ID/0@, 0): the /0 suffix defaults to 0 when blank; NULLIF converts 0 → NULL.
 UPDATE AD_Process
 SET SQLStatement = 'SELECT * FROM BusinessPartnerAccountSheetReport(NULLIF(@C_BPartner_ID/0@, 0), ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, ''@IsSOTrx@'')',
-    Updated      = now(),
+    Updated      = TO_TIMESTAMP('2026-06-22 10:00:01', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Process_ID = 584661
 ;
