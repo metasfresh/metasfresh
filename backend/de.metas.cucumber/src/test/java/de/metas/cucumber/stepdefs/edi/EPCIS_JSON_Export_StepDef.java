@@ -289,7 +289,7 @@ public class EPCIS_JSON_Export_StepDef
 		});
 
 		final Set<String> expectedPoRefs = new HashSet<>();
-		dataTable.asMaps().forEach(rowMap -> expectedPoRefs.add(rowMap.get("poReference")));
+		DataTableRows.of(dataTable).forEach(row -> expectedPoRefs.add(row.getAsString("poReference")));
 
 		assertThat(distinctPoRefs)
 				.as("distinct per-crate poReferences on pallet[%d]", palletIndex)

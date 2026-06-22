@@ -366,7 +366,7 @@ BEGIN
                           WHERE ha.ad_table_id = v_m_inoutline_table_id
                             AND ha.isactive = 'Y'
                             AND ha.m_tu_hu_id IN (SELECT tu_hu_id FROM individual_tu_ids
-                                                  UNION
+                                                  UNION ALL
                                                   SELECT vtu_hu_id FROM ha_items_with_vtu)
                           UNION ALL
                           SELECT ha.record_id, ha.vhu_id AS hu_id
@@ -374,7 +374,7 @@ BEGIN
                           WHERE ha.ad_table_id = v_m_inoutline_table_id
                             AND ha.isactive = 'Y'
                             AND ha.vhu_id IN (SELECT tu_hu_id FROM individual_tu_ids
-                                              UNION
+                                              UNION ALL
                                               SELECT vtu_hu_id FROM ha_items_with_vtu)
                       ) asg
                           JOIN m_inoutline iol ON iol.m_inoutline_id = asg.record_id

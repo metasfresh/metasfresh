@@ -219,16 +219,16 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30279_040
   Scenario: S30279_040 — a WhereClause that depends on the committed-complete state still matches at trigger time
-    ## RED reproduction for the complete-time eligibility timing bug.
+    ## Reproduces the complete-time eligibility timing bug fixed in this change.
     ## The production EPCIS config gates sending on "de.metas.edi".epcis_has_events(m_inout_id), which
     ## internally requires the shipment's DocStatus IN ('CO','CL'). This scenario uses the minimal
     ## equivalent clause `docstatus IN ('CO','CL')` to isolate the timing without LU/SSCC pallet setup.
     ##
-    ## Today the eligibility WhereClause is evaluated synchronously inside docValidate(AFTER_COMPLETE)
-    ## — fired by MInOut.completeIt() BEFORE the engine sets+saves DocStatus='CO' — so the in-trx SQL
-    ## sees the not-yet-completed row, the clause is false, and the row is recorded DontSend (N): the
-    ## export is never enqueued. Expected once the matching is moved to after-commit: the row reaches
-    ## Enqueued (U). This assertion FAILS on current code (RED) and passes after the fix (GREEN).
+    ## Before the fix, the eligibility WhereClause was evaluated synchronously inside
+    ## docValidate(AFTER_COMPLETE) — fired by MInOut.completeIt() BEFORE the engine sets+saves
+    ## DocStatus='CO' — so the in-trx SQL saw the not-yet-completed row, the clause was false, and the
+    ## row was recorded DontSend (N): the export never enqueued. With the matching moved to
+    ## after-commit, DocStatus is committed and the row reaches Enqueued (U) (was DontSend (N) before).
 
     # Override the Background config with one whose match clause only holds once the shipment is committed-complete.
     # Creating it deactivates the Background's always-true scriptedCfg_es for M_InOut (table-scoped takeover).
