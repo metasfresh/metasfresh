@@ -336,36 +336,23 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Called from the document's AFTER_COMPLETE interceptor: records an eligibility status for EVERY
-	 * trigger-on-complete config of the record's table and invokes the export for matching configs.
+	 * Records eligibility (matching WhereClause → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending},
+	 * else {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}) for every
+	 * trigger-on-complete config of the record's table, then invokes the export for the matching ones.
 	 *
-	 * <ul>
-	 *   <li>WhereClause MATCHES → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}
-	 *       + invokes the export.</li>
-	 *   <li>WhereClause does NOT match → {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}
-	 *       (EDI-consistency: DontSend is always persisted).</li>
-	 * </ul>
-	 *
-	 * <p><b>Runs entirely after-commit.</b> The eligibility WhereClause may read COMMITTED document
-	 * state — e.g. the EPCIS {@code "de.metas.edi".epcis_has_events(m_inout_id)} clause requires
-	 * {@code M_InOut.DocStatus IN ('CO','CL')}. At AFTER_COMPLETE the document engine has NOT yet
-	 * set+saved {@code DocStatus='CO'} ({@code MInOut.completeIt} fires AFTER_COMPLETE <i>before</i>
-	 * {@code DocumentEngine} assigns the status), so matching in the completing transaction would read
-	 * the pre-complete row and wrongly record DontSend — the export would never fire. Deferring the
-	 * whole match → status-write → invoke step to after-commit makes the clause evaluate against the
-	 * committed state. (The invocation itself was already after-commit; this moves the decision that
-	 * gates it to the same point, removing the in-trx-vs-committed mismatch.)
-	 *
-	 * <p>A status-write failure for one config is logged and swallowed so completion is never aborted.
+	 * <p>After-commit because the WhereClause may read committed document state — e.g. the EPCIS
+	 * {@code epcis_has_events(m_inout_id)} clause requires {@code DocStatus IN ('CO','CL')}, which the
+	 * AFTER_COMPLETE interceptor fires before the engine saves. A per-config status-write failure is
+	 * swallowed so document completion is never aborted.
 	 */
-	public void recordCompleteTimeEligibilityAndScheduleInvocation(
+	public void recordEligibilityAndInvokeAfterCommit(
 			@NonNull final AdTableAndClientId tableAndClientId,
 			final int recordId)
 	{
-		trxManager.runAfterCommit(() -> recordEligibilityAndInvokeAfterCommit(tableAndClientId, recordId));
+		trxManager.runAfterCommit(() -> recordEligibilityAndInvoke(tableAndClientId, recordId));
 	}
 
-	private void recordEligibilityAndInvokeAfterCommit(
+	private void recordEligibilityAndInvoke(
 			@NonNull final AdTableAndClientId tableAndClientId,
 			final int recordId)
 	{
