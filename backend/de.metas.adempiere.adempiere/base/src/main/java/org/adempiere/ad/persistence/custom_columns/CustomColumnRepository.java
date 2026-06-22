@@ -10,6 +10,7 @@ import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.persistence.custom_columns.RESTApiTableInfo.RESTApiTableInfoBuilder;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -62,23 +63,25 @@ public class CustomColumnRepository
 				.list();
 
 		// resolve the (active) table names for the referenced tables in a single bulk query — no per-column load
-		final ImmutableSet<Integer> tableIds = customColumns.stream()
-				.map(I_AD_Column::getAD_Table_ID)
+		final ImmutableSet<AdTableId> tableIds = customColumns.stream()
+				.map(column -> AdTableId.ofRepoId(column.getAD_Table_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<Integer, String> activeTableNamesById = tableIds.isEmpty()
+		final Map<AdTableId, String> activeTableNamesById = tableIds.isEmpty()
 				? ImmutableMap.of()
 				: queryBL.createQueryBuilder(I_AD_Table.class)
 						.addInArrayFilter(I_AD_Table.COLUMNNAME_AD_Table_ID, tableIds)
 						.addOnlyActiveRecordsFilter()
 						.create()
 						.stream()
-						.collect(ImmutableMap.toImmutableMap(I_AD_Table::getAD_Table_ID, I_AD_Table::getTableName));
+						.collect(ImmutableMap.toImmutableMap(
+								table -> AdTableId.ofRepoId(table.getAD_Table_ID()),
+								I_AD_Table::getTableName));
 
 		final HashMap<String, RESTApiTableInfoBuilder> builders = new HashMap<>();
 		for (final I_AD_Column column : customColumns)
 		{
-			final String tableName = activeTableNamesById.get(column.getAD_Table_ID());
+			final String tableName = activeTableNamesById.get(AdTableId.ofRepoId(column.getAD_Table_ID()));
 			if (tableName != null) // null => the table is inactive
 			{
 				builders.computeIfAbsent(tableName, RESTApiTableInfo::newBuilderForTableName)
