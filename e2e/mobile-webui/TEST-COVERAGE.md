@@ -209,7 +209,7 @@
 | Scenario | Test |
 |---|---|
 | Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
-| Rapidly mashing device/browser Back many times stays put and never leaves the app | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put, never leaves the app, and the title bar does not revert to the app caption | `picking/deviceBackIsNoOp.spec.js` |
 
 **2/2 — 100%**
 
