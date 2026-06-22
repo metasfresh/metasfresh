@@ -683,18 +683,15 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Validates {@code C_Order} records against expected values.
+	 * Validates {@code C_Order} records by identifier. Every column is an optional assertion - a column is only
+	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
+	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
 	 * <p>
-	 * gh#28565: Added validation for promotion code columns:
+	 * Validation for promotion code columns:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 * </ul>
-	 */
-	/**
-	 * Validates {@code C_Order} records by identifier. Every column is an optional assertion - a column is only
-	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
-	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
 	 */
 	@And("validate the created orders")
 	public void validate_created_order(@NonNull final DataTable table)

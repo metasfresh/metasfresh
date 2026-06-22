@@ -175,7 +175,7 @@ class OLCandOrderFactory
 	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
-	// task me03-30435: per-line DatePromised, taken from the source candidate that CREATED the line.
+	// per-line DatePromised, taken from the source candidate that CREATED the line.
 	// Applied at completion (after the single header->lines broadcast in MOrder.afterSave) so that each
 	// order line keeps its own DatePromised instead of being clobbered with the header value.
 	private final Map<Integer, Timestamp> orderLineId2DatePromised = new LinkedHashMap<>();
@@ -245,7 +245,7 @@ class OLCandOrderFactory
 		// task 06269 (see KurzBeschreibung)
 		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder().
 		// We seed the header with the first candidate's DatePromised here only so the order can be saved (lines need the FK).
-		// task me03-30435: the final header DatePromised is set to the earliest of the group's lines in completeOrDelete(),
+		// the final header DatePromised is set to the earliest of the group's lines in completeOrDelete(),
 		// and each line keeps its own olcand DatePromised. The header DatePromised is deliberately set-and-saved one last
 		// time (to the earliest) BEFORE the per-line dates are written, so the MOrder.afterSave() header->lines broadcast
 		// fires once on a value the lines don't yet override, and never again afterwards (DatePromised stays unchanged
@@ -395,7 +395,7 @@ class OLCandOrderFactory
 	}
 
 	/**
-	 * task me03-30435: makes each {@link I_C_OrderLine} keep the {@code DatePromised} of the source candidate that created
+	 * Makes each {@link I_C_OrderLine} keep the {@code DatePromised} of the source candidate that created
 	 * it, and sets the header {@code C_Order.DatePromised} to the earliest of the lines' dates.
 	 * <p>
 	 * Sequencing is critical because {@code MOrder.afterSave()} broadcasts a changed header {@code DatePromised} to ALL
@@ -685,7 +685,7 @@ class OLCandOrderFactory
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
 
-		// task me03-30435: remember the per-line DatePromised, taken from the candidate that CREATED the line.
+		// remember the per-line DatePromised, taken from the candidate that CREATED the line.
 		// When several candidates aggregate into one line, the line keeps the creating candidate's DatePromised.
 		if (isNewOrderLine)
 		{
