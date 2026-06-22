@@ -26,7 +26,7 @@ import java.io.StringWriter;
 import java.util.Optional;
 
 /**
- * Public entry point for CII e-invoice generation and EN16931 Schematron validation.
+ * Public entry point for CII e-invoice generation and Schematron validation.
  *
  * <p>Orchestrates the pipeline:
  * <ol>
@@ -35,8 +35,9 @@ import java.util.Optional;
  *   <li>{@link CiiMapper#map(I_C_Invoice, EInvoiceRecipientConfig)} — map the invoice to a CII
  *       {@link CrossIndustryInvoiceType} domain object.</li>
  *   <li>Marshal the CII object to XML.</li>
- *   <li>{@link CiiValidator#validate(String)} — validate the marshalled XML against EN16931
- *       Schematron rules.</li>
+ *   <li>{@link CiiValidator#validate(String, EInvoiceFormat)} — validate the marshalled XML
+ *       against EN16931 Schematron rules always, plus the KoSIT/XRechnung schematron when the
+ *       resolved format is XRechnung.</li>
  * </ol>
  *
  * <p>Returns {@link Optional#empty()} when the BPartner is not an e-invoice recipient,
@@ -95,13 +96,13 @@ public class EInvoiceCiiService
 		// Marshal to XML
 		final String ciiXml = marshalToXml(cii);
 
-		// Validate against EN16931 Schematron
+		// Validate against EN16931 Schematron (always), plus KoSIT/XRechnung when the format is XRechnung.
 		final CiiValidator validator = new CiiValidator();
-		final CiiValidationResult validationResult = validator.validate(ciiXml);
+		final CiiValidationResult validationResult = validator.validate(ciiXml, config.getFormat());
 
 		if (!validationResult.isValid())
 		{
-			log.warn("EN16931 Schematron validation found {} FATAL/ERROR failures for invoice {}. Rule IDs: {}",
+			log.warn("E-invoice Schematron validation found {} FATAL/ERROR failures for invoice {}. Rule IDs: {}",
 					validationResult.getFatalAndErrorRuleIds().size(),
 					invoiceId,
 					validationResult.getFatalAndErrorRuleIds());
