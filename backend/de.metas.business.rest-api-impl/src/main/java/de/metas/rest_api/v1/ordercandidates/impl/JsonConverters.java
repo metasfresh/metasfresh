@@ -89,6 +89,7 @@ public class JsonConverters
 		this.currencyService = currencyService;
 		this.docTypeService = docTypeService;
 		this.externalSystemRepository = externalSystemRepository;
+
 	}
 
 	public final OLCandCreateRequestBuilder fromJson(
@@ -324,5 +325,4 @@ public class JsonConverters
 				//
 				.build();
 	}
-
 }
