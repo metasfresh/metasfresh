@@ -56,6 +56,7 @@ public class C_BP_Relation_StepDef
 	 *   <b>C_BPartnerRelation_ID</b> — (required, identifier-ref) the related (target) business partner<br>
 	 *   <b>C_BPartnerRelation_Location_ID</b> — (optional, identifier-ref) the location of the related partner<br>
 	 *   <b>IsBillTo</b> — (optional, default false) whether the relation is used for bill-to<br>
+	 *   <b>Name</b> — (optional) relation name; auto-generated from the partner IDs when omitted<br>
 	 * @cucumber.depends StepDefData: C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -81,6 +82,8 @@ public class C_BP_Relation_StepDef
 		bpRelation.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		bpRelation.setC_BPartner_ID(sourceBPartnerId.getRepoId());
 		bpRelation.setC_BPartnerRelation_ID(relationBPartnerId.getRepoId());
+		bpRelation.setName(row.getAsOptionalString(I_C_BP_Relation.COLUMNNAME_Name)
+				.orElseGet(() -> "BP relation " + sourceBPartnerId.getRepoId() + "-" + relationBPartnerId.getRepoId()));
 		bpRelation.setIsActive(true);
 
 		row.getAsOptionalIdentifier(I_C_BP_Relation.COLUMNNAME_C_BPartnerRelation_Location_ID)
