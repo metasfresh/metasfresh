@@ -662,6 +662,15 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | desadvReferences    | 2            |
       | poReferences        | 2            |
       | shipmentDocumentNos | 2            |
+    # ─── Order-pure crates (me03 #30279) ─────────────────────────────────────────────
+    # Even though both orders share ONE physical pallet, each crate (Gebinde) belongs to
+    # exactly one order, so each crate must carry its own poReference + delivery note. The
+    # scripted adapter uses these to emit one po + one desadv bizTransaction per PACKING event.
+    # 15 crates total: 5 from order A (PO 1170000001) + 10 from order B (PO 1170000002).
+    Then the EPCIS JSON pallet 0 crates are order-pure with POReferences:
+      | poReference |
+      | 1170000001  |
+      | 1170000002  |
 
     # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170
