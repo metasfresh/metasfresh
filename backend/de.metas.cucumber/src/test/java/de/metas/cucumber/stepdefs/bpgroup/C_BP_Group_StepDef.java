@@ -22,10 +22,12 @@
 
 package de.metas.cucumber.stepdefs.bpgroup;
 
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -42,6 +44,8 @@ public class C_BP_Group_StepDef
 	@NonNull private final C_BP_Group_StepDefData bpGroupTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+
+	private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
 
 	/**
 	 * @cucumber.stepdef Creates {@code C_BP_Group} records, optionally nested under a parent group.
@@ -88,7 +92,7 @@ public class C_BP_Group_StepDef
 							.map(bpartnerLocationTable::get)
 							.ifPresent(loc -> bpGroupRecord.setBill_Location_ID(loc.getC_BPartner_Location_ID()));
 
-					InterfaceWrapperHelper.saveRecord(bpGroupRecord);
+					bpGroupDAO.save(bpGroupRecord);
 
 					row.getAsOptionalIdentifier().ifPresent(identifier -> bpGroupTable.putOrReplace(identifier, bpGroupRecord));
 				});
