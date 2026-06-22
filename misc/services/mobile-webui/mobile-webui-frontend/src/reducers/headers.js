@@ -163,7 +163,20 @@ export default function reducer(state = initialState, action) {
     case LOCATION_CHANGE: {
       const {
         location: { pathname },
+        action,
       } = payload;
+
+      // A POP is a device/browser Back press. Back is a no-op in this app (useDeviceBackButton absorbs
+      // it via history sentinels), so it must NOT mutate the header navigation stack — only real in-app
+      // navigations (PUSH / REPLACE) do. Without this guard, the sentinel's popstate fired a
+      // LOCATION_CHANGE(POP) that hit the "clear header on launchers/home url" branch below and wiped
+      // the current screen's header entry, dropping the screen's id (#WFLaunchersScreen) and blanking it.
+      // Note: the initial ConnectedRouter mount also dispatches LOCATION_CHANGE(POP, isFirstRendering);
+      // filtering it here is harmless — headers are seeded by initialState and set independently via
+      // HEADER_PUSH_ENTRY / HEADER_UPDATE_ENTRY dispatched by each screen on mount.
+      if (action === 'POP') {
+        return state;
+      }
 
       let newEntries = null;
 

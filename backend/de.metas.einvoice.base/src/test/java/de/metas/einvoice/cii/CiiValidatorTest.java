@@ -8,6 +8,7 @@ import de.metas.einvoice.cii.model.ObjectFactory;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -100,6 +101,17 @@ public class CiiValidatorTest
 		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
 		saveRecord(orgInfo);
 
+		// === Seller contact (AD_User) — required for XRechnung BG-6 / BR-DE-2/5/6/7 ===
+		// BR-DE-5: PersonName or DepartmentName required
+		// BR-DE-6: TelephoneUniversalCommunication/CompleteNumber required (≥3 digits per BR-DE-27)
+		// BR-DE-7: EmailURIUniversalCommunication/URIID required (valid email per BR-DE-28)
+		final I_AD_User sellerContact = newInstance(I_AD_User.class);
+		sellerContact.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerContact.setName("Max Mustermann");
+		sellerContact.setPhone("+49 30 123456789");
+		sellerContact.setEMail("max.mustermann@muster.de");
+		saveRecord(sellerContact);
+
 		// === Currency ===
 		final I_C_Currency currency = newInstance(I_C_Currency.class);
 		currency.setISO_Code("EUR");
@@ -134,6 +146,8 @@ public class CiiValidatorTest
 		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
 		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
 		buyerBPLoc.setIsBillTo(true);
+		// BT-49 Buyer electronic address — required by XRechnung (PEPPOL-EN16931-R010)
+		buyerBPLoc.setEMail("einkauf@kaeufer.de");
 		saveRecord(buyerBPLoc);
 
 		// === DocType (ARI = commercial invoice) ===
@@ -275,5 +289,117 @@ public class CiiValidatorTest
 		assertThat(result.getFailedAssertions())
 				.as("Expected at least one failed assertion for missing seller name")
 				.isNotEmpty();
+	}
+
+	// ===== XRechnung / KoSIT schematron tests =====
+
+	/**
+	 * Builds a fixture identical to {@link #buildCompleteFixture()} but with XRechnung format
+	 * and a Leitweg-ID buyer reference (BT-10), so it satisfies BR-DE-15.
+	 */
+	private FixtureResult buildXRechnungFixture()
+	{
+		// Reuse the full fixture; override format + buyer reference to XRechnung.
+		final FixtureResult base = buildCompleteFixture();
+		final EInvoiceRecipientConfig xrConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.XRECHNUNG)
+				.buyerReference("991-1234512345-06")
+				.build();
+		return new FixtureResult(base.invoice, xrConfig);
+	}
+
+	/**
+	 * KoSIT schematron is applied when format is XRECHNUNG: the call runs without throwing and
+	 * produces a result. The valid fixture may still have BR-DE-* mapper gaps (Task 3 fixes those);
+	 * here we only assert that the KoSIT layer is wired up (result is non-null and its assertion
+	 * list is a superset of the EN16931-only call OR carries BR-DE-* ids).
+	 * A dedicated "KoSIT fired" assertion is provided by the missingLeitweg test below.
+	 */
+	@Test
+	void validate_xrechnung_validInvoice_kosItSchematronApplied() throws Exception
+	{
+		final FixtureResult fixture = buildXRechnungFixture();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+		final String xml = marshalToXml(cii);
+
+		final CiiValidator validator = new CiiValidator();
+
+		// EN16931-only call (no KoSIT)
+		final CiiValidationResult en16931Only = validator.validate(xml);
+		// XRechnung call (EN16931 + KoSIT)
+		final CiiValidationResult withKoSIT = validator.validate(xml, EInvoiceFormat.XRECHNUNG);
+
+		// Both must be non-null; the XRechnung result must be produced without exception.
+		assertThat(withKoSIT).isNotNull();
+		assertThat(withKoSIT.getFailedAssertions()).isNotNull();
+
+		// The XRechnung result must have at least as many assertions as the EN16931-only result
+		// (KoSIT adds assertions on top; it never removes EN16931 ones).
+		assertThat(withKoSIT.getFailedAssertions().size())
+				.as("XRechnung validation must run the KoSIT layer in addition to EN16931; "
+						+ "EN16931-only failures: %s, XRechnung failures: %s",
+						en16931Only.getFatalAndErrorRuleIds(), withKoSIT.getFatalAndErrorRuleIds())
+				.isGreaterThanOrEqualTo(en16931Only.getFailedAssertions().size());
+	}
+
+	/**
+	 * Valid XRechnung fixture → KoSIT produces ZERO fatal/error BR-DE rule ids.
+	 *
+	 * <p>This test verifies that {@link CiiMapper} emits all XRechnung-mandatory fields
+	 * (BG-6 seller contact BR-DE-2/5/6/7, BT-34 seller electronic address BR-DE-2 precondition,
+	 * correct guideline ID BR-DE-21, payment means BR-DE-1, buyer reference BR-DE-15, etc.)
+	 * so that a fully-populated sales invoice passes KoSIT validation with no fatal or error assertions.
+	 */
+	@Test
+	void validate_xrechnung_validInvoice_noFatalErrors() throws Exception
+	{
+		final FixtureResult fixture = buildXRechnungFixture();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+		final String xml = marshalToXml(cii);
+
+		final CiiValidator validator = new CiiValidator();
+		final CiiValidationResult result = validator.validate(xml, EInvoiceFormat.XRECHNUNG);
+
+		final List<String> fatalErrors = result.getFatalAndErrorRuleIds();
+		assertThat(fatalErrors)
+				.as("Expected ZERO fatal/error KoSIT (BR-DE-*) rule violations on the valid XRechnung fixture. "
+						+ "Firing rules (mapper gaps): " + fatalErrors
+						+ ". All failed assertions: " + result.getFailedAssertions())
+				.isEmpty();
+	}
+
+	/**
+	 * BR-DE-15: "Das Element »Buyer reference« (BT-10) muss übermittelt werden." is a KoSIT-only rule.
+	 * When buyer reference is missing and format is XRECHNUNG, BR-DE-15 must appear.
+	 * When the same XML is validated as EN16931-only (null format), BR-DE-15 must NOT appear.
+	 */
+	@Test
+	void validate_xrechnung_missingLeitweg_failsBrDe15() throws Exception
+	{
+		final FixtureResult fixture = buildXRechnungFixture();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+
+		// Remove the buyer reference from the mapped CII to trigger BR-DE-15.
+		cii.getSupplyChainTradeTransaction()
+				.getApplicableHeaderTradeAgreement()
+				.setBuyerReference(null);
+
+		final String xmlWithoutLeitweg = marshalToXml(cii);
+
+		final CiiValidator validator = new CiiValidator();
+
+		// XRechnung call must flag BR-DE-15
+		final CiiValidationResult xrResult = validator.validate(xmlWithoutLeitweg, EInvoiceFormat.XRECHNUNG);
+		final List<String> xrRuleIds = xrResult.getFatalAndErrorRuleIds();
+		assertThat(xrRuleIds)
+				.as("Missing Leitweg-ID must trigger BR-DE-15 when validated as XRechnung. Actual rule ids: %s", xrRuleIds)
+				.contains("BR-DE-15");
+
+		// EN16931-only call must NOT flag any BR-DE-* rule (it does not run the KoSIT schematron)
+		final CiiValidationResult en16931Result = validator.validate(xmlWithoutLeitweg, null);
+		final List<String> en16931RuleIds = en16931Result.getFatalAndErrorRuleIds();
+		assertThat(en16931RuleIds)
+				.as("EN16931-only validation must not produce any BR-DE-* rule id. Actual: %s", en16931RuleIds)
+				.noneMatch(id -> id != null && id.startsWith("BR-DE-"));
 	}
 }
