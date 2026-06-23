@@ -57,7 +57,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @RequiredArgsConstructor
 public class AD_Sequence_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final AD_Sequence_StepDefData adSequenceTable;
 
