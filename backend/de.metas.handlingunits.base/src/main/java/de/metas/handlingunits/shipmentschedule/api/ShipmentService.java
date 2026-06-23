@@ -297,7 +297,7 @@ public class ShipmentService implements IShipmentService
 					)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
-							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
+							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DeliveryDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
 							.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
 					)
 					.create();

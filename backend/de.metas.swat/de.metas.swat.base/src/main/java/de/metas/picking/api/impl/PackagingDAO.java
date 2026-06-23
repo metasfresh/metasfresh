@@ -160,7 +160,7 @@ public class PackagingDAO implements IPackagingDAO
 		{
 			queryBuilder.addFilter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 					.setJoinOr()
-					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPromisedDate.toInstant())
+					.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DeliveryDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, maximumFixedPromisedDate.toInstant())
 					.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
 			);
 		}

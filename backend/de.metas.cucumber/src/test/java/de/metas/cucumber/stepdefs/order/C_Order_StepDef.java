@@ -226,10 +226,12 @@ public class C_Order_StepDef
 	/**
 	 * Creates {@code C_Order} records.
 	 * <p>
-	 * gh#28565: Added support for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 *   <li>{@code IsFixedDatePromised} (optional) — when {@code true}, holds each order line until its own
+	 *       delivery date (per-line {@code M_Packageable_V.DeliveryDate}) is reached before it may be shipped</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -359,6 +361,9 @@ public class C_Order_StepDef
 		{
 			order.setDatePromised(Timestamp.from(datePromisedToBeSet));
 		}
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedDatePromised)
+				.ifPresent(order::setIsFixedDatePromised);
 
 		if (EmptyUtil.isNotBlank(poReference))
 		{
