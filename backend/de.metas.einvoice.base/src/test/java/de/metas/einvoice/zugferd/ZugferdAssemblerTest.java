@@ -9,12 +9,21 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDResources;
 import org.apache.pdfbox.pdmodel.common.PDMetadata;
+import org.apache.pdfbox.pdmodel.common.filespecification.PDComplexFileSpecification;
+import org.apache.pdfbox.pdmodel.common.filespecification.PDEmbeddedFile;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.junit.jupiter.api.Test;
+import org.mustangproject.validator.EPart;
+import org.mustangproject.validator.ESeverity;
+import org.mustangproject.validator.ValidationContext;
+import org.mustangproject.validator.ValidationResultItem;
 import org.mustangproject.validator.ZUGFeRDValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.xmlunit.assertj.XmlAssert;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -23,6 +32,8 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -31,15 +42,30 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Embeds a minimal EN16931 CII XML into a fixture PDF/A-3 and asserts:
  * <ol>
- *   <li>The Mustang ZUGFeRDValidator completes without throwing and returns a non-empty result XML</li>
+ *   <li>The Mustang ZUGFeRDValidator reports ZERO PDF/A-3 conformance errors (EPart.pdf)
+ *       and ZERO Factur-X structural errors (EPart.fx) at severity error/fatal.
+ *       CII-content schematron (EPart.ox/xr) is explicitly excluded — that is the
+ *       responsibility of CiiMapper/EInvoiceCiiService, not the assembler.</li>
+ *   <li>The {@code factur-x.xml} extracted back from the assembled PDF is XML-equal
+ *       to the input CII string, proving the assembler embedded the exact content
+ *       without corruption.</li>
  *   <li>The attachment named {@code factur-x.xml} is present with
  *       {@code AFRelationship = Alternative}</li>
  *   <li>The XMP metadata contains the Factur-X conformance declaration
  *       ({@code fx:ConformanceLevel})</li>
  * </ol>
+ *
+ * <p><b>Approach B (container-level)</b> is used because the SAMPLE_CII_XML below is
+ * intentionally minimal — it is schema-structurally valid but not full EN16931-schematron-valid
+ * (many mandatory BT-* fields are absent). The assembler's contract is the <em>container</em>
+ * (PDF/A-3 + Factur-X embedding), not the CII content; CII-content validation is covered by
+ * {@code CiiValidatorTest}. Accordingly this test asserts zero container-level errors and
+ * round-trip XML fidelity, and deliberately does not assert {@code wasCompletelyValid()}.
  */
 public class ZugferdAssemblerTest
 {
+	private static final Logger log = LoggerFactory.getLogger(ZugferdAssemblerTest.class);
+
 	/**
 	 * Minimal but syntactically valid EN16931 CII XML (Factur-X 2.1.1 COMFORT / EN16931 profile).
 	 * Taken from the Factur-X specification sample set; all mandatory BT-* fields populated.
@@ -157,7 +183,7 @@ public class ZugferdAssemblerTest
 	 * (ensurePDFIsValid returns true unconditionally) so a structurally complete PDF/A-3
 	 * is sufficient to exercise the assembler.
 	 */
-	static byte[] buildFixturePdfA3() throws Exception
+	private static byte[] buildFixturePdfA3() throws Exception
 	{
 		try (PDDocument doc = new PDDocument())
 		{
@@ -199,9 +225,8 @@ public class ZugferdAssemblerTest
 
 	/**
 	 * Loads the sRGB ICC profile bundled with PDFBox (org/apache/pdfbox/resources/icc/ISOcoated_v2_300_bas.icc
-	 * or similar). Falls back to a tiny 128-byte placeholder if the bundled resource is not found,
-	 * which is sufficient for structural tests since ZUGFeRDExporterFromA3 2.11.0 does not validate
-	 * the ICC profile content.
+	 * or similar). Throws {@link IllegalStateException} if no candidate resolves, so a resource-path
+	 * shift surfaces as a test failure rather than a silently-invalid fixture.
 	 */
 	private static byte[] loadSrgbIccProfile() throws IOException
 	{
@@ -227,8 +252,27 @@ public class ZugferdAssemblerTest
 				}
 			}
 		}
-		// Minimal placeholder — 128 zero bytes; triggers no ICC validation in 2.11.0
-		return new byte[128];
+		throw new IllegalStateException(
+				"No sRGB ICC profile found on classpath. Checked: "
+						+ java.util.Arrays.toString(candidates)
+						+ ". Verify PDFBox ICC resources are present — the fixture PDF/A-3 requires a valid ICC output intent.");
+	}
+
+	// -----------------------------------------------------------------------
+	// Subclass to expose ValidationContext after validate()
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Thin wrapper over {@link ZUGFeRDValidator} that exposes the protected
+	 * {@code context} field so tests can inspect individual {@link ValidationResultItem}s
+	 * by part (pdf/fx/ox) and severity without parsing the XML report string.
+	 */
+	private static class InspectableValidator extends ZUGFeRDValidator
+	{
+		ValidationContext getContext()
+		{
+			return context;
+		}
 	}
 
 	// -----------------------------------------------------------------------
@@ -236,17 +280,26 @@ public class ZugferdAssemblerTest
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Core test: embed the sample CII into a fixture PDF/A-3 and validate the result
-	 * with Mustang's ZUGFeRDValidator.
-	 * <p>
-	 * Because the sample CII is schema-valid but not full EN16931-schematron-valid
-	 * (mandatory BT-* fields are intentionally minimal), we do NOT assert
-	 * {@code wasCompletelyValid()} here — only that the assembler produces a
-	 * ZUGFeRD-shaped PDF (factur-x.xml present, Factur-X XMP present, no exception).
-	 * The structural-assertion test below does the AFRelationship + XMP checks.
+	 * Core test (Finding 1 — Approach B, container-level):
+	 *
+	 * <p>Embeds the sample CII into a fixture PDF/A-3 and asserts:
+	 * <ol>
+	 *   <li>Zero validator items with severity {@code error} or {@code fatal} and part
+	 *       {@code pdf} (PDF/A-3 conformance) or {@code fx} (Factur-X structural).
+	 *       CII-content schematron parts ({@code ox}, {@code xr}) are explicitly excluded —
+	 *       the SAMPLE_CII_XML is intentionally minimal and will have schematron failures;
+	 *       those are upstream's responsibility (CiiMapper/EInvoiceCiiService).</li>
+	 *   <li>The {@code factur-x.xml} extracted back from the output PDF is XML-equal to
+	 *       the input CII string, proving round-trip fidelity of the container embedding.</li>
+	 * </ol>
+	 *
+	 * <p>Why Approach B and not A: no readily-available schematron-valid CII fixture exists
+	 * in this module's test resources that could be passed unchanged to a validator asserting
+	 * {@code wasCompletelyValid()}. The CiiValidatorTest covers EN16931 content validation with
+	 * a fully-populated CII produced by CiiMapper; we avoid duplicating that concern here.
 	 */
 	@Test
-	void embed_producesZugferdPdf_noException() throws Exception
+	void embed_producesZugferdPdf_containerLevelValid() throws Exception
 	{
 		final byte[] pdfA3 = buildFixturePdfA3();
 		final byte[] result = ZugferdAssembler.embed(pdfA3, SAMPLE_CII_XML);
@@ -255,22 +308,66 @@ public class ZugferdAssemblerTest
 				.as("embed() must return non-null, non-empty bytes")
 				.isNotEmpty();
 
-		// Write to temp file so ZUGFeRDValidator can validate it
+		// ---- 1. Validate container conformance with Mustang ZUGFeRDValidator ----
 		final Path tmp = Files.createTempFile("zugferd-test-", ".pdf");
 		try
 		{
 			Files.write(tmp, result);
-			final ZUGFeRDValidator validator = new ZUGFeRDValidator();
-			final String xmlResult = validator.validate(tmp.toAbsolutePath().toString());
-			// The validator must complete without throwing and return a non-empty result XML
-			assertThat(xmlResult)
-					.as("ZUGFeRDValidator must return a non-empty result XML")
-					.isNotEmpty();
+			final InspectableValidator validator = new InspectableValidator();
+			validator.validate(tmp.toAbsolutePath().toString());
+
+			final ValidationContext ctx = validator.getContext();
+			assertThat(ctx)
+					.as("ValidationContext must be available after validate()")
+					.isNotNull();
+
+			// Collect all error/fatal items whose part is pdf (PDF/A-3 conformance)
+			// or fx (Factur-X structural) — these are the assembler's responsibility.
+			// EPart.ox (CII schematron EN16931) and EPart.xr (KoSIT XRechnung) are excluded.
+			final List<ValidationResultItem> containerErrors = ctx.getResults().stream()
+					.filter(item -> item.getSeverity() == ESeverity.error
+							|| item.getSeverity() == ESeverity.fatal)
+					.filter(item -> item.getPart() == EPart.pdf || item.getPart() == EPart.fx)
+					.collect(Collectors.toList());
+
+			final String errorSummary = containerErrors.stream()
+					.map(item -> "[" + item.getPart() + "/" + item.getSeverity() + "] " + item.getMessage())
+					.collect(Collectors.joining("; "));
+
+			assertThat(containerErrors)
+					.as("Assembler must produce ZERO PDF/A-3 conformance (EPart.pdf) and "
+							+ "Factur-X structural (EPart.fx) errors/fatals. "
+							+ "Found " + containerErrors.size() + " container error(s): " + errorSummary)
+					.isEmpty();
+
+			// Log total result counts at debug level for diagnostics
+			log.debug("ZUGFeRDValidator results: total={}, pdf_errors={}, fx_errors={}, "
+							+ "ox_errors={}, xr_errors={}",
+					ctx.getResults().size(),
+					ctx.getResults().stream().filter(i -> i.getPart() == EPart.pdf
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+					ctx.getResults().stream().filter(i -> i.getPart() == EPart.fx
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+					ctx.getResults().stream().filter(i -> i.getPart() == EPart.ox
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+					ctx.getResults().stream().filter(i -> i.getPart() == EPart.xr
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count());
 		}
 		finally
 		{
 			Files.deleteIfExists(tmp);
 		}
+
+		// ---- 2. Round-trip fidelity: extract factur-x.xml and assert XML-equality ----
+		final String embeddedXml = extractEmbeddedFacturXXml(result);
+		assertThat(embeddedXml)
+				.as("factur-x.xml must be extractable from the assembled PDF")
+				.isNotEmpty();
+
+		XmlAssert.assertThat(embeddedXml)
+				.and(SAMPLE_CII_XML)
+				.ignoreWhitespace()
+				.areSimilar();
 	}
 
 	/**
@@ -322,6 +419,70 @@ public class ZugferdAssemblerTest
 							"fx:ConformanceLevel",
 							"factur-x");
 		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Extracts the UTF-8 content of the {@code factur-x.xml} embedded file from the assembled PDF.
+	 * Uses PDFBox's high-level {@link PDComplexFileSpecification} / {@link PDEmbeddedFile} API
+	 * to walk the EmbeddedFiles name tree.
+	 */
+	private static String extractEmbeddedFacturXXml(final byte[] pdfBytes) throws IOException
+	{
+		try (PDDocument doc = PDDocument.load(pdfBytes))
+		{
+			final COSDictionary namesDict = (COSDictionary) doc.getDocumentCatalog()
+					.getCOSObject()
+					.getDictionaryObject(COSName.NAMES);
+			if (namesDict == null)
+			{
+				return "";
+			}
+			final COSDictionary embeddedFilesDict = (COSDictionary) namesDict.getDictionaryObject(
+					COSName.getPDFName("EmbeddedFiles"));
+			if (embeddedFilesDict == null)
+			{
+				return "";
+			}
+			final COSArray namesArray = (COSArray) embeddedFilesDict.getDictionaryObject(COSName.NAMES);
+			if (namesArray == null)
+			{
+				return "";
+			}
+			// Pairs: [name, fileSpec, name, fileSpec, ...]
+			for (int i = 0; i + 1 < namesArray.size(); i += 2)
+			{
+				final String name = namesArray.getString(i);
+				if (!"factur-x.xml".equalsIgnoreCase(name))
+				{
+					continue;
+				}
+				COSBase specBase = namesArray.getObject(i + 1);
+				if (specBase instanceof COSObject)
+				{
+					specBase = ((COSObject) specBase).getObject();
+				}
+				if (!(specBase instanceof COSDictionary))
+				{
+					continue;
+				}
+				final PDComplexFileSpecification spec = new PDComplexFileSpecification((COSDictionary) specBase);
+				PDEmbeddedFile ef = spec.getEmbeddedFileUnicode();
+				if (ef == null)
+				{
+					ef = spec.getEmbeddedFile();
+				}
+				if (ef != null)
+				{
+					final byte[] content = ef.toByteArray();
+					return new String(content, StandardCharsets.UTF_8);
+				}
+			}
+		}
+		return "";
 	}
 
 	/** Checks the AF (Associated Files) array for factur-x.xml with AFRelationship=Alternative. */
@@ -416,10 +577,12 @@ public class ZugferdAssemblerTest
 				}
 			}
 		}
-		catch (final Exception ignored)
+		catch (final ClassCastException | NullPointerException e)
 		{
-			// If the tree is malformed, fall through to false
+			// Unexpected PDF structure — log for diagnostics and fall through to false
+			log.debug("checkEmbeddedFileNames: unexpected PDF structure while scanning EmbeddedFiles tree", e);
 		}
 		return false;
 	}
+
 }
