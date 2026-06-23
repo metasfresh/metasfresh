@@ -8,6 +8,8 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.location.DocumentLocation;
+import de.metas.gs1.GTIN;
+import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
@@ -32,6 +34,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -43,19 +46,8 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
-import de.metas.gs1.GTIN;
-import org.adempiere.service.ClientId;
-import de.metas.gs1.ean13.EAN13;
-import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
-import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
-import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
-import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.IHUQRCode;
-import de.metas.i18n.ITranslatableString;
-import de.metas.quantity.Quantity;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
@@ -71,7 +63,13 @@ import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
 import de.metas.handlingunits.picking.slot.PickingSlotListener;
+import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
@@ -80,6 +78,7 @@ import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -87,11 +86,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -439,7 +440,7 @@ public class PickingJobService implements PickingSlotListener
 			case UNPICK:
 			{
 				final ProductId unpickProductId = event.getUnpickProductId();
-				final java.math.BigDecimal unpickQtyBD = event.getQtyToUnpick(); // BigDecimal; UOM resolved below
+				final BigDecimal unpickQtyBD = event.getQtyToUnpick();
 				final Quantity unpickQty = (unpickProductId != null && unpickQtyBD != null)
 						? resolveUnpickQty(pickingJob, unpickProductId, unpickQtyBD)
 						: null;
@@ -934,7 +935,7 @@ public class PickingJobService implements PickingSlotListener
 	private static Quantity resolveUnpickQty(
 			@NonNull final PickingJob pickingJob,
 			@NonNull final ProductId productId,
-			@NonNull final java.math.BigDecimal qtyBD)
+			@NonNull final BigDecimal qtyBD)
 	{
 		final Quantity referenceQty = pickingJob.streamSteps()
 				.filter(step -> ProductId.equals(step.getProductId(), productId))
@@ -963,17 +964,10 @@ public class PickingJobService implements PickingSlotListener
 		final PickingJob pickingJob = getById(pickingJobId);
 		pickingJob.assertCanBeEditedBy(callerId);
 
-		// Step 1: parse scanned code to IHUQRCode
 		final IHUQRCode parsedQRCode = huService.parsePickFromScannedCode(scannedCode);
-
-		// Step 2: find the matching ProductId from the job's product set
 		final ProductId matchedProductId = resolveProductId(parsedQRCode, pickingJob);
-
-		// Step 3: compute packed qty for the matched product
 		final Quantity packedQty = computePackedQty(pickingJob, matchedProductId);
 		final boolean unpickable = packedQty != null && !packedQty.isZero();
-
-		// Step 4: look up product name
 		final ITranslatableString productNameTrl = productService.getProductNameTrl(matchedProductId);
 		final String productName = productNameTrl.getDefaultValue();
 
