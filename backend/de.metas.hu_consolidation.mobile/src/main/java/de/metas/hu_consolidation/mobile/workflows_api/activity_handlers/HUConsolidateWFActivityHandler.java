@@ -1,18 +1,25 @@
 package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
 import de.metas.handlingunits.picking.slot.PickingSlotQueuesSummary;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -24,8 +31,10 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
+import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Set;
 
 import static de.metas.hu_consolidation.mobile.HUConsolidationApplication.getHUConsolidationJob;
@@ -39,6 +48,9 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 
 	@NonNull private final PickingSlotService pickingSlotService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
+	@NonNull private final HUGraiService huGraiService;
+
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	@Override
 	public WFActivityType getHandledActivityType() {return HANDLED_ACTIVITY_TYPE;}
@@ -76,12 +88,42 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 		final RenderedAddressProvider renderedAddressProvider = documentLocationBL.newRenderedAddressProvider();
 		final String shipToAddress = renderedAddressProvider.getAddress(job.getShipToBPLocationId());
 
+		final boolean graiScanEnabled = resolveGraiScanEnabled(job);
+
 		return JsonHUConsolidationJob.builder()
 				.id(job.getId())
 				.shipToAddress(shipToAddress)
 				.pickingSlots(toJsonHUConsolidationJobPickingSlots(job.getPickingSlotIds()))
-				.currentTarget(JsonHUConsolidationTarget.ofNullable(job.getCurrentTarget()))
+				.graiScanEnabled(graiScanEnabled)
+				.currentTarget(toJsonTarget(job.getCurrentTarget(), graiScanEnabled))
 				.build();
+	}
+
+	/** GRAIRequired != No ⇒ graiScanEnabled=true (YesWithDummyGRAIs is treated as Yes). */
+	private boolean resolveGraiScanEnabled(@NonNull final HUConsolidationJob job)
+	{
+		final I_C_BPartner bpartner = bpartnerDAO.getById(job.getCustomerId());
+		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired())
+				.orElse(GRAIRequired.No);
+		return !graiRequired.isNo();
+	}
+
+	@Nullable
+	private JsonHUConsolidationTarget toJsonTarget(
+			@Nullable final HUConsolidationTarget target,
+			final boolean graiScanEnabled)
+	{
+		if (target == null)
+		{
+			return null;
+		}
+
+		final HuId luId = target.getLuId();
+		final HUGraiSnapshot graiSnapshot = (graiScanEnabled && luId != null)
+				? huGraiService.getSnapshot(luId).orElse(null)
+				: null;
+
+		return JsonHUConsolidationTarget.of(target, graiSnapshot);
 	}
 
 	private ImmutableList<JsonHUConsolidationJobPickingSlot> toJsonHUConsolidationJobPickingSlots(final Set<PickingSlotId> pickingSlotIds)

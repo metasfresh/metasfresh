@@ -17,6 +17,9 @@ public class JsonHUConsolidationJob
 	@NonNull HUConsolidationJobId id;
 	@NonNull String shipToAddress;
 	@NonNull ImmutableList<JsonHUConsolidationJobPickingSlot> pickingSlots;
-	
+
+	/** True when the ship-to customer requires GRAI scanning (GRAIRequired != No). */
+	boolean graiScanEnabled;
+
 	@Nullable JsonHUConsolidationTarget currentTarget;
 }
