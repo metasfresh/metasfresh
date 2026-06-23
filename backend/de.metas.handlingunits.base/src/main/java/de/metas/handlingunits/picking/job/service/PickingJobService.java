@@ -441,6 +441,16 @@ public class PickingJobService implements PickingSlotListener
 			{
 				final ProductId unpickProductId = event.getUnpickProductId();
 				final BigDecimal unpickQtyBD = event.getQtyToUnpick();
+
+				// Guard: both or neither of (unpickProductId, unpickQtyBD) must be present.
+				// A malformed UNPICK event with exactly one of the two set is a client error.
+				if ((unpickProductId == null) != (unpickQtyBD == null))
+				{
+					throw new AdempiereException("UNPICK event must have either both productId and qty set, or neither; got productId="
+							+ unpickProductId + ", qty=" + unpickQtyBD)
+							.markAsUserValidationError();
+				}
+
 				final Quantity unpickQty = (unpickProductId != null && unpickQtyBD != null)
 						? resolveUnpickQty(pickingJob, unpickProductId, unpickQtyBD)
 						: null;
