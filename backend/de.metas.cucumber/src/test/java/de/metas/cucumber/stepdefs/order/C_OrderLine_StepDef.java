@@ -52,6 +52,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -102,6 +104,7 @@ import org.junit.jupiter.api.Assertions;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +130,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
@@ -663,8 +667,11 @@ public class C_OrderLine_StepDef
 		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered));
 
-		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DatePromised)
-				.ifPresent(datePromised -> softly.assertThat(orderLine.getDatePromised()).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised));
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getDatePromised(), zoneId)).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised);
+				});
 
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())
