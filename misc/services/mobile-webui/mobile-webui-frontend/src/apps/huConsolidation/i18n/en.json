@@ -15,5 +15,14 @@
   },
   "PickingSlotScreen": {
     "consolidateAll": "Consolidate All"
+  },
+  "GraiScreen": {
+    "caption": "Scan GRAI",
+    "actionButton": "Scan GRAI",
+    "count": "%(scanned)s / %(total)s GRAIs scanned",
+    "countExtra": "(%(extra)s extra)",
+    "clearAll": "Clear All",
+    "clearAllConfirm": "Remove all %(count)s GRAIs?",
+    "send": "Save"
   }
 }
