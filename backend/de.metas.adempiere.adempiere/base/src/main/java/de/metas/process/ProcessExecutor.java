@@ -247,27 +247,29 @@ public final class ProcessExecutor
 		final AdProcessId previousProcessId = s_currentProcess_ID.get();
 		final OrgId previousOrgId = s_currentOrg_ID.get();
 		Stopwatch duration = null;
+
+		//
+		// Single-instance protection: when AD_Process.IsPreventConcurrentExecution='Y', skip this run if
+		// another instance is already running (prevents overlapping runs from interfering). Done BEFORE
+		// the run setup so a skip neither locks the PInstance nor needs an asymmetric unlock.
 		IAutoCloseable singleInstanceLock = null;
+		if (adProcessDAO.isPreventConcurrentExecution(pi.getAdProcessId()))
+		{
+			final Optional<IAutoCloseable> acquired = getSingleInstanceLockService().acquireFor(pi.getAdProcessId());
+			if (!acquired.isPresent())
+			{
+				pi.getResult().setSummary("Skipped — another instance of this process is already running.");
+				logger.info("Skipping process AD_Process_ID={}: another instance is already running (IsPreventConcurrentExecution=Y)", pi.getAdProcessId());
+				return;
+			}
+			singleInstanceLock = acquired.get();
+		}
+
 		try (final IAutoCloseable ignored = switchContextIfNeeded();
 				final IAutoCloseable ignored1 = ProcessMDC.putProcessAndInstanceId(pi.getAdProcessId(), pi.getPinstanceId()))
 		{
 			s_currentProcess_ID.set(pi.getAdProcessId());
 			s_currentOrg_ID.set(pi.getOrgId());
-
-			//
-			// Single-instance protection: when AD_Process.IsPreventConcurrentExecution='Y', skip this run
-			// if another instance is already running (prevents overlapping runs from interfering).
-			if (adProcessDAO.getById(pi.getAdProcessId()).isPreventConcurrentExecution())
-			{
-				final Optional<IAutoCloseable> acquired = getSingleInstanceLockService().acquireFor(pi.getAdProcessId());
-				if (!acquired.isPresent())
-				{
-					pi.getResult().setSummary("Skipped — another instance of this process is already running.");
-					logger.info("Skipping process AD_Process_ID={}: another instance is already running (IsPreventConcurrentExecution=Y)", pi.getAdProcessId());
-					return;
-				}
-				singleInstanceLock = acquired.get();
-			}
 
 			//
 			// Check permissions

@@ -5,10 +5,10 @@ import de.metas.lock.api.ILockManager;
 import de.metas.lock.api.LockOwner;
 import de.metas.lock.exceptions.LockFailedException;
 import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessSingleInstanceLockService;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
@@ -50,7 +50,7 @@ public class ProcessSingleInstanceLockService implements IProcessSingleInstanceL
 	@Override
 	public Optional<IAutoCloseable> acquireFor(@NonNull final AdProcessId adProcessId)
 	{
-		final I_AD_Process processRecord = InterfaceWrapperHelper.load(adProcessId.getRepoId(), I_AD_Process.class);
+		final I_AD_Process processRecord = Services.get(IADProcessDAO.class).getById(adProcessId);
 		try
 		{
 			final ILock lock = lockManager.lock()
