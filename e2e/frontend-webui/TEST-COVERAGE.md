@@ -1075,6 +1075,27 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 42. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany (current fields; the spec itself is window-generic)
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US **and** de_DE, requires port 8282):
+1. Create test user in the run's language via `Backend.createMasterdata()`, login (language-independent CSS selectors)
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) so field-visibility migrations are reflected without a restart
+3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner", table C_BPartner)
+4. Assert each column in `EXPECTED_DISPLAYED_FIELDS` is present in the layout
+
+**Key Validations**:
+- **Window-generic, not e-Invoicing-specific**: `EXPECTED_DISPLAYED_FIELDS` is the extension point — future issues that make a C_BPartner column visible in window 540676 append it there. Currently holds the me03 #30508 / migration 5809330 e-Invoicing seller identifiers: `VATaxID` (USt-IdNr, BT-31/48), `TaxID` (Steuernummer, BT-32), `CommercialRegisterNumber` (Handelsregisternr, BT-30)
+- **Language-independent**: every assertion is on the C_BPartner **DB ColumnName** (language-invariant, via `field.field` in the layout JSON), never on a UI caption; the test runs in **both en_US and de_DE** to prove the login + layout flow is language-independent
+- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
+- **Scope — presence only**: editability is NOT asserted. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'`) and verified by the window-designer
+
+---
+
 ### 43. ZUGFeRD e-Invoice — archived PDF embeds factur-x.xml (`einvoice-zugferd.spec.js`)
 
 **Features Tested**:
@@ -1111,27 +1132,6 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Invoice window (167) — detail view + archive fetch
 - `PdfValidator.validateZugferdAttachment()` — new ZUGFeRD-specific assertion
 - WebUI attachments REST endpoint — archive entry download
-
----
-
-### 42. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
-
-**Features Tested**:
-- F00751: e-Invoicing Germany (current fields; the spec itself is window-generic)
-
-**Epic**: E0340: Invoicing
-
-**Workflow** (en_US **and** de_DE, requires port 8282):
-1. Create test user in the run's language via `Backend.createMasterdata()`, login (language-independent CSS selectors)
-2. Reset webui metadata cache (`GET /rest/api/cache/reset`) so field-visibility migrations are reflected without a restart
-3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner", table C_BPartner)
-4. Assert each column in `EXPECTED_DISPLAYED_FIELDS` is present in the layout
-
-**Key Validations**:
-- **Window-generic, not e-Invoicing-specific**: `EXPECTED_DISPLAYED_FIELDS` is the extension point — future issues that make a C_BPartner column visible in window 540676 append it there. Currently holds the me03 #30508 / migration 5809330 e-Invoicing seller identifiers: `VATaxID` (USt-IdNr, BT-31/48), `TaxID` (Steuernummer, BT-32), `CommercialRegisterNumber` (Handelsregisternr, BT-30)
-- **Language-independent**: every assertion is on the C_BPartner **DB ColumnName** (language-invariant, via `field.field` in the layout JSON), never on a UI caption; the test runs in **both en_US and de_DE** to prove the login + layout flow is language-independent
-- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
-- **Scope — presence only**: editability is NOT asserted. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'`) and verified by the window-designer
 
 ---
 

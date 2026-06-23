@@ -119,10 +119,10 @@ class PdfValidator {
               `  Actual: Not found in PDF`
           );
         } else {
-          console.log(`✓ Document number validated: ${documentNo}`);
+          console.log('[PASS] Document number validated:', documentNo);
         }
       } else if (skipDocNumberValidation) {
-        console.log(`⏭ Document number validation skipped (partial receipt)`);
+        console.log('[INFO] Document number validation skipped (partial receipt)');
       }
 
       // Validate customer name/code (if provided)
@@ -135,7 +135,7 @@ class PdfValidator {
               `  Actual: Not found in PDF`
           );
         } else {
-          console.log(`✓ Customer name validated: ${customerName}`);
+          console.log('[PASS] Customer name validated:', customerName);
         }
       }
 
@@ -149,7 +149,7 @@ class PdfValidator {
               `  Actual: Not found in PDF`
           );
         } else {
-          console.log(`✓ Product code validated: ${productCode}`);
+          console.log('[PASS] Product code validated:', productCode);
         }
       }
 
@@ -204,7 +204,7 @@ class PdfValidator {
                   `  Product line text: "${productLineText}"`
               );
             } else {
-              console.log(`✓ Quantity validated: ${quantity}`);
+              console.log('[PASS] Quantity validated:', quantity);
             }
           }
         }
@@ -255,10 +255,10 @@ class PdfValidator {
           throw new Error(`PDF layout validation failed:\n${errorMessages.join('\n')}`);
         }
 
-        console.log('✓ PDF layout validated:', layoutResult.summary);
+        console.log('[PASS] PDF layout validated:', layoutResult.summary);
       }
 
-      console.log(`✅ PDF validation completed successfully for ${language}`);
+      console.log('[PASS] PDF validation completed successfully for', language);
 
       // ============================================================
       // STEP 4: Attach PDF to Allure report

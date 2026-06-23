@@ -8,7 +8,7 @@ import { SalesOrderPage } from '../utils/pages/SalesOrderPage';
 import { ShipmentSchedulePage } from '../utils/pages/ShipmentSchedulePage';
 import { InvoiceCandidatePage } from '../utils/pages/InvoiceCandidatePage';
 import { InvoicePage } from '../utils/pages/InvoicePage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 import { SALES_ORDER_WINDOW_ID, SALES_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 import { PdfValidator } from '../utils/PdfValidator';
@@ -61,6 +61,7 @@ test.describe('ZUGFeRD e-Invoice', () => {
     allure.tag('F00751');
     allure.story('ZUGFeRD invoice: archived PDF embeds factur-x.xml + intact content');
     allure.severity('critical');
+    allure.parameter('Language', 'de_DE');
 
     allure.description(`
 ## E0340: Invoicing
@@ -229,9 +230,6 @@ with an embedded factur-x.xml (Factur-X / ZUGFeRD CII XML) and intact invoice co
     await InvoiceCandidatePage.expectVisibleForSalesOrder();
     await InvoiceCandidatePage.createInvoiceForSalesOrder();
     console.log('[INFO] Invoice created from candidates');
-
-    // Wait for invoice async processing + ZUGFeRD assembly
-    await page.waitForTimeout(8000);
 
     // === NAVIGATE TO INVOICE ===
     await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${recordId}`);
