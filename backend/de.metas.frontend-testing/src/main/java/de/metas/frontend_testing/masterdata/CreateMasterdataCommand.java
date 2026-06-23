@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
+import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -74,6 +76,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -96,6 +99,9 @@ public class CreateMasterdataCommand
 
 		// Apply sysconfigs early (before any masterdata creation)
 		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+
+		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
+		applyAdProcessFlags();
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
@@ -576,6 +582,22 @@ public class CreateMasterdataCommand
 				.sysconfigs(request.getSysconfigs())
 				.build()
 				.execute();
+	}
+
+	private void applyAdProcessFlags()
+	{
+		final List<JsonSetAdProcessFlagsRequest> requests = request.getAdProcessFlags();
+		if (requests == null || requests.isEmpty())
+		{
+			return;
+		}
+		for (final JsonSetAdProcessFlagsRequest flagRequest : requests)
+		{
+			SetAdProcessFlagsCommand.builder()
+					.request(flagRequest)
+					.build()
+					.execute();
+		}
 	}
 
 }

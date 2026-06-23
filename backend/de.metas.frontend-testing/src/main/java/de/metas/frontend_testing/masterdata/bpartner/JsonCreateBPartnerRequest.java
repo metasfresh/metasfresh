@@ -28,6 +28,31 @@ public class JsonCreateBPartnerRequest
 	@Nullable GRAIRequired graiRequired;
 
 	/**
+	 * Sets {@code C_BPartner.IsEInvoiceRecipeint}.
+	 * If null, the field is left unchanged (defaults to false for new records).
+	 */
+	@Nullable Boolean isEInvoiceRecipeint;
+
+	/**
+	 * Sets {@code C_BPartner.EInvoiceType} (e.g. {@code "Z"} for ZUGFeRD / Factur-X).
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String eInvoiceType;
+
+	/**
+	 * Sets {@code C_BPartner.EInvoice_BuyerReference} (BuyerReference / Leitweg-ID in EN16931 CII).
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String eInvoiceBuyerReference;
+
+	/**
+	 * Sets {@code C_BPartner.VATaxID} (VAT identification number, e.g. {@code "DE123456789"}).
+	 * Required by EN16931 for both seller (resolved via org-bpartner) and buyer.
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String vatTaxId;
+
+	/**
 	 * Contacts (AD_User records) to create for this business partner.
 	 * Each contact is linked to the business partner via C_BPartner_ID.
 	 */

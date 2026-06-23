@@ -122,6 +122,23 @@ public class CreateBPartnerCommand
 			bpartner.setGRAIRequired(graiRequired.getCode());
 		}
 
+		if (request.getIsEInvoiceRecipeint() != null)
+		{
+			bpartner.setIsEInvoiceRecipeint(request.getIsEInvoiceRecipeint());
+		}
+		if (request.getEInvoiceType() != null)
+		{
+			bpartner.setEInvoiceType(request.getEInvoiceType());
+		}
+		if (request.getEInvoiceBuyerReference() != null)
+		{
+			bpartner.setEInvoice_BuyerReference(request.getEInvoiceBuyerReference());
+		}
+		if (request.getVatTaxId() != null)
+		{
+			bpartner.setVATaxID(request.getVatTaxId());
+		}
+
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())
 		{
