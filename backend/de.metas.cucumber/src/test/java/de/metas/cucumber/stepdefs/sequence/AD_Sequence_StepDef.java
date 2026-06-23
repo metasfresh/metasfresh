@@ -64,7 +64,9 @@ public class AD_Sequence_StepDef
 	@And("metasfresh contains AD_Sequence:")
 	public void createOrUpdate_AD_Sequence(@NonNull final DataTable dataTable)
 	{
-		DataTableRows.of(dataTable).forEach(this::createOrUpdateAdSequence);
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_AD_Sequence.COLUMNNAME_AD_Sequence_ID)
+				.forEach(this::createOrUpdateAdSequence);
 	}
 
 	private void createOrUpdateAdSequence(@NonNull final DataTableRow row)
@@ -99,6 +101,6 @@ public class AD_Sequence_StepDef
 
 		saveRecord(seqRecord);
 
-		row.getAsOptionalIdentifier().ifPresent(identifier -> adSequenceTable.putOrReplace(identifier, seqRecord));
+		row.getAsIdentifier(I_AD_Sequence.COLUMNNAME_AD_Sequence_ID).putOrReplace(adSequenceTable, seqRecord);
 	}
 }
