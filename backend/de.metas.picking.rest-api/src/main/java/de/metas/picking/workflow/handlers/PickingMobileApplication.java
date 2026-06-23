@@ -723,6 +723,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.build();
 	}
 
+	@NonNull
 	public JsonUnpickResolveResponse resolveUnpick(
 			@NonNull final JsonUnpickResolveRequest request,
 			@NonNull final UserId callerId)

@@ -18,7 +18,7 @@ public class PickingJobUnpickResolveResult
 	@NonNull ProductId productId;
 	@NonNull String productName;
 
-	/** Total qty currently packed for this product across all steps of the job; null if nothing is packed */
+	/** Total qty currently packed for this product across all steps of the job; null if no packed-qty record exists (a packed qty of exactly zero is non-null and makes {@link #isUnpickable()} return false) */
 	@Nullable Quantity packedQty;
 
 	/** true when packedQty is not null and > 0 */

@@ -940,6 +940,9 @@ public class PickingJobService implements PickingSlotListener
 	 * Resolves a unitless qty BigDecimal to a Quantity by looking up the UOM of the first packed HU
 	 * for the given product in the picking job. This is the UOM that {@link de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand}
 	 * expects for the subset-unpick path.
+	 * <p>Assumes all packed pick-froms for the product share a single UOM (the normal case). If they
+	 * diverge, the UOM guard in {@code PickingJobUnPickCommand.buildSubsetUnpickInstructions} rejects
+	 * the mismatch rather than silently mixing units.
 	 */
 	@NonNull
 	private static Quantity resolveUnpickQty(
