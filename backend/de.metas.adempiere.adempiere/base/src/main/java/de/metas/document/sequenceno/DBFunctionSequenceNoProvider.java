@@ -22,19 +22,26 @@
 
 package de.metas.document.sequenceno;
 
+import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.IPOReferenceAware;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentSequenceInfo;
+import de.metas.logging.LogManager;
 import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.DB;
 import org.compiere.util.Evaluatee;
+import org.compiere.util.SQLValueStringResult;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.regex.Pattern;
 
 /**
@@ -51,6 +58,8 @@ import java.util.regex.Pattern;
  */
 public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 {
+	private static final Logger logger = LogManager.getLogger(DBFunctionSequenceNoProvider.class);
+
 	// Per-sequence key: de.metas.document.seqNo.DBFunctionSequenceNoProvider.<AD_Sequence.Name>.dbFunctionName
 	private static final String SYSCONFIG_PREFIX = "de.metas.document.seqNo.DBFunctionSequenceNoProvider.";
 	private static final String SYSCONFIG_SUFFIX = ".dbFunctionName";
@@ -108,8 +117,19 @@ public class DBFunctionSequenceNoProvider implements CustomSequenceNoProvider
 		Check.assume(recordId > 0, "context must carry a positive {}", IPOReferenceAware.COLUMNNAME_Record_ID);
 
 		final Timestamp generatedAt = Timestamp.from(SystemTime.asInstant());
-		final String result = DB.getSQLValueStringEx(ITrx.TRXNAME_None,
+		final SQLValueStringResult sqlResult = DB.getSQLValueStringWithWarningEx(ITrx.TRXNAME_None,
 				"SELECT " + functionNameNorm + "(?, ?)", recordId, generatedAt);
+
+		// Surface any RAISE NOTICE the DB function emitted (PostgreSQL delivers them as JDBC SQLWarnings) to the
+		// ambient Loggable, so they are visible when debugging - the same notice output SQL-type AD_Processes log.
+		final List<String> noticeMessages = sqlResult.getWarningMessages();
+		if (noticeMessages != null && !noticeMessages.isEmpty())
+		{
+			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+			noticeMessages.forEach(noticeMessage -> loggable.addLog("{}", noticeMessage));
+		}
+
+		final String result = sqlResult.getReturnedValue();
 		Check.assumeNotEmpty(result, "DB function {} returned empty for {}={}",
 				functionNameNorm, IPOReferenceAware.COLUMNNAME_Record_ID, recordId);
 		return result;
