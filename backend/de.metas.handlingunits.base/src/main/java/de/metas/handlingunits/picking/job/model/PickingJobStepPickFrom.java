@@ -86,4 +86,18 @@ public class PickingJobStepPickFrom
 	{
 		return withPickedTo(pickedTo != null ? pickedTo.removing(unpickEvent.getUnpickedHUs()) : null);
 	}
+
+	/**
+	 * Partial-unpick variant: the {@code originalHuId} HU was split — only the split-off portion
+	 * is being unpicked. The original HU remains in the picked list with its qty reduced to
+	 * {@code remainingQtyInOriginalHu}.
+	 */
+	public PickingJobStepPickFrom withPartialUnpickedEvent(
+			@NonNull final HuId originalHuId,
+			@NonNull final Quantity remainingQtyInOriginalHu)
+	{
+		return withPickedTo(pickedTo != null
+				? pickedTo.withReducedQtyForHU(originalHuId, remainingQtyInOriginalHu)
+				: null);
+	}
 }

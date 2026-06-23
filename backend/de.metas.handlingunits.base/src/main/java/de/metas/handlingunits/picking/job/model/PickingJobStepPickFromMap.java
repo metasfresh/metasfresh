@@ -99,6 +99,14 @@ public class PickingJobStepPickFromMap
 		return withChangedPickFrom(key, pickFrom -> pickFrom.withUnPickedEvent(unpicked));
 	}
 
+	public PickingJobStepPickFromMap reduceWithPartialUnpickEvent(
+			@NonNull final PickingJobStepPickFromKey key,
+			@NonNull final HuId originalHuId,
+			@NonNull final Quantity remainingQtyInOriginalHu)
+	{
+		return withChangedPickFrom(key, pickFrom -> pickFrom.withPartialUnpickedEvent(originalHuId, remainingQtyInOriginalHu));
+	}
+
 	private PickingJobStepPickFromMap withChangedPickFrom(
 			@NonNull PickingJobStepPickFromKey key,
 			@NonNull UnaryOperator<PickingJobStepPickFrom> pickFromMapper)

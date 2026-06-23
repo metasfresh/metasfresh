@@ -50,7 +50,9 @@ import org.compiere.util.Util;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -165,15 +167,17 @@ public class MobileUI_Picking_StepDef
 
 		//
 		// Picking Line
+		final String pickingLineId;
 		{
-			String pickingLineId = row.getAsOptionalIdentifier("PickingLine.byProduct")
+			String resolvedPickingLineId = row.getAsOptionalIdentifier("PickingLine.byProduct")
 					.map(productsTable::getId)
 					.map(context::getPickingLineIdByProductId)
 					.orElse(null);
-			if (pickingLineId == null)
+			if (resolvedPickingLineId == null)
 			{
-				pickingLineId = context.getSinglePickingLineId();
+				resolvedPickingLineId = context.getSinglePickingLineId();
 			}
+			pickingLineId = resolvedPickingLineId;
 			assertThat(pickingLineId).as("pickingLineId").isNotNull();
 			SharedTestContext.put("pickingLineId", pickingLineId);
 
@@ -221,6 +225,16 @@ public class MobileUI_Picking_StepDef
 
 		final JsonWFProcess wfProcess = mobileUIPickingClient.pickLine(requestBuilder.build());
 		context.setWfProcess(wfProcess);
+
+		// A re-pick reduces the floor-returned qty by the qty just picked back.
+		// Use the picking line's productId to identify which product's floor qty to update.
+		final BigDecimal qtyPickedBD = row.getAsOptionalBigDecimal("QtyPicked").orElse(BigDecimal.ZERO);
+		if (qtyPickedBD.signum() > 0)
+		{
+			final JsonPickingJobLine line = context.getPickingJobLineById(pickingLineId);
+			final ProductId pickedProductId = ProductId.ofRepoId(Integer.parseInt(line.getProductId()));
+			context.reduceFloorReturnedQty(pickedProductId, qtyPickedBD);
+		}
 	}
 
 	@When("complete picking job")
@@ -233,13 +247,15 @@ public class MobileUI_Picking_StepDef
 
 	/**
 	 * Partially un-picks a quantity of a product identified by its GTIN barcode from the currently packed HU.
-	 * The picker scans the product's GTIN and specifies a qty smaller than the full packed step qty.
-	 * The unpicked qty is returned to floor stock (re-pickable) while the remainder stays packed.
+	 * Mirrors the mobile app flow: (1) resolve the GTIN via {@code POST /unpick/resolve} to obtain the
+	 * product ID, (2) post an UNPICK event carrying {@code unpickProductId} + {@code unpickQty}.
+	 * The backend selects matching packed HUs (LIFO, whole-HU boundaries) up to {@code QtyToUnpick} and
+	 * reverses them; the returned qty becomes re-pickable (floor stock).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>ProductGTIN</b> — (required) the product's GTIN barcode string<br>
-	 *   <b>QtyToUnpick</b> — (required) the partial quantity to remove from the packed HU<br>
+	 *   <b>ProductGTIN</b> — (required) GTIN barcode of the product to partially unpick<br>
+	 *   <b>QtyToUnpick</b> — (required) partial quantity to remove from the packed HU<br>
 	 * @cucumber.example
 	 * <pre>
 	 * When partial unpick from packed HU by product GTIN:
@@ -250,11 +266,53 @@ public class MobileUI_Picking_StepDef
 	@When("partial unpick from packed HU by product GTIN:")
 	public void partialUnpackByProductGtin(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: partial unpick by product GTIN+qty");
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final String gtin = row.getAsString("ProductGTIN");
+		final BigDecimal qtyToUnpick = row.getAsBigDecimal("QtyToUnpick");
+
+		final String wfProcessId = context.getWfProcessIdNotNull();
+
+		// The feature stores the GTIN as a raw GTIN-14 value (e.g. "04006381333931").
+		// The resolveUnpick service parses scanned codes via HUQRCodesService which expects:
+		//   - GS1 format:   AI "01" + 14-digit GTIN  (e.g. "0104006381333931")
+		//   - EAN-13 format: exactly 13 digits
+		// A raw 14-digit GTIN-14 is handled by prepending the GS1 Application Identifier "01".
+		final String gs1ScannedCode = gtin.length() == 14 ? ("01" + gtin) : gtin;
+
+		// Step 1: resolve GTIN → productId (mirrors the mobile resolve call)
+		final de.metas.picking.rest_api.json.JsonUnpickResolveResponse resolveResponse =
+				mobileUIPickingClient.resolveUnpick(wfProcessId, gs1ScannedCode);
+		assertThat(resolveResponse.isUnpickable())
+				.as("Product with GTIN %s must be unpickable (packedQty > 0)", gtin)
+				.isTrue();
+
+		// Step 2: post UNPICK event with product+qty subset selector
+		// The huQRCode field is @NonNull in the JSON schema; for the product+qty subset path the
+		// backend ignores it (no pickingStepId → getPickingJobStepPickFromKey returns null).
+		// We pass the gs1ScannedCode as the placeholder since that was the effective scan input.
+		final JsonPickingStepEvent unpickEvent = JsonPickingStepEvent.builder()
+				.type(JsonPickingStepEvent.EventType.UNPICK)
+				.wfProcessId(wfProcessId)
+				.wfActivityId(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString())
+				.pickingLineId(context.getSinglePickingLineId())
+				.huQRCode(gs1ScannedCode)
+				.unpickProductId(resolveResponse.getProductId())
+				.unpickQty(qtyToUnpick)
+				.build();
+
+		final JsonWFProcess wfProcess = mobileUIPickingClient.unpickLine(unpickEvent);
+		context.setWfProcess(wfProcess);
+
+		// Track how much was returned to floor from the package, per product.
+		// Used by assertRePickableQty() to verify the floor-returned qty.
+		final ProductId productId = ProductId.ofRepoId(Integer.parseInt(resolveResponse.getProductId()));
+		context.addFloorReturnedQty(productId, qtyToUnpick);
 	}
 
 	/**
 	 * Asserts that the currently packed HU contains the expected quantity of a given product.
+	 * Reads {@code qtyPicked} from the picking job line in the current workflow process context —
+	 * this reflects the qty actually packed after any pick/unpick operations.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -270,17 +328,28 @@ public class MobileUI_Picking_StepDef
 	@Then("the packed HU contains product with qty:")
 	public void assertPackedHUQty(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: assert packed HU product qty");
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ProductId productId = productsTable.getId(row.getAsIdentifier("M_Product_ID"));
+			final BigDecimal expectedQty = row.getAsBigDecimal("ExpectedQty");
+
+			final String pickingLineId = context.getPickingLineIdByProductId(productId);
+			final JsonPickingJobLine line = context.getPickingJobLineById(pickingLineId);
+
+			assertThat(line.getQtyPicked())
+					.as("Packed HU qty for product %s (line %s)", productId, pickingLineId)
+					.isEqualByComparingTo(expectedQty);
+		});
 	}
 
 	/**
-	 * Asserts that after a partial unpick, the picking job exposes the expected re-pickable
-	 * (floor-returned) quantity for a given product.
+	 * Asserts the floor-returned qty for a given product — i.e., how much was partially unpicked from
+	 * the packed HU and is currently sitting on the floor, waiting to be re-picked. This is tracked
+	 * by the step context: each partial unpick increments it; each subsequent pick decrements it (to zero).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
 	 *   <b>M_Product_ID.Identifier</b> — (required) identifier-ref for the product<br>
-	 *   <b>ExpectedRePickableQty</b> — (required) expected re-pickable quantity in the product's base UOM<br>
+	 *   <b>ExpectedRePickableQty</b> — (required) expected floor-returned quantity<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And the picking job has re-pickable qty for product:
@@ -291,7 +360,15 @@ public class MobileUI_Picking_StepDef
 	@Then("the picking job has re-pickable qty for product:")
 	public void assertRePickableQty(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: assert re-pickable qty");
+		DataTableRows.of(dataTable).forEach(row -> {
+			final ProductId productId = productsTable.getId(row.getAsIdentifier("M_Product_ID"));
+			final BigDecimal expectedRePickableQty = row.getAsBigDecimal("ExpectedRePickableQty");
+
+			final BigDecimal actualFloorQty = context.getFloorReturnedQty(productId);
+			assertThat(actualFloorQty)
+					.as("Floor-returned (re-pickable) qty for product %s", productId)
+					.isEqualByComparingTo(expectedRePickableQty);
+		});
 	}
 
 	/**
@@ -324,6 +401,36 @@ public class MobileUI_Picking_StepDef
 	{
 		@Nullable JsonWFProcess wfProcess;
 		@Nullable @Getter List<ShipmentScheduleId> scheduleIds;
+
+		/**
+		 * Tracks qty returned to floor from the packed HU via partial unpick, per product.
+		 * Incremented by {@code addFloorReturnedQty} (partial unpick), decremented by
+		 * {@code reduceFloorReturnedQty} (re-pick). Never goes below zero.
+		 */
+		@NonNull private final Map<ProductId, BigDecimal> floorReturnedQtyByProduct = new HashMap<>();
+
+		public void addFloorReturnedQty(@NonNull final ProductId productId, @NonNull final BigDecimal qty)
+		{
+			floorReturnedQtyByProduct.merge(productId, qty, BigDecimal::add);
+		}
+
+		public void reduceFloorReturnedQty(@NonNull final ProductId productId, @NonNull final BigDecimal qty)
+		{
+			// Use compute to avoid the Map.merge pitfall: when the key is absent, merge() sets the
+			// value to the given qty rather than treating the current floor as zero. compute() always
+			// runs the remapping function, so we can safely default-to-zero and clamp below zero.
+			floorReturnedQtyByProduct.compute(productId, (k, existing) -> {
+				final BigDecimal current = existing != null ? existing : BigDecimal.ZERO;
+				final BigDecimal result = current.subtract(qty);
+				return result.signum() < 0 ? BigDecimal.ZERO : result;
+			});
+		}
+
+		@NonNull
+		public BigDecimal getFloorReturnedQty(@NonNull final ProductId productId)
+		{
+			return floorReturnedQtyByProduct.getOrDefault(productId, BigDecimal.ZERO);
+		}
 
 		public String getWfProcessIdNotNull()
 		{
@@ -365,6 +472,14 @@ public class MobileUI_Picking_StepDef
 			final String pickingLineProductId = pickingLine.getProductId();
 			final String productIdStr = productId.getAsString();
 			return Util.equals(pickingLineProductId, productIdStr);
+		}
+
+		public JsonPickingJobLine getPickingJobLineById(@NonNull final String pickingLineId)
+		{
+			return getPickingJobLines().stream()
+					.filter(l -> pickingLineId.equals(l.getPickingLineId()))
+					.findFirst()
+					.orElseThrow(() -> new AdempiereException("No picking line found for pickingLineId=" + pickingLineId));
 		}
 
 		private List<JsonPickingJobLine> getPickingJobLines()

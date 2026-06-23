@@ -298,6 +298,10 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_Description).ifPresent(productRecord::setDescription);
 
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_GTIN).ifPresent(value -> productRecord.setGTIN(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_UPC).ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode).ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
+
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_DepositType)
 				.ifPresent(value -> productRecord.setDepositType(nullToken2Null(value)));
 

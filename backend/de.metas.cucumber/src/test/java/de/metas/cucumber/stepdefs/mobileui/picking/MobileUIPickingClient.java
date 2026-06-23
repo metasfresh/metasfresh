@@ -13,6 +13,8 @@ import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.util.Check;
@@ -115,6 +117,30 @@ public class MobileUIPickingClient
 	public JsonWFProcess pickLine(@NonNull final JsonPickingStepEvent request)
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
+		return pickingRestController.postEvent(request);
+	}
+
+	/**
+	 * Resolves a scanned product barcode (GTIN/EAN13) to product info + total packed qty.
+	 * Read-only; does not mutate any state.
+	 */
+	public JsonUnpickResolveResponse resolveUnpick(@NonNull final String wfProcessId, @NonNull final String scannedCode)
+	{
+		return pickingRestController.resolveUnpick(JsonUnpickResolveRequest.builder()
+				.wfProcessId(wfProcessId)
+				.scannedCode(scannedCode)
+				.build());
+	}
+
+	/**
+	 * Posts an UNPICK event for a partial-unpick-by-product operation.
+	 * The {@code huQRCode} field is required by the JSON schema but is not used by the backend
+	 * for the product+qty subset path (no {@code pickingStepId} → no HU QR-code lookup).
+	 * We pass the scanned GTIN as a semantically correct placeholder.
+	 */
+	public JsonWFProcess unpickLine(@NonNull final JsonPickingStepEvent request)
+	{
+		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.UNPICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);
 	}
 
