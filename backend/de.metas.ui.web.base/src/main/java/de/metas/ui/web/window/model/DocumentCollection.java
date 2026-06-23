@@ -617,12 +617,23 @@ public class DocumentCollection
 	 *
 	 * <p>Pure boolean signature on purpose so it can be unit-tested without needing to mock
 	 * {@link Document} (which is final and has a non-trivial constructor).
+	 *
+	 * @param rootHasUnsavedNewIncludedDocument the cached root owns an unsaved, new, in-memory
+	 *                                           included document whose work would be lost on eviction
 	 */
 	static boolean shouldInvalidateRootOnChildInvalidation(
 			final boolean callerRequestedFullInvalidation,
 			final boolean rootHasSaveError,
-			final boolean rootValidStatusIsValid)
+			final boolean rootValidStatusIsValid,
+			final boolean rootHasUnsavedNewIncludedDocument)
 	{
+		// Never evict a root that owns an unsaved, new, in-memory included document:
+		// eviction would discard the user's in-flight work and cause a 404 (me03 #29778).
+		// Mirrors the existing new-ROOT protection (`!rootDocument.isNew()` at the call site).
+		if (rootHasUnsavedNewIncludedDocument)
+		{
+			return false;
+		}
 		if (callerRequestedFullInvalidation)
 		{
 			return true;
@@ -683,7 +694,8 @@ public class DocumentCollection
 				if (shouldInvalidateRootOnChildInvalidation(
 						documentToInvalidate.isInvalidateDocument(),
 						rootDocument.getSaveStatus().isError(),
-						rootDocument.getValidStatus().isValid())
+						rootDocument.getValidStatus().isValid(),
+						false) // rootHasUnsavedNewIncludedDocument is wired at this call site in a follow-up commit
 						&& !rootDocument.isNew())
 				{
 					rootDocuments.invalidate(rootDocumentKey);
