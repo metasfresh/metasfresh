@@ -25,6 +25,14 @@ public class JsonCreateHURequest
 	@Nullable String bestBeforeDate;
 	@Nullable String externalBarcode;
 
+	/**
+	 * When set, the created HU is added to the picking slot queue identified by this identifier.
+	 * This bypasses the mobile picking app and therefore no GRAI is stamped on the HU —
+	 * use this to simulate the "cross-dock" scenario where a TU enters a picking slot without
+	 * passing through the GRAI-scanning mobile pick, so the HU Consolidation GRAI gate fires.
+	 */
+	@Nullable Identifier pickingSlot;
+
 	@JsonIgnore
 	public boolean isGenerateHUQRCode() {return generateHUQRCode != null ? generateHUQRCode : true;}
 

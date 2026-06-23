@@ -17,6 +17,11 @@
  * masterdata.packingInstructions.<id>.grai — no DB access, no hardcoded customer data.
  *
  * GRAI canonical format: "{companyPrefix}.{assetType}.{serial}" — 7-char companyPrefix.
+ *
+ * Source TUs are placed directly into the picking slot (bypassing the mobile picking app)
+ * via the pickingSlot field on the handlingUnit request.  This means no GRAI is stamped on
+ * the TUs during picking — exactly the "cross-dock" scenario that the consolidation GRAI gate
+ * is designed to catch.
  */
 
 import { test } from '../../../playwright.config';
@@ -27,9 +32,6 @@ import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScre
 import { HUConsolidationJobsListScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobsListScreen';
 import { HUConsolidationJobScreen } from '../../utils/screens/huConsolidation/HUConsolidationJobScreen';
 import { HUConsolidationGraiScreen } from '../../utils/screens/huConsolidation/HUConsolidationGraiScreen';
-import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
-import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
-import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 // ─── Masterdata helpers ───────────────────────────────────────────────────────
 
 /**
@@ -40,8 +42,11 @@ import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScre
  *   which shows the "GRAI scannen" button and gates the Complete button.
  * - graiMapping:true on PI_P1 makes the API generate a unique, scannable GRAI for that TU PI
  *   and return it as masterdata.packingInstructions.PI_P1.grai.
- * - The picking config matches the existing consolidation spec so the pick→slot→consolidate
- *   flow is identical; only the bpartner differs.
+ * - PI_P1 (with lu:'LU') is used only as the consolidation target LU (setTargetLU).
+ * - Source TUs (PI_TU1/PI_TU2, no lu) are placed directly into slot1 via pickingSlot —
+ *   bypassing the mobile picking app so no GRAI is stamped on them during picking.
+ * - The picking slot is pre-reserved for BP1 (bpartnerLocation:'BP1') so the consolidation
+ *   launcher can find a job for BP1 from the non-empty slot.
  */
 const createMasterdataGraiRequired = async () => {
     return await Backend.createMasterdata({
@@ -60,31 +65,23 @@ const createMasterdataGraiRequired = async () => {
             },
             bpartners: { BP1: { graiRequired: 'Y' } },
             warehouses: { wh: {} },
-            pickingSlots: { slot1: {} },
+            pickingSlots: { slot1: { bpartnerLocation: 'BP1' } },
             products: {
                 P1: { prices: [{ price: 1 }] },
                 P2: { prices: [{ price: 1 }] },
             },
             packingInstructions: {
-                // graiMapping: true → unique GRAI generated + M_HU_PI_GRAI mapping inserted.
-                // The returned GRAI is accessible at masterdata.packingInstructions.PI_P1.grai.
+                // PI_P1: target LU used for setTargetLU + graiMapping for the GRAI to scan.
                 PI_P1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
-                PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
+                // TU-only PIs for source HUs placed directly into the picking slot.
+                PI_TU1: { tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
+                PI_TU2: { tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
-                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_P1' },
-                HU2: { product: 'P2', warehouse: 'wh', packingInstructions: 'PI_P2' },
-            },
-            salesOrders: {
-                SO1: {
-                    bpartner: 'BP1',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [
-                        { product: 'P1', qty: 12, piItemProduct: 'TU1' },
-                        { product: 'P2', qty: 15, piItemProduct: 'TU2' },
-                    ],
-                },
+                // pickingSlot:'slot1' places the TU directly into the slot queue without the
+                // mobile picking app, so no GRAI is stamped — triggering the consolidation gate.
+                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_TU1', pickingSlot: 'slot1' },
+                HU2: { product: 'P2', warehouse: 'wh', packingInstructions: 'PI_TU2', pickingSlot: 'slot1' },
             },
         },
     });
@@ -111,53 +108,23 @@ const createMasterdataNoGrai = async () => {
             },
             bpartners: { BP_NOGRAI: { graiRequired: 'N' } },
             warehouses: { wh: {} },
-            pickingSlots: { slot1: {} },
+            pickingSlots: { slot1: { bpartnerLocation: 'BP_NOGRAI' } },
             products: {
                 P1: { prices: [{ price: 1 }] },
                 P2: { prices: [{ price: 1 }] },
             },
             packingInstructions: {
                 PI_P1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
-                PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
+                PI_TU1: { tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
+                PI_TU2: { tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
-                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_P1' },
-                HU2: { product: 'P2', warehouse: 'wh', packingInstructions: 'PI_P2' },
-            },
-            salesOrders: {
-                SO1: {
-                    bpartner: 'BP_NOGRAI',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [
-                        { product: 'P1', qty: 12, piItemProduct: 'TU1' },
-                        { product: 'P2', qty: 15, piItemProduct: 'TU2' },
-                    ],
-                },
+                HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_TU1', pickingSlot: 'slot1' },
+                HU2: { product: 'P2', warehouse: 'wh', packingInstructions: 'PI_TU2', pickingSlot: 'slot1' },
             },
         },
     });
 };
-
-// ─── Shared sub-flow: pick TUs into the picking slot ─────────────────────────
-
-/**
- * Picks HU1 and HU2 into slot1 using the picking application, then navigates
- * back to the launcher so the consolidation application can be started next.
- *
- * Mirrors the pickHUsToPickingSlot helper in hu_consolidation.spec.js.
- */
-const pickHUsToPickingSlot = async ({ masterdata }) => await test.step('Pick HUs into picking slot', async () => {
-    await ApplicationsListScreen.startApplication('picking');
-    await PickingJobsListScreen.waitForScreen();
-    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen' });
-    await PickLineScanScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3', expectGoBackToPickingJob: false });
-    await PickLineScanScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, expectQtyEntered: '3' });
-    await PickingJobScreen.complete();
-    await PickingJobsListScreen.goBack();
-});
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
 
@@ -175,10 +142,7 @@ test('GRAIRequired=Y — Complete blocked until GRAIs scanned, then succeeds', a
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    await pickHUsToPickingSlot({ masterdata });
-
     await test.step('Open HU Consolidation job', async () => {
-        await ApplicationsListScreen.expectVisible();
         await ApplicationsListScreen.startApplication('huConsolidation');
         await HUConsolidationJobsListScreen.waitForScreen();
         await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
@@ -242,10 +206,7 @@ test('GRAIRequired=No — no GRAI step, Complete proceeds directly', async ({ pa
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    await pickHUsToPickingSlot({ masterdata });
-
     await test.step('Open HU Consolidation job and set target LU', async () => {
-        await ApplicationsListScreen.expectVisible();
         await ApplicationsListScreen.startApplication('huConsolidation');
         await HUConsolidationJobsListScreen.waitForScreen();
         await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP_NOGRAI.bpartnerLocationId });

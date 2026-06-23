@@ -22,9 +22,11 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
+import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -51,6 +53,7 @@ public class CreateHUCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
+	@NonNull private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final SourceHUsService sourceHUsService;
@@ -104,6 +107,12 @@ public class CreateHUCommand
 		if (request.isSourceHU())
 		{
 			sourceHUsService.addSourceHuMarker(huId);
+		}
+
+		if (request.getPickingSlot() != null)
+		{
+			final PickingSlotId pickingSlotId = context.getId(request.getPickingSlot(), PickingSlotId.class);
+			huPickingSlotBL.addToPickingSlotQueue(pickingSlotId, huId);
 		}
 
 		return JsonCreateHUResponse.builder()
