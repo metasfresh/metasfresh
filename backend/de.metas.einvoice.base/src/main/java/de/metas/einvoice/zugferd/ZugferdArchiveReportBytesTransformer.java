@@ -73,8 +73,7 @@ public class ZugferdArchiveReportBytesTransformer implements IArchiveReportBytes
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
-	@NonNull
-	public byte[] transform(@NonNull final TableRecordReference recordRef, @NonNull final byte[] reportBytes)
+	public byte[] transform(@NonNull final TableRecordReference recordRef, final byte[] reportBytes)
 	{
 		// Fast-path: only C_Invoice is eligible
 		if (!I_C_Invoice.Table_Name.equals(recordRef.getTableName()))

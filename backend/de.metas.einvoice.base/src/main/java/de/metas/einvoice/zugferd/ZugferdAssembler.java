@@ -66,7 +66,7 @@ public class ZugferdAssembler
 	 * @return assembled ZUGFeRD/Factur-X PDF bytes
 	 * @throws IOException if the PDF cannot be parsed or the export fails
 	 */
-	public byte[] embed(@NonNull final byte[] pdfA3, @NonNull final String ciiXml) throws IOException
+	public byte[] embed(final byte[] pdfA3, @NonNull final String ciiXml) throws IOException
 	{
 		final byte[] ciiXmlBytes = ciiXml.getBytes(StandardCharsets.UTF_8);
 

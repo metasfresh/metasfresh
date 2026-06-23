@@ -81,8 +81,7 @@ class DefaultModelArchiverSpiTransformerTest
 		final List<Integer> capturedByteLengths = new ArrayList<>();
 
 		@Override
-		@NonNull
-		public byte[] transform(@NonNull final TableRecordReference recordRef, @NonNull final byte[] reportBytes)
+		public byte[] transform(@NonNull final TableRecordReference recordRef, final byte[] reportBytes)
 		{
 			capturedRefs.add(recordRef);
 			capturedByteLengths.add(reportBytes.length);

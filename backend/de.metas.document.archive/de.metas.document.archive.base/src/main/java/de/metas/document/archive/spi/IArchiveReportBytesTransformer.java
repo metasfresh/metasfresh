@@ -67,6 +67,5 @@ public interface IArchiveReportBytesTransformer
 	 *         Returning a new array with identical content is treated as a transformation and
 	 *         results in unnecessary resource allocation.
 	 */
-	@NonNull
-	byte[] transform(@NonNull TableRecordReference recordRef, @NonNull byte[] reportBytes);
+	byte[] transform(@NonNull TableRecordReference recordRef, byte[] reportBytes);
 }
