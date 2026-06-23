@@ -1,8 +1,8 @@
 /*
  * #%L
- * metasfresh-material-cockpit
+ * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2025 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,22 +20,5 @@
  * #L%
  */
 
-package de.metas.material.cockpit.availableforsales;
-
-import de.metas.security.RoleId;
-import de.metas.user.UserId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class EnqueueAvailableForSalesRequest
-{
-	@NonNull AvailableForSalesQuery availableForSalesQuery;
-
-	@Nullable UserId contextUserId;
-	@Nullable RoleId contextRoleId;
-}
+-- adding "..OR AD_Process.Value ILIKE '%HU_QRCode%'"
+UPDATE AD_Val_Rule SET Code='AD_Process.AD_Process_ID IN (540370, 540412, 540413, 540414, 540415, 540416, 540933, 541195, 584694, 585387) OR AD_Process.Value ILIKE ''HU_Label_%'' OR AD_Process.Value ILIKE ''%HU_QRCode%''', updatedby=100, updated='2026-06-16 00:00' where AD_Val_Rule_ID=540604;        
