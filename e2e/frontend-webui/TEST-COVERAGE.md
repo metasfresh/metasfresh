@@ -129,6 +129,39 @@ npm run test:report
 - Invoice Candidate window
 - Invoice window
 
+#### 4b. ZUGFeRD e-Invoice variant (same file)
+**Status**: CI-validated (requires port 8282)
+**Duration**: ~90 seconds (ZUGFeRD assembly adds latency)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (de_DE, single language — ZUGFeRD assertion is binary):
+1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured
+   as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner
+   (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`);
+   `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`;
+   `sysconfigs` enable mock report service.
+2. Login, create + complete Sales Order (qty=1) — reuses SalesOrderPage page-object flow.
+3. Navigate to Shipment Schedule (Alt+6), create shipment (ShipmentSchedulePage).
+4. Navigate to Invoice Candidates (Alt+6), create invoice (InvoiceCandidatePage).
+5. Navigate to completed Invoice (Alt+6), open detail view (InvoicePage).
+6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30s) for an `ARR-*` entry.
+7. Download the archived PDF via `GET …/attachments/ARR-{id}`.
+8. Assert `factur-x.xml` embedded (`PdfValidator.validateZugferdAttachment()`).
+9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
+
+**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive
+entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint —
+it is the only copy that contains the embedded factur-x.xml.
+
+**Components Tested**:
+- All page objects from the O2C flow (SalesOrderPage, ShipmentSchedulePage, InvoiceCandidatePage, InvoicePage)
+- `PdfValidator.validateZugferdAttachment()` — ZUGFeRD-specific assertion
+- WebUI attachments REST endpoint — archive entry download (`ARR-*` prefix)
+
 ---
 
 ### 5. Partial Receipt Workflow
@@ -1096,44 +1129,6 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 43. ZUGFeRD e-Invoice — archived PDF embeds factur-x.xml (`einvoice-zugferd.spec.js`)
-
-**Features Tested**:
-- F00751: e-Invoicing Germany
-
-**Epic**: E0340: Invoicing
-
-**Status**: CI-validated (requires port 8282)
-**Duration**: ~90 seconds
-
-**Workflow** (de_DE, requires port 8282):
-1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`); `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`; `sysconfigs` enable mock report service.
-2. Login, create + complete Sales Order (qty=1).
-3. Navigate to Shipment Schedule (Alt+6), create shipment.
-4. Navigate to Invoice Candidates (Alt+6), create invoice via `C_Invoice_Candidate_EnqueueSelectionForInvoicing`.
-5. Navigate to completed Invoice (Alt+6), open detail view.
-6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30 s) for an `ARR-*` archive entry.
-7. Download the archived PDF via `GET /rest/api/window/167/{invoiceId}/attachments/ARR-{id}`.
-8. Assert `factur-x.xml` is embedded (via `pdfjs-dist pdf.getAttachments()`).
-9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
-
-**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint — it is the only copy that contains the embedded factur-x.xml.
-
-**Key Validations**:
-- ZUGFeRD CII XML embedded at completion time (not re-render)
-- Archived PDF is reachable via `GET /rest/api/window/{windowId}/{recordId}/attachments/ARR-{id}`
-- `pdf.getAttachments()` finds `factur-x.xml` (or `zugferd-invoice.xml`)
-- Invoice content (documentNo, product code, quantity) present in PDF text
-
-**Components Tested**:
-- Sales Order window (143) — creation + completion
-- Shipment Schedule window (500221) — shipment creation
-- Invoice Candidate window (540092) — invoice generation
-- Invoice window (167) — detail view + archive fetch
-- `PdfValidator.validateZugferdAttachment()` — new ZUGFeRD-specific assertion
-- WebUI attachments REST endpoint — archive entry download
-
----
 
 ## Test Architecture
 
