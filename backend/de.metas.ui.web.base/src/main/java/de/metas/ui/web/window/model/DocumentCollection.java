@@ -86,6 +86,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Component
@@ -615,30 +616,43 @@ public class DocumentCollection
 	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
 	 * reset with {@code forgetNotSavedDocuments=true}.
 	 *
-	 * <p>Pure boolean signature on purpose so it can be unit-tested without needing to mock
+	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
 	 * {@link Document} (which is final and has a non-trivial constructor).
 	 *
-	 * @param rootHasUnsavedNewIncludedDocument the cached root owns an unsaved, new, in-memory
-	 *                                           included document whose work would be lost on eviction
+	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
+	 *                                          would lose it entirely
+	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
+	 *                                          included document whose work would be lost on eviction. Evaluated
+	 *                                          lazily — only when the root would otherwise be evicted — because it
+	 *                                          walks the included collections and is wasted on the happy path.
 	 */
 	static boolean shouldInvalidateRootOnChildInvalidation(
 			final boolean callerRequestedFullInvalidation,
 			final boolean rootHasSaveError,
 			final boolean rootValidStatusIsValid,
-			final boolean rootHasUnsavedNewIncludedDocument)
+			final boolean rootIsNew,
+			final BooleanSupplier rootHasUnsavedNewIncludedDocument)
 	{
-		// Never evict a root that owns an unsaved, new, in-memory included document:
-		// eviction would discard the user's in-flight work and cause a 404.
-		// Mirrors the existing new-ROOT protection (`!rootDocument.isNew()` at the call site).
-		if (rootHasUnsavedNewIncludedDocument)
+		// Never evict a new (not-yet-persisted) root — we would lose it entirely and the user would
+		// get a 404 with the document vanished from his browser.
+		if (rootIsNew)
 		{
 			return false;
 		}
-		if (callerRequestedFullInvalidation)
+
+		// Would we evict at all? (cheap checks)
+		final boolean wouldInvalidate = callerRequestedFullInvalidation
+				|| rootHasSaveError
+				|| !rootValidStatusIsValid;
+		if (!wouldInvalidate)
 		{
-			return true;
+			return false;
 		}
-		return rootHasSaveError || !rootValidStatusIsValid;
+
+		// We would evict — but never discard a root that still owns an unsaved, new, in-memory included
+		// document: that work would be lost and the next read-only load would 404. Checked last and
+		// lazily because it walks the included collections.
+		return !rootHasUnsavedNewIncludedDocument.getAsBoolean();
 	}
 
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
@@ -695,8 +709,8 @@ public class DocumentCollection
 						documentToInvalidate.isInvalidateDocument(),
 						rootDocument.getSaveStatus().isError(),
 						rootDocument.getValidStatus().isValid(),
-						rootDocument.hasUnsavedNewIncludedDocuments())
-						&& !rootDocument.isNew())
+						rootDocument.isNew(),
+						rootDocument::hasUnsavedNewIncludedDocuments))
 				{
 					rootDocuments.invalidate(rootDocumentKey);
 				}
