@@ -121,14 +121,13 @@ class EUVatIdValidatorTest
 
 			//
 			// CH — Switzerland (UID)
-			// Source: stdnum/ch/uid.py — valid: CHE100155212
-			// Invalid: stdnum invalid example CHE100155213
-			"CHE100155212, true",
-			"CHE100155213, false",
-			// CH VAT form carries the MWST/TVA/IVA suffix (CHE-xxx.xxx.xxx MWST) — must be accepted
+			// CH VAT number REQUIRES the VAT marker MWST/TVA/IVA/TPV (de/fr/it/rm) — source: stdnum/ch/vat.py.
+			// Valid 9-digit body 100155212 (stdnum/ch/uid.py); the bare UID without a marker is NOT a VAT number.
 			"CHE100155212MWST, true",
 			"CHE100155212TVA, true",
 			"CHE100155212IVA, true",
+			"CHE100155212TPV, true",
+			"CHE100155212, false",
 			"CHE100155213MWST, false",
 
 			//
@@ -352,6 +351,7 @@ class EUVatIdValidatorTest
 			// Invalid: stdnum invalid example 995525829 → NO995525829MVA
 			"NO995525828MVA, true",
 			"NO995525829MVA, false",
+			"NO995525828, false",
 
 			//
 			// PL — Poland

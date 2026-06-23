@@ -59,7 +59,7 @@ public final class EUVatIdValidator
 			.put("AT", Pattern.compile("ATU\\d{8}"))
 			.put("BE", Pattern.compile("BE[01]\\d{9}"))
 			.put("BG", Pattern.compile("BG\\d{9,10}"))
-			.put("CH", Pattern.compile("CHE\\d{9}(MWST|TVA|IVA)?"))          // Swiss UID (CHE prefix); optional MWST/TVA/IVA VAT suffix
+			.put("CH", Pattern.compile("CHE\\d{9}(MWST|TVA|IVA|TPV)"))       // Swiss VAT no.: CHE + 9 digits + required VAT marker (MWST/TVA/IVA/TPV); bare UID is not a VAT number
 			.put("CY", Pattern.compile("CY\\d{8}[A-Z]"))
 			.put("CZ", Pattern.compile("CZ\\d{8,10}"))
 			.put("DE", Pattern.compile("DE\\d{9}"))
