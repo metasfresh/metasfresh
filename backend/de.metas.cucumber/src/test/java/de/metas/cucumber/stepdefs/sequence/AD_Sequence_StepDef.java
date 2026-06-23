@@ -85,8 +85,16 @@ public class AD_Sequence_StepDef
 		seqRecord.setIsTableID(false);
 		seqRecord.setIsAutoSequence(true);
 
+		// StartNo seeds CurrentNext as well: the number actually handed out by the document-no builder is CurrentNext
+		// (a freshly created sequence defaults CurrentNext to 1,000,000), so a test that sets StartNo expects to start there.
 		row.getAsOptionalInt(I_AD_Sequence.COLUMNNAME_StartNo)
-				.ifPresent(seqRecord::setStartNo);
+				.ifPresent(startNo -> {
+					seqRecord.setStartNo(startNo);
+					seqRecord.setCurrentNext(startNo);
+				});
+
+		row.getAsOptionalInt(I_AD_Sequence.COLUMNNAME_CurrentNext)
+				.ifPresent(seqRecord::setCurrentNext);
 
 		row.getAsOptionalString(I_AD_Sequence.COLUMNNAME_CustomSequenceNoProvider_JavaClass_ID + ".Classname")
 				.ifPresent(classname -> {

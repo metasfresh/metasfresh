@@ -48,7 +48,7 @@ public class DB_Function_StepDef
 	 * """
 	 * </pre>
 	 */
-	@And("the following PL/pgSQL function is created or replaced in the DB:")
+	@And("the following PL\\/pgSQL function is created or replaced in the DB:")
 	public void create_or_replace_pg_function(@NonNull final String ddl)
 	{
 		DB.executeUpdateAndThrowExceptionOnFail(ddl, ITrx.TRXNAME_None);
