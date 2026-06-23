@@ -42,7 +42,6 @@ import org.mustangproject.validator.ZUGFeRDValidator;
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -219,21 +218,12 @@ public class Mailpit_StepDef
 			tmpPdf = Files.createTempFile("zugferd-cucumber-", ".pdf");
 			Files.write(tmpPdf, pdfBytes);
 
-			final ZUGFeRDValidator validator = new ZUGFeRDValidator();
+			final InspectableZUGFeRDValidator validator = new InspectableZUGFeRDValidator();
 			validator.validate(tmpPdf.toAbsolutePath().toString());
 
-			// Access the ValidationContext via reflection (protected field 'context')
-			final ValidationContext ctx;
-			try
-			{
-				final Field ctxField = ZUGFeRDValidator.class.getDeclaredField("context");
-				ctxField.setAccessible(true);
-				ctx = (ValidationContext) ctxField.get(validator);
-			}
-			catch (final Exception e)
-			{
-				throw new AdempiereException("Cannot access ZUGFeRDValidator.context via reflection", e);
-			}
+			// Read the protected ValidationContext via a thin subclass (no reflection — matches the
+			// pattern in ZugferdAssemblerTest and is resilient to future Mustang refactors).
+			final ValidationContext ctx = validator.getValidationContext();
 
 			if (ctx == null)
 			{
@@ -415,5 +405,18 @@ public class Mailpit_StepDef
 			buffer.write(chunk, 0, read);
 		}
 		return buffer.toByteArray();
+	}
+
+	/**
+	 * Thin subclass exposing {@link ZUGFeRDValidator}'s protected {@code context} field after
+	 * {@code validate(...)} — avoids reflection. Mirrors the pattern used in ZugferdAssemblerTest.
+	 */
+	private static final class InspectableZUGFeRDValidator extends ZUGFeRDValidator
+	{
+		@Nullable
+		ValidationContext getValidationContext()
+		{
+			return context;
+		}
 	}
 }
