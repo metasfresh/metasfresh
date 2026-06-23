@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
@@ -147,6 +149,17 @@ public class HUConsolidationJobService
 
 		final HuId luId = job.getCurrentTargetNotNull().getLuIdNotNull();
 		return huGraiService.getGrais(luId);
+	}
+
+	public ExplainedOptional<HUGraiSnapshot> getTargetGraisSnapshot(
+			@NonNull final HUConsolidationJobId jobId,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobRepository.getById(jobId);
+		job.assertUserCanEdit(callerId);
+
+		final HuId luId = job.getCurrentTargetNotNull().getLuIdNotNull();
+		return huGraiService.getSnapshot(luId);
 	}
 
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)

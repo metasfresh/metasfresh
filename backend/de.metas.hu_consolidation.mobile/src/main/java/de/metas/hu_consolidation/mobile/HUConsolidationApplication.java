@@ -6,6 +6,8 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
@@ -225,5 +227,14 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
 		wfProcess.assertHasAccess(callerId);
 		return jobService.getTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
+	}
+
+	public ExplainedOptional<HUGraiSnapshot> getTargetGraisSnapshot(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		wfProcess.assertHasAccess(callerId);
+		return jobService.getTargetGraisSnapshot(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
 	}
 }

@@ -3,6 +3,7 @@ package de.metas.hu_consolidation.mobile.rest_api;
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
@@ -106,8 +107,8 @@ public class HUConsolidationRestController
 
 	private JsonHUConsolidationTargetGrais getTargetGraisInternal(@NonNull final WFProcessId wfProcessId)
 	{
-		final GRAISet graiSet = mobileApplication.getTargetGrais(wfProcessId, getLoggedUserId());
-		return new JsonHUConsolidationTargetGrais(graiSet.toStringList(), graiSet.size());
+		final HUGraiSnapshot snapshot = mobileApplication.getTargetGraisSnapshot(wfProcessId, getLoggedUserId()).orElseThrow();
+		return new JsonHUConsolidationTargetGrais(snapshot.getAllGrais().toStringList(), snapshot.getTUCount().toInt());
 	}
 
 	@Nullable
