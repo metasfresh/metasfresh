@@ -23,6 +23,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 			<version>${project.version}</version>
