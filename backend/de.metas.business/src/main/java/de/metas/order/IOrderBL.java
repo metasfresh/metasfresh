@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -284,6 +285,9 @@ public interface IOrderBL extends ISingletonService
 	boolean isPrepay(I_C_Order order);
 
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
+
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubType(@NonNull I_C_Order order);
 
 	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);

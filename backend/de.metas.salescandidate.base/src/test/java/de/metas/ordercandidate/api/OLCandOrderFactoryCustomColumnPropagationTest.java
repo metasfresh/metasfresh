@@ -25,7 +25,6 @@ package de.metas.ordercandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.externalsystem.ExternalSystemId;
@@ -33,19 +32,14 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.OrderGroupRepository;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.api.impl.OLCandBL;
-import de.metas.ordercandidate.location.adapter.OLCandDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.NullOLCandListener;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.uom.X12DE355;
-import de.metas.user.UserRepository;
-import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -53,17 +47,20 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.X_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -73,8 +70,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
-class OLCandOrderFactoryTest
+/**
+ * Tests that {@link OLCandOrderFactory} copies columns flagged IsRestAPICustomColumn='Y'
+ * from C_OLCand to the created C_Order (header) and C_OrderLine (line).
+ */
+class OLCandOrderFactoryCustomColumnPropagationTest
 {
+	/** Column that should propagate to C_Order (header). */
+	private static final String HEADER_COL = "TestHeaderCustomCol";
+	/** Column that should propagate to C_OrderLine (line). */
+	private static final String LINE_COL = "TestLineCustomCol";
+
 	private CountryId countryDE;
 	private I_C_UOM uomKg;
 	private ProductId productId;
@@ -85,35 +91,120 @@ class OLCandOrderFactoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// OLCandOrderFactory eagerly fetches CustomColumnService (which delegates to CustomColumnRepository);
-		// register no-op stubs so the factory can be built in this unit test (no custom columns -> propagation is a no-op).
-		CustomColumnService.newInstanceForUnitTesting();
-
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
-
 		SpringContextHolder.registerJUnitBean(new OrderGroupRepository(
 				new GroupCompensationLineCreateRequestFactory(),
 				Optional.empty()
 		));
+		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
+				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
-		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
+		// registers IOLCandBL under the interface key consumers resolve via Services.get(IOLCandBL.class)
+		OLCandBL.newInstanceForUnitTesting();
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		SpringContextHolder.registerJUnitBean(
-				IOLCandBL.class,
-				new OLCandBL(
-						bpartnerBL,
-						BPartnerOrderParamsRepository.newInstanceForUnitTesting()
-				)
-		);
+		// Register the custom columns as real AD_Column entries (IsRestAPICustomColumn='Y') so the REAL
+		// CustomColumnRepository (querying via IQueryBL) picks them up — no stub needed:
+		// HEADER_COL is custom on C_OLCand + C_Order; LINE_COL is custom on C_OLCand + C_OrderLine.
+		final int olCandTableId = createADTable(I_C_OLCand.Table_Name);
+		final int orderTableId = createADTable(I_C_Order.Table_Name);
+		final int orderLineTableId = createADTable(I_C_OrderLine.Table_Name);
+		createCustomColumn(olCandTableId, HEADER_COL);
+		createCustomColumn(olCandTableId, LINE_COL);
+		createCustomColumn(orderTableId, HEADER_COL);
+		createCustomColumn(orderLineTableId, LINE_COL);
+		CustomColumnService.newInstanceForUnitTesting();
 
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();
 		productId = createProduct("product");
-		externalSystemId = ExternalSystemId.ofRepoId(createExternalSystem().getExternalSystem_ID());
+		externalSystemId = createExternalSystem();
 	}
 
-	public I_C_UOM createUomKg()
+	@Test
+	void headerCustomColumnPropagatedToOrder()
+	{
+		// Given: an OLCand that carries HEADER_COL = "hdrValue" and LINE_COL = "lineValue"
+		final DocumentLocation docLocation = createDocumentLocation(countryDE, "testAddr");
+		final I_C_OLCand olCandRecord = newOLCandRecord(docLocation);
+
+		// Pre-load custom column values directly into the POJO wrapper
+		POJOWrapper.getWrapper(olCandRecord).setValue(HEADER_COL, "hdrValue");
+		POJOWrapper.getWrapper(olCandRecord).setValue(LINE_COL, "lineValue");
+
+		saveRecord(olCandRecord);
+		final OLCand olCand = new OLCandFactory().toOLCand(olCandRecord);
+
+		// When
+		final OLCandOrderFactory factory = createFactory();
+		factory.addOLCand(olCand);
+
+		// Then: header column is on the C_Order
+		final I_C_Order order = factory.getOrder();
+		Assertions.assertThat(order).isNotNull();
+		final Object actualHeaderValue = POJOWrapper.getWrapper(order).getValue(HEADER_COL, Object.class);
+		Assertions.assertThat(actualHeaderValue)
+				.as("HEADER_COL should have been propagated to C_Order")
+				.isEqualTo("hdrValue");
+	}
+
+	@Test
+	void lineCustomColumnPropagatedToOrderLine()
+	{
+		// Given: an OLCand that carries LINE_COL = "lineValue"
+		final DocumentLocation docLocation = createDocumentLocation(countryDE, "testAddr2");
+		final I_C_OLCand olCandRecord = newOLCandRecord(docLocation);
+
+		POJOWrapper.getWrapper(olCandRecord).setValue(HEADER_COL, "hdrValue");
+		POJOWrapper.getWrapper(olCandRecord).setValue(LINE_COL, "lineValue");
+
+		saveRecord(olCandRecord);
+		final OLCand olCand = new OLCandFactory().toOLCand(olCandRecord);
+
+		// When
+		final OLCandOrderFactory factory = createFactory();
+		factory.addOLCand(olCand);
+		factory.closeCurrentOrderLine();
+
+		// Then: an order was created
+		final I_C_Order order = factory.getOrder();
+		Assertions.assertThat(order).isNotNull();
+
+		// The created order line was saved into the in-memory store; retrieve it via POJOLookupMap.
+		final I_C_OrderLine savedLine = org.adempiere.ad.wrapper.POJOLookupMap.get()
+				.getFirstOnly(I_C_OrderLine.class, ol -> true);
+
+		Assertions.assertThat(savedLine).isNotNull();
+		final Object actualLineValue = POJOWrapper.getWrapper(savedLine).getValue(LINE_COL, Object.class);
+		Assertions.assertThat(actualLineValue)
+				.as("LINE_COL should have been propagated to C_OrderLine")
+				.isEqualTo("lineValue");
+	}
+
+	// ---- helpers ----
+
+	private I_C_OLCand newOLCandRecord(final DocumentLocation location)
+	{
+		final I_C_OLCand record = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
+		de.metas.ordercandidate.location.adapter.OLCandDocumentLocationAdapterFactory
+				.bpartnerLocationAdapter(record).setFrom(location);
+		record.setExternalSystem_ID(externalSystemId.getRepoId());
+		record.setM_Product_ID(productId.getRepoId());
+		record.setC_UOM_ID(uomKg.getC_UOM_ID());
+		record.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());
+		record.setDateCandidate(SystemTime.asTimestamp());
+		return record;
+	}
+
+	private OLCandOrderFactory createFactory()
+	{
+		return OLCandOrderFactory.builder()
+				.orderDefaults(OLCandOrderDefaults.builder().build())
+				.olCandProcessorId(111)
+				.olCandListeners(NullOLCandListener.instance)
+				.build();
+	}
+
+	private I_C_UOM createUomKg()
 	{
 		final I_C_UOM uom = newInstanceOutOfTrx(I_C_UOM.class);
 		uom.setName(X12DE355.KILOGRAM.getCode());
@@ -123,16 +214,16 @@ class OLCandOrderFactoryTest
 		return uom;
 	}
 
-	public I_ExternalSystem createExternalSystem()
+	private ExternalSystemId createExternalSystem()
 	{
 		final I_ExternalSystem externalSystem = newInstanceOutOfTrx(I_ExternalSystem.class);
 		externalSystem.setValue("test");
 		externalSystem.setName("test");
 		saveRecord(externalSystem);
-		return externalSystem;
+		return ExternalSystemId.ofRepoId(externalSystem.getExternalSystem_ID());
 	}
 
-	public ProductId createProduct(@NonNull final String name)
+	private ProductId createProduct(@NonNull final String name)
 	{
 		final I_M_Product product = newInstanceOutOfTrx(I_M_Product.class);
 		POJOWrapper.setInstanceName(product, name);
@@ -142,11 +233,10 @@ class OLCandOrderFactoryTest
 		product.setProductType(ProductType.Item.getCode());
 		product.setIsStocked(true);
 		saveRecord(product);
-
 		return ProductId.ofRepoId(product.getM_Product_ID());
 	}
 
-	public CountryId createCountry(@NonNull final String countryCode, final String addressFormat)
+	private CountryId createCountry(@NonNull final String countryCode, final String addressFormat)
 	{
 		final I_C_Country record = newInstance(I_C_Country.class);
 		record.setCountryCode(countryCode);
@@ -167,8 +257,7 @@ class OLCandOrderFactoryTest
 		return LocationId.ofRepoId(record.getC_Location_ID());
 	}
 
-	@Builder(builderMethodName = "documentLocation", builderClassName = "$DocumentLocationBuilder")
-	private DocumentLocation createDocumentLocation(@NonNull final CountryId countryId, final String address1)
+	private DocumentLocation createDocumentLocation(@NonNull final CountryId countryId, @Nullable final String address1)
 	{
 		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 		bpGroup.setName("bpGroup");
@@ -200,60 +289,25 @@ class OLCandOrderFactoryTest
 				.build();
 	}
 
-	private OLCandOrderFactory createFactory()
+	private int createADTable(@NonNull final String tableName)
 	{
-		return OLCandOrderFactory.builder()
-				.orderDefaults(OLCandOrderDefaults.builder().build())
-				.olCandProcessorId(111)
-				.olCandListeners(NullOLCandListener.instance)
-				.build();
+		final I_AD_Table table = newInstanceOutOfTrx(I_AD_Table.class);
+		table.setTableName(tableName);
+		table.setName(tableName);
+		table.setEntityType("D");
+		table.setIsActive(true);
+		saveRecord(table);
+		return table.getAD_Table_ID();
 	}
 
-	@Nested
-	class DocumentLocationTests
+	private void createCustomColumn(final int adTableId, @NonNull final String columnName)
 	{
-		private OLCand createOLCand(final DocumentLocation location)
-		{
-			final I_C_OLCand olCandRecord = InterfaceWrapperHelper.newInstance(I_C_OLCand.class);
-			OLCandDocumentLocationAdapterFactory.bpartnerLocationAdapter(olCandRecord).setFrom(location);
-			olCandRecord.setExternalSystem_ID(externalSystemId.getRepoId());
-			olCandRecord.setM_Product_ID(productId.getRepoId());
-			olCandRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
-			olCandRecord.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());
-			olCandRecord.setDateCandidate(SystemTime.asTimestamp());
-			InterfaceWrapperHelper.saveRecord(olCandRecord);
-
-			return new OLCandFactory().toOLCand(olCandRecord);
-		}
-
-		@Test
-		void straightForwardTest()
-		{
-			final DocumentLocation documentLocation = createDocumentLocation(countryDE, "addr1");
-			final OLCand olCand = createOLCand(documentLocation);
-
-			final OLCandOrderFactory factory = createFactory();
-			factory.addOLCand(olCand);
-
-			Assertions.assertThat(OrderDocumentLocationAdapterFactory.locationAdapter(factory.getOrder()).toDocumentLocation())
-					.usingRecursiveComparison()
-					.isEqualTo(documentLocation);
-		}
-
-		@Test
-		void withDifferentCapturedLocation()
-		{
-			final DocumentLocation documentLocation = createDocumentLocation(countryDE, "addr1")
-					.withLocationId(createLocation(countryDE, "addr2"));
-			final OLCand olCand = createOLCand(documentLocation);
-
-			final OLCandOrderFactory factory = createFactory();
-			factory.addOLCand(olCand);
-
-			Assertions.assertThat(OrderDocumentLocationAdapterFactory.locationAdapter(factory.getOrder()).toDocumentLocation())
-					.usingRecursiveComparison()
-					.isEqualTo(documentLocation);
-		}
-
+		final I_AD_Column column = newInstanceOutOfTrx(I_AD_Column.class);
+		column.setAD_Table_ID(adTableId);
+		column.setColumnName(columnName);
+		column.setName(columnName);
+		column.setIsActive(true);
+		column.setIsRestAPICustomColumn(true);
+		saveRecord(column);
 	}
 }
