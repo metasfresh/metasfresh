@@ -31,10 +31,12 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  * <p>Implementations are discovered via Spring's component scan and invoked by
  * {@code DefaultModelArchiver} between "report bytes produced" and "archive persisted".
  * <strong>Exactly one implementation may be registered in the Spring context at a time.</strong>
- * If none is registered a no-op pass-through is used. Registering two beans of this type will
- * cause {@code SpringContextHolder.getBeanOr} to throw {@code NoUniqueBeanDefinitionException}
- * and break all PDF archiving — do not register a second implementation without removing or
- * qualifying the first.
+ * If none is registered a no-op pass-through is used (PDF archiving is unaffected). If two or
+ * more are registered, {@code SpringContextHolder.getBeanOr} catches the resulting
+ * {@code NoUniqueBeanDefinitionException} (a subtype of {@code NoSuchBeanDefinitionException})
+ * and returns none — so no transformer runs and CII embedding is silently skipped for every
+ * invoice. Archiving keeps working, but ZUGFeRD output is lost without any error. Do not register
+ * a second implementation without removing or qualifying the first.
  *
  * <p>Implementations must be:
  * <ul>
