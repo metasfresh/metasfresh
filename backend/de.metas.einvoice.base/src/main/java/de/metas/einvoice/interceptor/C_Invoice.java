@@ -23,8 +23,10 @@ import java.nio.charset.StandardCharsets;
 /**
  * C_Invoice model interceptor for e-invoicing.
  *
- * <p>After completion ({@link ModelValidator#TIMING_AFTER_COMPLETE}), and only when the buyer
- * BPartner is configured as an XRechnung recipient, this interceptor:
+ * <p>After completion ({@link ModelValidator#TIMING_AFTER_COMPLETE}), two independent gates fire:
+ *
+ * <h3>XRechnung gate ({@link #onComplete_generateXRechnung})</h3>
+ * <p>Only when the buyer BPartner is configured as an XRechnung recipient:
  * <ol>
  *   <li>Generates and validates the CII XML via {@link EInvoiceCiiService#generateAndValidate(InvoiceId)}.</li>
  *   <li>If the result is invalid, throws a user-validation-error {@link AdempiereException} that
@@ -34,7 +36,17 @@ import java.nio.charset.StandardCharsets;
  *       so the mailer can pick it up.</li>
  * </ol>
  *
- * <p><b>Idempotency</b>: on re-complete (after reactivate) the interceptor checks whether an
+ * <h3>ZUGFeRD completion gate ({@link #onComplete_validateZugferd})</h3>
+ * <p>Only when the buyer BPartner is configured as a ZUGFeRD recipient:
+ * <ol>
+ *   <li>Validates the CII XML against EN16931 rules via {@link EInvoiceCiiService#generateAndValidate(InvoiceId)}.</li>
+ *   <li>If the result is invalid, throws a user-validation-error {@link AdempiereException} that
+ *       names the failing EN16931 rule ids — this rolls back the completion.</li>
+ *   <li>If valid, returns without doing anything further (ZUGFeRD PDF embedding is handled at
+ *       archive time by the archive seam — Task 6).</li>
+ * </ol>
+ *
+ * <p><b>Idempotency</b>: on re-complete (after reactivate) the XRechnung gate checks whether an
  * attachment with the expected filename already exists via
  * {@link AttachmentEntryService#getByFilenameOrNull(Object, String)}. If one is found it is
  * unattached first (via {@link AttachmentEntryService#unattach(Object, AttachmentEntry)}),
@@ -50,6 +62,9 @@ public class C_Invoice
 {
 	/** User-facing, localized error (AD_Message) shown when the XRechnung is invalid; {0} = failed rule ids. */
 	private static final AdMessageKey MSG_XRechnungInvalid = AdMessageKey.of("EInvoice_XRechnungInvalid");
+
+	/** User-facing, localized error (AD_Message) shown when the ZUGFeRD CII is invalid; {0} = failed rule ids. */
+	private static final AdMessageKey MSG_ZUGFeRDInvalid = AdMessageKey.of("EInvoice_ZUGFeRDInvalid");
 
 	@NonNull private final EInvoiceConfigService configService;
 	@NonNull private final EInvoiceCiiService eInvoiceCiiService;
@@ -99,5 +114,37 @@ public class C_Invoice
 		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(invoice, filename, xmlBytes);
 		attachmentEntryService.save(newEntry.withAdditionalTag(
 				AttachmentTags.TAGNAME_SEND_VIA_EMAIL, "true"));
+	}
+
+	/**
+	 * After invoice completion: validate the ZUGFeRD CII against EN16931 rules and block completion
+	 * if invalid.
+	 *
+	 * <p>Returns immediately if the buyer is not configured as a ZUGFeRD recipient.
+	 *
+	 * <p>This gate does NOT produce the PDF embedding — that is handled at archive time by the
+	 * archive seam (Task 6 / {@code ZugferdArchiveReportBytesTransformer}).
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void onComplete_validateZugferd(@NonNull final I_C_Invoice invoice)
+	{
+		final EInvoiceRecipientConfig cfg = configService.resolveForInvoice(invoice).orElse(null);
+		if (cfg == null || !cfg.getFormat().isZUGFeRD())
+		{
+			return;
+		}
+
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		final GenerateAndValidateResult result = eInvoiceCiiService.generateAndValidate(invoiceId)
+				.orElseThrow(() -> new AdempiereException(
+						"E-Invoice config not resolvable for invoice " + invoice.getDocumentNo()
+								+ " — this should not happen when config resolution already succeeded")
+						.markAsUserValidationError());
+
+		if (!result.isValid())
+		{
+			throw new AdempiereException(MSG_ZUGFeRDInvalid, result.getFatalAndErrorRuleIds())
+					.markAsUserValidationError();
+		}
 	}
 }
