@@ -5,7 +5,6 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.RenderedAddressProvider;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.picking.slot.PickingSlotQueueQuery;
@@ -31,7 +30,6 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.api.Params;
-import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -102,10 +100,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 	/** GRAIRequired != No ⇒ graiScanEnabled=true (YesWithDummyGRAIs is treated as Yes). */
 	boolean resolveGraiScanEnabled(@NonNull final HUConsolidationJob job)
 	{
-		final I_C_BPartner bpartner = bpartnerDAO.getById(job.getCustomerId());
-		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired())
-				.orElse(GRAIRequired.No);
-		return !graiRequired.isNo();
+		return GraiScanHelper.isGraiScanEnabled(job, bpartnerDAO);
 	}
 
 	@Nullable

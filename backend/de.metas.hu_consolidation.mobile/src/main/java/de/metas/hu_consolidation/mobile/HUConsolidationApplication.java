@@ -38,6 +38,8 @@ import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -55,9 +57,13 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 	@NonNull private final HUConsolidationJobService jobService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 
-	/** Lazily injected to break the circular dependency: HUConsolidationApplication → CompleteWFActivityHandler → (mapJob via static) → HUConsolidationApplication. */
-	@org.springframework.beans.factory.annotation.Autowired
-	@org.springframework.context.annotation.Lazy
+	/**
+	 * Lazily injected to break the circular dependency:
+	 * HUConsolidationApplication.toWFProcess → CompleteWFActivityHandler.computeActivityState
+	 * AND CompleteWFActivityHandler.userConfirmed → HUConsolidationApplication.mapJob.
+	 */
+	@Autowired
+	@Lazy
 	private CompleteWFActivityHandler completeWFActivityHandler;
 
 	@Override
@@ -131,12 +137,14 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 								.id(WFActivityId.ofString("A1"))
 								.caption(TranslatableStrings.anyLanguage("Consolidate"))
 								.wfActivityType(HUConsolidateWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								// Static call: HUConsolidateWFActivityHandler has no injected services needed here.
 								.status(HUConsolidateWFActivityHandler.computeActivityState(job))
 								.build(),
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A2"))
 								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompleteWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+								// Instance call: Complete needs injected services (IBPartnerDAO, HUGraiService) for the GRAI gate.
 								.status(completeWFActivityHandler.computeActivityState(job))
 								.build()
 				))

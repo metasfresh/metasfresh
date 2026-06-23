@@ -1,7 +1,6 @@
 package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
@@ -23,7 +22,6 @@ import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_BPartner;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -130,10 +128,7 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 	/** {@code GRAIRequired != No} → GRAI scan is required (YesWithDummyGRAIs treated as Yes — no dummy-fill here). */
 	private boolean isGraiScanEnabled(@NonNull final HUConsolidationJob job)
 	{
-		final I_C_BPartner bpartner = bpartnerDAO.getById(job.getCustomerId());
-		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired())
-				.orElse(GRAIRequired.No);
-		return !graiRequired.isNo();
+		return GraiScanHelper.isGraiScanEnabled(job, bpartnerDAO);
 	}
 
 	@Nullable

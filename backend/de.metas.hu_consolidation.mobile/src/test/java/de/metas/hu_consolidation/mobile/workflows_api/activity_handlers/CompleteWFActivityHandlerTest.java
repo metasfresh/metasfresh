@@ -91,7 +91,7 @@ class CompleteWFActivityHandlerTest
 
 		final WFActivityStatus status = handler.computeActivityState(jobWithTarget);
 
-		assertThat(status).isNotEqualTo(WFActivityStatus.COMPLETED);
+		assertThat(status).isEqualTo(WFActivityStatus.NOT_STARTED);
 	}
 
 	@Test
