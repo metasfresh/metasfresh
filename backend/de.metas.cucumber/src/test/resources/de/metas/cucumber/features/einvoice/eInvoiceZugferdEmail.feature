@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00751_eInvoicing_Germany
-@topic:eInvoiceZugferdEmail
 @ghActions:run_on_executor4
 Feature: ZUGFeRD e-invoice generated, embedded in PDF/A-3 and emailed on sales-invoice completion
 ## F00751: E-Invoicing
