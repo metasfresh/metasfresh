@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/computeCurrentBOMProductCost.sql
 DROP FUNCTION IF EXISTS computeCurrentBOMProductCost(p_pp_product_bom_id numeric,
                                                     p_date              date)
 ;
@@ -43,7 +44,7 @@ BEGIN
                                   THEN bom.Percentage / 100 * bom.unit_cost
                                   ELSE bom.QtyBOM * bom.unit_cost
                          END
-                 ), 6)
+                 ), 2)
     INTO cost
     FROM (
              SELECT b.IsQtyPercentage,
