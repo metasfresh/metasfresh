@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-06-19
+**Last Updated**: 2026-06-23
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -128,39 +128,6 @@ npm run test:report
 - Shipment window
 - Invoice Candidate window
 - Invoice window
-
-#### 4b. ZUGFeRD e-Invoice variant (same file)
-**Status**: CI-validated (requires port 8282)
-**Duration**: ~90 seconds (ZUGFeRD assembly adds latency)
-
-**Features Tested**:
-- F00751: e-Invoicing Germany
-
-**Epic**: E0340: Invoicing
-
-**Workflow** (de_DE, single language — ZUGFeRD assertion is binary):
-1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured
-   as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner
-   (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`);
-   `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`;
-   `sysconfigs` enable mock report service.
-2. Login, create + complete Sales Order (qty=1) — reuses SalesOrderPage page-object flow.
-3. Navigate to Shipment Schedule (Alt+6), create shipment (ShipmentSchedulePage).
-4. Navigate to Invoice Candidates (Alt+6), create invoice (InvoiceCandidatePage).
-5. Navigate to completed Invoice (Alt+6), open detail view (InvoicePage).
-6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30s) for an `ARR-*` entry.
-7. Download the archived PDF via `GET …/attachments/ARR-{id}`.
-8. Assert `factur-x.xml` embedded (`PdfValidator.validateZugferdAttachment()`).
-9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
-
-**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive
-entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint —
-it is the only copy that contains the embedded factur-x.xml.
-
-**Components Tested**:
-- All page objects from the O2C flow (SalesOrderPage, ShipmentSchedulePage, InvoiceCandidatePage, InvoicePage)
-- `PdfValidator.validateZugferdAttachment()` — ZUGFeRD-specific assertion
-- WebUI attachments REST endpoint — archive entry download (`ARR-*` prefix)
 
 ---
 
@@ -1129,6 +1096,45 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 43. ZUGFeRD e-Invoice — archived PDF embeds factur-x.xml (`zugferd-invoice.spec.js`)
+**Status**: CI-validated (requires port 8282)
+**Duration**: ~90 seconds per language (ZUGFeRD assembly adds latency)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US **and** de_DE):
+1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured
+   as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner
+   (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`);
+   `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`.
+   (No mock report service — the real report service renders PDF/A-3.)
+2. Login in the run's language, create + complete Sales Order (qty=1) via SalesOrderPage.
+3. Navigate to Shipment Schedule (Alt+6), create shipment (ShipmentSchedulePage).
+4. Navigate to Invoice Candidates (Alt+6), create invoice (InvoiceCandidatePage).
+5. Navigate to completed Invoice (Alt+6), open detail view (InvoicePage).
+6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30s) for an `ARR-*` entry.
+7. Download the archived PDF via `GET …/attachments/ARR-{id}`.
+8. Assert `factur-x.xml` embedded (`PdfValidator.validateZugferdAttachment()`).
+9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
+
+**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive
+entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint —
+it is the only copy that contains the embedded factur-x.xml.
+
+**Language independence**: All selectors use data-testid / data-cy / ColumnName IDs (no localized
+text). The ZUGFeRD assertion is binary (embedded or not) — language does not affect it. Running
+in both en_US and de_DE proves the full page-object flow is language-independent.
+
+**Components Tested**:
+- All O2C page objects: SalesOrderPage, ShipmentSchedulePage, InvoiceCandidatePage, InvoicePage
+- `PdfValidator.validateZugferdAttachment()` — ZUGFeRD-specific assertion
+- WebUI attachments REST endpoint — archive entry download (`ARR-*` prefix)
+
+---
+
 
 ## Test Architecture
 
@@ -1203,8 +1209,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 58 files
-- **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 59 files
+- **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
