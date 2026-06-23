@@ -120,8 +120,6 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, pre
         />
       );
     case 'common/confirmButton': {
-      // Gate the confirm button when the previous activity is a huConsolidation/consolidate
-      // activity that requires GRAI scanning and the GRAIs are not yet fully assigned.
       const isConfirmUserEditable = activityItem.dataStored.isUserEditable && isConfirmGraiReady({ previousActivity });
       return (
         <ConfirmActivity

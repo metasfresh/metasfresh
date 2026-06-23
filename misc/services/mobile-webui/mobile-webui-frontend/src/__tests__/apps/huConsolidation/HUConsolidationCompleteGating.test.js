@@ -1,5 +1,5 @@
 /**
- * F3: Gate the HU Consolidation Complete activity on required GRAI scans.
+ * Gate the HU Consolidation Complete (Fertigstellen) activity on required GRAI scans.
  *
  * Rules under test:
  *  - graiScanEnabled=true + target GRAI slots unfilled (graiAssignedCount < graiExpectedCount)
