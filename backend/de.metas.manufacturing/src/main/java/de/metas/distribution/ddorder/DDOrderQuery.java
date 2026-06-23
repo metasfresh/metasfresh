@@ -31,6 +31,12 @@ public class DDOrderQuery
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
+
+	/**
+	 * When set, matches orders where either {@code M_Warehouse_From_ID} OR {@code M_Warehouse_To_ID}
+	 * equals this value. Applied in addition to (AND with) {@code warehouseFromIds} and
+	 * {@code warehouseToIds} if those are also set.
+	 */
 	@Nullable WarehouseId fromOrToWarehouseId;
 	@Nullable InSetPredicate<LocatorId> locatorToIds;
 	@Nullable Set<OrderId> salesOrderIds;
