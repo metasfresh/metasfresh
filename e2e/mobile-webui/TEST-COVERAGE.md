@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 60 | 64 | 94% |
+| Picking | 64 | 68 | 94% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -113,6 +113,16 @@
 | Pick All button picks all remaining HUs in one action | `picking/pickAllButton.spec.js` |
 | Pick All button hidden when feature disabled in mobile config | `picking/pickAllButton.spec.js` |
 | Only one matching HU → picking proceeds without qty dialog | `picking/pickAttributes.spec.js` |
+
+**3/3 — 100%**
+
+### Order-based picking — serial-no scan
+
+| Scenario | Test |
+|---|---|
+| Serial-no product → scan one serial per picked unit ("N of N"), confirm gated until N distinct serials, persisted comma-separated on the picked HU | `picking/picking_serialNo.spec.js` |
+| Duplicate serial scan is silently deduped (count unchanged; must scan N distinct serials) | `picking/picking_serialNo.spec.js` |
+| Misconfigured serial-no product (flag set, no serial-capable attribute set) → no prompt, picks directly | `picking/picking_serialNo.spec.js` |
 
 **3/3 — 100%**
 
