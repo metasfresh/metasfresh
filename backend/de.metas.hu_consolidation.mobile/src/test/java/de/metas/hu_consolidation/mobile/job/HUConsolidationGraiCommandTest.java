@@ -4,17 +4,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.set_target_grais.SetTargetGraisCommand;
-import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
-import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -116,7 +112,7 @@ class HUConsolidationGraiCommandTest
 	}
 
 	// -----------------------------------------------------------------------
-	// B2: GRAI scan-state JSON mapping tests
+	// GRAI scan-state JSON mapping tests
 	// -----------------------------------------------------------------------
 
 	@Test
@@ -158,60 +154,4 @@ class HUConsolidationGraiCommandTest
 		assertThat(json.getGraiAssignedCount()).isEqualTo(0);
 	}
 
-	@Test
-	void jsonJob_graiScanEnabled_whenGRAIRequiredIsYes()
-	{
-		// GIVEN — simulate what graiScanEnabled resolution produces
-		final GRAIRequired graiRequired = GRAIRequired.Yes;
-		final boolean graiScanEnabled = !graiRequired.isNo();
-
-		final JsonHUConsolidationJob jsonJob = JsonHUConsolidationJob.builder()
-				.id(job.getId())
-				.shipToAddress("Test Address")
-				.pickingSlots(ImmutableList.<JsonHUConsolidationJobPickingSlot>of())
-				.graiScanEnabled(graiScanEnabled)
-				.currentTarget(null)
-				.build();
-
-		// THEN
-		assertThat(jsonJob.isGraiScanEnabled()).isTrue();
-	}
-
-	@Test
-	void jsonJob_graiScanEnabled_whenGRAIRequiredIsNo()
-	{
-		// GIVEN — simulate what graiScanEnabled resolution produces for GRAIRequired.No
-		final GRAIRequired graiRequired = GRAIRequired.No;
-		final boolean graiScanEnabled = !graiRequired.isNo();
-
-		final JsonHUConsolidationJob jsonJob = JsonHUConsolidationJob.builder()
-				.id(job.getId())
-				.shipToAddress("Test Address")
-				.pickingSlots(ImmutableList.<JsonHUConsolidationJobPickingSlot>of())
-				.graiScanEnabled(graiScanEnabled)
-				.currentTarget(null)
-				.build();
-
-		// THEN
-		assertThat(jsonJob.isGraiScanEnabled()).isFalse();
-	}
-
-	@Test
-	void jsonJob_graiScanEnabled_whenGRAIRequiredIsYesWithDummyGRAIs()
-	{
-		// GIVEN — YesWithDummyGRAIs is treated as Yes (not No)
-		final GRAIRequired graiRequired = GRAIRequired.YesWithDummyGRAIs;
-		final boolean graiScanEnabled = !graiRequired.isNo();
-
-		final JsonHUConsolidationJob jsonJob = JsonHUConsolidationJob.builder()
-				.id(job.getId())
-				.shipToAddress("Test Address")
-				.pickingSlots(ImmutableList.<JsonHUConsolidationJobPickingSlot>of())
-				.graiScanEnabled(graiScanEnabled)
-				.currentTarget(null)
-				.build();
-
-		// THEN — YesWithDummyGRAIs should enable GRAI scanning
-		assertThat(jsonJob.isGraiScanEnabled()).isTrue();
-	}
 }

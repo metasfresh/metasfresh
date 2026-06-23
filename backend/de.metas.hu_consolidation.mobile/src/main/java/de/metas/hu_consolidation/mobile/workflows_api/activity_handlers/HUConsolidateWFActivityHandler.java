@@ -100,7 +100,7 @@ public class HUConsolidateWFActivityHandler implements WFActivityHandler
 	}
 
 	/** GRAIRequired != No ⇒ graiScanEnabled=true (YesWithDummyGRAIs is treated as Yes). */
-	private boolean resolveGraiScanEnabled(@NonNull final HUConsolidationJob job)
+	boolean resolveGraiScanEnabled(@NonNull final HUConsolidationJob job)
 	{
 		final I_C_BPartner bpartner = bpartnerDAO.getById(job.getCustomerId());
 		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired())
