@@ -441,8 +441,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   - the differing bill partner is part of the order-aggregation key (forces a separate order) but NOT of the
     C_Order_ExternalHeader_ID unique index tuple (ExternalSystem_ID, ExternalId, AD_Org_ID)
   - both forced orders therefore carry the same C_Order.ExternalId=18062027 -> the second order save violates the
-    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg, surfaced both as HTTP 400 on the
-    process call AND as C_OLCand.IsError + ErrorMsg on the offending candidate
+    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg. In the audited async mode the
+    candidate is NOT flagged IsError and the synchronous response has no body; the message is surfaced as the
+    HTTP 400 JsonError stored on the request-audit's response (api_response_audit), retrievable via the request-audit id
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | OPT.IsActive |
       | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true         |
@@ -553,8 +554,14 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
 
-    # The offending candidate is marked with the error; its ErrorMsg contains the AD_Index_Table.ErrorMsg text
+    # The process call is handled in audited async mode: the synchronous 400 response carries no body, and the
+    # candidate is not flagged with IsError. The translated AD_Index_Table.ErrorMsg is instead stored on the
+    # request-audit's stored response (api_response_audit), retrievable via the request-audit id.
+    # Capture the failing PUT's request-audit id (the most recent audit record - it follows the earlier bulk POST),
+    # then assert its stored response is the HTTP 400 JsonError whose body contains the translated message
     # (resolved in the base language, German), proving the unique-index conflict surfaced as the intended message.
-    And validate C_OLCand is with error
-      | C_OLCand_ID.Identifier | ErrorMsg                                                                                                                                |
-      | olCand_2               | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
+    And after not more than 60s, find and add last API_Request_Audit_ID to context
+
+    And after not more than 60s, there are added records in API_Response_Audit
+      | HttpCode | Body                                                                                                                                    |
+      | 400      | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
