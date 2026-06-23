@@ -5,6 +5,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.serialno.SerialNoSet;
+import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -54,6 +55,15 @@ public class PickingJobStepEvent
 	//
 	// Event Type: UNPICK
 	@Nullable HUQRCode unpickToTargetQRCode;
+
+	/**
+	 * Optional partial-unpick selector — when both are set, only HUs carrying this product
+	 * (LIFO, whole-HU boundaries) totalling {@code qtyToUnpick} are reversed.
+	 * When null the existing whole-step/whole-line unpick behaviour applies.
+	 * The qty is unitless (BigDecimal); the UOM is resolved at dispatch time from the job's step.
+	 */
+	@Nullable ProductId unpickProductId;
+	@Nullable BigDecimal qtyToUnpick;
 
 	public static Collection<PickingJobStepEvent> removeDuplicates(@NonNull final Collection<PickingJobStepEvent> events)
 	{

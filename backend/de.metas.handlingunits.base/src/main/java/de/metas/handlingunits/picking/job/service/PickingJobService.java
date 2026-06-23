@@ -43,8 +43,19 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
+import de.metas.gs1.GTIN;
+import org.adempiere.service.ClientId;
+import de.metas.gs1.ean13.EAN13;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
+import de.metas.handlingunits.qrcodes.custom.CustomHUQRCode;
+import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
+import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.i18n.ITranslatableString;
+import de.metas.quantity.Quantity;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.picking.job.service.commands.get_qty_available.PickingJobGetQtyAvailableCommand;
@@ -427,6 +438,12 @@ public class PickingJobService implements PickingSlotListener
 			}
 			case UNPICK:
 			{
+				final ProductId unpickProductId = event.getUnpickProductId();
+				final java.math.BigDecimal unpickQtyBD = event.getQtyToUnpick(); // BigDecimal; UOM resolved below
+				final Quantity unpickQty = (unpickProductId != null && unpickQtyBD != null)
+						? resolveUnpickQty(pickingJob, unpickProductId, unpickQtyBD)
+						: null;
+
 				return PickingJobUnPickCommand.builder()
 						.shipmentScheduleService(shipmentScheduleService)
 						.pickingJobRepository(pickingJobRepository)
@@ -438,6 +455,8 @@ public class PickingJobService implements PickingSlotListener
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
 						.unpickToHU(event.getUnpickToTargetQRCode())
+						.productId(unpickProductId)
+						.qtyToUnpick(unpickQty)
 						//
 						.build().execute();
 			}
@@ -904,5 +923,132 @@ public class PickingJobService implements PickingSlotListener
 				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
 				.request(request)
 				.build().execute();
+	}
+
+	/**
+	 * Resolves a unitless qty BigDecimal to a Quantity by looking up the UOM of the first packed HU
+	 * for the given product in the picking job. This is the UOM that {@link de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand}
+	 * expects for the subset-unpick path.
+	 */
+	@NonNull
+	private static Quantity resolveUnpickQty(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final ProductId productId,
+			@NonNull final java.math.BigDecimal qtyBD)
+	{
+		final Quantity referenceQty = pickingJob.streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.flatMap(step -> step.getPickFromKeys().stream()
+						.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
+						.filter(Objects::nonNull))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No packed qty found for product " + productId + " in picking job " + pickingJob.getId()));
+
+		return Quantity.of(qtyBD, referenceQty.getUOM());
+	}
+
+	/**
+	 * Resolves a scanned product barcode against the given picking job and computes
+	 * the total packed qty for the matched product (across all steps), for partial-unpick purposes.
+	 *
+	 * <p>Supports GS1 (GTIN), EAN13, and Custom (product-value) QR code formats.
+	 * For a standard HU QR code the method is not meaningful and throws.
+	 */
+	@NonNull
+	public PickingJobUnpickResolveResult resolveUnpick(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+
+		// Step 1: parse scanned code to IHUQRCode
+		final IHUQRCode parsedQRCode = huService.parsePickFromScannedCode(scannedCode);
+
+		// Step 2: find the matching ProductId from the job's product set
+		final ProductId matchedProductId = resolveProductId(parsedQRCode, pickingJob);
+
+		// Step 3: compute packed qty for the matched product
+		final Quantity packedQty = computePackedQty(pickingJob, matchedProductId);
+		final boolean unpickable = packedQty != null && !packedQty.isZero();
+
+		// Step 4: look up product name
+		final ITranslatableString productNameTrl = productService.getProductNameTrl(matchedProductId);
+		final String productName = productNameTrl.getDefaultValue();
+
+		return PickingJobUnpickResolveResult.builder()
+				.productId(matchedProductId)
+				.productName(productName)
+				.packedQty(packedQty)
+				.unpickable(unpickable)
+				.build();
+	}
+
+	@NonNull
+	private ProductId resolveProductId(
+			@NonNull final IHUQRCode parsedQRCode,
+			@NonNull final PickingJob pickingJob)
+	{
+		if (parsedQRCode instanceof GS1HUQRCode)
+		{
+			final GS1HUQRCode gs1QRCode = (GS1HUQRCode)parsedQRCode;
+			final GTIN gtin = gs1QRCode.getGTIN().orElse(null);
+			if (gtin != null)
+			{
+				final ProductId productId = productService.getProductIdByGTINStrictlyNotNull(gtin, ClientId.METASFRESH);
+				if (pickingJob.getProductIds().contains(productId))
+				{
+					return productId;
+				}
+			}
+		}
+		else if (parsedQRCode instanceof EAN13HUQRCode)
+		{
+			final EAN13HUQRCode ean13QRCode = (EAN13HUQRCode)parsedQRCode;
+			final EAN13 ean13 = ean13QRCode.unbox();
+			for (final ProductId productId : pickingJob.getProductIds())
+			{
+				if (productService.isValidEAN13Product(ean13, productId, pickingJob.getCustomerId()))
+				{
+					return productId;
+				}
+			}
+		}
+		else if (parsedQRCode instanceof CustomHUQRCode)
+		{
+			final CustomHUQRCode customQRCode = (CustomHUQRCode)parsedQRCode;
+			final String scannedProductNo = customQRCode.getProductNo().orElse(null);
+			if (scannedProductNo != null)
+			{
+				for (final ProductId productId : pickingJob.getProductIds())
+				{
+					if (scannedProductNo.equals(productService.getProductValue(productId)))
+					{
+						return productId;
+					}
+				}
+			}
+		}
+		else if (parsedQRCode instanceof HUQRCode)
+		{
+			throw new AdempiereException("Scanning an HU QR code is not supported for partial-unpick resolve; scan a product barcode (GTIN/EAN/product code) instead");
+		}
+
+		throw new AdempiereException("Cannot find a product matching the scanned code in this picking job");
+	}
+
+	@Nullable
+	private static Quantity computePackedQty(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final ProductId productId)
+	{
+		return pickingJob.streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.flatMap(step -> step.getPickFromKeys().stream()
+						.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
+						.filter(Objects::nonNull))
+				.reduce((a, b) -> a.add(b))
+				.orElse(null);
 	}
 }

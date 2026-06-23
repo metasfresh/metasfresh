@@ -43,6 +43,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.model.facets.CollectingParameters;
@@ -52,6 +53,8 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateReque
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.picking.qrcode.PickingSlotQRCode;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
+import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -306,5 +309,23 @@ public class PickingJobRestService
 	public GetNextEligibleLineToPackResponse getNextEligibleLineToPack(final @NonNull GetNextEligibleLineToPackRequest request)
 	{
 		return pickingJobService.getNextEligibleLineToPack(request);
+	}
+
+	@NonNull
+	public JsonUnpickResolveResponse resolveUnpick(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJobUnpickResolveResult result = pickingJobService.resolveUnpick(pickingJobId, scannedCode, callerId);
+
+		final Quantity packedQty = result.getPackedQty();
+		return JsonUnpickResolveResponse.builder()
+				.productId(String.valueOf(result.getProductId().getRepoId()))
+				.productName(result.getProductName())
+				.packedQty(packedQty != null ? packedQty.toBigDecimal() : null)
+				.packedQtyUom(packedQty != null ? packedQty.getUOMSymbol() : null)
+				.unpickable(result.isUnpickable())
+				.build();
 	}
 }
