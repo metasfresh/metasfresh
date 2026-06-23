@@ -30,8 +30,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  *
  * <p>Implementations are discovered via Spring's component scan and invoked by
  * {@code DefaultModelArchiver} between "report bytes produced" and "archive persisted".
- * The first bean of this type that is registered in the Spring context is used; if none is
- * registered a no-op pass-through is used.
+ * <strong>Exactly one implementation may be registered in the Spring context at a time.</strong>
+ * If none is registered a no-op pass-through is used. Registering two beans of this type will
+ * cause {@code SpringContextHolder.getBeanOr} to throw {@code NoUniqueBeanDefinitionException}
+ * and break all PDF archiving — do not register a second implementation without removing or
+ * qualifying the first.
  *
  * <p>Implementations must be:
  * <ul>
@@ -39,7 +42,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
  *       calling it once.</li>
  *   <li><strong>No-op for non-matching records</strong>: if the record is not eligible for
  *       transformation (wrong table, wrong e-invoice type, …) the implementation MUST return
- *       the original {@code reportBytes} unchanged (byte-identical to input).</li>
+ *       the original {@code reportBytes} array by reference (see {@code @return} below).</li>
  * </ul>
  *
  * <p>All e-invoice–specific transformation logic (ZUGFeRD, XRechnung, …) lives in
@@ -54,7 +57,13 @@ public interface IArchiveReportBytesTransformer
 	 * @param reportBytes  the raw report bytes produced by the report engine; may be empty ({@code length == 0})
 	 *                     but is never {@code null}
 	 * @return the (possibly transformed) bytes to store as archive data; must be non-null.
-	 *         Return the original array unchanged if no transformation applies.
+	 *         <strong>No-op signal</strong>: to indicate that no transformation occurred,
+	 *         implementations MUST return the exact same {@code reportBytes} array reference
+	 *         (i.e. {@code return reportBytes} — reference/identity equality, not value equality).
+	 *         {@code DefaultModelArchiver} uses reference identity ({@code ==}) to detect the
+	 *         no-op case and reuse the original Spring {@link org.springframework.core.io.Resource}.
+	 *         Returning a new array with identical content is treated as a transformation and
+	 *         results in unnecessary resource allocation.
 	 */
 	@NonNull
 	byte[] transform(@NonNull TableRecordReference recordRef, @NonNull byte[] reportBytes);

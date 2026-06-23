@@ -77,14 +77,15 @@ class DefaultModelArchiverSpiTransformerTest
 	private static class RecordingTransformer implements IArchiveReportBytesTransformer
 	{
 		final List<TableRecordReference> capturedRefs = new ArrayList<>();
-		final List<byte[]> capturedBytes = new ArrayList<>();
+		/** Lengths of the byte arrays passed in — proves the report engine produced actual data. */
+		final List<Integer> capturedByteLengths = new ArrayList<>();
 
 		@Override
 		@NonNull
 		public byte[] transform(@NonNull final TableRecordReference recordRef, @NonNull final byte[] reportBytes)
 		{
 			capturedRefs.add(recordRef);
-			capturedBytes.add(reportBytes);
+			capturedByteLengths.add(reportBytes.length);
 			return reportBytes; // pass-through
 		}
 	}
@@ -154,6 +155,11 @@ class DefaultModelArchiverSpiTransformerTest
 		assertThat(capturedRef.getRecord_ID())
 				.as("Transformer must receive the correct record ID")
 				.isEqualTo(invoice.getC_Invoice_ID());
+
+		// And: the report engine produced non-empty bytes (the SPI seam sits AFTER byte production)
+		assertThat(transformer.capturedByteLengths.get(0))
+				.as("Report bytes passed to transformer must be non-empty")
+				.isGreaterThan(0);
 	}
 
 	@Test

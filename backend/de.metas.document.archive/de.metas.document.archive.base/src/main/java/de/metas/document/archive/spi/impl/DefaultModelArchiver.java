@@ -267,13 +267,11 @@ public class DefaultModelArchiver
 	 * Optionally transforms the report bytes via the {@link IArchiveReportBytesTransformer} SPI,
 	 * if one is registered in the Spring context.
 	 *
-	 * <p>Returns the original report resource unchanged when no transformer bean is present
-	 * or when the report has no data. The call is inserted between "report bytes produced" and
-	 * "ArchiveBL.archive()" so that e-invoice modules can embed CII XML (ZUGFeRD etc.) into
-	 * the PDF bytes without touching the generic archive persistence path.
-	 *
-	 * <p>All e-invoice logic lives in {@code de.metas.einvoice.base}; the archive layer only
-	 * invokes the SPI. See {@link IArchiveReportBytesTransformer}.
+	 * <p>Returns the original report resource unchanged when no transformer bean is present,
+	 * when the report has no data, or when the report has no document reference. The call is
+	 * inserted between "report bytes produced" and "ArchiveBL.archive()" so that e-invoice
+	 * modules can embed CII XML (ZUGFeRD etc.) into the PDF bytes without touching the generic
+	 * archive persistence path. See {@link IArchiveReportBytesTransformer}.
 	 */
 	@Nullable
 	private Resource transformReportBytes(@NonNull final DocumentReportResult report)
@@ -287,6 +285,7 @@ public class DefaultModelArchiver
 		final TableRecordReference recordRef = report.getDocumentRef();
 		if (recordRef == null)
 		{
+			logger.debug("transformReportBytes: no documentRef on report — skipping SPI transformer for {}", report);
 			return reportData;
 		}
 
