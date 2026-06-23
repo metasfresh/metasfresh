@@ -2,12 +2,12 @@ package de.metas.hu_consolidation.mobile.rest_api;
 
 import de.metas.Profiles;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
-import de.metas.handlingunits.grai.GRAISet;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateResponse;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;

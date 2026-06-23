@@ -10,6 +10,8 @@ import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.grai.HUGraiSnapshot;
+import de.metas.handlingunits.picking.slot.PickingSlotService;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.set_target_grais.SetTargetGraisCommand;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJob;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlot;
@@ -95,8 +97,16 @@ class HUConsolidationGraiCommandTest
 		final GRAISet expectedGrais = GRAISet.ofCollection(ImmutableSet.of(grai1, grai2));
 		when(huGraiService.getGrais(LU_ID)).thenReturn(expectedGrais);
 
-		// WHEN — read back using the service method that the command builds upon
-		final GRAISet actualGrais = huGraiService.getGrais(LU_ID);
+		// WHEN — call the production method under test
+		final HUConsolidationJobService jobService = new HUConsolidationJobService(
+				jobRepository,
+				mock(PickingSlotService.class),
+				mock(HUQRCodesService.class),
+				mock(HUConsolidationAvailableTargetsFinder.class),
+				mock(HUConsolidationTargetCloser.class),
+				mock(HUConsolidationLabelPrinter.class),
+				huGraiService);
+		final GRAISet actualGrais = jobService.getTargetGrais(job.getId(), USER_ID);
 
 		// THEN
 		assertThat(actualGrais).isEqualTo(expectedGrais);
