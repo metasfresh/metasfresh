@@ -1,6 +1,7 @@
 package de.metas.einvoice.zugferd;
 
 import org.apache.pdfbox.cos.COSArray;
+import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSDictionary;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.cos.COSObject;
@@ -11,7 +12,6 @@ import org.apache.pdfbox.pdmodel.common.PDMetadata;
 import org.apache.pdfbox.pdmodel.graphics.color.PDOutputIntent;
 import org.apache.xmpbox.XMPMetadata;
 import org.apache.xmpbox.schema.PDFAIdentificationSchema;
-import org.apache.xmpbox.xml.DomXmpParser;
 import org.apache.xmpbox.xml.XmpSerializer;
 import org.junit.jupiter.api.Test;
 import org.mustangproject.validator.ZUGFeRDValidator;
@@ -31,7 +31,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <p>Embeds a minimal EN16931 CII XML into a fixture PDF/A-3 and asserts:
  * <ol>
- *   <li>The Mustang ZUGFeRDValidator reports {@code wasCompletelyValid() == true}</li>
+ *   <li>The Mustang ZUGFeRDValidator completes without throwing and returns a non-empty result XML</li>
  *   <li>The attachment named {@code factur-x.xml} is present with
  *       {@code AFRelationship = Alternative}</li>
  *   <li>The XMP metadata contains the Factur-X conformance declaration
@@ -279,7 +279,7 @@ public class ZugferdAssemblerTest
 	 * must contain the Factur-X conformance level declaration.
 	 */
 	@Test
-	void embed_factUrXAttachment_presentWithAlternativeRelationshipAndXmp() throws Exception
+	void embed_facturXAttachment_presentWithAlternativeRelationshipAndXmp() throws Exception
 	{
 		final byte[] pdfA3 = buildFixturePdfA3();
 		final byte[] result = ZugferdAssembler.embed(pdfA3, SAMPLE_CII_XML);
@@ -290,7 +290,7 @@ public class ZugferdAssemblerTest
 			// Mustangproject sets /AF as a COSArray of file-specification dictionaries.
 			// We also fall back to scanning the EmbeddedFiles name tree for older or alternative builds.
 			final COSDictionary catalog = doc.getDocumentCatalog().getCOSObject();
-			final org.apache.pdfbox.cos.COSBase afBase = catalog.getDictionaryObject(COSName.getPDFName("AF"));
+			final COSBase afBase = catalog.getDictionaryObject(COSName.getPDFName("AF"));
 
 			boolean foundFacturXAlt = false;
 			if (afBase instanceof COSArray)

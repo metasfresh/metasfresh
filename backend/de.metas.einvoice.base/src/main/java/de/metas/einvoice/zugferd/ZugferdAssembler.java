@@ -86,14 +86,14 @@ public class ZugferdAssembler
 		}
 		finally
 		{
-			// ZUGFeRDExporterFromA3 implements Closeable; close() releases the PDDocument handle
+			// close() releases the PDDocument handle; ignore errors since the export already completed
 			try
 			{
 				exporter.close();
 			}
 			catch (final IOException ignored)
 			{
-				// already exported; ignore close errors
+				// ignore
 			}
 		}
 	}
