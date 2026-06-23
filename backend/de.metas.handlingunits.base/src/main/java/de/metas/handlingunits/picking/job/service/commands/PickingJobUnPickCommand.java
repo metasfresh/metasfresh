@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PickingJobUnPickCommand
@@ -93,10 +94,16 @@ public class PickingJobUnPickCommand
 
 		this.unpickToHU = unpickToHU;
 
+		// productId and qtyToUnpick form a coupled pair: both-or-neither.
+		// Guard the half-set case, which would otherwise silently fall through and unpick the wrong set of HUs.
+		Check.assume(
+				(productId == null) == (qtyToUnpick == null),
+				"productId and qtyToUnpick must both be set or both be null; got productId={}, qtyToUnpick={}",
+				productId, qtyToUnpick);
+
 		final Stream<StepUnpickInstructions> unpickInstructionsStream;
 		if (productId != null && qtyToUnpick != null)
 		{
-			// Subset path: select whole packed HUs LIFO across all steps, summing to qtyToUnpick
 			unpickInstructionsStream = buildSubsetUnpickInstructions(pickingJob, productId, qtyToUnpick);
 		}
 		else if (onlyPickingJobStepId != null)
@@ -137,23 +144,22 @@ public class PickingJobUnPickCommand
 			@NonNull final ProductId productId,
 			@NonNull final Quantity qtyToUnpick)
 	{
-		// Collect all candidate (step, pickFromKey, pickedToHU) tuples matching the product, sorted LIFO
-		final List<CandidateHU> candidates = new ArrayList<>();
-		pickingJob.streamSteps()
+		final List<CandidateHU> candidates = pickingJob.streamSteps()
 				.filter(step -> ProductId.equals(step.getProductId(), productId))
-				.forEach(step -> step.getPickFromKeys().forEach(pickFromKey -> {
-					final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
-					if (pickFrom.getPickedTo() != null)
-					{
-						pickFrom.getPickedTo().stream()
-								.forEach(pickedToHU -> candidates.add(new CandidateHU(step.getId(), pickFromKey, pickedToHU)));
-					}
-				}));
+				.flatMap(step -> step.getPickFromKeys().stream()
+						.flatMap(pickFromKey -> {
+							final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
+							if (pickFrom.getPickedTo() == null)
+							{
+								return Stream.<CandidateHU>empty();
+							}
+							return pickFrom.getPickedTo().stream()
+									.map(pickedToHU -> new CandidateHU(step.getId(), pickFromKey, pickedToHU));
+						}))
+				// LIFO: most recently packed first
+				.sorted(Comparator.comparing((CandidateHU c) -> c.getPickedToHU().getCreatedAt()).reversed())
+				.collect(Collectors.toList());
 
-		// Sort LIFO (most recently packed first)
-		candidates.sort(Comparator.comparing((CandidateHU c) -> c.getPickedToHU().getCreatedAt()).reversed());
-
-		// Greedily pick whole HUs until sum reaches qtyToUnpick
 		Quantity remaining = qtyToUnpick;
 		final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> selectedByStepPickFrom = new HashMap<>();
 
@@ -191,7 +197,6 @@ public class PickingJobUnPickCommand
 						.build());
 	}
 
-	/** Simple tuple for LIFO candidate collection. */
 	@Value
 	private static class CandidateHU
 	{
@@ -200,7 +205,6 @@ public class PickingJobUnPickCommand
 		@NonNull PickingJobStepPickedToHU pickedToHU;
 	}
 
-	/** Map key: (stepId, pickFromKey). */
 	@Value
 	private static class StepPickFromKey
 	{
@@ -242,7 +246,7 @@ public class PickingJobUnPickCommand
 		for (final StepUnpickInstructions unpickInstructions : unpickInstructionsList)
 		{
 			final PickingJobStepPickFromKey pickFromKey = unpickInstructions.getPickFromKey();
-			changedStep = unpickStep(changedStep, pickFromKey, unpickInstructions.getPickedToHUsToUnpickOptional().orElse(null));
+			changedStep = unpickStep(changedStep, pickFromKey, unpickInstructions.getPickedToHUsToUnpick());
 		}
 
 		if (changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
@@ -414,10 +418,5 @@ public class PickingJobUnPickCommand
 		 * When absent: reverse all packed HUs for this step/pickFrom (whole-step path).
 		 */
 		@Nullable ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpick;
-
-		public java.util.Optional<ImmutableList<PickingJobStepPickedToHU>> getPickedToHUsToUnpickOptional()
-		{
-			return java.util.Optional.ofNullable(pickedToHUsToUnpick);
-		}
 	}
 }
