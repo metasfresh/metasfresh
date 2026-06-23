@@ -69,7 +69,7 @@ public class PromotionCodeRepository
 	@NonNull
 	public PromotionCodeId getPromotionCodeIdByValue(@NonNull final String value)
 	{
-		final PromotionCodeId id = cacheByValue.getOrLoad(value, () -> lookupIdByValue(value)).orElse(null);
+		final PromotionCodeId id = cacheByValue.getOrLoadNonNull(value, () -> lookupIdByValue(value)).orElse(null);
 		if (id == null)
 		{
 			throw new AdempiereException("Promotion code not found: " + value)
