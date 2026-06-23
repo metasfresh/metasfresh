@@ -126,13 +126,17 @@ public class OLCandBL implements IOLCandBL
 		this.bPartnerOrderParamsRepository = bPartnerOrderParamsRepository;
 	}
 
+	/**
+	 * Registers (and returns) an {@link IOLCandBL} for unit tests under the interface key that consumers
+	 * resolve via {@code Services.get(IOLCandBL.class)} — call it once in setup; no extra registerJUnitBean needed.
+	 */
 	@VisibleForTesting
-	public static OLCandBL newInstanceForUnitTesting()
+	public static IOLCandBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(
-				OLCandBL.class,
+				IOLCandBL.class,
 				() -> new OLCandBL(
 						new BPartnerBL(new UserRepository()),
 						BPartnerOrderParamsRepository.newInstanceForUnitTesting()));

@@ -94,10 +94,8 @@ class OLCandOrderFactoryFirstClassFieldsTest
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
-		SpringContextHolder.registerJUnitBean(
-				IOLCandBL.class,
-				OLCandBL.newInstanceForUnitTesting()
-		);
+		// registers IOLCandBL under the interface key consumers resolve via Services.get(IOLCandBL.class)
+		OLCandBL.newInstanceForUnitTesting();
 
 		// No custom columns needed for this test (we test first-class typed propagation, not generic)
 		CustomColumnService.newInstanceForUnitTesting();

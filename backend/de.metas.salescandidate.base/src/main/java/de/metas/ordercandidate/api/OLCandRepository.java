@@ -368,17 +368,16 @@ public class OLCandRepository
 			olCandPO.setReason(request.getReason());
 		}
 
-		saveRecord(olCandWithIssuesInterface);
-
-		// wire extendedProps: set custom REST API columns on the saved C_OLCand record
+		// wire extendedProps: set custom REST API columns on the C_OLCand record before the single save below
 		if (!request.getExtendedProps().isEmpty()
 				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
 		{
 			customColumnService.setCustomColumns(
 					InterfaceWrapperHelper.getPO(olCandWithIssuesInterface),
 					request.getExtendedProps());
-			saveRecord(olCandWithIssuesInterface);
 		}
+
+		saveRecord(olCandWithIssuesInterface);
 
 		return olCandWithIssuesInterface;
 	}

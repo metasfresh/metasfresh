@@ -99,10 +99,8 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
-		SpringContextHolder.registerJUnitBean(
-				IOLCandBL.class,
-				OLCandBL.newInstanceForUnitTesting()
-		);
+		// registers IOLCandBL under the interface key consumers resolve via Services.get(IOLCandBL.class)
+		OLCandBL.newInstanceForUnitTesting();
 
 		// Register the custom columns as real AD_Column entries (IsRestAPICustomColumn='Y') so the REAL
 		// CustomColumnRepository (querying via IQueryBL) picks them up — no stub needed:
