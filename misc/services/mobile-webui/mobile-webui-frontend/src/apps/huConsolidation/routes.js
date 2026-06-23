@@ -2,6 +2,7 @@ import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 import { SelectHUConsolidationTargetScreen } from './activities/SelectHUConsolidationTargetScreen';
 import { PickingSlotScreen } from './activities/PickingSlotScreen';
 import { ScanHUConsolidationTargetScreen } from './activities/ScanHUConsolidationTargetScreen';
+import { HUConsolidationGraiScreen } from './activities/HUConsolidationGraiScreen';
 
 export const huConsolidationJobLocation = ({ applicationId, wfProcessId }) =>
   getWFProcessScreenLocation({ applicationId, wfProcessId });
@@ -18,6 +19,11 @@ export const scanTargetScreenLocation = ({ applicationId, wfProcessId, activityI
 export const pickingSlotScreenLocation = ({ applicationId, wfProcessId, activityId, pickingSlotId }) => {
   const baseUrl = huConsolidationJobLocation({ applicationId, wfProcessId });
   return `${baseUrl}/pickingSlot/${activityId}/${pickingSlotId}`;
+};
+
+export const graiScreenLocation = ({ applicationId, wfProcessId, activityId }) => {
+  const baseUrl = huConsolidationJobLocation({ applicationId, wfProcessId });
+  return `${baseUrl}/graiScan/${activityId}`;
 };
 
 export const huConsolidationRoutes = [
@@ -45,5 +51,13 @@ export const huConsolidationRoutes = [
       pickingSlotId: ':id',
     }),
     Component: PickingSlotScreen,
+  },
+  {
+    path: graiScreenLocation({
+      applicationId: ':applicationId',
+      wfProcessId: ':workflowId',
+      activityId: ':activityId',
+    }),
+    Component: HUConsolidationGraiScreen,
   },
 ];
