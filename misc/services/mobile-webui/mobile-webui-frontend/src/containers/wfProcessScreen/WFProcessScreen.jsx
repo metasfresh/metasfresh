@@ -23,6 +23,7 @@ import { appLaunchersLocation } from '../../routes/launchers';
 import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { COMPONENT_TYPE_huConsolidation_consolidate } from '../../apps/huConsolidation';
 import HUConsolidationActivity from '../../apps/huConsolidation/activities/HUConsolidationActivity';
+import { getHUConsolidationJob, isGraiReady } from '../../apps/huConsolidation/reducers';
 import { getUIComponentFactory } from '../../reducers/wfProcesses/activityStateHandlers';
 
 const WFProcessScreen = () => {
@@ -61,6 +62,7 @@ const WFProcessScreen = () => {
               applicationId,
               wfProcessId,
               activityItem,
+              previousActivity: index > 0 ? activities[index - 1] : null,
               isLastActivity: index === activities.length - 1,
             });
           })}
@@ -70,7 +72,20 @@ const WFProcessScreen = () => {
   );
 };
 
-const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isLastActivity }) => {
+/**
+ * Returns false when the previous activity is a huConsolidation/consolidate activity
+ * that requires GRAI scanning and the required GRAIs have not all been assigned yet.
+ * Returns true in all other cases (different activity type, GRAI not required, or all filled).
+ */
+const isConfirmGraiReady = ({ previousActivity }) => {
+  if (previousActivity?.componentType !== COMPONENT_TYPE_huConsolidation_consolidate) {
+    return true;
+  }
+  const job = getHUConsolidationJob({ activity: previousActivity });
+  return isGraiReady(job);
+};
+
+const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, previousActivity, isLastActivity }) => {
   const componentType = activityItem.componentType;
 
   const uiComponentFactory = getUIComponentFactory({ componentType });
@@ -104,7 +119,10 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           activity={activityItem}
         />
       );
-    case 'common/confirmButton':
+    case 'common/confirmButton': {
+      // Gate the confirm button when the previous activity is a huConsolidation/consolidate
+      // activity that requires GRAI scanning and the GRAIs are not yet fully assigned.
+      const isConfirmUserEditable = activityItem.dataStored.isUserEditable && isConfirmGraiReady({ previousActivity });
       return (
         <ConfirmActivity
           key={activityItem.activityId}
@@ -114,12 +132,13 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           caption={activityItem.caption}
           promptQuestion={activityItem.componentProps.question}
           userInstructions={activityItem.userInstructions}
-          isUserEditable={activityItem.dataStored.isUserEditable}
+          isUserEditable={isConfirmUserEditable}
           isProcessing={activityItem.dataStored.processing}
           completeStatus={activityItem.dataStored.completeStatus}
           isLastActivity={isLastActivity}
         />
       );
+    }
     case 'manufacturing/rawMaterialsIssue':
       return (
         <RawMaterialIssueActivity
