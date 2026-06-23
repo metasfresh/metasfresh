@@ -319,6 +319,7 @@ public class C_BPartner_StepDef
 		}
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_TaxID).ifPresent(bPartnerRecord::setTaxID);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId))); // USt-IdNr (BT-31/48)
 
 		// e-invoice recipient configuration (resolved by EInvoiceConfigService.resolveForInvoice)
 		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
