@@ -46,7 +46,7 @@ public class EInvoiceCiiServiceTest
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-		service = new EInvoiceCiiService(new EInvoiceConfigService(), null);
+		service = new EInvoiceCiiService(new EInvoiceConfigService(), null, null);
 	}
 
 	@Test

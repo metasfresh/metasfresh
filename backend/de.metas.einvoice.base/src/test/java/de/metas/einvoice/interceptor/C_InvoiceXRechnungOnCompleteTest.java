@@ -94,7 +94,7 @@ public class C_InvoiceXRechnungOnCompleteTest
 		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		final C_Invoice interceptor = new C_Invoice(
 				configService,
-				new EInvoiceCiiService(configService, null),
+				new EInvoiceCiiService(configService, null, null),
 				attachmentEntryService);
 		POJOLookupMap.get().addModelValidator(interceptor);
 	}
