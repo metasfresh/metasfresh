@@ -8,18 +8,18 @@ import { mergeGraiArrays } from '../../../utils/grai';
 export const useTargetGrais = ({ wfProcessId }) => {
   const dispatch = useDispatch();
   const [graiCodes, setGraiCodes] = useState([]);
-  const [sending, setSending] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const loadFromBackend = useCallback(() => {
-    setLoading(true);
+    setIsLoading(true);
     return api
       .getTargetGrais({ wfProcessId })
       .then((result) => {
         setGraiCodes(result?.graiCodes ?? []);
       })
       .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setLoading(false));
+      .finally(() => setIsLoading(false));
   }, [wfProcessId]);
 
   const addGrais = useCallback((newGrais) => {
@@ -35,7 +35,7 @@ export const useTargetGrais = ({ wfProcessId }) => {
   }, []);
 
   const sendToBackend = useCallback(() => {
-    setSending(true);
+    setIsSending(true);
     return api
       .setTargetGrais({ wfProcessId, graiCodes })
       .then((wfProcess) => {
@@ -44,15 +44,15 @@ export const useTargetGrais = ({ wfProcessId }) => {
         }
       })
       .catch((axiosError) => toastError({ axiosError }))
-      .finally(() => setSending(false));
+      .finally(() => setIsSending(false));
   }, [wfProcessId, graiCodes, dispatch]);
 
   return {
     graiCodes,
     assignedGrais: graiCodes,
     extraGrais: [],
-    loading,
-    sending,
+    isLoading,
+    isSending,
     addGrais,
     removeGrai,
     clearAllGrais,

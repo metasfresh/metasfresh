@@ -150,9 +150,19 @@ jest.mock('../../../utils/toast', () => ({
   toastError: jest.fn(),
 }));
 
+jest.mock('../../../hooks/useScreenDefinition', () => ({
+  useScreenDefinition: jest.fn(),
+}));
+
+jest.mock('../../../components/GraiCapturePanel', () => ({
+  __esModule: true,
+  default: ({ children }) => <div data-testid="grai-capture-panel">{children}</div>,
+}));
+
 import { useDispatch } from 'react-redux';
 import * as api from '../../../apps/huConsolidation/api';
 import { useTargetGrais } from '../../../apps/huConsolidation/actions/useTargetGrais';
+import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 
 const mockDispatch = jest.fn();
 
@@ -170,6 +180,7 @@ describe('useTargetGrais — sendToBackend payload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     useDispatch.mockReturnValue(mockDispatch);
+    useScreenDefinition.mockReturnValue({ wfProcessId: WF_PROCESS_ID, history: { goBack: jest.fn() } });
   });
 
   it('calls setTargetGrais({ wfProcessId, graiCodes }) with the added GRAIs', async () => {
@@ -205,5 +216,30 @@ describe('useTargetGrais — sendToBackend payload', () => {
       wfProcessId: WF_PROCESS_ID,
       graiCodes: [],
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: HUConsolidationGraiScreen — loads saved GRAIs on mount
+// ---------------------------------------------------------------------------
+
+import HUConsolidationGraiScreen from '../../../apps/huConsolidation/activities/HUConsolidationGraiScreen';
+
+describe('HUConsolidationGraiScreen — mount-load', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useDispatch.mockReturnValue(mockDispatch);
+    useScreenDefinition.mockReturnValue({ wfProcessId: WF_PROCESS_ID, history: { goBack: jest.fn() } });
+  });
+
+  it('calls getTargetGrais once on mount with the correct wfProcessId', async () => {
+    api.getTargetGrais.mockResolvedValue({ graiCodes: ['GRAI-001'] });
+
+    await act(async () => {
+      render(<HUConsolidationGraiScreen />);
+    });
+
+    expect(api.getTargetGrais).toHaveBeenCalledTimes(1);
+    expect(api.getTargetGrais).toHaveBeenCalledWith({ wfProcessId: WF_PROCESS_ID });
   });
 });

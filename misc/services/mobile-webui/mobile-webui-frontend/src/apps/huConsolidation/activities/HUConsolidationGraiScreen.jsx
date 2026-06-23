@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { huConsolidationJobLocation } from '../routes';
 import GraiCapturePanel from '../../../components/GraiCapturePanel';
@@ -12,8 +12,22 @@ export const HUConsolidationGraiScreen = () => {
     back: huConsolidationJobLocation,
   });
 
-  const { graiCodes, assignedGrais, extraGrais, loading, sending, addGrais, removeGrai, clearAllGrais, sendToBackend } =
-    useTargetGrais({ wfProcessId });
+  const {
+    graiCodes,
+    assignedGrais,
+    extraGrais,
+    isLoading,
+    isSending,
+    addGrais,
+    removeGrai,
+    clearAllGrais,
+    sendToBackend,
+    loadFromBackend,
+  } = useTargetGrais({ wfProcessId });
+
+  useEffect(() => {
+    loadFromBackend();
+  }, [loadFromBackend]);
 
   const onSend = () => {
     sendToBackend().then(() => history.goBack());
@@ -24,7 +38,7 @@ export const HUConsolidationGraiScreen = () => {
       assignedGrais={assignedGrais}
       extraGrais={extraGrais}
       graiCodes={graiCodes}
-      loading={loading}
+      loading={isLoading}
       countKey="huConsolidation.GraiScreen.count"
       countExtraKey="huConsolidation.GraiScreen.countExtra"
       clearAllButtonKey="huConsolidation.GraiScreen.clearAll"
@@ -36,7 +50,7 @@ export const HUConsolidationGraiScreen = () => {
       <ButtonWithIndicator
         captionKey="huConsolidation.GraiScreen.send"
         testId="grai-send-button"
-        disabled={sending || !graiCodes.length}
+        disabled={isSending || !graiCodes.length}
         onClick={onSend}
         additionalCssClass="action-button"
       />
