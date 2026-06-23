@@ -695,7 +695,7 @@ public class DocumentCollection
 						documentToInvalidate.isInvalidateDocument(),
 						rootDocument.getSaveStatus().isError(),
 						rootDocument.getValidStatus().isValid(),
-						false) // rootHasUnsavedNewIncludedDocument is wired at this call site in a follow-up commit
+						rootDocument.hasUnsavedNewIncludedDocuments())
 						&& !rootDocument.isNew())
 				{
 					rootDocuments.invalidate(rootDocumentKey);
