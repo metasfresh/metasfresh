@@ -1340,6 +1340,29 @@ public interface I_M_Product
 	String COLUMNNAME_IsSelfService = "IsSelfService";
 
 	/**
+	 * Set Serial No Picked.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSerialNoPicked (boolean IsSerialNoPicked);
+
+	/**
+	 * Get Serial No Picked.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSerialNoPicked();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsSerialNoPicked = new ModelColumn<>(I_M_Product.class, "IsSerialNoPicked", null);
+	String COLUMNNAME_IsSerialNoPicked = "IsSerialNoPicked";
+
+	/**
 	 * Set Sold.
 	 * Organization sells this product
 	 *

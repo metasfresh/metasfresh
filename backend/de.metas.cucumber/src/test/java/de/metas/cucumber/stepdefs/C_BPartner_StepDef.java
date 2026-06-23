@@ -149,7 +149,8 @@ public class C_BPartner_StepDef
 	 * <p>
 	 * E-invoicing columns (all optional):
 	 * <ul>
-	 *   <li>{@code TaxID} — the partner's VAT id (BT-31 seller / BT-48 buyer)</li>
+	 *   <li>{@code VATaxID} — the partner's USt-IdNr / VAT identifier (BT-31 seller / BT-48 buyer)</li>
+	 *   <li>{@code TaxID} — the partner's Steuernummer / tax registration number (BT-32 seller)</li>
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
@@ -318,6 +319,7 @@ public class C_BPartner_StepDef
 		}
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_TaxID).ifPresent(bPartnerRecord::setTaxID);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId))); // USt-IdNr (BT-31/48)
 
 		// e-invoice recipient configuration (resolved by EInvoiceConfigService.resolveForInvoice)
 		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
