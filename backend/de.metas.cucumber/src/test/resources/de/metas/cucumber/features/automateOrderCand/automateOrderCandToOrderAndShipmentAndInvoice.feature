@@ -70,8 +70,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | order_1               | shipment_1            | invoice_1               |
 
     And validate the created orders
-      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
-      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | Shopware6            |
+      | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | OrderType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | ExternalSystem.Value |
+      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | SO        | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | Shopware6            |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |

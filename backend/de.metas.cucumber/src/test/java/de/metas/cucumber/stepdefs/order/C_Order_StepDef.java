@@ -787,6 +787,9 @@ public class C_Order_StepDef
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_OrderType)
+				.ifPresent(orderType -> softly.assertThat(order.getOrderType()).as("OrderType for Identifier=%s", identifierStr).isEqualTo(orderType));
+
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> {
 					final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);

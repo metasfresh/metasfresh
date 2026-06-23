@@ -41,6 +41,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -1110,6 +1111,14 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
+	@NonNull
+	public DocBaseAndSubType getDocBaseAndSubType(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = Check.assumeNotNull(getDocTypeIdEffectiveOrNull(order), "DocTypeId is not null for order {}", order);
+		return docTypeBL.getDocBaseAndSubTypeById(docTypeId);
+	}
+
 	@Nullable
 	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
@@ -1119,8 +1128,7 @@ public class OrderBL implements IOrderBL
 			return docTypeId;
 		}
 
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeTargetId;
+		return DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 	}
 
 	@Override
@@ -1128,14 +1136,6 @@ public class OrderBL implements IOrderBL
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
 		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
-				.map(docTypeBL::getById)
-				.orElse(null);
-	}
-
-	@Nullable
-	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
-	{
-		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
 				.map(docTypeBL::getById)
 				.orElse(null);
 	}
