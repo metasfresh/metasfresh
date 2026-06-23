@@ -3,7 +3,7 @@ import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
-import { assertRecordIsValid, WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
+import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
 
 /**
  * E-Invoicing — Seller tax-identification fields on Organisation Stammdaten window.
@@ -16,8 +16,17 @@ import { assertRecordIsValid, WEBAPI_BASE_URL } from '../utils/WebAPIValidation'
  *   - CommercialRegisterNumber (Handelsregisternr)      — newly added field
  *
  * Test verifies that all three fields:
- *   1. Are rendered in the detail form (visible)
- *   2. Are editable (the underlying <input> is NOT disabled/readonly)
+ *   1. Appear in the window's tab layout (visible = not excluded from layout)
+ *   2. Are editable (readonly: false in the layout)
+ *
+ * Data-independence: this test verifies the AD_Field layout via the WebAPI
+ * /rest/api/window/{windowId}/layout endpoint. Window layout is pure metadata
+ * (AD_Field/AD_UI_Element configuration) and does not depend on any C_BPartner
+ * records being present — making this test safe on a clean CI seed DB.
+ *
+ * Window 540676 has isinsertrecord=N and a WhereClause (ad_orgbp_id IS NOT NULL)
+ * that filters to org-BPartner records not present in the CI seed DB, so
+ * /window/540676/NEW and navigating to a hardcoded record ID are both non-options.
  *
  * me03 #30508
  *
@@ -30,14 +39,6 @@ import { assertRecordIsValid, WEBAPI_BASE_URL } from '../utils/WebAPIValidation'
  * AD_Tab 541852 "Geschäftspartner" — table C_BPartner (WhereClause: ad_orgbp_id is not null)
  */
 const ORG_MASTER_WINDOW_ID = 540676;
-
-/**
- * C_BPartner_ID 2155894 "Muster GmbH" — an org-BPartner record (ad_orgbp_id IS NOT NULL)
- * that already carries VATaxID and TaxID values.  CommercialRegisterNumber is empty (NULL),
- * which makes it a good test target: we can assert the field is present even when blank.
- * The record is NOT modified by this test.
- */
-const TEST_BPARTNER_ID = 2155894;
 
 /**
  * Reset the WebUI metadata cache after login.
@@ -55,16 +56,68 @@ async function resetWebuiCache(page) {
   console.log(`[INFO] Cache reset response: HTTP ${status}`);
 }
 
+/**
+ * Fetch the window layout from the WebAPI.
+ * Returns the parsed JSON layout for the window's root tab.
+ *
+ * The /window/{id}/layout endpoint is available to any authenticated session
+ * and returns field visibility/readonly metadata regardless of whether records exist.
+ */
+async function fetchWindowLayout(page, windowId) {
+  const url = `${WEBAPI_BASE_URL}/window/${windowId}/layout`;
+  console.log(`[INFO] Fetching layout from: ${url}`);
+  const resp = await page.request.get(url);
+  if (!resp.ok()) {
+    const body = await resp.text();
+    throw new Error(`Layout fetch failed: HTTP ${resp.status()} — ${body.substring(0, 300)}`);
+  }
+  return resp.json();
+}
+
+/**
+ * Collect all {element, field} pairs from a window layout JSON.
+ *
+ * Actual structure (verified against /rest/api/window/540676/layout):
+ *   sections[] → columns[] → elementGroups[] → elementsLine[] → elements[] → fields[]
+ *
+ * - Each field entry is: { field: "<ColumnName>", caption, emptyText, ... }
+ *   ("field" is the column name string, NOT an object)
+ * - Editability attributes (readonly, viewEditorRenderMode) live on the ELEMENT,
+ *   not on the field. A missing "readonly" key means editable.
+ *
+ * Returns an array of { fieldName, element } objects so callers can check
+ * both presence (fieldName in layout) and editability (element.readonly).
+ */
+function collectLayoutFields(layout) {
+  const results = [];
+  for (const section of layout.sections || []) {
+    for (const column of section.columns || []) {
+      for (const elementGroup of column.elementGroups || []) {
+        // The actual key is "elementsLine", not "elements"
+        for (const elementsLine of elementGroup.elementsLine || []) {
+          for (const element of elementsLine.elements || []) {
+            for (const field of element.fields || []) {
+              // field.field is the ColumnName string (e.g. "VATaxID")
+              results.push({ fieldName: field.field, element });
+            }
+          }
+        }
+      }
+    }
+  }
+  return results;
+}
+
 test.describe('Organisation Stammdaten — seller tax-identification fields (E-Invoicing)', () => {
   test(
-    'VATaxID, TaxID and CommercialRegisterNumber are visible and editable on Geschäftspartner tab',
+    'VATaxID, TaxID and CommercialRegisterNumber are in the window layout and editable',
     async ({ page }) => {
       // === ALLURE METADATA ===
       allure.epic('E0340: Invoicing');
       allure.feature('F00751: e-Invoicing Germany');
       allure.tag('F00751: e-Invoicing Germany');
       allure.tag('F00751');
-      allure.story('Seller tax fields visible and editable on Organisation Stammdaten window 540676');
+      allure.story('Seller tax fields in window layout on Organisation Stammdaten window 540676');
       allure.severity('critical');
       allure.tag('e-Invoicing');
       allure.tag('OrganisationStammdaten');
@@ -78,12 +131,18 @@ tab "Geschäftspartner" (AD_Tab 541852):
 - **TaxID** (Steuernummer) — newly shown
 - **CommercialRegisterNumber** (Handelsregisternr) — newly added
 
+### Test Approach — Data-Independent Layout Verification
+Window 540676 has \`isinsertrecord=N\` and a WhereClause that filters to org-BPartner
+records not present in the CI seed DB. The test therefore verifies the field layout
+via the WebAPI \`/rest/api/window/{windowId}/layout\` endpoint, which returns
+AD_Field metadata without requiring any records.
+
 ### Test Steps
 1. Create fresh test user, login
 2. Reset webui metadata cache (so new field layout is active without server restart)
-3. Navigate directly to the org-BPartner record in window 540676
-4. Assert each field container is visible in the form (.form-field-VATaxID etc.)
-5. Assert the input inside each field is enabled (NOT disabled / NOT readonly)
+3. Fetch the window layout via /rest/api/window/540676/layout
+4. Assert each field is present in the layout (not excluded from the tab)
+5. Assert each field has readonly: false (editable)
       `);
 
       test.setTimeout(120000); // 2 minutes
@@ -127,87 +186,59 @@ tab "Geschäftspartner" (AD_Tab 541852):
       // Must be done after login (endpoint requires authentication).
       await resetWebuiCache(page);
 
-      // === STEP 4: Navigate directly to the org-BPartner record in window 540676 ===
-      // Window 540676 "Organisation Stammdaten" — the Geschäftspartner tab (541852)
-      // shows C_BPartner records where ad_orgbp_id IS NOT NULL.
-      // Record 2155894 "Muster GmbH" satisfies this condition.
-      await page.goto(`${FRONTEND_BASE_URL}/window/${ORG_MASTER_WINDOW_ID}/${TEST_BPARTNER_ID}`);
+      // === STEP 4: Fetch window layout ===
+      // The layout endpoint returns the field definitions for the tab — this is pure metadata
+      // and works regardless of whether any C_BPartner records exist in the DB.
+      const layout = await fetchWindowLayout(page, ORG_MASTER_WINDOW_ID);
 
-      // Wait for the detail view to fully load
-      await page.waitForURL(/\/window\/\d+\/\d+/, { timeout: SLOW_ACTION_TIMEOUT });
-      await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-      await page
-        .locator('.rotating, .indicator-pending')
-        .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-        .catch(() => {});
+      allure.attachment('Window Layout JSON', JSON.stringify(layout, null, 2), 'application/json');
+      console.log('[INFO] Window layout fetched successfully');
 
-      console.log('[INFO] Record loaded. URL:', page.url());
+      // Collect all field names from the layout structure
+      const layoutFields = collectLayoutFields(layout);
+      console.log(`[INFO] Layout contains ${layoutFields.length} field entries`);
 
-      const screenshotInitial = await page.screenshot();
-      allure.attachment('Geschaeftspartner Detail — Initial State', screenshotInitial, 'image/png');
-
-      // === STEP 5: Assert record is valid (MANDATORY guard per CLAUDE.md) ===
-      // If valid=false, any UI changes would not be saved.  We are not editing in this
-      // test, but the guard confirms the record loaded correctly.
-      await assertRecordIsValid(
-        String(ORG_MASTER_WINDOW_ID),
-        String(TEST_BPARTNER_ID),
-        'before asserting field visibility'
-      );
-      console.log('[INFO] Record is valid');
-
-      // === STEP 6: Assert all three fields are visible and editable ===
+      // === STEP 5: Assert all three fields are in the layout and editable ===
       const FIELDS = [
         {
           columnName: 'VATaxID',
           label: 'USt-IdNr / VAT identifier',
-          selector: '.form-field-VATaxID',
         },
         {
           columnName: 'TaxID',
           label: 'Steuernummer',
-          selector: '.form-field-TaxID',
         },
         {
           columnName: 'CommercialRegisterNumber',
           label: 'Handelsregisternr',
-          selector: '.form-field-CommercialRegisterNumber',
         },
       ];
 
       for (const field of FIELDS) {
-        await test.step(`Assert field ${field.columnName} (${field.label}) is visible and editable`, async () => {
-          // 1. Field container must be visible in the form
-          const fieldContainer = page.locator(field.selector);
-          await fieldContainer.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-          await expect(fieldContainer, `Field ${field.columnName} container must be visible`).toBeVisible();
+        await test.step(`Assert field ${field.columnName} (${field.label}) is in layout and editable`, async () => {
+          // Find the field in the layout by column name
+          const entry = layoutFields.find((f) => f.fieldName === field.columnName);
 
-          // 2. The input inside the field must be enabled (not disabled and not readonly)
-          //    String/Text fields render as <input type="text"> inside the form-field wrapper.
-          const input = fieldContainer.locator('input').first();
-          await input.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-          const isDisabled = await input.isDisabled();
           expect(
-            isDisabled,
-            `Field ${field.columnName} input must NOT be disabled (field must be editable)`
-          ).toBe(false);
+            entry,
+            `Field ${field.columnName} must appear in the window 540676 layout (check AD_Field.IsDisplayed and AD_UI_Element visibility for tab 541852)`
+          ).toBeDefined();
 
-          // Also check the readonly attribute (some fields are shown but not editable)
-          const isReadonly = await input.getAttribute('readonly');
+          // Assert the field is editable.
+          // Editability is indicated by the ABSENCE of readonly:true on the element.
+          // (The layout omits the readonly key when the field is editable;
+          //  readonly:true is set explicitly only for truly read-only fields.)
+          const isReadonly = entry.element.readonly === true;
           expect(
             isReadonly,
-            `Field ${field.columnName} input must NOT have readonly attribute`
-          ).toBeNull();
+            `Field ${field.columnName} must NOT be readonly (element.readonly must not be true)`
+          ).toBe(false);
 
-          console.log(`[PASS] ${field.columnName} (${field.label}) — visible and editable`);
+          console.log(`[PASS] ${field.columnName} (${field.label}) — present in layout, element.readonly=${entry.element.readonly}`);
         });
       }
 
-      const screenshotFinal = await page.screenshot();
-      allure.attachment('Geschaeftspartner Detail — Fields Verified', screenshotFinal, 'image/png');
-
-      console.log('[INFO] All three seller tax fields verified — visible and editable');
+      console.log('[INFO] All three seller tax fields verified — present in layout and editable');
     }
   );
 });
