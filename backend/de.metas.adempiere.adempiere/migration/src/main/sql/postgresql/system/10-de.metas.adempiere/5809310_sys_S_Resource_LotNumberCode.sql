@@ -1,5 +1,6 @@
 -- Add S_Resource.LotNumberCode column (String, length 10, optional)
--- Used for Lot-Nummer logic (me03 #29154, customer sp80)
+-- A per-resource code consumed by custom lot-number sequence providers (e.g. to embed a
+-- production-line code in a generated lot number). Not unique, not mandatory.
 
 -- ===========================================================
 -- 1. AD_Element
