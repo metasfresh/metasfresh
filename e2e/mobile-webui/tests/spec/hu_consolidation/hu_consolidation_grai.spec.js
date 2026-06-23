@@ -74,8 +74,11 @@ const createMasterdataGraiRequired = async () => {
                 // PI_P1: target LU used for setTargetLU + graiMapping for the GRAI to scan.
                 PI_P1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
                 // TU-only PIs for source HUs placed directly into the picking slot.
-                PI_TU1: { tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
-                PI_TU2: { tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
+                // Use distinct TU identifiers (SRC_TU1/SRC_TU2) to avoid colliding with
+                // the TU1 identifier registered by PI_P1 (same tu:'TU1' would produce a
+                // duplicate TU1_P1 HUPIItemProductId entry in MasterdataContext).
+                PI_TU1: { tu: 'SRC_TU1', product: 'P1', qtyCUsPerTU: 4 },
+                PI_TU2: { tu: 'SRC_TU2', product: 'P2', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
                 // pickingSlot:'slot1' places the TU directly into the slot queue without the
@@ -115,8 +118,11 @@ const createMasterdataNoGrai = async () => {
             },
             packingInstructions: {
                 PI_P1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
-                PI_TU1: { tu: 'TU1', product: 'P1', qtyCUsPerTU: 4 },
-                PI_TU2: { tu: 'TU2', product: 'P2', qtyCUsPerTU: 5 },
+                // Use distinct TU identifiers (SRC_TU1/SRC_TU2) to avoid colliding with
+                // the TU1 identifier registered by PI_P1 (same tu:'TU1' would produce a
+                // duplicate TU1_P1 HUPIItemProductId entry in MasterdataContext).
+                PI_TU1: { tu: 'SRC_TU1', product: 'P1', qtyCUsPerTU: 4 },
+                PI_TU2: { tu: 'SRC_TU2', product: 'P2', qtyCUsPerTU: 5 },
             },
             handlingUnits: {
                 HU1: { product: 'P1', warehouse: 'wh', packingInstructions: 'PI_TU1', pickingSlot: 'slot1' },
