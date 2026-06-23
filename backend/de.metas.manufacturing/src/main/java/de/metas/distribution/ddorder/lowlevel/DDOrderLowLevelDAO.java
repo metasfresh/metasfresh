@@ -66,6 +66,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+/**
+ * Repository Tables: DD_Order, DD_OrderLine, DD_OrderLine_Alternative, PP_MRP, PP_MRP_Alloc
+ * Repository Cluster: DDOrderLowLevelDAO
+ */
 @Repository
 public class DDOrderLowLevelDAO
 {
