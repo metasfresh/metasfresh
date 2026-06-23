@@ -13,7 +13,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 @UtilityClass
@@ -62,7 +61,7 @@ public class DistributionJobQueries
 				.build();
 	}
 
-	@Nullable
+	@NonNull
 	private static InSetPredicate<WarehouseId> extractWarehouseToIds(final @NotNull DDOrderReferenceQuery query)
 	{
 		final Set<WarehouseId> facetWarehouseToIds = query.getActiveFacetIds().getWarehouseToIds();
