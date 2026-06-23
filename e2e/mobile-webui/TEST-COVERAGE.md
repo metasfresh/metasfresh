@@ -12,7 +12,7 @@
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
-| HU Consolidation | 4 | 5 | 80% |
+| HU Consolidation | 6 | 7 | 86% |
 | Inventory | 1 | 3 | 33% |
 
 ---
@@ -403,9 +403,11 @@
 | Consolidate individual TUs one by one onto new LU | `hu_consolidation/hu_consolidation.spec.js` |
 | Manually print current target LU label mid-consolidation | `hu_consolidation/hu_consolidation.spec.js` |
 | Consolidate picked TUs onto existing LU → combined storage validated | `hu_consolidation/hu_consolidation.spec.js` |
+| GRAIRequired=Y — Complete blocked until GRAIs scanned via "GRAI scannen" button, then succeeds | `hu_consolidation/hu_consolidation_grai.spec.js` |
+| GRAIRequired=No — no GRAI step shown, Complete proceeds directly | `hu_consolidation/hu_consolidation_grai.spec.js` |
 | ❌ setTargetLU fails (LU already holds different customer's goods) → error shown | — |
 
-**4/5 — 80%**
+**6/7 — 86%**
 
 ---
 

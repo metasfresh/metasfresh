@@ -1,4 +1,4 @@
-import { page, SLOW_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT, step, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { HUConsolidationJobsListScreen } from './HUConsolidationJobsListScreen';
 import { SelectHUConsolidationTargetScreen } from './SelectHUConsolidationTargetScreen';
@@ -82,6 +82,48 @@ export const HUConsolidationJobScreen = {
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
         await HUConsolidationJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert the Complete button is disabled.
+     * This is the GRAI completion gate: when GRAIRequired=Y and the required GRAI count on
+     * the target LU is unfilled, WFProcessScreen sets isUserEditable=false on ConfirmActivity,
+     * which renders #last-confirm-button as disabled.
+     */
+    expectCompleteDisabled: async () => await step(`${NAME} - Expect Complete button disabled`, async () => {
+        await expect(page.locator('#last-confirm-button')).toBeDisabled({ timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert the Complete button is enabled.
+     * True when graiScanEnabled=false, or when graiAssignedCount >= graiExpectedCount.
+     */
+    expectCompleteEnabled: async () => await step(`${NAME} - Expect Complete button enabled`, async () => {
+        await expect(page.locator('#last-confirm-button')).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert the "GRAI scannen" action button is visible.
+     * Shown after a target LU is set, when the job has graiScanEnabled=true.
+     */
+    expectGraiScanButtonVisible: async () => await step(`${NAME} - Expect GRAI scan action button visible`, async () => {
+        await expect(page.getByTestId('grai-scan-action-button')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Assert the "GRAI scannen" action button is NOT visible.
+     * Expected when graiScanEnabled=false (GRAIRequired=No or no target set).
+     */
+    expectGraiScanButtonNotVisible: async () => await step(`${NAME} - Expect GRAI scan action button NOT visible`, async () => {
+        await expect(page.getByTestId('grai-scan-action-button')).not.toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    /**
+     * Tap the "GRAI scannen" action button to open the GRAI capture screen.
+     * Precondition: the button is visible (target LU set, graiScanEnabled=true).
+     */
+    clickGraiScanButton: async () => await step(`${NAME} - Click GRAI scan action button`, async () => {
+        await page.getByTestId('grai-scan-action-button').tap();
     }),
 };
 
