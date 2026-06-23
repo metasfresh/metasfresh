@@ -6,7 +6,6 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.einvoice.EInvoiceCiiService;
 import de.metas.einvoice.EInvoiceConfigService;
 import de.metas.einvoice.EInvoiceFormat;
-import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;

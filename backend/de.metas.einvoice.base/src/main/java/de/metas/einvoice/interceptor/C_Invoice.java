@@ -43,7 +43,7 @@ import java.nio.charset.StandardCharsets;
  *   <li>If the result is invalid, throws a user-validation-error {@link AdempiereException} that
  *       names the failing EN16931 rule ids — this rolls back the completion.</li>
  *   <li>If valid, returns without doing anything further (ZUGFeRD PDF embedding is handled at
- *       archive time by the archive seam — Task 6).</li>
+ *       archive time by the archive seam).</li>
  * </ol>
  *
  * <p><b>Idempotency</b>: on re-complete (after reactivate) the XRechnung gate checks whether an
@@ -123,7 +123,7 @@ public class C_Invoice
 	 * <p>Returns immediately if the buyer is not configured as a ZUGFeRD recipient.
 	 *
 	 * <p>This gate does NOT produce the PDF embedding — that is handled at archive time by the
-	 * archive seam (Task 6 / {@code ZugferdArchiveReportBytesTransformer}).
+	 * archive seam ({@code ZugferdArchiveReportBytesTransformer}).
 	 */
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
 	public void onComplete_validateZugferd(@NonNull final I_C_Invoice invoice)
