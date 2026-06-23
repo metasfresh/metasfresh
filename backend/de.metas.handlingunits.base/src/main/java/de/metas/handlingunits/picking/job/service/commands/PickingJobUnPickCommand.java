@@ -28,17 +28,23 @@ import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUServic
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -72,7 +78,10 @@ public class PickingJobUnPickCommand
 			final @NonNull PickingJobLineId lineId,
 			final @Nullable PickingJobStepId onlyPickingJobStepId,
 			final @Nullable PickingJobStepPickFromKey onlyPickFromKey,
-			final @Nullable HUQRCode unpickToHU)
+			final @Nullable HUQRCode unpickToHU,
+			// Optional subset selector — when both set, reverse only matching product+qty HUs (LIFO)
+			final @Nullable ProductId productId,
+			final @Nullable Quantity qtyToUnpick)
 	{
 		this.shipmentScheduleService = shipmentScheduleService;
 		this.pickingJobRepository = pickingJobRepository;
@@ -85,7 +94,12 @@ public class PickingJobUnPickCommand
 		this.unpickToHU = unpickToHU;
 
 		final Stream<StepUnpickInstructions> unpickInstructionsStream;
-		if (onlyPickingJobStepId != null)
+		if (productId != null && qtyToUnpick != null)
+		{
+			// Subset path: select whole packed HUs LIFO across all steps, summing to qtyToUnpick
+			unpickInstructionsStream = buildSubsetUnpickInstructions(pickingJob, productId, qtyToUnpick);
+		}
+		else if (onlyPickingJobStepId != null)
 		{
 			Check.assumeNotNull(onlyPickFromKey, "onlyPickFromKey shall be set when onlyPickingJobStepId is set");
 			initialPickingJob.getStepById(onlyPickingJobStepId).getPickFrom(onlyPickFromKey).assertPicked();
@@ -111,6 +125,87 @@ public class PickingJobUnPickCommand
 		this.unpickInstructionsMap = unpickInstructionsStream.collect(ImmutableListMultimap.toImmutableListMultimap(
 				StepUnpickInstructions::getStepId,
 				unpickInstructions -> unpickInstructions));
+	}
+
+	/**
+	 * Selects whole packed HUs (LIFO) across all steps whose product matches {@code productId},
+	 * summing their {@code qtyPicked} until exactly {@code qtyToUnpick} is reached.
+	 * If the requested qty cannot be met by whole-HU boundaries, throws an {@link AdempiereException}.
+	 */
+	private static Stream<StepUnpickInstructions> buildSubsetUnpickInstructions(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final ProductId productId,
+			@NonNull final Quantity qtyToUnpick)
+	{
+		// Collect all candidate (step, pickFromKey, pickedToHU) tuples matching the product, sorted LIFO
+		final List<CandidateHU> candidates = new ArrayList<>();
+		pickingJob.streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.forEach(step -> step.getPickFromKeys().forEach(pickFromKey -> {
+					final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
+					if (pickFrom.getPickedTo() != null)
+					{
+						pickFrom.getPickedTo().stream()
+								.forEach(pickedToHU -> candidates.add(new CandidateHU(step.getId(), pickFromKey, pickedToHU)));
+					}
+				}));
+
+		// Sort LIFO (most recently packed first)
+		candidates.sort(Comparator.comparing((CandidateHU c) -> c.getPickedToHU().getCreatedAt()).reversed());
+
+		// Greedily pick whole HUs until sum reaches qtyToUnpick
+		Quantity remaining = qtyToUnpick;
+		final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> selectedByStepPickFrom = new HashMap<>();
+
+		for (final CandidateHU candidate : candidates)
+		{
+			if (remaining.isZero())
+			{
+				break;
+			}
+
+			final Quantity huQty = candidate.getPickedToHU().getQtyPicked();
+			if (huQty.compareTo(remaining) <= 0)
+			{
+				// Take the whole HU
+				final StepPickFromKey key = new StepPickFromKey(candidate.getStepId(), candidate.getPickFromKey());
+				selectedByStepPickFrom.computeIfAbsent(key, k -> new ArrayList<>()).add(candidate.getPickedToHU());
+				remaining = remaining.subtract(huQty);
+			}
+			// else: this HU's qty exceeds remaining — skip (no splitting)
+		}
+
+		if (!remaining.isZero())
+		{
+			throw new AdempiereException("Cannot unpick the requested quantity " + qtyToUnpick
+					+ " for product " + productId
+					+ " because it cannot be met by summing whole packed HU boundaries (no HU splitting allowed)."
+					+ " Remaining qty that could not be matched: " + remaining);
+		}
+
+		return selectedByStepPickFrom.entrySet().stream()
+				.map(entry -> StepUnpickInstructions.builder()
+						.stepId(entry.getKey().getStepId())
+						.pickFromKey(entry.getKey().getPickFromKey())
+						.pickedToHUsToUnpick(ImmutableList.copyOf(entry.getValue()))
+						.build());
+	}
+
+	/** Simple tuple for LIFO candidate collection. */
+	@Value
+	private static class CandidateHU
+	{
+		@NonNull PickingJobStepId stepId;
+		@NonNull PickingJobStepPickFromKey pickFromKey;
+		@NonNull PickingJobStepPickedToHU pickedToHU;
+	}
+
+	/** Map key: (stepId, pickFromKey). */
+	@Value
+	private static class StepPickFromKey
+	{
+		@NonNull PickingJobStepId stepId;
+		@NonNull PickingJobStepPickFromKey pickFromKey;
 	}
 
 	public PickingJob execute()
@@ -147,7 +242,7 @@ public class PickingJobUnPickCommand
 		for (final StepUnpickInstructions unpickInstructions : unpickInstructionsList)
 		{
 			final PickingJobStepPickFromKey pickFromKey = unpickInstructions.getPickFromKey();
-			changedStep = unpickStep(changedStep, pickFromKey);
+			changedStep = unpickStep(changedStep, pickFromKey, unpickInstructions.getPickedToHUsToUnpickOptional().orElse(null));
 		}
 
 		if (changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
@@ -160,12 +255,23 @@ public class PickingJobUnPickCommand
 
 	private PickingJobStep unpickStep(
 			@NonNull final PickingJobStep step,
-			@NonNull final PickingJobStepPickFromKey pickFromKey)
+			@NonNull final PickingJobStepPickFromKey pickFromKey,
+			@Nullable final ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpickOverride)
 	{
 		final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
-		final List<PickingJobStepPickedToHU> pickedToHUs = pickFrom.getPickedTo() != null
-				? pickFrom.getPickedTo().getActualPickedHUs()
-				: ImmutableList.of();
+		final List<PickingJobStepPickedToHU> pickedToHUs;
+		if (pickedToHUsToUnpickOverride != null)
+		{
+			// Subset path: use only the explicitly selected HUs
+			pickedToHUs = pickedToHUsToUnpickOverride;
+		}
+		else
+		{
+			// Whole-step path (original behaviour)
+			pickedToHUs = pickFrom.getPickedTo() != null
+					? pickFrom.getPickedTo().getActualPickedHUs()
+					: ImmutableList.of();
+		}
 		if (pickedToHUs.isEmpty())
 		{
 			return step;
@@ -303,5 +409,15 @@ public class PickingJobUnPickCommand
 	{
 		@NonNull PickingJobStepId stepId;
 		@NonNull PickingJobStepPickFromKey pickFromKey;
+		/**
+		 * When present: reverse only these specific packed HUs (subset path).
+		 * When absent: reverse all packed HUs for this step/pickFrom (whole-step path).
+		 */
+		@Nullable ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpick;
+
+		public java.util.Optional<ImmutableList<PickingJobStepPickedToHU>> getPickedToHUsToUnpickOptional()
+		{
+			return java.util.Optional.ofNullable(pickedToHUsToUnpick);
+		}
 	}
 }
