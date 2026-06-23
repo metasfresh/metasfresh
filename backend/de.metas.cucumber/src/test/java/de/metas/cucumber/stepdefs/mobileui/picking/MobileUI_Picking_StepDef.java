@@ -250,7 +250,7 @@ public class MobileUI_Picking_StepDef
 	@When("partial unpick from packed HU by product GTIN:")
 	public void partialUnpackByProductGtin(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: partial unpick by product GTIN+qty — me03#30480");
+		throw new UnsupportedOperationException("not implemented: partial unpick by product GTIN+qty");
 	}
 
 	/**
@@ -270,7 +270,7 @@ public class MobileUI_Picking_StepDef
 	@Then("the packed HU contains product with qty:")
 	public void assertPackedHUQty(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: assert packed HU product qty — me03#30480");
+		throw new UnsupportedOperationException("not implemented: assert packed HU product qty");
 	}
 
 	/**
@@ -291,7 +291,7 @@ public class MobileUI_Picking_StepDef
 	@Then("the picking job has re-pickable qty for product:")
 	public void assertRePickableQty(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: assert re-pickable qty — me03#30480");
+		throw new UnsupportedOperationException("not implemented: assert re-pickable qty");
 	}
 
 	/**

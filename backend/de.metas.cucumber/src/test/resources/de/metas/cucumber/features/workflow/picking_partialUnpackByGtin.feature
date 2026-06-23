@@ -94,6 +94,9 @@ Feature: Picking workflow - partial unpack a packed HU by scanning a product GTI
     Then the packed HU contains product with qty:
       | M_Product_ID.Identifier | ExpectedQty |
       | product_30480           | 6           |
+    And the picking job has re-pickable qty for product:
+      | M_Product_ID.Identifier | ExpectedRePickableQty |
+      | product_30480           | 0                     |
 
     # --- Cycle 2: partial unpick 3 PCE, then re-pick ---
 
@@ -113,3 +116,8 @@ Feature: Picking workflow - partial unpack a packed HU by scanning a product GTI
     Then the packed HU contains product with qty:
       | M_Product_ID.Identifier | ExpectedQty |
       | product_30480           | 6           |
+    And the picking job has re-pickable qty for product:
+      | M_Product_ID.Identifier | ExpectedRePickableQty |
+      | product_30480           | 0                     |
+
+    And complete picking job
