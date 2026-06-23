@@ -59,6 +59,7 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientReques
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -668,7 +669,7 @@ public class CiiMapper
 			try
 			{
 				final DocBaseAndSubType docBaseAndSubType = resolveDocBaseAndSubType(invoice);
-				final de.metas.email.mailboxes.Mailbox mailbox = mailService.findMailbox(
+				final Mailbox mailbox = mailService.findMailbox(
 						MailboxQuery.builder()
 								.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
 								.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))

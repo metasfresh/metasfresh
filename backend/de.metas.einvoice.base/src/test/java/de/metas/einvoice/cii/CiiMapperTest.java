@@ -1558,7 +1558,7 @@ public class CiiMapperTest
 		final MailService stubMailService = new MailService(
 				new MailboxRepository(),
 				new MailTemplateRepository(),
-				java.util.Collections.emptyList())
+				Collections.emptyList())
 		{
 			@Override
 			public Mailbox findMailbox(@NonNull final MailboxQuery query)
