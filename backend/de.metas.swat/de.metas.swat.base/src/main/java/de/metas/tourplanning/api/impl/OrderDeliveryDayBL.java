@@ -22,6 +22,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
+import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -71,6 +72,59 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return false;
 		}
 
+		// Compute the header's preparation date + tour from the header's DatePromised.
+		final PreparationDateAndTour preparationDateAndTour = computePreparationDateAndTour0(order, datePromised, fallbackToDatePromised, timeZone);
+
+		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
+		order.setM_Tour_ID(preparationDateAndTour.getTourRepoId());
+
+		return true;
+	}
+
+	@Override
+	public ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final ZonedDateTime deliveryDate)
+	{
+		// Defensive: the tour calculation requires a bpartner location. A shipment-schedule order always has one,
+		// but if it is somehow absent, fall back to the order's already-stored PreparationDate (legacy behavior)
+		// rather than risk an NPE in the tour calculation.
+		if (BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
+		{
+			return TimeUtil.asZonedDateTime(order.getPreparationDate());
+		}
+
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+		// Apply the SAME tour-found / no-tour-fallback / offset / sysconfig logic the header uses,
+		// but derived from the given (per-line) deliveryDate instead of the header's DatePromised.
+		//
+		// fallbackToDatePromised=true mirrors the system/OLCand order-creation path
+		// (de.metas.tourplanning.model.validator.C_Order.setPreparationDate => fallbackToDatePromised = !isUIAction).
+		// This guarantees a non-null preparation date even when no tour is configured (fallback to the delivery date),
+		// so that for a single-date order (deliveryDate == header DatePromised) this returns exactly what the header
+		// carries today => no regression for single-date orders when SYSCONFIG_Fallback_PreparationDate=true (the
+		// production default). (A UI-created order under the non-default sysconfig=false could differ, but the
+		// IsFixedPreparationDate / OLCand flow this feeds is always system-created, i.e. header fallback=true too.)
+		return computePreparationDateAndTour0(order, deliveryDate, true, timeZone).getPreparationDate();
+	}
+
+	/**
+	 * Core preparation-date computation, shared by the header path ({@link #setPreparationDateAndTour0}) and the
+	 * per-line path ({@link #computePreparationDate}).
+	 * <p>
+	 * The given {@code deliveryDate} is used both as the {@code datePromised} argument to
+	 * {@link IDeliveryDayBL#calculateTourAndPreparationDate} AND as the base of the no-tour fallback. All other inputs
+	 * (calculationTime, soTrx, bpartnerLocationId, sysconfig reads, offset) are unchanged from the original inline logic.
+	 *
+	 * @return the computed preparation date (may be {@code null} when there is no usable tour and the fallback is
+	 *         disabled) together with the tour repo-id to assign ({@code NO_TOUR_ID} = {@code -1} when no tour was used).
+	 */
+	private PreparationDateAndTour computePreparationDateAndTour0(
+			@NonNull final I_C_Order order,
+			@NonNull final ZonedDateTime deliveryDate,
+			final boolean fallbackToDatePromised,
+			@NonNull final ZoneId timeZone)
+	{
+		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
 		boolean isUseFallback = fallbackToDatePromised;
@@ -92,7 +146,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				context,
 				soTrx,
 				calculationTime,
-				datePromised,
+				deliveryDate,
 				bpartnerLocationId);
 		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
@@ -101,19 +155,19 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		{
 			final int offset = isUseFallback ? getFallbackPreparationDateOffsetInHours() : 0;
 
-			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(preparationDate, offset)));
+			final TourId tourId = tourAndDate.getLeft();
 
 			logger.debug("Setting Tour {} for C_Order {}. Old Tour was {} (fallbackToDatePromised={}, systemTime={})",
-					tourAndDate.getLeft().getRepoId(),
+					tourId.getRepoId(),
 					order,
 					order.getM_Tour_ID(),
 					isUseFallback,
 					systemTime);
 
-			order.setM_Tour_ID(tourAndDate.getLeft().getRepoId());
-
 			logger.debug("Setting PreparationDate={}, for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					preparationDate, order, isUseFallback, systemTime);
+
+			return new PreparationDateAndTour(computePreparationTime(preparationDate, offset), tourId.getRepoId());
 		}
 		else if (isUseFallback)
 		{
@@ -122,27 +176,34 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			if (soTrx.isPurchase())
 			{
 				final int maxTransportDays = orderBL.getMaxPurchaseTransportDays(order);
-				fallbackBase = datePromised.minusDays(maxTransportDays);
+				fallbackBase = deliveryDate.minusDays(maxTransportDays);
 			}
 			else
 			{
-				fallbackBase = datePromised;
+				fallbackBase = deliveryDate;
 			}
-			order.setPreparationDate(TimeUtil.asTimestamp(computePreparationTime(fallbackBase, offset)));
-			order.setM_Tour_ID(-1);
+			final ZonedDateTime fallbackPreparationDate = computePreparationTime(fallbackBase, offset);
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} (soTrx={}, fallbackToDatePromised={}, systemTime={}).",
-					order.getPreparationDate(), order, soTrx, isUseFallback, systemTime);
+					fallbackPreparationDate, order, soTrx, isUseFallback, systemTime);
+			return new PreparationDateAndTour(fallbackPreparationDate, NO_TOUR_ID);
 		}
 		else
 		{
-			order.setPreparationDate(null);
-			order.setM_Tour_ID(-1);
 			logger.info("Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
 					preparationDate, order, preparationDate, isUseFallback, systemTime);
+			return new PreparationDateAndTour(null, NO_TOUR_ID);
 		}
+	}
 
-		return true; // value set
+	/** No-tour sentinel written to {@code C_Order.M_Tour_ID}, matching the original inline {@code setM_Tour_ID(-1)}. */
+	private static final int NO_TOUR_ID = -1;
+
+	@lombok.Value
+	private static class PreparationDateAndTour
+	{
+		@Nullable ZonedDateTime preparationDate;
+		int tourRepoId;
 	}
 
 	private int getFallbackPreparationDateOffsetInHours() {return sysConfigBL.getIntValue(SYSCONFIG_Fallback_PreparationDate_Offset_Hours, 0);}

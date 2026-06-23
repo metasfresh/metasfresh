@@ -21,6 +21,7 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.shipping.ShipperId;
+import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 
@@ -51,6 +52,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 {
 	private final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
+	private final IOrderDeliveryDayBL orderDeliveryDayBL = Services.get(IOrderDeliveryDayBL.class);
 
 	/**
 	 * @return {@link I_C_OrderLine#Table_Name}
@@ -75,10 +77,17 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		final I_C_Order order = ordersRepo.getById(orderId);
 		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderAndLineId);
 
+		// Derive the delivery date per order line (presetDateShipped / line DatePromised / header DatePromised),
+		// then derive the preparation date FROM that per-line delivery date using the same tour/fallback/offset logic
+		// the order header uses. For a single-date order the per-line delivery date equals the header DatePromised,
+		// so the preparation date equals today's header value (no regression); for multi-date orders each line gets
+		// its own preparation date.
+		final ZonedDateTime deliveryDate = computeOrderLineDeliveryDate(orderLine, order);
+
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
-				.preparationDate(TimeUtil.asZonedDateTime(order.getPreparationDate()))
-				.deliveryDate(computeOrderLineDeliveryDate(orderLine, order))
+				.preparationDate(orderDeliveryDayBL.computePreparationDate(order, deliveryDate))
+				.deliveryDate(deliveryDate)
 				.warehouseId(warehouseAdvisor.evaluateWarehouse(orderLine))
 				.shipperId(ShipperId.optionalOfRepoId(orderLine.getM_Shipper_ID()))
 				.documentLineDescriptor(createDocumentLineDescriptor(orderAndLineId, order))

@@ -150,6 +150,18 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
 
+	/**
+	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
+	 * <p>
+	 * Required columns: {@code C_Order_ID} (identifier-ref), {@code M_Product_ID} (identifier-ref), {@code QtyEntered}.<br>
+	 * Selected optional columns:
+	 * <ul>
+	 *   <li>{@code DatePromised} (optional) — per-line promised/delivery date; when set, this line's delivery date
+	 *       (and therefore its shipment-schedule {@code PreparationDate}) is derived from it instead of the order header's
+	 *       {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
@@ -246,6 +258,12 @@ public class C_OrderLine_StepDef
 					orderLine.setIsManualPrice(true);
 					orderLine.setPriceEntered(price);
 					orderLine.setPriceActual(price);
+				});
+
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised, orderLineZoneId));
 				});
 
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)

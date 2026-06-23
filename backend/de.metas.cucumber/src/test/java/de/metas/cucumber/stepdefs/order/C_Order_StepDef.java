@@ -232,6 +232,8 @@ public class C_Order_StepDef
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
 	 *   <li>{@code IsFixedDatePromised} (optional) — when {@code true}, holds each order line until its own
 	 *       delivery date (per-line {@code M_Packageable_V.DeliveryDate}) is reached before it may be shipped</li>
+	 *   <li>{@code IsFixedPreparationDate} (optional) — when {@code true}, holds each order line until its own
+	 *       preparation date (per-line {@code M_Packageable_V.PreparationDate}) is reached before it may be picked</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -364,6 +366,9 @@ public class C_Order_StepDef
 
 		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedDatePromised)
 				.ifPresent(order::setIsFixedDatePromised);
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedPreparationDate)
+				.ifPresent(order::setIsFixedPreparationDate);
 
 		if (EmptyUtil.isNotBlank(poReference))
 		{

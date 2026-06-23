@@ -119,6 +119,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
@@ -367,6 +368,8 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
 	 *   <b>Processed</b> — (optional) true/false<br>
 	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>PreparationDate</b> — (optional) expected base preparation date as an instant; accepts a plain date
+	 *     (e.g. {@code 2022-08-10}, parsed as start-of-day in the JVM time zone) or an explicit-UTC instant (e.g. {@code 2022-08-10T00:00:00Z})<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -948,6 +951,11 @@ public class M_ShipmentSchedule_StepDef
 		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
 		tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsDeliveryStop)
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isDeliveryStop()).as("IsDeliveryStop for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
+
+		tableRow.getAsOptionalInstant(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate)
+				.ifPresent(expected -> softly.assertThat(TimeUtil.asInstant(shipmentSchedule.getPreparationDate()))
+						.as("PreparationDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(expected));
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
