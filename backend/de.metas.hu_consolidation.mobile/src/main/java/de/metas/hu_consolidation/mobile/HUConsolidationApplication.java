@@ -3,6 +3,7 @@ package de.metas.hu_consolidation.mobile;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
@@ -205,5 +206,24 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 	public JsonHUConsolidationJobPickingSlotContent getPickingSlotContent(final HUConsolidationJobId jobId, final PickingSlotId pickingSlotId)
 	{
 		return jobService.getPickingSlotContent(jobId, pickingSlotId);
+	}
+
+	public void setTargetGrais(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId,
+			@NonNull final GRAISet graiSet)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		wfProcess.assertHasAccess(callerId);
+		jobService.setTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId, graiSet);
+	}
+
+	public GRAISet getTargetGrais(
+			@NonNull final WFProcessId wfProcessId,
+			@NonNull final UserId callerId)
+	{
+		final WFProcess wfProcess = getWFProcessById(wfProcessId);
+		wfProcess.assertHasAccess(callerId);
+		return jobService.getTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
 	}
 }

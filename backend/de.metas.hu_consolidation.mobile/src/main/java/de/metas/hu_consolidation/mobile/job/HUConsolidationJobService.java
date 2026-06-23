@@ -1,6 +1,9 @@
 package de.metas.hu_consolidation.mobile.job;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
+import de.metas.handlingunits.grai.HUGraiService;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.job.commands.abort.AbortCommand;
@@ -9,6 +12,7 @@ import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateComm
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.job.commands.get_pickingslot_content.GetPickingSlotContentCommand;
 import de.metas.hu_consolidation.mobile.job.commands.set_target.SetTargetCommand;
+import de.metas.hu_consolidation.mobile.job.commands.set_target_grais.SetTargetGraisCommand;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
@@ -30,6 +34,7 @@ public class HUConsolidationJobService
 	@NonNull private final HUConsolidationAvailableTargetsFinder availableTargetsFinder;
 	@NonNull private final HUConsolidationTargetCloser targetCloser;
 	@NonNull private final HUConsolidationLabelPrinter labelPrinter;
+	@NonNull private final HUGraiService huGraiService;
 
 	public HUConsolidationJob getJobById(final HUConsolidationJobId id)
 	{
@@ -116,6 +121,32 @@ public class HUConsolidationJobService
 		final HUConsolidationJob job = jobRepository.getById(jobId);
 		final HUConsolidationTarget currentTarget = job.getCurrentTargetNotNull();
 		labelPrinter.printLabel(currentTarget);
+	}
+
+	public void setTargetGrais(
+			@NonNull final HUConsolidationJobId jobId,
+			@NonNull final UserId callerId,
+			@NonNull final GRAISet graiSet)
+	{
+		SetTargetGraisCommand.builder()
+				.jobRepository(jobRepository)
+				.huGraiService(huGraiService)
+				.jobId(jobId)
+				.callerId(callerId)
+				.graiSet(graiSet)
+				.build()
+				.execute();
+	}
+
+	public GRAISet getTargetGrais(
+			@NonNull final HUConsolidationJobId jobId,
+			@NonNull final UserId callerId)
+	{
+		final HUConsolidationJob job = jobRepository.getById(jobId);
+		job.assertUserCanEdit(callerId);
+
+		final HuId luId = job.getCurrentTargetNotNull().getLuIdNotNull();
+		return huGraiService.getGrais(luId);
 	}
 
 	public HUConsolidationJob consolidate(@NonNull final ConsolidateRequest request)

@@ -7,11 +7,13 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateResponse;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobAvailableTargets;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPickingSlotContent;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
+import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTargetGrais;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
@@ -31,6 +33,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,6 +79,35 @@ public class HUConsolidationRestController
 		final HUConsolidationTarget target = fromJson(jsonTarget);
 		final WFProcess wfProcess = mobileApplication.setTarget(wfProcessId, target, getLoggedUserId());
 		return workflowRestController.toJson(wfProcess);
+	}
+
+	@PutMapping("/job/{wfProcessId}/target/grai")
+	public JsonHUConsolidationTargetGrais setTargetGrais(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestBody @NonNull final JsonHUConsolidationTargetGrais request)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final GRAISet graiSet = GRAISet.parseStrings(request.getGraiCodes());
+		mobileApplication.setTargetGrais(wfProcessId, getLoggedUserId(), graiSet);
+		return getTargetGraisInternal(wfProcessId);
+	}
+
+	@GetMapping("/job/{wfProcessId}/target/grai")
+	public JsonHUConsolidationTargetGrais getTargetGrais(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		return getTargetGraisInternal(wfProcessId);
+	}
+
+	private JsonHUConsolidationTargetGrais getTargetGraisInternal(@NonNull final WFProcessId wfProcessId)
+	{
+		final GRAISet graiSet = mobileApplication.getTargetGrais(wfProcessId, getLoggedUserId());
+		return new JsonHUConsolidationTargetGrais(graiSet.toStringList(), graiSet.size());
 	}
 
 	@Nullable
