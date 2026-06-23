@@ -25,7 +25,6 @@ package de.metas.ordercandidate.api;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.externalsystem.ExternalSystemId;
@@ -33,7 +32,6 @@ import de.metas.externalsystem.model.I_ExternalSystem;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.ordercandidate.api.impl.OLCandBL;
@@ -42,7 +40,6 @@ import de.metas.ordercandidate.spi.NullOLCandListener;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.uom.X12DE355;
-import de.metas.user.UserRepository;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -102,10 +99,9 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		SpringContextHolder.registerJUnitBean(new OLCandValidatorService(
 				new OLCandSPIRegistry(Optional.empty(), Optional.empty(), Optional.empty())));
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(
 				IOLCandBL.class,
-				new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting())
+				OLCandBL.newInstanceForUnitTesting()
 		);
 
 		// Register the custom columns as real AD_Column entries (IsRestAPICustomColumn='Y') so the REAL
@@ -123,7 +119,7 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		countryDE = createCountry("DE", "@A1@ @CO@");
 		uomKg = createUomKg();
 		productId = createProduct("product");
-		externalSystemId = ExternalSystemId.ofRepoId(createExternalSystem().getExternalSystem_ID());
+		externalSystemId = createExternalSystem();
 	}
 
 	@Test
@@ -220,13 +216,13 @@ class OLCandOrderFactoryCustomColumnPropagationTest
 		return uom;
 	}
 
-	private I_ExternalSystem createExternalSystem()
+	private ExternalSystemId createExternalSystem()
 	{
 		final I_ExternalSystem externalSystem = newInstanceOutOfTrx(I_ExternalSystem.class);
 		externalSystem.setValue("test");
 		externalSystem.setName("test");
 		saveRecord(externalSystem);
-		return externalSystem;
+		return ExternalSystemId.ofRepoId(externalSystem.getExternalSystem_ID());
 	}
 
 	private ProductId createProduct(@NonNull final String name)

@@ -333,17 +333,18 @@ class OLCandOrderFactory
 		}
 
 		// First-class field propagation: promotion codes from OLCand to order header
-		final I_C_OLCand olCandRecord = candidateOfGroup.unbox();
-		if (PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode_ID()) != null)
+		final PromotionCodeId promotionCodeId = candidateOfGroup.getPromotionCodeId();
+		if (promotionCodeId != null)
 		{
-			order.setC_PromotionCode_ID(olCandRecord.getC_PromotionCode_ID());
+			order.setC_PromotionCode_ID(promotionCodeId.getRepoId());
 		}
-		if (PromotionCodeId.ofRepoIdOrNull(olCandRecord.getC_PromotionCode2_ID()) != null)
+		final PromotionCodeId promotionCode2Id = candidateOfGroup.getPromotionCode2Id();
+		if (promotionCode2Id != null)
 		{
-			order.setC_PromotionCode2_ID(olCandRecord.getC_PromotionCode2_ID());
+			order.setC_PromotionCode2_ID(promotionCode2Id.getRepoId());
 		}
 
-		customColumnService.copyCustomColumns(olCandRecord, I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
+		customColumnService.copyCustomColumns(candidateOfGroup.unbox(), I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
 
 		save(order);
 		return order;
@@ -617,18 +618,18 @@ class OLCandOrderFactory
 			attributePricingBL.setDynAttrProductPriceAttributeAware(orderLineASIAware, candidate);
 		}
 
+		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
+		// Done before firing the listeners, so that listeners observe a fully-populated order line.
+		{
+			currentOrderLine.setIsWithoutCharge(candidate.isWithoutCharge());
+			currentOrderLine.setReason(candidate.getReason());
+
+			customColumnService.copyCustomColumns(candidate.unbox(), I_C_OLCand.Table_Name, I_C_OrderLine.Table_Name, currentOrderLine);
+		}
+
 		//
 		// Fire listeners
 		olCandListeners.onOrderLineCreated(candidate, currentOrderLine);
-
-		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
-		{
-			final I_C_OLCand olCandRecord = candidate.unbox();
-			currentOrderLine.setIsWithoutCharge(olCandRecord.isWithoutCharge());
-			currentOrderLine.setReason(olCandRecord.getReason());
-
-			customColumnService.copyCustomColumns(olCandRecord, I_C_OLCand.Table_Name, I_C_OrderLine.Table_Name, currentOrderLine);
-		}
 
 		//
 		// Save the current order line

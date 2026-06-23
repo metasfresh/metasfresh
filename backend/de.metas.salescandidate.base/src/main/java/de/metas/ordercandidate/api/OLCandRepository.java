@@ -82,8 +82,8 @@ public class OLCandRepository
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
     private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 
-	private final ExternalSystemRepository externalSystemRepository;
-	private final CustomColumnService customColumnService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final CustomColumnService customColumnService;
 
 	public List<OLCand> create(@NonNull final List<OLCandCreateRequest> requests)
 	{
@@ -371,8 +371,7 @@ public class OLCandRepository
 		saveRecord(olCandWithIssuesInterface);
 
 		// wire extendedProps: set custom REST API columns on the saved C_OLCand record
-		if (request.getExtendedProps() != null
-				&& !request.getExtendedProps().isEmpty()
+		if (!request.getExtendedProps().isEmpty()
 				&& !POJOWrapper.isHandled(olCandWithIssuesInterface))
 		{
 			customColumnService.setCustomColumns(

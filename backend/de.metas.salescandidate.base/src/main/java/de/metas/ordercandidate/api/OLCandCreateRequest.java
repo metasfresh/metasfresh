@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -152,7 +153,7 @@ public class OLCandCreateRequest
 	String email;
 	String phone;
 
-	@Nullable Map<String, Object> extendedProps;
+	@NonNull Map<String, Object> extendedProps;
 
 	@Nullable PromotionCodeId promotionCodeId;
 
@@ -295,7 +296,7 @@ public class OLCandCreateRequest
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
-		this.extendedProps = extendedProps;
+		this.extendedProps = extendedProps != null ? ImmutableMap.copyOf(extendedProps) : ImmutableMap.of();
 		this.promotionCodeId = promotionCodeId;
 		this.promotionCode2Id = promotionCode2Id;
 		this.isWithoutCharge = isWithoutCharge;

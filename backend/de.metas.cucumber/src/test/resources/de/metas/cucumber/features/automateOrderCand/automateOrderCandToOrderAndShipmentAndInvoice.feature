@@ -15,10 +15,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
       | bpartner_1               | 2156425       | bpartnerLocation_1                | 2205175                | product_1               | 2005577      |
-    And update AD_Column:
-      | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
-      | C_OLCand  | Description | false                     |
-      | C_Order   | Description | false                     |
 
 
   @from:cucumber

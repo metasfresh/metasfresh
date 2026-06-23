@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.business
  * %%
  * Copyright (C) 2026 metas GmbH
  * %%
@@ -20,10 +20,8 @@
  * #L%
  */
 
-package de.metas.rest_api.v1.ordercandidates.impl;
+package de.metas.promotioncode;
 
-import de.metas.promotioncode.PromotionCodeId;
-import de.metas.promotioncode.PromotionCodeRepository;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -38,11 +36,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Tests that the promotion-code lookup-by-Value used by the v1 OLCand REST converter works correctly.
- * Covers the path: JSON "promotionCode" String → PromotionCodeRepository → PromotionCodeId.
+ * Tests {@link PromotionCodeRepository#getPromotionCodeIdByValue(String)} lookup-by-Value.
  */
 @ExtendWith(AdempiereTestWatcher.class)
-class OLCandPromotionCodeResolutionTest
+class PromotionCodeRepositoryTest
 {
 	private PromotionCodeRepository promotionCodeRepository;
 

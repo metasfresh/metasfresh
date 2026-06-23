@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.olcand;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -232,49 +231,6 @@ public class C_OLCand_StepDef
 
 			final String olCandIdentifier = identifiers.get(index);
 			olCandTable.putOrReplace(olCandIdentifier, olCandRecord);
-		}
-	}
-
-	/**
-	 * Parses the v1 OLCand create response ({@code api/v1/sales/order/candidates}) and stores each returned OLCand
-	 * in step-def data by identifier.
-	 * <p>
-	 * Use this instead of {@code process metasfresh response JsonOLCandCreateBulkResponse} when the request was made
-	 * against the v1 endpoint. The v1 response shape differs from v2 (e.g. {@code org} is a nested object in v1 vs a
-	 * plain string in v2), so deserializing it with the v2 DTO fails. This step uses a schema-agnostic {@link JsonNode}
-	 * traversal to extract only the {@code id} fields from the {@code result} array.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>C_OLCand_ID.Identifier</b> — (required) comma-separated list of identifiers to assign to the returned OLCand records (one per result element, in order)
-	 * @cucumber.example
-	 * <pre>
-	 * And process metasfresh response JsonOLCandCreateBulkResponse v1
-	 *   | C_OLCand_ID.Identifier |
-	 *   | olcand_1               |
-	 * </pre>
-	 */
-	@And("process metasfresh response JsonOLCandCreateBulkResponse v1")
-	public void process_JsonOLCandCreateBulkResponse_v1(@NonNull final DataTable dataTable) throws JsonProcessingException
-	{
-		final JsonNode root = mapper.readTree(testContext.getApiResponse().getContent());
-		final JsonNode resultArray = root.path("result");
-		assertThat(resultArray.isArray()).as("v1 response must have a 'result' array").isTrue();
-
-		final Map<String, String> row = dataTable.asMaps().get(0);
-		final String olCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OLCand_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final List<String> identifiers = StepDefUtil.splitIdentifiers(olCandIdentifiers);
-		assertThat(resultArray).as("result array size must match identifier count").hasSize(identifiers.size());
-
-		for (int index = 0; index < identifiers.size(); index++)
-		{
-			final int olCandId = resultArray.get(index).path("id").asInt();
-			assertThat(olCandId).as("result[%d].id must be a positive integer", index).isPositive();
-
-			final I_C_OLCand olCandRecord = InterfaceWrapperHelper.load(olCandId, I_C_OLCand.class);
-			assertThat(olCandRecord).as("C_OLCand with id=%d must exist", olCandId).isNotNull();
-
-			olCandTable.putOrReplace(identifiers.get(index), olCandRecord);
 		}
 	}
 
