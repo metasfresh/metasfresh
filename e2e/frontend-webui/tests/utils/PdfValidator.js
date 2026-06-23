@@ -269,12 +269,66 @@ class PdfValidator {
         const attachmentName = documentNo ? `${filename.replace('.pdf', '')}-${documentNo}.pdf` : filename;
 
         await allure.attachment(attachmentName, buffer, 'application/pdf');
-        console.log(`📎 PDF attached to Allure report: ${attachmentName}`);
+        console.log('[INFO] PDF attached to Allure report:', attachmentName);
       } catch (attachError) {
         // Don't fail the test if attachment fails, just log warning
-        console.warn(`⚠️ Failed to attach PDF to Allure report: ${attachError.message}`);
+        console.log('[WARN] Failed to attach PDF to Allure report:', attachError.message);
       }
     });
+  }
+
+  /**
+   * Validate that a PDF buffer is a ZUGFeRD / Factur-X file by checking for an
+   * embedded XML attachment named 'factur-x.xml' or 'zugferd-invoice.xml'.
+   *
+   * ZUGFeRD PDFs are PDF/A-3 files that embed the CII XML as a named file attachment.
+   * pdfjs-dist exposes this via pdf.getAttachments(), which returns a map of
+   * { filename: { filename, content } } entries or null when there are no attachments.
+   *
+   * This method asserts that at least one of the recognised attachment names is present.
+   * It does NOT parse or validate the XML content — that is a backend responsibility.
+   *
+   * @param {Buffer} pdfBuffer - Raw PDF bytes (from the AD_Archive entry, NOT a re-render)
+   * @returns {Promise<void>} Throws if no ZUGFeRD attachment is found
+   */
+  static async validateZugferdAttachment(pdfBuffer) {
+    const pdfjsLib = require('pdfjs-dist');
+
+    const uint8Array = new Uint8Array(pdfBuffer);
+    const loadingTask = pdfjsLib.getDocument({ data: uint8Array });
+    const pdf = await loadingTask.promise;
+
+    console.log('[INFO] PDF pages:', pdf.numPages, '  — checking for ZUGFeRD attachment');
+
+    const attachments = await pdf.getAttachments();
+
+    if (!attachments) {
+      throw new Error(
+        'ZUGFeRD validation FAILED: pdf.getAttachments() returned null — ' +
+        'no embedded file attachments found in this PDF. ' +
+        'The CII XML was not embedded; verify that IsPdfA3Output=true is set and ' +
+        'that the ZugferdAssembler interceptor ran at invoice completion.'
+      );
+    }
+
+    // The attachment map keys are filenames (case-insensitive comparison)
+    const attachmentNames = Object.keys(attachments).map((k) => k.toLowerCase());
+    console.log('[INFO] PDF embedded attachments:', attachmentNames.join(', ') || '(none)');
+
+    const ZUGFERD_ATTACHMENT_NAMES = ['factur-x.xml', 'zugferd-invoice.xml'];
+    const found = ZUGFERD_ATTACHMENT_NAMES.find((name) => attachmentNames.includes(name));
+
+    if (!found) {
+      throw new Error(
+        'ZUGFeRD validation FAILED: expected one of ' +
+        JSON.stringify(ZUGFERD_ATTACHMENT_NAMES) +
+        ' to be embedded in the PDF, but found: ' +
+        JSON.stringify(attachmentNames) +
+        '. The PDF is not a valid ZUGFeRD / Factur-X file.'
+      );
+    }
+
+    console.log('[PASS] ZUGFeRD attachment found:', found);
   }
 }
 
