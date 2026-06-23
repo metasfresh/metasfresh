@@ -46,7 +46,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  *   <b>Name</b> — (required) unique sequence name; used by the provider SysConfig key<br>
  *   <b>OPT.CustomSequenceNoProvider_JavaClass_ID.Classname</b> — (optional) fully-qualified class name of the provider;
  *     when present the step looks up {@code AD_JavaClass} by classname and sets the FK (fails if no such class exists)<br>
- *   <b>OPT.StartNo</b> — (optional) starting value, default 1<br>
+ *   <b>OPT.StartNo</b> — (optional) starting value; also seeds CurrentNext (the number actually issued), default 1,000,000<br>
+ *   <b>OPT.CurrentNext</b> — (optional) explicit next-issued number; applied after the StartNo seed, so it wins if both are present<br>
  * @cucumber.example
  * <pre>
  * And metasfresh contains AD_Sequence:
