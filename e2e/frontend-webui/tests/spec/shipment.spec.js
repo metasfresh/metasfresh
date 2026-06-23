@@ -445,9 +445,11 @@ the ZUGFeRD assertion is binary (embedded or not) — language does not affect i
         //   backend/de.metas.cucumber/src/test/resources/de/metas/cucumber/features/einvoice/eInvoiceZugferdEmail.feature
         const masterdata = await Backend.createMasterdata({
             request: {
-                sysconfigs: {
-                    'de.metas.report.jasper.IsMockReportService': 'true',
-                },
+                // NB: do NOT set IsMockReportService here — the frontend-webui stack renders REAL
+                // PDFs (the standard O2C test above validates real invoice-PDF content). The real
+                // report service renders the invoice as PDF/A-3 (driven by adProcessFlags below),
+                // the archive seam embeds the CII, and we validate that real archived PDF. Mocking
+                // would substitute a fixture and make the content assertions vacuous/failing.
                 adProcessFlags: [
                     {
                         jasperReportSubstring: 'de/metas/docs/sales/invoice',
