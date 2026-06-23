@@ -303,7 +303,7 @@ Ensures the complete order-to-cash flow works correctly across UI languages.
 
             // Step 15: Zoom to invoice candidates from sales order (Alt+6)
             // Wait for invoice candidates to be created (5 seconds)
-            await SalesOrderPage.openRelatedInvoiceCandidate(5000);
+            await SalesOrderPage.openRelatedInvoiceCandidate({ retryDelay: 5000 });
             console.log(`[${language}] Navigated to Invoice Candidates from Sales Order`);
 
             // Step 16: Verify invoice candidate window is visible
@@ -678,25 +678,32 @@ the ZUGFeRD assertion is binary (embedded or not) — language does not affect i
 
         // === VALIDATE INVOICE CONTENT: documentNo / product / qty present ===
         // PdfValidator.validate() expects a Download-like object with path() and suggestedFilename().
-        // We create a minimal wrapper that writes the buffer to a temp file.
+        // We create a minimal wrapper that writes the buffer to a temp file and cleans it up after.
         console.log('[INFO] Validating invoice content in archived PDF...');
+        let tmpPdfPath = null;
         const downloadProxy = {
             path: async () => {
-                const tmpPath = path.join(os.tmpdir(), `zugferd-invoice-${Date.now()}.pdf`);
-                fs.writeFileSync(tmpPath, archivedPdfBuffer);
-                return tmpPath;
+                tmpPdfPath = path.join(os.tmpdir(), `zugferd-invoice-${Date.now()}.pdf`);
+                fs.writeFileSync(tmpPdfPath, archivedPdfBuffer);
+                return tmpPdfPath;
             },
             suggestedFilename: async () => `invoice-${invoiceDocNo}.pdf`,
         };
 
-        await PdfValidator.validate(downloadProxy, {
-            documentNo: invoiceDocNo,
-            productCode: masterdata.products.product.productCode,
-            quantity: '1',
-            language: 'de_DE',
-            checkOverlaps: false, // Layout overlaps not relevant; ZUGFeRD check is the gate
-            checkMargins: false,
-        });
+        try {
+            await PdfValidator.validate(downloadProxy, {
+                documentNo: invoiceDocNo,
+                productCode: masterdata.products.product.productCode,
+                quantity: '1',
+                language: 'de_DE',
+                checkOverlaps: false, // Layout overlaps not relevant; ZUGFeRD check is the gate
+                checkMargins: false,
+            });
+        } finally {
+            if (tmpPdfPath) {
+                fs.unlinkSync(tmpPdfPath);
+            }
+        }
 
         console.log('[PASS] Invoice content validated: documentNo, product, quantity present');
 
