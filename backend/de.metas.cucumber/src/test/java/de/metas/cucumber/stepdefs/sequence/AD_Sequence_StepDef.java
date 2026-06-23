@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.sequence;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -43,13 +44,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * @cucumber.columns
  *   <b>AD_Sequence_ID</b> — (required) identifier alias for cross-step reference<br>
  *   <b>Name</b> — (required) unique sequence name; used by the provider SysConfig key<br>
- *   <b>OPT.CustomSequenceNoProvider_JavaClass_Classname</b> — (optional) fully-qualified class name of the provider;
- *     when present the step looks up {@code AD_JavaClass} by classname and sets the FK<br>
+ *   <b>OPT.CustomSequenceNoProvider_JavaClass_ID.Classname</b> — (optional) fully-qualified class name of the provider;
+ *     when present the step looks up {@code AD_JavaClass} by classname and sets the FK (fails if no such class exists)<br>
  *   <b>OPT.StartNo</b> — (optional) starting value, default 1<br>
  * @cucumber.example
  * <pre>
  * And metasfresh contains AD_Sequence:
- *   | AD_Sequence_ID | Name        | OPT.CustomSequenceNoProvider_JavaClass_Classname                    |
+ *   | AD_Sequence_ID | Name        | OPT.CustomSequenceNoProvider_JavaClass_ID.Classname                 |
  *   | seq_provider   | TestLotSeq  | de.metas.document.sequenceno.DBFunctionSequenceNoProvider           |
  * </pre>
  */
@@ -70,9 +71,10 @@ public class AD_Sequence_StepDef
 	{
 		final String name = row.getAsString(I_AD_Sequence.COLUMNNAME_Name);
 
-		// upsert: find existing by name, or create new
+		// upsert: find existing active record by name, or create new
 		final I_AD_Sequence seqRecord = queryBL.createQueryBuilder(I_AD_Sequence.class)
 				.addEqualsFilter(I_AD_Sequence.COLUMNNAME_Name, name)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstOnlyOptional(I_AD_Sequence.class)
 				.orElseGet(() -> newInstance(I_AD_Sequence.class));
@@ -90,11 +92,9 @@ public class AD_Sequence_StepDef
 							.addEqualsFilter(I_AD_JavaClass.COLUMNNAME_Classname, classname)
 							.addOnlyActiveRecordsFilter()
 							.create()
-							.firstOnly(I_AD_JavaClass.class);
-					if (javaClass != null)
-					{
-						seqRecord.setCustomSequenceNoProvider_JavaClass_ID(javaClass.getAD_JavaClass_ID());
-					}
+							.firstOnlyOrNull(I_AD_JavaClass.class);
+					Check.assumeNotNull(javaClass, "No active AD_JavaClass found for classname={}", classname);
+					seqRecord.setCustomSequenceNoProvider_JavaClass_ID(javaClass.getAD_JavaClass_ID());
 				});
 
 		saveRecord(seqRecord);
