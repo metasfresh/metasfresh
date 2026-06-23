@@ -13,7 +13,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.CreateOrUpdateLocatorRequest;
+import org.adempiere.warehouse.api.CreateWarehousePickingGroupRequest;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.compiere.model.I_M_Locator;
 
@@ -53,6 +55,7 @@ public class WarehouseCommand
 	public JsonWarehouseResponse execute()
 	{
 		createWarehouse();
+		assignPickingGroup();
 
 		final JsonWarehouseResponse.JsonWarehouseResponseBuilder responseBuilder = JsonWarehouseResponse.builder()
 				.warehouseId(warehouseRecord.getM_Warehouse_ID())
@@ -97,6 +100,38 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, warehouseId);
 	}
 
+	/**
+	 * If the request named a {@code pickingGroup}, assign this warehouse to the shared
+	 * {@code M_Warehouse_PickingGroup} identified by that value (looked up in / created once into the
+	 * masterdata context, keyed by the group identifier). Warehouses naming the same {@code pickingGroup}
+	 * thus end up in the same picking group.
+	 */
+	private void assignPickingGroup()
+	{
+		final String pickingGroupName = StringUtils.trimBlankToNull(request.getPickingGroup());
+		if (pickingGroupName == null)
+		{
+			return;
+		}
+
+		final Identifier pickingGroupIdentifier = Identifier.ofString(pickingGroupName);
+		final WarehousePickingGroupId pickingGroupId = context.getOptionalId(pickingGroupIdentifier, WarehousePickingGroupId.class)
+				.orElseGet(() -> {
+					// Use a unique Name (string + datetime): the picking group lives in the shared DB and a raw
+					// pickingGroupName would collide across tests reusing the same group label.
+					final WarehousePickingGroupId newId = warehouseBL.createWarehousePickingGroup(
+							CreateWarehousePickingGroupRequest.builder()
+									.orgId(MasterdataContext.ORG_ID)
+									.name(pickingGroupIdentifier.toUniqueString())
+									.build());
+					context.putIdentifier(pickingGroupIdentifier, newId);
+					return newId;
+				});
+
+		warehouseRecord.setM_Warehouse_PickingGroup_ID(pickingGroupId.getRepoId());
+		saveRecord(warehouseRecord);
+	}
+
 	private Map<String, JsonWarehouseResponse.Locator> createLocators()
 	{
 		if (request.getLocators() == null || request.getLocators().isEmpty())
@@ -139,6 +174,23 @@ public class WarehouseCommand
 		context.putIdentifier(identifier, locatorId);
 
 		final I_M_Locator locatorRecord = warehouseBL.getLocatorById(locatorId);
+
+		boolean needsSave = false;
+		if (locatorRequest.getPriorityNo() != null)
+		{
+			locatorRecord.setPriorityNo(locatorRequest.getPriorityNo());
+			needsSave = true;
+		}
+		if (locatorRequest.getIsGroundLocator() != null)
+		{
+			locatorRecord.setIsGroundLocator(locatorRequest.getIsGroundLocator());
+			needsSave = true;
+		}
+		if (needsSave)
+		{
+			saveRecord(locatorRecord);
+		}
+
 		return toJson(locatorRecord);
 	}
 
@@ -153,6 +205,8 @@ public class WarehouseCommand
 				.y(locatorRecord.getY())
 				.z(locatorRecord.getZ())
 				.x1(locatorRecord.getX1())
+				.priorityNo(locatorRecord.getPriorityNo())
+				.isGroundLocator(locatorRecord.isGroundLocator())
 				.build();
 	}
 }

@@ -1,12 +1,14 @@
 package de.metas.distribution.mobileui.job.service.commands.switch_pick_from_locator;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.mobileui.external_services.warehouse.NextPickFromLocatorResolver;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoader;
 import de.metas.distribution.mobileui.job.service.DistributionJobLoaderSupportingServices;
-import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -15,12 +17,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public class DistributionJobSwitchPickFromLocatorCommand
 {
-	static final AdMessageKey MSG_NOT_AVAILABLE = AdMessageKey.of("MobileUI_DDOrder_SwitchPickFromLocator_NotAvailable");
-
 	@NonNull private final ITrxManager trxManager;
 	@NonNull private final DistributionJobLoaderSupportingServices loadingSupportServices;
 	@NonNull private final NextPickFromLocatorResolver nextLocatorResolver;
@@ -46,28 +45,48 @@ public class DistributionJobSwitchPickFromLocatorCommand
 
 	private DistributionJob executeInTrx()
 	{
-		final DistributionJobLoader loader = new DistributionJobLoader(loadingSupportServices);
-		final DistributionJob job = loader.loadByJobId(jobId);
-
+		final DistributionJob job = getJob();
 		final LocatorId currentLocatorId = job.getSinglePickFromLocatorId();
-		final LocatorId nextLocatorId = nextLocatorResolver.resolveNext(currentLocatorId);
 
-		final DDOrderId ddOrderId = jobId.toDDOrderId();
-		final I_DD_Order ddOrder = loadingSupportServices.getDDOrderById(ddOrderId);
-		final List<I_DD_OrderLine> lines = loadingSupportServices.retrieveLines(ddOrder);
-		for (final I_DD_OrderLine line : lines)
+		final ImmutableListMultimap<ProductId, I_DD_OrderLine> linesByProductId = retrieveLinesToUpdate(currentLocatorId);
+		for (final ProductId productId : linesByProductId.keySet())
 		{
-			// Resilience: only move lines that still sit on the locator we resolved the next one from.
-			if (LocatorId.equalsByRepoId(line.getM_Locator_ID(), currentLocatorId.getRepoId()))
-			{
-				switchLinePickFromLocator(line, nextLocatorId);
-			}
+			final ImmutableList<I_DD_OrderLine> lines = linesByProductId.get(productId);
+			final LocatorId nextLocatorId = nextLocatorResolver.resolveNext(currentLocatorId, productId);
+			lines.forEach(line -> switchLinePickFromLocator(line, nextLocatorId));
 		}
 
 		// Reload with a FRESH loader: the `loader` above cached the pre-switch lines in its instance-level
 		// ddOrderLinesCache, so reusing it would return the old M_Locator_ID and the mobile UI would not reflect
 		// the switch (even though the DB is correctly updated).
 		return new DistributionJobLoader(loadingSupportServices).loadByJobId(jobId);
+	}
+
+	private static @NonNull ProductId extractProductId(final I_DD_OrderLine line)
+	{
+		return ProductId.ofRepoId(line.getM_Product_ID());
+	}
+
+	private DistributionJob getJob()
+	{
+		final DistributionJobLoader loader = new DistributionJobLoader(loadingSupportServices);
+		return loader.loadByJobId(jobId);
+	}
+
+	private ImmutableListMultimap<ProductId, I_DD_OrderLine> retrieveLinesToUpdate(final LocatorId expectedPickFromLocatorId)
+	{
+		final DDOrderId ddOrderId = jobId.toDDOrderId();
+		final I_DD_Order ddOrder = loadingSupportServices.getDDOrderById(ddOrderId);
+		return loadingSupportServices.retrieveLines(ddOrder)
+				.stream()
+				//
+				// Resilience: only move lines that still sit on the locator, we resolved the next one from:
+				.filter(line -> LocatorId.equalsByRepoId(line.getM_Locator_ID(), expectedPickFromLocatorId.getRepoId()))
+				//
+				.collect(ImmutableListMultimap.toImmutableListMultimap(
+						DistributionJobSwitchPickFromLocatorCommand::extractProductId,
+						line -> line
+				));
 	}
 
 	/**

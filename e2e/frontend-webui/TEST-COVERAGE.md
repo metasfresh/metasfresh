@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-04
+**Last Updated**: 2026-06-19
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1013,6 +1013,88 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - Calendar popup stays closed on click (DatePicker no-ops when readonly)
 - Seed-independent: creates its own customer + drafted invoice, so it passes on an empty invoice grid (e.g. customer CI seed DBs). **Requires port 8282** (App server) for `Backend.createMasterdata()`
 
+### 39. Workplace Window — Auto-Assign Restriction Fields (`workplace-window.spec.js`)
+
+**Features Tested**:
+- F00251: Worplace Traffic Rules
+
+**Epic**: E0105: Picking
+
+**Workflow**:
+1. Login via `Backend.createMasterdata()` user in de_DE and en_US (requires port 8282)
+2. Navigate to the Workplace window (541744)
+3. Fetch `/rest/api/window/541744/layout` and assert all 8 auto-assign restriction fields (Kommissionierart/Order Picking Type, Priorität/Priority + the 6 Labels multi-selects: Produkte, Produktkategorien, Lieferweg-Produkte, Externe Systeme, Geschäftspartnergruppen, Auftrags-Belegarten) carry the language-correct caption and the matching-semantics tooltip ("Einschränkung für die automatische Arbeitsplatz-Zuordnung …" / "Restriction for the automatic workplace assignment …")
+4. Create a new Workplace via the UI (Name + Warehouse), set a BP-Group restriction via the Labels widget, reload, assert the chip persisted
+
+**Key Validations**:
+- All matching fields live in the "restrictions" element group with explanatory tooltips (window-overhaul migration 5807330)
+- Labels captions resolve via AD_UI_Element.AD_Name_ID → AD_Element_Trl (language-specific); Labels tooltips are German in every language (AD_UI_Element.Description has no _Trl)
+- A BP-Group restriction set through the Labels widget is persisted on the record
+
+### 40. Stock per Week — Open Empty, Load on Filter (`stock-per-week-open-empty.spec.js`)
+
+**Features Tested**:
+- F19100: Stock per week
+- F19100
+
+**Epic**: E0155: Material Disposition
+
+**Workflow** (de_DE and en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user (login only — no seeded products/price lists)
+2. **Standalone open** — navigate to window 542159 (Bestand pro Woche, ~782k-row MD_Stock_PerWeek_V) with no filter; assert 0 grid rows and the localized "please filter first" hint is shown in `.empty-info-text` (the view is NOT scanned)
+3. **Filtered view via REST** — create a documentView for 542159 with a `WeekStartDate` filter; assert `emptyResultText` is absent in the response (the queryIfNoFilters guard does not fire once a filter is supplied)
+
+**Key Validations**:
+- The open-empty guard short-circuits to an EmptyReason (AD_Messages `webui.view.emptyReason.pleaseFilterFirst.text`/`.hint`) when no filter is applied, and stops firing when one is
+- Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
+- The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
+
+### 41. Tax — EN16931 VAT Category field (`tax-en16931-vat-category.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up the newly-added field
+3. Navigate to Tax record 540010 (OSS CY 19%) in window 137
+4. Assert `EN16931VATCategory` field is present and has `widgetType-List` CSS class
+5. Assert the record is valid (`assertRecordIsValid`) before editing — else UI changes won't persist
+6. Read current value via WebAPI `getFieldData`; choose a different known code to stay idempotent across retries
+7. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
+8. Wait for auto-save; read back via WebAPI `getFieldData` — assert `fieldData.value.key` matches
+9. Restore original value and verify via WebAPI
+
+**Key Validations**:
+- The `form-field-EN16931VATCategory` wrapper is rendered as a `widgetType-List`
+- Dropdown options use stable `data-testid="option-S"`, `option-AE"` etc.
+- WebAPI returns `{ key, caption }` for List fields (not a bare string)
+- The test is fully idempotent: it reads current value and round-trips, not depending on a fixed initial state
+
+---
+
+### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up migration 5809330's field changes
+3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner")
+4. Assert each of `VATaxID`, `TaxID`, `CommercialRegisterNumber` is present in the layout
+
+**Key Validations**:
+- Migration 5809330 made `TaxID` (Steuernummer) and `CommercialRegisterNumber` (Handelsregisternr) visible in tab 541852 alongside the already-shown `VATaxID` (USt-IdNr) — these back the CII seller fields BT-31/BT-32/BT-30
+- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
+- **Scope — presence only**: editability is NOT asserted here. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'` in migration 5809330) and verified by the window-designer
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -1086,8 +1168,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 34 files
-- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 57 files
+- **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test

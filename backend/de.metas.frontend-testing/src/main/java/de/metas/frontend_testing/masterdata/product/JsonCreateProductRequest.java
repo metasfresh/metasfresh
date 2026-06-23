@@ -49,6 +49,14 @@ public class JsonCreateProductRequest
 	 */
 	@Nullable Boolean isSelfPacked;
 
+	/**
+	 * Explicit {@code M_Product.IsSerialNoPicked} override. When {@code true}, the mobile picking flow
+	 * prompts the operator to scan a serial number for this product and writes it to the picked HU's
+	 * {@code SerialNo} attribute. Requires the product's attribute set to support the {@code SerialNo}
+	 * attribute — set {@link #attributeSetName} to a set that includes it (e.g. {@code "Serial"} / {@code "LotSerial"}).
+	 */
+	@Nullable Boolean isSerialNoPicked;
+
 	@Nullable String valuePrefix;
 	@Nullable RandomValueSpec randomValue;
 	@Nullable GTIN gtin;

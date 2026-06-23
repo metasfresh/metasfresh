@@ -7,9 +7,9 @@
 | Module | Covered | Total | % |
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 5 | 8 | 63% |
-| Picking | 56 | 60 | 93% |
-| Distribution | 34 | 37 | 92% |
+| Barcode Scanner Modes | 7 | 12 | 58% |
+| Picking | 64 | 68 | 94% |
+| Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -52,9 +52,10 @@
 
 | Scenario | Test |
 |---|---|
-| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — all four DataWedge-required HTML properties in one check | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readonly` absent, CSS-hidden — DataWedge IME contract (visible-input editable, virtual keyboard suppressed via soft hint) | `barcode_scanner_modes.spec.js` |
+| `type=text`, `inputmode=none`, `readOnly` present, CSS-hidden, no `<video>` — Honeywell CT60 / Android 11 keystroke-wedge contract (HARD keyboard suppression via `readOnly`; camera disabled) | `barcode_scanner_modes.spec.js` |
 
-**1/1 — 100%**
+**2/2 — 100%**
 
 ### Scan paths
 
@@ -67,8 +68,11 @@
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
+| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode and renders `<video>` (feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
+| ❌ Footer — "Enter manually": shows only when manual mode enabled and activeMode ≠ MANUAL; clicking sets activeMode to MANUAL | — |
+| ❌ Footer — "Back to scanner": shows when activeMode=MANUAL and at least one of hw/camera enabled; clicking returns to HARDWARE (or CAMERA if only camera enabled) | — |
 
-**4/7 — 57%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis` and `triggerOnChangeIfLengthGreaterThan` not yet covered)
+**5/10 — 50%** (Mode B excluded — untestable in Playwright CI; `scanDuplicatesIntervalMillis`, `triggerOnChangeIfLengthGreaterThan`, and two footer buttons not yet covered)
 
 ---
 
@@ -112,6 +116,16 @@
 
 **3/3 — 100%**
 
+### Order-based picking — serial-no scan
+
+| Scenario | Test |
+|---|---|
+| Serial-no product → scan one serial per picked unit ("N of N"), confirm gated until N distinct serials, persisted comma-separated on the picked HU | `picking/picking_serialNo.spec.js` |
+| Duplicate serial scan is silently deduped (count unchanged; must scan N distinct serials) | `picking/picking_serialNo.spec.js` |
+| Misconfigured serial-no product (flag set, no serial-capable attribute set) → no prompt, picks directly | `picking/picking_serialNo.spec.js` |
+
+**3/3 — 100%**
+
 ### Order-based picking — HU scanning variants
 
 | Scenario | Test |
@@ -151,9 +165,11 @@
 | Non-self-packed-only LU: no boxes packed, skipped-products section is visible | `picking/massPrinting.spec.js` |
 | Off-mode guard: mass-printing trigger button is absent when feature is disabled in picking profile | `picking/massPrinting.spec.js` |
 | Null PackTo PI: self-packed product with no TU packing instruction packs as VHU (one label per unit, not a TU box) | `picking/massPrinting.spec.js` |
+| Cross-warehouse: LU stored in one warehouse, demand + workplace in another warehouse of the same picking group → demand is found and packed (searches by the workplace warehouse, not the LU's storage warehouse) | `picking/massPrinting.spec.js` |
+| LU outside the workplace's picking group → scan is rejected with an error, nothing packed | `picking/massPrinting.spec.js` |
 | ❌ CREATE_COMPLETE_CLOSE policy: scanning LU packs + produces a completed shipment and closes the shipment schedule — but the schedule must be closed **only on a full pick**; a partially-picked schedule must stay **open** (closing it would discard the remaining open demand) | — |
 
-**10/11 — 91%**
+**12/13 — 92%**
 
 ### Order-based picking — catch-weight
 
@@ -180,11 +196,12 @@
 | Lines aggregated and grouped by delivery location | `picking/picking_deliveryLocationBasedAggregation.spec.js` |
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
+| Picking slot not required → slot-scan step absent, job pickable directly | `picking/pickingSlotRequired.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
 | DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Product-based picking
 
@@ -196,6 +213,15 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### Navigation — device/browser Back
+
+| Scenario | Test |
+|---|---|
+| Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put, never leaves the app, and the title bar does not revert to the app caption | `picking/deviceBackIsNoOp.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
@@ -226,29 +252,34 @@
 | New distribution orders appear in launcher list via websockets | `distribution/launchers_websockets.spec.js` |
 | Without workplace set → all distribution jobs visible | `distribution/filter_by_workplace.spec.js` |
 | With workplace set → only jobs whose drop-to locator matches workplace shown | `distribution/filter_by_workplace.spec.js` |
+| IsPackingPlace=Y workplace → only DD orders targeting its pick-from locator; IsPackingPlace=N workplace → only DD orders NOT targeting any packing-place locator | `distribution/filter_by_packingplace.spec.js` |
 | Sort by SeqNo when orderBys=SeqNo,Priority,DatePromised | `distribution/sorting.spec.js` |
+| Sort by locator priority when orderBys=LocatorPriority → lower FROM-locator PriorityNo first | `distribution/sort_by_locator_priority.spec.js` |
 | ❌ maxLaunchers cap — list truncated beyond N jobs | — |
 | ❌ maxStartedLaunchers cap | — |
 
-**7/9 — 78%**
+**8/10 — 80%**
 
 ### Distribution — job execution
 
 | Scenario | Test |
 |---|---|
-| Job screen header shows correct From Locator and Locator To | `distribution/header.spec.js` |
+| Job-detail header renders the configured profile caption items (From Locator, To Locator, Product Value and Name) | `distribution/header.spec.js` |
 | Pick multiple HUs; Drop All delivers in one action; warehouse validated per step | `distribution/job_dropAllButton.spec.js` |
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| Packing-table operator: orders offered sorted by priority then locator priority; pick + scan auto-advances order→order through the run | `distribution/packingTable_navigateToNextOrder.spec.js` |
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — after round-robin wrap, pick HU + drop completes end-to-end | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — after switch, scanning an HU from the original locator is rejected with "HU is not at the target trolley" | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" — fulfill one line from two locators: pick from A, switch mid-job, pick from B; pick-from dialog proposes the scanned HU's qty (HU-limited then remaining-limited) | `distribution/switchPickFromLocator.spec.js` |
+| "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
+| "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**11/11 — 100%**
+**14/14 — 100%**
 
 ### Distribution — HU scanning
 

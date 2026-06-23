@@ -37,6 +37,7 @@ import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessToken;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthAccessTokenRequest;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthIdentity;
 import de.metas.camel.externalsystems.scriptedadapter.oauth.OAuthTokenManager;
+import de.metas.camel.externalsystems.scriptedadapter.oauth2.OAuth2TokenManager;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.endpoint.JsonEndpointAuthType;
 import de.metas.common.externalsystem.endpoint.JsonExternalSystemEndpoint;
@@ -67,7 +68,9 @@ import java.util.Optional;
 
 import static com.google.common.net.HttpHeaders.AUTHORIZATION;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ERROR_CONTEXT;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ATTACHMENT_FILE_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.ROUTE_MSG_FROM_MF_CONTEXT;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_CONTEXT;
@@ -100,6 +103,22 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID = "ScriptedExportConversionOutboundHttpEPId";
 
+	/** Node ID for the single-send /ok success-callback toD, used by AdviceWith in tests. */
+	@VisibleForTesting
+	static final String ScriptedExportConversion_OkCallback_EP_ID = "ScriptedExportConversionOkCallbackEPId";
+
+	/** Node ID for the fan-out /ok success-callback toD, used by AdviceWith in tests. */
+	@VisibleForTesting
+	static final String ScriptedExportConversion_FanOutOkCallback_EP_ID = "ScriptedExportConversionFanOutOkCallbackEPId";
+
+	/**
+	 * Exchange property used to carry the HTTP response code received from the external system
+	 * across the {@code removeHeaders("CamelHttp*")} boundary so the success-callback URL can
+	 * include it as a query parameter.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE = "savedHttpResponseCode";
+
 	/** Exchange property holding the parsed {@link ArrayNode} when fan-out mode is active; null/missing otherwise. */
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_FAN_OUT_ARRAY = "fanOutArray";
@@ -116,13 +135,26 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	static final String EXCHANGE_PROPERTY_FAN_OUT_RESULT = "fanOutResult";
 
+	/**
+	 * Exchange property used to stash the raw external-system HTTP response body before the /ok success-callback
+	 * POST to metasfresh overwrites the exchange body. Restored immediately after the /ok call so that
+	 * {@link #prepareJsonAttachmentRequest} can still include the original response in the audit log.
+	 */
+	@VisibleForTesting
+	static final String EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE = "externalSystemResponse";
+
 	private JavaScriptRepo javaScriptRepo;
 
 	@NonNull
 	private final OAuthTokenManager oauthTokenManager;
 
 	@NonNull
+	private final OAuth2TokenManager oauth2TokenManager;
+
+	@NonNull
 	private final SftpDeliveryProcessor sftpDeliveryProcessor;
+
+	private final FileUploadProcessor fileUploadProcessor = new FileUploadProcessor();
 
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
@@ -181,6 +213,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 									.process(this::prepareHttpRequestForTokenAuth)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
 									.process(this::prepareHttpRequestForOAuth)
+								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth2))
+									.process(this::prepareHttpRequestForOAuth2)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 									.process(this::prepareHttpRequestForSasAuth)
 								.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
@@ -189,13 +223,38 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 									.throwException(new RuntimeCamelException("Unsupported authentication type"))
 							.end()
 
-							// Make the rest-call and handle the case of a stale OAuth token
+							// Make the rest-call and handle the case of a stale OAuth/OAuth2 token
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID)
 							.choice()
 								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 									.process(this::forceRefreshOAuthToken)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_RETRY")
+								.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
+									.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
+									.process(this::forceRefreshOAuth2Token)
+									.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
+									.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_OAUTH2_RETRY")
+							.end()
+
+							// Notify metasfresh that the export succeeded (2xx). Fires exactly once after the final
+							// successful response — whether from the original attempt or the 401-refresh retry.
+							// Skipped when no pInstanceId is present (fire-and-configure invocations without a process instance).
+							// Save the external-system response body to a property so the attachment log can
+							// still read it after the /ok HTTP call overwrites the exchange body.
+							.choice()
+								.when(header(HEADER_PINSTANCE_ID).isNotNull())
+									.log(LoggingLevel.DEBUG, "Reporting export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} httpCode=${header.CamelHttpResponseCode}")
+									.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+									.setProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE, header(Exchange.HTTP_RESPONSE_CODE))
+									.setBody(constant(null))
+									.removeHeaders("CamelHttp*")
+									.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+									.setHeader(Exchange.HTTP_RESPONSE_CODE, exchangeProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE))
+									.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok?httpResponseCode=${header.CamelHttpResponseCode}").id(ScriptedExportConversion_OkCallback_EP_ID)
+									.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
 							.end()
 
 							.process(this::prepareJsonAttachmentRequest)
@@ -226,6 +285,8 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 							.process(this::prepareHttpRequestForTokenAuth)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth))
 							.process(this::prepareHttpRequestForOAuth)
+						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.OAuth2))
+							.process(this::prepareHttpRequestForOAuth2)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.SAS))
 							.process(this::prepareHttpRequestForSasAuth)
 						.when(header(HEADER_AUTH_TYPE).isEqualTo(JsonEndpointAuthType.Basic))
@@ -233,13 +294,39 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 						.otherwise()
 							.throwException(new RuntimeCamelException("Unsupported authentication type"))
 					.end()
+					.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 					.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT")
 					.choice()
 						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth'"))
 							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth token and retrying once...")
 							.process(this::forceRefreshOAuthToken)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
 							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_RETRY")
+						.when(simple("${header.CamelHttpResponseCode} == 401 && ${header." + HEADER_AUTH_TYPE + "} == 'OAuth2'"))
+							.log(LoggingLevel.WARN, "Received 401, refreshing OAuth2 token and retrying once...")
+							.process(this::forceRefreshOAuth2Token)
+							.process(fileUploadProcessor::applyFileUploadBodyIfRequested)
+							.toD("${header." + Exchange.HTTP_URI + "}").id(ScriptedExportConversion_ConvertMsgFromMF_OUTBOUND_HTTP_EP_ID + "_FANOUT_OAUTH2_RETRY")
 					.end()
+
+					// Notify metasfresh that this fan-out element succeeded (2xx). Fires exactly once after
+					// the final successful response — whether from the original attempt or the 401-refresh retry.
+					// Skipped when no pInstanceId is present (fire-and-configure invocations without a process instance).
+					// Save the external-system response body to a property so the attachment log can
+					// still read it after the /ok HTTP call overwrites the exchange body.
+					.choice()
+						.when(header(HEADER_PINSTANCE_ID).isNotNull())
+							.log(LoggingLevel.DEBUG, "Reporting fan-out export success to metasfresh: pInstance=${header." + HEADER_PINSTANCE_ID + "} element=${exchangeProperty." + EXCHANGE_PROPERTY_FAN_OUT_INDEX + "} httpCode=${header.CamelHttpResponseCode}")
+							.setProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE, body())
+							.setProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE, header(Exchange.HTTP_RESPONSE_CODE))
+							.setBody(constant(null))
+							.removeHeaders("CamelHttp*")
+							.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+							.setHeader(Exchange.HTTP_RESPONSE_CODE, exchangeProperty(EXCHANGE_PROPERTY_HTTP_RESPONSE_CODE))
+							.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/ok?httpResponseCode=${header.CamelHttpResponseCode}").id(ScriptedExportConversion_FanOutOkCallback_EP_ID)
+							.setBody(exchangeProperty(EXCHANGE_PROPERTY_EXTERNAL_SYSTEM_RESPONSE))
+					.end()
+
 					.process(this::prepareJsonAttachmentRequest)
 					.to(direct(ExternalSystemCamelConstants.MF_ATTACHMENT_ROUTE_ID))
 			.end();
@@ -581,6 +668,48 @@ public class ScriptedAdapterConvertMsgFromMFRouteBuilder extends RouteBuilder
 		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
 		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
 		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void prepareHttpRequestForOAuth2(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+		Check.assumeEquals(endpointParameters.getAuthType(), JsonEndpointAuthType.OAuth2);
+		Check.assumeNotEmpty(endpointParameters.getOauthTokenUrl(), "oauthTokenUrl must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getClientId(), "clientId must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getUser(), "user must not be empty for OAuth2 auth");
+		Check.assumeNotEmpty(endpointParameters.getPassword(), "password must not be empty for OAuth2 auth");
+
+		final String accessToken = oauth2TokenManager.getAccessToken(
+				endpointParameters.getOauthTokenUrl(),
+				endpointParameters.getOauthScope(),
+				endpointParameters.getClientId(),
+				endpointParameters.getUser(),
+				endpointParameters.getPassword());
+
+		exchange.getIn().removeHeaders("CamelHttp*");
+		exchange.getIn().setHeader(AUTHORIZATION, "Bearer " + accessToken);
+		exchange.getIn().setHeader(Exchange.HTTP_URI, endpointParameters.getEndpointUrl());
+		exchange.getIn().setHeader(Exchange.CONTENT_TYPE, resolveContentType(endpointParameters));
+		exchange.getIn().setHeader(Exchange.HTTP_METHOD, HttpMethods.valueOf(endpointParameters.getMethod()));
+		exchange.getIn().setBody(msgFromMfContext.getScriptReturnValue());
+	}
+
+	private void forceRefreshOAuth2Token(@NonNull final Exchange exchange)
+	{
+		final MsgFromMfContext msgFromMfContext = getMsgFromMfContext(exchange);
+
+		final JsonExternalSystemEndpoint endpointParameters = msgFromMfContext.getEndpointParameters();
+
+		// Invalidate the cached token so the next request will get a fresh token
+		oauth2TokenManager.invalidateToken(
+				endpointParameters.getOauthTokenUrl(),
+				endpointParameters.getClientId(),
+				endpointParameters.getUser());
+
+		// Re-prepare request with fresh token
+		prepareHttpRequestForOAuth2(exchange);
 	}
 
 	private void prepareHttpRequestForBasicAuth(@NonNull final Exchange exchange)

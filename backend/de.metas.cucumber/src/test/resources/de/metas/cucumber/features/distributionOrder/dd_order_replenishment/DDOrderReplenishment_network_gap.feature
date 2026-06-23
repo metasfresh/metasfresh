@@ -43,12 +43,36 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | stockWH        | customer      | customerLocation       |
+    # The stocking warehouse's default locator is flagged as a ground-floor locator so the replenishment service
+    # considers it when computing the required allocation (IsGroundLocator=Y is required by the ground-filter).
+    And metasfresh contains M_Locator:
+      | Identifier   | M_Warehouse_ID | Value    | IsGroundLocator | PriorityNo |
+      | stockLocator | stockWH        | Standard | Y               | 10         |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | IsInTransit |
       | inTransitWH    | customer      | customerLocation       | true        |
+    # The packing warehouse's default locator is captured so it can be used as the workstation's pick-from locator.
     And metasfresh contains M_Warehouse:
-      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID |
-      | packingWH      | customer      | customerLocation       | Y           | Y                  | network                   |
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
+      | packingWH      | customer      | customerLocation       | Y           | Y                       | network                   | packingLocator |
+    # The picker's workstation is on the packing warehouse; its pick-from locator is set so the reconcile gets
+    # past the pick-from-locator check and reaches the source-warehouse resolution (the network gap under test).
+    And metasfresh contains C_Workplaces
+      | Identifier | M_Warehouse_ID | PickFrom_Locator_ID |
+      | workplace  | packingWH      | packingLocator      |
+
+    # On-hand stock in the source warehouse (single locator, qty 5) so that — once the network gap is fixed and a
+    # source warehouse resolves — the stock-aware split has stock to pull and creates the DD_Order.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | stockInventory            | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | productQ                | stockLocator | 0       | 5        | PCE          |
+    And complete inventory with inventoryIdentifier 'stockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | stockInventoryLine            | stockProductHU     |
 
   @from:cucumber
   Scenario: A missing source line makes the reconcile event fail softly, then succeeds after the network is fixed
@@ -64,22 +88,27 @@ Feature: DD_Order replenishment — network gap soft-fail and repost recovery
       | Identifier       | C_OrderLine_ID | Warehouse_ID |
       | shipmentSchedule | orderLine      | packingWH    |
 
+    # Assigning the schedule line to the workstation triggers the reconcile via the M_Picking_Job_Schedule interceptor.
+    When create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | jobSchedule               | shipmentSchedule      | workplace      | 5         |
+
     # No source warehouse can be resolved → no DD_Order is created.
-    And there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
+    Then there is no live DD_Order for M_ShipmentSchedule shipmentSchedule
     # The reconcile event ends in Error with a readable message and an AD_Issue is logged.
     # MsgText matches the AD_Message resolved in the system base language (de_DE): "Kein Quelllager ...".
     And after not more than 120s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | M_ShipmentSchedule_ID | IsError | MsgText      |
-      | shipmentSchedule      | true    | %Quelllager% |
-    And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_ShipmentSchedule shipmentSchedule
+      | M_Picking_Job_Schedule_ID | IsError | MsgText      |
+      | jobSchedule               | true    | %Quelllager% |
+    And after not more than 10s, an AD_Issue is logged for the replenishment network gap of M_Picking_Job_Schedule jobSchedule
 
     # Fix the network: add the missing source line resolving stockWH for the packing warehouse, then repost.
     When metasfresh contains DD_NetworkDistributionLine
       | DD_NetworkDistribution_ID | M_Warehouse_ID | M_WarehouseSource_ID | M_Shipper_ID |
       | network                   | packingWH      | stockWH              | shipper      |
-    And the reconcile event for M_ShipmentSchedule shipmentSchedule is processed
+    And the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
 
     # Now the DD_Order is created.
-    Then after not more than 30s, the DD_Order linked to shipment schedule is found:
-      | M_ShipmentSchedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | QtyEntered |
-      | shipmentSchedule      | CO        | stockWH             | packingWH         | 5          |
+    Then after not more than 30s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DocStatus | M_Warehouse_From_ID | M_Warehouse_To_ID | M_LocatorTo_ID | QtyEntered |
+      | jobSchedule               | CO        | stockWH             | packingWH         | packingLocator | 5          |

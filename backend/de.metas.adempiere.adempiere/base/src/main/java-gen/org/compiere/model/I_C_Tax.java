@@ -266,6 +266,29 @@ public interface I_C_Tax
 	String COLUMNNAME_DuplicateTax = "DuplicateTax";
 
 	/**
+	 * Set EN16931 VAT Category.
+	 * VAT category code per UNTDID 5305 (EN16931) for e-invoicing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEN16931VATCategory (@Nullable java.lang.String EN16931VATCategory);
+
+	/**
+	 * Get EN16931 VAT Category.
+	 * VAT category code per UNTDID 5305 (EN16931) for e-invoicing.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEN16931VATCategory();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_EN16931VATCategory = new ModelColumn<>(I_C_Tax.class, "EN16931VATCategory", null);
+	String COLUMNNAME_EN16931VATCategory = "EN16931VATCategory";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

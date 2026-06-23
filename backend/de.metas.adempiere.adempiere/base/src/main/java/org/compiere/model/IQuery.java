@@ -627,9 +627,9 @@ public interface IQuery<T>
 	/**
 	 * Creates a NEW selection from this query result.
 	 *
-	 * @return selection's or <code>null</code> if there were no records matching
+	 * @return selection's or empty if there were no records matching
 	 */
-	PInstanceId createSelection();
+	Optional<CreateSelectionResponse> createSelection();
 
 	/**
 	 * Appends this query result to an existing selection.

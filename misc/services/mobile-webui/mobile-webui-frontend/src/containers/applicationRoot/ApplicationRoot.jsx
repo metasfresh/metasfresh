@@ -22,6 +22,7 @@ import { toastError } from '../../utils/toast';
 import { getIsLoggedInFromState } from '../../reducers/appHandler';
 import { putSettingsAction } from '../../reducers/settings';
 import { useUIEventsTracing } from '../../utils/ui_trace/useUIEventsTracing';
+import { useDeviceBackButton } from '../../hooks/useDeviceBackButton';
 
 const ApplicationRoot = () => {
   const auth = useAuth();
@@ -70,6 +71,7 @@ const ApplicationRoot = () => {
   return (
     <>
       <ConnectedRouter history={history} basename="./">
+        <DeviceBackButtonTrap />
         <Switch>
           <Route exact path="/login">
             <LoginScreen />
@@ -89,6 +91,16 @@ const ApplicationRoot = () => {
       {REGISTER_SERVICE_WORKER && <VersionChecker updateIntervalMillis={VERSION_CHECK_INTERVAL_MILLIS} />}
     </>
   );
+};
+
+// Renderless: mounted once inside ConnectedRouter (so useHistory works) and before the <Switch> (so it
+// is never unmounted by route changes). Makes the device/browser Back button a pure no-op — the
+// sentinel mechanism in useDeviceBackButton absorbs every Back press without changing the screen or
+// leaving the PWA. It has no Redux dependency and does not navigate. See useDeviceBackButton for the
+// full rationale (incl. why mirroring the footer Back from here is impossible to do correctly).
+const DeviceBackButtonTrap = () => {
+  useDeviceBackButton();
+  return null;
 };
 
 export default ApplicationRoot;

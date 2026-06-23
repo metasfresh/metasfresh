@@ -5,6 +5,8 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { MassPrintingScanScreen } from "../../utils/screens/picking/MassPrintingScanScreen";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { expectErrorToast } from "../../utils/common";
+import { expect } from '@playwright/test';
 
 /**
  * End-to-end coverage of the mobileUI mass-printing scan-and-pack flow.
@@ -88,7 +90,7 @@ test('Mass printing — scan LU packs one box per unit for open demand', async (
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
@@ -123,7 +125,7 @@ test('Mass printing — scan LU with leftover units when demand is smaller than 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 2 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
@@ -202,7 +204,7 @@ test('Mass printing — FIFO partial fill when LU capacity is smaller than total
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 boxes packed total (2 for SO_A, 1 for SO_B), 0 units left on LU, 1 unit demand remaining on SO_B
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 1 });
 
@@ -256,7 +258,7 @@ test('Mass printing — shipment created and completed when policy is CREATE_AND
 
     const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -304,7 +306,7 @@ test('Mass printing — shipment created in draft when policy is CREATE_DRAFT', 
 
     const scanResult = await MassPrintingScanScreen.scanLUAndGetResult({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -348,7 +350,7 @@ test('Mass printing — no shipment created when policy is DO_NOT_CREATE', async
 
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
@@ -383,7 +385,7 @@ test('Mass printing — self-packed product on LU is packed; no skipped-products
     await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 1 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 1 });
     // No non-self-packed products on this LU — skipped section must not appear
     await MassPrintingScanScreen.expectNoSkippedProducts();
 
@@ -583,7 +585,7 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
     await MassPrintingScanScreen.waitForResult();
     await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
     // 3 units → 3 boxes (one VHU/CU each), nothing left over, no open demand remaining
-    await MassPrintingScanScreen.expectBoxesPacked({ expected: 3 });
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 3 });
     await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
     await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
 
@@ -605,4 +607,179 @@ test('Mass printing — null PackTo PI: self-packed schedule with no PI packs as
 
     await MassPrintingScanScreen.clickDone();
     await PickingJobsListScreen.waitForScreen();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Mass printing — cross-warehouse: LU in storage warehouse, demand in workplace warehouse, same picking group', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Mass printing — cross-warehouse pack within one picking group');
+    allure.severity('critical');
+
+    // Two warehouses share ONE picking group:
+    //   - whPacking: the workplace's (picker's) warehouse, where the demand is delivered from
+    //   - whStorage: where the scanned LU physically sits
+    // Mass printing must search demand by the picker's WORKPLACE warehouse (whPacking), spanning the whole
+    // picking group, and accept the LU even though it lives in a different warehouse of the same group.
+    // Before the fix this packed 0 (demand was searched only in the LU's own storage warehouse).
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US', workplace: 'workplace1' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    allowPickingAnyHU: true,
+                    createShipmentPolicy: 'NO',
+                    massPrinting: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { "customer": {} },
+            warehouses: {
+                // Both warehouses belong to the same picking group "pickingArea".
+                "whPacking": { pickingGroup: 'pickingArea' },
+                "whStorage": { pickingGroup: 'pickingArea' },
+            },
+            // Pin the slot to the workplace warehouse — with >1 warehouse the locator is otherwise ambiguous.
+            pickingSlots: { slot1: { locator: 'whPacking' } },
+            // The picker's workplace is in the PACKING warehouse (not where the LU is stored).
+            workplaces: { "workplace1": { warehouse: 'whPacking', pickingSlot: 'slot1' } },
+            products: {
+                "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
+            },
+            packingInstructions: {
+                "boxPI": { lu: "LU", qtyTUsPerLU: 4, tu: "TU", product: "selfPackedPrd", qtyCUsPerTU: 1 },
+            },
+            handlingUnits: {
+                // The LU of 4 single-unit boxes physically sits in the STORAGE warehouse.
+                "lu": { product: 'selfPackedPrd', warehouse: 'whStorage', packingInstructions: 'boxPI' },
+            },
+            salesOrders: {
+                // Demand is delivered from the PACKING warehouse (the picker's workplace warehouse).
+                "SO1": {
+                    bpartner: 'customer',
+                    warehouse: 'whPacking',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'selfPackedPrd', qty: 1 }],
+                },
+                "SO2": {
+                    bpartner: 'customer',
+                    warehouse: 'whPacking',
+                    datePromised: '2025-03-02T00:00:00.000+02:00',
+                    lines: [{ product: 'selfPackedPrd', qty: 1 }],
+                },
+                "SO3": {
+                    bpartner: 'customer',
+                    warehouse: 'whPacking',
+                    datePromised: '2025-03-03T00:00:00.000+02:00',
+                    lines: [{ product: 'selfPackedPrd', qty: 1 }],
+                },
+                "SO4": {
+                    bpartner: 'customer',
+                    warehouse: 'whPacking',
+                    datePromised: '2025-03-04T00:00:00.000+02:00',
+                    lines: [{ product: 'selfPackedPrd', qty: 1 }],
+                },
+            },
+        }
+    });
+
+    await openMassPrintingFromLaunchers({ masterdata });
+
+    await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+    await MassPrintingScanScreen.waitForResult();
+    await MassPrintingScanScreen.expectProductResultCount({ expectedCount: 1 });
+    // LU has 4 units; 4 single-unit orders delivered from the workplace warehouse => 4 boxes packed,
+    // nothing left over, no open demand remaining. (Before the fix: 0 packed.)
+    await MassPrintingScanScreen.expectUnitsPacked({ expected: 4 });
+    await MassPrintingScanScreen.expectUnitsLeftOnLU({ expected: 0 });
+    await MassPrintingScanScreen.expectDemandRemaining({ expected: 0 });
+
+    await MassPrintingScanScreen.clickDone();
+    await PickingJobsListScreen.waitForScreen();
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Mass printing — LU outside the workplace picking group is rejected', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Mass printing — reject LU not in workplace picking group');
+    allure.severity('critical');
+
+    // The workplace sits in "whPacking" (picking group "pickingArea"); the scanned LU is stored in
+    // "whOutside", which belongs to NO picking group. Scanning it must be rejected (error surfaced in the
+    // mobile UI) and nothing may be packed. Before the fix the scan was accepted regardless of the LU's
+    // warehouse.
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US', workplace: 'workplace1' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    allowPickingAnyHU: true,
+                    createShipmentPolicy: 'NO',
+                    massPrinting: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { "customer": {} },
+            warehouses: {
+                // Workplace warehouse, in picking group "pickingArea".
+                "whPacking": { pickingGroup: 'pickingArea' },
+                // The LU's warehouse — NOT in any picking group.
+                "whOutside": {},
+            },
+            // Pin the slot to the workplace warehouse — with >1 warehouse the locator is otherwise ambiguous.
+            pickingSlots: { slot1: { locator: 'whPacking' } },
+            workplaces: { "workplace1": { warehouse: 'whPacking', pickingSlot: 'slot1' } },
+            products: {
+                "selfPackedPrd": { prices: [{ price: 10 }], isSelfPacked: true },
+            },
+            packingInstructions: {
+                "boxPI": { lu: "LU", qtyTUsPerLU: 3, tu: "TU", product: "selfPackedPrd", qtyCUsPerTU: 1 },
+            },
+            handlingUnits: {
+                // The LU sits in a warehouse outside the workplace's picking group.
+                "lu": { product: 'selfPackedPrd', warehouse: 'whOutside', packingInstructions: 'boxPI' },
+            },
+            salesOrders: {
+                "SO1": {
+                    bpartner: 'customer',
+                    warehouse: 'whPacking',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'selfPackedPrd', qty: 1 }],
+                },
+            },
+        }
+    });
+
+    await openMassPrintingFromLaunchers({ masterdata });
+
+    // Scanning an LU outside the workplace's picking group must surface a rejection error (toast)
+    // and produce no result panel.
+    await expectErrorToast(
+        'LU not in workplace picking group',
+        async () => {
+            await MassPrintingScanScreen.scanLU({ qrCode: masterdata.handlingUnits.lu.qrCode });
+        },
+        ({ textContent }) => {
+            expect(textContent).toContain('picking warehouse group');
+        }
+    );
+
+    // Nothing was packed: confirm the order still has no shipment.
+    await Backend.expect({
+        title: 'SO1 should have no shipment after a rejected mass-printing scan',
+        salesOrders: {
+            'SO1': { shipments: [] },
+        }
+    });
 });

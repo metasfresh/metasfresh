@@ -21,7 +21,9 @@ de.metas.handlingunits.picking.job.repository.PickingJobRepositoryTest.createNew
       "isAllowPickingAnyHU": false,
       "isAnonymousPickHUsOnTheFly": false,
       "isDisplayPickingSlotSuggestions": false,
+      "isPickingSlotRequired": true,
       "lockedBy": 5,
+      "pickingSlotRequired": true,
       "preparationDate": "2021-11-02T07:39:16Z",
       "salesOrderDocumentNo": "docno-2"
     },

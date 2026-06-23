@@ -8,6 +8,7 @@ import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternativ
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -119,6 +120,31 @@ public class DDOrderLowLevelDAO
 				.create()
 				.firstOptional(I_DD_Order.class)
 				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+	}
+
+	/**
+	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
+	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
+	 *
+	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
+	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
+	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
+	 */
+	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				// A disconnected DD_Order (IsPickingDisconnected=Y) is the in-progress close-out disposition: the
+				// shipment schedule was already closed out, the DD_Order survives as a standalone replenishment the
+				// worker finishes. The picker-busy guard and the reconcile must NOT see it (else they would re-block
+				// the close-out / re-void the standalone job), so it is filtered out here.
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.list(I_DD_Order.class);
 	}
 
 	/**
@@ -366,6 +392,19 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
+		// Locator To — exclude (packing places)
+		if (query.getExcludeLocatorToIds() != null && !query.getExcludeLocatorToIds().isEmpty())
+		{
+			queryBuilder.addNotInSubQueryFilter(
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					I_DD_Order.COLUMNNAME_DD_Order_ID,
+					queryBL.createQueryBuilder(I_DD_OrderLine.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, query.getExcludeLocatorToIds())
+							.create());
+		}
+
+		//
 		// Sales Order
 		if (query.getSalesOrderIds() != null && !query.getSalesOrderIds().isEmpty())
 		{
@@ -465,6 +504,10 @@ public class DDOrderLowLevelDAO
 		if (field == DDOrderQuery.OrderByField.PriorityRule)
 		{
 			sqlColumnName = I_DD_Order.COLUMNNAME_PriorityRule;
+		}
+		else if (field == DDOrderQuery.OrderByField.LocatorPriority)
+		{
+			sqlColumnName = I_DD_Order.COLUMNNAME_LocatorPriorityNo;
 		}
 		else if (field == DDOrderQuery.OrderByField.DatePromised)
 		{

@@ -409,6 +409,57 @@ class CollectionUtilsTest
 	}
 
 	@Nested
+	class getNextRoundRobin
+	{
+		@Test
+		void wrapAround_toFirst()
+		{
+			// Last element is current → next is first (wrap-around)
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "C", null)).isEqualTo("A");
+		}
+
+		@Test
+		void skipIneligible_returnsNextEligible()
+		{
+			// B is ineligible → skips B, returns C
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", e -> !e.equals("B"))).isEqualTo("C");
+		}
+
+		@Test
+		void noEligible_returnsNull()
+		{
+			// All candidates after A are ineligible
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", e -> false)).isNull();
+		}
+
+		@Test
+		void elementNotInList_returnsNull()
+		{
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "Z", null)).isNull();
+		}
+
+		@Test
+		void singleElement_returnsNull()
+		{
+			// Only one element — the loop runs zero iterations (step < size=1 never holds)
+			final ImmutableList<String> list = ImmutableList.of("A");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", null)).isNull();
+		}
+
+		@Test
+		void nullIsEligible_treatedAsAlwaysEligible()
+		{
+			// null isEligible → no filtering → plain next element
+			final ImmutableList<String> list = ImmutableList.of("A", "B", "C");
+			assertThat(CollectionUtils.getNextRoundRobin(list, "A", null)).isEqualTo("B");
+		}
+	}
+
+	@Nested
 	public class removeIf
 	{
 		@Test

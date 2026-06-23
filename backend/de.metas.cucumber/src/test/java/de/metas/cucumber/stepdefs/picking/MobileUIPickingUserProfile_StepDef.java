@@ -80,6 +80,7 @@ public class MobileUIPickingUserProfile_StepDef
 	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
 	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
 	 *   <li>{@code IsMassPrinting} — boolean</li>
+	 *   <li>{@code IsConsideredOnlyScheduledJobs} — boolean (job-scheduled-to-workplace mode: only demand scheduled to the picker's workplace via a {@code M_Picking_Job_Schedule} is eligible)</li>
 	 * </ul>
 	 *
 	 * <p>Example:
@@ -114,6 +115,7 @@ public class MobileUIPickingUserProfile_StepDef
 					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
 
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsMassPrinting).ifPresent(profileBuilder::isMassPrinting);
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsConsideredOnlyScheduledJobs).ifPresent(profileBuilder::isConsiderOnlyJobScheduledToWorkplace);
 
 			return profileBuilder.build();
 		});

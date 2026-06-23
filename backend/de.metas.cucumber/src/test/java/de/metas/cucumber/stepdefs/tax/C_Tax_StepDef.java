@@ -87,6 +87,7 @@ public class C_Tax_StepDef
 	 *     <li>{@code AD_Org_ID} — identifier of an existing {@code AD_Org}</li>
 	 *     <li>{@code IsTaxExempt}, {@code IsReverseCharge}, {@code IsWholeTax}, {@code IsDocumentLevel} — {@code Y}/{@code N}/{@code true}/{@code false}</li>
 	 *     <li>{@code SeqNo} — integer; auto-assigned if missing</li>
+	 *     <li>{@code EN16931VATCategory} — EN16931 VAT category code (e.g. {@code S}), required for e-invoice mapping</li>
 	 *     <li>{@code TypeOfDestCountry}, {@code ValidFrom} — as documented in {@link I_C_Tax}</li>
 	 * </ul>
 	 *
@@ -157,6 +158,8 @@ public class C_Tax_StepDef
 				.ifPresent(taxRecord::setIsWholeTax);
 		tableRow.getAsOptionalBoolean(I_C_Tax.COLUMNNAME_IsDocumentLevel)
 				.ifPresent(taxRecord::setIsDocumentLevel);
+		tableRow.getAsOptionalString(I_C_Tax.COLUMNNAME_EN16931VATCategory)
+				.ifPresent(taxRecord::setEN16931VATCategory);
 
 		InterfaceWrapperHelper.saveRecord(taxRecord);
 

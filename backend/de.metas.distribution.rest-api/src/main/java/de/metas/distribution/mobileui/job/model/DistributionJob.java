@@ -99,6 +99,11 @@ public class DistributionJob
 
 	public void assertCanEdit(final UserId userId)
 	{
+		// A closed job can no longer be edited, even by its responsible user (guards the in-flight-edit race).
+		if (isClosed)
+		{
+			throw new AdempiereException("Cannot edit " + this + " because it is closed");
+		}
 		if (!UserId.equals(this.responsibleId, userId))
 		{
 			throw new AdempiereException("Cannot edit " + this + " because it is not assigned to " + userId);
