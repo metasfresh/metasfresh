@@ -302,14 +302,13 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Workplace warehouse (from OR to)
+		// Warehouse (from OR to)
 		if (query.getFromOrToWarehouseId() != null)
 		{
-			final WarehouseId fromOrToWarehouseId = query.getFromOrToWarehouseId();
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, fromOrToWarehouseId)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, fromOrToWarehouseId);
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, query.getFromOrToWarehouseId())
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getFromOrToWarehouseId());
 		}
 
 		//
