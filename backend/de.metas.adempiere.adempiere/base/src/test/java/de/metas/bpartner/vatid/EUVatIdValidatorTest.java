@@ -125,6 +125,11 @@ class EUVatIdValidatorTest
 			// Invalid: stdnum invalid example CHE100155213
 			"CHE100155212, true",
 			"CHE100155213, false",
+			// CH VAT form carries the MWST/TVA/IVA suffix (CHE-xxx.xxx.xxx MWST) — must be accepted
+			"CHE100155212MWST, true",
+			"CHE100155212TVA, true",
+			"CHE100155212IVA, true",
+			"CHE100155213MWST, false",
 
 			//
 			// CY — Cyprus

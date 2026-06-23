@@ -59,7 +59,7 @@ public final class EUVatIdValidator
 			.put("AT", Pattern.compile("ATU\\d{8}"))
 			.put("BE", Pattern.compile("BE[01]\\d{9}"))
 			.put("BG", Pattern.compile("BG\\d{9,10}"))
-			.put("CH", Pattern.compile("CHE\\d{9}"))                          // Swiss UID (CHE prefix)
+			.put("CH", Pattern.compile("CHE\\d{9}(MWST|TVA|IVA)?"))          // Swiss UID (CHE prefix); optional MWST/TVA/IVA VAT suffix
 			.put("CY", Pattern.compile("CY\\d{8}[A-Z]"))
 			.put("CZ", Pattern.compile("CZ\\d{8,10}"))
 			.put("DE", Pattern.compile("DE\\d{9}"))
@@ -294,8 +294,8 @@ public final class EUVatIdValidator
 
 	private static boolean checkCh(final String n)
 	{
-		// n = "CHE" + 9 digits
-		final String digits = n.substring(3); // 9 digits
+		// n = "CHE" + 9 digits (+ optional MWST/TVA/IVA suffix) → take exactly the 9 digits
+		final String digits = n.substring(3, 12);
 		final int[] weights = { 5, 4, 3, 2, 7, 6, 5, 4 };
 		int sum = 0;
 		for (int i = 0; i < 8; i++)
