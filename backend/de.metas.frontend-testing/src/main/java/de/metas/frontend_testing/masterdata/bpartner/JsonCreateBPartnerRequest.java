@@ -78,12 +78,23 @@ public class JsonCreateBPartnerRequest
 	 */
 	@Builder.Default boolean isSoPriceList = true;
 
+	/**
+	 * Bank accounts to create for this business partner.
+	 * Used for EN16931 / ZUGFeRD CII CreditorFinancialAccount (seller IBAN).
+	 */
+	@Nullable Map<String, JsonBankAccountRequest> bankAccounts;
+
 	@Value
 	@Builder
 	@Jacksonized
 	public static class Location
 	{
 		@Nullable String gln;
+		@Nullable String city;
+		@Nullable String postal;
+		@Nullable String address1;
+		/** ISO 2-letter country code, e.g. {@code "DE"}. */
+		@Nullable String countryCode;
 	}
 
 	@Value
@@ -99,5 +110,10 @@ public class JsonCreateBPartnerRequest
 		 * Description or title for the contact.
 		 */
 		@Nullable String description;
+		/**
+		 * If true, sets {@code AD_User.IsDefaultContact=Y}.
+		 * The CII mapper reads the seller contact via {@code retrieveDefaultContact}.
+		 */
+		@Nullable Boolean isDefaultContact;
 	}
 }

@@ -58,6 +58,8 @@ import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
+import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
@@ -106,6 +108,7 @@ public class CreateMasterdataCommand
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
+		configureOrgSeller();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
@@ -598,6 +601,20 @@ public class CreateMasterdataCommand
 					.build()
 					.execute();
 		}
+	}
+
+	private void configureOrgSeller()
+	{
+		final JsonOrgSellerRequest orgSellerRequest = request.getOrgSeller();
+		if (orgSellerRequest == null)
+		{
+			return;
+		}
+		ConfigureOrgSellerCommand.builder()
+				.context(context)
+				.request(orgSellerRequest)
+				.build()
+				.execute();
 	}
 
 }
