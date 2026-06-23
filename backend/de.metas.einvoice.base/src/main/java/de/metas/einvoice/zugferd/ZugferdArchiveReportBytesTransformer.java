@@ -26,11 +26,10 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.archive.spi.IArchiveReportBytesTransformer;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Invoice;
 import org.slf4j.Logger;
@@ -70,7 +69,6 @@ public class ZugferdArchiveReportBytesTransformer implements IArchiveReportBytes
 	private static final Logger log = LoggerFactory.getLogger(ZugferdArchiveReportBytesTransformer.class);
 
 	@NonNull private final AttachmentEntryService attachmentEntryService;
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	public byte[] transform(@NonNull final TableRecordReference recordRef, final byte[] reportBytes)
@@ -83,8 +81,10 @@ public class ZugferdArchiveReportBytesTransformer implements IArchiveReportBytes
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(recordRef.getRecord_ID());
 
-		// Load the invoice to build the expected attachment filename
-		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		// Load the invoice to build the expected attachment filename. This transformer runs
+		// asynchronously (DocOutboundWorkpackageProcessor) AFTER the completion transaction has
+		// committed, so a plain committed-state load is correct (not the in-trx variant).
+		final I_C_Invoice invoice = InterfaceWrapperHelper.load(invoiceId.getRepoId(), I_C_Invoice.class);
 		final String filename = invoice.getDocumentNo() + "_zugferd.xml";
 
 		// Look up the pre-attached CII XML created by the completion gate
