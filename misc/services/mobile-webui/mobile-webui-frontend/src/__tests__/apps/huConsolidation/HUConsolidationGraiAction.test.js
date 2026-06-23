@@ -163,6 +163,7 @@ import { useDispatch } from 'react-redux';
 import * as api from '../../../apps/huConsolidation/api';
 import { useTargetGrais } from '../../../apps/huConsolidation/actions/useTargetGrais';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
+import * as WorkflowActions from '../../../actions/WorkflowActions';
 
 const mockDispatch = jest.fn();
 
@@ -176,6 +177,8 @@ function renderHook(hookFn) {
   return result;
 }
 
+const WF_PROCESS_FIXTURE = { id: WF_PROCESS_ID, activities: [] };
+
 describe('useTargetGrais — sendToBackend payload', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -183,8 +186,8 @@ describe('useTargetGrais — sendToBackend payload', () => {
     useScreenDefinition.mockReturnValue({ wfProcessId: WF_PROCESS_ID, history: { goBack: jest.fn() } });
   });
 
-  it('calls setTargetGrais({ wfProcessId, graiCodes }) with the added GRAIs', async () => {
-    api.setTargetGrais.mockResolvedValue(null);
+  it('calls setTargetGrais({ wfProcessId, graiCodes }) with the added GRAIs and dispatches wfProcess', async () => {
+    api.setTargetGrais.mockResolvedValue(WF_PROCESS_FIXTURE);
 
     const result = renderHook(() => useTargetGrais({ wfProcessId: WF_PROCESS_ID }));
 
@@ -201,9 +204,26 @@ describe('useTargetGrais — sendToBackend payload', () => {
       wfProcessId: WF_PROCESS_ID,
       graiCodes: ['GRAI-001', 'GRAI-002'],
     });
+    // wfProcess (with .id) must be dispatched so the store updates correctly
+    expect(WorkflowActions.updateWFProcess).toHaveBeenCalledWith({ wfProcess: WF_PROCESS_FIXTURE });
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
   });
 
-  it('calls setTargetGrais with an empty graiCodes array when no GRAIs were added', async () => {
+  it('dispatches the returned wfProcess when backend responds with one', async () => {
+    api.setTargetGrais.mockResolvedValue(WF_PROCESS_FIXTURE);
+
+    const result = renderHook(() => useTargetGrais({ wfProcessId: WF_PROCESS_ID }));
+
+    await act(async () => {
+      await result.current.sendToBackend();
+    });
+
+    // updateWFProcess must be called with the wfProcess so the store keyed by .id updates correctly
+    expect(WorkflowActions.updateWFProcess).toHaveBeenCalledWith({ wfProcess: WF_PROCESS_FIXTURE });
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not dispatch when backend responds with null (legacy/error fallback)', async () => {
     api.setTargetGrais.mockResolvedValue(null);
 
     const result = renderHook(() => useTargetGrais({ wfProcessId: WF_PROCESS_ID }));
@@ -212,10 +232,7 @@ describe('useTargetGrais — sendToBackend payload', () => {
       await result.current.sendToBackend();
     });
 
-    expect(api.setTargetGrais).toHaveBeenCalledWith({
-      wfProcessId: WF_PROCESS_ID,
-      graiCodes: [],
-    });
+    expect(mockDispatch).not.toHaveBeenCalled();
   });
 });
 
@@ -241,5 +258,42 @@ describe('HUConsolidationGraiScreen — mount-load', () => {
 
     expect(api.getTargetGrais).toHaveBeenCalledTimes(1);
     expect(api.getTargetGrais).toHaveBeenCalledWith({ wfProcessId: WF_PROCESS_ID });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Tests: useTargetGrais — loadFromBackend surfaces tuCount
+// ---------------------------------------------------------------------------
+
+describe('useTargetGrais — loadFromBackend tuCount', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useDispatch.mockReturnValue(mockDispatch);
+    useScreenDefinition.mockReturnValue({ wfProcessId: WF_PROCESS_ID, history: { goBack: jest.fn() } });
+  });
+
+  it('exposes tuCount from the getTargetGrais response', async () => {
+    api.getTargetGrais.mockResolvedValue({ graiCodes: ['GRAI-001', 'GRAI-002'], tuCount: 5 });
+
+    const result = renderHook(() => useTargetGrais({ wfProcessId: WF_PROCESS_ID }));
+
+    await act(async () => {
+      await result.current.loadFromBackend();
+    });
+
+    expect(result.current.tuCount).toBe(5);
+    expect(result.current.graiCodes).toEqual(['GRAI-001', 'GRAI-002']);
+  });
+
+  it('exposes tuCount as undefined when not present in response', async () => {
+    api.getTargetGrais.mockResolvedValue({ graiCodes: [] });
+
+    const result = renderHook(() => useTargetGrais({ wfProcessId: WF_PROCESS_ID }));
+
+    await act(async () => {
+      await result.current.loadFromBackend();
+    });
+
+    expect(result.current.tuCount).toBeUndefined();
   });
 });

@@ -83,7 +83,7 @@ public class HUConsolidationRestController
 	}
 
 	@PutMapping("/job/{wfProcessId}/target/grai")
-	public JsonHUConsolidationTargetGrais setTargetGrais(
+	public JsonWFProcess setTargetGrais(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
 			@RequestBody @NonNull final JsonHUConsolidationTargetGrais request)
 	{
@@ -91,8 +91,8 @@ public class HUConsolidationRestController
 
 		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
 		final GRAISet graiSet = GRAISet.parseStrings(request.getGraiCodes());
-		mobileApplication.setTargetGrais(wfProcessId, getLoggedUserId(), graiSet);
-		return getTargetGraisInternal(wfProcessId);
+		final WFProcess wfProcess = mobileApplication.setTargetGrais(wfProcessId, getLoggedUserId(), graiSet);
+		return workflowRestController.toJson(wfProcess);
 	}
 
 	@GetMapping("/job/{wfProcessId}/target/grai")

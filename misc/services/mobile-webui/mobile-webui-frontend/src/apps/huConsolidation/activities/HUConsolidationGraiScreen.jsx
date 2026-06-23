@@ -16,6 +16,7 @@ export const HUConsolidationGraiScreen = () => {
     graiCodes,
     assignedGrais,
     extraGrais,
+    tuCount,
     isLoading,
     isSending,
     addGrais,
@@ -38,6 +39,7 @@ export const HUConsolidationGraiScreen = () => {
       assignedGrais={assignedGrais}
       extraGrais={extraGrais}
       graiCodes={graiCodes}
+      expectedCount={tuCount}
       loading={isLoading}
       countKey="huConsolidation.GraiScreen.count"
       countExtraKey="huConsolidation.GraiScreen.countExtra"

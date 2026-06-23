@@ -223,7 +223,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		return jobService.getPickingSlotContent(jobId, pickingSlotId);
 	}
 
-	public void setTargetGrais(
+	public WFProcess setTargetGrais(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId,
 			@NonNull final GRAISet graiSet)
@@ -231,6 +231,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		final WFProcess wfProcess = getWFProcessById(wfProcessId);
 		wfProcess.assertHasAccess(callerId);
 		jobService.setTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId, graiSet);
+		return getWFProcessById(wfProcessId);
 	}
 
 	public ExplainedOptional<HUGraiSnapshot> getTargetGraisSnapshot(

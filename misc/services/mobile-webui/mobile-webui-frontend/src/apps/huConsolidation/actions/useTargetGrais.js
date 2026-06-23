@@ -8,6 +8,7 @@ import { mergeGraiArrays } from '../../../utils/grai';
 export const useTargetGrais = ({ wfProcessId }) => {
   const dispatch = useDispatch();
   const [graiCodes, setGraiCodes] = useState([]);
+  const [tuCount, setTuCount] = useState(undefined);
   const [isSending, setIsSending] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -17,6 +18,7 @@ export const useTargetGrais = ({ wfProcessId }) => {
       .getTargetGrais({ wfProcessId })
       .then((result) => {
         setGraiCodes(result?.graiCodes ?? []);
+        setTuCount(result?.tuCount);
       })
       .catch((axiosError) => toastError({ axiosError }))
       .finally(() => setIsLoading(false));
@@ -51,6 +53,7 @@ export const useTargetGrais = ({ wfProcessId }) => {
     graiCodes,
     assignedGrais: graiCodes,
     extraGrais: [],
+    tuCount,
     isLoading,
     isSending,
     addGrais,
