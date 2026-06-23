@@ -34,6 +34,7 @@ import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFActivity;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcess;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.Getter;
 import lombok.NonNull;
@@ -228,6 +229,69 @@ public class MobileUI_Picking_StepDef
 		waitUntilPickingJobSchedulesValid();
 		final JsonWFProcess wfProcess = mobileUIPickingClient.complete(context.getWfProcessIdNotNull());
 		context.setWfProcess(wfProcess);
+	}
+
+	/**
+	 * Partially un-picks a quantity of a product identified by its GTIN barcode from the currently packed HU.
+	 * The picker scans the product's GTIN and specifies a qty smaller than the full packed step qty.
+	 * The unpicked qty is returned to floor stock (re-pickable) while the remainder stays packed.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>ProductGTIN</b> — (required) the product's GTIN barcode string<br>
+	 *   <b>QtyToUnpick</b> — (required) the partial quantity to remove from the packed HU<br>
+	 * @cucumber.example
+	 * <pre>
+	 * When partial unpick from packed HU by product GTIN:
+	 *   | ProductGTIN    | QtyToUnpick |
+	 *   | 04006381333931 | 2           |
+	 * </pre>
+	 */
+	@When("partial unpick from packed HU by product GTIN:")
+	public void partialUnpackByProductGtin(@NonNull final DataTable dataTable)
+	{
+		throw new UnsupportedOperationException("not implemented: partial unpick by product GTIN+qty — me03#30480");
+	}
+
+	/**
+	 * Asserts that the currently packed HU contains the expected quantity of a given product.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID.Identifier</b> — (required) identifier-ref for the product<br>
+	 *   <b>ExpectedQty</b> — (required) expected packed quantity in the product's base UOM<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the packed HU contains product with qty:
+	 *   | M_Product_ID.Identifier | ExpectedQty |
+	 *   | product_30480           | 4           |
+	 * </pre>
+	 */
+	@Then("the packed HU contains product with qty:")
+	public void assertPackedHUQty(@NonNull final DataTable dataTable)
+	{
+		throw new UnsupportedOperationException("not implemented: assert packed HU product qty — me03#30480");
+	}
+
+	/**
+	 * Asserts that after a partial unpick, the picking job exposes the expected re-pickable
+	 * (floor-returned) quantity for a given product.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_Product_ID.Identifier</b> — (required) identifier-ref for the product<br>
+	 *   <b>ExpectedRePickableQty</b> — (required) expected re-pickable quantity in the product's base UOM<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And the picking job has re-pickable qty for product:
+	 *   | M_Product_ID.Identifier | ExpectedRePickableQty |
+	 *   | product_30480           | 2                     |
+	 * </pre>
+	 */
+	@Then("the picking job has re-pickable qty for product:")
+	public void assertRePickableQty(@NonNull final DataTable dataTable)
+	{
+		throw new UnsupportedOperationException("not implemented: assert re-pickable qty — me03#30480");
 	}
 
 	/**
