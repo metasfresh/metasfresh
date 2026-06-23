@@ -1,6 +1,7 @@
 package de.metas.einvoice.interceptor;
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.einvoice.EInvoiceCiiService;
 import de.metas.einvoice.EInvoiceConfigService;
@@ -33,6 +34,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -47,34 +49,38 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  * {@link POJOLookupMap#addModelValidator(Object)} and fires the doc-validate chain via
  * {@link POJOLookupMap#fireDocumentChange(Object, DocTimingType)}.
  *
- * <p>Done-when assertions (Task 7):
+ * <p>Three scenarios are proven:
  * <ol>
  *   <li><b>Invalid ZUGFeRD</b>: missing seller VAT ID triggers EN16931 BR-CO-26; firing
  *       {@code AFTER_COMPLETE} throws a user-validation-error {@link AdempiereException} that
  *       names the failing rule id — completion is rolled back.</li>
- *   <li><b>Valid ZUGFeRD</b>: firing {@code AFTER_COMPLETE} does not throw.</li>
+ *   <li><b>Valid ZUGFeRD</b>: firing {@code AFTER_COMPLETE} does not throw and produces no
+ *       attachment (ZUGFeRD PDF embedding is handled at archive time, not at completion time).</li>
  *   <li><b>Non-e-invoice</b>: the gate does not fire for a buyer that is not an e-invoice
  *       recipient.</li>
  * </ol>
  */
 public class C_InvoiceZugferdOnCompleteTest
 {
+	private AttachmentEntryService attachmentEntryService;
+
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10);
 
+		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
 		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		final C_Invoice interceptor = new C_Invoice(
 				configService,
 				new EInvoiceCiiService(configService, null, null),
-				AttachmentEntryService.createInstanceForUnitTesting());
+				attachmentEntryService);
 		POJOLookupMap.get().addModelValidator(interceptor);
 	}
 
 	// =========================================================================
-	// Done-when 1: invalid ZUGFeRD — completion vetoed (user-validation-error)
+	// Invalid ZUGFeRD invoice — completion vetoed with user-validation-error
 	// =========================================================================
 
 	@Test
@@ -97,7 +103,7 @@ public class C_InvoiceZugferdOnCompleteTest
 	}
 
 	// =========================================================================
-	// Done-when 2: valid ZUGFeRD — completion succeeds
+	// Valid ZUGFeRD invoice — completion succeeds without attachment
 	// =========================================================================
 
 	@Test
@@ -107,10 +113,16 @@ public class C_InvoiceZugferdOnCompleteTest
 
 		// Must not throw
 		POJOLookupMap.get().fireDocumentChange(invoice, DocTimingType.AFTER_COMPLETE);
+
+		// Gate must NOT produce any attachment — ZUGFeRD PDF embedding is at archive time, not completion time
+		final List<AttachmentEntry> attachments = attachmentEntryService.getByReferencedRecord(invoice);
+		assertThat(attachments)
+				.as("ZUGFeRD completion gate must not produce any attachment; embedding is done at archive time")
+				.isEmpty();
 	}
 
 	// =========================================================================
-	// Done-when 3: non-e-invoice buyer — gate does not fire
+	// Non-e-invoice buyer — gate is silent
 	// =========================================================================
 
 	@Test

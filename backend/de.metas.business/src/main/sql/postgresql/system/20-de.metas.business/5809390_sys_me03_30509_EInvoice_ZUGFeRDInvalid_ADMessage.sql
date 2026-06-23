@@ -8,7 +8,7 @@
 
 -- Value: EInvoice_ZUGFeRDInvalid
 -- 2026-06-23T00:00:00Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545763,0,TIMESTAMP '2026-06-23 00:00:00',100,'D','Y','Das ZUGFeRD (E-Rechnung) für diese Rechnung ist ungültig; die Rechnung wurde nicht fertiggestellt. Bitte korrigieren Sie die beanstandeten Daten (z. B. Lieferanten-USt-IdNr., Zahlungsangaben, Steuerkennzeichen) und stellen Sie die Rechnung erneut fertig. Nicht erfüllte Regeln: {0}','E',TIMESTAMP '2026-06-23 00:00:00',100,'EInvoice_ZUGFeRDInvalid','EINVOICE_ZUGFERD_INVALID')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value,ErrorCode) VALUES (0,545763 /*From ID Server*/,0,TIMESTAMP '2026-06-23 00:00:00',100,'D','Y','Das ZUGFeRD (E-Rechnung) für diese Rechnung ist ungültig; die Rechnung wurde nicht fertiggestellt. Bitte korrigieren Sie die beanstandeten Daten (z. B. Lieferanten-USt-IdNr., Zahlungsangaben, Steuerkennzeichen) und stellen Sie die Rechnung erneut fertig. Nicht erfüllte Regeln: {0}','E',TIMESTAMP '2026-06-23 00:00:00',100,'EInvoice_ZUGFeRDInvalid','EINVOICE_ZUGFERD_INVALID')
 ;
 
 -- 2026-06-23T00:00:00Z
