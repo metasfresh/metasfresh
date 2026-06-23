@@ -63,7 +63,7 @@ VALUES
    'Y',
    TO_TIMESTAMP('2026-06-23 08:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
    TO_TIMESTAMP('2026-06-23 08:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-   'LotNumberCode', 414, 592876,
+   'Lot-Nummer Code', 414, 592876,
    'Y', 10, 80,
    'N', 'N', 'N', 'N',
    'Y', 25,
