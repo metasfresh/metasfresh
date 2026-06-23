@@ -15,9 +15,10 @@ import { WEBAPI_BASE_URL } from '../utils/WebAPIValidation';
  *   - TaxID               (Steuernummer)                — newly shown
  *   - CommercialRegisterNumber (Handelsregisternr)      — newly added field
  *
- * Test verifies that all three fields:
- *   1. Appear in the window's tab layout (visible = not excluded from layout)
- *   2. Are editable (readonly: false in the layout)
+ * Test verifies that all three fields appear (are DISPLAYED) in the window's tab layout
+ * (visible = not excluded from the layout). Form-view editability is NOT assertable from the
+ * /layout endpoint (it carries no readonly flag — see collectLayoutFields below); it is enforced
+ * at the AD level (AD_Field.IsReadOnly='N' in migration 5809330) and verified by the window-designer.
  *
  * Data-independence: this test verifies the AD_Field layout via the WebAPI
  * /rest/api/window/{windowId}/layout endpoint. Window layout is pure metadata
@@ -61,7 +62,7 @@ async function resetWebuiCache(page) {
  * Returns the parsed JSON layout for the window's root tab.
  *
  * The /window/{id}/layout endpoint is available to any authenticated session
- * and returns field visibility/readonly metadata regardless of whether records exist.
+ * and returns field visibility/layout metadata regardless of whether records exist.
  */
 async function fetchWindowLayout(page, windowId) {
   const url = `${WEBAPI_BASE_URL}/window/${windowId}/layout`;
@@ -82,11 +83,12 @@ async function fetchWindowLayout(page, windowId) {
  *
  * - Each field entry is: { field: "<ColumnName>", caption, emptyText, ... }
  *   ("field" is the column name string, NOT an object)
- * - Editability attributes (readonly, viewEditorRenderMode) live on the ELEMENT,
- *   not on the field. A missing "readonly" key means editable.
+ * - The /layout endpoint carries NO per-record editability flag: there is no "readonly" key,
+ *   and "viewEditorRenderMode" defaults to 'never' for every text element regardless of form
+ *   editability. Form-view editability lives on the per-record data endpoint, not here.
  *
  * Returns an array of { fieldName, element } objects so callers can check
- * both presence (fieldName in layout) and editability (element.readonly).
+ * presence (fieldName in layout).
  */
 function collectLayoutFields(layout) {
   const results = [];
@@ -110,7 +112,7 @@ function collectLayoutFields(layout) {
 
 test.describe('Organisation Stammdaten — seller tax-identification fields (E-Invoicing)', () => {
   test(
-    'VATaxID, TaxID and CommercialRegisterNumber are in the window layout and editable',
+    'VATaxID, TaxID and CommercialRegisterNumber are displayed in the window layout',
     async ({ page }) => {
       // === ALLURE METADATA ===
       allure.epic('E0340: Invoicing');
@@ -142,7 +144,10 @@ AD_Field metadata without requiring any records.
 2. Reset webui metadata cache (so new field layout is active without server restart)
 3. Fetch the window layout via /rest/api/window/540676/layout
 4. Assert each field is present in the layout (not excluded from the tab)
-5. Assert each field has readonly: false (editable)
+
+Editability is NOT asserted here: the /layout endpoint carries no per-record readonly flag.
+It is enforced at the AD level (\`AD_Field.IsReadOnly='N'\` in migration 5809330) and verified
+by the window-designer.
       `);
 
       test.setTimeout(120000); // 2 minutes
@@ -198,7 +203,7 @@ AD_Field metadata without requiring any records.
       const layoutFields = collectLayoutFields(layout);
       console.log(`[INFO] Layout contains ${layoutFields.length} field entries`);
 
-      // === STEP 5: Assert all three fields are in the layout and editable ===
+      // === STEP 5: Assert all three fields are displayed in the window layout ===
       const FIELDS = [
         {
           columnName: 'VATaxID',
@@ -215,7 +220,7 @@ AD_Field metadata without requiring any records.
       ];
 
       for (const field of FIELDS) {
-        await test.step(`Assert field ${field.columnName} (${field.label}) is in layout and editable`, async () => {
+        await test.step(`Assert field ${field.columnName} (${field.label}) is displayed in the window layout`, async () => {
           // Find the field in the layout by column name
           const entry = layoutFields.find((f) => f.fieldName === field.columnName);
 
@@ -224,21 +229,19 @@ AD_Field metadata without requiring any records.
             `Field ${field.columnName} must appear in the window 540676 layout (check AD_Field.IsDisplayed and AD_UI_Element visibility for tab 541852)`
           ).toBeDefined();
 
-          // Assert the field is editable.
-          // Editability is indicated by the ABSENCE of readonly:true on the element.
-          // (The layout omits the readonly key when the field is editable;
-          //  readonly:true is set explicitly only for truly read-only fields.)
-          const isReadonly = entry.element.readonly === true;
-          expect(
-            isReadonly,
-            `Field ${field.columnName} must NOT be readonly (element.readonly must not be true)`
-          ).toBe(false);
-
-          console.log(`[PASS] ${field.columnName} (${field.label}) — present in layout, element.readonly=${entry.element.readonly}`);
+          // NOTE: this asserts PRESENCE/visibility only. Form-view editability (readonlyLogic) is
+          // per-record state exposed on the per-record data endpoint
+          // (/rest/api/window/{id}/{recordId} -> JSONDocumentField.readonly), NOT on the /layout
+          // endpoint — which carries no readonly flag and defaults every text element to
+          // viewEditorRenderMode='never' regardless of form editability. Rendering a record here is
+          // not possible (tab 541852 has no org-BPartner rows on the seed DB). Editability is
+          // enforced at the AD level (AD_Field.IsReadOnly='N' in migration 5809330, verified by the
+          // window-designer). This test guards that the fields are DISPLAYED in the layout.
+          console.log(`[PASS] ${field.columnName} (${field.label}) — present in window 540676 layout`);
         });
       }
 
-      console.log('[INFO] All three seller tax fields verified — present in layout and editable');
+      console.log('[INFO] All three seller tax fields verified — displayed in the window 540676 layout');
     }
   );
 });
