@@ -31,6 +31,7 @@ public class DDOrderQuery
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
+	@Nullable WarehouseId fromOrToWarehouseId;
 	@Nullable InSetPredicate<LocatorId> locatorToIds;
 	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;

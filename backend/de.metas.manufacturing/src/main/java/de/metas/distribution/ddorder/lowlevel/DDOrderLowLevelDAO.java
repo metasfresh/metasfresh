@@ -22,6 +22,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.eevolution.api.PPOrderId;
@@ -298,6 +299,17 @@ public class DDOrderLowLevelDAO
 		if (query.getWarehouseToIds() != null)
 		{
 			queryBuilder.addInArrayFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getWarehouseToIds());
+		}
+
+		//
+		// Workplace warehouse (from OR to)
+		if (query.getFromOrToWarehouseId() != null)
+		{
+			final WarehouseId warehouseId = query.getFromOrToWarehouseId();
+			queryBuilder.addCompositeQueryFilter()
+					.setJoinOr()
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, warehouseId)
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, warehouseId);
 		}
 
 		//
