@@ -23,6 +23,7 @@ package de.metas.einvoice.zugferd;
  */
 
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.einvoice.EInvoiceCiiService;
 import de.metas.einvoice.EInvoiceConfigService;
 import de.metas.einvoice.EInvoiceFormat;
@@ -86,8 +87,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  * <ul>
  *   <li>For a {@code C_Invoice} whose BPartner is configured as {@code EInvoiceType=Z}
- *       (ZUGFeRD): feeding a fixture PDF/A-3 as the "report bytes" must produce a valid
- *       ZUGFeRD file (Mustang validation zero PDF/A-3 and Factur-X container errors).</li>
+ *       (ZUGFeRD) AND which has a pre-attached {@code <DocNo>_zugferd.xml} attachment: feeding a
+ *       fixture PDF/A-3 as the "report bytes" must produce a valid ZUGFeRD file by embedding the
+ *       CII XML read from the attachment (Mustang validation: zero PDF/A-3 and Factur-X container
+ *       errors). No CII regeneration happens.</li>
  *   <li>For a non-Z invoice (XRechnung) and for a non-{@code C_Invoice} record: the
  *       output bytes must be byte-identical to the input.</li>
  * </ul>
@@ -96,29 +99,34 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class ZugferdArchiveReportBytesTransformerTest
 {
+	private AttachmentEntryService attachmentEntryService;
 	private ZugferdArchiveReportBytesTransformer transformer;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
-		// AttachmentEntryService (used indirectly by CiiMapper for BT-49/BT-34) needs a valid user
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_User_ID, 10);
 
-		final EInvoiceConfigService configService = new EInvoiceConfigService();
-		final EInvoiceCiiService ciiService = new EInvoiceCiiService(configService, null, null);
-		transformer = new ZugferdArchiveReportBytesTransformer(configService, ciiService);
+		attachmentEntryService = AttachmentEntryService.createInstanceForUnitTesting();
+		transformer = new ZugferdArchiveReportBytesTransformer(attachmentEntryService);
 	}
 
 	// =========================================================================
-	// Case 1: EInvoiceType=Z → transformed bytes are a valid ZUGFeRD PDF
+	// Case 1: EInvoiceType=Z with pre-attached CII → embeds CII from attachment
 	// =========================================================================
 
 	@Test
-	void transform_zugferd_invoice_producesValidZugferdPdf() throws Exception
+	void transform_zugferd_invoice_withAttachedCii_producesValidZugferdPdf() throws Exception
 	{
+		// Build the invoice fixture (ZUGFeRD recipient)
 		final I_C_Invoice invoice = buildInvoice(EInvoiceFormat.ZUGFeRD);
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		// Attach a pre-generated CII XML (simulating what the completion gate would have saved)
+		final String ciiXml = generateCiiXmlForInvoice(invoice);
+		final String filename = invoice.getDocumentNo() + "_zugferd.xml";
+		attachmentEntryService.createNewAttachment(invoice, filename, ciiXml.getBytes(StandardCharsets.UTF_8));
 
 		final byte[] pdfA3Bytes = buildFixturePdfA3();
 		final TableRecordReference recordRef = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId.getRepoId());
@@ -137,7 +145,29 @@ public class ZugferdArchiveReportBytesTransformerTest
 	}
 
 	// =========================================================================
-	// Case 2: non-Z invoice (XRechnung) → byte-identical pass-through
+	// Case 2: EInvoiceType=Z but NO attachment → pass-through (no error)
+	// =========================================================================
+
+	@Test
+	void transform_zugferd_invoice_withoutAttachment_passesThroughUnchanged() throws Exception
+	{
+		final I_C_Invoice invoice = buildInvoice(EInvoiceFormat.ZUGFeRD);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+
+		// No CII attachment present (abnormal: attachment not yet created or already cleaned up)
+		final byte[] pdfA3Bytes = buildFixturePdfA3();
+		final TableRecordReference recordRef = TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId.getRepoId());
+
+		// Without an attachment the transformer has nothing to embed — it must pass through unchanged
+		final byte[] result = transformer.transform(recordRef, pdfA3Bytes);
+
+		assertThat(result)
+				.as("Without a _zugferd.xml attachment the transformer must return input bytes unchanged")
+				.isEqualTo(pdfA3Bytes);
+	}
+
+	// =========================================================================
+	// Case 3: non-Z invoice (XRechnung) → byte-identical pass-through
 	// =========================================================================
 
 	@Test
@@ -157,7 +187,7 @@ public class ZugferdArchiveReportBytesTransformerTest
 	}
 
 	// =========================================================================
-	// Case 3: non-C_Invoice record → byte-identical pass-through
+	// Case 4: non-C_Invoice record → byte-identical pass-through
 	// =========================================================================
 
 	@Test
@@ -177,6 +207,20 @@ public class ZugferdArchiveReportBytesTransformerTest
 	// =========================================================================
 	// Fixture builders
 	// =========================================================================
+
+	/**
+	 * Generates real CII XML for the given invoice by running the full CII pipeline.
+	 * Used to pre-populate the attachment so the transformer can read it.
+	 */
+	private static String generateCiiXmlForInvoice(@NonNull final I_C_Invoice invoice)
+	{
+		final EInvoiceConfigService configService = new EInvoiceConfigService();
+		final EInvoiceCiiService ciiService = new EInvoiceCiiService(configService, null, null);
+		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+		return ciiService.generateAndValidate(invoiceId)
+				.orElseThrow(() -> new IllegalStateException("CII generation returned empty for test invoice"))
+				.getCiiXml();
+	}
 
 	/**
 	 * Builds a complete invoice fixture — mirrors

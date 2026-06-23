@@ -3,6 +3,7 @@ package de.metas.einvoice.interceptor;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryService;
+import de.metas.attachments.AttachmentTags;
 import de.metas.einvoice.EInvoiceCiiService;
 import de.metas.einvoice.EInvoiceConfigService;
 import de.metas.einvoice.EInvoiceFormat;
@@ -53,8 +54,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
  *   <li><b>Invalid ZUGFeRD</b>: missing seller VAT ID triggers EN16931 BR-CO-26; firing
  *       {@code AFTER_COMPLETE} throws a user-validation-error {@link AdempiereException} that
  *       names the failing rule id — completion is rolled back.</li>
- *   <li><b>Valid ZUGFeRD</b>: firing {@code AFTER_COMPLETE} does not throw and produces no
- *       attachment (ZUGFeRD PDF embedding is handled at archive time, not at completion time).</li>
+ *   <li><b>Valid ZUGFeRD</b>: firing {@code AFTER_COMPLETE} does not throw and creates exactly
+ *       one attachment named {@code <DocumentNo>_zugferd.xml} that is NOT tagged
+ *       {@code Send_via_Email} — the CII is an internal PDF-embedding artifact consumed at
+ *       archive time by {@code ZugferdArchiveReportBytesTransformer}.</li>
  *   <li><b>Non-e-invoice</b>: the gate does not fire for a buyer that is not an e-invoice
  *       recipient.</li>
  * </ol>
@@ -102,22 +105,33 @@ public class C_InvoiceZugferdOnCompleteTest
 	}
 
 	// =========================================================================
-	// Valid ZUGFeRD invoice — completion succeeds without attachment
+	// Valid ZUGFeRD invoice — completion succeeds WITH attachment (CII XML)
 	// =========================================================================
 
 	@Test
-	void docValidate_afterComplete_validZugferd_completionSucceeds()
+	void docValidate_afterComplete_validZugferd_completionSucceedsAndCiiAttached()
 	{
 		final I_C_Invoice invoice = buildZugferdInvoice(/* clearSellerVatId */ false);
 
 		// Must not throw
 		POJOLookupMap.get().fireDocumentChange(invoice, DocTimingType.AFTER_COMPLETE);
 
-		// Gate must NOT produce any attachment — ZUGFeRD PDF embedding is at archive time, not completion time
+		// Gate MUST produce exactly one attachment: the CII XML named <DocNo>_zugferd.xml
 		final List<AttachmentEntry> attachments = attachmentEntryService.getByReferencedRecord(invoice);
 		assertThat(attachments)
-				.as("ZUGFeRD completion gate must not produce any attachment; embedding is done at archive time")
-				.isEmpty();
+				.as("ZUGFeRD completion gate must create exactly one CII XML attachment")
+				.hasSize(1);
+
+		final AttachmentEntry ciiAttachment = attachments.get(0);
+		final String expectedFilename = invoice.getDocumentNo() + "_zugferd.xml";
+		assertThat(ciiAttachment.getFilename())
+				.as("ZUGFeRD CII attachment must use filename <DocNo>_zugferd.xml")
+				.isEqualTo(expectedFilename);
+
+		// ZUGFeRD CII is an internal PDF-embedding artifact — must NOT be tagged for email delivery
+		assertThat(ciiAttachment.getTags().getTagValueOrNull(AttachmentTags.TAGNAME_SEND_VIA_EMAIL))
+				.as("ZUGFeRD CII attachment must NOT be tagged Send_via_Email (it is embedded in the PDF, not emailed standalone)")
+				.isNull();
 	}
 
 	// =========================================================================

@@ -22,12 +22,12 @@ package de.metas.einvoice.zugferd;
  * #L%
  */
 
+import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryService;
 import de.metas.document.archive.spi.IArchiveReportBytesTransformer;
-import de.metas.einvoice.EInvoiceCiiService;
-import de.metas.einvoice.EInvoiceCiiService.GenerateAndValidateResult;
-import de.metas.einvoice.EInvoiceConfigService;
-import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -37,10 +37,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * {@link IArchiveReportBytesTransformer} implementation that embeds a ZUGFeRD/Factur-X CII XML
- * into an archived PDF/A-3 for invoices whose BPartner is configured as
- * {@code EInvoiceType = ZUGFeRD}.
+ * into an archived PDF/A-3 for invoices whose CII was pre-attached at completion time.
+ *
+ * <p>The CII XML is <em>not</em> regenerated here — it is consumed from the
+ * {@code <DocumentNo>_zugferd.xml} attachment that the {@code C_Invoice} completion gate
+ * ({@code onComplete_validateAndAttachZugferd}) created when the invoice was completed.
+ * This ensures each CII XML is generated exactly once (at completion), validated once,
+ * and reused at archive time.
  *
  * <p>Registration: declared as a Spring {@code @Component} so
  * {@code SpringContextHolder.instance.getBeanOpt(IArchiveReportBytesTransformer.class)} can
@@ -49,13 +56,12 @@ import org.springframework.stereotype.Component;
  * <p>No-op contract: returns the input bytes unchanged for:
  * <ul>
  *   <li>Records that are not {@code C_Invoice} (wrong table).</li>
- *   <li>{@code C_Invoice} records whose BPartner is not an e-invoice recipient.</li>
- *   <li>{@code C_Invoice} records whose e-invoice format is not {@link de.metas.einvoice.EInvoiceFormat#ZUGFeRD}.</li>
+ *   <li>{@code C_Invoice} records that have no {@code <DocumentNo>_zugferd.xml} attachment.</li>
  * </ul>
  *
- * <p>Error handling: if the CII generation or PDF assembly fails, an
- * {@link AdempiereException} is thrown so the archive transaction rolls back — the caller
- * (DefaultModelArchiver) will propagate it as an archive failure.
+ * <p>Error handling: if the PDF assembly fails, an {@link AdempiereException} is thrown so the
+ * archive transaction rolls back — the caller (DefaultModelArchiver) will propagate it as an
+ * archive failure.
  */
 @Component
 @RequiredArgsConstructor
@@ -63,8 +69,8 @@ public class ZugferdArchiveReportBytesTransformer implements IArchiveReportBytes
 {
 	private static final Logger log = LoggerFactory.getLogger(ZugferdArchiveReportBytesTransformer.class);
 
-	@NonNull private final EInvoiceConfigService configService;
-	@NonNull private final EInvoiceCiiService ciiService;
+	@NonNull private final AttachmentEntryService attachmentEntryService;
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	@Override
 	@NonNull
@@ -78,32 +84,29 @@ public class ZugferdArchiveReportBytesTransformer implements IArchiveReportBytes
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(recordRef.getRecord_ID());
 
-		// Resolve config — returns empty if not an e-invoice recipient or not ZUGFeRD
-		final EInvoiceRecipientConfig config = configService.resolveForInvoice(invoiceId).orElse(null);
-		if (config == null || !config.getFormat().isZUGFeRD())
+		// Load the invoice to build the expected attachment filename
+		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
+		final String filename = invoice.getDocumentNo() + "_zugferd.xml";
+
+		// Look up the pre-attached CII XML created by the completion gate
+		final AttachmentEntry ciiAttachment = attachmentEntryService.getByFilenameOrNull(invoice, filename);
+		if (ciiAttachment == null)
 		{
+			// No ZUGFeRD attachment: either this is not a ZUGFeRD invoice or the completion
+			// gate has not run yet — pass through unchanged.
+			log.debug("No {} attachment found for invoice {} — returning report bytes unchanged.", filename, invoiceId);
 			return reportBytes;
 		}
 
-		log.debug("Embedding ZUGFeRD CII for invoice {}", invoiceId);
+		final byte[] ciiBytes = attachmentEntryService.retrieveData(ciiAttachment.getId());
+		final String ciiXml = new String(ciiBytes, StandardCharsets.UTF_8);
 
-		// Generate and validate CII XML
-		final GenerateAndValidateResult ciiResult = ciiService.generateAndValidate(invoiceId)
-				.orElseThrow(() -> new AdempiereException(
-						"ZUGFeRD: EInvoice config resolved but CII generation returned empty for invoice " + invoiceId));
-
-		if (!ciiResult.isValid())
-		{
-			throw new AdempiereException(
-					"ZUGFeRD: CII XML for invoice " + invoiceId + " failed Schematron validation. "
-							+ "Failing rule IDs: " + ciiResult.getFatalAndErrorRuleIds())
-					.markAsUserValidationError();
-		}
+		log.debug("Embedding ZUGFeRD CII from attachment {} for invoice {}", filename, invoiceId);
 
 		// Embed CII XML into the PDF/A-3 bytes
 		try
 		{
-			final byte[] zugferdBytes = ZugferdAssembler.embed(reportBytes, ciiResult.getCiiXml());
+			final byte[] zugferdBytes = ZugferdAssembler.embed(reportBytes, ciiXml);
 			log.debug("ZUGFeRD assembly complete for invoice {}. Output size: {} bytes", invoiceId, zugferdBytes.length);
 			return zugferdBytes;
 		}
