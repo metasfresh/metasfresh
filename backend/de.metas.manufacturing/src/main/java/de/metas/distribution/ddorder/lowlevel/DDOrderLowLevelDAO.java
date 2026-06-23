@@ -305,11 +305,11 @@ public class DDOrderLowLevelDAO
 		// Workplace warehouse (from OR to)
 		if (query.getFromOrToWarehouseId() != null)
 		{
-			final WarehouseId warehouseId = query.getFromOrToWarehouseId();
+			final WarehouseId fromOrToWarehouseId = query.getFromOrToWarehouseId();
 			queryBuilder.addCompositeQueryFilter()
 					.setJoinOr()
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, warehouseId)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, warehouseId);
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, fromOrToWarehouseId)
+					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, fromOrToWarehouseId);
 		}
 
 		//
