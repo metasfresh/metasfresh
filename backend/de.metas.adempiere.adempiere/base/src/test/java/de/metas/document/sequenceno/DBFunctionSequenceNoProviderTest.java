@@ -104,8 +104,8 @@ class DBFunctionSequenceNoProviderTest
 	@Test
 	void isValidFunctionName_acceptsPlainAndSchemaQualified()
 	{
-		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("fn_lotno_soft_panda")).isTrue();
-		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("sp80.fn_lotno")).isTrue();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("fn_lotno_custom")).isTrue();
+		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("myschema.fn_lotno")).isTrue();
 		assertThat(DBFunctionSequenceNoProvider.isValidFunctionName("  fn_lotno  ")).isTrue(); // trimmed
 	}
 
