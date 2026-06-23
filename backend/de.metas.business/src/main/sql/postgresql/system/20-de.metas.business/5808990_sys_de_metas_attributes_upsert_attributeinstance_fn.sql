@@ -30,6 +30,9 @@ BEGIN
     IF NOT FOUND THEN
         RAISE EXCEPTION 'M_Attribute % not found', p_M_Attribute_ID;
     END IF;
+    IF v_type NOT IN ('S', 'N', 'D', 'L') THEN
+        RAISE EXCEPTION 'Unsupported AttributeValueType=% for M_Attribute % (expected S/N/D/L)', v_type, p_M_Attribute_ID;
+    END IF;
 
     v_client_id := COALESCE(p_AD_Client_ID, v_client_id);
     v_org_id    := COALESCE(p_AD_Org_ID, v_org_id);
@@ -46,6 +49,9 @@ BEGIN
 
     -- list type: resolve the M_AttributeValue from the supplied value (code)
     IF v_type = 'L' THEN
+        IF p_value IS NULL THEN
+            RAISE EXCEPTION 'NULL value not allowed for list attribute % — use clear_attributeinstance to null a list value', p_M_Attribute_ID;
+        END IF;
         SELECT av.M_AttributeValue_ID INTO v_attrvalue_id
           FROM M_AttributeValue av
          WHERE av.M_Attribute_ID = p_M_Attribute_ID AND av.Value = p_value;
