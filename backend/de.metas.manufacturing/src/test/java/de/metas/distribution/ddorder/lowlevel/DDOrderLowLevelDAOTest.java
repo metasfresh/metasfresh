@@ -58,9 +58,9 @@ class DDOrderLowLevelDAOTest
 		final DDOrderId aToB = createDDOrder(WH_A, WH_B);
 		final DDOrderId cToA = createDDOrder(WH_C, WH_A);
 
-		assertThat(queryFromOrTo(WH_A)).containsExactlyInAnyOrder(aToB, cToA); // A is the 'from' of aToB and the 'to' of cToA
-		assertThat(queryFromOrTo(WH_B)).containsExactly(aToB);                 // B only the 'to' of aToB
-		assertThat(queryFromOrTo(WH_C)).containsExactly(cToA);                 // C only the 'from' of cToA
-		assertThat(queryFromOrTo(WH_D)).isEmpty();                            // D unrelated
+		assertThat(queryFromOrTo(WH_A)).containsExactlyInAnyOrder(aToB, cToA); // A appears on both sides of the OR
+		assertThat(queryFromOrTo(WH_B)).containsExactly(aToB);
+		assertThat(queryFromOrTo(WH_C)).containsExactly(cToA);
+		assertThat(queryFromOrTo(WH_D)).isEmpty();
 	}
 }
