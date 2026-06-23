@@ -1,6 +1,5 @@
 package de.metas.material.cockpit.stock;
 
-import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
@@ -18,7 +17,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -51,8 +49,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Component
 public class StockDataUpdateRequestHandler
 {
-	private static final Logger logger = LogManager.getLogger(StockDataUpdateRequestHandler.class);
-
 	private final PostMaterialEventService postMaterialEventService;
 
 	public StockDataUpdateRequestHandler(
@@ -69,16 +65,6 @@ public class StockDataUpdateRequestHandler
 
 		final BigDecimal qtyOnHandToAdd = dataUpdateRequest.getOnHandQtyChange();
 		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(dataRecord.getQtyOnHand().add(qtyOnHandToAdd));
-
-		// Backstop: never persist a non-physical QtyOnHand. Skip + log loudly instead of escalating
-		// (the overlapping-reset-runs runaway). A legitimate transaction delta never reaches this bound.
-		if (!StockQtySanityGuard.isPlausibleQtyOnHand(qtyOnHandNew))
-		{
-			logger.warn("Skipping non-physical stock correction: resulting QtyOnHand={} exceeds sanity bound; dataUpdateRequest={}",
-					qtyOnHandNew, dataUpdateRequest);
-			return;
-		}
-
 		dataRecord.setQtyOnHand(qtyOnHandNew);
 		save(dataRecord);
 
@@ -97,13 +83,6 @@ public class StockDataUpdateRequestHandler
 			@NonNull final StockChangeSourceInfo sourceInfo)
 	{
 		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(targetQtyOnHand);
-
-		if (!StockQtySanityGuard.isPlausibleQtyOnHand(qtyOnHandNew))
-		{
-			logger.warn("Skipping non-physical stock reset: target QtyOnHand={} exceeds sanity bound; identifier={}",
-					qtyOnHandNew, identifier);
-			return;
-		}
 
 		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(identifier);
 		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();

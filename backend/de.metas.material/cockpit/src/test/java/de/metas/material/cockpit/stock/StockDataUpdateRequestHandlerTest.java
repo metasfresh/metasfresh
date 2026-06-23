@@ -25,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 /*
  * #%L
@@ -131,23 +130,5 @@ class StockDataUpdateRequestHandlerTest
 		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
 		assertThat(currentQtyOnHand()).isEqualByComparingTo("100"); // not 200
 		verify(postMaterialEventService, times(1)).enqueueEventAfterNextCommit(any()); // only the first call changed anything
-	}
-
-	// --- Add path: magnitude guard wiring ---
-
-	@Test
-	void addPath_skipsACorrectionThatWouldEscalateToNonPhysicalQty()
-	{
-		seedMdStock(new BigDecimal("10"));
-		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
-				.identifier(identifier())
-				.onHandQtyChange(new BigDecimal("1E40"))
-				.sourceInfo(resetSource())
-				.build();
-
-		handler.handleDataUpdateRequest(request);
-
-		assertThat(currentQtyOnHand()).isEqualByComparingTo("10"); // guard skipped the escalation
-		verifyNoInteractions(postMaterialEventService);            // no event fired for a skipped correction
 	}
 }
