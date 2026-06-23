@@ -144,7 +144,7 @@ public class PP_Product_Bom_StepDef
 
 			// only persist when a supported column is actually present, to avoid a no-op UPDATE on the (just-completed) document
 			row.getAsOptionalIdentifier(I_PP_Product_BOM.COLUMNNAME_LotNo_Sequence_ID)
-					.map(adSequenceTable::get)
+					.map(id -> id.lookupNotNullIn(adSequenceTable))
 					.ifPresent(seq -> {
 						bom.setLotNo_Sequence_ID(seq.getAD_Sequence_ID());
 						saveRecord(bom);
