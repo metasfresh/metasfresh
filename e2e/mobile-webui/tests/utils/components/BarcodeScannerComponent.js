@@ -173,13 +173,11 @@ export const BarcodeScannerComponent = {
         }
     }),
 
-    // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
-    // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
-    // regression that would silently re-enable the camera capture preview.
-    //
-    // Asserts camera mode is NOT active (the CameraModePanel wrapper is not mounted).
-    // We assert on the always-mounted wrapper `.camera-mode-panel` (rendered iff activeMode===CAMERA)
-    // rather than the inner <video> — see expectCameraModeActive for why the <video> is unreliable.
+    // Asserts camera mode is NOT active — the CameraModePanel wrapper (`.camera-mode-panel`,
+    // rendered iff activeMode===CAMERA) is not mounted. Used by hardware-scanner-only deployments
+    // (camera disabled) to guard against a regression that would silently re-enable camera capture.
+    // We assert on the always-mounted wrapper rather than the inner <video> — see
+    // expectCameraModeActive for why the <video> is unreliable.
     // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — falling back
     // to the 120s global assertion timeout would silently consume the test budget on a genuine regression.
     expectCameraModeInactive: async () => await test.step(`${NAME} - Expect camera mode not active`, async () => {
