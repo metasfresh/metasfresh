@@ -75,7 +75,6 @@ import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
 import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
 import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;

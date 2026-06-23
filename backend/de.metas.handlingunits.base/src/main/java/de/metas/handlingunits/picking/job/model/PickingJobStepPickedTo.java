@@ -109,30 +109,4 @@ public class PickingJobStepPickedTo
 		return actualPickedHUs.stream()
 				.max(Comparator.comparing(PickingJobStepPickedToHU::getCreatedAt));
 	}
-
-	/**
-	 * Returns a new {@code PickingJobStepPickedTo} with the entry for the given HU updated to
-	 * {@code reducedQty}. Used when a VHU is split during partial unpick: the original HU stays
-	 * in the packed list but its tracked quantity is reduced to the portion that remains picked.
-	 *
-	 * @param huId       the packed HU whose tracked qty shall be reduced
-	 * @param reducedQty the new (smaller) qty to record for that HU
-	 * @return updated snapshot; never null (the HU still has product remaining in it)
-	 */
-	@NonNull
-	public PickingJobStepPickedTo withReducedQtyForHU(@NonNull final HuId huId, @NonNull final Quantity reducedQty)
-	{
-		final ImmutableList<PickingJobStepPickedToHU> updated = actualPickedHUs.stream()
-				.map(pickedHU -> pickedHU.getActualPickedHU().getId().equals(huId)
-						? PickingJobStepPickedToHU.builder()
-								.pickFromHUId(pickedHU.getPickFromHUId())
-								.actualPickedHU(pickedHU.getActualPickedHU())
-								.qtyPicked(reducedQty)
-								.catchWeight(pickedHU.getCatchWeight())
-								.createdAt(pickedHU.getCreatedAt())
-								.build()
-						: pickedHU)
-				.collect(ImmutableList.toImmutableList());
-		return toBuilder().actualPickedHUs(updated).build();
-	}
 }

@@ -22,5 +22,8 @@ public class PickingJobUnpickResolveResult
 	@Nullable Quantity packedQty;
 
 	/** true when packedQty is not null and > 0 */
-	boolean unpickable;
+	public boolean isUnpickable()
+	{
+		return packedQty != null && !packedQty.isZero();
+	}
 }

@@ -60,6 +60,7 @@ Feature: Picking workflow - partial unpack a packed HU by scanning a product GTI
   @from:cucumber
   @allure.label.epic:E0180_System_Administration
   @allure.label.feature:F00183
+  @Id:S30480_TC1
   Scenario: Partial unpack by product GTIN and quantity, with re-pick loop repeated twice
     # Set up: start job, scan slot, pick 6 PCE into the package
     And start picking job for sales order identified by order_30480

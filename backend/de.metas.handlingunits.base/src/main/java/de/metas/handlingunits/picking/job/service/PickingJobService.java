@@ -977,7 +977,6 @@ public class PickingJobService implements PickingSlotListener
 		final IHUQRCode parsedQRCode = huService.parsePickFromScannedCode(scannedCode);
 		final ProductId matchedProductId = resolveProductId(parsedQRCode, pickingJob);
 		final Quantity packedQty = computePackedQty(pickingJob, matchedProductId);
-		final boolean unpickable = packedQty != null && !packedQty.isZero();
 		final ITranslatableString productNameTrl = productService.getProductNameTrl(matchedProductId);
 		final String productName = productNameTrl.getDefaultValue();
 
@@ -985,7 +984,6 @@ public class PickingJobService implements PickingSlotListener
 				.productId(matchedProductId)
 				.productName(productName)
 				.packedQty(packedQty)
-				.unpickable(unpickable)
 				.build();
 	}
 

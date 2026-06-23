@@ -104,6 +104,7 @@ public class PickingJobUnPickCommand
 		final Stream<StepUnpickInstructions> unpickInstructionsStream;
 		if (productId != null && qtyToUnpick != null)
 		{
+			// Header-scoped by design: matches the sales_order aggregation level; same product across multiple lines is intentionally pooled.
 			unpickInstructionsStream = buildSubsetUnpickInstructions(pickingJob, productId, qtyToUnpick);
 		}
 		else if (onlyPickingJobStepId != null)
@@ -160,7 +161,7 @@ public class PickingJobUnPickCommand
 				.sorted(Comparator.comparing((CandidateHU c) -> c.getPickedToHU().getCreatedAt()).reversed())
 				.collect(Collectors.toList());
 
-		// Fix 1: Fail-fast UOM guard — every candidate's qtyPicked must share the same UOM as qtyToUnpick.
+		// Fail-fast UOM guard — every candidate's qtyPicked must share the same UOM as qtyToUnpick.
 		// UOM conversion is not supported for partial unpick; a mismatch here would cause a cryptic
 		// internal Quantity assertion further down the greedy selection loop.
 		for (final CandidateHU candidate : candidates)
@@ -175,7 +176,7 @@ public class PickingJobUnPickCommand
 		}
 
 		Quantity remaining = qtyToUnpick;
-		// Fix 2: LinkedHashMap preserves LIFO-grouped insertion order (candidates are sorted LIFO above).
+		// LinkedHashMap preserves LIFO-grouped insertion order (candidates are sorted LIFO above).
 		final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> selectedByStepPickFrom = new LinkedHashMap<>();
 
 		for (final CandidateHU candidate : candidates)
@@ -198,42 +199,10 @@ public class PickingJobUnPickCommand
 
 		if (!remaining.isZero())
 		{
-			// Fallback: if the requested qty cannot be met by summing whole-HU boundaries,
-			// try to take the partial qty from the LAST (most-recently-packed) candidate
-			// whose qty exceeds remaining.  The execution phase will split that VHU.
-			final Quantity remainingFinal = remaining; // effectively final capture for the lambda
-			final CandidateHU partialCandidate = candidates.stream()
-					.filter(c -> c.getPickedToHU().getQtyPicked().compareTo(remainingFinal) > 0)
-					.findFirst() // candidates are LIFO-sorted → first = most recent
-					.orElse(null);
-
-			if (partialCandidate == null)
-			{
-				throw new AdempiereException("Cannot unpick the requested quantity " + qtyToUnpick
-						+ " for product " + productId
-						+ " because it cannot be met by summing whole packed HU boundaries."
-						+ " Remaining qty that could not be matched: " + remaining);
-			}
-
-			// Build a partial-split instruction: one HU with more qty than needed.
-			final StepPickFromKey partialKey = new StepPickFromKey(partialCandidate.getStepId(), partialCandidate.getPickFromKey());
-			selectedByStepPickFrom.computeIfAbsent(partialKey, k -> new ArrayList<>()).add(partialCandidate.getPickedToHU());
-
-			return Stream.concat(
-					selectedByStepPickFrom.entrySet().stream()
-							.filter(e -> !e.getKey().equals(partialKey))
-							.map(entry -> StepUnpickInstructions.builder()
-									.stepId(entry.getKey().getStepId())
-									.pickFromKey(entry.getKey().getPickFromKey())
-									.pickedToHUsToUnpick(ImmutableList.copyOf(entry.getValue()))
-									.build()),
-					Stream.of(StepUnpickInstructions.builder()
-							.stepId(partialKey.getStepId())
-							.pickFromKey(partialKey.getPickFromKey())
-							.pickedToHUsToUnpick(ImmutableList.of(partialCandidate.getPickedToHU()))
-							.partialQtyToUnpick(remainingFinal)
-							.build())
-			);
+			throw new AdempiereException("Cannot unpick the requested quantity " + qtyToUnpick
+					+ " for product " + productId
+					+ " because it cannot be met by summing whole packed HU boundaries (no HU splitting allowed)."
+					+ " Remaining qty that could not be matched: " + remaining);
 		}
 
 		return selectedByStepPickFrom.entrySet().stream()
@@ -293,7 +262,8 @@ public class PickingJobUnPickCommand
 		PickingJobStep changedStep = step;
 		for (final StepUnpickInstructions unpickInstructions : unpickInstructionsList)
 		{
-			changedStep = unpickStep(changedStep, unpickInstructions);
+			final PickingJobStepPickFromKey pickFromKey = unpickInstructions.getPickFromKey();
+			changedStep = unpickStep(changedStep, pickFromKey, unpickInstructions.getPickedToHUsToUnpick());
 		}
 
 		if (changedStep.isGeneratedOnFly() && changedStep.isNothingPicked())
@@ -306,81 +276,40 @@ public class PickingJobUnPickCommand
 
 	private PickingJobStep unpickStep(
 			@NonNull final PickingJobStep step,
-			@NonNull final StepUnpickInstructions instructions)
+			@NonNull final PickingJobStepPickFromKey pickFromKey,
+			@Nullable final ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpickOverride)
 	{
-		final PickingJobStepPickFromKey pickFromKey = instructions.getPickFromKey();
-		final Quantity partialQtyToUnpick = instructions.getPartialQtyToUnpick();
-
-		if (partialQtyToUnpick != null)
+		final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
+		final List<PickingJobStepPickedToHU> pickedToHUs;
+		if (pickedToHUsToUnpickOverride != null)
 		{
-			// Partial-split path: the selected packed HU has MORE qty than we want to unpick.
-			// 1. Get the single packed HU that will be split.
-			final ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpick = instructions.getPickedToHUsToUnpick();
-			Check.assume(pickedToHUsToUnpick != null && pickedToHUsToUnpick.size() == 1,
-					"Partial unpick must target exactly one packed HU; got {}", pickedToHUsToUnpick);
-			final PickingJobStepPickedToHU originalPickedHU = pickedToHUsToUnpick.get(0);
-			final I_M_HU originalHURecord = huService.getById(originalPickedHU.getActualPickedHU().getId());
-
-			// 2. Split the VHU: cuToNewCU takes `partialQtyToUnpick` out of the original HU
-			//    and returns it as a new standalone HU.  The original HU's storage is reduced.
-			final HUTransformService huTransformService = newHUTransformService();
-			final List<I_M_HU> splitOffHUs = huTransformService.cuToNewCU(originalHURecord, partialQtyToUnpick);
-			Check.assumeNotEmpty(splitOffHUs, "cuToNewCU must return at least one HU");
-
-			// 3. Compute the qty remaining in the original HU after the split.
-			final Quantity originalQty = originalPickedHU.getQtyPicked();
-			final Quantity remainingInOriginal = originalQty.subtract(partialQtyToUnpick);
-
-			// 4. Unpick only the split-off HUs: delete shipment sched records and set Active.
-			final ImmutableSet<HUIdAndQRCode> splitOffIdAndQRCode = splitOffHUs.stream()
-					.map(hu -> HUIdAndQRCode.ofHuId(HuId.ofRepoId(hu.getM_HU_ID())))
-					.collect(ImmutableSet.toImmutableSet());
-			final List<I_M_HU> splitOffTopLevelHUs = extractToTopLevelHUs(splitOffIdAndQRCode);
-			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(splitOffTopLevelHUs, step.getScheduleId().getShipmentScheduleId());
-			changeHUStatusFromPickedToActive(splitOffTopLevelHUs);
-			moveToTargetHUIfNeeded(splitOffIdAndQRCode);
-
-			// 5. Update the in-memory model: reduce the original HU's tracked qty.
-			return step.reduceWithPartialUnpickEvent(
-					pickFromKey,
-					originalPickedHU.getActualPickedHU().getId(),
-					remainingInOriginal);
+			// Subset path: use only the explicitly selected HUs
+			pickedToHUs = pickedToHUsToUnpickOverride;
 		}
 		else
 		{
-			// Whole-HU path (original behaviour)
-			final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
-			final List<PickingJobStepPickedToHU> pickedToHUs;
-			if (instructions.getPickedToHUsToUnpick() != null)
-			{
-				// Subset path: use only the explicitly selected HUs
-				pickedToHUs = instructions.getPickedToHUsToUnpick();
-			}
-			else
-			{
-				// Whole-step path (original behaviour)
-				pickedToHUs = pickFrom.getPickedTo() != null
-						? pickFrom.getPickedTo().getActualPickedHUs()
-						: ImmutableList.of();
-			}
-			if (pickedToHUs.isEmpty())
-			{
-				return step;
-			}
-
-			final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
-
-			final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
-			changeHUStatusFromPickedToActive(topLevelHUs);
-
-			moveToTargetHUIfNeeded(huIdAndQRCodeList);
-
-			return step.reduceWithUnpickEvent(
-					pickFromKey,
-					PickingJobStepUnpickInfo.ofUnpickedHUs(pickedToHUs)
-			);
+			// Whole-step path (original behaviour)
+			pickedToHUs = pickFrom.getPickedTo() != null
+					? pickFrom.getPickedTo().getActualPickedHUs()
+					: ImmutableList.of();
 		}
+		if (pickedToHUs.isEmpty())
+		{
+			return step;
+		}
+
+		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(pickedToHUs);
+
+		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
+		changeHUStatusFromPickedToActive(topLevelHUs);
+
+		moveToTargetHUIfNeeded(huIdAndQRCodeList);
+
+		return step.reduceWithUnpickEvent(
+				pickFromKey,
+				PickingJobStepUnpickInfo.ofUnpickedHUs(pickedToHUs)
+		);
 	}
 
 	private void moveToTargetHUIfNeeded(final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
@@ -506,12 +435,5 @@ public class PickingJobUnPickCommand
 		 * When absent: reverse all packed HUs for this step/pickFrom (whole-step path).
 		 */
 		@Nullable ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpick;
-		/**
-		 * When non-null, {@code pickedToHUsToUnpick} contains exactly ONE entry whose VHU has MORE qty
-		 * than {@code qtyToUnpick}. The execution phase must split that VHU first (taking exactly
-		 * {@code qtyToUnpick} out of it) and unpick only the split-off portion, leaving the remainder
-		 * in the packed list with a reduced qty.
-		 */
-		@Nullable Quantity partialQtyToUnpick;
 	}
 }
