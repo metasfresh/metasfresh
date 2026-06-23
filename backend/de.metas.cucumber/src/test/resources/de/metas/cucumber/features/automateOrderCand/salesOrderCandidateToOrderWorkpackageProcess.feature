@@ -432,3 +432,129 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | orderLine_1               | order_1               | 2026-07-01   | product_22062026        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
       | orderLine_2               | order_1               | 2026-07-08   | product_22062026        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
       | orderLine_3               | order_1               | 2026-07-15   | product_22062026        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00101
+  Scenario: OLCands sharing externalHeaderId but with different bill partner surface the external-header uniqueness error
+  - create 2 olcands with the same externalHeaderId, externalSystemCode, org and ship partner, but DIFFERENT bill partner
+  - the differing bill partner is part of the order-aggregation key (forces a separate order) but NOT of the
+    C_Order_ExternalHeader_ID unique index tuple (ExternalSystem_ID, ExternalId, AD_Org_ID)
+  - both forced orders therefore carry the same C_Order.ExternalId=18062027 -> the second order save violates the
+    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg, surfaced both as HTTP 400 on the
+    process call AND as C_OLCand.IsError + ErrorMsg on the offending candidate
+    Given metasfresh contains M_PricingSystems
+      | Identifier           | Name                             | Value                            | OPT.IsActive |
+      | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier           | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_scenario_18062027 | ps_scenario_18062027          | DE                        | EUR                 | pl_scenario_18062027 | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier            | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
+      | plv_scenario_18062027 | pl_scenario_18062027      | plv_scenario_18062027 | 2021-04-01 |
+    And metasfresh contains M_Products:
+      | Identifier       | Name             |
+      | product_18062027 | product_18062027 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | plv_scenario_18062027             | product_18062027        | 10.0     | PCE               | Normal                        |
+    # Two customers sharing the same pricing system: 'shipCustomer' is the common ship partner of both olcands,
+    # while 'billCustomerA' and 'billCustomerB' are the two DIFFERENT bill partners that force the order split.
+    And metasfresh contains C_BPartners:
+      | Identifier    | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
+      | shipCustomer  | Y              | N            | ps_scenario_18062027          | shipCustomer_location      | 1100000000011 | F            |
+      | billCustomerA | Y              | N            | ps_scenario_18062027          | billCustomerA_location     | 2200000000022 | F            |
+      | billCustomerB | Y              | N            | ps_scenario_18062027          | billCustomerB_location     | 3300000000033 | F            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier             | GLN           | C_BPartner_ID.Identifier |
+      | shipCustomer_location  | 1100000000011 | shipCustomer             |
+      | billCustomerA_location | 2200000000022 | billCustomerA            |
+      | billCustomerB_location | 3300000000033 | billCustomerB            |
+
+    # we create 2 OLCands with the same externalHeaderId `18062027`, same externalSystemCode, org and ship partner,
+    # but DIFFERENT billBPartner. They aggregate into the same group, but the differing bill partner forces a
+    # separate order for each -> both orders get C_Order.ExternalId=18062027 -> the unique index
+    # C_Order_ExternalHeader_ID is violated on the second order's save.
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "18062027",
+            "externalLineId": "18062027_0",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-1100000000011",
+                "bpartnerLocationIdentifier": "gln-1100000000011"
+            },
+            "billBPartner": {
+                "bpartnerIdentifier": "gln-2200000000022",
+                "bpartnerLocationIdentifier": "gln-2200000000022"
+            },
+            "dateRequired": "2027-07-01",
+            "dateOrdered": "2027-06-18",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_18062027",
+            "qty": 2,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "18062027",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        },
+        {
+            "orgCode": "001",
+            "externalHeaderId": "18062027",
+            "externalLineId": "18062027_1",
+            "externalSystemCode": "Shopware6",
+            "dataSource": "int-Shopware",
+            "bpartner": {
+                "bpartnerIdentifier": "gln-1100000000011",
+                "bpartnerLocationIdentifier": "gln-1100000000011"
+            },
+            "billBPartner": {
+                "bpartnerIdentifier": "gln-3300000000033",
+                "bpartnerLocationIdentifier": "gln-3300000000033"
+            },
+            "dateRequired": "2027-07-01",
+            "dateOrdered": "2027-06-18",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-product_18062027",
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "18062027",
+            "deliveryViaRule": "S",
+            "deliveryRule": "F"
+        }
+    ]
+}
+"""
+
+    Then process metasfresh response JsonOLCandCreateBulkResponse
+      | C_OLCand_ID.Identifier |
+      | olCand_1,olCand_2      |
+
+    # Processing fails: the second forced order violates the C_Order_ExternalHeader_ID unique index.
+    # The DBUniqueConstraintException carries the translated AD_Index_Table.ErrorMsg; the workpackage fails,
+    # so the process call returns HTTP 400.
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '400' status code
+"""
+{
+    "externalHeaderId": "18062027",
+    "externalSystemCode": "Shopware6",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+
+    # The offending candidate is marked with the error; its ErrorMsg contains the AD_Index_Table.ErrorMsg text
+    # (resolved in the base language, German), proving the unique-index conflict surfaced as the intended message.
+    And validate C_OLCand is with error
+      | C_OLCand_ID.Identifier | ErrorMsg                                                                                                                                |
+      | olCand_2               | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
