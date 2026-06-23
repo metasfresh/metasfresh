@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E2300_Attributes
-@allure.label.feature:F67000_Attributes
+@allure.label.feature:F67044_Attribute
 @ghActions:run_on_executor1
 Feature: Generic SQL helper to UPSERT a single M_AttributeInstance
   The de_metas_attributes.upsert_attributeinstance function writes one attribute value
