@@ -1,6 +1,9 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
 import { allure } from 'allure-playwright';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
@@ -323,9 +326,6 @@ with an embedded factur-x.xml (Factur-X / ZUGFeRD CII XML) and intact invoice co
     const downloadProxy = {
       path: async () => {
         // Write buffer to a temp file and return the path
-        const os = require('os');
-        const path = require('path');
-        const fs = require('fs');
         const tmpPath = path.join(os.tmpdir(), `zugferd-invoice-${Date.now()}.pdf`);
         fs.writeFileSync(tmpPath, archivedPdfBuffer);
         return tmpPath;
