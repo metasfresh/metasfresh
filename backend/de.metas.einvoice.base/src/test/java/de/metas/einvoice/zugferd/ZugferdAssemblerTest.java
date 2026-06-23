@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,7 +44,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * <p>Embeds a minimal EN16931 CII XML into a fixture PDF/A-3 and asserts:
  * <ol>
  *   <li>The Mustang ZUGFeRDValidator reports ZERO PDF/A-3 conformance errors (EPart.pdf)
- *       and ZERO Factur-X structural errors (EPart.fx) at severity error/fatal.
+ *       and ZERO Factur-X structural errors (EPart.fx) at severity error/fatal/exception.
  *       CII-content schematron (EPart.ox/xr) is explicitly excluded — that is the
  *       responsibility of CiiMapper/EInvoiceCiiService, not the assembler.</li>
  *   <li>The {@code factur-x.xml} extracted back from the assembled PDF is XML-equal
@@ -55,21 +56,23 @@ import static org.assertj.core.api.Assertions.assertThat;
  *       ({@code fx:ConformanceLevel})</li>
  * </ol>
  *
- * <p><b>Approach B (container-level)</b> is used because the SAMPLE_CII_XML below is
- * intentionally minimal — it is schema-structurally valid but not full EN16931-schematron-valid
- * (many mandatory BT-* fields are absent). The assembler's contract is the <em>container</em>
- * (PDF/A-3 + Factur-X embedding), not the CII content; CII-content validation is covered by
- * {@code CiiValidatorTest}. Accordingly this test asserts zero container-level errors and
- * round-trip XML fidelity, and deliberately does not assert {@code wasCompletelyValid()}.
+ * <p>The SAMPLE_CII_XML fixture is schema-structurally valid but intentionally not full
+ * EN16931-schematron-valid (many mandatory BT-* fields are absent). The assembler's contract is
+ * the <em>container</em> (PDF/A-3 + Factur-X embedding), not the CII content; CII-content
+ * validation is covered by {@code CiiValidatorTest}. This test therefore asserts zero
+ * container-level errors and round-trip XML fidelity; it deliberately does not assert
+ * {@code wasCompletelyValid()}.
  */
 public class ZugferdAssemblerTest
 {
 	private static final Logger log = LoggerFactory.getLogger(ZugferdAssemblerTest.class);
 
 	/**
-	 * Minimal but syntactically valid EN16931 CII XML (Factur-X 2.1.1 COMFORT / EN16931 profile).
-	 * Taken from the Factur-X specification sample set; all mandatory BT-* fields populated.
-	 * The XML is intentionally minimal — schema-valid, EN16931 schematron-valid.
+	 * Minimal CII XML fixture for container-level testing.
+	 * Intentionally schema-structurally valid but NOT full EN16931-schematron-valid —
+	 * many mandatory BT-* fields are absent. CII-content schematron validation is
+	 * covered by {@link de.metas.einvoice.cii.CiiValidatorTest}; this fixture
+	 * exercises the PDF/A-3 container embedding only.
 	 */
 	private static final String SAMPLE_CII_XML =
 			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
@@ -254,7 +257,7 @@ public class ZugferdAssemblerTest
 		}
 		throw new IllegalStateException(
 				"No sRGB ICC profile found on classpath. Checked: "
-						+ java.util.Arrays.toString(candidates)
+						+ Arrays.toString(candidates)
 						+ ". Verify PDFBox ICC resources are present — the fixture PDF/A-3 requires a valid ICC output intent.");
 	}
 
@@ -280,12 +283,10 @@ public class ZugferdAssemblerTest
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Core test (Finding 1 — Approach B, container-level):
-	 *
-	 * <p>Embeds the sample CII into a fixture PDF/A-3 and asserts:
+	 * Core container-level test: embeds the sample CII into a fixture PDF/A-3 and asserts:
 	 * <ol>
-	 *   <li>Zero validator items with severity {@code error} or {@code fatal} and part
-	 *       {@code pdf} (PDF/A-3 conformance) or {@code fx} (Factur-X structural).
+	 *   <li>Zero validator items with severity {@code error}, {@code fatal}, or {@code exception}
+	 *       and part {@code pdf} (PDF/A-3 conformance) or {@code fx} (Factur-X structural).
 	 *       CII-content schematron parts ({@code ox}, {@code xr}) are explicitly excluded —
 	 *       the SAMPLE_CII_XML is intentionally minimal and will have schematron failures;
 	 *       those are upstream's responsibility (CiiMapper/EInvoiceCiiService).</li>
@@ -293,10 +294,10 @@ public class ZugferdAssemblerTest
 	 *       the input CII string, proving round-trip fidelity of the container embedding.</li>
 	 * </ol>
 	 *
-	 * <p>Why Approach B and not A: no readily-available schematron-valid CII fixture exists
-	 * in this module's test resources that could be passed unchanged to a validator asserting
-	 * {@code wasCompletelyValid()}. The CiiValidatorTest covers EN16931 content validation with
-	 * a fully-populated CII produced by CiiMapper; we avoid duplicating that concern here.
+	 * <p>A fully schematron-valid CII fixture is not readily available in this module;
+	 * CII-content validation is covered by {@code CiiValidatorTest}. This test therefore does
+	 * not assert {@code wasCompletelyValid()} — it asserts only that the assembler produced a
+	 * structurally correct PDF/A-3 Factur-X container.
 	 */
 	@Test
 	void embed_producesZugferdPdf_containerLevelValid() throws Exception
@@ -326,7 +327,8 @@ public class ZugferdAssemblerTest
 			// EPart.ox (CII schematron EN16931) and EPart.xr (KoSIT XRechnung) are excluded.
 			final List<ValidationResultItem> containerErrors = ctx.getResults().stream()
 					.filter(item -> item.getSeverity() == ESeverity.error
-							|| item.getSeverity() == ESeverity.fatal)
+							|| item.getSeverity() == ESeverity.fatal
+							|| item.getSeverity() == ESeverity.exception)
 					.filter(item -> item.getPart() == EPart.pdf || item.getPart() == EPart.fx)
 					.collect(Collectors.toList());
 
@@ -336,7 +338,7 @@ public class ZugferdAssemblerTest
 
 			assertThat(containerErrors)
 					.as("Assembler must produce ZERO PDF/A-3 conformance (EPart.pdf) and "
-							+ "Factur-X structural (EPart.fx) errors/fatals. "
+							+ "Factur-X structural (EPart.fx) errors/fatals/exceptions. "
 							+ "Found " + containerErrors.size() + " container error(s): " + errorSummary)
 					.isEmpty();
 
@@ -345,13 +347,13 @@ public class ZugferdAssemblerTest
 							+ "ox_errors={}, xr_errors={}",
 					ctx.getResults().size(),
 					ctx.getResults().stream().filter(i -> i.getPart() == EPart.pdf
-							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal || i.getSeverity() == ESeverity.exception)).count(),
 					ctx.getResults().stream().filter(i -> i.getPart() == EPart.fx
-							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal || i.getSeverity() == ESeverity.exception)).count(),
 					ctx.getResults().stream().filter(i -> i.getPart() == EPart.ox
-							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count(),
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal || i.getSeverity() == ESeverity.exception)).count(),
 					ctx.getResults().stream().filter(i -> i.getPart() == EPart.xr
-							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal)).count());
+							&& (i.getSeverity() == ESeverity.error || i.getSeverity() == ESeverity.fatal || i.getSeverity() == ESeverity.exception)).count());
 		}
 		finally
 		{
@@ -577,10 +579,10 @@ public class ZugferdAssemblerTest
 				}
 			}
 		}
-		catch (final ClassCastException | NullPointerException e)
+		catch (final ClassCastException e)
 		{
-			// Unexpected PDF structure — log for diagnostics and fall through to false
-			log.debug("checkEmbeddedFileNames: unexpected PDF structure while scanning EmbeddedFiles tree", e);
+			// Unexpected PDF structure (wrong COS type) — log for diagnostics and fall through to false
+			log.debug("checkEmbeddedFileNames: unexpected COS type while scanning EmbeddedFiles tree", e);
 		}
 		return false;
 	}
