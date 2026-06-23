@@ -55,6 +55,11 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 	@NonNull private final HUConsolidationJobService jobService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
 
+	/** Lazily injected to break the circular dependency: HUConsolidationApplication → CompleteWFActivityHandler → (mapJob via static) → HUConsolidationApplication. */
+	@org.springframework.beans.factory.annotation.Autowired
+	@org.springframework.context.annotation.Lazy
+	private CompleteWFActivityHandler completeWFActivityHandler;
+
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
 
@@ -115,7 +120,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 				.build();
 	}
 
-	private static WFProcess toWFProcess(final HUConsolidationJob job)
+	private WFProcess toWFProcess(final HUConsolidationJob job)
 	{
 		return WFProcess.builder()
 				.id(job.getId().toWFProcessId())
@@ -132,7 +137,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 								.id(WFActivityId.ofString("A2"))
 								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
 								.wfActivityType(CompleteWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(CompleteWFActivityHandler.computeActivityState(job))
+								.status(completeWFActivityHandler.computeActivityState(job))
 								.build()
 				))
 				.build();
@@ -144,7 +149,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		return wfProcess.getDocumentAs(HUConsolidationJob.class);
 	}
 
-	public static WFProcess mapJob(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<HUConsolidationJob> mapper)
+	public WFProcess mapJob(@NonNull final WFProcess wfProcess, @NonNull final UnaryOperator<HUConsolidationJob> mapper)
 	{
 		final HUConsolidationJob job = getHUConsolidationJob(wfProcess);
 		final HUConsolidationJob jobChanged = mapper.apply(job);

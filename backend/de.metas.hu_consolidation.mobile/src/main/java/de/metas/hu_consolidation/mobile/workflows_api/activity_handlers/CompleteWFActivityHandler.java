@@ -1,8 +1,13 @@
 package de.metas.hu_consolidation.mobile.workflows_api.activity_handlers;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.HUGraiService;
+import de.metas.handlingunits.grai.HUGraiSnapshot;
 import de.metas.hu_consolidation.mobile.HUConsolidationApplication;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
+import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.activity_features.user_confirmation.UserConfirmationRequest;
@@ -17,7 +22,13 @@ import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 import static de.metas.hu_consolidation.mobile.HUConsolidationApplication.getHUConsolidationJob;
 import static de.metas.workflow.rest_api.service.Constants.ARE_YOU_SURE;
@@ -29,7 +40,17 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("huConsolidation.complete");
 
 	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final HUConsolidationJobService jobService;
+	@NonNull private final HUGraiService huGraiService;
+
+	/**
+	 * Lazily injected to break the mutual dependency:
+	 * HUConsolidationApplication (lazy) → CompleteWFActivityHandler → HUConsolidationApplication.
+	 */
+	@Autowired
+	@Lazy
+	private HUConsolidationApplication huConsolidationApplication;
 
 	@Override
 	public WFActivityType getHandledActivityType()
@@ -56,16 +77,73 @@ public class CompleteWFActivityHandler implements WFActivityHandler, UserConfirm
 		return computeActivityState(job);
 	}
 
-	public static WFActivityStatus computeActivityState(final HUConsolidationJob job)
+	/**
+	 * Package-private: also called directly from tests.
+	 * Returns {@link WFActivityStatus#COMPLETED} when GRAI scan is not required or all required GRAIs
+	 * on the current target LU are assigned; returns {@link WFActivityStatus#NOT_STARTED} (not-ready)
+	 * when GRAI scan is required but the current target LU has unfilled TU slots.
+	 */
+	public WFActivityStatus computeActivityState(@NonNull final HUConsolidationJob job)
 	{
-		// TODO
+		if (!isGraiScanEnabled(job))
+		{
+			return WFActivityStatus.COMPLETED;
+		}
+
+		final HUGraiSnapshot snapshot = getTargetLUSnapshot(job);
+		if (snapshot == null || snapshot.isAllGraisAssigned())
+		{
+			return WFActivityStatus.COMPLETED;
+		}
+
 		return WFActivityStatus.NOT_STARTED;
+	}
+
+	/**
+	 * Validates GRAI completeness and throws a user-facing {@link AdempiereException} when GRAI scan
+	 * is required but the current target LU still has unfilled TU GRAI slots.
+	 * Package-private: used by {@link #userConfirmed} and callable directly from tests.
+	 */
+	void checkGraisComplete(@NonNull final HUConsolidationJob job)
+	{
+		if (!isGraiScanEnabled(job))
+		{
+			return;
+		}
+
+		final HUGraiSnapshot snapshot = getTargetLUSnapshot(job);
+		if (snapshot != null)
+		{
+			snapshot.assertAllGraisAssigned();
+		}
 	}
 
 	@Override
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
 		request.assertActivityType(HANDLED_ACTIVITY_TYPE);
-		return HUConsolidationApplication.mapJob(request.getWfProcess(), jobService::complete);
+		final HUConsolidationJob job = getHUConsolidationJob(request.getWfProcess());
+		checkGraisComplete(job);
+		return huConsolidationApplication.mapJob(request.getWfProcess(), jobService::complete);
+	}
+
+	/** {@code GRAIRequired != No} → GRAI scan is required (YesWithDummyGRAIs treated as Yes — no dummy-fill here). */
+	private boolean isGraiScanEnabled(@NonNull final HUConsolidationJob job)
+	{
+		final I_C_BPartner bpartner = bpartnerDAO.getById(job.getCustomerId());
+		final GRAIRequired graiRequired = GRAIRequired.optionalOfNullableCode(bpartner.getGRAIRequired())
+				.orElse(GRAIRequired.No);
+		return !graiRequired.isNo();
+	}
+
+	@Nullable
+	private HUGraiSnapshot getTargetLUSnapshot(@NonNull final HUConsolidationJob job)
+	{
+		final HUConsolidationTarget currentTarget = job.getCurrentTarget();
+		if (currentTarget == null || !currentTarget.isExistingLU())
+		{
+			return null;
+		}
+		return huGraiService.getSnapshot(currentTarget.getLuIdNotNull()).orElse(null);
 	}
 }
