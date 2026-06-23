@@ -76,7 +76,7 @@ async function fetchWindowLayout(page, windowId) {
 }
 
 /**
- * Collect all {element, field} pairs from a window layout JSON.
+ * Collect all field (ColumnName) names from a window layout JSON.
  *
  * Actual structure (verified against /rest/api/window/540676/layout):
  *   sections[] → columns[] → elementGroups[] → elementsLine[] → elements[] → fields[]
@@ -87,11 +87,11 @@ async function fetchWindowLayout(page, windowId) {
  *   and "viewEditorRenderMode" defaults to 'never' for every text element regardless of form
  *   editability. Form-view editability lives on the per-record data endpoint, not here.
  *
- * Returns an array of { fieldName, element } objects so callers can check
- * presence (fieldName in layout).
+ * Returns an array of the ColumnName strings present in the layout, so callers can
+ * check presence (a field name in the array == displayed in the tab).
  */
 function collectLayoutFields(layout) {
-  const results = [];
+  const fieldNames = [];
   for (const section of layout.sections || []) {
     for (const column of section.columns || []) {
       for (const elementGroup of column.elementGroups || []) {
@@ -100,14 +100,14 @@ function collectLayoutFields(layout) {
           for (const element of elementsLine.elements || []) {
             for (const field of element.fields || []) {
               // field.field is the ColumnName string (e.g. "VATaxID")
-              results.push({ fieldName: field.field, element });
+              fieldNames.push(field.field);
             }
           }
         }
       }
     }
   }
-  return results;
+  return fieldNames;
 }
 
 test.describe('Organisation Stammdaten — seller tax-identification fields (E-Invoicing)', () => {
@@ -221,13 +221,13 @@ by the window-designer.
 
       for (const field of FIELDS) {
         await test.step(`Assert field ${field.columnName} (${field.label}) is displayed in the window layout`, async () => {
-          // Find the field in the layout by column name
-          const entry = layoutFields.find((f) => f.fieldName === field.columnName);
+          // Presence = the column name appears among the layout's displayed fields
+          const isPresent = layoutFields.includes(field.columnName);
 
           expect(
-            entry,
+            isPresent,
             `Field ${field.columnName} must appear in the window 540676 layout (check AD_Field.IsDisplayed and AD_UI_Element visibility for tab 541852)`
-          ).toBeDefined();
+          ).toBe(true);
 
           // NOTE: this asserts PRESENCE/visibility only. Form-view editability (readonlyLogic) is
           // per-record state exposed on the per-record data endpoint
