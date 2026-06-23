@@ -1,9 +1,9 @@
 DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
-CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric = NULL,
-                                                             p_dateFrom      date,
+CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_dateFrom      date,
                                                              p_dateTo        date,
                                                              p_ad_client_id  numeric,
+                                                             p_c_bpartner_id numeric = NULL,
                                                              p_ad_org_id     numeric = NULL,
                                                              p_isSoTrx       TEXT = 'Y',
                                                              p_ad_language   text = 'en_US')
@@ -322,21 +322,20 @@ $BODY$
     LANGUAGE plpgsql
     VOLATILE;
 
-COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
+COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_c_bpartner_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
 'How to run (single partner):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(2000252,
-                                       ''1111-1-1''::date,
+FROM BusinessPartnerAccountSheetReport(''1111-1-1''::date,
                                        ''3333-1-1''::date,
-                                       1000000)
+                                       1000000,
+                                       2000252)
 ;
 
 How to run (all partners):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(NULL,
-                                       ''1111-1-1''::date,
+FROM BusinessPartnerAccountSheetReport(''1111-1-1''::date,
                                        ''3333-1-1''::date,
                                        1000000)
 ;
@@ -346,17 +345,16 @@ FROM BusinessPartnerAccountSheetReport(NULL,
 How to run (single partner):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(2000252,
-                                       '1111-1-1'::date,
+FROM BusinessPartnerAccountSheetReport('1111-1-1'::date,
                                        '3333-1-1'::date,
-                                       1000000)
+                                       1000000,
+                                       2000252)
 ;
 
 How to run (all partners):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(NULL,
-                                       '1111-1-1'::date,
+FROM BusinessPartnerAccountSheetReport('1111-1-1'::date,
                                        '3333-1-1'::date,
                                        1000000)
 ;

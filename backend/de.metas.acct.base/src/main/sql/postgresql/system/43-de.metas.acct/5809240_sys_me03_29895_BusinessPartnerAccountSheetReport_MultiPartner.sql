@@ -1,10 +1,10 @@
 -- Source DDL: backend/de.metas.acct.base/src/main/sql/postgresql/ddl/functions/BusinessPartnerAccountSheetReport.sql
 DROP FUNCTION IF EXISTS BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text);
 
-CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric = NULL,
-                                                             p_dateFrom      date,
+CREATE OR REPLACE FUNCTION BusinessPartnerAccountSheetReport(p_dateFrom      date,
                                                              p_dateTo        date,
                                                              p_ad_client_id  numeric,
+                                                             p_c_bpartner_id numeric = NULL,
                                                              p_ad_org_id     numeric = NULL,
                                                              p_isSoTrx       TEXT = 'Y',
                                                              p_ad_language   text = 'en_US')
@@ -323,21 +323,20 @@ $BODY$
     LANGUAGE plpgsql
     VOLATILE;
 
-COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_c_bpartner_id numeric, p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
+COMMENT ON FUNCTION BusinessPartnerAccountSheetReport(p_dateFrom date, p_dateTo date, p_ad_client_id numeric, p_c_bpartner_id numeric, p_ad_org_id numeric, p_isSoTrx TEXT, p_ad_language text) IS
 'How to run (single partner):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(2000252,
-                                       ''1111-1-1''::date,
+FROM BusinessPartnerAccountSheetReport(''1111-1-1''::date,
                                        ''3333-1-1''::date,
-                                       1000000)
+                                       1000000,
+                                       2000252)
 ;
 
 How to run (all partners):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(NULL,
-                                       ''1111-1-1''::date,
+FROM BusinessPartnerAccountSheetReport(''1111-1-1''::date,
                                        ''3333-1-1''::date,
                                        1000000)
 ;
@@ -347,17 +346,16 @@ FROM BusinessPartnerAccountSheetReport(NULL,
 How to run (single partner):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(2000252,
-                                       '1111-1-1'::date,
+FROM BusinessPartnerAccountSheetReport('1111-1-1'::date,
                                        '3333-1-1'::date,
-                                       1000000)
+                                       1000000,
+                                       2000252)
 ;
 
 How to run (all partners):
 
 SELECT*
-FROM BusinessPartnerAccountSheetReport(NULL,
-                                       '1111-1-1'::date,
+FROM BusinessPartnerAccountSheetReport('1111-1-1'::date,
                                        '3333-1-1'::date,
                                        1000000)
 ;
@@ -373,10 +371,10 @@ SET IsMandatory = 'N',
 WHERE AD_Process_Para_ID = 541752
 ;
 
--- Update SQLStatement so that an empty/unset Geschäftspartner field passes NULL (all-partners mode).
--- NULLIF(@C_BPartner_ID/0@, 0): the /0 suffix defaults to 0 when blank; NULLIF converts 0 → NULL.
+-- Update SQLStatement to match new parameter order (dateFrom, dateTo, client_id, bpartner_or_null, ...)
+-- and use NULLIF(@C_BPartner_ID/0@, 0) so a blank partner field passes NULL (all-partners mode).
 UPDATE AD_Process
-SET SQLStatement = 'SELECT * FROM BusinessPartnerAccountSheetReport(NULLIF(@C_BPartner_ID/0@, 0), ''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, @AD_Org_ID@, ''@IsSOTrx@'')',
+SET SQLStatement = 'SELECT * FROM BusinessPartnerAccountSheetReport(''@DateFrom@''::date, ''@DateTo@''::date, @#AD_Client_ID@, NULLIF(@C_BPartner_ID/0@, 0), @AD_Org_ID@, ''@IsSOTrx@'')',
     Updated      = TO_TIMESTAMP('2026-06-22 10:00:01', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Process_ID = 584661
