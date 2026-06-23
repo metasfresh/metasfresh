@@ -41,3 +41,17 @@ export const getPickingSlotContent = ({ wfProcessId, pickingSlotId }) => {
     .get(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/pickingSlot/${pickingSlotId}`)
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const getTargetGrais = ({ wfProcessId }) => {
+  return axios
+    .get(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/target/grai`))
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const setTargetGrais = ({ wfProcessId, graiCodes }) => {
+  return axios
+    .put(toUrl(`${apiBasePath}/mobile/huConsolidation/job/${wfProcessId}/target/grai`), {
+      graiCodes,
+    })
+    .then((response) => unboxAxiosResponse(response));
+};
