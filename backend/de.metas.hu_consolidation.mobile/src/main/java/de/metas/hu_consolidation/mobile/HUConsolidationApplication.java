@@ -220,15 +220,6 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 		jobService.setTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId, graiSet);
 	}
 
-	public GRAISet getTargetGrais(
-			@NonNull final WFProcessId wfProcessId,
-			@NonNull final UserId callerId)
-	{
-		final WFProcess wfProcess = getWFProcessById(wfProcessId);
-		wfProcess.assertHasAccess(callerId);
-		return jobService.getTargetGrais(HUConsolidationJobId.ofWFProcessId(wfProcessId), callerId);
-	}
-
 	public ExplainedOptional<HUGraiSnapshot> getTargetGraisSnapshot(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UserId callerId)
