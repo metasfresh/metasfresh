@@ -105,14 +105,17 @@ de_DE to prove the full page-object flow is language-independent.
                         // CII mapper reads seller from invoice org's org-bpartner
                         // (bPartnerDAO.retrieveOrgBPartner(invoice.AD_Org_ID)).
                         seller: {
-                            bpartnerCode: 'ZFDSELLER',
+                            // No fixed bpartnerCode/GLN: this spec runs in en_US + de_DE against a
+                            // shared e2e DB, so hardcoded unique values (C_BPartner.Value,
+                            // C_BPartner_Location.GLN) collide on the 2nd run. Let the backend
+                            // auto-generate a unique Value; GLN is not required for ZUGFeRD EN16931
+                            // validity (VATaxID covers BR-CO-26; BT-34 comes from the mailbox).
                             name: 'Muster GmbH',
                             vatTaxId: 'DE123456789',
                             isCustomer: false,
                             isSoPriceList: false,
                             locations: {
                                 sellerLoc: {
-                                    gln: '4099999000002',
                                     city: 'Berlin',
                                     postal: '10115',
                                     address1: 'Musterstrasse 1',
