@@ -631,7 +631,7 @@ public class DocumentCollection
 			final boolean rootHasSaveError,
 			final boolean rootValidStatusIsValid,
 			final boolean rootIsNew,
-			final BooleanSupplier rootHasUnsavedNewIncludedDocument)
+			@NonNull final BooleanSupplier rootHasUnsavedNewIncludedDocument)
 	{
 		// Never evict a new (not-yet-persisted) root — we would lose it entirely and the user would
 		// get a 404 with the document vanished from his browser.
