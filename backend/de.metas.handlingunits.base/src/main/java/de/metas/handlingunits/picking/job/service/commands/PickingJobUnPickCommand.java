@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -160,8 +160,23 @@ public class PickingJobUnPickCommand
 				.sorted(Comparator.comparing((CandidateHU c) -> c.getPickedToHU().getCreatedAt()).reversed())
 				.collect(Collectors.toList());
 
+		// Fix 1: Fail-fast UOM guard — every candidate's qtyPicked must share the same UOM as qtyToUnpick.
+		// UOM conversion is not supported for partial unpick; a mismatch here would cause a cryptic
+		// internal Quantity assertion further down the greedy selection loop.
+		for (final CandidateHU candidate : candidates)
+		{
+			final Quantity huQty = candidate.getPickedToHU().getQtyPicked();
+			if (!huQty.getUomId().equals(qtyToUnpick.getUomId()))
+			{
+				throw new AdempiereException("qtyToUnpick UOM " + qtyToUnpick.getUomId()
+						+ " does not match packed HU UOM " + huQty.getUomId()
+						+ " — UOM conversion is not supported for partial unpick");
+			}
+		}
+
 		Quantity remaining = qtyToUnpick;
-		final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> selectedByStepPickFrom = new HashMap<>();
+		// Fix 2: LinkedHashMap preserves LIFO-grouped insertion order (candidates are sorted LIFO above).
+		final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> selectedByStepPickFrom = new LinkedHashMap<>();
 
 		for (final CandidateHU candidate : candidates)
 		{
@@ -193,6 +208,7 @@ public class PickingJobUnPickCommand
 				.map(entry -> StepUnpickInstructions.builder()
 						.stepId(entry.getKey().getStepId())
 						.pickFromKey(entry.getKey().getPickFromKey())
+						// invariant: non-empty — only non-empty lists are put into selectedByStepPickFrom
 						.pickedToHUsToUnpick(ImmutableList.copyOf(entry.getValue()))
 						.build());
 	}
