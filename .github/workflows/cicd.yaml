@@ -20,6 +20,11 @@ jobs:
     outputs:
       tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
       tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      # Floating tag of the BASE branch this ref derives from (e.g. soft_panda_hotfix for soft_panda_hotfix_Foo).
+      # Used as an additional --cache-from so a feature branch's FIRST build reuses the base image's already-published
+      # layers; otherwise docker push must cold-upload the whole (large) backend image, which stalls past RETRY_TIMEOUT.
+      # For a base branch (or an unrecognised ref) this equals tag-floating, so the extra cache-from is a harmless no-op.
+      base-tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.base-refname.outputs.refname }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
@@ -67,6 +72,25 @@ jobs:
           GIT_REF: ${{ github.ref_name }}
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: determine-base-refname
+        # Resolve the BASE branch this ref derives from, for the base-tag-floating cache-from (see init outputs).
+        # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
+        # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
+        # (base branches, merge-queue/merge-* branches, or anything unrecognised) -> base-tag == own tag, no-op.
+        id: base-refname
+        env:
+          GIT_REF: ${{ github.ref_name }}
+          BRANCH_MAP: ${{ vars.CICD_BRANCH_MAP }}
+        run: |
+          best=""
+          for b in $(echo "$BRANCH_MAP" | grep -oE '"[^"]+"' | tr -d '"' || true); do
+            if [ "$GIT_REF" = "$b" ] || [[ "$GIT_REF" == "${b}_"* ]]; then
+              if [ ${#b} -gt ${#best} ]; then best="$b"; fi
+            fi
+          done
+          [ -z "$best" ] && best="$GIT_REF"
+          echo "Base branch resolved for cache-from: $best"
+          echo "refname=$(echo "$best" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: sanitize-branch-for-gh-pages
         id: sanitize-branch-gh-pages
         env:
@@ -198,6 +222,7 @@ jobs:
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
@@ -209,6 +234,7 @@ jobs:
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
@@ -236,6 +262,7 @@ jobs:
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
@@ -248,6 +275,7 @@ jobs:
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
@@ -260,6 +288,7 @@ jobs:
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
@@ -370,6 +399,7 @@ jobs:
           --file docker-builds/Dockerfile.frontend \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-frontend:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -380,6 +410,7 @@ jobs:
           --file docker-builds/Dockerfile.mobile \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mobile:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -390,6 +421,7 @@ jobs:
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -400,6 +432,7 @@ jobs:
           --file docker-builds/Dockerfile.frontend.test \
           --cache-to type=inline \
           --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.base-tag-floating }} \
           --tag metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
           .
@@ -565,6 +598,7 @@ jobs:
           --file docker-builds/Dockerfile.backend.api \
           --cache-to type=inline \
           --cache-from metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-api:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }} \
@@ -576,6 +610,7 @@ jobs:
           --file docker-builds/Dockerfile.backend.app \
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-app:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }} \
@@ -587,6 +622,7 @@ jobs:
           --file docker-builds/Dockerfile.camel.externalsystems \
           --cache-to type=inline \
           --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-externalsystems:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }} \
@@ -598,6 +634,7 @@ jobs:
           --file docker-builds/Dockerfile.camel.edi \
           --cache-to type=inline \
           --cache-from metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-edi:${{ needs.init.outputs.base-tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-edi:${{ needs.init.outputs.tag-fixed }} \
