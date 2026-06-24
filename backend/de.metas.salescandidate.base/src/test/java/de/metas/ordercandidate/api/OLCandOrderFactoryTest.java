@@ -47,6 +47,7 @@ import de.metas.uom.X12DE355;
 import de.metas.user.UserRepository;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -83,6 +84,10 @@ class OLCandOrderFactoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+
+		// OLCandOrderFactory eagerly fetches CustomColumnService (which delegates to CustomColumnRepository);
+		// register no-op stubs so the factory can be built in this unit test (no custom columns -> propagation is a no-op).
+		CustomColumnService.newInstanceForUnitTesting();
 
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 

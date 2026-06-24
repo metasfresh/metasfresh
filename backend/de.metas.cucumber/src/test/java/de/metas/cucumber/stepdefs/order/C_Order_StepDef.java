@@ -168,6 +168,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Description;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
@@ -697,10 +698,11 @@ public class C_Order_StepDef
 	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
 	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
 	 * <p>
-	 * Validation for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 *   <li>{@code Description} (optional) — expected order description text</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -846,6 +848,9 @@ public class C_Order_StepDef
 					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(docTypeRepoId));
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_OrderType)
+				.ifPresent(orderType -> softly.assertThat(order.getOrderType()).as("OrderType for Identifier=%s", identifierStr).isEqualTo(orderType));
 
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> {
@@ -1021,6 +1026,11 @@ public class C_Order_StepDef
 							.as("PreparationDate for Identifier=%s", identifierStr)
 							.isEqualTo(preparationDate);
 				});
+
+		row.getAsOptionalString(COLUMNNAME_Description)
+				.ifPresent(description -> softly.assertThat(order.getDescription())
+						.as("Description for Identifier=%s", identifierStr)
+						.isEqualTo(description));
 
 		softly.assertAll();
 	}
