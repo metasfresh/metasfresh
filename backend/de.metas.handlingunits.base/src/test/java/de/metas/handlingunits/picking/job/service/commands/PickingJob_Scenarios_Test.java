@@ -212,10 +212,7 @@ class PickingJob_Scenarios_Test
 	 * Tests for the partial-unpick-by-product path (subset UNPICK via productId + qtyToUnpick).
 	 * <p>
 	 * These tests cover backend branches that the Playwright UI tests cannot drive
-	 * (AC7: JUnit/cucumber only for paths Playwright cannot reach).
-	 * <p>
-	 * <b>RED state</b>: all tests in this class are EXPECTED TO FAIL against the current
-	 * no-split implementation. They pass only after Task 2 adds HU-splitting support.
+	 * (JUnit/cucumber only for paths unreachable via the mobile UI).
 	 */
 	@Nested
 	class PartialUnpickByProduct
@@ -243,8 +240,7 @@ class PickingJob_Scenarios_Test
 		 * Setup: 1 VHU with qty=6 picked → packed qty = 6.
 		 * Action: request subset-UNPICK of qty=7 (> packed qty).
 		 * <p>
-		 * <b>RED now</b>: current code throws "whole packed HU boundaries" (no "exceeds").
-		 * <b>GREEN after Task 2</b>: a dedicated over-qty guard throws a message containing "exceeds".
+		 * Expected exception message must contain "exceeds" (dedicated over-qty guard).
 		 */
 		@Test
 		void overQtyRejected()
@@ -283,8 +279,7 @@ class PickingJob_Scenarios_Test
 					.qtyPicked(new BigDecimal("6"))
 					.build());
 
-			// Attempt subset-UNPICK of qty=7 (exceeds packed qty of 6) — must be rejected
-			// RED: current message is "whole packed HU boundaries", not "exceeds"
+			// Attempt subset-UNPICK of qty=7 (exceeds packed qty of 6) — must be rejected with "exceeds"
 			final PickingJob finalPickingJob = pickingJob;
 			assertThatThrownBy(() -> helper.pickingJobService.processStepEvent(finalPickingJob, PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())
@@ -307,8 +302,7 @@ class PickingJob_Scenarios_Test
 		 * Expected: boundary CU (VHU2, qty=3) is split — 2 units removed, 1 unit remains.
 		 * Net picked qty across all steps = 4 (=3+3−2).
 		 * <p>
-		 * <b>RED now</b>: current code cannot split VHU2 (3 > 2) and throws "whole packed HU boundaries".
-		 * <b>GREEN after Task 2</b>: split is performed; net packed qty = 4.
+		 * Expected: after split, net packed qty across all steps = 4.
 		 */
 		@Test
 		void multiCuLifoBoundarySelection()
@@ -381,8 +375,7 @@ class PickingJob_Scenarios_Test
 
 			// Total packed qty = 6 (3 + 3). Request partial unpick of 2.
 			// LIFO: VHU2 (newer, T2) is boundary CU — qty=3 > remaining=2 — must be split.
-			// RED: current code throws "whole packed HU boundaries" instead of splitting.
-			// GREEN (Task 2): split VHU2 → 2 removed, 1 stays → net picked = 4.
+			// Expected after split: VHU2 contributes 2 removed, 1 stays → net picked = 4.
 			final PickingJob finalPickingJob = pickingJob;
 			final PickingJob afterUnpick = helper.pickingJobService.processStepEvent(finalPickingJob, PickingJobStepEvent.builder()
 					.pickingLineId(line.getId())

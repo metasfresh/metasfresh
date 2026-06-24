@@ -6,12 +6,6 @@ Feature: Picking workflow - partial unpack counter-row net qty lockdown
 
   # This feature verifies that after a partial unpick of qty N from a packed qty P,
   # the generated shipment carries qty P-N with NO negative shipment line.
-  #
-  # RED state: the 'partial unpick from packed HU by product GTIN' step is not
-  # implemented (throws UnsupportedOperationException) — this scenario FAILS there.
-  #
-  # GREEN (Task 2): partial unpick is implemented; the shipment-schedule net picked
-  # qty equals P-N and the shipment has exactly one positive line (no negative offset).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -82,13 +76,11 @@ Feature: Picking workflow - partial unpack counter-row net qty lockdown
       | stockHU_30480_crNQ | 6         |
 
     # Partial unpick 2 PCE of product identified by its GTIN.
-    # RED: this step throws UnsupportedOperationException — scenario fails here.
-    # GREEN (Task 2): 2 PCE are removed; packed qty becomes 4.
     When partial unpick from packed HU by product GTIN:
       | ProductGTIN    | QtyToUnpick |
       | 04006381334019 | 2           |
 
-    # Assertions after partial unpick (only reached in GREEN state)
+    # Assert packed qty after partial unpick
     Then the packed HU contains product with qty:
       | M_Product_ID.Identifier | ExpectedQty |
       | product_30480_crNQ      | 4           |

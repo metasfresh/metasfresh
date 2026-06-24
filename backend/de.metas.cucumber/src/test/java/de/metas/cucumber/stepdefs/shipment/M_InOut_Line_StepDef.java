@@ -54,6 +54,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -74,7 +75,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;
@@ -417,9 +418,16 @@ public class M_InOut_Line_StepDef
 	/**
 	 * Asserts that the given shipment has no lines with a negative MovementQty.
 	 * <p>
-	 * This guards against the counter-row net-qty approach producing a spurious negative
-	 * shipment line: after a partial unpick of N from packed P, the only shipment line for
-	 * the product must carry qty P−N (positive), with no separate negative offset line.
+	 * Guards against a counter-row net-qty approach producing a spurious negative shipment line:
+	 * after a partial unpick of N from packed P, the only shipment line for the product must
+	 * carry qty P−N (positive), with no separate negative offset line.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns (no DataTable — shipment identifier is a regex capture group)
+	 * @cucumber.example
+	 * <pre>
+	 * And the shipment identified by shipment_30480_crNQ has no negative movement lines
+	 * </pre>
 	 */
 	@And("^the shipment identified by (.*) has no negative movement lines$")
 	public void assertNoNegativeMovementLines(@NonNull final String inOutIdentifier)
@@ -429,7 +437,7 @@ public class M_InOut_Line_StepDef
 
 		final long negativeLineCount = queryBL.createQueryBuilder(I_M_InOutLine.class)
 				.addEqualsFilter(COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
-				.addCompareFilter(COLUMNNAME_MovementQty, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, BigDecimal.ZERO)
+				.addCompareFilter(COLUMNNAME_MovementQty, CompareQueryFilter.Operator.LESS, BigDecimal.ZERO)
 				.create()
 				.count();
 		assertThat(negativeLineCount)
