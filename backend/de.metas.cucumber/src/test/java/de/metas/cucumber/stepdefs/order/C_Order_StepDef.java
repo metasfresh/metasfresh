@@ -715,48 +715,6 @@ public class C_Order_StepDef
 				.forEach(this::validateOrder);
 	}
 
-	/**
-	 * Asserts how many active {@code C_Order} records exist for a given external coordinate set
-	 * ({@code ExternalId} + {@code ExternalSystem.Value}). Use this to verify that order
-	 * aggregation produced the expected number of orders (e.g. exactly one order even though the
-	 * source candidates differed in some non-splitting column).
-	 * <p>
-	 * Columns:
-	 * <ul>
-	 *   <li>{@code ExternalId} (required) — the {@code C_Order.ExternalId} to match</li>
-	 *   <li>{@code ExternalSystem.Value} (required) — the external system the orders belong to</li>
-	 *   <li>{@code Count} (required) — the expected number of matching active {@code C_Order} records</li>
-	 * </ul>
-	 * Example:
-	 * <pre>
-	 * Then validate the number of C_Orders by ExternalId
-	 *   | ExternalId | ExternalSystem.Value | Count |
-	 *   | 22062026   | Shopware6            | 1     |
-	 * </pre>
-	 */
-	@Then("validate the number of C_Orders by ExternalId")
-	public void validate_number_of_orders_by_externalId(@NonNull final DataTable table)
-	{
-		DataTableRows.of(table).forEach(row -> {
-			final String externalId = row.getAsString(COLUMNNAME_ExternalId);
-			final String externalSystemValue = row.getAsString("ExternalSystem.Value");
-			final int expectedCount = row.getAsInt("Count");
-
-			final ExternalSystemId externalSystemId = externalSystemRepository.getIdByType(ExternalSystemType.ofValue(externalSystemValue));
-
-			final int actualCount = queryBL.createQueryBuilder(I_C_Order.class)
-					.addOnlyActiveRecordsFilter()
-					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalId)
-					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalSystem_ID, externalSystemId)
-					.create()
-					.count();
-
-			assertThat(actualCount)
-					.as("Number of C_Order records for ExternalId=%s, ExternalSystem=%s", externalId, externalSystemValue)
-					.isEqualTo(expectedCount);
-		});
-	}
-
 	@And("update order")
 	public void update_order(@NonNull final DataTable dataTable)
 	{

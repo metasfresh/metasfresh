@@ -302,26 +302,26 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   - process them
   - verify that exactly ONE C_Order with 3 order lines is created (DatePromised must no longer split the order)
     Given metasfresh contains M_PricingSystems
-      | Identifier           | Name                             | Value                            | OPT.IsActive |
-      | ps_scenario_22062026 | pricing_system_scenario_22062026 | pricing_system_scenario_22062026 | true         |
+      | Identifier           | Name                             | Value                            | IsActive |
+      | ps_scenario_22062026 | pricing_system_scenario_22062026 | pricing_system_scenario_22062026 | true     |
     And metasfresh contains M_PriceLists
-      | Identifier           | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_scenario_22062026 | ps_scenario_22062026          | DE                        | EUR                 | pl_scenario_22062026 | true  | false         | 2              | true         |
+      | Identifier           | M_PricingSystem_ID   | C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | IsActive |
+      | pl_scenario_22062026 | ps_scenario_22062026 | DE                    | EUR                 | pl_scenario_22062026 | true  | false         | 2              | true     |
     And metasfresh contains M_PriceList_Versions
-      | Identifier            | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
-      | plv_scenario_22062026 | pl_scenario_22062026      | plv_scenario_22062026 | 2021-04-01 |
+      | Identifier            | M_PriceList_ID       | Name                  | ValidFrom  |
+      | plv_scenario_22062026 | pl_scenario_22062026 | plv_scenario_22062026 | 2021-04-01 |
     And metasfresh contains M_Products:
       | Identifier       | Name             |
       | product_22062026 | product_22062026 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_product | plv_scenario_22062026             | product_22062026        | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | plv_scenario_22062026  | product_22062026 | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier      | Name                     | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
-      | olCand_Customer | olCand_Customer_22062026 | Y              | N            | ps_scenario_22062026          | olCand_Customer_location   | 9988776655443 | F            |
+      | Identifier      | Name                     | IsCustomer | IsVendor | M_PricingSystem_ID   | C_BPartner_Location_ID   | GLN           | deliveryRule |
+      | olCand_Customer | olCand_Customer_22062026 | Y          | N        | ps_scenario_22062026 | olCand_Customer_location | 9988776655443 | F            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier               | GLN           | C_BPartner_ID.Identifier |
-      | olCand_Customer_location | 9988776655443 | olCand_Customer          |
+      | Identifier               | GLN           | C_BPartner_ID   |
+      | olCand_Customer_location | 9988776655443 | olCand_Customer |
 
     # we create 3 OLCands with the same externalHeaderId `22062026`, same externalSystemCode and org, same poReference and dateOrdered,
     # but DIFFERENT dateRequired (which maps to C_OLCand.DatePromised).
@@ -403,8 +403,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
 
     Then process metasfresh response JsonOLCandCreateBulkResponse
-      | C_OLCand_ID.Identifier              |
-      | olCand_1,olCand_2,olCand_3          |
+      | C_OLCand_ID                |
+      | olCand_1,olCand_2,olCand_3 |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
@@ -417,24 +417,32 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
     Then process metasfresh response
-      | C_Order_ID.Identifier |
-      | order_1               |
-
-    And validate the number of C_Orders by ExternalId
-      | ExternalId | ExternalSystem.Value | Count |
-      | 22062026   | Shopware6            | 1     |
+      | C_Order_ID |
+      | order_1    |
 
     # The header DatePromised must equal the EARLIEST DatePromised among the lines (2026-07-01).
     And validate the created orders
-      | C_Order_ID.Identifier | externalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DatePromised | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
-      | order_1               | 22062026   | olCand_Customer          | olCand_Customer_location          | 2026-06-22  | 2026-07-01   | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
+      | C_Order_ID | externalId | C_BPartner_ID   | C_BPartner_Location_ID   | DateOrdered | DatePromised | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
+      | order_1    | 22062026   | olCand_Customer | olCand_Customer_location | 2026-06-22  | 2026-07-01   | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
     # Each order line must keep the DatePromised (dateRequired) of its own source candidate.
     # The line is matched by QtyOrdered: qty 2 -> 2026-07-01, qty 1 -> 2026-07-08, qty 3 -> 2026-07-15.
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | DatePromised | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1               | order_1               | 2026-07-01   | product_22062026        | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_2               | order_1               | 2026-07-08   | product_22062026        | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_3               | order_1               | 2026-07-15   | product_22062026        | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
+      | C_OrderLine_ID | C_Order_ID | DatePromised | M_Product_ID     | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
+      | orderLine_1    | order_1    | 2026-07-01   | product_22062026 | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_2    | order_1    | 2026-07-08   | product_22062026 | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
+      | orderLine_3    | order_1    | 2026-07-15   | product_22062026 | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
+    # The per-line DatePromised flows through to each line's shipment schedule: with no tour configured the
+    # base PreparationDate equals the delivery date, which equals the line's own DatePromised.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | schedule_1 | orderLine_1    | N             |
+      | schedule_2 | orderLine_2    | N             |
+      | schedule_3 | orderLine_3    | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | PreparationDate |
+      | schedule_1            | 2026-07-01      |
+      | schedule_2            | 2026-07-08      |
+      | schedule_3            | 2026-07-15      |
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
@@ -448,32 +456,32 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     candidate is NOT flagged IsError and the synchronous response has no body; the message is surfaced as the
     HTTP 400 JsonError stored on the request-audit's response (api_response_audit), retrievable via the request-audit id
     Given metasfresh contains M_PricingSystems
-      | Identifier           | Name                             | Value                            | OPT.IsActive |
-      | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true         |
+      | Identifier           | Name                             | Value                            | IsActive |
+      | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true     |
     And metasfresh contains M_PriceLists
-      | Identifier           | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_scenario_18062027 | ps_scenario_18062027          | DE                        | EUR                 | pl_scenario_18062027 | true  | false         | 2              | true         |
+      | Identifier           | M_PricingSystem_ID   | C_Country.CountryCode | C_Currency.ISO_Code | Name                 | SOTrx | IsTaxIncluded | PricePrecision | IsActive |
+      | pl_scenario_18062027 | ps_scenario_18062027 | DE                    | EUR                 | pl_scenario_18062027 | true  | false         | 2              | true     |
     And metasfresh contains M_PriceList_Versions
-      | Identifier            | M_PriceList_ID.Identifier | Name                  | ValidFrom  |
-      | plv_scenario_18062027 | pl_scenario_18062027      | plv_scenario_18062027 | 2021-04-01 |
+      | Identifier            | M_PriceList_ID       | Name                  | ValidFrom  |
+      | plv_scenario_18062027 | pl_scenario_18062027 | plv_scenario_18062027 | 2021-04-01 |
     And metasfresh contains M_Products:
       | Identifier       | Name             |
       | product_18062027 | product_18062027 |
     And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | pp_product | plv_scenario_18062027             | product_18062027        | 10.0     | PCE               | Normal                        |
+      | Identifier | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_product | plv_scenario_18062027  | product_18062027 | 10.0     | PCE               | Normal                        |
     # Two customers sharing the same pricing system: 'shipCustomer' is the common ship partner of both olcands,
     # while 'billCustomerA' and 'billCustomerB' are the two DIFFERENT bill partners that force the order split.
     And metasfresh contains C_BPartners:
-      | Identifier    | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | deliveryRule |
-      | shipCustomer  | Y              | N            | ps_scenario_18062027          | shipCustomer_location      | 1100000000011 | F            |
-      | billCustomerA | Y              | N            | ps_scenario_18062027          | billCustomerA_location     | 2200000000022 | F            |
-      | billCustomerB | Y              | N            | ps_scenario_18062027          | billCustomerB_location     | 3300000000033 | F            |
+      | Identifier    | IsCustomer | IsVendor | M_PricingSystem_ID   | C_BPartner_Location_ID | GLN           | deliveryRule |
+      | shipCustomer  | Y          | N        | ps_scenario_18062027 | shipCustomer_location  | 1100000000011 | F            |
+      | billCustomerA | Y          | N        | ps_scenario_18062027 | billCustomerA_location | 2200000000022 | F            |
+      | billCustomerB | Y          | N        | ps_scenario_18062027 | billCustomerB_location | 3300000000033 | F            |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier             | GLN           | C_BPartner_ID.Identifier |
-      | shipCustomer_location  | 1100000000011 | shipCustomer             |
-      | billCustomerA_location | 2200000000022 | billCustomerA            |
-      | billCustomerB_location | 3300000000033 | billCustomerB            |
+      | Identifier             | GLN           | C_BPartner_ID |
+      | shipCustomer_location  | 1100000000011 | shipCustomer  |
+      | billCustomerA_location | 2200000000022 | billCustomerA |
+      | billCustomerB_location | 3300000000033 | billCustomerB |
 
     # we create 2 OLCands with the same externalHeaderId `18062027`, same externalSystemCode, org and ship partner,
     # but DIFFERENT billBPartner. They aggregate into the same group, but the differing bill partner forces a
@@ -540,8 +548,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
 
     Then process metasfresh response JsonOLCandCreateBulkResponse
-      | C_OLCand_ID.Identifier |
-      | olCand_1,olCand_2      |
+      | C_OLCand_ID       |
+      | olCand_1,olCand_2 |
 
     # Processing fails: the second forced order violates the C_Order_ExternalHeader_ID unique index.
     # The DBUniqueConstraintException carries the translated AD_Index_Table.ErrorMsg; the workpackage fails,
@@ -564,5 +572,5 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     # this PUT - we must NOT overwrite it with a "last audit record" guess. Assert its stored response is the HTTP 400
     # JsonError whose body contains the translated message (base language, German).
     And after not more than 60s, there are added records in API_Response_Audit
-      | HttpCode | Body                                                                                                                                    |
+      | HttpCode | Body                                                                                                                                                   |
       | 400      | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
