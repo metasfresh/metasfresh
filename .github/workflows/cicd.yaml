@@ -696,7 +696,7 @@ jobs:
           echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
           echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
       - name: download-migration-cli-jar
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: migration-cli-jar
           path: .
@@ -1638,7 +1638,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download all Cucumber Allure results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           pattern: cucumber-allure-results-*
           path: all-cucumber-results/
@@ -2004,7 +2004,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download all shard Allure results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           pattern: allure-results-frontend-*
           path: allure-results-merged
