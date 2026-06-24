@@ -31,6 +31,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_BPartner;
 import org.compiere.model.X_M_InOut;
 import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -768,6 +769,90 @@ public class M_InOutLine_HandlerTest
 				return Objects.equals(icPaymentTermId, termId);
 			}
 		};
+	}
+
+	/**
+	 * AC#1: order-less delivery (M_InOut has no C_Order) → candidate must inherit PaymentRule from bill-partner.
+	 * In the default init() fixture, inout has no C_Order_ID, so this is exactly the order-less case.
+	 */
+	@Test
+	public void setOrderedData_orderlessDelivery_inheritsPaymentRuleFromBillPartner()
+	{
+		// given: bill-partner with PaymentRule = DirectDeposit ("T")
+		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+		billBPartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+		save(billBPartner);
+
+		// create the packaging invoice candidate (no order on the inout)
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// when
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+
+		// then: PaymentRule must be inherited from bill-partner, not stuck at column default "P"
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+	}
+
+	/**
+	 * AC#3 regression: delivery WITH a C_Order on the header must still inherit PaymentRule from that order
+	 * (the existing order-branch code must be unaffected by the fix).
+	 * <p>
+	 * We create the IC while the inout has no order (same as the order-less path), then link an order with
+	 * DirectDebit ("D") onto the inout before calling setOrderedData — so setOrderedData sees C_Order_ID > 0
+	 * and must inherit PaymentRule from the order, not the bill-partner.
+	 */
+	@Test
+	public void setOrderedData_deliveryWithOrder_inheritsPaymentRuleFromOrder()
+	{
+		// create the packaging invoice candidate first (inout still has no C_Order at this point)
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// now attach an order with PaymentRule = DirectDebit ("D") to the inout
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setPaymentRule(X_C_BPartner.PAYMENTRULE_DirectDebit);
+		save(order);
+		inout.setC_Order(order);
+		save(inout);
+
+		// when: setOrderedData now sees inOut.C_Order_ID > 0
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+
+		// then: PaymentRule comes from the order, not the bill-partner
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDebit);
+	}
+
+	/**
+	 * AC#3 null guard: if bill-partner has no PaymentRule set, setOrderedData must not throw and
+	 * the IC's PaymentRule stays at the column default (no NPE, no change).
+	 */
+	@Test
+	public void setOrderedData_orderlessDelivery_billPartnerHasNoPaymentRule_noErrorAndPaymentRuleUnchanged()
+	{
+		// given: bill-partner with no PaymentRule (null → will be returned as "" by POJO harness)
+		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+		billBPartner.setPaymentRule(null);
+		save(billBPartner);
+
+		// create the packaging invoice candidate
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// capture PaymentRule before setOrderedData
+		final String paymentRuleBeforeUpdate = ic.getPaymentRule();
+
+		// when: must not throw
+		inOutLineHandlerUnderTest.setOrderedData(ic);
+
+		// then: PaymentRule unchanged from before (column default)
+		assertThat(ic.getPaymentRule()).isEqualTo(paymentRuleBeforeUpdate);
 	}
 
 }

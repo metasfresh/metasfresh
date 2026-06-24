@@ -384,6 +384,16 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			{
 				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
 			}
+
+			// Inherit PaymentRule from the bill-partner for order-less deliveries (e.g. consolidated
+			// "Leergut"/returnable deliveries that bundle multiple orders). Otherwise the candidate keeps
+			// the column default and splits off from the order-based goods, which carry the order's rule,
+			// because PaymentRule is part of the invoice header aggregation key.
+			final String paymentRule = billBPartner.getPaymentRule();
+			if (Check.isNotBlank(paymentRule))
+			{
+				icRecord.setPaymentRule(paymentRule);
+			}
 		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);
@@ -627,6 +637,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			// don't attempt to "clear" the order data if it is already set/known.
 			icRecord.setC_Order(null);
 			icRecord.setDateOrdered(inOut.getMovementDate());
+			// PaymentRule for order-less deliveries is inherited from the bill-partner in
+			// createInvoiceCandidateForInOutLineOrNull's no-order InvoiceRule block, where the
+			// bill-partner is already populated (setBPartnerData runs after this method on create).
 		}
 
 		final DocStatus docStatus = DocStatus.ofCode(inOut.getDocStatus());
