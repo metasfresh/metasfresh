@@ -148,6 +148,15 @@ public class C_BPartner_StepDef
 	 * <p>
 	 * The {@code C_BP_Group_ID} column resolves a known {@link C_BP_Group_StepDefData} identifier first, then
 	 * falls back to a raw repo-id, then to the default group.
+	 * <p>
+	 * E-invoicing columns (all optional):
+	 * <ul>
+	 *   <li>{@code VATaxID} — the partner's USt-IdNr / VAT identifier (BT-31 seller / BT-48 buyer)</li>
+	 *   <li>{@code TaxID} — the partner's Steuernummer / tax registration number (BT-32 seller)</li>
+	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
+	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
+	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
@@ -314,6 +323,14 @@ public class C_BPartner_StepDef
 		{
 			bPartnerRecord.setCompanyName(companyName);
 		}
+
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_TaxID).ifPresent(bPartnerRecord::setTaxID);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId))); // USt-IdNr (BT-31/48)
+
+		// e-invoice recipient configuration (resolved by EInvoiceConfigService.resolveForInvoice)
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoiceType).ifPresent(bPartnerRecord::setEInvoiceType);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoice_BuyerReference).ifPresent(bPartnerRecord::setEInvoice_BuyerReference);
 
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))

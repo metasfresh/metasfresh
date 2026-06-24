@@ -165,6 +165,8 @@ public class AD_User_StepDef
 		tableRow.getAsOptionalString(COLUMNNAME_Login).ifPresent(userRecord::setLogin);
 		tableRow.getAsOptionalBoolean(COLUMNNAME_IsBillToContact_Default)
 				.ifPresent(userRecord::setIsBillToContact_Default);
+		tableRow.getAsOptionalBoolean(I_AD_User.COLUMNNAME_IsDefaultContact)
+				.ifPresent(userRecord::setIsDefaultContact);
 		tableRow.getAsOptionalString(COLUMNNAME_NotificationType).ifPresent(userRecord::setNotificationType);
 
 		tableRow.getAsOptionalString(I_AD_User.COLUMNNAME_IsInvoiceEmailEnabled)
