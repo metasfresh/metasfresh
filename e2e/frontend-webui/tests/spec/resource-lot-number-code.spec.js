@@ -49,13 +49,17 @@ receipt time. If it does not render or persist, the feature cannot be configured
 
         test.setTimeout(90000);
 
-        // A field save is committed by Tab/blur, which fires a PATCH to the window
-        // document. Awaiting that response is deterministic — no blind sleeps, and no
-        // risk of reloading before the save round-trips.
-        const waitForSave = () =>
+        // A field save is committed by Tab/blur, which fires a PATCH to THIS record's
+        // window document. Awaiting that specific response is deterministic — no blind
+        // sleeps, and no reload before the save round-trips. Scoped to /window/<win>/<rec>
+        // so a concurrent PATCH to another record can't satisfy the wait. Resolves to the
+        // response, or null if none arrived within the timeout — callers handle null.
+        const waitForSave = (recId) =>
             page
                 .waitForResponse(
-                    (r) => r.request().method() === 'PATCH' && r.url().includes('/window/'),
+                    (r) =>
+                        r.request().method() === 'PATCH' &&
+                        r.url().includes(`/window/${RESOURCE_WINDOW_ID}/${recId}`),
                     { timeout: SLOW_ACTION_TIMEOUT }
                 )
                 .catch(() => null);
@@ -100,7 +104,8 @@ receipt time. If it does not render or persist, the feature cannot be configured
             .catch(() => {});
 
         const recordUrl = page.url();
-        console.log(`Opened Resource record: ${recordUrl.split('/').pop()}`);
+        const recordId = recordUrl.split('/').pop();
+        console.log(`Opened Resource record: ${recordId}`);
 
         // Step 5: the LotNumberCode field renders and is editable
         const lotInput = page.locator(LOT_FIELD).first();
@@ -118,7 +123,7 @@ receipt time. If it does not render or persist, the feature cannot be configured
             const uniqueValue = `L${Date.now().toString().slice(-8)}`; // 9 chars, unique per run
             await lotInput.click();
             await lotInput.fill(uniqueValue);
-            const saved = waitForSave();
+            const saved = waitForSave(recordId);
             await page.keyboard.press('Tab');
             await saved;
             console.log(`Set LotNumberCode to: ${uniqueValue}`);
@@ -146,16 +151,27 @@ receipt time. If it does not render or persist, the feature cannot be configured
         } finally {
             // Restore the original value so the test leaves no residue — runs even if the
             // persistence assertion above threw (the record is pre-existing, not owned by
-            // this test, so teardown must be unconditional).
-            await page.goto(recordUrl);
-            const lotInputRestore = page.locator(LOT_FIELD).first();
-            await lotInputRestore.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-            await lotInputRestore.click();
-            await lotInputRestore.fill(originalValue);
-            const restored = waitForSave();
-            await page.keyboard.press('Tab');
-            await restored;
-            console.log(`Restored original LotNumberCode value: "${originalValue}"`);
+            // this test, so teardown must be unconditional). Wrapped in try/catch so a
+            // restore error never replaces the original test failure (standard finally
+            // semantics would otherwise mask it).
+            try {
+                await page.goto(recordUrl);
+                const lotInputRestore = page.locator(LOT_FIELD).first();
+                await lotInputRestore.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+                await lotInputRestore.click();
+                await lotInputRestore.fill(originalValue);
+                const restored = waitForSave(recordId);
+                await page.keyboard.press('Tab');
+                if ((await restored) === null) {
+                    // Don't fail silently: a missing save round-trip means the record may
+                    // still hold the test value, which a later run would read as baseline.
+                    console.warn(`Restore save for LotNumberCode did not round-trip within timeout; record ${recordId} may still hold the test value.`);
+                } else {
+                    console.log(`Restored original LotNumberCode value: "${originalValue}"`);
+                }
+            } catch (restoreErr) {
+                console.error(`LotNumberCode restore failed (original test result preserved): ${restoreErr}`);
+            }
         }
     });
 });
