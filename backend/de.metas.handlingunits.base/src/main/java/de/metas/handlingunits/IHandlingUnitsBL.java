@@ -333,6 +333,14 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
 
+	/**
+	 * Looks up the first active, top-level HU whose GRAI attribute exactly equals
+	 * {@code grai.toCanonicalString()}.
+	 * <p>
+	 * Scope note: this matches a single canonical GRAI stored on a top-level HU (e.g. a TU).
+	 * The GRAI attribute on aggregate-VHUs beneath an LU may hold a comma-separated GRAI set;
+	 * those are not matched here (and are not top-level anyway).
+	 */
 	Optional<HuId> getHuIdByGrai(@NonNull GRAI grai);
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);

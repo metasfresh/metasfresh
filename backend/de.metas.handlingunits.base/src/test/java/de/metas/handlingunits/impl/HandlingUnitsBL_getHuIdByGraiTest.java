@@ -7,6 +7,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
@@ -31,13 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class HandlingUnitsBL_getHuIdByGraiTest
 {
 	private IHandlingUnitsBL handlingUnitsBL;
-	private HUTestHelper huTestHelper;
 	private AttributeId graiAttributeId;
 
 	@BeforeEach
 	void beforeEach()
 	{
-		huTestHelper = HUTestHelper.newInstanceOutOfTrx();
+		final HUTestHelper huTestHelper = HUTestHelper.newInstanceOutOfTrx();
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		// Register the GRAI M_Attribute and add it to the TEMPLATE PI so it ends up in
@@ -64,6 +64,19 @@ class HandlingUnitsBL_getHuIdByGraiTest
 		return hu;
 	}
 
+	/** An HU with a parent item set → NOT top-level (excluded by setOnlyTopLevelHUs()). */
+	private I_M_HU createChildActiveHU()
+	{
+		final I_M_HU_Item parentItem = newInstance(I_M_HU_Item.class);
+		saveRecord(parentItem);
+
+		final I_M_HU hu = newInstance(I_M_HU.class);
+		hu.setHUStatus(X_M_HU.HUSTATUS_Active);
+		hu.setM_HU_Item_Parent_ID(parentItem.getM_HU_Item_ID());
+		saveRecord(hu);
+		return hu;
+	}
+
 	private void stampGraiAttribute(final I_M_HU hu, final String graiCanonical)
 	{
 		final I_M_HU_Attribute huAttr = newInstance(I_M_HU_Attribute.class);
@@ -80,10 +93,7 @@ class HandlingUnitsBL_getHuIdByGraiTest
 		final I_M_HU hu = createTopLevelActiveHU();
 		stampGraiAttribute(hu, graiCanonical);
 
-		final GRAI grai = GRAI.parse(graiCanonical);
-		assertThat(grai).isNotNull();
-
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(grai);
+		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
 
 		assertThat(result).contains(HuId.ofRepoId(hu.getM_HU_ID()));
 	}
@@ -91,10 +101,35 @@ class HandlingUnitsBL_getHuIdByGraiTest
 	@Test
 	void empty_when_no_hu_has_that_grai()
 	{
-		final GRAI grai = GRAI.parse("9999999.00099.NOMATCH");
-		assertThat(grai).isNotNull();
+		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse("9999999.00099.NOMATCH"));
 
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(grai);
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void empty_when_hu_is_inactive()
+	{
+		// setOnlyActiveHUs(true) filters on IsActive='Y' (distinct from HUStatus)
+		final String graiCanonical = "1234567.00001.INACTIVE";
+		final I_M_HU hu = createTopLevelActiveHU();
+		stampGraiAttribute(hu, graiCanonical);
+		hu.setIsActive(false);
+		saveRecord(hu);
+
+		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
+
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void empty_when_hu_is_not_top_level()
+	{
+		// setOnlyTopLevelHUs() excludes HUs that have a parent item
+		final String graiCanonical = "1234567.00001.CHILDHU";
+		final I_M_HU childHu = createChildActiveHU();
+		stampGraiAttribute(childHu, graiCanonical);
+
+		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
 
 		assertThat(result).isEmpty();
 	}
