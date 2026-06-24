@@ -981,11 +981,10 @@ public class PickingJobService implements PickingSlotListener
 		final ProductId matchedProductId = resolveProductId(parsedQRCode, pickingJob);
 		final Quantity packedQty = computePackedQty(pickingJob, matchedProductId);
 		final ITranslatableString productNameTrl = productService.getProductNameTrl(matchedProductId);
-		final String productName = productNameTrl.getDefaultValue();
 
 		return PickingJobUnpickResolveResult.builder()
 				.productId(matchedProductId)
-				.productName(productName)
+				.productName(productNameTrl)
 				.packedQty(packedQty)
 				.build();
 	}

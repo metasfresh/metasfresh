@@ -105,6 +105,9 @@ public class PickingJobUnPickCommand
 		if (productId != null && qtyToUnpick != null)
 		{
 			// Header-scoped by design: matches the sales_order aggregation level; same product across multiple lines is intentionally pooled.
+			// Each produced StepUnpickInstructions carries its own step's lineId, so the per-instruction reinitializePickingTargetIfDestroyed
+			// below reinits the correct line's target regardless of how many lines the selection spanned (for PRODUCT aggregation the
+			// product↔line relationship is 1:1, so the selection stays within a single line anyway).
 			unpickInstructionsStream = buildSubsetUnpickInstructions(pickingJob, productId, qtyToUnpick);
 		}
 		else if (onlyPickingJobStepId != null)

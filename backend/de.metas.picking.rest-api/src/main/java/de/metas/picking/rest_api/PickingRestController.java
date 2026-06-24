@@ -336,7 +336,7 @@ public class PickingRestController
 	public @NonNull JsonUnpickResolveResponse resolveUnpick(@RequestBody @NonNull final JsonUnpickResolveRequest request)
 	{
 		assertApplicationAccess();
-		return pickingMobileApplication.resolveUnpick(request, getLoggedUserId());
+		return pickingMobileApplication.resolveUnpick(request, getLoggedUserId(), Env.getADLanguageOrBaseLanguage());
 	}
 
 	@PostMapping("/massPrinting/scan")

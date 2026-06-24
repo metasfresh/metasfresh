@@ -726,9 +726,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@NonNull
 	public JsonUnpickResolveResponse resolveUnpick(
 			@NonNull final JsonUnpickResolveRequest request,
-			@NonNull final UserId callerId)
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
 	{
 		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
-		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId);
+		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
 	}
 }

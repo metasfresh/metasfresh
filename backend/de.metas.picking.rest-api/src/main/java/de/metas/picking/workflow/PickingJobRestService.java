@@ -315,14 +315,15 @@ public class PickingJobRestService
 	public JsonUnpickResolveResponse resolveUnpick(
 			@NonNull final PickingJobId pickingJobId,
 			@NonNull final ScannedCode scannedCode,
-			@NonNull final UserId callerId)
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
 	{
 		final PickingJobUnpickResolveResult result = pickingJobService.resolveUnpick(pickingJobId, scannedCode, callerId);
 
 		final Quantity packedQty = result.getPackedQty();
 		return JsonUnpickResolveResponse.builder()
 				.productId(String.valueOf(result.getProductId().getRepoId()))
-				.productName(result.getProductName())
+				.productName(result.getProductName().translate(adLanguage))
 				.packedQty(packedQty != null ? packedQty.toBigDecimal() : null)
 				.packedQtyUom(packedQty != null ? packedQty.getUOMSymbol() : null)
 				.unpickable(result.isUnpickable())

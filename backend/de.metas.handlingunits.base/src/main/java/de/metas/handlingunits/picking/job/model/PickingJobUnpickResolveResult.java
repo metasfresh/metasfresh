@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.model;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -16,7 +17,9 @@ import javax.annotation.Nullable;
 public class PickingJobUnpickResolveResult
 {
 	@NonNull ProductId productId;
-	@NonNull String productName;
+
+	/** Translatable product name; resolve to the caller's language at the REST/JSON boundary via {@code translate(adLanguage)} — do not collapse to the base language here. */
+	@NonNull ITranslatableString productName;
 
 	/** Total qty currently packed for this product across all steps of the job; null if no packed-qty record exists (a packed qty of exactly zero is non-null and makes {@link #isUnpickable()} return false) */
 	@Nullable Quantity packedQty;

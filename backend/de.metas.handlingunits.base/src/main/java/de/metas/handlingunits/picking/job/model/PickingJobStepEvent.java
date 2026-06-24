@@ -70,7 +70,11 @@ public class PickingJobStepEvent
 		return events
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(
-						event -> Util.ArrayKey.of(event.getPickingLineId(), event.getPickingStepId(), event.getPickFromKey()),
+						// unpickProductId+qtyToUnpick are part of the key so distinct subset-UNPICK events on the
+						// same line are not collapsed: for a subset UNPICK, pickingStepId and pickFromKey are both
+						// null, so without these two fields the key would degrade to lineId alone and silently drop
+						// all-but-the-latest. For legacy whole-step events both are null → key is unchanged.
+						event -> Util.ArrayKey.of(event.getPickingLineId(), event.getPickingStepId(), event.getPickFromKey(), event.getUnpickProductId(), event.getQtyToUnpick()),
 						event -> event,
 						PickingJobStepEvent::latest))
 				.values();
