@@ -97,14 +97,10 @@ public class GithubImporterServiceTest
 
 	private ExternalReferenceRepository externalReferenceRepository;
 
-	private final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
-
-	private final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
-
 	private final LabelService labelService = new LabelService();
 
-	private final GithubImporterService githubImporterService =
-			new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
+	private GithubImporterService githubImporterService;
+
 	@BeforeEach
 	public void init()
 	{
@@ -118,6 +114,11 @@ public class GithubImporterServiceTest
 		//externalSystems.registerExternalSystem(MOCK_EXTERNAL_SYSTEM_1);
 
 		externalReferenceRepository = new ExternalReferenceRepository(queryBL, externalSystems, externalReferenceTypes);
+
+		final IssueRepository issueRepository = new IssueRepository(queryBL, ModelCacheInvalidationService.newInstanceForUnitTesting());
+		final ExternalProjectRepository externalProjectRepository = new ExternalProjectRepository(queryBL);
+
+		githubImporterService = new GithubImporterService(importIssuesQueue, mockGithubClient, externalReferenceRepository, issueRepository, externalProjectRepository, labelService);
 	}
 
 	@Test
