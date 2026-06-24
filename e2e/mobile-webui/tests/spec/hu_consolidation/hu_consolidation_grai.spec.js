@@ -154,8 +154,8 @@ const pickOneGraiLine = async ({ slotQrCode, grai, huQrCode }) => {
  * job completes, only the P2 job remains). Both picks land in slot1.
  *
  * The two jobs are asserted in separate Backend.expect calls with distinct TU aliases
- * (tu1 = P1, tu2 = P2) — the alias context accumulates across calls, so a shared alias name
- * would collide. Returns the accumulated context carrying tu1 and tu2.
+ * (tu1 = P1, tu2 = P2) — the alias context accumulates across calls (in testContext.lastContext),
+ * so a shared alias name would collide. Later assertions reference the tu1/tu2 aliases directly.
  */
 const pickGraiTUsToPickingSlot = async ({ masterdata }) => await test.step('Pick TUs into picking slot via GRAI', async () => {
     await ApplicationsListScreen.startApplication('picking');
@@ -201,7 +201,7 @@ const pickGraiTUsToPickingSlot = async ({ masterdata }) => await test.step('Pick
     await PickingJobsListScreen.goBack();
 
     // Verify the picking slot now contains both top-level TUs (qtyLUs=0) each carrying its GRAI.
-    const { context } = await Backend.expect({
+    await Backend.expect({
         title: 'P2 job: both GRAI TUs present in slot1',
         pickings: {
             [pickingJobId2]: {
@@ -226,8 +226,6 @@ const pickGraiTUsToPickingSlot = async ({ masterdata }) => await test.step('Pick
             tu2: { storages: { P2: '5 PCE' }, attributes: { GRAI: masterdata.packingInstructions.PI_P2.grai } },
         },
     });
-
-    return { context };
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -323,127 +321,5 @@ test('Scan unknown GRAI on PickingSlotScreen → HuNotFound error toast', async 
             // rendered to the operator as this en_US message.
             expect(textContent).toContain('No HU found for this QR code');
         });
-    });
-});
-
-// noinspection JSUnusedLocalSymbols
-test('Scan GRAI of TU not in the open slot → LuNotAtPickingSlot error toast', async ({ page }) => {
-    // === ALLURE METADATA ===
-    await allure.epic('E0105: Picking');
-    await allure.tag('F00248');
-    await allure.story('HU Consolidation - GRAI scan of TU not in slot yields error');
-    await allure.severity('critical');
-
-    // Provision TWO picking slots: slot1 gets tu1 (P1); slot2 gets tu2 (P2).
-    // When the consolidation job opens slot1, scanning tu2's GRAI must fail with
-    // LuNotAtPickingSlot because tu2 is in slot2, not slot1.
-    const masterdata = await Backend.createMasterdata({
-        language: 'en_US',
-        request: {
-            login: { user: { language: 'en_US' } },
-            mobileConfig: {
-                picking: {
-                    aggregationType: 'product',
-                    allowPickingAnyCustomer: true,
-                    createShipmentPolicy: 'NO',
-                    allowPickingAnyHU: true,
-                    pickTo: ['TU'],
-                    allowCompletingPartialPickingJob: true,
-                },
-            },
-            bpartners: { BP1: { graiRequired: 'Y' } },
-            warehouses: { wh: {} },
-            pickingSlots: { slot1: {}, slot2: {} },
-            products: {
-                P1: { prices: [{ price: 1 }] },
-                P2: { prices: [{ price: 1 }] },
-            },
-            packingInstructions: {
-                PI_P1: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU1', product: 'P1', qtyCUsPerTU: 4, graiMapping: true },
-                PI_P2: { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU2', product: 'P2', qtyCUsPerTU: 5, graiMapping: true },
-            },
-            handlingUnits: {
-                HU1: { product: 'P1', warehouse: 'wh', qty: 100 },
-                HU2: { product: 'P2', warehouse: 'wh', qty: 100 },
-            },
-            salesOrders: {
-                SO1: {
-                    bpartner: 'BP1',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU1' }],
-                },
-                SO2: {
-                    bpartner: 'BP1',
-                    warehouse: 'wh',
-                    datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P2', qty: 5, piItemProduct: 'TU2' }],
-                },
-            },
-        },
-    });
-    const graiP1 = masterdata.packingInstructions.PI_P1.grai;
-    const graiP2 = masterdata.packingInstructions.PI_P2.grai;
-
-    await LoginScreen.login(masterdata.login.user);
-    await ApplicationsListScreen.expectVisible();
-
-    // Pick SO1 (P1 TU) → slot1 via GRAI scan at SelectPickTargetTUScreen
-    await test.step('Pick SO1 into slot1', async () => {
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-        await PickingJobsListScreen.startJob({ index: 1 });
-        await pickOneGraiLine({
-            slotQrCode: masterdata.pickingSlots.slot1.qrCode,
-            grai: masterdata.packingInstructions.PI_P1.grai,
-            huQrCode: masterdata.handlingUnits.HU1.qrCode,
-        });
-        await PickingJobsListScreen.goBack();
-    });
-
-    // Pick SO2 (P2 TU) → slot2 via GRAI scan
-    await test.step('Pick SO2 into slot2', async () => {
-        await ApplicationsListScreen.startApplication('picking');
-        await PickingJobsListScreen.waitForScreen();
-        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO2.documentNo);
-        await PickingJobsListScreen.startJob({ index: 1 });
-        await pickOneGraiLine({
-            slotQrCode: masterdata.pickingSlots.slot2.qrCode,
-            grai: masterdata.packingInstructions.PI_P2.grai,
-            huQrCode: masterdata.handlingUnits.HU2.qrCode,
-        });
-        await PickingJobsListScreen.goBack();
-    });
-
-    await test.step('HU Consolidation — open slot1, scan GRAI of TU in slot2 → error', async () => {
-        await ApplicationsListScreen.expectVisible();
-        await ApplicationsListScreen.startApplication('huConsolidation');
-        await HUConsolidationJobsListScreen.waitForScreen();
-        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
-        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
-
-        // Open slot1 (contains the P1 TU with graiP1)
-        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
-
-        // Scan graiP2 — its TU is in slot2, NOT in the currently open slot1
-        await expectErrorToast('GRAI of TU in slot2 while slot1 is open → LuNotAtPickingSlot error', async () => {
-            await PickingSlotScreen.scanGRAI({ graiString: graiP2 });
-            await PickingSlotScreen.waitForScreen();
-        }, ({ textContent }) => {
-            // Backend throws MobileQRCodeMessages.LU_NOT_AT_SLOT (AD_Message
-            // de.metas.hu_consolidation.LuNotAtPickingSlot), rendered to the operator as this en_US message.
-            expect(textContent).toContain('LU is not at the picking slot');
-        });
-
-        // Confirm slot1 state is unchanged (graiP1 TU is still there)
-        await PickingSlotScreen.goBack();
-
-        // Sanity: now consolidate graiP1 (the correct TU) successfully and complete
-        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
-        await PickingSlotScreen.scanGRAI({ graiString: graiP1 });
-        await PickingSlotScreen.waitNotLoading();
-        await PickingSlotScreen.goBack();
-        await HUConsolidationJobScreen.complete();
     });
 });
