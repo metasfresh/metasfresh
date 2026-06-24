@@ -14,6 +14,7 @@ import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -76,7 +77,9 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final PreparationDateAndTour preparationDateAndTour = computePreparationDateAndTour0(order, datePromised, fallbackToDatePromised, timeZone);
 
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
-		order.setM_Tour_ID(preparationDateAndTour.getTourRepoId());
+		final TourId tourId = preparationDateAndTour.getTourId();
+		// keep the legacy "clear" sentinel -1 (not TourId.toRepoId(null)==0) when there is no tour
+		order.setM_Tour_ID(tourId != null ? tourId.getRepoId() : -1);
 
 		return true;
 	}
@@ -115,7 +118,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	 * (calculationTime, soTrx, bpartnerLocationId, sysconfig reads, offset) are unchanged from the original inline logic.
 	 *
 	 * @return the computed preparation date (may be {@code null} when there is no usable tour and the fallback is
-	 *         disabled) together with the tour repo-id to assign ({@code NO_TOUR_ID} = {@code -1} when no tour was used).
+	 *         disabled) together with the tour to assign ({@code null} when no tour was used).
 	 */
 	private PreparationDateAndTour computePreparationDateAndTour0(
 			@NonNull final I_C_Order order,
@@ -150,7 +153,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 				bpartnerLocationId);
 		final ZonedDateTime preparationDate = tourAndDate.getRight();
 
-		final ZonedDateTime systemTime = de.metas.common.util.time.SystemTime.asZonedDateTime(timeZone);
+		final ZonedDateTime systemTime = SystemTime.asZonedDateTime(timeZone);
 		if (preparationDate != null && preparationDate.isAfter(systemTime))
 		{
 			final int offset = isUseFallback ? getFallbackPreparationDateOffsetInHours() : 0;
@@ -167,7 +170,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			logger.debug("Setting PreparationDate={}, for C_Order {} (fallbackToDatePromised={}, systemTime={})",
 					preparationDate, order, isUseFallback, systemTime);
 
-			return new PreparationDateAndTour(computePreparationTime(preparationDate, offset), tourId.getRepoId());
+			return new PreparationDateAndTour(computePreparationTime(preparationDate, offset), tourId);
 		}
 		else if (isUseFallback)
 		{
@@ -186,24 +189,21 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			logger.debug(
 					"Setting PreparationDate={} for C_Order {} (soTrx={}, fallbackToDatePromised={}, systemTime={}).",
 					fallbackPreparationDate, order, soTrx, isUseFallback, systemTime);
-			return new PreparationDateAndTour(fallbackPreparationDate, NO_TOUR_ID);
+			return new PreparationDateAndTour(fallbackPreparationDate, null);
 		}
 		else
 		{
 			logger.info("Setting PreparationDate={} for C_Order {}, because the computed PreparationDate={} is null or has already passed (fallbackToDatePromised={}, systemTime={}). Leaving it to the user to set a date manually.",
 					preparationDate, order, preparationDate, isUseFallback, systemTime);
-			return new PreparationDateAndTour(null, NO_TOUR_ID);
+			return new PreparationDateAndTour(null, null);
 		}
 	}
 
-	/** No-tour sentinel written to {@code C_Order.M_Tour_ID}, matching the original inline {@code setM_Tour_ID(-1)}. */
-	private static final int NO_TOUR_ID = -1;
-
-	@lombok.Value
+	@Value
 	private static class PreparationDateAndTour
 	{
 		@Nullable ZonedDateTime preparationDate;
-		int tourRepoId;
+		@Nullable TourId tourId;
 	}
 
 	private int getFallbackPreparationDateOffsetInHours() {return sysConfigBL.getIntValue(SYSCONFIG_Fallback_PreparationDate_Offset_Hours, 0);}

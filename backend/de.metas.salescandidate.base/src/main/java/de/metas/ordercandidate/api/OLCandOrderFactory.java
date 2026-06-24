@@ -175,10 +175,8 @@ class OLCandOrderFactory
 	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
-	// per-line DatePromised, taken from the source candidate that CREATED the line.
-	// Applied at completion (after the single header->lines broadcast in MOrder.afterSave) so that each
-	// order line keeps its own DatePromised instead of being clobbered with the header value.
-	private final Map<Integer, Timestamp> orderLineId2DatePromised = new LinkedHashMap<>();
+	// Applied AFTER MOrder.afterSave (the header->lines broadcast) so each line's own DatePromised survives.
+	private final Map<OrderLineId, Timestamp> orderLineId2DatePromised = new LinkedHashMap<>();
 	private final List<OLCand> candidates = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
@@ -431,9 +429,9 @@ class OLCandOrderFactory
 		}
 
 		// write each line's own DatePromised LAST, so it is not clobbered by the header->lines broadcast above.
-		for (final Map.Entry<Integer, Timestamp> entry : orderLineId2DatePromised.entrySet())
+		for (final Map.Entry<OrderLineId, Timestamp> entry : orderLineId2DatePromised.entrySet())
 		{
-			final I_C_OrderLine orderLine = orderLines.get(entry.getKey());
+			final I_C_OrderLine orderLine = orderLines.get(entry.getKey().getRepoId());
 			if (orderLine == null)
 			{
 				continue;
@@ -692,7 +690,7 @@ class OLCandOrderFactory
 			final Timestamp lineDatePromised = TimeUtil.asTimestamp(candidate.getDatePromised());
 			if (lineDatePromised != null)
 			{
-				orderLineId2DatePromised.put(currentOrderLine.getC_OrderLine_ID(), lineDatePromised);
+				orderLineId2DatePromised.put(OrderLineId.ofRepoId(currentOrderLine.getC_OrderLine_ID()), lineDatePromised);
 			}
 		}
 
