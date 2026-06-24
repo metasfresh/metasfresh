@@ -40,6 +40,8 @@ import java.util.regex.Pattern;
  *
  * <p>For each supported prefix the value must pass <em>both</em> the structural regex
  * <em>and</em> the country-specific check-digit algorithm.  Either failure returns {@code false}.
+ * For CH and NO the legally-mandatory VAT marker is required (CH: {@code MWST}/{@code TVA}/{@code IVA}/{@code TPV};
+ * NO: {@code MVA}) — the bare UID / org-number is not a VAT number and is rejected.
  * Algorithms are ported from python-stdnum
  * (<a href="https://github.com/arthurdejong/python-stdnum">arthurdejong/python-stdnum</a>).
  */
