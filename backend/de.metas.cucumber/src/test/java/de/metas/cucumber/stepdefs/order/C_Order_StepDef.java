@@ -703,6 +703,7 @@ public class C_Order_StepDef
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 *   <li>{@code Description} (optional) — expected order description text</li>
+	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
