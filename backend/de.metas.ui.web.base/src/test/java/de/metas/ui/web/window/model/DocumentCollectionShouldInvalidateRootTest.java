@@ -34,7 +34,7 @@ class DocumentCollectionShouldInvalidateRootTest
 	}
 
 	@Test
-	void fullInvalidationRequested_alwaysEvictsRoot()
+	void fullInvalidationRequested_nonNewRootWithoutUnsavedChild_evictsRoot()
 	{
 		assertThat(DocumentCollection.shouldInvalidateRootOnChildInvalidation(true, false, true, false, NO_UNSAVED_NEW_CHILD)).isTrue();
 		assertThat(DocumentCollection.shouldInvalidateRootOnChildInvalidation(true, true, false, false, NO_UNSAVED_NEW_CHILD)).isTrue();
