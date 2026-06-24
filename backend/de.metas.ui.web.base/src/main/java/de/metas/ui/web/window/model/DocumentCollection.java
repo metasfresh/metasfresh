@@ -619,6 +619,11 @@ public class DocumentCollection
 	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
 	 * {@link Document} (which is final and has a non-trivial constructor).
 	 *
+	 * <p>The unsaved-new-included-document guard (evaluated last) takes precedence over
+	 * {@code callerRequestedFullInvalidation}: we never discard in-memory work-in-progress, even on an
+	 * explicit full-invalidation request — so this method can return {@code false} despite
+	 * {@code callerRequestedFullInvalidation == true}.
+	 *
 	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
 	 *                                          would lose it entirely
 	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
