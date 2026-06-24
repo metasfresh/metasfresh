@@ -2,6 +2,7 @@ package de.metas.document.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -213,5 +214,11 @@ public class DocTypeBL implements IDocTypeBL
 		save(newDocType);
 
 		return DocTypeId.ofRepoId(newDocType.getC_DocType_ID());
+	}
+
+	@Override
+	public @NonNull DocBaseAndSubType getDocBaseAndSubTypeById(@NonNull final DocTypeId docTypeId)
+	{
+		return docTypesRepo.getDocBaseAndSubTypeById(docTypeId);
 	}
 }

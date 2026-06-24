@@ -31,6 +31,7 @@ import de.metas.einvoice.cii.model.LineTradeSettlementType;
 import de.metas.einvoice.cii.model.PercentType;
 import de.metas.einvoice.cii.model.QuantityType;
 import de.metas.einvoice.cii.model.ReferencedDocumentType;
+import de.metas.einvoice.cii.model.SupplyChainEventType;
 import de.metas.einvoice.cii.model.SupplyChainTradeLineItemType;
 import de.metas.einvoice.cii.model.SupplyChainTradeTransactionType;
 import de.metas.einvoice.cii.model.TaxCategoryCodeType;
@@ -38,6 +39,7 @@ import de.metas.einvoice.cii.model.TaxRegistrationType;
 import de.metas.einvoice.cii.model.TaxTypeCodeType;
 import de.metas.einvoice.cii.model.TextType;
 import de.metas.einvoice.cii.model.TradeAddressType;
+import de.metas.einvoice.cii.model.TradeContactType;
 import de.metas.einvoice.cii.model.TradePartyType;
 import de.metas.einvoice.cii.model.TradePaymentTermsType;
 import de.metas.einvoice.cii.model.TradePriceType;
@@ -49,13 +51,27 @@ import de.metas.einvoice.cii.model.TradeSettlementLineMonetarySummationType;
 import de.metas.einvoice.cii.model.TradeSettlementPaymentMeansType;
 import de.metas.einvoice.cii.model.TradeTaxType;
 import de.metas.einvoice.cii.model.UniversalCommunicationType;
+import de.metas.document.DocBaseAndSubType;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipient;
+import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.email.MailService;
+import de.metas.email.mailboxes.Mailbox;
+import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
@@ -89,11 +105,38 @@ public class CiiMapper
 {
 	private static final Logger log = LoggerFactory.getLogger(CiiMapper.class);
 
+	@Nullable private final DocOutboundLogMailRecipientRegistry mailRecipientRegistry;
+	@Nullable private final MailService mailService;
+
+	public CiiMapper()
+	{
+		this.mailRecipientRegistry = null;
+		this.mailService = null;
+	}
+
+	public CiiMapper(
+			@Nullable final DocOutboundLogMailRecipientRegistry mailRecipientRegistry,
+			@Nullable final MailService mailService)
+	{
+		this.mailRecipientRegistry = mailRecipientRegistry;
+		this.mailService = mailService;
+	}
+
 	/** EN 16931 guideline IDs per invoice format. */
 	private static final String GUIDELINE_ID_ZUGFERD =
 			"urn:cen.eu:en16931:2017#compliant#urn:factur-x.eu:1p0:en16931";
+	/**
+	 * XRechnung 3.0 CIUS ID — as specified by the KoSIT schematron (xeinkauf.de domain).
+	 * Note: the legacy xoev-de domain is NOT accepted by the KoSIT 3.0 schematron (BR-DE-21).
+	 */
 	private static final String GUIDELINE_ID_XRECHNUNG =
-			"urn:cen.eu:en16931:2017#compliant#urn:xoev-de:kosit:standard:xrechnung_3.0";
+			"urn:cen.eu:en16931:2017#compliant#urn:xeinkauf.de:kosit:xrechnung_3.0";
+	/**
+	 * Peppol BIS Billing 3.0 process ID — required by the XRechnung schematron (PEPPOL-EN16931-R001)
+	 * when BusinessProcessSpecifiedDocumentContextParameter/ID is expected.
+	 */
+	private static final String BUSINESS_PROCESS_ID_PEPPOL_BILLING =
+			"urn:fdc:peppol.eu:2017:poacc:billing:01:1.0";
 	/** Peppol BIS Billing 3.0 — European profile. */
 	private static final String GUIDELINE_ID_PEPPOL =
 			"urn:cen.eu:en16931:2017#compliant#urn:fdc:peppol.eu:2017:poacc:billing:3.0";
@@ -139,6 +182,15 @@ public class CiiMapper
 		{
 			// ZUGFeRD / Factur-X (default)
 			guidelineId = GUIDELINE_ID_ZUGFERD;
+		}
+
+		// BT-23 Business process (BusinessProcessSpecifiedDocumentContextParameter/ID)
+		// Required by the XRechnung schematron (PEPPOL-EN16931-R001).
+		if (format.isXRechnung())
+		{
+			final DocumentContextParameterType bpParam = new DocumentContextParameterType();
+			bpParam.setID(id(BUSINESS_PROCESS_ID_PEPPOL_BILLING));
+			ctx.setBusinessProcessSpecifiedDocumentContextParameter(bpParam);
 		}
 
 		final DocumentContextParameterType guidelineParam = new DocumentContextParameterType();
@@ -195,10 +247,33 @@ public class CiiMapper
 		}
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
-		tx.setApplicableHeaderTradeDelivery(new HeaderTradeDeliveryType());
+		tx.setApplicableHeaderTradeDelivery(buildHeaderTradeDelivery(invoice));
 		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice));
 
 		return tx;
+	}
+
+	// ===== BG-13 Delivery information =====
+
+	/**
+	 * Builds {@code ApplicableHeaderTradeDelivery} with BT-72 (Actual delivery date).
+	 *
+	 * <p>The CII schema requires this element to be present (it is mandatory in EN16931 CII mapping).
+	 * PEPPOL-EN16931-R008 fires if the element is serialised as an empty tag, so we always populate it
+	 * with at least {@code ActualDeliverySupplyChainEvent/OccurrenceDateTime}. When no explicit delivery
+	 * date is known we fall back to the invoice date ({@code DateInvoiced}), which is the common practice
+	 * for German XRechnung invoices.
+	 */
+	private HeaderTradeDeliveryType buildHeaderTradeDelivery(@NonNull final I_C_Invoice invoice)
+	{
+		final HeaderTradeDeliveryType delivery = new HeaderTradeDeliveryType();
+
+		// BT-72 Actual delivery date — fall back to invoice date when no dedicated field is set
+		final SupplyChainEventType event = new SupplyChainEventType();
+		event.setOccurrenceDateTime(toDateTime(invoice.getDateInvoiced()));
+		delivery.setActualDeliverySupplyChainEvent(event);
+
+		return delivery;
 	}
 
 	// ===== BG-25 Invoice line item =====
@@ -359,23 +434,46 @@ public class CiiMapper
 			seller.setSpecifiedLegalOrganization(legalOrg);
 		}
 
-		// BT-31 VAT id (scheme VA)
-		final String taxId = sellerBP.getTaxID();
-		if (taxId != null && !taxId.isEmpty())
+		// BT-31 VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
+		final String vataxId = sellerBP.getVATaxID();
+		if (vataxId != null && !vataxId.isEmpty())
 		{
 			final TaxRegistrationType vatReg = new TaxRegistrationType();
 			final IDType vatId = new IDType();
-			vatId.setValue(taxId);
+			vatId.setValue(vataxId);
 			vatId.setSchemeID("VA");
 			vatReg.setID(vatId);
 			seller.getSpecifiedTaxRegistration().add(vatReg);
 		}
 
-		// BT-34 Seller electronic address (email, scheme EM — GAP-4 default)
-		final String email = sellerBP.getEMail();
-		if (email != null && !email.isEmpty())
+		// BT-32 Tax registration (Steuernummer, scheme FC) — source: TaxID
+		final String steuernummer = sellerBP.getTaxID();
+		if (steuernummer != null && !steuernummer.isEmpty())
 		{
-			seller.setURIUniversalCommunication(uriCommunication(email));
+			final TaxRegistrationType fcReg = new TaxRegistrationType();
+			final IDType fcId = new IDType();
+			fcId.setValue(steuernummer);
+			fcId.setSchemeID("FC");
+			fcReg.setID(fcId);
+			seller.getSpecifiedTaxRegistration().add(fcReg);
+		}
+
+		// BT-34 Seller electronic address (scheme EM).
+		// Primary source: resolved outbound mailbox "From" address (same address the e-invoice email is sent from).
+		// Fallback: sellerBP.getEMail(). Omit when both are blank.
+		final String bt34Email = resolveSellerEmail(invoice, sellerBP.getEMail());
+		if (bt34Email != null && !bt34Email.isEmpty())
+		{
+			seller.setURIUniversalCommunication(uriCommunication(bt34Email));
+		}
+
+		// BG-6 Seller contact (BT-41 name, BT-42 phone, BT-43 email)
+		// XRechnung BR-DE-2 requires DefinedTradeContact on the seller party.
+		// Source: first AD_User contact associated with the seller BPartner.
+		final TradeContactType sellerContact = buildSellerContact(sellerBP);
+		if (sellerContact != null)
+		{
+			seller.setDefinedTradeContact(sellerContact);
 		}
 
 		// BG-5 Seller postal address
@@ -409,6 +507,84 @@ public class CiiMapper
 		return buildAddress(repo.getLocation(sellerBPLoc.getC_Location_ID()));
 	}
 
+	/**
+	 * Builds BG-6 Seller contact (DefinedTradeContact) from the first AD_User linked to the seller BPartner.
+	 *
+	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact on the seller party.
+	 * BR-DE-5 requires PersonName or DepartmentName; BR-DE-6 requires a telephone number
+	 * (CompleteNumber matching ≥3 digits); BR-DE-7 requires an email URI.
+	 * BR-DE-27 / BR-DE-28 validate the phone/email format.
+	 *
+	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}. The first contact
+	 * with a non-empty phone number (BT-42) is preferred; if none has a phone, the first contact
+	 * overall is used.
+	 *
+	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no contacts.
+	 */
+	@Nullable
+	private TradeContactType buildSellerContact(@NonNull final I_C_BPartner sellerBP)
+	{
+		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
+		if (contacts.isEmpty())
+		{
+			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+					sellerBP.getC_BPartner_ID());
+			return null;
+		}
+
+		// Prefer the first contact that has a phone number (BR-DE-6 requires a phone)
+		I_AD_User contact = null;
+		for (final I_AD_User u : contacts)
+		{
+			final String phone = u.getPhone();
+			if (phone != null && !phone.trim().isEmpty())
+			{
+				contact = u;
+				break;
+			}
+		}
+		if (contact == null)
+		{
+			contact = contacts.get(0);
+		}
+
+		final TradeContactType tradeContact = new TradeContactType();
+
+		// BT-41 Contact point name (PersonName)
+		final String contactName = contact.getName();
+		if (contactName != null && !contactName.trim().isEmpty())
+		{
+			tradeContact.setPersonName(text(contactName));
+		}
+		else
+		{
+			log.warn("Seller BPartner {} has a contact (AD_User_ID={}) with no name — XRechnung BR-DE-5 (PersonName) will fail validation",
+					sellerBP.getC_BPartner_ID(), contact.getAD_User_ID());
+		}
+
+		// BT-42 Contact telephone (CompleteNumber — must contain ≥3 digits per BR-DE-27)
+		final String phone = contact.getPhone();
+		if (phone != null && !phone.trim().isEmpty())
+		{
+			final UniversalCommunicationType phoneCom = new UniversalCommunicationType();
+			phoneCom.setCompleteNumber(text(phone.trim()));
+			tradeContact.setTelephoneUniversalCommunication(phoneCom);
+		}
+
+		// BT-43 Contact email (URIID — must match email format per BR-DE-28)
+		final String contactEmail = contact.getEMail();
+		if (contactEmail != null && !contactEmail.trim().isEmpty())
+		{
+			final UniversalCommunicationType emailCom = new UniversalCommunicationType();
+			final IDType emailId = new IDType();
+			emailId.setValue(contactEmail.trim());
+			emailCom.setURIID(emailId);
+			tradeContact.setEmailURIUniversalCommunication(emailCom);
+		}
+
+		return tradeContact;
+	}
+
 	// ===== Buyer trade party (BG-7/BG-8) =====
 
 	private TradePartyType buildBuyerParty(@NonNull final I_C_Invoice invoice)
@@ -430,13 +606,13 @@ public class CiiMapper
 					? companyName
 					: buyerBP.getName()));
 
-			// BT-48 Buyer VAT id
-			final String taxId = buyerBP.getTaxID();
-			if (taxId != null && !taxId.isEmpty())
+			// BT-48 Buyer VAT identifier (Umsatzsteuer-ID, scheme VA) — source: VATaxID
+			final String buyerVataxId = buyerBP.getVATaxID();
+			if (buyerVataxId != null && !buyerVataxId.isEmpty())
 			{
 				final TaxRegistrationType vatReg = new TaxRegistrationType();
 				final IDType vatId = new IDType();
-				vatId.setValue(taxId);
+				vatId.setValue(buyerVataxId);
 				vatId.setSchemeID("VA");
 				vatReg.setID(vatId);
 				buyer.getSpecifiedTaxRegistration().add(vatReg);
@@ -445,11 +621,17 @@ public class CiiMapper
 
 		if (buyerBPLoc != null)
 		{
-			// BT-49 Buyer electronic address (BPartnerLocation email, scheme EM — GAP default)
-			final String email = buyerBPLoc.getEMail();
-			if (email != null && !email.isEmpty())
+			// BT-49 Buyer electronic address (scheme EM).
+			// Primary source: doc-outbound recipient resolver (same resolution that sets
+			// C_Doc_Outbound_Log.CurrentEMailAddress). Fallback: BPartnerLocation.EMail.
+			final String resolvedEmail = resolveBuyerEmail(invoice);
+			final String locationEmail = buyerBPLoc.getEMail();
+			final String bt49Email = (resolvedEmail != null && !resolvedEmail.isEmpty())
+					? resolvedEmail
+					: locationEmail;
+			if (bt49Email != null && !bt49Email.isEmpty())
 			{
-				buyer.setURIUniversalCommunication(uriCommunication(email));
+				buyer.setURIUniversalCommunication(uriCommunication(bt49Email));
 			}
 
 			// BG-8 Buyer postal address
@@ -458,6 +640,95 @@ public class CiiMapper
 		}
 
 		return buyer;
+	}
+
+	/**
+	 * Resolves the seller email for BT-34.
+	 *
+	 * <p>Resolution chain:
+	 * <ol>
+	 *   <li>If {@link #mailService} is non-null, query the mailbox routing table using
+	 *       client-id, org-id, and doc-base+sub-type from the invoice's DocType.
+	 *       Use the resolved mailbox's {@code From} address when non-blank.</li>
+	 *   <li>Fall back to {@code bpEmail} (the org BPartner's {@code EMail} column).</li>
+	 *   <li>Return {@code null} when both are blank — caller omits BT-34.</li>
+	 * </ol>
+	 *
+	 * <p>A {@code null} / "no mailbox" result from {@link MailService#findMailbox} falls back
+	 * gracefully via the {@code orElseGet} in the repository; when it can't find any mailbox
+	 * the service falls back to the client's default email config, so a non-null {@link de.metas.email.mailboxes.Mailbox}
+	 * is always returned (or an exception is thrown if the client has no email config at all).
+	 * We catch {@link AdempiereException} — the documented failure mode when no client email
+	 * config exists — and log a warning rather than aborting CII generation.
+	 */
+	@Nullable
+	private String resolveSellerEmail(@NonNull final I_C_Invoice invoice, @Nullable final String bpEmail)
+	{
+		if (mailService != null)
+		{
+			try
+			{
+				final DocBaseAndSubType docBaseAndSubType = resolveDocBaseAndSubType(invoice);
+				final Mailbox mailbox = mailService.findMailbox(
+						MailboxQuery.builder()
+								.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
+								.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+								.adProcessId(null)
+								.docBaseAndSubType(docBaseAndSubType)
+								.build());
+				final String resolvedEmail = mailbox.getEmail().getAsString();
+				if (resolvedEmail != null && !resolvedEmail.isEmpty())
+				{
+					return resolvedEmail;
+				}
+			}
+			catch (final AdempiereException ex)
+			{
+				log.warn("BT-34: could not resolve outbound mailbox for invoice {} — falling back to BPartner email. Reason: {}",
+						invoice.getC_Invoice_ID(), ex.getMessage());
+			}
+		}
+		return bpEmail;
+	}
+
+	/**
+	 * Resolves the {@link DocBaseAndSubType} for the given invoice's C_DocType_ID.
+	 * Returns {@code null} when the invoice has no DocType set.
+	 */
+	@Nullable
+	private DocBaseAndSubType resolveDocBaseAndSubType(@NonNull final I_C_Invoice invoice)
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+		if (docTypeId == null)
+		{
+			return null;
+		}
+		final I_C_DocType docType = Services.get(IDocTypeDAO.class).getById(docTypeId);
+		return DocBaseAndSubType.of(docType.getDocBaseType(), docType.getDocSubType());
+	}
+
+	/**
+	 * Resolves the buyer email for BT-49 via the injected doc-outbound recipient registry
+	 * (same logic that populates C_Doc_Outbound_Log.CurrentEMailAddress).
+	 * Returns {@code null} when the registry was not injected (e.g. unit tests) or when
+	 * the registry returns no address — the caller falls back to the BPartnerLocation email.
+	 */
+	@Nullable
+	private String resolveBuyerEmail(@NonNull final I_C_Invoice invoice)
+	{
+		if (mailRecipientRegistry == null)
+		{
+			return null;
+		}
+		final DocOutboundLogMailRecipientRequest req = DocOutboundLogMailRecipientRequest.builder()
+				.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID()))
+				.clientId(ClientId.ofRepoId(invoice.getAD_Client_ID()))
+				.orgId(OrgId.ofRepoId(invoice.getAD_Org_ID()))
+				.build();
+		return mailRecipientRegistry.getRecipient(req)
+				.map(DocOutBoundRecipients::getTo)
+				.map(DocOutBoundRecipient::getEmailAddress)
+				.orElse(null);
 	}
 
 	// ===== HeaderTradeSettlement =====

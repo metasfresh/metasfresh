@@ -139,6 +139,11 @@ public class CreateProductCommand
 		{
 			productRecord.setIsSelfPacked(isSelfPacked);
 		}
+		final Boolean isSerialNoPicked = request.getIsSerialNoPicked();
+		if (isSerialNoPicked != null)
+		{
+			productRecord.setIsSerialNoPicked(isSerialNoPicked);
+		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);

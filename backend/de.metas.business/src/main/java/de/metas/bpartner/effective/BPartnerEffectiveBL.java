@@ -38,12 +38,14 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.X_C_Order;
@@ -72,7 +74,7 @@ public class BPartnerEffectiveBL
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting());
+		return SpringContextHolder.getBeanOrSupply(BPartnerEffectiveBL.class, () -> new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting()));
 	}
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)
@@ -208,6 +210,8 @@ public class BPartnerEffectiveBL
 
 		bPartnerBuilder.purchaseTransportDays(
 				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+
+		bPartnerBuilder.salesRepId(UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID()));
 
 		return bPartnerBuilder.build();
 	}

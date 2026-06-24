@@ -47,6 +47,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
@@ -478,6 +479,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.bestBeforeDate(json.getBestBeforeDate())
 				.isSetLotNo(json.isSetLotNo())
 				.lotNo(json.getLotNo())
+				.isSetSerialNos(json.isSetSerialNos())
+				.serialNos(json.getSerialNos() != null ? SerialNoSet.parseStrings(json.getSerialNos()) : null)
 				.isCloseTarget(json.isCloseTarget())
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
