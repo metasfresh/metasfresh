@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00101
+@allure.label.feature:F00122
 @topic:orderCandidate
 @ghActions:run_on_executor3
 Feature: Enqueue order candidate in multiple workpackages for processing to order
@@ -16,7 +16,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00101
+@allure.label.feature:F00122
   @topic:orderCandidate
   Scenario: Process C_OLCand in batches:
   - create 4 olcands - they would end of in 3 C_Orders
@@ -227,7 +227,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00101
+@allure.label.feature:F00122
   @topic:orderCandidate
   Scenario: Create OLCand with different currency than what the pricelist allows -> an error is thrown when trying to create an order from it
     Given metasfresh contains M_PricingSystems
@@ -293,7 +293,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00101
+  @allure.label.feature:F00122
   Scenario: OLCands sharing externalHeaderId but with different DatePromised aggregate into ONE order
   - create 3 olcands with the same externalHeaderId, externalSystemCode and org but DIFFERING DatePromised (dateRequired)
   - process them
@@ -435,7 +435,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
-  @allure.label.feature:F00101
+  @allure.label.feature:F00122
   Scenario: OLCands sharing externalHeaderId but with different bill partner surface the external-header uniqueness error
   - create 2 olcands with the same externalHeaderId, externalSystemCode, org and ship partner, but DIFFERENT bill partner
   - the differing bill partner is part of the order-aggregation key (forces a separate order) but NOT of the

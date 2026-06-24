@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
 @ghActions:run_on_executor5
 Feature: Pick-after-date holds each order line until its own preparation date
 
@@ -37,7 +37,7 @@ Feature: Pick-after-date holds each order line until its own preparation date
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
   Scenario: IsFixedPreparationDate=Y holds the future-preparation-date line but ships the past-preparation-date line
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsFixedPreparationDate |
@@ -73,7 +73,7 @@ Feature: Pick-after-date holds each order line until its own preparation date
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
   Scenario: Single-date order keeps the header preparation date on its shipment schedule (no regression)
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | DatePromised | IsFixedPreparationDate |

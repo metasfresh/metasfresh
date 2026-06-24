@@ -1,6 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
 @ghActions:run_on_executor5
 Feature: Ship-after-date holds each order line until its own delivery date
 
@@ -35,7 +35,7 @@ Feature: Ship-after-date holds each order line until its own delivery date
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
   Scenario: IsFixedDatePromised=Y holds the future-delivery-date line but ships the past-delivery-date line
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsFixedDatePromised |
@@ -74,7 +74,7 @@ Feature: Ship-after-date holds each order line until its own delivery date
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
-@allure.label.feature:F00104
+@allure.label.feature:F00131
   Scenario: IsFixedDatePromised=N ships both lines regardless of delivery date
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsFixedDatePromised |
