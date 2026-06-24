@@ -9,6 +9,11 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
   # A manufacturing order backflushes one BOM component and receives the finished good.
   # The component-issue cost collector must post DR P_WIP_Acct / CR P_Asset_Acct (inventory down, WIP up).
   # The finished-good material-receipt cost collector must post DR P_Asset_Acct / CR P_WIP_Acct (inventory up, WIP down).
+  #
+  # For a CLOSED AveragePO order all production cost must be recovered into the finished good, so the
+  # P_WIP_Acct nets to zero across the order's cost collectors. This holds even when the component's
+  # actual cost at issue time differs from the planned BOM-rollup frozen at order completion (e.g. the
+  # component price rose between production planning and the actual material issue).
 
   Background:
     Given infrastructure and metasfresh are running
@@ -121,3 +126,65 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 10        |
       | receiptCostCollector | P_Asset_Acct          | finProd      | 10        | 0         |
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        |
+
+  @from:cucumber
+  Scenario: Component cost rises after order completion - all production cost is still recovered so WIP clears
+    # Complete the order while the component still costs 10 CHF/PCE. This freezes the finished good's
+    # planned BOM-rollup price at 10 (PP_Order_Cost), with its own standing cost cleared.
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 1            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    # The component price rises to 90 CHF/PCE BEFORE the material is issued, modelling a real-world
+    # price increase between production planning and the actual material issue. (Using a direct cost
+    # update rather than a second receipt keeps the single component stock HU, as the mobile issue
+    # step expects exactly one HU to issue from.)
+    And update current costs
+      | M_Product_ID | CurrentCostPrice |
+      | compProd     | 90 CHF           |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | compProd     | AveragePO        | 90 CHF           | 100 PCE    |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    # Issue the component to the production order (now valued at the risen cost of 90 CHF)
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Receive the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | issueCostCollector              | ppOrder                | compProd                | 1           | CO        |
+      | receiptCostCollector            | ppOrder                | finProd                 | 1           | CO        |
+
+    And Wait until documents issueCostCollector, receiptCostCollector are posted
+
+    # The whole production cost (90 CHF of issued component) must be recovered into the finished good,
+    # so the work-in-process account nets to zero across the order's cost collectors.
+    And Fact_Acct records balances for documents issueCostCollector, receiptCostCollector are matching
+      | AccountConceptualName | AcctBalance |
+      | P_WIP_Acct            | 0           |
