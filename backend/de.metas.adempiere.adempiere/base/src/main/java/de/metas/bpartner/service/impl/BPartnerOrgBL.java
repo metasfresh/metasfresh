@@ -73,6 +73,27 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 		return Optional.of(BPartnerId.ofRepoId(resultRecord.getC_BPartner_ID()));
 	}
 
+	@Override
+	public void setLinkedBPartner(@NonNull final OrgId orgId, @NonNull final BPartnerId bpartnerId)
+	{
+		// An org has at most one linked BPartner (partial unique index C_BPartner_OrgBP_ID_Unique on
+		// active, non-null AD_OrgBP_ID). Unlink whatever partner is currently linked (if different)
+		// before linking the new one. Cleared via setValue(null) — the generated int setter cannot
+		// express null, and -1 would stay non-null and so remain in the unique index. Without a shared
+		// transaction each save commits, so the index is satisfied at every step.
+		retrieveLinkedBPartnerId(orgId)
+				.filter(currentlyLinkedId -> !currentlyLinkedId.equals(bpartnerId))
+				.ifPresent(currentlyLinkedId -> {
+					final I_C_BPartner prevLinked = bpartnerDAO.getById(currentlyLinkedId);
+					InterfaceWrapperHelper.setValue(prevLinked, I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, null);
+					bpartnerDAO.save(prevLinked);
+				});
+
+		final I_C_BPartner bpartner = bpartnerDAO.getById(bpartnerId);
+		bpartner.setAD_OrgBP_ID(orgId.getRepoId());
+		bpartnerDAO.save(bpartner);
+	}
+
 	@Cached(cacheName = I_C_BPartner.Table_Name + "#By#AD_OrgBP_ID")
 		/* package */ I_C_BPartner retrieveLinkedBPartner(@CacheCtx final Properties ctx, final int adOrgId, @CacheTrx final String trxName)
 	{

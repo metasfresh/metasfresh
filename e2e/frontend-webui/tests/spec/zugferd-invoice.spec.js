@@ -32,6 +32,10 @@ const testCases = [
     { language: 'de_DE', label: 'German' },
 ];
 
+// Line product name — set in the masterdata request and asserted against the CII line item.
+// M_Product.Name is not language-translated, so it appears identically in both en_US and de_DE.
+const PRODUCT_NAME = 'Testprodukt';
+
 testCases.forEach(({ language, label }) => {
     test.describe(`ZUGFeRD e-Invoice (${label})`, () => {
         test(`Completed sales invoice PDF is a valid ZUGFeRD file with intact content (${label})`, async ({ page }) => {
@@ -163,7 +167,7 @@ de_DE to prove the full page-object flow is language-independent.
                     },
                     products: {
                         product: {
-                            name: 'Testprodukt',
+                            name: PRODUCT_NAME,
                             type: 'Item',
                             prices: [
                                 {
@@ -337,7 +341,7 @@ de_DE to prove the full page-object flow is language-independent.
             console.log(`[${language}] Validating invoice content in embedded CII...`);
             allure.attachment(`factur-x-${invoiceDocNo}.xml`, ciiXml, 'application/xml');
             expect(ciiXml, 'CII must carry the invoice document number (BT-1)').toContain(invoiceDocNo);
-            expect(ciiXml, 'CII must carry the line product name').toContain('Testprodukt');
+            expect(ciiXml, 'CII must carry the line product name').toContain(PRODUCT_NAME);
             expect(ciiXml, 'CII must carry the billed quantity').toMatch(/BilledQuantity[^>]*>\s*1(\.0+)?\s*</);
 
             console.log(`[${language}] [PASS] Invoice content validated in CII: documentNo, product, quantity present`);

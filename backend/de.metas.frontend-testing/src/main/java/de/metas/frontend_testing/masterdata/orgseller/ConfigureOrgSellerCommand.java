@@ -2,7 +2,6 @@ package de.metas.frontend_testing.masterdata.orgseller;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
@@ -12,8 +11,6 @@ import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BPartner;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -51,28 +48,13 @@ public class ConfigureOrgSellerCommand
 				.orgBPartnerLocationId(Optional.of(bplId))
 				.build());
 
-		// Set the reverse link the seller resolver actually queries: retrieveOrgBPartner looks up
-		// C_BPartner WHERE AD_OrgBP_ID = orgId. Without it the org has no resolvable seller and
-		// every document under the org (e-invoice CII + standard archive) fails.
+		// Set the reverse link the seller resolver actually queries (C_BPartner.AD_OrgBP_ID = orgId).
+		// Without it retrieveOrgBPartner finds no seller and every document under the org (e-invoice
+		// CII + standard archive) fails — see class Javadoc. setLinkedBPartner also takes over the
+		// per-org unique link, so the shared main org can be reused across runs and the en_US/de_DE cases.
 		final BPartnerId sellerBPartnerId = context.getId(
 				Identifier.ofString(request.getBpartnerIdentifier()), BPartnerId.class);
-		final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
-
-		// The org→bpartner link is unique per org (partial unique index C_BPartner_OrgBP_ID_Unique
-		// on active rows). On the shared test DB the same (main) org is reused across runs and
-		// across the en_US/de_DE cases of one run, so unlink whatever partner is currently linked
-		// to this org before linking the new seller — the latest configured seller takes over.
-		Services.get(IBPartnerOrgBL.class).retrieveLinkedBPartnerId(orgId)
-				.filter(linkedId -> !linkedId.equals(sellerBPartnerId))
-				.ifPresent(linkedId -> {
-					final I_C_BPartner prevLinked = bPartnerDAO.getById(linkedId);
-					InterfaceWrapperHelper.setValue(prevLinked, I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, null);
-					bPartnerDAO.save(prevLinked);
-				});
-
-		final I_C_BPartner sellerBPartner = bPartnerDAO.getById(sellerBPartnerId);
-		sellerBPartner.setAD_OrgBP_ID(orgId.getRepoId());
-		bPartnerDAO.save(sellerBPartner);
+		Services.get(IBPartnerOrgBL.class).setLinkedBPartner(orgId, sellerBPartnerId);
 	}
 
 	private OrgId resolveOrgId()
