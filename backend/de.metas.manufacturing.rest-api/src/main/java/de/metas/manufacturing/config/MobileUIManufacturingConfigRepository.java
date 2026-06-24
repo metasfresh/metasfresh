@@ -68,8 +68,11 @@ public class MobileUIManufacturingConfigRepository
 
 	private Optional<I_MobileUI_UserProfile_MFG> retrieveUserConfigRecord(final @NonNull UserId userId)
 	{
+		// No active-records filter on purpose: this method is shared by the read path
+		// (retrieveUserConfig filters IsActive='N' out in Java, treating it as "no config")
+		// and the save path (saveUserConfig reactivates an existing inactive row instead of
+		// inserting a duplicate). Filtering here would break that save-path reactivation.
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_MFG.class)
-				//.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_UserProfile_MFG.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.firstOnlyOptional(I_MobileUI_UserProfile_MFG.class);
