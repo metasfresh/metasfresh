@@ -13,6 +13,8 @@ import de.metas.picking.rest_api.PickingRestController;
 import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.util.Check;
@@ -116,6 +118,31 @@ public class MobileUIPickingClient
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);
+	}
+
+	/**
+	 * Resolves a scanned product code (GTIN/EAN) to the unpickable product + currently-packed qty for the job,
+	 * mirroring the mobile UI's "scan to remove item" first call (POST /picking/unpick/resolve).
+	 */
+	public JsonUnpickResolveResponse resolveUnpick(@NonNull final String wfProcessId, @NonNull final String scannedCode)
+	{
+		return pickingRestController.resolveUnpick(JsonUnpickResolveRequest.builder()
+				.wfProcessId(wfProcessId)
+				.scannedCode(scannedCode)
+				.build());
+	}
+
+	public JsonWFProcess unpickLine(@NonNull final JsonPickingStepEvent request)
+	{
+		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.UNPICK, "Invalid type: {}", request);
+		return pickingRestController.postEvent(request);
+	}
+
+	public PickingJob getPickingJob(@NonNull final String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		return pickingJobService.getById(pickingJobId);
 	}
 
 	public JsonWFProcess complete(final String wfProcessId)

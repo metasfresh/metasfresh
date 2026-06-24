@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder
+@Builder(toBuilder = true)
 @Jacksonized
 public class PickingJobStepPickedToHU
 {

@@ -14,6 +14,7 @@ import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
+import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -23,6 +24,7 @@ import de.metas.picking.api.PickingSlotIdAndCaption;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.product.ProductId;
@@ -232,13 +234,15 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
-	 * Partially un-picks a quantity of a product identified by its GTIN barcode from the currently packed HU.
-	 * The picker scans the product's GTIN and specifies a qty smaller than the full packed step qty.
-	 * The unpicked qty is returned to floor stock (re-pickable) while the remainder stays packed.
+	 * Partially un-picks a quantity of a product identified by its GTIN barcode from the currently packed HU,
+	 * mirroring the mobile UI "scan to remove item" flow: the picker scans the product's GTIN (1st call resolves
+	 * the unpickable product + packed qty), then specifies a qty up to the packed qty. The chosen qty is carved
+	 * (LIFO, splitting the boundary CU) out of the packed CU; the remainder stays packed. No target HU is scanned
+	 * here, so the carved CU is set Active in place (the destination move runs only when a target HU is scanned).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>ProductGTIN</b> — (required) the product's GTIN barcode string<br>
+	 *   <b>ProductGTIN</b> — (required) the product's GTIN barcode string scanned by the picker<br>
 	 *   <b>QtyToUnpick</b> — (required) the partial quantity to remove from the packed HU<br>
 	 * @cucumber.example
 	 * <pre>
@@ -250,7 +254,38 @@ public class MobileUI_Picking_StepDef
 	@When("partial unpick from packed HU by product GTIN:")
 	public void partialUnpackByProductGtin(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: partial unpick by product GTIN+qty");
+		DataTableRows.of(dataTable).forEach(this::partialUnpackByProductGtin);
+	}
+
+	private void partialUnpackByProductGtin(@NonNull final DataTableRow row)
+	{
+		final String productGTIN = row.getAsString("ProductGTIN");
+		final BigDecimal qtyToUnpick = row.getAsBigDecimal("QtyToUnpick");
+		final String wfProcessId = context.getWfProcessIdNotNull();
+
+		// The picker scans the product's GTIN barcode. A GS1-128 barcode encodes the GTIN under
+		// application identifier (01) (fixed-length 14 digits) — that AI-prefixed element string is what
+		// the scanner emits and what the picking resolver parses (see PickingJobService.resolveUnpick).
+		final String scannedGtinCode = "01" + productGTIN;
+
+		// 1) Scan the product GTIN -> resolve the unpickable product + currently-packed qty (mobile UI's 1st call).
+		final JsonUnpickResolveResponse resolved = mobileUIPickingClient.resolveUnpick(wfProcessId, scannedGtinCode);
+		assertThat(resolved.isUnpickable())
+				.as("product resolved from scanned GTIN %s must be unpickable", productGTIN)
+				.isTrue();
+
+		// 2) Remove the chosen qty of that product. The UNPICK event carries product+qty; the scanned code is the
+		//    qrCode (the subset path keys off unpickProductId, pickingStepId is null).
+		final JsonWFProcess wfProcess = mobileUIPickingClient.unpickLine(JsonPickingStepEvent.builder()
+				.type(JsonPickingStepEvent.EventType.UNPICK)
+				.wfProcessId(wfProcessId)
+				.wfActivityId(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString())
+				.pickingLineId(context.getSinglePickingLineId())
+				.huQRCode(scannedGtinCode)
+				.unpickProductId(resolved.getProductId())
+				.unpickQty(qtyToUnpick)
+				.build());
+		context.setWfProcess(wfProcess);
 	}
 
 	/**
@@ -270,7 +305,27 @@ public class MobileUI_Picking_StepDef
 	@Then("the packed HU contains product with qty:")
 	public void assertPackedHUQty(@NonNull final DataTable dataTable)
 	{
-		throw new UnsupportedOperationException("not implemented: assert packed HU product qty");
+		DataTableRows.of(dataTable).forEach(this::assertPackedHUQty);
+	}
+
+	private void assertPackedHUQty(@NonNull final DataTableRow row)
+	{
+		final ProductId productId = productsTable.getId(row.getAsIdentifier("M_Product_ID"));
+		final BigDecimal expectedQty = row.getAsBigDecimal("ExpectedQty");
+
+		// Re-load the persisted picking job and sum the packed (pickedTo) qty for the product across its steps.
+		final PickingJob pickingJob = mobileUIPickingClient.getPickingJob(context.getWfProcessIdNotNull());
+		final BigDecimal packedQty = pickingJob.streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.flatMap(step -> step.getPickFromKeys().stream()
+						.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null)))
+				.filter(qty -> qty != null)
+				.map(qty -> qty.toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+
+		assertThat(packedQty)
+				.as("packed qty for product %s after partial unpick", productId)
+				.isEqualByComparingTo(expectedQty);
 	}
 
 	/**

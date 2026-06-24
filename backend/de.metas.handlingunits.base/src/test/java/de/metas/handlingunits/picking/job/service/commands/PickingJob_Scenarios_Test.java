@@ -292,15 +292,20 @@ class PickingJob_Scenarios_Test
 		}
 
 		/**
-		 * Multi-CU LIFO boundary selection: when a product is packed across multiple CUs,
-		 * the LIFO selection picks the most-recently-packed CU first, and splits the boundary CU
-		 * to deliver exactly the requested qty.
+		 * Multi-CU LIFO boundary selection — selection arithmetic only. When a product is packed across
+		 * multiple CUs, {@link PickingJobUnPickCommand#buildSubsetUnpickInstructions} picks the
+		 * most-recently-packed CU first (LIFO) and marks the straddling CU as the boundary split for the
+		 * leftover qty, leaving the older CU untouched.
 		 * <p>
-		 * Setup: 2 VHUs of qty=3 each (VHU1 packed first, VHU2 packed second).
-		 * LIFO order for unpick: VHU2 (newer) first, then VHU1 (older).
-		 * Action: request subset-UNPICK of qty=2.
-		 * Expected: boundary CU (VHU2, qty=3) is split — 2 units removed, 1 unit remains.
-		 * Net picked qty across all steps = 4 (=3+3−2).
+		 * Setup: 2 VHUs of qty=3 each (VHU1 packed first at T1, VHU2 packed second at T2).
+		 * Action: build subset-unpick instructions for qty=2.
+		 * Expected: a single instruction whose boundary CU is VHU2 (newer) with split qty=2, no whole CUs
+		 * taken, and the older VHU1 not selected at all. A FIFO selection would instead pick VHU1.
+		 * <p>
+		 * The physical split, net packed qty, and no-negative shipment line are proven end-to-end by the
+		 * full-stack cucumber {@code picking_partialUnpackCounterRowNetQty.feature} (@Id:S30480_TC2). The
+		 * in-memory harness cannot materialise the real VHU split, so this test covers only the pure
+		 * selection arithmetic (per the module rule: in-memory JUnit is not proof of shape-dependent behaviour).
 		 */
 		@Test
 		void multiCuLifoBoundarySelection()
@@ -371,39 +376,31 @@ class PickingJob_Scenarios_Test
 
 			SystemTime.resetTimeSource();
 
-			// Total packed qty = 6 (3 + 3). Request partial unpick of 2.
-			// LIFO: VHU2 (newer, T2) is boundary CU — qty=3 > remaining=2 — must be split.
-			// Expected after split: VHU2 contributes 2 removed, 1 stays → net picked = 4.
-			final PickingJob finalPickingJob = pickingJob;
-			final PickingJob afterUnpick = helper.pickingJobService.processStepEvent(finalPickingJob, PickingJobStepEvent.builder()
-					.pickingLineId(line.getId())
-					.eventType(PickingJobStepEventType.UNPICK)
-					.qrCode(pickSecondVhu.getQrCode().toScannedCode())
-					.unpickProductId(productId)
-					.qtyToUnpick(new BigDecimal("2"))
-					.build());
+			// Build subset-unpick instructions for qty=2 — selection arithmetic only (no physical split,
+			// which the in-memory harness cannot materialise; that path is covered by S30480_TC2 cucumber).
+			final ImmutableList<PickingJobUnPickCommand.StepUnpickInstructions> instructions =
+					PickingJobUnPickCommand.buildSubsetUnpickInstructions(pickingJob, productId, Quantity.of("2", helper.uomEach))
+							.collect(ImmutableList.toImmutableList());
 
-			// Assert net packed qty = 4 (6 - 2)
-			final BigDecimal netPickedQty = afterUnpick.streamSteps()
-					.filter(step -> ProductId.equals(step.getProductId(), productId))
-					.flatMap(step -> step.getPickFromKeys().stream()
-							.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
-							.filter(qty -> qty != null))
-					.map(qty -> qty.toBigDecimal())
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			assertThat(netPickedQty).isEqualByComparingTo(new BigDecimal("4"));
-
-			// LIFO lock: the OLDER CU (VHU1, picked first at T1) is drawn LAST, so a qty-2 unpick
-			// never touches it — its step must still carry the full 3. A FIFO implementation would
-			// split VHU1 first and fail this assertion (net qty alone cannot distinguish LIFO from FIFO).
-			final Quantity vhu1QtyAfter = afterUnpick.getStepById(pickFirstStepId)
-					.getPickFrom(PickingJobStepPickFromKey.MAIN)
-					.getQtyPicked()
-					.orElse(null);
-			assertThat(vhu1QtyAfter).as("older CU (VHU1) must remain in a step after the unpick").isNotNull();
-			assertThat(vhu1QtyAfter.toBigDecimal())
-					.as("older CU (VHU1) is untouched under LIFO (FIFO would have split it)")
-					.isEqualByComparingTo(new BigDecimal("3"));
+			// LIFO: only the newer CU (VHU2, T2) is selected — as the boundary split for the 2 units.
+			// The older CU (VHU1, T1) is not selected at all. A FIFO selection would pick VHU1 instead.
+			assertThat(instructions).as("a qty-2 subset unpick selects only the boundary CU").hasSize(1);
+			final PickingJobUnPickCommand.StepUnpickInstructions boundaryInstruction = instructions.get(0);
+			assertThat(boundaryInstruction.getStepId())
+					.as("boundary step is the newer CU's step (LIFO), not the older one")
+					.isEqualTo(pickSecondStepId);
+			assertThat(boundaryInstruction.getPickedToHUsToUnpick())
+					.as("no whole CUs are removed — only a boundary split")
+					.isNullOrEmpty();
+			assertThat(boundaryInstruction.getBoundaryHuToSplit())
+					.as("boundary CU must be set")
+					.isNotNull();
+			assertThat(boundaryInstruction.getBoundaryHuToSplit().getActualPickedHU().getId())
+					.as("boundary CU is VHU2 (newer, LIFO-first); FIFO would have chosen VHU1")
+					.isEqualTo(pickSecondVhu.getId());
+			assertThat(boundaryInstruction.getBoundarySplitQty().toBigDecimal())
+					.as("boundary split qty = the requested 2 units")
+					.isEqualByComparingTo(new BigDecimal("2"));
 		}
 	}
 
