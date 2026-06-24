@@ -32,7 +32,7 @@ jobs:
           else
             echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
           fi
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
         if: steps.skip-checks.outputs.skip-testspace != 'true'
         with:
@@ -103,8 +103,8 @@ jobs:
     permissions:
       packages: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -168,7 +168,7 @@ jobs:
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -193,8 +193,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -217,7 +217,7 @@ jobs:
           --tag metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -238,7 +238,7 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [init, frontend]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
         if: needs.init.outputs.skip-testspace != 'true'
         with:
@@ -261,7 +261,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: jest-logs
@@ -271,8 +271,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -354,7 +354,7 @@ jobs:
           --tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded \
           .
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -389,8 +389,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -438,7 +438,7 @@ jobs:
           --tag metasfresh/metas-procurement-frontend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -465,8 +465,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [init, frontend, backend]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -522,7 +522,7 @@ jobs:
           docker pull metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}
           docker tag metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }} metasfresh/metasfresh-db:${{ needs.init.outputs.tag-fixed }}-compat
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -558,8 +558,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -597,7 +597,7 @@ jobs:
           --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -620,7 +620,7 @@ jobs:
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
           if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: junit-logs
@@ -631,8 +631,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [init, java]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -651,7 +651,7 @@ jobs:
           --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -688,8 +688,8 @@ jobs:
           - profile: catchall
             params: -Dcucumber.filter.tags="not @ghActions:run_on_executor1 and not @ghActions:run_on_executor2 and not @ghActions:run_on_executor3 and not @ghActions:run_on_executor4 and not @ghActions:run_on_executor5 and not @ghActions:run_on_executor6 and not @ghActions:run_on_executor7 and not @ignore"
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -727,7 +727,7 @@ jobs:
           testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"     # upload cucumber log with combined exit code
           fi
       - name: push-database-images
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
@@ -741,7 +741,7 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat cucumber.exit-code) != 0 ] || [ $(cat cucumber.mvn.exit-code) != 0 ]; then tail -1000 cucumber.log && exit 1; fi                                     # print cucumber log and exit if cucumber failed
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: failure()
         with:
           name: cucumber-logs
@@ -752,8 +752,8 @@ jobs:
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, backend, frontend ]
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/login-action@v3
+      - uses: actions/checkout@v6
+      - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
@@ -883,7 +883,7 @@ jobs:
 
       - name: Download allure-report-cucumber
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: allure-report-cucumber
           path: reports/cucumber
@@ -891,7 +891,7 @@ jobs:
 
       - name: Download allure-report-mobile-webui
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: allure-report-mobile-webui
           path: reports/mobile-webui
@@ -899,7 +899,7 @@ jobs:
 
       - name: Download allure-report-frontend-webui
         if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true'
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: allure-report-frontend-webui
           path: reports/frontend-webui
