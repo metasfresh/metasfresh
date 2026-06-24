@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -178,6 +179,7 @@ public class OrderBL implements IOrderBL
 	@NonNull private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
 	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
 	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -1338,6 +1340,22 @@ public class OrderBL implements IOrderBL
 		final Incoterms incoterms = bPartnerOrderParams.getIncoterms();
 		order.setC_Incoterms_ID(incoterms.getId().getRepoId());
 		order.setIncotermLocation(incoterms.getLocationEffective());
+	}
+
+	@Override
+	public void setSalesRep(@NonNull final I_C_Order order)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final UserId salesRepId = bpartnerEffectiveBL.get().getById(bpartnerId).getSalesRepId();
+		if (salesRepId != null)
+		{
+			order.setSalesRep_ID(salesRepId.getRepoId());
+		}
 	}
 
 	@Override
