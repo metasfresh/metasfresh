@@ -301,8 +301,6 @@ class PickingJob_Scenarios_Test
 		 * Action: request subset-UNPICK of qty=2.
 		 * Expected: boundary CU (VHU2, qty=3) is split — 2 units removed, 1 unit remains.
 		 * Net picked qty across all steps = 4 (=3+3−2).
-		 * <p>
-		 * Expected: after split, net packed qty across all steps = 4.
 		 */
 		@Test
 		void multiCuLifoBoundarySelection()
