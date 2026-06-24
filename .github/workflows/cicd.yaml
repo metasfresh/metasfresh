@@ -5,6 +5,8 @@ on:
       - '**'
     paths-ignore:
       - '**/README.md'
+      - '.mergify.yml'
+      - '.testspace.yml'
   workflow_dispatch:
 
 permissions:
