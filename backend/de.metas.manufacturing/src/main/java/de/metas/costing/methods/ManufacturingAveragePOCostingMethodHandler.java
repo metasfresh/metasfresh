@@ -31,6 +31,7 @@ import org.eevolution.api.IPPCostCollectorBL;
 import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
+import org.eevolution.api.PPOrderCost;
 import org.eevolution.api.PPOrderCosts;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Cost_Collector;
@@ -205,11 +206,18 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
-					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
+			final PPOrderCost mainProductCost = orderCosts.getByCostSegmentAndElement(costSegmentAndElement)
+					.orElseThrow(() -> new AdempiereException("No order cost found for " + costSegmentAndElement + " in " + orderCosts));
 
-			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
-			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
+			final Quantity qty = utils.convertToUOM(request.getQty(), mainProductCost.getUomId(), costSegmentAndElement.getProductId());
+
+			// Recover the order's actual production cost into the finished good instead of the frozen
+			// planned BOM-rollup price, so the work-in-process account clears once the order is closed.
+			// The post-calculation amount is the total actual inbound (component) cost accumulated so far;
+			// this receipt absorbs whatever part of it earlier receipts have not yet recovered.
+			final CostAmount amt = mainProductCost.getPostCalculationAmount()
+					.subtract(mainProductCost.getAccumulatedAmount())
+					.roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
 		}
 		else
@@ -239,28 +247,33 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 	{
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
+		final CostDetailCreateRequest requestEffective;
 		final CostDetailCreateResult result;
 		if (request.isReversal())
 		{
-			result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
-			currentCosts.addWeightedAverage(request.getAmt(), request.getQty(), utils.getQuantityUOMConverter());
+			requestEffective = request;
+			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
+			currentCosts.addWeightedAverage(requestEffective.getAmt(), requestEffective.getQty(), utils.getQuantityUOMConverter());
 		}
 		else
 		{
 			final CostPrice price = currentCosts.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), request.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCosts.getPrecision());
-			final CostDetailCreateRequest requestEffective = request.withAmountAndQty(amt, qty);
+			requestEffective = request.withAmountAndQty(amt, qty);
 			result = utils.createCostDetailRecordWithChangedCosts(requestEffective, previousCosts);
 
 			currentCosts.addToCurrentQtyAndCumulate(requestEffective.getQty(), requestEffective.getAmt());
 		}
 
-		// Accumulate to order costs
+		// Accumulate the ACTUAL issued cost (from the current cost price) to the order costs, so that
+		// the order's post-calculation reflects the real inbound component cost.
+		// NOTE: issue amounts/quantities are negative, so we negate them here to accumulate a positive
+		// inbound value (mirroring the outbound negation in createMainProductOrCoProductReceipt).
 		orderCosts.accumulateInboundCostAmount(
 				utils.extractCostSegmentAndElement(request),
-				request.getAmt(),
-				request.getQty(),
+				requestEffective.getAmt().negate(),
+				requestEffective.getQty().negate(),
 				utils.getQuantityUOMConverter());
 
 		return result;
