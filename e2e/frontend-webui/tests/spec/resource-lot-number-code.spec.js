@@ -21,7 +21,8 @@ import { RESOURCE_WINDOW_ID } from '../utils/WindowIds';
  *   4. Verify the "Lot-Nummer Code" field renders and is editable
  *   5. Set a unique value, save (Tab), reload the page
  *   6. Verify the value persisted after reload
- *   7. Restore the original value (leave no test residue)
+ *   7. Restore the original value (in a finally block — runs even if an
+ *      assertion above fails, so the test never leaves residue on the record)
  *
  * This is the WebUI-side proof that the AD metadata added for the field
  * (AD_Field 781245 / AD_UI_Element on window 236, tab 414) renders a usable,
@@ -48,20 +49,29 @@ receipt time. If it does not render or persist, the feature cannot be configured
 
         test.setTimeout(90000);
 
-        // Step 1: test user
+        // A field save is committed by Tab/blur, which fires a PATCH to the window
+        // document. Awaiting that response is deterministic — no blind sleeps, and no
+        // risk of reloading before the save round-trips.
+        const waitForSave = () =>
+            page
+                .waitForResponse(
+                    (r) => r.request().method() === 'PATCH' && r.url().includes('/window/'),
+                    { timeout: SLOW_ACTION_TIMEOUT }
+                )
+                .catch(() => null);
+
+        // Step 1: test user (Backend.createMasterdata logs the created masterdata itself)
         const masterdata = await Backend.createMasterdata({
             request: { login: { user: { language: 'en_US', firstname: 'first', lastname: 'last' } } },
         });
-        console.log(`Test user created: ${masterdata.login.user.username}`);
 
-        // Step 2: login
+        // Step 2: login. login() already waits for the redirect off /login; the call
+        // below is a URL-only sanity assertion (not a DOM-ready signal). The real
+        // ready-to-render guard is the document-list wait in step 3. We intentionally do
+        // NOT wait for the dashboard to reach 'networkidle' — its STOMP/websocket + KPI
+        // polling keep the network active, so networkidle never settles locally.
         await LoginPage.goto();
         await LoginPage.login(masterdata.login.user);
-        // login() already waits for the redirect off /login; assert it deterministically.
-        // Intentionally NOT waiting for the dashboard to reach 'networkidle' — the
-        // dashboard's STOMP/websocket + KPI polling keep the network active, so
-        // networkidle never settles locally. The Resource-window load below waits on a
-        // deterministic DOM signal (the document list) instead.
         await LoginPage.expectLoggedIn();
 
         // Step 3: navigate to the Resource window
@@ -76,7 +86,10 @@ receipt time. If it does not render or persist, the feature cannot be configured
             .catch(() => {});
         await page.waitForTimeout(500);
 
-        // Step 4: open the first existing Resource record (double-click opens detail)
+        // Step 4: open the first existing Resource record (double-click opens detail).
+        // Any resource carries the LotNumberCode field, so the first row is fine — the
+        // restore in the finally block is per-run (restores whatever record THIS run
+        // opened to its own captured baseline), so it does not depend on a stable sort.
         const firstRow = page.locator('.table tbody tr, table tbody tr').first();
         await firstRow.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
         await firstRow.dblclick();
@@ -85,10 +98,9 @@ receipt time. If it does not render or persist, the feature cannot be configured
         await page.locator('.rotating, .indicator-pending')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
             .catch(() => {});
-        await page.waitForTimeout(1000);
 
-        const recordId = page.url().split('/').pop();
-        console.log(`Opened Resource record: ${recordId}`);
+        const recordUrl = page.url();
+        console.log(`Opened Resource record: ${recordUrl.split('/').pop()}`);
 
         // Step 5: the LotNumberCode field renders and is editable
         const lotInput = page.locator(LOT_FIELD).first();
@@ -98,51 +110,52 @@ receipt time. If it does not render or persist, the feature cannot be configured
         const originalValue = await lotInput.inputValue();
         console.log(`Original LotNumberCode value: "${originalValue}"`);
 
-        // Step 6: set a unique value and save (Tab triggers the field save).
-        // LotNumberCode is a short per-resource code — VARCHAR(10) / AD FieldLength 10
-        // (e.g. a production-line code). Keep the value within 10 chars so the field's
-        // maxLength does not truncate it.
-        const uniqueValue = `L${Date.now().toString().slice(-8)}`; // 9 chars, unique per run
-        await lotInput.click();
-        await lotInput.fill(uniqueValue);
-        await page.keyboard.press('Tab');
-        await page.waitForTimeout(2000);
-        await page.locator('.rotating, .indicator-pending')
-            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-            .catch(() => {});
-        console.log(`Set LotNumberCode to: ${uniqueValue}`);
+        try {
+            // Step 6: set a unique value and save (Tab triggers the field save).
+            // LotNumberCode is a short per-resource code — VARCHAR(10) / AD FieldLength 10
+            // (e.g. a production-line code). Keep the value within 10 chars so the field's
+            // maxLength does not truncate it.
+            const uniqueValue = `L${Date.now().toString().slice(-8)}`; // 9 chars, unique per run
+            await lotInput.click();
+            await lotInput.fill(uniqueValue);
+            const saved = waitForSave();
+            await page.keyboard.press('Tab');
+            await saved;
+            console.log(`Set LotNumberCode to: ${uniqueValue}`);
 
-        // Step 7: reload and verify persistence
-        await page.reload();
-        await page.locator(LOT_FIELD).first().waitFor({
-            state: 'visible',
-            timeout: VERY_SLOW_ACTION_TIMEOUT,
-        });
-        await page.waitForTimeout(500);
-        const reloadedValue = await page.locator(LOT_FIELD).first().inputValue();
-        expect(reloadedValue).toBe(uniqueValue);
-        console.log(`After reload, LotNumberCode = "${reloadedValue}" (persisted)`);
+            // Step 7: reload and verify persistence
+            await page.reload();
+            await page.locator(LOT_FIELD).first().waitFor({
+                state: 'visible',
+                timeout: VERY_SLOW_ACTION_TIMEOUT,
+            });
+            const reloadedValue = await page.locator(LOT_FIELD).first().inputValue();
+            expect(reloadedValue).toBe(uniqueValue);
+            console.log(`After reload, LotNumberCode = "${reloadedValue}" (persisted)`);
 
-        const screenshot = await page.screenshot();
-        allure.attachment('Resource LotNumberCode persisted', screenshot, 'image/png');
+            const screenshot = await page.screenshot();
+            allure.attachment('Resource LotNumberCode persisted', screenshot, 'image/png');
 
-        const validationHtml = `<table border="1">
-            <tr><th>Check</th><th>Status</th><th>Value</th></tr>
-            <tr><td>Field renders + editable</td><td>PASS</td><td>${LOT_FIELD}</td></tr>
-            <tr><td>Value set</td><td>PASS</td><td>${uniqueValue}</td></tr>
-            <tr><td>Persisted after reload</td><td>PASS</td><td>${reloadedValue}</td></tr>
-        </table>`;
-        allure.attachment('Validation Results', validationHtml, 'text/html');
-
-        // Step 8: restore the original value so the test leaves no residue
-        const lotInputRestore = page.locator(LOT_FIELD).first();
-        await lotInputRestore.click();
-        await lotInputRestore.fill(originalValue);
-        await page.keyboard.press('Tab');
-        await page.waitForTimeout(1500);
-        await page.locator('.rotating, .indicator-pending')
-            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-            .catch(() => {});
-        console.log(`Restored original LotNumberCode value: "${originalValue}"`);
+            const validationHtml = `<table border="1">
+                <tr><th>Check</th><th>Status</th><th>Value</th></tr>
+                <tr><td>Field renders + editable</td><td>PASS</td><td>${LOT_FIELD}</td></tr>
+                <tr><td>Value set</td><td>PASS</td><td>${uniqueValue}</td></tr>
+                <tr><td>Persisted after reload</td><td>PASS</td><td>${reloadedValue}</td></tr>
+            </table>`;
+            allure.attachment('Validation Results', validationHtml, 'text/html');
+        } finally {
+            // Restore the original value so the test leaves no residue — runs even if the
+            // persistence assertion above threw (the record is pre-existing, not owned by
+            // this test, so teardown must be unconditional).
+            await page.goto(recordUrl);
+            const lotInputRestore = page.locator(LOT_FIELD).first();
+            await lotInputRestore.waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+            await lotInputRestore.click();
+            await lotInputRestore.fill(originalValue);
+            const restored = waitForSave();
+            await page.keyboard.press('Tab');
+            await restored;
+            console.log(`Restored original LotNumberCode value: "${originalValue}"`);
+        }
     });
 });
