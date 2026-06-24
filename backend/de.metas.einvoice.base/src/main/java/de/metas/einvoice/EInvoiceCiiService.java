@@ -1,5 +1,7 @@
 package de.metas.einvoice;
 
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.email.MailService;
 import de.metas.einvoice.cii.CiiMapper;
 import de.metas.einvoice.cii.CiiValidationResult;
 import de.metas.einvoice.cii.CiiValidator;
@@ -10,7 +12,6 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -26,7 +27,7 @@ import java.io.StringWriter;
 import java.util.Optional;
 
 /**
- * Public entry point for CII e-invoice generation and EN16931 Schematron validation.
+ * Public entry point for CII e-invoice generation and Schematron validation.
  *
  * <p>Orchestrates the pipeline:
  * <ol>
@@ -35,15 +36,15 @@ import java.util.Optional;
  *   <li>{@link CiiMapper#map(I_C_Invoice, EInvoiceRecipientConfig)} — map the invoice to a CII
  *       {@link CrossIndustryInvoiceType} domain object.</li>
  *   <li>Marshal the CII object to XML.</li>
- *   <li>{@link CiiValidator#validate(String)} — validate the marshalled XML against EN16931
- *       Schematron rules.</li>
+ *   <li>{@link CiiValidator#validate(String, EInvoiceFormat)} — validate the marshalled XML
+ *       against EN16931 Schematron rules always, plus the KoSIT/XRechnung schematron when the
+ *       resolved format is XRechnung.</li>
  * </ol>
  *
  * <p>Returns {@link Optional#empty()} when the BPartner is not an e-invoice recipient,
  * so callers do not need to check eligibility themselves.
  */
 @Service
-@RequiredArgsConstructor
 public class EInvoiceCiiService
 {
 	private static final Logger log = LoggerFactory.getLogger(EInvoiceCiiService.class);
@@ -67,7 +68,24 @@ public class EInvoiceCiiService
 	}
 
 	@NonNull private final EInvoiceConfigService configService;
+	@Nullable private final DocOutboundLogMailRecipientRegistry mailRecipientRegistry;
+	@Nullable private final MailService mailService;
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+	/**
+	 * {@code mailRecipientRegistry} and {@code mailService} are nullable so that existing tests
+	 * that do not exercise the BT-49/BT-34 resolvers can pass {@code null} without a NPE from a
+	 * {@code @NonNull} guard. In a live Spring context both beans are always present.
+	 */
+	public EInvoiceCiiService(
+			@NonNull final EInvoiceConfigService configService,
+			@Nullable final DocOutboundLogMailRecipientRegistry mailRecipientRegistry,
+			@Nullable final MailService mailService)
+	{
+		this.configService = configService;
+		this.mailRecipientRegistry = mailRecipientRegistry;
+		this.mailService = mailService;
+	}
 
 	/**
 	 * Generates a CII XML e-invoice for the given invoice and validates it against EN16931 rules.
@@ -90,18 +108,18 @@ public class EInvoiceCiiService
 		}
 
 		// Map invoice to CII domain object
-		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, config);
+		final CrossIndustryInvoiceType cii = new CiiMapper(mailRecipientRegistry, mailService).map(invoice, config);
 
 		// Marshal to XML
 		final String ciiXml = marshalToXml(cii);
 
-		// Validate against EN16931 Schematron
+		// Validate against EN16931 Schematron (always), plus KoSIT/XRechnung when the format is XRechnung.
 		final CiiValidator validator = new CiiValidator();
-		final CiiValidationResult validationResult = validator.validate(ciiXml);
+		final CiiValidationResult validationResult = validator.validate(ciiXml, config.getFormat());
 
 		if (!validationResult.isValid())
 		{
-			log.warn("EN16931 Schematron validation found {} FATAL/ERROR failures for invoice {}. Rule IDs: {}",
+			log.warn("E-invoice Schematron validation found {} FATAL/ERROR failures for invoice {}. Rule IDs: {}",
 					validationResult.getFatalAndErrorRuleIds().size(),
 					invoiceId,
 					validationResult.getFatalAndErrorRuleIds());

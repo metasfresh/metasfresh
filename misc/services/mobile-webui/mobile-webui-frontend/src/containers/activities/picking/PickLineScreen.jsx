@@ -128,7 +128,7 @@ const PickLineScreen = () => {
       .then((wfProcess) => {
         dispatch(updateWFProcess({ wfProcess }));
       })
-      .then(() => history.goBack); // go back to Picking Job
+      .then(() => history.goBack()); // go back to Picking Job
   };
 
   const onReOpen = () => {
