@@ -130,6 +130,41 @@ public class PPOrderCostsTest
 		this.assertThatPostCalculationAmt(orderCosts, productId5).isEqualByComparingTo(new BigDecimal("0"));
 	}
 
+	/**
+	 * The main product's own accumulated amount (booked by its finished-good receipts) must NOT be
+	 * counted as inbound production cost. The main product's post-calculation amount is the total
+	 * actual component (inbound) cost only - here a single component issued for 90 - regardless of how
+	 * much has already been received. Otherwise it is double-counted (90 component + 90 receipt = 180).
+	 */
+	@Test
+	public void testPostCalculation_mainProductReceiptIsNotCountedAsInbound()
+	{
+		final PPOrderCosts orderCosts = PPOrderCosts.builder()
+				.orderId(ppOrderId)
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MainProduct)
+						.costSegmentAndElement(costSegmentAndElement(productId1))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(90, currencyId)) // already received 90
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.cost(PPOrderCost.builder()
+						.trxType(PPOrderCostTrxType.MaterialIssue)
+						.costSegmentAndElement(costSegmentAndElement(productId2))
+						.price(CostPrice.zero(currencyId, uomId))
+						.accumulatedAmount(CostAmount.of(90, currencyId)) // component issued for 90
+						.accumulatedQty(Quantity.zero(uom))
+						.build())
+				.build();
+
+		orderCosts.updatePostCalculationAmounts(costingPrecision);
+		orderCosts.toCollection().forEach(System.out::println);
+
+		// total actual production cost = the component inbound (90), NOT 90 + the 90 already received
+		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("90"));
+		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("90"));
+	}
+
 	private CostSegmentAndElement costSegmentAndElement(@NonNull final ProductId productId)
 	{
 		return CostSegmentAndElement.builder()
