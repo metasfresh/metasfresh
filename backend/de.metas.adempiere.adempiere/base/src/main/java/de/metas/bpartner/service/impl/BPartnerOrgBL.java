@@ -78,14 +78,14 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	{
 		// An org has at most one linked BPartner (partial unique index C_BPartner_OrgBP_ID_Unique on
 		// active, non-null AD_OrgBP_ID). Unlink whatever partner is currently linked (if different)
-		// before linking the new one. Cleared via setValue(null) — the generated int setter cannot
-		// express null, and -1 would stay non-null and so remain in the unique index. Without a shared
-		// transaction each save commits, so the index is satisfied at every step.
+		// before linking the new one — setAD_OrgBP_ID(-1) maps to SQL NULL (the generated setter clears
+		// the column on < 1), removing it from the index. Without a shared transaction each save commits,
+		// so the index is satisfied at every step.
 		retrieveLinkedBPartnerId(orgId)
 				.filter(currentlyLinkedId -> !currentlyLinkedId.equals(bpartnerId))
 				.ifPresent(currentlyLinkedId -> {
 					final I_C_BPartner prevLinked = bpartnerDAO.getById(currentlyLinkedId);
-					InterfaceWrapperHelper.setValue(prevLinked, I_C_BPartner.COLUMNNAME_AD_OrgBP_ID, null);
+					prevLinked.setAD_OrgBP_ID(-1);
 					bpartnerDAO.save(prevLinked);
 				});
 
