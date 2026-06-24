@@ -11,6 +11,7 @@ import de.metas.hu_consolidation.mobile.job.HUConsolidationJobReference;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobService;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationTarget;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.hu_consolidation.mobile.job.commands.consolidate.ConsolidateRequest;
 import de.metas.hu_consolidation.mobile.launchers.HUConsolidationWorkflowLaunchersProvider;
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonConsolidateRequest;
@@ -19,7 +20,6 @@ import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationJobPick
 import de.metas.hu_consolidation.mobile.rest_api.json.JsonHUConsolidationTarget;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.CompleteWFActivityHandler;
 import de.metas.hu_consolidation.mobile.workflows_api.activity_handlers.HUConsolidateWFActivityHandler;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
 import de.metas.picking.api.PickingSlotId;
@@ -51,8 +51,6 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 {
 	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("huConsolidation");
-
-	private static final AdMessageKey MSG_INVALID_GRAI_BARCODE = AdMessageKey.of("de.metas.handlingunits.picking.InvalidGRAIBarcode");
 
 	@NonNull private final HUConsolidationWorkflowLaunchersProvider launchersProvider;
 	@NonNull private final HUConsolidationJobService jobService;
@@ -206,7 +204,7 @@ public class HUConsolidationApplication implements WorkflowBasedMobileApplicatio
 			grai = GRAI.parse(graiStr);
 			if (grai == null)
 			{
-				throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, graiStr);
+				throw new AdempiereException(MobileQRCodeMessages.INVALID_GRAI_BARCODE, graiStr);
 			}
 		}
 		else
