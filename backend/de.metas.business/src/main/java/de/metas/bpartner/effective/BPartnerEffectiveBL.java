@@ -230,19 +230,19 @@ public class BPartnerEffectiveBL
 				? bpartnerDAO.getBPartnerLocationById(bPartnerLocationId)
 				: null;
 
-		final Object queryCtx = bPartnerRecord; // DAO uses this only for AD_Client_ID / AD_Org_ID query context
-		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(queryCtx, bPartnerRecord, locationRecord);
+		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(bPartnerRecord, bPartnerRecord, locationRecord);
 		if (billRelation != null)
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());
 			if (billBPartnerId != null)
 			{
 				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID());
+				// C_BP_Relation has no Bill_User_ID column → no bill user from this path
 				return BillBPartnerResolution.of(billBPartnerId, billLocationId, null);
 			}
 		}
 
-		final I_C_BP_Group bpGroup = bpGroupDAO.getByBPartnerId(bPartnerId);
+		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
 		if (bpGroup.isAssociation())
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpGroup.getBill_BPartner_ID());
@@ -254,19 +254,15 @@ public class BPartnerEffectiveBL
 			}
 		}
 
-		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
-		if (parentGroupId != null)
+		final I_C_BP_Group parentGroup = getParentGroup(bpGroup);
+		if (parentGroup != null && parentGroup.isAssociation())
 		{
-			final I_C_BP_Group parentGroup = bpGroupDAO.getById(parentGroupId);
-			if (parentGroup.isAssociation())
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
+			if (billBPartnerId != null)
 			{
-				final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
-				if (billBPartnerId != null)
-				{
-					final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, parentGroup.getBill_Location_ID());
-					final UserId billUserId = UserId.ofRepoIdOrNull(parentGroup.getBill_User_ID());
-					return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
-				}
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, parentGroup.getBill_Location_ID());
+				final UserId billUserId = UserId.ofRepoIdOrNull(parentGroup.getBill_User_ID());
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
 			}
 		}
 

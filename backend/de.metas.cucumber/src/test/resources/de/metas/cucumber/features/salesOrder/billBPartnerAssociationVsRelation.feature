@@ -9,7 +9,6 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
-  @from:cucumber
   @Id:S30351_10
   Scenario: Per-partner bill-to relation takes precedence over association group bill partner
     Given metasfresh contains M_PricingSystems
