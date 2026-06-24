@@ -208,6 +208,202 @@ class PickingJob_Scenarios_Test
 		}
 	}
 
+	/**
+	 * Tests for the partial-unpick-by-product path (subset UNPICK via productId + qtyToUnpick).
+	 * <p>
+	 * These tests cover backend branches that the Playwright UI tests cannot drive
+	 * (AC7: JUnit/cucumber only for paths Playwright cannot reach).
+	 * <p>
+	 * <b>RED state</b>: all tests in this class are EXPECTED TO FAIL against the current
+	 * no-split implementation. They pass only after Task 2 adds HU-splitting support.
+	 */
+	@Nested
+	class PartialUnpickByProduct
+	{
+		private ProductCategoryId productCategoryId;
+
+		@BeforeEach
+		void beforeEach()
+		{
+			this.productCategoryId = BusinessTestHelper.createProductCategory("PUP-Category", null);
+		}
+
+		private ProductId createProduct(@NonNull final String value)
+		{
+			final I_M_Product product = BusinessTestHelper.createProduct(value, helper.uomEach);
+			product.setM_Product_Category_ID(productCategoryId.getRepoId());
+			InterfaceWrapperHelper.save(product);
+			return ProductId.ofRepoId(product.getM_Product_ID());
+		}
+
+		/**
+		 * Over-qty rejection: requesting more than the total packed qty for a product is rejected
+		 * with a clear "exceeds" message.
+		 * <p>
+		 * Setup: 1 VHU with qty=6 picked → packed qty = 6.
+		 * Action: request subset-UNPICK of qty=7 (> packed qty).
+		 * <p>
+		 * <b>RED now</b>: current code throws "whole packed HU boundaries" (no "exceeds").
+		 * <b>GREEN after Task 2</b>: a dedicated over-qty guard throws a message containing "exceeds".
+		 */
+		@Test
+		void overQtyRejected()
+		{
+			final ProductId productId = createProduct("OQR-P1");
+			final HUInfo vhu1 = helper.createVHUInfo(productId, "6", "QR-OQR-VHU1");
+
+			final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("OQR-salesOrder");
+			helper.packageable()
+					.orderAndLineId(orderAndLineId)
+					.productId(productId)
+					.qtyToDeliver("6")
+					.build();
+
+			PickingJob pickingJob = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.SALES_ORDER)
+									.pickerId(UserId.ofRepoId(1234))
+									.salesOrderId(orderAndLineId.getOrderId())
+									.deliveryBPLocationId(helper.shipToBPLocationId)
+									.isAllowPickingAnyHU(false)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
+
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final PickingJobStepId stepId = CollectionUtils.singleElement(
+					line.getSteps().stream().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
+
+			// Pick 6 from the single VHU
+			pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(stepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(vhu1.getQrCode().toScannedCode())
+					.qtyPicked(new BigDecimal("6"))
+					.build());
+
+			// Attempt subset-UNPICK of qty=7 (exceeds packed qty of 6) — must be rejected
+			// RED: current message is "whole packed HU boundaries", not "exceeds"
+			final PickingJob finalPickingJob = pickingJob;
+			assertThatThrownBy(() -> helper.pickingJobService.processStepEvent(finalPickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.eventType(PickingJobStepEventType.UNPICK)
+					.qrCode(vhu1.getQrCode().toScannedCode())
+					.unpickProductId(productId)
+					.qtyToUnpick(new BigDecimal("7"))
+					.build()))
+					.hasMessageContaining("exceeds");
+		}
+
+		/**
+		 * Multi-CU LIFO boundary selection: when a product is packed across multiple CUs,
+		 * the LIFO selection picks the most-recently-packed CU first, and splits the boundary CU
+		 * to deliver exactly the requested qty.
+		 * <p>
+		 * Setup: 2 VHUs of qty=3 each (VHU1 packed first, VHU2 packed second).
+		 * LIFO order for unpick: VHU2 (newer) first, then VHU1 (older).
+		 * Action: request subset-UNPICK of qty=2.
+		 * Expected: boundary CU (VHU2, qty=3) is split — 2 units removed, 1 unit remains.
+		 * Net picked qty across all steps = 4 (=3+3−2).
+		 * <p>
+		 * <b>RED now</b>: current code cannot split VHU2 (3 > 2) and throws "whole packed HU boundaries".
+		 * <b>GREEN after Task 2</b>: split is performed; net packed qty = 4.
+		 */
+		@Test
+		void multiCuLifoBoundarySelection()
+		{
+			final ProductId productId = createProduct("MCLB-P1");
+			final HUInfo vhu1 = helper.createVHUInfo(productId, "3", "QR-MCLB-VHU1");
+			final HUInfo vhu2 = helper.createVHUInfo(productId, "3", "QR-MCLB-VHU2");
+
+			final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("MCLB-salesOrder");
+			helper.packageable()
+					.orderAndLineId(orderAndLineId)
+					.productId(productId)
+					.qtyToDeliver("6")
+					.build();
+
+			PickingJob pickingJob = helper.pickingJobService.createPickingJob(
+							PickingJobCreateRequest.builder()
+									.aggregationType(PickingJobAggregationType.SALES_ORDER)
+									.pickerId(UserId.ofRepoId(1234))
+									.salesOrderId(orderAndLineId.getOrderId())
+									.deliveryBPLocationId(helper.shipToBPLocationId)
+									.isAllowPickingAnyHU(false)
+									.build())
+					.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
+
+			final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
+			final ImmutableList<PickingJobStepId> stepIds = line.getSteps().stream()
+					.map(PickingJobStep::getId)
+					.collect(ImmutableList.toImmutableList());
+			assertThat(stepIds).as("expect 2 steps (one per VHU)").hasSize(2);
+
+			final PickingJobStepId stepId1 = stepIds.get(0);
+			final PickingJobStepId stepId2 = stepIds.get(1);
+
+			// Determine which step's pickFromHU matches VHU1 and VHU2
+			final PickingJobStep rawStep1 = pickingJob.getStepById(stepId1);
+			final PickingJobStep rawStep2 = pickingJob.getStepById(stepId2);
+			final HUInfo vhuForStep1 = rawStep1.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU();
+			final HUInfo vhuForStep2 = rawStep2.getPickFrom(PickingJobStepPickFromKey.MAIN).getPickFromHU();
+
+			// Pick step whose pickFrom = VHU1 first (older timestamp)
+			final PickingJobStepId pickFirstStepId = vhuForStep1 != null && vhuForStep1.getId().equals(vhu1.getId()) ? stepId1 : stepId2;
+			final HUInfo pickFirstVhu = vhuForStep1 != null && vhuForStep1.getId().equals(vhu1.getId()) ? vhu1 : vhu2;
+			final PickingJobStepId pickSecondStepId = pickFirstStepId.equals(stepId1) ? stepId2 : stepId1;
+			final HUInfo pickSecondVhu = pickFirstVhu.getId().equals(vhu1.getId()) ? vhu2 : vhu1;
+
+			// Pick VHU1 first (at T1 = older) → lower createdAt
+			SystemTime.setFixedTimeSource("2025-01-01T10:00:00+00:00");
+			pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(pickFirstStepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(pickFirstVhu.getQrCode().toScannedCode())
+					.qtyPicked(new BigDecimal("3"))
+					.build());
+
+			// Pick VHU2 second (at T2 = newer) → higher createdAt → LIFO picks this first
+			SystemTime.setFixedTimeSource("2025-01-01T11:00:00+00:00");
+			pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.pickingStepId(pickSecondStepId)
+					.pickFromKey(PickingJobStepPickFromKey.MAIN)
+					.eventType(PickingJobStepEventType.PICK)
+					.qrCode(pickSecondVhu.getQrCode().toScannedCode())
+					.qtyPicked(new BigDecimal("3"))
+					.build());
+
+			SystemTime.resetTimeSource();
+
+			// Total packed qty = 6 (3 + 3). Request partial unpick of 2.
+			// LIFO: VHU2 (newer, T2) is boundary CU — qty=3 > remaining=2 — must be split.
+			// RED: current code throws "whole packed HU boundaries" instead of splitting.
+			// GREEN (Task 2): split VHU2 → 2 removed, 1 stays → net picked = 4.
+			final PickingJob finalPickingJob = pickingJob;
+			final PickingJob afterUnpick = helper.pickingJobService.processStepEvent(finalPickingJob, PickingJobStepEvent.builder()
+					.pickingLineId(line.getId())
+					.eventType(PickingJobStepEventType.UNPICK)
+					.qrCode(pickSecondVhu.getQrCode().toScannedCode())
+					.unpickProductId(productId)
+					.qtyToUnpick(new BigDecimal("2"))
+					.build());
+
+			// Assert net packed qty = 4 (6 - 2)
+			final BigDecimal netPickedQty = afterUnpick.streamSteps()
+					.filter(step -> ProductId.equals(step.getProductId(), productId))
+					.flatMap(step -> step.getPickFromKeys().stream()
+							.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
+							.filter(qty -> qty != null))
+					.map(qty -> qty.toBigDecimal())
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			assertThat(netPickedQty).isEqualByComparingTo(new BigDecimal("4"));
+		}
+	}
+
 	@Nested
 	class pick_GS1
 	{

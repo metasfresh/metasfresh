@@ -414,4 +414,27 @@ public class M_InOut_Line_StepDef
 		return MovementType.ofCode(inout.getMovementType());
 	}
 
+	/**
+	 * Asserts that the given shipment has no lines with a negative MovementQty.
+	 * <p>
+	 * This guards against the counter-row net-qty approach producing a spurious negative
+	 * shipment line: after a partial unpick of N from packed P, the only shipment line for
+	 * the product must carry qty P−N (positive), with no separate negative offset line.
+	 */
+	@And("^the shipment identified by (.*) has no negative movement lines$")
+	public void assertNoNegativeMovementLines(@NonNull final String inOutIdentifier)
+	{
+		final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
+		assertThat(inOut).isNotNull();
+
+		final long negativeLineCount = queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addEqualsFilter(COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
+				.addCompareFilter(COLUMNNAME_MovementQty, org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.LESS, BigDecimal.ZERO)
+				.create()
+				.count();
+		assertThat(negativeLineCount)
+				.as("negative M_InOutLine.MovementQty lines in shipment " + inOutIdentifier)
+				.isEqualTo(0L);
+	}
+
 }
