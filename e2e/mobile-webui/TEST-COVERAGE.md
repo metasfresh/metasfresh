@@ -12,7 +12,7 @@
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
-| HU Consolidation | 4 | 5 | 80% |
+| HU Consolidation | 7 | 8 | 88% |
 | Inventory | 1 | 3 | 33% |
 
 ---
@@ -406,6 +406,16 @@
 | ❌ setTargetLU fails (LU already holds different customer's goods) → error shown | — |
 
 **4/5 — 80%**
+
+### GRAI-scan TU selection
+
+| Scenario | Test |
+|---|---|
+| Scan each picked TU's GRAI on the picking slot → both TUs consolidated onto the target LU, slot emptied | `hu_consolidation/hu_consolidation_grai.spec.js` |
+| Scan an unknown GRAI → "No HU found" error, nothing consolidated | `hu_consolidation/hu_consolidation_grai.spec.js` |
+| Scan the GRAI of a TU sitting in a different picking slot → "LU not at picking slot" error | `hu_consolidation/hu_consolidation_grai.spec.js` |
+
+**3/3 — 100%**
 
 ---
 
