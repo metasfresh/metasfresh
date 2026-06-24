@@ -43,22 +43,33 @@ BEGIN
                     AND cas.C_AcctSchema_ID = v_acctschema_id)
     LIMIT 1;
 
-    -- Sum each direct BOM line: quantity for one finished good x component current cost.
-    -- The component current cost is taken in the BOM line UOM (getCurrentCost converts from
-    -- the component stock UOM), and a percentage line's quantity is scaled by the finished
-    -- good -> line UOM conversion (see computeCurrentBOMLineProductCost).
-    SELECT ROUND(SUM(
-                         CASE WHEN bom.IsQtyPercentage = 'Y'
-                                  THEN bom.Percentage / 100 * uomConvert(v_parent_product_id, v_parent_uom_id, bom.c_uom_id, 1) * bom.unit_cost
-                                  ELSE bom.QtyBOM * bom.unit_cost
-                         END
-                 ), 6)
+    -- Sum each direct BOM line (depth=2; depth=1 is the finished good itself): quantity for
+    -- one finished good x component current cost. The component current cost (bom.unit_cost) is
+    -- taken in the BOM line UOM (getCurrentCost converts from the component stock UOM, and for a
+    -- sub-assembly component returns its own already-rolled-up current cost). A percentage line's
+    -- quantity is scaled by bom.uom_mult = the finished good -> line UOM conversion. bom.Percentage
+    -- is PP_Product_BOMLine.QtyBatch as exposed by pp_product_bom_recursive for percentage lines.
+    --
+    -- A percentage line whose finished good / line UOMs cannot be converted has uom_mult = NULL;
+    -- that is a configuration gap, so the whole BOM cost is returned NULL to surface it (mirrors
+    -- computeCurrentBOMLineProductCost, which returns NULL for that line). The guard targets only
+    -- percentage lines, so a line that is legitimately NULL for other reasons (e.g. a by-product
+    -- with no QtyBOM) is still skipped by SUM without nulling the whole total.
+    SELECT CASE
+               WHEN bool_or(bom.IsQtyPercentage = 'Y' AND bom.uom_mult IS NULL) THEN NULL
+               ELSE ROUND(SUM(
+                                  CASE WHEN bom.IsQtyPercentage = 'Y'
+                                           THEN bom.Percentage / 100 * bom.uom_mult * bom.unit_cost
+                                           ELSE bom.QtyBOM * bom.unit_cost
+                                  END
+                          ), 6)
+           END
     INTO cost
     FROM (
              SELECT b.IsQtyPercentage,
                     b.QtyBOM,
                     b.Percentage,
-                    b.c_uom_id,
+                    uomConvert(v_parent_product_id, v_parent_uom_id, b.c_uom_id, 1) AS uom_mult,
                     COALESCE(getCurrentCost(
                                      b.m_product_id,
                                      b.c_uom_id,
