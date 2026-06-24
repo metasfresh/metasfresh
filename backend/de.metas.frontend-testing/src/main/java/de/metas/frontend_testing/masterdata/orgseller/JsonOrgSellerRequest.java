@@ -8,8 +8,9 @@ import javax.annotation.Nullable;
 
 /**
  * Configures an org's seller identity for ZUGFeRD / EN16931 CII by wiring a
- * BR-DE-conformant BPartner as {@code AD_OrgInfo.Org_BPartner_ID} (the CII mapper
- * reads the seller from the invoice org's org-bpartner).
+ * BR-DE-conformant BPartner as the org's seller. The CII mapper resolves the seller via
+ * {@code retrieveOrgBPartner}, which queries {@code C_BPartner WHERE AD_OrgBP_ID = AD_Org_ID};
+ * the command sets that reverse link (plus {@code AD_OrgInfo.OrgBP_Location_ID}).
  *
  * <p>If {@code orgId} is null, defaults to {@link de.metas.frontend_testing.masterdata.MasterdataContext#ORG_ID}
  * (the main org that the test user's login session operates in — no extra org or role change needed).
@@ -30,7 +31,8 @@ public class JsonOrgSellerRequest
 	@Nullable String orgIdentifier;
 
 	/**
-	 * Identifier of the BPartner to set as {@code AD_OrgInfo.Org_BPartner_ID}.
+	 * Identifier of the BPartner to wire as the org's seller — its {@code AD_OrgBP_ID} is set to
+	 * the org so {@code retrieveOrgBPartner} resolves it.
 	 * Must have been created in the same masterdata request.
 	 * Required.
 	 */

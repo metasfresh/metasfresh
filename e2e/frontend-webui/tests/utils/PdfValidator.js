@@ -329,6 +329,13 @@ class PdfValidator {
     }
 
     console.log('[PASS] ZUGFeRD attachment found:', found);
+
+    // Return the embedded CII XML so callers can assert the structured invoice content.
+    // (The PDF/A-3 visual layer is not reliably text-extractable; the authoritative
+    // e-invoice content lives in this CII XML.)
+    const originalKey = Object.keys(attachments).find((k) => k.toLowerCase() === found);
+    const ciiContent = attachments[originalKey].content;
+    return Buffer.from(ciiContent).toString('utf-8');
   }
 }
 
