@@ -78,7 +78,7 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
 		final TourId tourId = preparationDateAndTour.getTourId();
-		// keep the legacy "clear" sentinel -1 (not TourId.toRepoId(null)==0) when there is no tour
+		// convention: clear an FK setter with -1 (see docs/coding-rules/java-general.md), matching the original
 		order.setM_Tour_ID(tourId != null ? tourId.getRepoId() : -1);
 
 		return true;
