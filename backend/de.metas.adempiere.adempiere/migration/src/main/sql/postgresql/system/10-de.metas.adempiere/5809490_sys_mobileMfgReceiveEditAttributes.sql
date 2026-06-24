@@ -18,7 +18,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2026-06-24 08:00:12 (en_US override — strictly later than the element INSERT)
-UPDATE AD_Element_Trl SET Name='Best Before Date editable', Description='Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-24 08:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585046 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Best Before Date editable', PrintName='Best Before Date editable', Description='Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-24 08:00:12.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585046 AND AD_Language='en_US'
 ;
 
 -- 2026-06-24 08:00:13 (de_DE override — set description + flip IsTranslated)
@@ -42,7 +42,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 ;
 
 -- 2026-06-24 08:00:32 (en_US override)
-UPDATE AD_Element_Trl SET Name='Lot Number editable', Description='Allows editing the Lot Number when receiving finished goods in mobile manufacturing.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-24 08:00:32.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585047 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Lot Number editable', PrintName='Lot Number editable', Description='Allows editing the Lot Number when receiving finished goods in mobile manufacturing.', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-24 08:00:32.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', UpdatedBy=100 WHERE AD_Element_ID=585047 AND AD_Language='en_US'
 ;
 
 -- 2026-06-24 08:00:33 (de_DE override)
