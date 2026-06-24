@@ -333,6 +333,8 @@ public interface IOrderBL extends ISingletonService
 
 	void setIncoterms(@NonNull I_C_Order order);
 
+	void setSalesRep(@NonNull I_C_Order order);
+
 	void setWeightFromLines(@NonNull I_C_Order order);
 
 	@NonNull
