@@ -24,6 +24,8 @@ public class MobileUIManufacturingConfigRepository
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
 			.receiveUnitType(ReceiveUnitType.CU)
+			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
+			.isLotNumberEditable(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -79,6 +81,8 @@ public class MobileUIManufacturingConfigRepository
 				.isScanResourceRequired(OptionalBoolean.ofNullableString(record.getIsScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofNullableString(record.getIsAllowIssuingAnyHU()))
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
 				.build();
 	}
 
@@ -87,6 +91,8 @@ public class MobileUIManufacturingConfigRepository
 		record.setIsScanResourceRequired(from.getIsScanResourceRequired().toBooleanString());
 		record.setIsAllowIssuingAnyHU(from.getIsAllowIssuingAnyHU().toBooleanString());
 		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
+		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
+		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -105,6 +111,8 @@ public class MobileUIManufacturingConfigRepository
 				.isScanResourceRequired(OptionalBoolean.ofBoolean(record.isScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(record.isAllowIssuingAnyHU()))
 				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
 				.build();
 	}
 
