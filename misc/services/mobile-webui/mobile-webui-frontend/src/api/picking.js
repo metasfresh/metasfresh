@@ -130,6 +130,35 @@ export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQR
   });
 };
 
+export const resolveUnpickByScannedCode = ({ wfProcessId, scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/unpick/resolve`, { wfProcessId, scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postStepPartiallyUnPicked = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  huQRCode,
+  unpickProductId,
+  unpickQty,
+  unpickToTargetQRCode,
+}) => {
+  return postEvent({
+    wfProcessId,
+    wfActivityId: activityId,
+    pickingLineId: lineId,
+    pickingStepId: stepId,
+    type: 'UNPICK',
+    huQRCode,
+    unpickProductId,
+    unpickQty,
+    unpickToTargetQRCode,
+  });
+};
+
 const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };

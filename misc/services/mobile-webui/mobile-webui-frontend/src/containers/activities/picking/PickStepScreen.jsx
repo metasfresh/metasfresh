@@ -14,6 +14,7 @@ import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import UnpickDialog from './UnpickDialog';
+import PartialUnpickFlow from './PartialUnpickFlow';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -48,6 +49,7 @@ const PickStepScreen = () => {
   const dispatch = useDispatch();
 
   const [showTargetHUScanner, setShowTargetHUScanner] = useState(false);
+  const [showPartialUnpick, setShowPartialUnpick] = useState(false);
 
   const unpick = ({ unpickToTargetQRCode }) => {
     postStepUnPicked({
@@ -104,6 +106,16 @@ const PickStepScreen = () => {
   return (
     <div className="section pt-2">
       {showTargetHUScanner && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
+      {showPartialUnpick && (
+        <PartialUnpickFlow
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+          stepId={stepId}
+          huQRCode={pickFrom.huQRCode}
+          onClose={() => setShowPartialUnpick(false)}
+        />
+      )}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}
@@ -116,6 +128,12 @@ const PickStepScreen = () => {
           captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
           onClick={() => setShowTargetHUScanner(true)}
+        />
+        <ButtonWithIndicator
+          testId="remove-item-button"
+          captionKey="activities.picking.unpick.removeItemBtn"
+          disabled={!isPickedFromHU}
+          onClick={() => setShowPartialUnpick(true)}
         />
         {nothingPicked && (
           <ConfirmButton

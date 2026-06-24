@@ -139,6 +139,14 @@ const translations = {
       skip: 'Skip',
       scanTargetHU: 'Scan target HU',
       qtyRejectedIgnoreReason: 'Without reason',
+      unpick: {
+        removeItemBtn: 'Remove item',
+        scanProduct: 'Scan product',
+        qtyCaption: 'Qty to remove',
+        scanTargetHU: 'Scan target HU',
+        productNotInPackage: 'This product is not in the package',
+        success: 'Item removed',
+      },
       qrcode: {
         missingQty: 'The scanned QR contains no qty information!',
         differentUOM: 'The scanned QR UOM does not match the target!',

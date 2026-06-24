@@ -6,7 +6,14 @@ import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent
 import DialogButton from '../../../components/dialogs/DialogButton';
 import Dialog from '../../../components/dialogs/Dialog';
 
-const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
+const UnpickDialog = ({
+  onSubmit,
+  onCloseDialog,
+  allowSkip = true,
+  scanPlaceholderKey = 'activities.picking.scanTargetHU',
+  scannerTestId,
+  skipTestId,
+}) => {
   const onResolvedQrCode = useCallback(
     ({ scannedBarcode }) => {
       onSubmit({ unpickToTargetQRCode: scannedBarcode });
@@ -21,7 +28,8 @@ const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
           <tr>
             <td colSpan="2">
               <BarcodeScannerComponent
-                inputPlaceholderText={trl('activities.picking.scanTargetHU')}
+                testId={scannerTestId}
+                inputPlaceholderText={trl(scanPlaceholderKey)}
                 onResolvedResult={onResolvedQrCode}
               />
             </td>
@@ -29,7 +37,7 @@ const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
         </tbody>
       </table>
       <div className="buttons is-centered">
-        <DialogButton captionKey="activities.picking.skip" onClick={onSubmit} />
+        {allowSkip && <DialogButton captionKey="activities.picking.skip" testId={skipTestId} onClick={onSubmit} />}
         <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
       </div>
     </Dialog>
@@ -37,6 +45,11 @@ const UnpickDialog = ({ onSubmit, onCloseDialog }) => {
 };
 
 UnpickDialog.propTypes = {
+  // Properties
+  allowSkip: PropTypes.bool,
+  scanPlaceholderKey: PropTypes.string,
+  scannerTestId: PropTypes.string,
+  skipTestId: PropTypes.string,
   // Callbacks
   onSubmit: PropTypes.func.isRequired,
   onCloseDialog: PropTypes.func.isRequired,
