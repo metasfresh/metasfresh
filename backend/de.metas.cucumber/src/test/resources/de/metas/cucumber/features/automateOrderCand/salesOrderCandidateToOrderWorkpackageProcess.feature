@@ -403,7 +403,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
 
     Then process metasfresh response JsonOLCandCreateBulkResponse
-      | C_OLCand_ID                |
+      | C_OLCand_ID.Identifier     |
       | olCand_1,olCand_2,olCand_3 |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
@@ -417,8 +417,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
     Then process metasfresh response
-      | C_Order_ID |
-      | order_1    |
+      | C_Order_ID.Identifier |
+      | order_1               |
 
     # The header DatePromised must equal the EARLIEST DatePromised among the lines (2026-07-01).
     And validate the created orders
@@ -548,8 +548,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 """
 
     Then process metasfresh response JsonOLCandCreateBulkResponse
-      | C_OLCand_ID       |
-      | olCand_1,olCand_2 |
+      | C_OLCand_ID.Identifier |
+      | olCand_1,olCand_2      |
 
     # Processing fails: the second forced order violates the C_Order_ExternalHeader_ID unique index.
     # The DBUniqueConstraintException carries the translated AD_Index_Table.ErrorMsg; the workpackage fails,

@@ -89,7 +89,9 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 	{
 		// Defensive: the tour calculation requires a bpartner location. A shipment-schedule order always has one,
 		// but if it is somehow absent, fall back to the order's already-stored PreparationDate (legacy behavior)
-		// rather than risk an NPE in the tour calculation.
+		// rather than risk an NPE in the tour calculation. (The header path setPreparationDateAndTour0 instead
+		// returns false / leaves the value untouched here; this method must return a non-null date to the
+		// shipment-schedule provider, so it returns the stored value rather than skipping.)
 		if (BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
 		{
 			return TimeUtil.asZonedDateTime(order.getPreparationDate());
