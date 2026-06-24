@@ -45,11 +45,10 @@ const startReceiveFlow = async (masterdata) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
-    return { jobId };
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -61,7 +60,7 @@ test('Receive finished goods entering Lot + Best-Before — produced HU carries 
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
-    const { jobId } = await startReceiveFlow(masterdata);
+    await startReceiveFlow(masterdata);
 
     const lotNo = `LOT-${Date.now()}`;
 
@@ -99,7 +98,7 @@ test('Receive finished goods leaving Lot + Best-Before empty — no attribute is
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
-    const { jobId } = await startReceiveFlow(masterdata);
+    await startReceiveFlow(masterdata);
 
     // Inputs are offered (default ON) but the operator leaves them empty — the produced HU
     // must NOT get a Lot / Best-Before attribute (default-ON must not fabricate values).
