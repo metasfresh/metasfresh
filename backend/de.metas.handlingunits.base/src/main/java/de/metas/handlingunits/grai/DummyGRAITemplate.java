@@ -1,5 +1,6 @@
 package de.metas.handlingunits.grai;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
@@ -13,6 +14,11 @@ public class DummyGRAITemplate
 	public static final String MIGROS_COMPANY_PREFIX = "7613204";
 	public static final String MIGROS_ASSET_TYPE = "00307";
 	public static final int MAX_COUNTER = 99;
+
+	// User-facing, translated prerequisite messages for dummy-GRAI generation. Centralised here so every
+	// validation layer (order change/completion, picking job-open, picking completion) surfaces the same text.
+	public static final AdMessageKey MSG_DUMMY_GRAI_SERIAL_PREFIX_TOO_LONG = AdMessageKey.of("de.metas.handlingunits.grai.DummyGRAISerialPrefixTooLong");
+	public static final AdMessageKey MSG_DUMMY_GRAI_POREFERENCE_MISSING = AdMessageKey.of("de.metas.handlingunits.grai.DummyGRAIPOReferenceMissing");
 
 	@NonNull String companyPrefix;
 	@NonNull String assetType;
@@ -71,7 +77,7 @@ public class DummyGRAITemplate
 	{
 		if (serialPrefix.length() > 10)
 		{
-			throw new AdempiereException("Serial prefix too long for dummy GRAI generation (max 10 chars): " + serialPrefix);
+			throw new AdempiereException(MSG_DUMMY_GRAI_SERIAL_PREFIX_TOO_LONG, serialPrefix);
 		}
 		return StringUtils.lpadZero(serialPrefix, 10, "serialPrefix");
 	}
