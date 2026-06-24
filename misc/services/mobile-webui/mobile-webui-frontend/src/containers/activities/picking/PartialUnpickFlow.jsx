@@ -58,6 +58,8 @@ const PartialUnpickFlow = ({ wfProcessId, activityId, lineId, stepId, huQRCode, 
         onClose();
       })
       .catch((axiosError) => {
+        // Commit always exits the flow on error (server rejection → toast), mirroring the
+        // whole-step unpick handler — no inline retry branch for the multi-stage scan flow.
         toastError({ axiosError });
         onClose();
       });

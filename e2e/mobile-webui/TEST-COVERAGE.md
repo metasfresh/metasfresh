@@ -84,6 +84,8 @@
 |---|---|
 | Full pick, single HU, confirm, shipment schedule marked picked | `picking/picking.spec.js` |
 | Pick HU then unpick → HU returns to unallocated | `picking/picking.spec.js` |
+| ❌ Partial unpack: scan product GTIN → qty dialog → scan target HU → chosen qty removed, rest stays packed | — |
+| ❌ Partial unpack: scan product not in the package → inline `unpick-error`, nothing removed | — |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -94,7 +96,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**10/11 — 91%**
+**10/13 — 77%**
 
 ### Order-based picking — filtering and facets
 

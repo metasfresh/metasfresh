@@ -127,13 +127,19 @@ const PickStepScreen = () => {
           id="unpick-button"
           captionKey="activities.picking.unPickBtn"
           disabled={nothingPicked}
-          onClick={() => setShowTargetHUScanner(true)}
+          onClick={() => {
+            setShowPartialUnpick(false);
+            setShowTargetHUScanner(true);
+          }}
         />
         <ButtonWithIndicator
           testId="remove-item-button"
           captionKey="activities.picking.unpick.removeItemBtn"
           disabled={!isPickedFromHU}
-          onClick={() => setShowPartialUnpick(true)}
+          onClick={() => {
+            setShowTargetHUScanner(false);
+            setShowPartialUnpick(true);
+          }}
         />
         {nothingPicked && (
           <ConfirmButton
