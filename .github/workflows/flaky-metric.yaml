@@ -56,7 +56,7 @@ jobs:
       ${{ github.repository == 'metasfresh/metasfresh'
           && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure') }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: actions/setup-node@v4
         with:
