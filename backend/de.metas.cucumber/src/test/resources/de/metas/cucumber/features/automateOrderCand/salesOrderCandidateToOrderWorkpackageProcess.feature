@@ -554,14 +554,12 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
 
-    # The process call is handled in audited async mode: the synchronous 400 response carries no body, and the
-    # candidate is not flagged with IsError. The translated AD_Index_Table.ErrorMsg is instead stored on the
-    # request-audit's stored response (api_response_audit), retrievable via the request-audit id.
-    # Capture the failing PUT's request-audit id (the most recent audit record - it follows the earlier bulk POST),
-    # then assert its stored response is the HTTP 400 JsonError whose body contains the translated message
-    # (resolved in the base language, German), proving the unique-index conflict surfaced as the intended message.
-    And after not more than 60s, find and add last API_Request_Audit_ID to context
-
+    # The process call is handled in audited async mode: the synchronous 400 response carries no body and the
+    # candidate is not flagged with IsError. The translated AD_Index_Table.ErrorMsg is stored on the request-audit's
+    # response (api_response_audit). The PUT's own request-audit id is taken from its X-Api-Request-Audit-ID response
+    # header (RESTUtil stores it into the test context), so the assertion below resolves the EXACT request-audit of
+    # this PUT - we must NOT overwrite it with a "last audit record" guess. Assert its stored response is the HTTP 400
+    # JsonError whose body contains the translated message (base language, German).
     And after not more than 60s, there are added records in API_Response_Audit
       | HttpCode | Body                                                                                                                                    |
       | 400      | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
