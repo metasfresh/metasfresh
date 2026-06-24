@@ -1,1 +1,0 @@
-/root/work/mf15-ai-dev-support/claude/metasfresh/.github/workflows/CLAUDE.md
