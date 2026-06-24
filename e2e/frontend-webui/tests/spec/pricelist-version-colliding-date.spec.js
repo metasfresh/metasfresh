@@ -31,7 +31,8 @@ const COLLIDING_DATE = '01/01/2015';  // en_US MM/DD/YYYY — collides with the 
 
 test.describe('PriceListVersion — colliding ValidFrom', () => {
   test('colliding new PLV: friendly error AND the Preislisten-Schema dropdown still resolves (no 404)', async ({ page }) => {
-    allure.epic('E0420: Pricing');
+    allure.epic('E0260: Pricing');
+    allure.tag('F32070: Price List Copy using Price List Schema');
     allure.tag('F32070');
     allure.story('Creating a PLV with a duplicate ValidFrom must not break the document (no 404 on the schema dropdown)');
     allure.severity('critical');
@@ -82,10 +83,13 @@ new child PLV.
     await page.goto(`${FRONTEND_BASE_URL}/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}`);
     await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-    await page.waitForTimeout(1000);
 
     // 3. The "PriceList Version" included tab is shown inline. Create a new PLV row via its "Add new" button.
-    const addNewBtn = page.getByRole('button', { name: 'Add new' }).first();
+    //    Language-independent selector (stable button classes, NOT the localized "Add new" caption) —
+    //    covers both the inline-tab and the table-filter renderers; excludes the batch-entry toggle.
+    const addNewBtn = page
+      .locator('.inlinetab-action-button button, .table-filter-line .filter-panel-buttons button.btn-distance:not(.close-batch-entry)')
+      .first();
     await addNewBtn.scrollIntoViewIfNeeded();
     await addNewBtn.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await addNewBtn.click();
@@ -95,12 +99,19 @@ new child PLV.
       .waitForURL(new RegExp(`/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}/${PLV_TAB_ID}/\\d+`), { timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
     await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-    await page.locator('#lookup_ValidFrom input, .form-field-ValidFrom input').first()
+    await page.locator('.form-field-ValidFrom input').first()
       .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    // 5. Set the colliding ValidFrom → auto-save → fails on the unique index
+    // 5. Set the colliding ValidFrom → auto-save → fails on the unique index.
     await DateWidget.setValue('ValidFrom', COLLIDING_DATE);
-    await page.waitForTimeout(1500);
+    // Deterministically wait for the failed save to arrive (no fixed sleep): the response listener
+    // records the server-side saveStatus error from the PLV PATCH.
+    await expect
+      .poll(() => saveErrorReasons.length, {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'colliding PLV save should fail server-side with the duplicate-date error',
+      })
+      .toBeGreaterThan(0);
 
     // 6. The colliding save fails server-side — captured via saveErrorReasons from the PATCH response.
     //    NOTE: as of this fix the WebUI "Add new" overlay does NOT surface that message on screen (the save
