@@ -1428,6 +1428,9 @@ jobs:
           docker buildx build \
           --progress=auto \
           --file docker-builds/Dockerfile.cucumber \
+          --cache-to type=inline \
+          --cache-from metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          --cache-from metasfresh/metas-cucumber:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
