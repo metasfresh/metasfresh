@@ -868,11 +868,11 @@ public class M_InOutLine_HandlerTest
 	}
 
 	/**
-	 * Max Rieck's review scenario (me03 #30063): PaymentRule is blank on the bill-partner but set on its BP
-	 * group. An order resolves PaymentRule via COALESCE(partner, group, parentGroup) (CalloutOrder /
-	 * BPartnerOrderParamsRepository), so the order-based goods candidates carry the group's value. The
-	 * order-less returnable candidate must inherit the SAME effective value, otherwise PaymentRule differs
-	 * and the returnables split onto a separate invoice.
+	 * Reviewer scenario: PaymentRule is blank on the bill-partner but set on its BP group. An order resolves
+	 * PaymentRule via COALESCE(partner, group, parentGroup) (CalloutOrder / BPartnerOrderParamsRepository),
+	 * so the order-based goods candidates carry the group's value. The order-less returnable candidate must
+	 * inherit the SAME effective value, otherwise PaymentRule differs and the returnables split onto a
+	 * separate invoice.
 	 */
 	@Test
 	public void createCandidatesForInOutLine_orderlessDelivery_inheritsPaymentRuleFromBPGroup()
