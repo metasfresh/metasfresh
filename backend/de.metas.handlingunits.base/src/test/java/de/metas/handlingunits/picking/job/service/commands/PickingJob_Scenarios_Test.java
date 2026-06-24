@@ -392,6 +392,18 @@ class PickingJob_Scenarios_Test
 					.map(qty -> qty.toBigDecimal())
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 			assertThat(netPickedQty).isEqualByComparingTo(new BigDecimal("4"));
+
+			// LIFO lock: the OLDER CU (VHU1, picked first at T1) is drawn LAST, so a qty-2 unpick
+			// never touches it — its step must still carry the full 3. A FIFO implementation would
+			// split VHU1 first and fail this assertion (net qty alone cannot distinguish LIFO from FIFO).
+			final Quantity vhu1QtyAfter = afterUnpick.getStepById(pickFirstStepId)
+					.getPickFrom(PickingJobStepPickFromKey.MAIN)
+					.getQtyPicked()
+					.orElse(null);
+			assertThat(vhu1QtyAfter).as("older CU (VHU1) must remain in a step after the unpick").isNotNull();
+			assertThat(vhu1QtyAfter.toBigDecimal())
+					.as("older CU (VHU1) is untouched under LIFO (FIFO would have split it)")
+					.isEqualByComparingTo(new BigDecimal("3"));
 		}
 	}
 

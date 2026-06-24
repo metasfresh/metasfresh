@@ -63,7 +63,7 @@ Feature: Picking workflow - partial unpack counter-row net qty lockdown
   @from:cucumber
   @allure.label.epic:E0180_System_Administration
   @allure.label.feature:F00183
-  @Id:S30480_TC_crNQ
+  @Id:S30480_TC2
   Scenario: Partial unpack 2 of 6 — shipment must carry qty=4 with no negative line
     # Set up: start picking job, scan slot, pick 6 PCE into the package
     And start picking job for sales order identified by order_30480_crNQ
