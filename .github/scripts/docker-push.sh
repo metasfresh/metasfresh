@@ -12,6 +12,11 @@
 # while preserving the exact exit code so nick-fields/retry still retries on failure.
 #
 # Usage: docker-push.sh <image:tag>
+#
+# NOTE: `-e` is intentionally omitted. We must log the elapsed time / result line and
+# close the ::group:: even when `docker push` fails; with `-e` the script would abort
+# on the failed push and emit neither. The push exit code is captured and re-exited
+# explicitly so nick-fields/retry and the Merge Gate still see the failure.
 set -uo pipefail
 
 TAG="${1:?usage: docker-push.sh <image:tag>}"
