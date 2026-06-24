@@ -52,7 +52,8 @@ public final class VATaxIDValidationUtil
 	{
 		if (!EUVatIdValidator.isValid(vatId))
 		{
-			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatId).markAsUserValidationError();
+			// AdempiereException(AdMessageKey, …) is already flagged userValidationError=true — no .markAsUserValidationError() needed.
+			throw new AdempiereException(MSG_VATaxID_Invalid_Format, vatId);
 		}
 	}
 }

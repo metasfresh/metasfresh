@@ -35,8 +35,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | VATaxID     |
       | bp_tc2     | DE136695976 |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | VATaxID     |
-      | bp_tc2                   | VatTC2Test | DE136695976 |
+      | C_BPartner_ID | Value      | VATaxID     |
+      | bp_tc2        | VatTC2Test | DE136695976 |
 
   @from:cucumber
   @Id:S0613_030
@@ -49,8 +49,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | VATaxID |
       | bp_tc8     | DE12345 |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | VATaxID |
-      | bp_tc8                   | VatTC8Test | DE12345 |
+      | C_BPartner_ID | Value      | VATaxID |
+      | bp_tc8        | VatTC8Test | DE12345 |
 
   @from:cucumber
   @Id:S0613_040
@@ -67,8 +67,8 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | Name          |
       | bp_tc7     | VatTC7Renamed |
     Then validate C_BPartner:
-      | C_BPartner_ID.Identifier | Value      | VATaxID |
-      | bp_tc7                   | VatTC7Test | DE12345 |
+      | C_BPartner_ID | Value      | VATaxID |
+      | bp_tc7        | VatTC7Test | DE12345 |
 
   @from:cucumber
   @Id:S0613_050
@@ -78,11 +78,11 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | Value         |
       | bp_loc_tc1 | VatLocTC1Test |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID.Identifier | GLN           |
-      | bpl_tc1    | bp_loc_tc1               | 0285601001050 |
+      | Identifier | C_BPartner_ID | GLN           |
+      | bpl_tc1    | bp_loc_tc1    | 0285601001050 |
     When update C_BPartner_Location expecting error:
-      | C_BPartner_Location_ID.Identifier | VATaxID |
-      | bpl_tc1                           | ATU1234 |
+      | C_BPartner_Location_ID | VATaxID |
+      | bpl_tc1                | ATU1234 |
     Then an AdempiereException was thrown during the last C_BPartner_Location update
 
   @from:cucumber
@@ -93,11 +93,11 @@ Feature: VAT-ID format is validated when saving a Business Partner
       | Identifier | Value         |
       | bp_loc_tc2 | VatLocTC2Test |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | C_BPartner_ID.Identifier | GLN           |
-      | bpl_tc2    | bp_loc_tc2               | 0285601001051 |
+      | Identifier | C_BPartner_ID | GLN           |
+      | bpl_tc2    | bp_loc_tc2    | 0285601001051 |
     When update C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | VATaxID     |
-      | bpl_tc2                           | ATU13585627 |
+      | C_BPartner_Location_ID | VATaxID     |
+      | bpl_tc2                | ATU13585627 |
     Then validate C_BPartner_Location:
-      | C_BPartner_Location_ID.Identifier | VATaxID     |
-      | bpl_tc2                           | ATU13585627 |
+      | C_BPartner_Location_ID | VATaxID     |
+      | bpl_tc2                | ATU13585627 |
