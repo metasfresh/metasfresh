@@ -243,7 +243,7 @@ public class BPartnerEffectiveBL
 		}
 
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
-		if (bpGroup.isAssociation())
+		if (bpGroup.isDeviatingBillBPartner())
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpGroup.getBill_BPartner_ID());
 			if (billBPartnerId != null)
@@ -255,7 +255,7 @@ public class BPartnerEffectiveBL
 		}
 
 		final I_C_BP_Group parentGroup = getParentGroup(bpGroup);
-		if (parentGroup != null && parentGroup.isAssociation())
+		if (parentGroup != null && parentGroup.isDeviatingBillBPartner())
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
 			if (billBPartnerId != null)

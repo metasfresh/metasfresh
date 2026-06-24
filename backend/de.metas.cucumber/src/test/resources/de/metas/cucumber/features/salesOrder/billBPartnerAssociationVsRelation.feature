@@ -2,7 +2,7 @@
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00100_Sales_Order
 @ghActions:run_on_executor1
-Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beats association group
+Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beats the group's deviating bill-partner
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,7 +10,7 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
     And metasfresh has date and time 2022-05-17T13:30:13+01:00[Europe/Berlin]
 
   @Id:S30351_10
-  Scenario: Per-partner bill-to relation takes precedence over association group bill partner
+  Scenario: Per-partner bill-to relation takes precedence over the group's deviating bill partner
     Given metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -25,11 +25,11 @@ Feature: Bill-to partner resolution: per-partner C_BP_Relation (IsBillTo=Y) beat
       | centralBilling |
       | memberBillTo   |
     And metasfresh contains C_BP_Groups:
-      | Identifier | IsAssociation | Bill_BPartner_ID |
-      | assocGroup | Y             | centralBilling   |
+      | Identifier       | IsDeviatingBillBPartner | Bill_BPartner_ID |
+      | deviatingBillGrp | Y                       | centralBilling   |
     And metasfresh contains C_BPartners:
-      | Identifier | IsCustomer | C_BP_Group_ID | M_PricingSystem_ID |
-      | memberBP   | Y          | assocGroup    | ps                 |
+      | Identifier | IsCustomer | C_BP_Group_ID    | M_PricingSystem_ID |
+      | memberBP   | Y          | deviatingBillGrp | ps                 |
     And metasfresh contains C_BP_Relations:
       | Identifier | C_BPartner_ID | C_BPartnerRelation_ID | C_BPartnerRelation_Location_ID | IsBillTo |
       | rel1       | memberBP      | memberBillTo          | memberBillTo                   | Y        |

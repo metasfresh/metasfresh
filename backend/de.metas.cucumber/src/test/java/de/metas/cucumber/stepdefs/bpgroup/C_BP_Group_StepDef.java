@@ -53,15 +53,15 @@ public class C_BP_Group_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>Name</b> — (optional) group name; auto-generated when omitted<br>
 	 *   <b>Parent_BP_Group_ID</b> — (optional, identifier-ref) parent business-partner group<br>
-	 *   <b>IsAssociation</b> — (optional, default false) marks the group as an association group<br>
-	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) central bill-to partner for the association group<br>
-	 *   <b>Bill_Location_ID</b> — (optional, identifier-ref) bill-to location for the association group<br>
+	 *   <b>IsDeviatingBillBPartner</b> — (optional, default false) redirects the order's bill-partner to this group's Bill_BPartner<br>
+	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) deviating bill-to partner for the group<br>
+	 *   <b>Bill_Location_ID</b> — (optional, identifier-ref) deviating bill-to location for the group<br>
 	 * @cucumber.depends StepDefData: C_BP_Group_StepDefData, C_BPartner_StepDefData, C_BPartner_Location_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_BP_Groups:
-	 *   | Identifier       | IsAssociation | Bill_BPartner_ID  |
-	 *   | assocGroup       | Y             | centralBillingBP  |
+	 *   | Identifier       | IsDeviatingBillBPartner | Bill_BPartner_ID  |
+	 *   | deviatingBillGrp | Y                       | centralBillingBP  |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_BP_Groups:")
@@ -81,8 +81,8 @@ public class C_BP_Group_StepDef
 							.map(bpGroupTable::getId)
 							.ifPresent(parentId -> bpGroupRecord.setParent_BP_Group_ID(parentId.getRepoId()));
 
-					row.getAsOptionalBoolean(I_C_BP_Group.COLUMNNAME_IsAssociation)
-							.ifPresent(bpGroupRecord::setIsAssociation);
+					row.getAsOptionalBoolean(I_C_BP_Group.COLUMNNAME_IsDeviatingBillBPartner)
+							.ifPresent(bpGroupRecord::setIsDeviatingBillBPartner);
 
 					row.getAsOptionalIdentifier(I_C_BP_Group.COLUMNNAME_Bill_BPartner_ID)
 							.map(id -> id.lookupNotNullIdIn(bpartnerTable))

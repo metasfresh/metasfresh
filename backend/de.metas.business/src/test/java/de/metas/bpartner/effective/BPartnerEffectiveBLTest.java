@@ -384,7 +384,7 @@ public class BPartnerEffectiveBLTest
 
 		// association group pointing to centralBillingBP
 		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		assocGroup.setIsAssociation(true);
+		assocGroup.setIsDeviatingBillBPartner(true);
 		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
 		saveRecord(assocGroup);
 
@@ -440,7 +440,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(centralLoc);
 
 		final I_C_BP_Group assocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		assocGroup.setIsAssociation(true);
+		assocGroup.setIsDeviatingBillBPartner(true);
 		assocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
 		assocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
 		saveRecord(assocGroup);
@@ -471,14 +471,14 @@ public class BPartnerEffectiveBLTest
 
 		// parent group is the association
 		final I_C_BP_Group parentAssocGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		parentAssocGroup.setIsAssociation(true);
+		parentAssocGroup.setIsDeviatingBillBPartner(true);
 		parentAssocGroup.setBill_BPartner_ID(centralBillingId.getRepoId());
 		parentAssocGroup.setBill_Location_ID(centralLoc.getC_BPartner_Location_ID());
 		saveRecord(parentAssocGroup);
 
 		// member's direct group is NOT an association
 		final I_C_BP_Group childGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		childGroup.setIsAssociation(false);
+		childGroup.setIsDeviatingBillBPartner(false);
 		childGroup.setParent_BP_Group_ID(parentAssocGroup.getC_BP_Group_ID());
 		saveRecord(childGroup);
 
@@ -499,7 +499,7 @@ public class BPartnerEffectiveBLTest
 	public void getEffectiveBillBPartner_neitherRelationNorAssociationGroup_returnsNull()
 	{
 		final I_C_BP_Group plainGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		plainGroup.setIsAssociation(false);
+		plainGroup.setIsDeviatingBillBPartner(false);
 		saveRecord(plainGroup);
 
 		final I_C_BPartner memberBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
