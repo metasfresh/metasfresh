@@ -30,6 +30,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.impl.CopyHUsResponse;
 import de.metas.handlingunits.model.I_M_HU;
@@ -331,6 +332,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 	boolean isTUIncludedInLU(@NonNull I_M_HU tu, @NonNull I_M_HU expectedLU);
 
 	Optional<HuId> getHUIdByValueOrExternalBarcode(@NonNull ScannedCode scannedCode);
+
+	Optional<HuId> getHuIdByGrai(@NonNull GRAI grai);
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 
