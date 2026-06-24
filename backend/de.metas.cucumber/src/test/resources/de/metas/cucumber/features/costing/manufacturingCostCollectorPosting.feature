@@ -183,7 +183,17 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
 
     And Wait until documents issueCostCollector, receiptCostCollector are posted
 
-    # The whole production cost (90 CHF of issued component) must be recovered into the finished good,
+    # The component issue posts its actual cost (90) to WIP; the finished-good receipt must credit the
+    # same actual production cost (90) back out of WIP - not the frozen rollup price (10) - so the
+    # finished good carries the true production cost.
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
+      | issueCostCollector   | P_WIP_Acct            | compProd     | 90        | 0         |
+      | issueCostCollector   | P_Asset_Acct          | compProd     | 0         | 90        |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 90        | 0         |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 90        |
+
+    # The whole production cost (90 CHF of issued component) is recovered into the finished good,
     # so the work-in-process account nets to zero across the order's cost collectors.
     And Fact_Acct records balances for documents issueCostCollector, receiptCostCollector are matching
       | AccountConceptualName | AcctBalance |

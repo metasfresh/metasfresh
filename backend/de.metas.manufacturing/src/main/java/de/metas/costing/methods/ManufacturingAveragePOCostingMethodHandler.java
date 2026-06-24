@@ -215,6 +215,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			// planned BOM-rollup price, so the work-in-process account clears once the order is closed.
 			// The post-calculation amount is the total actual inbound (component) cost accumulated so far;
 			// this receipt absorbs whatever part of it earlier receipts have not yet recovered.
+			// NOTE: this fully clears WIP for the normal flow (all component issues precede a single
+			// finished-good receipt); multi-receipt orders with interleaved issues are not in scope.
 			final CostAmount amt = mainProductCost.getPostCalculationAmount()
 					.subtract(mainProductCost.getAccumulatedAmount())
 					.roundToPrecisionIfNeeded(currentCost.getPrecision());
