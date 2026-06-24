@@ -43,7 +43,7 @@ runs:
     # Download previous history from last successful run on same branch
     - name: Download previous Allure history
       if: inputs.history-artifact-name != ''
-      uses: dawidd6/action-download-artifact@v6
+      uses: dawidd6/action-download-artifact@v21
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.results-dir }}/history
@@ -126,7 +126,7 @@ runs:
         echo "Allure report generated at: $OUTPUT_DIR"
 
     - name: Upload Allure report artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       if: success() || failure()
       with:
         name: ${{ inputs.artifact-name }}
@@ -136,7 +136,7 @@ runs:
     # Upload history for next build (enables trends over time)
     - name: Upload Allure history for trends
       if: inputs.history-artifact-name != '' && (success() || failure())
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v6
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.output-dir }}/history
