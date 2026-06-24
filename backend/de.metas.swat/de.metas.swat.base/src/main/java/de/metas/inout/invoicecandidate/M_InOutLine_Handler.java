@@ -9,6 +9,8 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerBL.RetrieveContactRequest;
@@ -35,7 +37,6 @@ import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapte
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
-import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
@@ -130,6 +131,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	private final transient DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 	private final transient OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	private final transient BPartnerEffectiveBL bPartnerEffectiveBL = SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class);
 
 	/**
 	 * @return {@code false}, but note that this handler will be invoked to create missing invoice candidates via {@link M_InOut_Handler#expandRequest(InvoiceCandidateGenerateRequest)}.
@@ -367,36 +369,22 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_Order order = inOut.getC_Order();
 			icRecord.setInvoiceRule(order.getInvoiceRule()); // the rule set in order
 		}
-		// Set Invoice Rule from BPartner
+		// Set Invoice Rule and Payment Rule from the bill-partner (order-less delivery)
 		else
 		{
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
+			final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartner);
+			final SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 
-			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
-					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
-
-			if (invoiceRule!= null)
-			{
-				icRecord.setInvoiceRule(invoiceRule.getCode());
-			}
-			else
-			{
-				icRecord.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate); // Immediate
-			}
-
-			// Inherit PaymentRule from the bill-partner for order-less deliveries (e.g. consolidated
-			// "Leergut"/returnable deliveries that bundle multiple orders). Otherwise the candidate keeps
-			// the column default and splits off from the order-based goods, which carry the order's rule,
-			// because PaymentRule is part of the invoice header aggregation key. SO/PO split mirrors the
-			// InvoiceRule inheritance above.
-			final String paymentRule = inOut.isSOTrx()
-					? billBPartner.getPaymentRule()
-					: billBPartner.getPaymentRulePO();
-			if (Check.isNotBlank(paymentRule))
-			{
-				icRecord.setPaymentRule(paymentRule);
-			}
+			// Inherit InvoiceRule and PaymentRule from the bill-partner's *effective* configuration
+			// (partner -> BP group -> parent group -> default), the same chain an order resolves them with
+			// (CalloutOrder / BPartnerOrderParamsRepository). For order-less deliveries (e.g. consolidated
+			// "Leergut"/returnable deliveries that bundle several orders) this keeps the candidate aligned
+			// with the order-based goods candidates. Both InvoiceRule and PaymentRule are part of the invoice
+			// header aggregation key, so a mismatch would split the returnables onto a separate invoice.
+			// Reading the raw bill-partner columns missed values inherited from the BP group.
+			icRecord.setInvoiceRule(billBPartnerEffective.getInvoiceRule(soTrx).getCode());
+			icRecord.setPaymentRule(billBPartnerEffective.getPaymentRule(soTrx).getCode());
 		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);

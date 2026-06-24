@@ -1,8 +1,10 @@
 package de.metas.inout.invoicecandidate;
 
 import com.jgoodies.common.base.Objects;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.order.InvoiceRule;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.dimension.DimensionFactory;
@@ -25,6 +27,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -81,6 +84,7 @@ public class M_InOutLine_HandlerTest
 
 	private I_M_InOutLine packagingInOutLine;
 	private I_M_InOut inout;
+	private I_C_BP_Group bpGroup;
 	private PaymentTermId orderPaymentTermId;
 	private PaymentTermId paymentTermA;
 	private PaymentTermId paymentTermB;
@@ -100,12 +104,17 @@ public class M_InOutLine_HandlerTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+		SpringContextHolder.registerJUnitBean(BPartnerEffectiveBL.newInstanceForUnitTesting());
 
 		final I_C_PaymentTerm paymentTerm = newInstance(I_C_PaymentTerm.class);
 		save(paymentTerm);
 
+		bpGroup = newInstance(I_C_BP_Group.class);
+		save(bpGroup);
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		bPartner.setC_PaymentTerm_ID(paymentTerm.getC_PaymentTerm_ID());
+		bPartner.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		save(bPartner);
 
 		final I_C_BPartner_Location bPartnerLocation = newInstance(I_C_BPartner_Location.class);
@@ -832,14 +841,14 @@ public class M_InOutLine_HandlerTest
 	}
 
 	/**
-	 * Order-less delivery where the bill-partner has no PaymentRule: the inheritance is skipped (the
-	 * Check.isNotBlank guard — the POJO harness returns "" for an unset column, not null), so the candidate
-	 * keeps its column default and no exception is thrown.
+	 * Order-less delivery where neither the bill-partner nor its BP group has a PaymentRule: the effective
+	 * resolution (partner → group → parent group → default) falls back to OnCredit ("P"), the same value an
+	 * order for this partner would carry.
 	 */
 	@Test
-	public void createCandidatesForInOutLine_orderlessDelivery_billPartnerHasNoPaymentRule_paymentRuleUnchanged()
+	public void createCandidatesForInOutLine_orderlessDelivery_noPaymentRuleAnywhere_usesDefaultOnCredit()
 	{
-		// given: bill-partner with no PaymentRule (null → will be returned as "" by POJO harness)
+		// given: bill-partner with no PaymentRule (group has none either)
 		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		billBPartner.setPaymentRule(null);
 		save(billBPartner);
@@ -850,14 +859,66 @@ public class M_InOutLine_HandlerTest
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 
-		// capture PaymentRule before setOrderedData
-		final String paymentRuleBeforeUpdate = ic.getPaymentRule();
+		// then: effective default OnCredit ("P")
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_OnCredit);
 
-		// when: must not throw
+		// and: re-running setOrderedData on the order-less candidate must not overwrite it
 		inOutLineHandlerUnderTest.setOrderedData(ic);
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_OnCredit);
+	}
 
-		// then: PaymentRule unchanged from before (column default)
-		assertThat(ic.getPaymentRule()).isEqualTo(paymentRuleBeforeUpdate);
+	/**
+	 * Max Rieck's review scenario (me03 #30063): PaymentRule is blank on the bill-partner but set on its BP
+	 * group. An order resolves PaymentRule via COALESCE(partner, group, parentGroup) (CalloutOrder /
+	 * BPartnerOrderParamsRepository), so the order-based goods candidates carry the group's value. The
+	 * order-less returnable candidate must inherit the SAME effective value, otherwise PaymentRule differs
+	 * and the returnables split onto a separate invoice.
+	 */
+	@Test
+	public void createCandidatesForInOutLine_orderlessDelivery_inheritsPaymentRuleFromBPGroup()
+	{
+		// given: bill-partner has no PaymentRule, but its BP group has DirectDeposit ("T")
+		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+		billBPartner.setPaymentRule(null);
+		save(billBPartner);
+
+		bpGroup.setPaymentRule(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+		save(bpGroup);
+
+		// when: the packaging invoice candidate is created (no order on the inout)
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// then: candidate inherits the group's PaymentRule, not the column default "P"
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+	}
+
+	/**
+	 * Order-less delivery: InvoiceRule is also resolved from the bill-partner's effective configuration
+	 * (partner → BP group → parent group → default), aligned with how an order resolves it. Here the
+	 * partner has no InvoiceRule but the group does, so the candidate inherits the group's InvoiceRule.
+	 */
+	@Test
+	public void createCandidatesForInOutLine_orderlessDelivery_inheritsInvoiceRuleFromBPGroup()
+	{
+		// given: bill-partner has no InvoiceRule, group has OrderCompletelyDelivered
+		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
+		billBPartner.setInvoiceRule(null);
+		save(billBPartner);
+
+		bpGroup.setInvoiceRule(InvoiceRule.OrderCompletelyDelivered.getCode());
+		save(bpGroup);
+
+		// when
+		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
+		result.forEach(InterfaceWrapperHelper::saveRecord);
+		assertThat(result).hasSize(1);
+		final I_C_Invoice_Candidate ic = result.get(0);
+
+		// then: candidate inherits the group's InvoiceRule
+		assertThat(ic.getInvoiceRule()).isEqualTo(InvoiceRule.OrderCompletelyDelivered.getCode());
 	}
 
 }
