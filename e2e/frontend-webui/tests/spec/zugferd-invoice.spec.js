@@ -113,7 +113,9 @@ de_DE to prove the full page-object flow is language-independent.
                             name: 'Muster GmbH',
                             vatTaxId: 'DE123456789',
                             isCustomer: false,
-                            isSoPriceList: false,
+                            // true: the masterdata shares one pricing system across bpartners, and the
+                            // first-created one sets its price list's IsSOPriceList — the buyer needs a sales list.
+                            isSoPriceList: true,
                             locations: {
                                 sellerLoc: {
                                     city: 'Berlin',
