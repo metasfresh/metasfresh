@@ -772,37 +772,41 @@ public class M_InOutLine_HandlerTest
 	}
 
 	/**
-	 * AC#1: order-less delivery (M_InOut has no C_Order) → candidate must inherit PaymentRule from bill-partner.
-	 * In the default init() fixture, inout has no C_Order_ID, so this is exactly the order-less case.
+	 * Order-less delivery (M_InOut has no C_Order): the packaging/returnable candidate must inherit
+	 * PaymentRule from the bill-partner. PaymentRule is set when the candidate is created (in the no-order
+	 * branch of createInvoiceCandidateForInOutLineOrNull); a later setOrderedData on the order-less
+	 * candidate must leave it untouched. In the default init() fixture inout has no C_Order_ID, so this is
+	 * the order-less case.
 	 */
 	@Test
-	public void setOrderedData_orderlessDelivery_inheritsPaymentRuleFromBillPartner()
+	public void createCandidatesForInOutLine_orderlessDelivery_inheritsPaymentRuleFromBillPartner()
 	{
 		// given: bill-partner with PaymentRule = DirectDeposit ("T")
 		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
 		billBPartner.setPaymentRule(X_C_BPartner.PAYMENTRULE_DirectDeposit);
 		save(billBPartner);
 
-		// create the packaging invoice candidate (no order on the inout)
+		// when: the packaging invoice candidate is created (no order on the inout)
 		final List<I_C_Invoice_Candidate> result = inOutLineHandlerUnderTest.createCandidatesForInOutLine(packagingInOutLine);
 		result.forEach(InterfaceWrapperHelper::saveRecord);
 		assertThat(result).hasSize(1);
 		final I_C_Invoice_Candidate ic = result.get(0);
 
-		// when
-		inOutLineHandlerUnderTest.setOrderedData(ic);
+		// then: PaymentRule is inherited from the bill-partner, not stuck at the column default "P"
+		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
 
-		// then: PaymentRule must be inherited from bill-partner, not stuck at column default "P"
+		// and: re-running setOrderedData on the order-less candidate must not overwrite it
+		inOutLineHandlerUnderTest.setOrderedData(ic);
 		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
 	}
 
 	/**
-	 * AC#3 regression: delivery WITH a C_Order on the header must still inherit PaymentRule from that order
-	 * (the existing order-branch code must be unaffected by the fix).
+	 * Delivery WITH a C_Order on the header must inherit PaymentRule from that order, not the bill-partner
+	 * (the pre-existing order-branch behaviour must be unaffected by the order-less fix).
 	 * <p>
-	 * We create the IC while the inout has no order (same as the order-less path), then link an order with
-	 * DirectDebit ("D") onto the inout before calling setOrderedData — so setOrderedData sees C_Order_ID > 0
-	 * and must inherit PaymentRule from the order, not the bill-partner.
+	 * The candidate is created while the inout has no order (the order-less path); an order with DirectDebit
+	 * ("D") is then linked onto the inout before setOrderedData runs, so setOrderedData sees C_Order_ID > 0
+	 * and inherits PaymentRule from the order.
 	 */
 	@Test
 	public void setOrderedData_deliveryWithOrder_inheritsPaymentRuleFromOrder()
@@ -828,11 +832,12 @@ public class M_InOutLine_HandlerTest
 	}
 
 	/**
-	 * AC#3 null guard: if bill-partner has no PaymentRule set, setOrderedData must not throw and
-	 * the IC's PaymentRule stays at the column default (no NPE, no change).
+	 * Order-less delivery where the bill-partner has no PaymentRule: the inheritance is skipped (the
+	 * Check.isNotBlank guard — the POJO harness returns "" for an unset column, not null), so the candidate
+	 * keeps its column default and no exception is thrown.
 	 */
 	@Test
-	public void setOrderedData_orderlessDelivery_billPartnerHasNoPaymentRule_noErrorAndPaymentRuleUnchanged()
+	public void createCandidatesForInOutLine_orderlessDelivery_billPartnerHasNoPaymentRule_paymentRuleUnchanged()
 	{
 		// given: bill-partner with no PaymentRule (null → will be returned as "" by POJO harness)
 		final I_C_BPartner billBPartner = InterfaceWrapperHelper.load(inout.getC_BPartner_ID(), I_C_BPartner.class);
