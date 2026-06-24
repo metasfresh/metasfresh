@@ -54,6 +54,15 @@ export const GetQuantityDialog = {
         await clickAndType(field, lotNo);
     }),
 
+    typeBestBeforeDate: async (bestBeforeDate) => await test.step(`${NAME} - Type BestBeforeDate '${bestBeforeDate}'`, async () => {
+        // The Best-Before field is a DateInput. With the default config
+        // (mobileui.frontend.dateInput.isUseNativeComponent=N) it renders as a text input
+        // expecting the DD.MM.YYYY display format; fill() sets the whole value in one event.
+        const field = page.getByTestId('bestBeforeDate');
+        await field.tap();
+        await field.fill(bestBeforeDate);
+    }),
+
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
         // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
         const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
@@ -136,7 +145,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -152,6 +161,9 @@ export const GetQuantityDialog = {
         }
         if (lotNo != null) {
             await GetQuantityDialog.typeLotNo(lotNo);
+        }
+        if (bestBeforeDate != null) {
+            await GetQuantityDialog.typeBestBeforeDate(bestBeforeDate);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);
