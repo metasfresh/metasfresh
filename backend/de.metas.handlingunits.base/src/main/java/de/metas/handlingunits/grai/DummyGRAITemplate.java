@@ -72,13 +72,23 @@ public class DummyGRAITemplate
 		}
 	}
 
-	@NonNull
-	private static String padSerialPrefix(@NonNull final String serialPrefix)
+	/**
+	 * Asserts that {@code serialPrefix} (the sales order's PO reference) can form a valid dummy-GRAI serial
+	 * prefix — it must be at most 10 characters. Throws the translated prerequisite message otherwise.
+	 * The single source of truth for the dummy-GRAI length rule, reused by the early validation layers.
+	 */
+	public static void assertValidSerialPrefix(@NonNull final String serialPrefix)
 	{
 		if (serialPrefix.length() > 10)
 		{
 			throw new AdempiereException(MSG_DUMMY_GRAI_SERIAL_PREFIX_TOO_LONG, serialPrefix);
 		}
+	}
+
+	@NonNull
+	private static String padSerialPrefix(@NonNull final String serialPrefix)
+	{
+		assertValidSerialPrefix(serialPrefix);
 		return StringUtils.lpadZero(serialPrefix, 10, "serialPrefix");
 	}
 }

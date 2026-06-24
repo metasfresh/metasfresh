@@ -23,7 +23,15 @@ public class C_Order
 		this.pickingJobService = pickingJobService;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
+	// ifColumnsChanged is honoured only for CHANGE timings; on AFTER_NEW the framework ignores it. So a
+	// dedicated NEW handler validates every newly created sales order (a no-op unless it requires dummy GRAIs).
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
+	public void validateDummyGRAIPrerequisitesOnNew(@NonNull final I_C_Order order)
+	{
+		assertDummyGRAIPrerequisites(order);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
 	public void validateDummyGRAIPrerequisitesOnPOReferenceChange(@NonNull final I_C_Order order)
 	{
 		assertDummyGRAIPrerequisites(order);

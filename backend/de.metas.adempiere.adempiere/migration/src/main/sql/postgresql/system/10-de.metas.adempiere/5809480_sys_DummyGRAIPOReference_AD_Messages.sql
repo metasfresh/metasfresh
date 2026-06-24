@@ -35,7 +35,7 @@ INSERT INTO AD_Message (AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, U
                         MsgType, Value, MsgText, EntityType, AD_Message_ID)
 VALUES (0, 0, 'Y', TO_TIMESTAMP('2026-06-24 12:00:04','YYYY-MM-DD HH24:MI:SS'), 0, TO_TIMESTAMP('2026-06-24 12:00:04','YYYY-MM-DD HH24:MI:SS'), 0,
         'E', 'de.metas.handlingunits.grai.DummyGRAIPOReferenceMissing',
-        'Es ist keine Bestellreferenz im Auftrag hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.',
+        'Auftrag {0}: Es ist keine Bestellreferenz hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.',
         'de.metas.handlingunits', 545766 /*From ID Server*/);
 
 UPDATE AD_Message SET ErrorCode = 'GRAI_POREFERENCE_MISSING' WHERE AD_Message_ID = 545766;
@@ -43,14 +43,14 @@ UPDATE AD_Message SET ErrorCode = 'GRAI_POREFERENCE_MISSING' WHERE AD_Message_ID
 INSERT INTO AD_Message_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Message_ID, MsgText, MsgTip, IsTranslated)
 VALUES ('de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-06-24 12:00:05','YYYY-MM-DD HH24:MI:SS'), 0, TO_TIMESTAMP('2026-06-24 12:00:05','YYYY-MM-DD HH24:MI:SS'), 0,
         545766 /*From ID Server*/,
-        'Es ist keine Bestellreferenz im Auftrag hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.', NULL, 'N');
+        'Auftrag {0}: Es ist keine Bestellreferenz hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.', NULL, 'N');
 
 INSERT INTO AD_Message_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Message_ID, MsgText, MsgTip, IsTranslated)
 VALUES ('de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-06-24 12:00:06','YYYY-MM-DD HH24:MI:SS'), 0, TO_TIMESTAMP('2026-06-24 12:00:06','YYYY-MM-DD HH24:MI:SS'), 0,
         545766 /*From ID Server*/,
-        'Es ist keine Bestellreferenz im Auftrag hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.', NULL, 'N');
+        'Auftrag {0}: Es ist keine Bestellreferenz hinterlegt. Für die GRAI-Erzeugung wird eine Bestellreferenz (max. 10 Zeichen) benötigt.', NULL, 'N');
 
 INSERT INTO AD_Message_Trl (AD_Language, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, AD_Message_ID, MsgText, MsgTip, IsTranslated)
 VALUES ('en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-06-24 12:00:07','YYYY-MM-DD HH24:MI:SS'), 0, TO_TIMESTAMP('2026-06-24 12:00:07','YYYY-MM-DD HH24:MI:SS'), 0,
         545766 /*From ID Server*/,
-        'No PO reference is set on the order. GRAI generation requires a PO reference (max. 10 characters).', NULL, 'Y');
+        'Order {0}: no PO reference is set. GRAI generation requires a PO reference (max. 10 characters).', NULL, 'Y');

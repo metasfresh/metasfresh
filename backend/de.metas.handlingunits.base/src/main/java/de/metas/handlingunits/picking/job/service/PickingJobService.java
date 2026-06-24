@@ -707,8 +707,7 @@ public class PickingJobService implements PickingSlotListener
 			throw new AdempiereException(DummyGRAITemplate.MSG_DUMMY_GRAI_POREFERENCE_MISSING, salesOrderId);
 		}
 
-		// Reuse the single dummy-GRAI validity rule (throws the translated "too long" message when > 10 chars).
-		DummyGRAITemplate.migros(serialPrefix);
+		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)
