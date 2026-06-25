@@ -489,8 +489,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
 						.orElse(null))
-				// Optional partial-unpick by product+qty — both or neither
-				.unpickProductId(toProductIdOrNull(json.getUnpickProductId()))
+				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
 				.qtyToUnpick(json.getUnpickQty())
 				.build();
 	}
@@ -507,24 +506,6 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		if (huQRCode == null) {return null;}
 
 		return pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(huQRCode).getPickFromKey();
-	}
-
-	@Nullable
-	private static ProductId toProductIdOrNull(@Nullable final String productIdStr)
-	{
-		if (productIdStr == null)
-		{
-			return null;
-		}
-		try
-		{
-			return ProductId.ofRepoId(Integer.parseInt(productIdStr));
-		}
-		catch (final NumberFormatException e)
-		{
-			throw new AdempiereException("Invalid productId value: " + productIdStr, e)
-					.markAsUserValidationError();
-		}
 	}
 
 	private static boolean isCheckIfAlreadyPacked(

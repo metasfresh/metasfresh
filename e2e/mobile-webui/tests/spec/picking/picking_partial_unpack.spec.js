@@ -2,10 +2,7 @@ import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobLineScreen } from "../../utils/screens/picking/PickingJobLineScreen";
-import { PickingJobStepScreen } from "../../utils/screens/picking/PickingJobStepScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
-import { PartialUnpickFlow } from "../../utils/screens/picking/PartialUnpickFlow";
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { expectErrorToast } from "../../utils/common";
@@ -108,14 +105,6 @@ const loginAndStartJob = async ({ masterdata }) => {
     return { pickingJobId };
 };
 
-// Opens the packed step screen for line 1 (the only line).
-const openPackedStepScreen = async () => {
-    await PickingJobScreen.clickLineButton({ index: 1 });
-    await PickingJobLineScreen.waitForScreen();
-    await PickingJobLineScreen.clickStepButton({ index: 0 });
-    await PickingJobStepScreen.waitForScreen();
-};
-
 // noinspection JSUnusedLocalSymbols
 test('Partial unpack - remove item by scanning product GTIN, re-pick loop repeatable', async ({ page }) => {
     allure.epic('E0105: Picking');
@@ -155,11 +144,8 @@ test('Partial unpack - remove item by scanning product GTIN, re-pick loop repeat
     // HU2 starts with 80 PCE (see masterdata note), so the unpick moves the removed 4 PCE into it
     // -> 80 + 4 = 84 PCE.
     await test.step('Round 1 - remove 4 PCE then re-pick', async () => {
-        await openPackedStepScreen();
-        await PartialUnpickFlow.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
-        await PickingJobStepScreen.goBack();
-        await PickingJobLineScreen.goBack();
-        await PickingJobScreen.waitForScreen();
+        // The "Remove item" entry is on the picking JOB screen — no drilling into a step.
+        await PickingJobScreen.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
 
         // The rest stays packed (2 TU = 8 PCE); the removed 4 PCE has been moved into target HU2,
         // which therefore now holds its starting 80 PCE + the removed 4 PCE = 84 PCE.
@@ -187,11 +173,7 @@ test('Partial unpack - remove item by scanning product GTIN, re-pick loop repeat
 
     // Round 2: repeat the unpick -> re-pick loop to prove it is repeatable (AC7).
     await test.step('Round 2 - remove 4 PCE then re-pick', async () => {
-        await openPackedStepScreen();
-        await PartialUnpickFlow.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
-        await PickingJobStepScreen.goBack();
-        await PickingJobLineScreen.goBack();
-        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
 
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU' });
         await Backend.expect({
@@ -242,17 +224,15 @@ test('Partial unpack - scanning a product not in the package shows one error, no
         hus: { lu1: { huStatus: 'S', storages: { P1: '12 PCE' } } },
     });
 
-    await openPackedStepScreen();
-
     await test.step('Scan a product GTIN that is not packed in this job -> one error, nothing removed', async () => {
-        await PartialUnpickFlow.clickRemoveItem();
+        await PickingJobScreen.clickRemoveItem();
         // The backend rejects a product that is not packed in this job; the single error surface is
         // the scanner's toast ("Cannot find a product matching the scanned code in this picking job").
         await expectErrorToast('Scan a product not in the package', async () => {
-            await PartialUnpickFlow.scanProductCode({ scannedCode: otherScan });
+            await PickingJobScreen.scanProductCodeToRemove({ scannedCode: otherScan });
         });
         // The flow stays on the product-scan stage (no qty dialog advanced).
-        await PartialUnpickFlow.expectOnProductScanStage();
+        await PickingJobScreen.expectOnProductScanStage();
     });
 
     // Nothing was removed: the 12 PCE are still fully packed on lu1.
@@ -305,11 +285,7 @@ test('Partial unpack - partial unpick then complete the job ships the NET qty in
     });
 
     await test.step('Partial-unpick 4 PCE by scanning the product GTIN into the target HU; do NOT re-pick', async () => {
-        await openPackedStepScreen();
-        await PartialUnpickFlow.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
-        await PickingJobStepScreen.goBack();
-        await PickingJobLineScreen.goBack();
-        await PickingJobScreen.waitForScreen();
+        await PickingJobScreen.removeItem({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4', targetHUQRCode });
 
         // 2 TU (8 PCE) stays packed on lu1; the removed 4 PCE has moved into target HU2.
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU' });
@@ -337,5 +313,46 @@ test('Partial unpack - partial unpick then complete the job ships the NET qty in
                 ],
             },
         },
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Partial unpack - remove item to the floor by canceling the target-HU scan', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Partial unpack by scanning a product GTIN');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ packedGtin: uniqueGtin14(), otherGtin: uniqueGtin14() });
+    const packedScan = gs1GtinScan(masterdata.products.P1.gtin);
+
+    const { pickingJobId } = await loginAndStartJob({ masterdata });
+
+    await test.step('Pick all 3 TU (12 PCE) from HU1', async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU' });
+        await Backend.expect({
+            title: 'after full pick: 12 PCE packed on lu1',
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
+            },
+            hus: { lu1: { huStatus: 'S', storages: { P1: '12 PCE' } } }
+        });
+    });
+
+    await test.step('Remove 4 PCE to the floor (cancel/skip the target-HU scan)', async () => {
+        await PickingJobScreen.removeItemToFloor({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4' });
+        // No target HU is scanned: the removed 4 PCE drops to the floor. The line falls to 2 TU and the
+        // picked LU keeps the remaining 8 PCE.
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU' });
+        await Backend.expect({
+            title: 'floor unpick: 8 PCE stays packed on lu1 (removed 4 PCE dropped to the floor, no target HU)',
+            hus: { lu1: { huStatus: 'S', storages: { P1: '8 PCE' } } }
+        });
     });
 });

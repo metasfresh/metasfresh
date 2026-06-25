@@ -140,19 +140,20 @@ export const postStepPartiallyUnPicked = ({
   wfProcessId,
   activityId,
   lineId,
-  stepId,
-  huQRCode,
+  scannedCode,
   unpickProductId,
   unpickQty,
   unpickToTargetQRCode,
 }) => {
+  // Job-scoped removal: no pickingStepId, so the backend reverses the product across the whole job.
+  // huQRCode is structurally required (non-blank) by the event DTO but unused on the product+qty
+  // subset path, so the scanned product code stands in for it.
   return postEvent({
     wfProcessId,
     wfActivityId: activityId,
     pickingLineId: lineId,
-    pickingStepId: stepId,
     type: 'UNPICK',
-    huQRCode,
+    huQRCode: scannedCode,
     unpickProductId,
     unpickQty,
     unpickToTargetQRCode,

@@ -92,7 +92,6 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -439,22 +438,6 @@ public class PickingJobService implements PickingSlotListener
 			}
 			case UNPICK:
 			{
-				final ProductId unpickProductId = event.getUnpickProductId();
-				final BigDecimal unpickQtyBD = event.getQtyToUnpick();
-
-				// Guard: both or neither of (unpickProductId, unpickQtyBD) must be present.
-				// A malformed UNPICK event with exactly one of the two set is a client error.
-				if ((unpickProductId == null) != (unpickQtyBD == null))
-				{
-					throw new AdempiereException("UNPICK event must have either both productId and qty set, or neither; got productId="
-							+ unpickProductId + ", qty=" + unpickQtyBD)
-							.markAsUserValidationError();
-				}
-
-				final Quantity unpickQty = (unpickProductId != null && unpickQtyBD != null)
-						? resolveUnpickQty(pickingJob, unpickProductId, unpickQtyBD)
-						: null;
-
 				return PickingJobUnPickCommand.builder()
 						.shipmentScheduleService(shipmentScheduleService)
 						.pickingJobRepository(pickingJobRepository)
@@ -466,8 +449,8 @@ public class PickingJobService implements PickingSlotListener
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
 						.unpickToHU(event.getUnpickToTargetQRCode())
-						.productId(unpickProductId)
-						.qtyToUnpick(unpickQty)
+						.productId(event.getUnpickProductId())
+						.qtyToUnpick(event.getQtyToUnpick())
 						//
 						.build().execute();
 			}
@@ -934,24 +917,6 @@ public class PickingJobService implements PickingSlotListener
 				.shipmentSchedules(shipmentScheduleService.newLoadingCache())
 				.request(request)
 				.build().execute();
-	}
-
-	/** Resolves the qty to a Quantity using the first packed HU's UOM for the product. Assumes all packed HUs for the product share one UOM; the unpick command rejects a mismatch. */
-	@NonNull
-	private static Quantity resolveUnpickQty(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final ProductId productId,
-			@NonNull final BigDecimal qtyBD)
-	{
-		final Quantity referenceQty = pickingJob.streamSteps()
-				.filter(step -> ProductId.equals(step.getProductId(), productId))
-				.flatMap(step -> step.getPickFromKeys().stream()
-						.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
-						.filter(Objects::nonNull))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No packed qty found for product " + productId + " in picking job " + pickingJob.getId()));
-
-		return Quantity.of(qtyBD, referenceQty.getUOM());
 	}
 
 	/**

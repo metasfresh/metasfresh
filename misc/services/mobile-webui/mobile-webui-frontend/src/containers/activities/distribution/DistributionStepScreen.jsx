@@ -17,7 +17,7 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
-import UnpickDialog from '../picking/UnpickDialog';
+import UnpickDialog from '../picking/unpick/UnpickDialog';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { useDistributionLineHeaders } from './DistributionLineScreen';
 

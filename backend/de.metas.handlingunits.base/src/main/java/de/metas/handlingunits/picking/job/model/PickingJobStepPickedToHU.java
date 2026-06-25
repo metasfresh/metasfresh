@@ -21,4 +21,6 @@ public class PickingJobStepPickedToHU
 	@Nullable Quantity catchWeight;
 	@NonNull Instant createdAt;
 	// @NonNull PickingCandidateId pickingCandidateId;
+
+	public HuId getActualPickedHUId() {return actualPickedHU.getId();}
 }

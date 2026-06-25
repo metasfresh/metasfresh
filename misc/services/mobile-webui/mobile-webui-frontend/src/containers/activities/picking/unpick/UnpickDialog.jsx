@@ -1,10 +1,10 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 
-import { trl } from '../../../utils/translations';
-import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
-import DialogButton from '../../../components/dialogs/DialogButton';
-import Dialog from '../../../components/dialogs/Dialog';
+import { trl } from '../../../../utils/translations';
+import BarcodeScannerComponent from '../../../../components/BarcodeScannerComponent';
+import DialogButton from '../../../../components/dialogs/DialogButton';
+import Dialog from '../../../../components/dialogs/Dialog';
 
 const UnpickDialog = ({
   onSubmit,
