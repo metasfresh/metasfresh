@@ -3,6 +3,10 @@ import * as os from 'node:os';
 
 export default defineConfig({
   testDir: './tests',
+  // Auto-prepare + caption UAT videos after the run (playwright-video-delivery skill).
+  // Operates on copies under uat-videos/; no-op in CI / when the skill isn't installed;
+  // set UAT_VIDEO_PREP=0 to skip. See ../uat-video-prep.teardown.cjs.
+  globalTeardown: '../uat-video-prep.teardown.cjs',
   workers: 1, // Sequential execution for test data isolation
   fullyParallel: false,
   forbidOnly: !!process.env.CI,
