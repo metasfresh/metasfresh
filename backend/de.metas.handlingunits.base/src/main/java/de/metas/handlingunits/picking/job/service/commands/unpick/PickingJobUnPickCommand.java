@@ -1,4 +1,4 @@
-package de.metas.handlingunits.picking.job.service.commands;
+package de.metas.handlingunits.picking.job.service.commands.unpick;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -36,16 +36,13 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -257,62 +254,6 @@ public class PickingJobUnPickCommand
 		return new LifoSelection(wholeHUsByStepPickFrom, boundaryByStepPickFrom);
 	}
 
-	@Value
-	private static class LifoSelection
-	{
-		@NonNull Map<StepPickFromKey, List<PickingJobStepPickedToHU>> wholeHUsByStepPickFrom;
-		@NonNull Map<StepPickFromKey, BoundarySplit> boundaryByStepPickFrom;
-
-		Stream<StepUnpickInstructions> toUnpickInstructions()
-		{
-			final ImmutableSet<StepPickFromKey> allKeys = ImmutableSet.<StepPickFromKey>builder()
-					.addAll(wholeHUsByStepPickFrom.keySet())
-					.addAll(boundaryByStepPickFrom.keySet())
-					.build();
-
-			return allKeys.stream()
-					.map(key -> {
-						final BoundarySplit boundary = boundaryByStepPickFrom.get(key);
-						return StepUnpickInstructions.builder()
-								.stepId(key.getStepId())
-								.pickFromKey(key.getPickFromKey())
-								.pickedToHUsToUnpick(ImmutableList.copyOf(wholeHUsByStepPickFrom.getOrDefault(key, ImmutableList.of())))
-								.boundaryHuToSplit(boundary != null ? boundary.getPickedToHU() : null)
-								.boundarySplitQty(boundary != null ? boundary.getQtyToCarve() : null)
-								.build();
-					});
-		}
-	}
-
-	@Value
-	private static class BoundarySplit
-	{
-		@NonNull PickingJobStepPickedToHU pickedToHU;
-		@NonNull Quantity qtyToCarve;
-	}
-
-	@Value
-	private static class CandidateHU
-	{
-		static final Comparator<CandidateHU> ORDERBY_Created_DESC =
-				Comparator.comparing(CandidateHU::getCreatedAt).reversed();
-
-		@NonNull PickingJobStepId stepId;
-		@NonNull PickingJobStepPickFromKey pickFromKey;
-		@NonNull PickingJobStepPickedToHU pickedToHU;
-
-		Quantity getQtyPicked() {return pickedToHU.getQtyPicked();}
-
-		Instant getCreatedAt() {return pickedToHU.getCreatedAt();}
-	}
-
-	@Value
-	private static class StepPickFromKey
-	{
-		@NonNull PickingJobStepId stepId;
-		@NonNull PickingJobStepPickFromKey pickFromKey;
-	}
-
 	public PickingJob execute()
 	{
 		initialPickingJob.assertNotProcessed();
@@ -364,20 +305,7 @@ public class PickingJobUnPickCommand
 		final PickingJobStepPickFromKey pickFromKey = unpickInstructions.getPickFromKey();
 		final PickingJobStepPickFrom pickFrom = step.getPickFrom(pickFromKey);
 
-		final List<PickingJobStepPickedToHU> wholeHUsToUnpick;
-		if (unpickInstructions.getPickedToHUsToUnpick() != null)
-		{
-			// Subset path: use only the explicitly selected whole CUs
-			wholeHUsToUnpick = unpickInstructions.getPickedToHUsToUnpick();
-		}
-		else
-		{
-			// Whole-step path (original behaviour)
-			wholeHUsToUnpick = pickFrom.getPickedTo() != null
-					? pickFrom.getPickedTo().getActualPickedHUs()
-					: ImmutableList.of();
-		}
-
+		final List<PickingJobStepPickedToHU> wholeHUsToUnpick = resolveWholeHUsToUnpick(unpickInstructions, pickFrom);
 		final PickingJobStepPickedToHU boundaryHu = unpickInstructions.getBoundaryHuToSplit();
 		final Quantity boundarySplitQty = unpickInstructions.getBoundarySplitQty();
 
@@ -388,57 +316,91 @@ public class PickingJobUnPickCommand
 
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
 
-		//
-		// 1) Whole CUs: detach, return to Active, move into the scanned target (existing behaviour).
-		if (!wholeHUsToUnpick.isEmpty())
-		{
-			final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(wholeHUsToUnpick);
-
-			final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
-			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
-			changeHUStatusFromPickedToActive(topLevelHUs);
-
-			// Move the EXTRACTED top-level HUs, not the original picked-CU references: extracting an aggregate
-			// CU splits out a new TU and relocates its QR assignment onto that TU, so the original (huId,QR)
-			// pairs are stale and the move's re-extraction would fail the QR-assignment assertion.
-			moveToTargetHUIfNeeded(toCurrentHuIdAndQRCodes(topLevelHUs));
-		}
-
-		//
-		// 2) Boundary CU: physically carve the exact remainder out of it, move the carved CU into the
-		//    scanned target (Active), decrement the original VHU's picked-qty allocation, keep the rest packed.
 		final PickingJobStepUnpickInfo.PickingJobStepUnpickInfoBuilder unpickInfoBuilder = PickingJobStepUnpickInfo.builder()
 				.unpickedHUs(wholeHUsToUnpick);
-		if (boundaryHu != null && boundarySplitQty != null)
-		{
-			final HuId boundaryVhuId = boundaryHu.getActualPickedHUId();
-			final Quantity boundaryHuQty = boundaryHu.getQtyPicked();
-			final Quantity remainderQty = boundaryHuQty.subtract(boundarySplitQty);
 
-			// Carve a NEW CU of exactly `boundarySplitQty` from the boundary VHU; the source keeps the remainder.
-			final I_M_HU carvedCU = newHUTransformService().huToNewSingleCU(
-					HUTransformService.HUsToNewCUsRequest.builder()
-							.sourceHU(huService.getById(boundaryVhuId))
-							.productId(step.getProductId())
-							.qtyCU(boundarySplitQty)
-							.build());
-			final HuId carvedCUId = HuId.ofRepoId(carvedCU.getM_HU_ID());
-
-			// Delete the carved CU's allocation before re-activating it — the source VHU's allocation then covers the physical remainder.
-			final HUQRCode carvedQRCode = huService.getHuQRCodesService().getQRCodeByHuId(carvedCUId);
-			final ImmutableSet<HUIdAndQRCode> carvedHuIdAndQRCode = ImmutableSet.of(
-					HUIdAndQRCode.builder().huId(carvedCUId).huQRCode(carvedQRCode).build());
-			final List<I_M_HU> carvedTopLevelHUs = extractToTopLevelHUs(carvedHuIdAndQRCode);
-			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(carvedTopLevelHUs, shipmentScheduleId);
-			changeHUStatusFromPickedToActive(carvedTopLevelHUs);
-			moveToTargetHUIfNeeded(carvedHuIdAndQRCode);
-
-			unpickInfoBuilder
-					.huToReduce(boundaryHu)
-					.reducedQtyPicked(remainderQty);
-		}
+		unpickWholeHUs(wholeHUsToUnpick, shipmentScheduleId);
+		unpickBoundaryHU(step, boundaryHu, boundarySplitQty, shipmentScheduleId, unpickInfoBuilder);
 
 		return step.reduceWithUnpickEvent(pickFromKey, unpickInfoBuilder.build());
+	}
+
+	private static List<PickingJobStepPickedToHU> resolveWholeHUsToUnpick(
+			@NonNull final StepUnpickInstructions unpickInstructions,
+			@NonNull final PickingJobStepPickFrom pickFrom)
+	{
+		if (unpickInstructions.getPickedToHUsToUnpick() != null)
+		{
+			// Subset path: use only the explicitly selected whole CUs
+			return unpickInstructions.getPickedToHUsToUnpick();
+		}
+		else
+		{
+			// Whole-step path (original behaviour)
+			return pickFrom.getPickedTo() != null
+					? pickFrom.getPickedTo().getActualPickedHUs()
+					: ImmutableList.of();
+		}
+	}
+
+	private void unpickWholeHUs(
+			@NonNull final List<PickingJobStepPickedToHU> wholeHUsToUnpick,
+			@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		if (wholeHUsToUnpick.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList = extractHuIdAndQRCodes(wholeHUsToUnpick);
+
+		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
+		changeHUStatusFromPickedToActive(topLevelHUs);
+
+		// Move the EXTRACTED top-level HUs, not the original picked-CU references: extracting an aggregate
+		// CU splits out a new TU and relocates its QR assignment onto that TU, so the original (huId,QR)
+		// pairs are stale and the move's re-extraction would fail the QR-assignment assertion.
+		moveToTargetHUIfNeeded(toCurrentHuIdAndQRCodes(topLevelHUs));
+	}
+
+	private void unpickBoundaryHU(
+			@NonNull final PickingJobStep step,
+			@Nullable final PickingJobStepPickedToHU boundaryHu,
+			@Nullable final Quantity boundarySplitQty,
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final PickingJobStepUnpickInfo.PickingJobStepUnpickInfoBuilder unpickInfoBuilder)
+	{
+		if (boundaryHu == null || boundarySplitQty == null)
+		{
+			return;
+		}
+
+		final HuId boundaryVhuId = boundaryHu.getActualPickedHUId();
+		final Quantity boundaryHuQty = boundaryHu.getQtyPicked();
+		final Quantity remainderQty = boundaryHuQty.subtract(boundarySplitQty);
+
+		// Carve a NEW CU of exactly `boundarySplitQty` from the boundary VHU; the source keeps the remainder.
+		final I_M_HU carvedCU = newHUTransformService().huToNewSingleCU(
+				HUTransformService.HUsToNewCUsRequest.builder()
+						.sourceHU(huService.getById(boundaryVhuId))
+						.productId(step.getProductId())
+						.qtyCU(boundarySplitQty)
+						.build());
+		final HuId carvedCUId = HuId.ofRepoId(carvedCU.getM_HU_ID());
+
+		// Delete the carved CU's allocation before re-activating it — the source VHU's allocation then covers the physical remainder.
+		final HUQRCode carvedQRCode = huService.getQRCodeByHuId(carvedCUId);
+		final ImmutableSet<HUIdAndQRCode> carvedHuIdAndQRCode = ImmutableSet.of(
+				HUIdAndQRCode.builder().huId(carvedCUId).huQRCode(carvedQRCode).build());
+		final List<I_M_HU> carvedTopLevelHUs = extractToTopLevelHUs(carvedHuIdAndQRCode);
+		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(carvedTopLevelHUs, shipmentScheduleId);
+		changeHUStatusFromPickedToActive(carvedTopLevelHUs);
+		moveToTargetHUIfNeeded(carvedHuIdAndQRCode);
+
+		unpickInfoBuilder
+				.huToReduce(boundaryHu)
+				.reducedQtyPicked(remainderQty);
 	}
 
 	private void moveToTargetHUIfNeeded(final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
@@ -469,7 +431,7 @@ public class PickingJobUnPickCommand
 					final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 					return HUIdAndQRCode.builder()
 							.huId(huId)
-							.huQRCode(huService.getHuQRCodesService().getQRCodeByHuId(huId))
+							.huQRCode(huService.getQRCodeByHuId(huId))
 							.build();
 				})
 				.collect(ImmutableSet.toImmutableSet());
@@ -560,33 +522,5 @@ public class PickingJobUnPickCommand
 
 		final HuPackingInstructionsIdAndCaption luPI = huService.getEffectivePackingInstructionsIdAndCaption(lu);
 		return LUPickingTarget.ofPackingInstructions(luPI);
-	}
-
-	//
-	//
-	//
-
-	@Value
-	@Builder
-	@VisibleForTesting
-	static class StepUnpickInstructions
-	{
-		@NonNull PickingJobStepId stepId;
-		@NonNull PickingJobStepPickFromKey pickFromKey;
-		/**
-		 * When present: reverse only these specific packed HUs entirely (subset path, whole-CU portion).
-		 * When absent: reverse all packed HUs for this step/pickFrom (whole-step path).
-		 * May be an empty list when only a boundary split happens (see {@link #boundaryHuToSplit}).
-		 */
-		@Nullable ImmutableList<PickingJobStepPickedToHU> pickedToHUsToUnpick;
-
-		/**
-		 * Subset path only: the boundary CU that must be physically split because only part of its qty is
-		 * being removed. {@code null} when the requested qty lands exactly on whole-CU boundaries.
-		 */
-		@Nullable PickingJobStepPickedToHU boundaryHuToSplit;
-
-		/** The qty to carve out of {@link #boundaryHuToSplit} (the rest stays packed). */
-		@Nullable Quantity boundarySplitQty;
 	}
 }

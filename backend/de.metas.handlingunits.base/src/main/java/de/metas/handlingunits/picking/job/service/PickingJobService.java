@@ -46,7 +46,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.unpick.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
@@ -937,7 +937,7 @@ public class PickingJobService implements PickingSlotListener
 
 		final IHUQRCode parsedQRCode = huService.parsePickFromScannedCode(scannedCode);
 		final ProductId matchedProductId = resolveProductId(parsedQRCode, pickingJob);
-		final Quantity packedQty = computePackedQty(pickingJob, matchedProductId);
+		final Quantity packedQty = pickingJob.getPackedQty(matchedProductId);
 		final ITranslatableString productNameTrl = productService.getProductNameTrl(matchedProductId);
 
 		return PickingJobUnpickResolveResult.builder()
@@ -1000,17 +1000,4 @@ public class PickingJobService implements PickingSlotListener
 		throw new AdempiereException("Cannot find a product matching the scanned code in this picking job");
 	}
 
-	@Nullable
-	private static Quantity computePackedQty(
-			@NonNull final PickingJob pickingJob,
-			@NonNull final ProductId productId)
-	{
-		return pickingJob.streamSteps()
-				.filter(step -> ProductId.equals(step.getProductId(), productId))
-				.flatMap(step -> step.getPickFromKeys().stream()
-						.map(key -> step.getPickFrom(key).getQtyPicked().orElse(null))
-						.filter(Objects::nonNull))
-				.reduce((a, b) -> a.add(b))
-				.orElse(null);
-	}
 }
