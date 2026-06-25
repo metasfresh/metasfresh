@@ -1,7 +1,7 @@
--- M_Packageable_V.DatePromised: source it per order line (the line's DatePromised, header as fallback) instead of
--- always the header C_Order.DatePromised. The shipment schedule is per line, so the per-line promised date is the
--- correct value for the per-line ship/pick feature and its downstream consumers (M_Picking_Job_Schedule_view,
--- pickinglist). The ship gate itself enforces the DeliveryDate column (override-inclusive), not this column.
+-- M_Packageable_V.DatePromised: source it per order line (override-inclusive: COALESCE(DeliveryDate_Override,
+-- DeliveryDate)) instead of the header C_Order.DatePromised, so the per-line ship-after gate
+-- (IsFixedDatePromised) and any DatePromised consumer see each line's own date. Same value as the DeliveryDate
+-- column; the order(DatePromised)-vs-schedule(DeliveryDate) naming is bridged once, in this view.
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
@@ -145,12 +145,13 @@ FROM (SELECT
           (SELECT l.LockedBy_User_ID
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
-          -- Per-line promised delivery date = the order LINE's DatePromised (header C_Order.DatePromised as fallback).
-          -- M_ShipmentSchedule is per line, so this is the per-line value (overrides the header) for downstream
-          -- consumers (M_Picking_Job_Schedule_view, pickinglist). NOTE: the ship gate enforces the DeliveryDate column
-          -- above (COALESCE(DeliveryDate_Override, DeliveryDate), override-inclusive), NOT this column; the IsFixed*
-          -- flags below are header toggles that apply to ALL lines.
-          COALESCE(ol.datepromised, o.datepromised)                               AS datepromised,
+          -- Per-line promised date = the same override-inclusive value as the DeliveryDate column above
+          -- (COALESCE(DeliveryDate_Override, DeliveryDate)). M_ShipmentSchedule has no DatePromised column of its own;
+          -- "DatePromised" is the order/flag terminology for the same business date the schedule stores as DeliveryDate.
+          -- Exposing it per-line here is what makes the ship-after gate (header flag IsFixedDatePromised, applies to
+          -- ALL lines) hold each line until its OWN date. This is the single place the order(DatePromised)-vs-schedule
+          -- (DeliveryDate) naming is bridged.
+          COALESCE(s.DeliveryDate_Override, s.DeliveryDate)                        AS datepromised,
           o.IsFixedDatePromised,
           o.IsFixedPreparationDate,
           s.carrier_advising_status,
@@ -194,3 +195,4 @@ SELECT db_alter_view(
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
+

@@ -289,17 +289,9 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
-			// Per-line "hold each line until its own date" gate. The header flags below apply to ALL lines of the
-			// order uniformly; the dates are per line (each line has its own M_ShipmentSchedule, whose date overrides
-			// the header):
-			//   - PreparationDate (pick date)                 ↔ header flag IsFixedPreparationDate ("pick after the prep date")
-			//   - DeliveryDate (line's promised delivery date ↔ header flag IsFixedDatePromised   ("ship after the promised date")
-			//     = line DatePromised, plus DeliveryDate_Override)
-			// The gate compares DeliveryDate (= COALESCE(DeliveryDate_Override, DeliveryDate)) because it is the
-			// override-inclusive per-line date. Do NOT gate on M_Packageable_V.DatePromised: it is the per-line
-			// promised date WITHOUT the manual DeliveryDate_Override, so gating on it would ignore an override the
-			// user set. The flag/column names differ (IsFixedDatePromised vs DeliveryDate) for historical reasons —
-			// M_ShipmentSchedule stores the per-line promised date under the name DeliveryDate.
+			// Per-line "hold each line until its own date" gate. PreparationDate and DatePromised are per line in
+			// M_Packageable_V (DatePromised = the override-inclusive per-line date — see the view); IsFixedPreparationDate
+			// and IsFixedDatePromised are header flags that apply to ALL lines of the order.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
@@ -308,7 +300,7 @@ public class ShipmentService implements IShipmentService
 					)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
-							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DeliveryDate, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
+							.addCompareFilter(I_M_Packageable_V.COLUMNNAME_DatePromised, CompareQueryFilter.Operator.LESS_OR_EQUAL, nowInstant)
 							.addEqualsFilter(I_M_Packageable_V.COLUMNNAME_IsFixedDatePromised, false)
 					)
 					.create();
