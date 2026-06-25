@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { huConsolidationJobLocation } from '../routes';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
@@ -43,12 +43,9 @@ export const PickingSlotScreen = () => {
       .then(() => history.goBack())
       .catch((error) => toastErrorFromObj(error));
   };
-  const onGraiScanned = useCallback(
-    ({ scannedBarcode }) => {
-      return consolidate({ grai: scannedBarcode }).catch((error) => toastErrorFromObj(error));
-    },
-    [consolidate]
-  );
+  const onGraiScanned = ({ scannedBarcode }) => {
+    return consolidate({ grai: scannedBarcode }).catch((error) => toastErrorFromObj(error));
+  };
 
   // console.log('PickingSlotScreen', { pickingSlotContent });
 

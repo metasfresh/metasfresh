@@ -5,11 +5,10 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.slot.PickingSlotQueue;
 import de.metas.handlingunits.picking.slot.PickingSlotService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -39,10 +38,10 @@ public class GetPickingSlotContentCommand
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
-	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final HUConsolidationJobRepository jobRepository;
 	@NonNull private final HUQRCodesService huQRCodesService;
 	@NonNull private final PickingSlotService pickingSlotService;
+	@NonNull private final PickingJobBPartnerService pickingJobBPartnerService;
 
 	@NonNull private final HUConsolidationJobId jobId;
 	@NonNull private final PickingSlotId pickingSlotId;
@@ -57,12 +56,8 @@ public class GetPickingSlotContentCommand
 			throw new AdempiereException("Job " + jobId + " does not have picking slot " + pickingSlotId);
 		}
 
-		// The GRAI scanner is shown only when the consolidation customer requires GRAI (same source
-		// picking uses) — mirrors picking's graiScanEnabled gating.
-		final GRAIRequired graiRequired = GRAIRequired
-				.optionalOfNullableCode(bpartnerDAO.getById(job.getCustomerId()).getGRAIRequired())
-				.orElse(GRAIRequired.No);
-		final boolean graiScanEnabled = !graiRequired.isNo();
+		// Show the GRAI scanner only when the customer requires GRAI — same rule (and same source) picking uses.
+		final boolean graiScanEnabled = !pickingJobBPartnerService.getGRAIRequired(job.getCustomerId()).isNo();
 
 		final PickingSlotQueue queue = pickingSlotService.getPickingSlotQueue(pickingSlotId);
 
