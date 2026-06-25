@@ -82,6 +82,13 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		// the order header uses. For a single-date order the per-line delivery date equals the header DatePromised,
 		// so the preparation date equals today's header value (no regression); for multi-date orders each line gets
 		// its own preparation date.
+		//
+		// The shipment schedule is per order line. The header flag C_Order.IsFixedDatePromised ("ship after the
+		// promised date") applies to ALL lines uniformly; what is per-line is the DATE it enforces — this delivery
+		// date (the line's DatePromised, overriding the header) becomes the schedule's DeliveryDate. So with the flag
+		// on, every line is held until its OWN delivery date (not the whole order until the header date). Same shape
+		// for IsFixedPreparationDate (header flag, all lines) + the per-line preparation date. Enforced in
+		// de.metas.handlingunits...ShipmentService's enqueue filter.
 		final ZonedDateTime deliveryDate = computeOrderLineDeliveryDate(orderLine, order);
 
 		return ShipmentScheduleReferencedLine.builder()

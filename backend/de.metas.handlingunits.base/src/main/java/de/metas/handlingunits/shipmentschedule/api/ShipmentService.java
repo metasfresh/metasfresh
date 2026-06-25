@@ -289,6 +289,16 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
+			// Per-line "hold each line until its own date" gate. The header flags below apply to ALL lines of the
+			// order uniformly; the dates are per line (each line has its own M_ShipmentSchedule, whose date overrides
+			// the header):
+			//   - PreparationDate (pick date)                 ↔ header flag IsFixedPreparationDate ("pick after the prep date")
+			//   - DeliveryDate (line's promised delivery date ↔ header flag IsFixedDatePromised   ("ship after the promised date")
+			//     = line DatePromised, plus DeliveryDate_Override)
+			// The flag/column names differ (IsFixedDatePromised vs DeliveryDate) only because M_ShipmentSchedule has no
+			// DatePromised column — the per-line promised date lives in DeliveryDate. Do NOT use
+			// M_Packageable_V.DatePromised here: it is the *header* C_Order.DatePromised and would hold every line to
+			// the single header date, defeating the per-line behaviour.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
