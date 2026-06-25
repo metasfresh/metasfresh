@@ -11,6 +11,7 @@ Feature: Dummy-GRAI prerequisite — validate the sales order PO reference at th
 
   Background:
     Given infrastructure and metasfresh are running
+    And metasfresh has date and time 2026-06-24T12:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
