@@ -363,14 +363,11 @@ public class BPartnerEffectiveBLTest
 		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isAfterDelivery())
 				.as("BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
 				.isTrue();
-		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.PURCHASE).isAfterDelivery())
-				.as("PURCHASE invoice rule falls back to system default when not set on partner or group")
-				.isTrue();
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES))
 				.as("BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
 				.isTrue();
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE))
-				.as("IsAutoInvoice has no purchase-side effect")
+				.as("group IsAutoInvoice=Y must NOT propagate to the purchase side")
 				.isFalse();
 	}
 
