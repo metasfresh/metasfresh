@@ -28,7 +28,7 @@ import { expect } from '@playwright/test';
  * 7. Only then proceed to add child records (order lines, etc.)
  */
 
-const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
+export const WEBAPI_BASE_URL = process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
 
 /**
  * Get complete record data including validation status from WebAPI.

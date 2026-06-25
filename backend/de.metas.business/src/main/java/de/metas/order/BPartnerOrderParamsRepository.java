@@ -37,6 +37,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
@@ -64,7 +65,7 @@ public class BPartnerOrderParamsRepository
 	public static BPartnerOrderParamsRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new BPartnerOrderParamsRepository(BPartnerEffectiveBL.newInstanceForUnitTesting());
+		return SpringContextHolder.getBeanOrSupply(BPartnerOrderParamsRepository.class, () -> new BPartnerOrderParamsRepository(BPartnerEffectiveBL.newInstanceForUnitTesting()));
 	}
 
 	@NonNull

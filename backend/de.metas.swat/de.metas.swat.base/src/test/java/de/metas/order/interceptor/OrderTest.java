@@ -29,6 +29,8 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -180,6 +182,8 @@ public class OrderTest
 		doctype.setName(name);
 		doctype.setDescription(description);
 		doctype.setDocumentNote(documentNote);
+		doctype.setDocBaseType(DocBaseType.SalesOrder.getCode());
+		doctype.setDocSubType(DocSubType.StandardOrder.getCode());
 
 		doctype.setCopyDescriptionAndDocumentNote(CopyDescriptionAndDocumentNote.CopyDescAndDocumentNote.getCode());
 

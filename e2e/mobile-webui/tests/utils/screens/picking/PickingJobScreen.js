@@ -60,6 +60,10 @@ export const PickingJobScreen = {
         await button.locator('.indicator-color-green').waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
+    expectPickingSlotButtonNotVisible: async () => await step(`${NAME} - Expect Picking Slot button not present`, async () => {
+        await pickingSlotButton().waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
     scanPickingSlot: async ({ qrCode, expectNextScreen, gotoPickingJobScreen }) => await step(`${NAME} - Scan picking slot ${qrCode}`, async () => {
         await PickingJobScreen.clickPickingSlotButton();
         await PickingSlotScanScreen.typeQRCode(qrCode);

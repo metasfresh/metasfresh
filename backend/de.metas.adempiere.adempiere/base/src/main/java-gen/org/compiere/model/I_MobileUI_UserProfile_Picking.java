@@ -556,6 +556,27 @@ public interface I_MobileUI_UserProfile_Picking
 	String COLUMNNAME_IsMassPrinting = "IsMassPrinting";
 
 	/**
+	 * Set Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPickingSlotRequired (boolean IsPickingSlotRequired);
+
+	/**
+	 * Get Kommissionierfach erforderlich.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPickingSlotRequired();
+
+	ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsPickingSlotRequired = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsPickingSlotRequired", null);
+	String COLUMNNAME_IsPickingSlotRequired = "IsPickingSlotRequired";
+
+	/**
 	 * Set Ship after closing LU.
 	 *
 	 * <br>Type: YesNo

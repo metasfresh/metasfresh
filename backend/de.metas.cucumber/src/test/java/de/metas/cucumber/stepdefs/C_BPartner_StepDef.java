@@ -94,6 +94,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_SalesRep_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_DeliveryRule;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_IncotermLocation;
@@ -130,6 +131,7 @@ public class C_BPartner_StepDef
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
+	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -146,6 +148,15 @@ public class C_BPartner_StepDef
 	 * <p>
 	 * The {@code C_BP_Group_ID} column resolves a known {@link C_BP_Group_StepDefData} identifier first, then
 	 * falls back to a raw repo-id, then to the default group.
+	 * <p>
+	 * E-invoicing columns (all optional):
+	 * <ul>
+	 *   <li>{@code VATaxID} — the partner's USt-IdNr / VAT identifier (BT-31 seller / BT-48 buyer)</li>
+	 *   <li>{@code TaxID} — the partner's Steuernummer / tax registration number (BT-32 seller)</li>
+	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
+	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
+	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
@@ -303,11 +314,23 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setC_BPartner_SalesRep_ID(salesRep.getC_BPartner_ID());
 		}
 
+		row.getAsOptionalIdentifier(COLUMNNAME_SalesRep_ID)
+				.map(userTable::get)
+				.ifPresent(salesRepUser -> bPartnerRecord.setSalesRep_ID(salesRepUser.getAD_User_ID()));
+
 		final String companyName = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_CompanyName).orElse(null);
 		if (EmptyUtil.isNotBlank(companyName))
 		{
 			bPartnerRecord.setCompanyName(companyName);
 		}
+
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_TaxID).ifPresent(bPartnerRecord::setTaxID);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID).ifPresent(vaTaxId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId))); // USt-IdNr (BT-31/48)
+
+		// e-invoice recipient configuration (resolved by EInvoiceConfigService.resolveForInvoice)
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoiceType).ifPresent(bPartnerRecord::setEInvoiceType);
+		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoice_BuyerReference).ifPresent(bPartnerRecord::setEInvoice_BuyerReference);
 
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))

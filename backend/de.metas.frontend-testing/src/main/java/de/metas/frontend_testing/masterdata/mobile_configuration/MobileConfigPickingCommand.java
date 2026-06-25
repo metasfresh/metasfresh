@@ -95,6 +95,7 @@ class MobileConfigPickingCommand
 				.filterByQRCode(profile.isFilterByBarcode())
 				.allowCompletingPartialPickingJob(profile.getDefaultPickingJobOptions().isAllowCompletingPartialPickingJob())
 				.isAnonymousPickHUsOnTheFly(profile.getDefaultPickingJobOptions().isAnonymousPickHUsOnTheFly())
+				.pickingSlotRequired(profile.getDefaultPickingJobOptions().getPickingSlotRequired().toBooleanOrNull())
 				.displayPickingSlotSuggestions(profile.getDefaultPickingJobOptions().getDisplayPickingSlotSuggestions().toBooleanOrNull())
 				.activeWorkplaceRequired(profile.isActiveWorkplaceRequired())
 				.considerOnlyJobScheduledToWorkplace(profile.isConsiderOnlyJobScheduledToWorkplace())
@@ -146,6 +147,8 @@ class MobileConfigPickingCommand
 		{
 			builder.isAnonymousPickHUsOnTheFly(from.getAnonymousPickHUsOnTheFly());
 		}
+
+		builder.pickingSlotRequired(OptionalBoolean.ofNullableBoolean(from.getPickingSlotRequired()));
 
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 

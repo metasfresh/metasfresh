@@ -34,6 +34,7 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -79,7 +80,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -235,21 +235,29 @@ public class C_Order
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+					I_C_Order.COLUMNNAME_C_BPartner_ID
+			})
 	public void setIncoterms(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
-		if (bpartner == null)
-		{
-			return; // nothing to do yet
-		}
-		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		if (order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
 		{
 			return; // prevent updating value from OLCand
 		}
 
 		orderBL.setIncoterms(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID },
+			skipIfCopying = true)
+	public void setSalesRepFromBPartner(final I_C_Order order)
+	{
+		// No isUIAction guard (intentional): this must also run when an order is created
+		// programmatically from an OLCand, not only from the UI callout.
+		if (order.isSOTrx())
+		{
+			orderBL.setSalesRep(order);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -528,6 +536,27 @@ public class C_Order
 		{
 			orderBL.updateDescriptionFromDocTypeTargetId(order);
 		}
+	}
+
+	/**
+	 * Mirrors {@code CalloutOrder.docType} (which only fires in the WebUI) so that {@code OrderType} is also set
+	 * for orders created/changed via the REST API, OLCand import or async processing.
+	 */
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
+			I_C_Order.COLUMNNAME_C_DocType_ID
+	})
+	public void updateOrderTypeFromDocType(final I_C_Order order)
+	{
+		if (DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()) == null && DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()) == null)
+		{
+			return; // no doctype yet => nothing to derive from
+		}
+
+		order.setOrderType(orderBL.getDocBaseAndSubType(order).getDocSubType().getNullableCode());
 	}
 
 	@ModelChange(timings = {
