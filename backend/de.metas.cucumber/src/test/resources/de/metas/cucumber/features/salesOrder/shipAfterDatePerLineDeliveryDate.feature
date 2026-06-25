@@ -63,8 +63,9 @@ Feature: Ship-after-date holds each order line until its own delivery date
       | M_ShipmentSchedule_ID | M_InOut_ID    |
       | schedule_past         | shipment_past |
 
-    # The future-delivery-date line is held back: the per-line DeliveryDate filter excludes it from the
-    # enqueuer selection, so no valid record remains to enqueue.
+    # The future-delivery-date line is held back: the per-line DatePromised filter
+    # (COALESCE(DeliveryDate_Override, DeliveryDate) <= now) excludes it from the enqueuer selection, so no
+    # valid record remains to enqueue.
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule and expects error message
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | AD_Message.Value                                                                    |
       | schedule_future       | D            | true                | false       | de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.NoValidRecords |
