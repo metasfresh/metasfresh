@@ -319,15 +319,20 @@ jobs:
           command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
       - name: push-image ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
-        # No retry wrapper: a single uninterrupted push so a slow (but completing) manifest
-        # commit on the large backend image is not killed at RETRY_TIMEOUT. Bounded by timeout-minutes.
-        timeout-minutes: 60
-        run: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
       - name: push-image ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
-        # No retry wrapper: a single uninterrupted push (see fixed-tag step above). Bounded by timeout-minutes.
-        timeout-minutes: 60
-        run: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+        uses: nick-fields/retry@v4
+        with:
+          max_attempts: ${{ vars.RETRY_ATTEMPTS }}
+          retry_wait_seconds: ${{ vars.RETRY_DELAY }}
+          timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
       - name: push-image ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
