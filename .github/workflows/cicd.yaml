@@ -75,6 +75,7 @@ jobs:
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
       - name: determine-base-refname
+        # In short: reuse the base branch's already-built image cache so a feature branch's first build stays fast.
         # Resolve the BASE branch this ref derives from, for the base-tag-floating cache-from (see init outputs).
         # Feature branches follow the "<base>_<suffix>" convention; the base branches are listed in CICD_BRANCH_MAP.
         # Pick the LONGEST base that the ref equals or starts with ("<base>_"); fall back to the ref itself
