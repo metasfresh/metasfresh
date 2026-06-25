@@ -304,3 +304,53 @@ test('Scan unknown GRAI on PickingSlotScreen → HuNotFound error toast', async 
         });
     });
 });
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a garbage / non-GRAI barcode on PickingSlotScreen → rejected, nothing consolidated', async ({ page }) => {
+    // === ALLURE METADATA ===
+    await allure.epic('E0105: Picking');
+    await allure.tag('F00248');
+    await allure.story('HU Consolidation - GRAI scan with a garbage barcode is safely rejected');
+    await allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    // A free-form, non-GRAI string. (GRAI parsing is lenient, so it is treated as a GRAI that
+    // simply matches no HU — the operator sees the same "no HU found" rejection as an unknown GRAI;
+    // the point of this case is that arbitrary garbage input is safely rejected and consolidates nothing.)
+    const garbageBarcode = 'NOT-A-GRAI-BARCODE-12345';
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+
+    await pickGraiTUsToPickingSlot({ masterdata });
+
+    await test.step('HU Consolidation — scan a garbage barcode → error, nothing consolidated', async () => {
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('huConsolidation');
+        await HUConsolidationJobsListScreen.waitForScreen();
+        await HUConsolidationJobsListScreen.startJob({ customerLocationId: masterdata.bpartners.BP1.bpartnerLocationId });
+        await HUConsolidationJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI_P1.luName });
+        await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
+
+        await expectErrorToast('Garbage barcode → rejected', async () => {
+            await PickingSlotScreen.scanGRAI({ graiString: garbageBarcode });
+            await PickingSlotScreen.waitForScreen();
+        }, ({ textContent }) => {
+            // A non-resolvable scanned code is rejected; nothing is consolidated.
+            expect(textContent).toContain('No HU found for this QR code');
+        });
+    });
+
+    // The garbage scan changed nothing: both picked TUs are still in the slot, none on a target LU.
+    await Backend.expect({
+        title: 'garbage scan consolidated nothing — both TUs still in slot1',
+        pickingSlots: {
+            [masterdata.pickingSlots.slot1.qrCode]: { queue: [{ hu: 'tu1' }, { hu: 'tu2' }] },
+        },
+        hus: {
+            tu1: { storages: { P1: '4 PCE' } },
+            tu2: { storages: { P2: '5 PCE' } },
+        },
+    });
+});
