@@ -31,6 +31,9 @@ public class C_Order
 		assertDummyGRAIPrerequisites(order);
 	}
 
+	// Watches POReference only — intentionally NOT C_BPartner_ID. Switching an existing order's customer
+	// to a dummy-GRAI customer (PO reference untouched) is a rare back-office action; it is not re-validated
+	// at save and is caught instead by the BEFORE_COMPLETE backstop below. (me03 30607 — deliberate scope.)
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
 	public void validateDummyGRAIPrerequisitesOnPOReferenceChange(@NonNull final I_C_Order order)
 	{
