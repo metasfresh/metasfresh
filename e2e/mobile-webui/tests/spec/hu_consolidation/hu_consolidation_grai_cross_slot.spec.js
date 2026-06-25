@@ -6,7 +6,7 @@
  * Real-life flow:
  *   1. Two packages are picked, one into each of two different slots.
  *   2. The worker opens HU Consolidation and opens the first slot.
- *   3. Scanning the barcode of the package that is in the OTHER slot → "LU is not at the picking
+ *   3. Scanning the barcode of the package that is in the OTHER slot → "The HU is not at the picking
  *      slot"; the open slot is unchanged.
  *   4. Scanning the package that IS in the open slot then consolidates it and completes the job.
  *
@@ -168,7 +168,8 @@ test('Scan GRAI of TU not in the open slot → LuNotAtPickingSlot error toast', 
         }, ({ textContent }) => {
             // Backend throws MobileQRCodeMessages.LU_NOT_AT_SLOT (AD_Message
             // de.metas.hu_consolidation.LuNotAtPickingSlot), rendered to the operator as this en_US message.
-            expect(textContent).toContain('LU is not at the picking slot');
+            // The scanned unit is a TU, so the message is HU-worded (not "LU") — see gh#29852.
+            expect(textContent).toContain('The HU is not at the picking slot');
         });
 
         // Confirm slot1 state is unchanged (graiP1 TU is still there)
