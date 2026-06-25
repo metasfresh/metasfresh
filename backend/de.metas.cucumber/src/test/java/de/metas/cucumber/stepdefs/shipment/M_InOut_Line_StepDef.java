@@ -54,7 +54,6 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -413,36 +412,6 @@ public class M_InOut_Line_StepDef
 		final InOutId inoutId = InOutId.ofRepoId(inoutLine.getM_InOut_ID());
 		final I_M_InOut inout = inoutTable.getFirstById(inoutId).orElseThrow(() -> new AdempiereException("No loaded inout found for " + inoutId));
 		return MovementType.ofCode(inout.getMovementType());
-	}
-
-	/**
-	 * Asserts that the given shipment has no lines with a negative MovementQty.
-	 * <p>
-	 * Guards against a counter-row net-qty approach producing a spurious negative shipment line:
-	 * after a partial unpick of N from packed P, the only shipment line for the product must
-	 * carry qty P−N (positive), with no separate negative offset line.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns (no DataTable — shipment identifier is a regex capture group)
-	 * @cucumber.example
-	 * <pre>
-	 * And the shipment identified by shipment_30480_crNQ has no negative movement lines
-	 * </pre>
-	 */
-	@And("^the shipment identified by (.*) has no negative movement lines$")
-	public void assertNoNegativeMovementLines(@NonNull final String inOutIdentifier)
-	{
-		final I_M_InOut inOut = inoutTable.get(inOutIdentifier);
-		assertThat(inOut).isNotNull();
-
-		final long negativeLineCount = queryBL.createQueryBuilder(I_M_InOutLine.class)
-				.addEqualsFilter(COLUMNNAME_M_InOut_ID, inOut.getM_InOut_ID())
-				.addCompareFilter(COLUMNNAME_MovementQty, CompareQueryFilter.Operator.LESS, BigDecimal.ZERO)
-				.create()
-				.count();
-		assertThat(negativeLineCount)
-				.as("negative M_InOutLine.MovementQty lines in shipment " + inOutIdentifier)
-				.isEqualTo(0L);
 	}
 
 }

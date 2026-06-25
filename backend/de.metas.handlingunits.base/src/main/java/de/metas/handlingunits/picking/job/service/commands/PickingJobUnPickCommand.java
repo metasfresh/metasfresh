@@ -106,10 +106,7 @@ public class PickingJobUnPickCommand
 		final Stream<StepUnpickInstructions> unpickInstructionsStream;
 		if (productId != null && qtyToUnpick != null)
 		{
-			// Header-scoped by design: matches the sales_order aggregation level; same product across multiple lines is intentionally pooled.
-			// Each produced StepUnpickInstructions carries its own step's lineId, so the per-instruction reinitializePickingTargetIfDestroyed
-			// below reinits the correct line's target regardless of how many lines the selection spanned (for PRODUCT aggregation the
-			// product↔line relationship is 1:1, so the selection stays within a single line anyway).
+			// The subset selection is product-scoped and may span multiple lines; each instruction carries its own lineId.
 			unpickInstructionsStream = buildSubsetUnpickInstructions(pickingJob, productId, qtyToUnpick);
 		}
 		else if (onlyPickingJobStepId != null)
@@ -355,7 +352,10 @@ public class PickingJobUnPickCommand
 			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 			changeHUStatusFromPickedToActive(topLevelHUs);
 
-			moveToTargetHUIfNeeded(huIdAndQRCodeList);
+			// Move the EXTRACTED top-level HUs, not the original picked-CU references: extracting an aggregate
+			// CU splits out a new TU and relocates its QR assignment onto that TU, so the original (huId,QR)
+			// pairs are stale and the move's re-extraction would fail the QR-assignment assertion.
+			moveToTargetHUIfNeeded(toCurrentHuIdAndQRCodes(topLevelHUs));
 		}
 
 		//
@@ -378,10 +378,7 @@ public class PickingJobUnPickCommand
 							.build());
 			final HuId carvedCUId = HuId.ofRepoId(carvedCU.getM_HU_ID());
 
-			// The carved CU is the unpicked part. huToNewSingleCU carried a proportional picked-qty allocation
-			// onto it, so remove that allocation (same as the whole-CU path above) — the carved CU then ships
-			// nothing and the source VHU keeps its full picked allocation = the physical remainder, so the
-			// shipment ships the remainder. Delete before returning to Active / moving, mirroring the whole-CU path.
+			// Delete the carved CU's allocation before re-activating it — the source VHU's allocation then covers the physical remainder.
 			final HUQRCode carvedQRCode = huService.getHuQRCodesService().getQRCodeByHuId(carvedCUId);
 			final ImmutableSet<HUIdAndQRCode> carvedHuIdAndQRCode = ImmutableSet.of(
 					HUIdAndQRCode.builder().huId(carvedCUId).huQRCode(carvedQRCode).build());
@@ -417,6 +414,19 @@ public class PickingJobUnPickCommand
 	{
 		final Set<HuId> topLevelHUIds = newHUTransformService().extractToTopLevel(huIdAndQRCodeList);
 		return huService.getByIds(topLevelHUIds);
+	}
+
+	private ImmutableSet<HUIdAndQRCode> toCurrentHuIdAndQRCodes(@NonNull final Collection<I_M_HU> hus)
+	{
+		return hus.stream()
+				.map(hu -> {
+					final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+					return HUIdAndQRCode.builder()
+							.huId(huId)
+							.huQRCode(huService.getHuQRCodesService().getQRCodeByHuId(huId))
+							.build();
+				})
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private static ImmutableSet<HUIdAndQRCode> extractHuIdAndQRCodes(final @NonNull List<PickingJobStepPickedToHU> pickedToHUs)
