@@ -90,3 +90,26 @@ Feature: Pick-after-date holds each order line until its own preparation date
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyToDeliver | PreparationDate |
       | schedule                         | 1            | 2022-08-16      |
+
+  @from:cucumber
+@allure.label.epic:E0100_Sales
+@allure.label.feature:F00131
+  Scenario: An explicit per-line C_OrderLine.PreparationDate overrides the derived preparation date
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | IsFixedPreparationDate |
+      | order      | true    | bpartner                 | 2022-08-16  | false                  |
+    And metasfresh contains C_OrderLines:
+      | Identifier         | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DatePromised | OPT.PreparationDate |
+      | orderLine_override | order                 | product                 | 1          | 2022-08-20   | 2022-08-05          |
+      | orderLine_derived  | order                 | product                 | 1          | 2022-08-10   |                     |
+    When the order identified by order is completed
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | schedule_override | orderLine_override        | N             |
+      | schedule_derived  | orderLine_derived         | N             |
+    # The override line's preparation date is its explicit C_OrderLine.PreparationDate (2022-08-05), NOT its
+    # delivery date (2022-08-20). The derived line (no override) keeps prep == delivery date (no tour configured).
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | PreparationDate |
+      | schedule_override                | 2022-08-05      |
+      | schedule_derived                 | 2022-08-10      |

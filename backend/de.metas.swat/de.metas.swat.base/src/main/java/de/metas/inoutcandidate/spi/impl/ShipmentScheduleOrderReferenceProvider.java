@@ -86,7 +86,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
-				.preparationDate(orderDeliveryDayBL.computePreparationDate(order, deliveryDate))
+				.preparationDate(orderDeliveryDayBL.computePreparationDate(order, orderLine, deliveryDate))
 				.deliveryDate(deliveryDate)
 				.warehouseId(warehouseAdvisor.evaluateWarehouse(orderLine))
 				.shipperId(ShipperId.optionalOfRepoId(orderLine.getM_Shipper_ID()))

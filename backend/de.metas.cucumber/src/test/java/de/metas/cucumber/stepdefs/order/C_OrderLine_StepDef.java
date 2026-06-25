@@ -157,8 +157,11 @@ public class C_OrderLine_StepDef
 	 * Selected optional columns:
 	 * <ul>
 	 *   <li>{@code DatePromised} (optional) — per-line promised/delivery date; when set, this line's delivery date
-	 *       (and therefore its shipment-schedule {@code PreparationDate}) is derived from it instead of the order header's
-	 *       {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *       (and therefore its shipment-schedule {@code PreparationDate}, unless overridden below) is derived from it
+	 *       instead of the order header's {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *   <li>{@code PreparationDate} (optional) — explicit per-line preparation-date override; when set, it is used
+	 *       verbatim as this line's shipment-schedule {@code PreparationDate} (instead of deriving from the delivery
+	 *       date). Parsed as a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 * </ul>
 	 */
@@ -264,6 +267,12 @@ public class C_OrderLine_StepDef
 				.ifPresent(datePromised -> {
 					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
 					orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised, orderLineZoneId));
+				});
+
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate, orderLineZoneId));
 				});
 
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)

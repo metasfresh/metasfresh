@@ -19,6 +19,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
@@ -109,6 +110,20 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		// production default). (A UI-created order under the non-default sysconfig=false could differ, but the
 		// IsFixedPreparationDate / OLCand flow this feeds is always system-created, i.e. header fallback=true too.)
 		return computePreparationDateAndTour0(order, deliveryDate, true, timeZone).getPreparationDate();
+	}
+
+	@Override
+	@Nullable
+	public ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine, @NonNull final ZonedDateTime deliveryDate)
+	{
+		// me03 30435 point 2: an explicit per-line C_OrderLine.PreparationDate override wins verbatim; otherwise derive
+		// from the (per-line) delivery date. This method is the single owner of the override-or-derive decision.
+		final java.sql.Timestamp lineOverride = orderLine.getPreparationDate();
+		if (lineOverride != null)
+		{
+			return TimeUtil.asZonedDateTime(lineOverride, orderBL.getTimeZone(order));
+		}
+		return computePreparationDate(order, deliveryDate);
 	}
 
 	/**
