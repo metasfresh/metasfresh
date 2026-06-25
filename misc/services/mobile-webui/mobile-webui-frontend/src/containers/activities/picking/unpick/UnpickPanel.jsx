@@ -16,6 +16,10 @@ const STAGE = {
   SCAN_TARGET: 'SCAN_TARGET',
 };
 
+// Orchestrates the job-level partial-unpick flow as a panel that takes over the picking job screen,
+// driven by a single `stage` state through three steps: scan the product to unpick
+// (UnpickProductScanDialog) → enter the qty (GetQuantityDialog) → scan the target HU, or skip to drop
+// on the floor (UnpickDialog).
 const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
   const dispatch = useDispatch();
 
@@ -56,9 +60,7 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
 
   if (stage === STAGE.SCAN_PRODUCT) {
     return <UnpickProductScanDialog wfProcessId={wfProcessId} onResolved={onProductResolved} onCloseDialog={onClose} />;
-  }
-
-  if (stage === STAGE.ENTER_QTY) {
+  } else if (stage === STAGE.ENTER_QTY) {
     const packedQty = Number(resolved?.packedQty ?? 0);
     return (
       <div data-testid="unpick-qty-dialog">
@@ -73,17 +75,17 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
         />
       </div>
     );
+  } else {
+    return (
+      <UnpickDialog
+        scanPlaceholderKey="activities.picking.unpick.scanTargetHU"
+        scannerTestId="unpick-target-hu-scanner"
+        skipTestId="unpick-skip-to-floor"
+        onSubmit={onTargetSubmitted}
+        onCloseDialog={onClose}
+      />
+    );
   }
-
-  return (
-    <UnpickDialog
-      scanPlaceholderKey="activities.picking.unpick.scanTargetHU"
-      scannerTestId="unpick-target-hu-scanner"
-      skipTestId="unpick-skip-to-floor"
-      onSubmit={onTargetSubmitted}
-      onCloseDialog={onClose}
-    />
-  );
 };
 
 UnpickPanel.propTypes = {

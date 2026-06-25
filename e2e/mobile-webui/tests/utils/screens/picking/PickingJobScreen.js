@@ -248,12 +248,12 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen();
     }),
 
-    clickRemoveItem: async () => await step(`${NAME} - Click "Remove item"`, async () => {
-        await page.getByTestId('remove-item-button').tap();
+    clickUnpickItem: async () => await step(`${NAME} - Click "Unpack item"`, async () => {
+        await page.getByTestId('unpick-item-button').tap();
         // The unpick panel replaces the job screen; wait for the job-screen scan button to be gone so
         // its scanner is unmounted before we scan into the unpick scanner (otherwise the product scan
         // can land in the still-mounted job scanner).
-        await page.getByTestId('remove-item-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await page.getByTestId('unpick-item-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
         await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
@@ -261,7 +261,7 @@ export const PickingJobScreen = {
     // dialog opens with default = packed qty. Re-scans if the scan landed in the mount-race window
     // before the freshly-mounted scanner armed its keydown listener — a real operator simply scans
     // again when nothing registers.
-    scanProductToRemove: async ({ scannedCode }) => await step(`${NAME} - Scan product GTIN '${scannedCode}'`, async () => {
+    scanProductToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product GTIN '${scannedCode}'`, async () => {
         const qtyDialog = page.locator('.get-qty-dialog');
         const maxScanAttempts = 3;
         for (let attempt = 1; attempt <= maxScanAttempts; attempt++) {
@@ -278,11 +278,11 @@ export const PickingJobScreen = {
         }
     }),
 
-    expectDefaultQtyToRemove: async ({ qty }) => await step(`${NAME} - Expect default qty to remove '${qty}'`, async () => {
+    expectDefaultQtyToUnpick: async ({ qty }) => await step(`${NAME} - Expect default qty to unpick '${qty}'`, async () => {
         await GetQuantityDialog.expectQtyEntered(qty);
     }),
 
-    enterQtyToRemove: async ({ qty }) => await step(`${NAME} - Enter qty to remove '${qty}'`, async () => {
+    enterQtyToUnpick: async ({ qty }) => await step(`${NAME} - Enter qty to unpick '${qty}'`, async () => {
         await GetQuantityDialog.typeQtyEntered(qty);
         await GetQuantityDialog.clickDone({});
         await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
@@ -298,29 +298,29 @@ export const PickingJobScreen = {
         await PickingJobScreen.waitForScreen();
     }),
 
-    removeItem: async ({ scannedCode, qty, targetHUQRCode, expectDefaultQty }) => await step(`${NAME} - Remove ${qty} of '${scannedCode}' into target HU`, async () => {
-        await PickingJobScreen.clickRemoveItem();
-        await PickingJobScreen.scanProductToRemove({ scannedCode });
+    unpickItem: async ({ scannedCode, qty, targetHUQRCode, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' into target HU`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
         if (expectDefaultQty != null) {
-            await PickingJobScreen.expectDefaultQtyToRemove({ qty: expectDefaultQty });
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
         }
-        await PickingJobScreen.enterQtyToRemove({ qty });
+        await PickingJobScreen.enterQtyToUnpick({ qty });
         await PickingJobScreen.scanTargetHUAndCommit({ qrCode: targetHUQRCode });
     }),
 
-    removeItemToFloor: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Remove ${qty} of '${scannedCode}' to the floor (skip target HU)`, async () => {
-        await PickingJobScreen.clickRemoveItem();
-        await PickingJobScreen.scanProductToRemove({ scannedCode });
+    unpickItemToFloor: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' to the floor (skip target HU)`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
         if (expectDefaultQty != null) {
-            await PickingJobScreen.expectDefaultQtyToRemove({ qty: expectDefaultQty });
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
         }
-        await PickingJobScreen.enterQtyToRemove({ qty });
+        await PickingJobScreen.enterQtyToUnpick({ qty });
         await PickingJobScreen.skipTargetHUAndCommit();
     }),
 
     // Negative path: scans a code that does not resolve to a product packed in this job. The single
     // error surface is the scanner's toast; wrap the call site in expectErrorToast(...) to assert it.
-    scanProductCodeToRemove: async ({ scannedCode }) => await step(`${NAME} - Scan product code '${scannedCode}' (no advance expected)`, async () => {
+    scanProductCodeToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product code '${scannedCode}' (no advance expected)`, async () => {
         await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-product-scanner' });
     }),
 
@@ -329,7 +329,7 @@ export const PickingJobScreen = {
         await expect(page.locator('.get-qty-dialog')).toHaveCount(0);
     }),
 
-    closeRemoveItem: async () => await step(`${NAME} - Close "Remove item"`, async () => {
+    closeUnpickItem: async () => await step(`${NAME} - Close "Unpack item"`, async () => {
         await page.locator('.unpick-dialog .buttons button.is-danger').tap();
         await PickingJobScreen.waitForScreen();
     }),

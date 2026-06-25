@@ -140,9 +140,9 @@ const translations = {
       scanTargetHU: 'Scan target HU',
       qtyRejectedIgnoreReason: 'Without reason',
       unpick: {
-        removeItemBtn: 'Remove item',
+        unpickItemBtn: 'Unpack item',
         scanProduct: 'Scan product',
-        qtyCaption: 'Qty to remove',
+        qtyCaption: 'Qty to unpick',
         scanTargetHU: 'Scan target HU',
         productNotInPackage: 'This product is not in the package',
       },

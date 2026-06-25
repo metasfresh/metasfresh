@@ -7,6 +7,9 @@ import BarcodeScannerComponent from '../../../../components/BarcodeScannerCompon
 import DialogButton from '../../../../components/dialogs/DialogButton';
 import Dialog from '../../../../components/dialogs/Dialog';
 
+// Stage 1 of UnpickPanel: scans a product GTIN and resolves it against the picking job; surfaces an
+// inline error when the scanned product is not packed in this job (the qty/target stages live in
+// UnpickPanel).
 const UnpickProductScanDialog = ({ wfProcessId, onResolved, onCloseDialog }) => {
   const [errorMessage, setErrorMessage] = useState(null);
 
@@ -39,20 +42,12 @@ const UnpickProductScanDialog = ({ wfProcessId, onResolved, onCloseDialog }) => 
 
   return (
     <Dialog className="screen unpick-dialog">
-      <table className="table">
-        <tbody>
-          <tr>
-            <td colSpan="2">
-              <BarcodeScannerComponent
-                testId="unpick-product-scanner"
-                inputPlaceholderText={trl('activities.picking.unpick.scanProduct')}
-                resolveScannedBarcode={resolveScannedBarcode}
-                onResolvedResult={onResolvedResult}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <BarcodeScannerComponent
+        testId="unpick-product-scanner"
+        inputPlaceholderText={trl('activities.picking.unpick.scanProduct')}
+        resolveScannedBarcode={resolveScannedBarcode}
+        onResolvedResult={onResolvedResult}
+      />
       {errorMessage && (
         <p className="help is-danger" data-testid="unpick-error">
           {errorMessage}

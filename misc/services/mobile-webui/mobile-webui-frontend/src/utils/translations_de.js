@@ -144,9 +144,9 @@ const translations = {
       scanTargetHU: 'Ziel HU scannen',
       qtyRejectedIgnoreReason: 'Ohne Grund',
       unpick: {
-        removeItemBtn: 'Artikel entfernen',
+        unpickItemBtn: 'Artikel entpacken',
         scanProduct: 'Produkt scannen',
-        qtyCaption: 'Zu entfernende Menge',
+        qtyCaption: 'Zu entpackende Menge',
         scanTargetHU: 'Ziel HU scannen',
         productNotInPackage: 'Dieses Produkt ist nicht im Paket',
       },

@@ -92,8 +92,8 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
 
       {isUserEditable && (
         <ButtonWithIndicator
-          testId="remove-item-button"
-          captionKey="activities.picking.unpick.removeItemBtn"
+          testId="unpick-item-button"
+          captionKey="activities.picking.unpick.unpickItemBtn"
           disabled={!anyLinePicked}
           onClick={() => setUnpicking(true)}
         />

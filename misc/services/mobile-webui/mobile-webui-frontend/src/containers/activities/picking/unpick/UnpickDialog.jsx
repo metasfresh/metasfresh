@@ -6,10 +6,12 @@ import BarcodeScannerComponent from '../../../../components/BarcodeScannerCompon
 import DialogButton from '../../../../components/dialogs/DialogButton';
 import Dialog from '../../../../components/dialogs/Dialog';
 
+// Destination scanner for an unpick: scan the target HU to return goods into, or Skip to drop them
+// on the floor (always offered). Shared by the job-level UnpickPanel and the step-level
+// PickStepScreen / DistributionStepScreen.
 const UnpickDialog = ({
   onSubmit,
   onCloseDialog,
-  allowSkip = true,
   scanPlaceholderKey = 'activities.picking.scanTargetHU',
   scannerTestId,
   skipTestId,
@@ -23,21 +25,13 @@ const UnpickDialog = ({
 
   return (
     <Dialog className="screen unpick-dialog">
-      <table className="table">
-        <tbody>
-          <tr>
-            <td colSpan="2">
-              <BarcodeScannerComponent
-                testId={scannerTestId}
-                inputPlaceholderText={trl(scanPlaceholderKey)}
-                onResolvedResult={onResolvedQrCode}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <BarcodeScannerComponent
+        testId={scannerTestId}
+        inputPlaceholderText={trl(scanPlaceholderKey)}
+        onResolvedResult={onResolvedQrCode}
+      />
       <div className="buttons is-centered">
-        {allowSkip && <DialogButton captionKey="activities.picking.skip" testId={skipTestId} onClick={onSubmit} />}
+        <DialogButton captionKey="activities.picking.skip" testId={skipTestId} onClick={onSubmit} />
         <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
       </div>
     </Dialog>
@@ -46,7 +40,6 @@ const UnpickDialog = ({
 
 UnpickDialog.propTypes = {
   // Properties
-  allowSkip: PropTypes.bool,
   scanPlaceholderKey: PropTypes.string,
   scannerTestId: PropTypes.string,
   skipTestId: PropTypes.string,
