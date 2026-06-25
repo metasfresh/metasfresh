@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.payment.sepa/schema-pain_008_003_02/CLAUDE.md

@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.adempiere.adempiere/base/src/main/java/de/metas/payment/CLAUDE.md

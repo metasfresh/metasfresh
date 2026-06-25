@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.handlingunits.base/src/main/java/de/metas/handlingunits/hutransaction/CLAUDE.md

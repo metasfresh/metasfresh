@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_request/CLAUDE.md

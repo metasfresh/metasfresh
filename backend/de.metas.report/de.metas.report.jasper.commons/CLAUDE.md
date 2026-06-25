@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.report/de.metas.report.jasper.commons/CLAUDE.md

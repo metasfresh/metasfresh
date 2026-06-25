@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.vertical.pharma.msv3.schema.v1/CLAUDE.md

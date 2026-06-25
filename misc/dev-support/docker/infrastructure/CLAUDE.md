@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/misc/dev-support/docker/infrastructure/CLAUDE.md

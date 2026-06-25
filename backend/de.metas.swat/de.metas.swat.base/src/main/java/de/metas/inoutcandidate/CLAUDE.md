@@ -1,0 +1,1 @@
+/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.swat/de.metas.swat.base/src/main/java/de/metas/inoutcandidate/CLAUDE.md
