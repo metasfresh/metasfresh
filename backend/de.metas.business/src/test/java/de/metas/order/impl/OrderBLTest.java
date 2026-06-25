@@ -24,12 +24,18 @@ package de.metas.order.impl;
 
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.order.InvoiceRule;
+import de.metas.util.StringUtils;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 class OrderBLTest
@@ -40,6 +46,7 @@ class OrderBLTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		BPartnerEffectiveBL.newInstanceForUnitTesting();
 		orderBL = new OrderBL();
 	}
 
@@ -141,5 +148,67 @@ class OrderBLTest
 		order.setBill_User_ID(40);
 
 		assertThat(orderBL.getBillToContactIdOrNull(order)).isEqualTo(BPartnerContactId.ofRepoId(30, 40));
+	}
+
+	// setBPartner - InvoiceRule + IsAutoInvoice resolution via BP group
+	////////////////////////////////
+
+	/**
+	 * AC3b: Sales order, bp with null InvoiceRule/IsAutoInvoice, BP group has
+	 * InvoiceRule=AfterDelivery and IsAutoInvoice=Y.
+	 * After setBPartner the order must carry the group's values.
+	 */
+	@Test
+	void givenSalesOrder_bpHasNullInvoiceRule_bpGroupHasAfterDelivery_whenSetBPartner_thenOrderGetsGroupValues()
+	{
+		// setup BP group with InvoiceRule=AfterDelivery, IsAutoInvoice=Y
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+		bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
+		saveRecord(bpGroup);
+
+		// bp has no own InvoiceRule / IsAutoInvoice
+		final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		saveRecord(bp);
+
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+
+		orderBL.setBPartner(order, bp);
+
+		assertThat(order.getInvoiceRule())
+				.as("order InvoiceRule must be AfterDelivery (from BP group)")
+				.isEqualTo(InvoiceRule.AfterDelivery.getCode());
+		assertThat(order.isAutoInvoice())
+				.as("order IsAutoInvoice must be true (from BP group)")
+				.isTrue();
+	}
+
+	/**
+	 * AC4: bp with explicit InvoiceRule=Immediate — partner value wins over group.
+	 */
+	@Test
+	void givenSalesOrder_bpHasExplicitImmediateInvoiceRule_whenSetBPartner_thenOrderGetsImmediateRule()
+	{
+		// setup BP group with InvoiceRule=AfterDelivery (lower-priority)
+		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+		saveRecord(bpGroup);
+
+		// bp has explicit InvoiceRule=Immediate
+		final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+		bp.setInvoiceRule(InvoiceRule.Immediate.getCode());
+		saveRecord(bp);
+
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+
+		orderBL.setBPartner(order, bp);
+
+		assertThat(order.getInvoiceRule())
+				.as("order InvoiceRule must be Immediate (partner value wins)")
+				.isEqualTo(InvoiceRule.Immediate.getCode());
 	}
 }

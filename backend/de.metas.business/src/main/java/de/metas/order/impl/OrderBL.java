@@ -654,15 +654,11 @@ public class OrderBL implements IOrderBL
 		}
 
 		//
-		// Default Invoice/Payment Rule
-		final InvoiceRule invoiceRule = isSOTrx ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
-		{
-			order.setInvoiceRule(invoiceRule.getCode());
-		}
+		// Default Invoice/Payment Rule (resolved via BP group chain: partner → group → parent → system default)
+		final de.metas.bpartner.effective.BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(bp);
+		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
 
 		final String paymentRule = bp.getPaymentRule();
 		if (paymentRule != null)
