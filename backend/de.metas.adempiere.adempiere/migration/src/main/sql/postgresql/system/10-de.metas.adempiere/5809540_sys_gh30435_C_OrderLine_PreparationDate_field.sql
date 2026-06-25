@@ -48,7 +48,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND f.AD_Field_ID = 781250
   AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language = l.AD_Language AND tt.AD_Field_ID = f.AD_Field_ID);
 
 -- =============================================================================
--- 2. AD_UI_Element at seq 420 (after DatePromised's 410) — cloned from UI element 554396
+-- 2. AD_UI_Element at seq 415 (after DatePromised's 410, before Vendor's 420) — cloned from UI element 554396
 -- =============================================================================
 INSERT INTO AD_UI_Element (
   ad_ui_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
