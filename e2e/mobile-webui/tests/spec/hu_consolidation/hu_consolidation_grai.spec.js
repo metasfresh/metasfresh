@@ -11,7 +11,7 @@
  *
  * Companion error-case tests (separate spec, hu_consolidation_grai_cross_slot.spec.js, and below):
  *   - Scan a barcode that matches no package  → "No HU found for this QR code".
- *   - Scan a package that is in a different slot → "LU is not at the picking slot".
+ *   - Scan a package that is in a different slot → "The HU is not at the picking slot".
  */
 
 import { test } from '../../../playwright.config';
