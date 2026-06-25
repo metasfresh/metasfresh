@@ -1,6 +1,6 @@
 ARG REFNAME=local
 ARG REGISTRY=
-FROM ${REGISTRY}metasfreshdev/metas-mvn-camel:$REFNAME AS camel
+FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM maven:3.8.4-eclipse-temurin-17 AS junit
 
