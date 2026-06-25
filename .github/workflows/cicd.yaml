@@ -204,10 +204,10 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
-          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend
         run: |
@@ -242,11 +242,11 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel
         run: |
@@ -254,11 +254,11 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel-dist
         run: |
@@ -266,28 +266,28 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
-      - name: push-image metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
       - name: push-image ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         # No retry wrapper: a single uninterrupted push so a slow (but completing) manifest
@@ -299,62 +299,62 @@ jobs:
         # No retry wrapper: a single uninterrupted push (see fixed-tag step above). Bounded by timeout-minutes.
         timeout-minutes: 60
         run: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: bash .github/scripts/docker-push.sh metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+          command: bash .github/scripts/docker-push.sh ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
   #      # only needed for agent/hub
-  #      - name: push-maven-dist metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+  #      - name: push-maven-dist ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
   #        run: |
-  #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+  #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
   #      # only needed for custom external/edi
-  #      - name: push-maven-dist metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+  #      - name: push-maven-dist ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
   #        run: |
-  #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+  #          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
     runs-on: ${{ vars.RUNNER_HEAVY }}
