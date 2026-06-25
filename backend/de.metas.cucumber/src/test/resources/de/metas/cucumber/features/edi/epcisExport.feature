@@ -735,11 +735,15 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   ## Completion-ordering gate (me03 #30558): when two sales orders are picked onto ONE shared
   ## physical pallet (ONE SSCC18), the function must return {} for the first-completed shipment
   ## until ALL TUs on the LU are covered by a CO/CL shipment.
-  ## This scenario uses DO_NOT_CREATE: both picking jobs complete FIRST (so the LU physically
-  ## holds all 15 TUs), then shipments are generated individually. ioA is completed while ioB
-  ## has no shipment yet (its 10 TUs are on the LU but uncovered). The RED gate assertion fires
-  ## after completing ioA: the current (un-gated) function emits a non-empty partial event
-  ## for ioA because it sees no sibling M_InOut, so the 'returns empty object' assertion FAILS.
+  ## This scenario uses DO_NOT_CREATE + QuantityType=P (picked-only): both picking jobs
+  ## complete FIRST (so the LU physically holds all 15 TUs from both orders), then shipments
+  ## are generated sequentially. ioA is generated+completed alone (QuantityType=P restricts it
+  ## to order A's 5 picked TUs = 50 PCE). At that point ioB has no shipment yet — order B's
+  ## 10 TUs are physically on the shared LU but uncovered by any CO/CL shipment. The RED gate
+  ## assertion fires after completing ioA: the current (un-gated) function emits a non-empty
+  ## partial event for ioA because it sees no sibling M_InOut, so the 'returns empty object'
+  ## assertion FAILS. ioB is then generated+completed, closing the pallet; ioA then returns
+  ## the merged full event and ioB returns {}.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
@@ -875,28 +879,27 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_HU_ID             | M_Attribute_ID.Value | Value              |
       | sharedLu_S30558_010 | SSCC18               | 987654321000003058 |
 
-    # ─── Generate and complete ioA only ──────────────────────────────────────────────
+    # ─── Generate + complete ioA alone (QuantityType=P = picked-only → 5 TUs = 50 PCE) ─
+    # ioB has no shipment yet; its 10 TUs are physically on the LU but uncovered.
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssA_S30558_010        | PD           | false               | false       |
+      | ssA_S30558_010        | P            | true                | false       |
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     |
-      | ssA_S30558_010        | ioA_S30558_010 |
-    And the shipment identified by ioA_S30558_010 is completed
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
+      | ssA_S30558_010        | ioA_S30558_010 | CO            |
 
     # RED gate — ioB has no shipment yet (its 10 TUs are on the LU but uncovered by any CO/CL M_InOut):
     # Correct post-fix behaviour: {} (LU not fully covered → gate blocks emission).
     # This assertion MUST FAIL on the current (un-gated) code.
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioA_S30558_010
 
-    # ─── Generate and complete ioB — now all 15 TUs on the LU are covered ────────────
+    # ─── Generate + complete ioB — now all 15 TUs on the LU are covered ─────────────
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssB_S30558_010        | PD           | false               | false       |
+      | ssB_S30558_010        | P            | true                | false       |
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     |
-      | ssB_S30558_010        | ioB_S30558_010 |
-    And the shipment identified by ioB_S30558_010 is completed
+      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
+      | ssB_S30558_010        | ioB_S30558_010 | CO            |
 
     # ─── After both completions: ioA (lower ID = owner) returns the merged pallet ────
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S30558_010
@@ -907,9 +910,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000003058 | 15         |
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 2            |
     Then the EPCIS JSON pallet 0 crates are order-pure with POReferences:
       | poReference |
       | 1170000001  |
