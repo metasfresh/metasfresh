@@ -344,6 +344,31 @@ public class BPartnerEffectiveBLTest
 		assertEquals("TestPoIncotermsLocation3", poIncoterms.getLocationEffective());
 	}
 
+	/**
+	 * AC1 regression guard — me03 #30448: a BP-Group-level InvoiceRule+IsAutoInvoice default must reach
+	 * the partner's effective resolution for a sales order when the partner has no own value set.
+	 *
+	 * Scenario: C_BPartner with null InvoiceRule + null IsAutoInvoice,
+	 * assigned to a C_BP_Group that has InvoiceRule=AfterDelivery and IsAutoInvoice='Y'.
+	 * Expected: effective InvoiceRule == AfterDelivery, isAutoInvoice == true for SOTrx.SALES.
+	 */
+	@Test
+	public void getEffectiveValue_bpGroupInvoiceRuleAndIsAutoInvoice_reachesEffectiveForSales()
+	{
+		final BPartnerId bPartnerId = setup()
+				.bpGroup_InvoiceRule(InvoiceRule.AfterDelivery)
+				.bpGroup_isAutoInvoice(true)
+				.build();
+
+		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isAfterDelivery())
+				.as("AC1: BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
+				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES))
+				.as("AC1: BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
+				.isTrue();
+	}
+
 	@Test
 	public void getPurchaseTransportDays_noValueOnBPartner_returns0()
 	{
