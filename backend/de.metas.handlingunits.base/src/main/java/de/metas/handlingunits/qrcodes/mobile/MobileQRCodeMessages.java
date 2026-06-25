@@ -65,8 +65,7 @@ public class MobileQRCodeMessages
 
 	/**
 	 * Same as {@link #newNotRecognizedException(ScannedCode)} but keeps the original {@code cause} for diagnostics
-	 * (e.g. the raw payload-conversion failure of a truncated QR code). The cause is wired at construction time,
-	 * so we never risk {@link Throwable#initCause(Throwable)} on an already-initialized exception.
+	 * (e.g. the raw payload-conversion failure of a truncated QR code).
 	 */
 	@NonNull
 	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode, @Nullable final Throwable cause)

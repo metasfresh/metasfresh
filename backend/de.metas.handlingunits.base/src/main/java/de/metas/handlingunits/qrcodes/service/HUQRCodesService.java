@@ -414,7 +414,7 @@ public class HUQRCodesService
 					return LMQRCode.fromGlobalQRCode(globalQRCode);
 				}
 			}
-			catch (final Exception ex)
+			catch (final RuntimeException ex)
 			{
 				// The type prefix (HU#/LM#) matched but the payload could not be converted into a QR code. This
 				// covers a long QR code split mid-stream on a slow scanner device (the head fragment keeps the valid
