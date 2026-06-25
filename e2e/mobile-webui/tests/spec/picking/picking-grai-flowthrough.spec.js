@@ -123,6 +123,10 @@ const buildDistinctGrais = (baseGrai, count) => {
  * Postcondition: the inline GRAI capture panel is showing and reports the picked crate count as the
  * required number of GRAIs (count label 0 / TU_COUNT).
  *
+ * @param {{ closeTarget?: boolean }} [options]
+ * @param {boolean} [options.closeTarget=false]  when true, confirms the pick quantity with the
+ *   "OK und LU schließen" button instead of plain "OK" — asserts the GRAI capture is demanded on
+ *   both completion paths (the close-LU path must not bypass it).
  * @returns {Promise<{ masterdata: any, grais: string[], pickingJobId: any }>}
  */
 const pickAllTUsAndOpenGraiScreen = async ({ closeTarget = false } = {}) => {
