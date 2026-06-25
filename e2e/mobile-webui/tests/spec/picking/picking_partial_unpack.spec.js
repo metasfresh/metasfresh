@@ -47,6 +47,11 @@ const createMasterdata = async ({ packedGtin, otherGtin, createShipmentPolicy = 
                     createShipmentPolicy,
                     allowPickingAnyHU: true,
                     pickTo: ['LU_TU'],
+                    // Completing the job after a partial unpick leaves the line partially picked,
+                    // so the job must be completable while partial. Set it explicitly so this spec
+                    // does not inherit a prior spec's value (the picking config persists in the DB;
+                    // picking_multiProduct_aggregatedTUs sets it false and runs earlier).
+                    allowCompletingPartialPickingJob: true,
                 }
             },
             bpartners: { "BP1": {} },
