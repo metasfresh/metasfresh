@@ -9,6 +9,7 @@ import de.metas.acct.api.IProductAcctDAO;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.effective.BPartnerEffective;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
@@ -75,7 +76,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -297,8 +297,6 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@Nullable final PaymentTermId paymentTermId,
 			@Nullable final BigDecimal forcedQtyToAllocate)
 	{
-		final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-
 		final I_M_InOut inOut = create(inOutLineRecord.getM_InOut(), I_M_InOut.class);
 		final I_C_Invoice_Candidate icRecord = newInstance(I_C_Invoice_Candidate.class, inOutLineRecord);
 
@@ -371,8 +369,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		// Set Invoice Rule and Payment Rule from the bill-partner (order-less delivery)
 		else
 		{
-			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
-			final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartner);
+			final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(icRecord.getBill_BPartner_ID()));
 			final SOTrx soTrx = SOTrx.ofBoolean(inOut.isSOTrx());
 
 			// Inherit InvoiceRule and PaymentRule from the bill-partner's *effective* configuration

@@ -18,6 +18,7 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
 import de.metas.order.InvoiceRule;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -802,11 +803,11 @@ public class M_InOutLine_HandlerTest
 		final I_C_Invoice_Candidate ic = result.get(0);
 
 		// then: PaymentRule is inherited from the bill-partner, not stuck at the column default "P"
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.DirectDeposit);
 
 		// and: re-running setOrderedData on the order-less candidate must not overwrite it
 		inOutLineHandlerUnderTest.setOrderedData(ic);
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.DirectDeposit);
 	}
 
 	/**
@@ -837,7 +838,7 @@ public class M_InOutLine_HandlerTest
 		inOutLineHandlerUnderTest.setOrderedData(ic);
 
 		// then: PaymentRule comes from the order, not the bill-partner
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDebit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.DirectDebit);
 	}
 
 	/**
@@ -860,11 +861,11 @@ public class M_InOutLine_HandlerTest
 		final I_C_Invoice_Candidate ic = result.get(0);
 
 		// then: effective default OnCredit ("P")
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_OnCredit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.OnCredit);
 
 		// and: re-running setOrderedData on the order-less candidate must not overwrite it
 		inOutLineHandlerUnderTest.setOrderedData(ic);
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_OnCredit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.OnCredit);
 	}
 
 	/**
@@ -892,7 +893,7 @@ public class M_InOutLine_HandlerTest
 		final I_C_Invoice_Candidate ic = result.get(0);
 
 		// then: candidate inherits the group's PaymentRule, not the column default "P"
-		assertThat(ic.getPaymentRule()).isEqualTo(X_C_BPartner.PAYMENTRULE_DirectDeposit);
+		assertThat(PaymentRule.ofCode(ic.getPaymentRule())).isEqualTo(PaymentRule.DirectDeposit);
 	}
 
 	/**
