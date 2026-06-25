@@ -2,7 +2,6 @@ package de.metas.handlingunits.qrcodes.mobile;
 
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -72,9 +71,6 @@ public class MobileQRCodeMessages
 	@NonNull
 	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode, @Nullable final Throwable cause)
 	{
-		return new AdempiereException(
-				TranslatableStrings.adMessage(NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40)),
-				cause)
-				.setErrorCode(NOT_RECOGNIZED.toAD_Message());
+		return new AdempiereException(cause, NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
 	}
 }
