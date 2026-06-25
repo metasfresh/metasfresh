@@ -45,10 +45,12 @@ const startReceiveFlow = async (masterdata) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('mfg');
     await ManufacturingJobsListScreen.waitForScreen();
-    await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
+    const { jobId } = await ManufacturingJobsListScreen.startJob({ documentNo: masterdata.manufacturingOrders.PP1.documentNo });
 
     await ManufacturingJobScreen.clickReceiveButton({ index: 1 });
     await MaterialReceiptLineScreen.selectNewLUTarget({ luPIItemTestId: masterdata.packingInstructions.PI.luPIItemTestId });
+
+    return { jobId };
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -60,7 +62,7 @@ test('Receive finished goods entering Lot + Best-Before — produced HU carries 
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
-    await startReceiveFlow(masterdata);
+    const { jobId } = await startReceiveFlow(masterdata);
 
     const lotNo = `LOT-${Date.now()}`;
 
@@ -77,6 +79,11 @@ test('Receive finished goods entering Lot + Best-Before — produced HU carries 
 
     await Backend.expect({
         title: 'Produced HU carries the entered Lot and Best-Before',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '5 PCE' }],
+            },
+        },
         hus: {
             'lu1': {
                 storages: { 'BOM': '5 PCE' },
@@ -98,7 +105,7 @@ test('Receive finished goods leaving Lot + Best-Before empty — no attribute is
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
-    await startReceiveFlow(masterdata);
+    const { jobId } = await startReceiveFlow(masterdata);
 
     // Inputs are offered (default ON) but the operator leaves them empty — the produced HU
     // must NOT get a Lot / Best-Before attribute (default-ON must not fabricate values).
@@ -113,6 +120,11 @@ test('Receive finished goods leaving Lot + Best-Before empty — no attribute is
 
     await Backend.expect({
         title: 'Produced HU has no Lot / Best-Before when left empty',
+        manufacturings: {
+            [jobId]: {
+                receivedHUs: [{ lu: 'lu1', qty: '5 PCE' }],
+            },
+        },
         hus: {
             'lu1': {
                 storages: { 'BOM': '5 PCE' },

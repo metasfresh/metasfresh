@@ -66,6 +66,7 @@ import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.InSetPredicate;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.workflow.rest_api.service.Constants;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -523,8 +524,8 @@ public class ManufacturingJobService
 						.build())
 				.qtyToReceiveBD(receiveFrom.getQtyReceived())
 				.date(date)
-				.bestBeforeDate(TimeUtil.asLocalDate(receiveFrom.getBestBeforeDate()))
-				.productionDate(TimeUtil.asLocalDate(receiveFrom.getProductionDate()))
+				.bestBeforeDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getBestBeforeDate())))
+				.productionDate(TimeUtil.asLocalDate(StringUtils.trimBlankToNull(receiveFrom.getProductionDate())))
 				.lotNo(receiveFrom.getLotNo())
 				.catchWeight(extractTargetCatchWeight(receiveFrom).orElse(null))
 				.barcode(receiveFrom.getBarcode())
