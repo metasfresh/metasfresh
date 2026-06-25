@@ -234,6 +234,9 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
 
         await HUConsolidationJobScreen.clickPickingSlot({ pickingSlotId: masterdata.pickingSlots.slot1.id });
 
+        // The customer requires GRAI, so the scan affordance is shown.
+        await PickingSlotScreen.expectScannerVisible();
+
         // Scan first TU's GRAI → consolidates tu1 onto the target LU
         await PickingSlotScreen.scanGRAI({ graiString: graiP1 });
         // Assertion between scans: ensures the keyboard hook flushes before the next scan

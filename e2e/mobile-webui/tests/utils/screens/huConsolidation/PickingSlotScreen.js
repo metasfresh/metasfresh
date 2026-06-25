@@ -62,4 +62,14 @@ export const PickingSlotScreen = {
     scanGRAI: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCANNER_TESTID });
     }),
+
+    /** The GRAI scanner is present — shown only when the consolidation customer requires GRAI. */
+    expectScannerVisible: async () => await test.step(`${NAME} - Expect GRAI scanner present`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: GRAI_SCANNER_TESTID });
+    }),
+
+    /** The GRAI scanner is absent — the customer does not require GRAI. */
+    expectScannerNotVisible: async () => await test.step(`${NAME} - Expect GRAI scanner absent`, async () => {
+        await BarcodeScannerComponent.expectNotAttached({ testId: GRAI_SCANNER_TESTID });
+    }),
 };

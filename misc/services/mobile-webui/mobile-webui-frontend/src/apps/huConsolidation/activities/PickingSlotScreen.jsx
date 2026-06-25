@@ -32,6 +32,7 @@ export const PickingSlotScreen = () => {
   });
 
   const items = pickingSlotContent?.items ?? [];
+  const graiScanEnabled = pickingSlotContent?.graiScanEnabled ?? false;
   const isWorking = isLoading || isProcessing;
 
   const onConsolidateHUClicked = ({ huId }) => {
@@ -54,12 +55,14 @@ export const PickingSlotScreen = () => {
   return (
     <div className="section pt-2">
       {isLoading && <Spinner />}
-      <BarcodeScannerComponent
-        testId="grai-scanner"
-        onResolvedResult={onGraiScanned}
-        inputPlaceholderText={trl('huConsolidation.PickingSlotScreen.scanGRAI')}
-        invisible={isWorking}
-      />
+      {graiScanEnabled && (
+        <BarcodeScannerComponent
+          testId="grai-scanner"
+          onResolvedResult={onGraiScanned}
+          inputPlaceholderText={trl('huConsolidation.PickingSlotScreen.scanGRAI')}
+          invisible={isWorking}
+        />
+      )}
       <PickingSlotContent
         items={items}
         disabled={isWorking}
