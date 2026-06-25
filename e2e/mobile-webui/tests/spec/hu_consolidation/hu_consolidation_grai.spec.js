@@ -7,7 +7,7 @@
  *
  * Real-life flow:
  *   1. Pick with the GRAI-scan picking flow so each TU in the picking slot carries a GRAI attribute.
- *      (Only a TU that was assigned a GRAI during picking is resolvable via getHuIdByGrai.)
+ *      (Only a TU that was assigned a GRAI during picking is resolvable via getTopLevelHuIdByGrai.)
  *   2. Open HU Consolidation, start a job, set a target LU, open the picking slot screen.
  *   3. Scan each TU's GRAI → backend resolves the HU, consolidates it onto the target LU.
  *   4. Assert via Backend.expect that the target LU carries the expected storages.
