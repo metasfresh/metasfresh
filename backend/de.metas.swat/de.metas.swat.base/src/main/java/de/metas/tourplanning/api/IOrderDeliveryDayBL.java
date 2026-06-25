@@ -48,7 +48,7 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	 * Resolves a per-line preparation date: if the order line carries an explicit {@code C_OrderLine.PreparationDate}
 	 * override it is returned verbatim; otherwise the preparation date is derived from the given {@code deliveryDate}
 	 * via {@link #computePreparationDate(I_C_Order, ZonedDateTime)}. This is the single owner of the override-or-derive
-	 * decision (me03 30435 point 2) — callers must not branch on the override themselves. Does NOT mutate the line.
+	 * decision — callers must not branch on the override themselves. Does NOT mutate the line.
 	 *
 	 * @return the explicit per-line override (if set), else the derived preparation date (which may be {@code null}
 	 *         when there is no usable tour and the fallback is disabled).

@@ -2,8 +2,10 @@
 -- Core (standard) sales-order window 143, order-line tab 187: AD_Field 781250 + AD_UI_Element 652370 placed at
 -- UI seq 415 (between DatePromised 410 and Vendor 420), immediately after DatePromised (UI seq 410) in element group 1000005 ("main").
 -- The field + ui-element are cloned from the sibling DatePromised field (AD_Field 1123 / AD_UI_Element 554396)
--- so every layout attribute (displaylogic, span, widths, grid flags) matches; only the PK, column, name, seqno
--- and audit columns are overridden. Caption resolves from AD_Element 542340 (AD_Name_ID stays NULL).
+-- so every layout attribute (displaylogic, span, widths, grid flags) matches; only the PK, column, name and
+-- audit columns are overridden. The AD_UI_Element SeqNo is set to 415 (placing the field right after
+-- DatePromised); AD_Field.SeqNo is inherited from the sibling (it is legacy, not the WebUI render path for this
+-- UI-section-backed window, where 74 fields share SeqNo=0). Caption resolves from AD_Element 542340 (AD_Name_ID stays NULL).
 -- The dt204 override window 541886 / tab 548027 gets the same field in a separate customer-repo script (5809550).
 --
 -- IDs allocated from idserver.metas.de on 2026-06-24:
