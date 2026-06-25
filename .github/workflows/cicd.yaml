@@ -1595,6 +1595,10 @@ jobs:
           mkdir -p cucumber
           docker image inspect ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} >/dev/null 2>&1 || docker pull ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} --quiet
           docker cp "$(docker create --name tempcopytainer ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
+          # compose.yml references ${mfregistry:-metasfresh}/metas-cucumber (i.e. the Docker Hub name) for the cucumber
+          # service, but the image now lives on GHCR. Retag the pulled ghcr image under that name so compose uses the
+          # local image (metas-db still resolves to Docker Hub via mfregistry).
+          docker tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
