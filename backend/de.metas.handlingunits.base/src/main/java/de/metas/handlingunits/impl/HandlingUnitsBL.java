@@ -1645,7 +1645,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
-	public Optional<HuId> getHuIdByGrai(@NonNull final GRAI grai)
+	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
 	{
 		return handlingUnitsRepo.createHUQueryBuilder()
 				.setOnlyActiveHUs(true)

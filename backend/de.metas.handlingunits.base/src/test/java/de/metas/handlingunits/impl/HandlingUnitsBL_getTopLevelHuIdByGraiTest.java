@@ -29,7 +29,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(AdempiereTestWatcher.class)
-class HandlingUnitsBL_getHuIdByGraiTest
+class HandlingUnitsBL_getTopLevelHuIdByGraiTest
 {
 	private IHandlingUnitsBL handlingUnitsBL;
 	private AttributeId graiAttributeId;
@@ -93,7 +93,7 @@ class HandlingUnitsBL_getHuIdByGraiTest
 		final I_M_HU hu = createTopLevelActiveHU();
 		stampGraiAttribute(hu, graiCanonical);
 
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
+		final Optional<HuId> result = handlingUnitsBL.getTopLevelHuIdByGrai(GRAI.parse(graiCanonical));
 
 		assertThat(result).contains(HuId.ofRepoId(hu.getM_HU_ID()));
 	}
@@ -101,7 +101,7 @@ class HandlingUnitsBL_getHuIdByGraiTest
 	@Test
 	void empty_when_no_hu_has_that_grai()
 	{
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse("9999999.00099.NOMATCH"));
+		final Optional<HuId> result = handlingUnitsBL.getTopLevelHuIdByGrai(GRAI.parse("9999999.00099.NOMATCH"));
 
 		assertThat(result).isEmpty();
 	}
@@ -116,7 +116,7 @@ class HandlingUnitsBL_getHuIdByGraiTest
 		hu.setIsActive(false);
 		saveRecord(hu);
 
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
+		final Optional<HuId> result = handlingUnitsBL.getTopLevelHuIdByGrai(GRAI.parse(graiCanonical));
 
 		assertThat(result).isEmpty();
 	}
@@ -129,7 +129,7 @@ class HandlingUnitsBL_getHuIdByGraiTest
 		final I_M_HU childHu = createChildActiveHU();
 		stampGraiAttribute(childHu, graiCanonical);
 
-		final Optional<HuId> result = handlingUnitsBL.getHuIdByGrai(GRAI.parse(graiCanonical));
+		final Optional<HuId> result = handlingUnitsBL.getTopLevelHuIdByGrai(GRAI.parse(graiCanonical));
 
 		assertThat(result).isEmpty();
 	}

@@ -341,7 +341,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	 * The GRAI attribute on aggregate-VHUs beneath an LU may hold a comma-separated GRAI set;
 	 * those are not matched here (and are not top-level anyway).
 	 */
-	Optional<HuId> getHuIdByGrai(@NonNull GRAI grai);
+	Optional<HuId> getTopLevelHuIdByGrai(@NonNull GRAI grai);
 
 	List<I_M_HU> retrieveIncludedHUs(I_M_HU huId);
 

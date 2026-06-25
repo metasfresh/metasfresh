@@ -120,7 +120,7 @@ public class ConsolidateCommand
 		}
 		else if (grai != null)
 		{
-			effectiveHuId = handlingUnitsBL.getHuIdByGrai(grai)
+			effectiveHuId = handlingUnitsBL.getTopLevelHuIdByGrai(grai)
 					.orElseThrow(() -> new AdempiereException(MobileQRCodeMessages.HU_NOT_FOUND)
 							.setParameter("grai", grai.toCanonicalString()));
 		}
