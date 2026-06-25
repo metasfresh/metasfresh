@@ -95,7 +95,7 @@ public class PickingJobUnPickCommand
 
 		this.unpickToHU = unpickToHU;
 
-		if ((productId == null) != (qtyToUnpick == null))
+		if (productId == null ^ qtyToUnpick == null)
 		{
 			throw new AdempiereException("UNPICK must have either both productId and qty set, or neither; got productId="
 					+ productId + ", qty=" + qtyToUnpick)
@@ -410,8 +410,7 @@ public class PickingJobUnPickCommand
 			return;
 		}
 
-		MoveHUCommand.builder()
-				.huQRCodesService(huService.getHuQRCodesService())
+		huService.newMoveHUCommandBuilder()
 				.requestItems(huIdAndQRCodeList.stream().map(MoveHURequestItem::ofHUIdAndQRCode).collect(ImmutableSet.toImmutableSet()))
 				.targetQRCode(unpickToHU.toScannedCode())
 				.build()
@@ -460,10 +459,7 @@ public class PickingJobUnPickCommand
 
 	private HUTransformService newHUTransformService()
 	{
-		return HUTransformService.builder()
-				.huQRCodesService(huService.getHuQRCodesService())
-				.allowedReservedVhuIds(getAllowedReservedVhuIds())
-				.build();
+		return huService.newHUTransformService(getAllowedReservedVhuIds());
 	}
 
 	/**
@@ -472,10 +468,6 @@ public class PickingJobUnPickCommand
 	 * wider permission than strictly necessary (i.e. all steps rather than just the current one),
 	 * because the same service instance is reused for the entire un-pick batch and all steps
 	 * are being reversed in the same transaction.
-	 * <p>
-	 * The resulting {@link HUTransformService} instance is single-use: it is created by
-	 * {@link #newHUTransformService()} for this un-pick batch only and must not be reused
-	 * for unrelated operations, as it would carry over the wider VHU exemption.
 	 */
 	private ImmutableSet<HuId> getAllowedReservedVhuIds()
 	{

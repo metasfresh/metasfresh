@@ -4,17 +4,23 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickedToHU;
 import lombok.NonNull;
-import lombok.Value;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-@Value
 class LifoSelection
 {
-	@NonNull Map<StepPickFromKey, List<PickingJobStepPickedToHU>> wholeHUsByStepPickFrom;
-	@NonNull Map<StepPickFromKey, BoundarySplit> boundaryByStepPickFrom;
+	@NonNull private final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> wholeHUsByStepPickFrom;
+	@NonNull private final Map<StepPickFromKey, BoundarySplit> boundaryByStepPickFrom;
+
+	LifoSelection(
+			@NonNull final Map<StepPickFromKey, List<PickingJobStepPickedToHU>> wholeHUsByStepPickFrom,
+			@NonNull final Map<StepPickFromKey, BoundarySplit> boundaryByStepPickFrom)
+	{
+		this.wholeHUsByStepPickFrom = wholeHUsByStepPickFrom;
+		this.boundaryByStepPickFrom = boundaryByStepPickFrom;
+	}
 
 	Stream<StepUnpickInstructions> toUnpickInstructions()
 	{

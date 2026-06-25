@@ -330,7 +330,7 @@ export const PickingJobScreen = {
     }),
 
     closeUnpickItem: async () => await step(`${NAME} - Close "Unpack item"`, async () => {
-        await page.locator('.unpick-dialog .buttons button.is-danger').tap();
+        await page.getByTestId('unpick-close-button').tap();
         await PickingJobScreen.waitForScreen();
     }),
 };

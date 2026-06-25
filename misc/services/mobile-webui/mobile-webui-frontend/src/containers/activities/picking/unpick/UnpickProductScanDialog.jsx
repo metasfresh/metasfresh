@@ -54,7 +54,12 @@ const UnpickProductScanDialog = ({ wfProcessId, onResolved, onCloseDialog }) => 
         </p>
       )}
       <div className="buttons is-centered">
-        <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
+        <DialogButton
+          captionKey="general.closeText"
+          className="is-danger"
+          testId="unpick-close-button"
+          onClick={onCloseDialog}
+        />
       </div>
     </Dialog>
   );

@@ -9,7 +9,7 @@ import Dialog from '../../../../components/dialogs/Dialog';
 // Destination scanner for an unpick: scan the target HU to return goods into, or Skip to drop them
 // on the floor (always offered). Shared by the job-level UnpickPanel and the step-level
 // PickStepScreen / DistributionStepScreen.
-const UnpickDialog = ({
+const UnpickTargetScanDialog = ({
   onSubmit,
   onCloseDialog,
   scanPlaceholderKey = 'activities.picking.scanTargetHU',
@@ -32,13 +32,18 @@ const UnpickDialog = ({
       />
       <div className="buttons is-centered">
         <DialogButton captionKey="activities.picking.skip" testId={skipTestId} onClick={onSubmit} />
-        <DialogButton captionKey="general.closeText" className="is-danger" onClick={onCloseDialog} />
+        <DialogButton
+          captionKey="general.closeText"
+          className="is-danger"
+          testId="unpick-close-button"
+          onClick={onCloseDialog}
+        />
       </div>
     </Dialog>
   );
 };
 
-UnpickDialog.propTypes = {
+UnpickTargetScanDialog.propTypes = {
   // Properties
   scanPlaceholderKey: PropTypes.string,
   scannerTestId: PropTypes.string,
@@ -48,4 +53,4 @@ UnpickDialog.propTypes = {
   onCloseDialog: PropTypes.func.isRequired,
 };
 
-export default UnpickDialog;
+export default UnpickTargetScanDialog;

@@ -13,7 +13,7 @@ import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator
 import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { toQRCodeDisplayable, toQRCodeString } from '../../../utils/qrCode/hu';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
-import UnpickDialog from './unpick/UnpickDialog';
+import UnpickTargetScanDialog from './unpick/UnpickTargetScanDialog';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { postStepPickedThunk } from '../../../apps/picking/redux/postStepPickedThunk';
@@ -108,7 +108,9 @@ const PickStepScreen = () => {
 
   return (
     <div className="section pt-2">
-      {stage === STAGE.SCAN_TARGET && <UnpickDialog onSubmit={unpick} onCloseDialog={() => setStage(STAGE.NONE)} />}
+      {stage === STAGE.SCAN_TARGET && (
+        <UnpickTargetScanDialog onSubmit={unpick} onCloseDialog={() => setStage(STAGE.NONE)} />
+      )}
       <div className="buttons">
         <ButtonWithIndicator
           caption={scanButtonCaption}

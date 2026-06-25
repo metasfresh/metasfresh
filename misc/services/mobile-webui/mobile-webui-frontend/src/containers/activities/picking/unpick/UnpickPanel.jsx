@@ -8,7 +8,7 @@ import { toQRCodeString } from '../../../../utils/qrCode/hu';
 import { postStepPartiallyUnPickedThunk } from '../../../../apps/picking/redux/postStepPartiallyUnPickedThunk';
 import GetQuantityDialog from '../../../../components/dialogs/GetQuantityDialog';
 import UnpickProductScanDialog from './UnpickProductScanDialog';
-import UnpickDialog from './UnpickDialog';
+import UnpickTargetScanDialog from './UnpickTargetScanDialog';
 
 const STAGE = {
   SCAN_PRODUCT: 'SCAN_PRODUCT',
@@ -19,7 +19,7 @@ const STAGE = {
 // Orchestrates the job-level partial-unpick flow as a panel that takes over the picking job screen,
 // driven by a single `stage` state through three steps: scan the product to unpick
 // (UnpickProductScanDialog) → enter the qty (GetQuantityDialog) → scan the target HU, or skip to drop
-// on the floor (UnpickDialog).
+// on the floor (UnpickTargetScanDialog).
 const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
   const dispatch = useDispatch();
 
@@ -77,7 +77,7 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
     );
   } else {
     return (
-      <UnpickDialog
+      <UnpickTargetScanDialog
         scanPlaceholderKey="activities.picking.unpick.scanTargetHU"
         scannerTestId="unpick-target-hu-scanner"
         skipTestId="unpick-skip-to-floor"
