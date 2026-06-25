@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffective;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -655,7 +656,7 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Default Invoice/Payment Rule (resolved via BP group chain: partner → group → parent → system default)
-		final de.metas.bpartner.effective.BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(bp);
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(bp);
 		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
 		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));

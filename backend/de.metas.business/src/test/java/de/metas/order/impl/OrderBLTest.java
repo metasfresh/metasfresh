@@ -210,5 +210,8 @@ class OrderBLTest
 		assertThat(order.getInvoiceRule())
 				.as("order InvoiceRule must be Immediate (partner value wins)")
 				.isEqualTo(InvoiceRule.Immediate.getCode());
+		assertThat(order.isAutoInvoice())
+				.as("order IsAutoInvoice must be false (no group value set)")
+				.isFalse();
 	}
 }
