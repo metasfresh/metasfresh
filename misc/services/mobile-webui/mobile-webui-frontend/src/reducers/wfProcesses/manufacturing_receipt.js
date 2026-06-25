@@ -93,7 +93,6 @@ const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftLine.completeStatus = computeLineStatus(draftLine);
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
