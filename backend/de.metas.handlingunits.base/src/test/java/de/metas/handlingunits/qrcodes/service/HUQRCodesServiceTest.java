@@ -378,5 +378,27 @@ class HUQRCodesServiceTest
 					.isInstanceOf(AdempiereException.class)
 					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
 		}
+
+		@Test
+		void truncatedHuQRCodeHead_throwsUserFriendlyError()
+		{
+			// A long HU QR code can be split mid-stream on a slow scanner device (me03 #30625): the head
+			// fragment keeps the valid "HU#<version>#" prefix but carries truncated JSON payload. It must
+			// surface the SAME friendly "not recognized" message as any other bad code, not leak the raw
+			// "Failed converting payload" developer error.
+			final HuId tuId = createTU();
+			final String fullHuQRCode = huQRCodesService.generateForExistingHU(tuId).getSingleQRCode(tuId).getAsString();
+
+			// sanity: the full code is a valid, parseable HU QR code
+			assertThat(huQRCodesService.parse(fullHuQRCode)).isInstanceOf(HUQRCode.class);
+
+			// simulate the device split: keep the HU#<version># prefix, drop the tail so the JSON payload is incomplete
+			final String truncatedHead = fullHuQRCode.substring(0, fullHuQRCode.length() / 2);
+			assertThat(truncatedHead).startsWith("HU#");
+
+			assertThatThrownBy(() -> huQRCodesService.parse(truncatedHead))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
 	}
 }
