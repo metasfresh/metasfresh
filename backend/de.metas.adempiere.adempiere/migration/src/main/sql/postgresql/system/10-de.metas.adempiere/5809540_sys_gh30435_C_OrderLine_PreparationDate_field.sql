@@ -69,6 +69,4 @@ FROM AD_UI_Element WHERE ad_ui_element_id = 554396;
 -- =============================================================================
 -- 3. Propagate the caption from AD_Element 542340 to the new AD_Field_Trl rows
 -- =============================================================================
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(
-  (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'PreparationDate')
-);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(542340 /*PreparationDate*/);

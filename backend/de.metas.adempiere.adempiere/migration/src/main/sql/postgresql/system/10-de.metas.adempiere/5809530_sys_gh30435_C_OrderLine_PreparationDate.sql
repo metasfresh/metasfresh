@@ -10,7 +10,7 @@
 --   AD_Column           592882  (C_OrderLine.PreparationDate)
 
 -- =============================================================================
--- 1. AD_Column (C_OrderLine — table id looked up by name; reuses element 542340)
+-- 1. AD_Column (C_OrderLine = AD_Table 260; reuses AD_Element 542340)
 -- =============================================================================
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
                        Version, AD_Table_ID, AD_Element_ID, AD_Reference_ID,
@@ -23,8 +23,8 @@ VALUES (592882 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-06-24 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-06-24 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100,
         0,
-        (SELECT AD_Table_ID FROM AD_Table WHERE TableName = 'C_OrderLine'),
-        (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'PreparationDate'),
+        260 /*C_OrderLine*/,
+        542340 /*PreparationDate*/,
         16 /*Date+Time*/,
         'PreparationDate',
         'Bereitstellungsdatum',
@@ -48,6 +48,4 @@ ALTER TABLE C_OrderLine ADD COLUMN IF NOT EXISTS PreparationDate timestamp with 
 -- =============================================================================
 -- 3. Propagate translations from AD_Element 542340 to AD_Column_Trl
 -- =============================================================================
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(
-  (SELECT AD_Element_ID FROM AD_Element WHERE ColumnName = 'PreparationDate')
-);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(542340 /*PreparationDate*/);
