@@ -149,7 +149,6 @@ const translations = {
         qtyCaption: 'Zu entfernende Menge',
         scanTargetHU: 'Ziel HU scannen',
         productNotInPackage: 'Dieses Produkt ist nicht im Paket',
-        success: 'Artikel entfernt',
       },
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
