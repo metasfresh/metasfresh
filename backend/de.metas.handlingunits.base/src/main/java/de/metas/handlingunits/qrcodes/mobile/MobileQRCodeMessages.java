@@ -2,6 +2,7 @@ package de.metas.handlingunits.qrcodes.mobile;
 
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -9,6 +10,8 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.LocatorQRCodeJsonConverter;
+
+import javax.annotation.Nullable;
 
 @UtilityClass
 public class MobileQRCodeMessages
@@ -59,5 +62,19 @@ public class MobileQRCodeMessages
 	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode)
 	{
 		return new AdempiereException(NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
+	}
+
+	/**
+	 * Same as {@link #newNotRecognizedException(ScannedCode)} but keeps the original {@code cause} for diagnostics
+	 * (e.g. the raw payload-conversion failure of a truncated QR code). The cause is wired at construction time,
+	 * so we never risk {@link Throwable#initCause(Throwable)} on an already-initialized exception.
+	 */
+	@NonNull
+	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode, @Nullable final Throwable cause)
+	{
+		return new AdempiereException(
+				TranslatableStrings.adMessage(NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40)),
+				cause)
+				.setErrorCode(NOT_RECOGNIZED.toAD_Message());
 	}
 }

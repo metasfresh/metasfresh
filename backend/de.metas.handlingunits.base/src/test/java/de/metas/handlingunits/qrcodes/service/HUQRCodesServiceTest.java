@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -382,10 +383,9 @@ class HUQRCodesServiceTest
 		@Test
 		void truncatedHuQRCodeHead_throwsUserFriendlyError()
 		{
-			// A long HU QR code can be split mid-stream on a slow scanner device (me03 #30625): the head
-			// fragment keeps the valid "HU#<version>#" prefix but carries truncated JSON payload. It must
-			// surface the SAME friendly "not recognized" message as any other bad code, not leak the raw
-			// "Failed converting payload" developer error.
+			// A long HU QR code can be split mid-stream on a slow scanner device: the head fragment keeps the
+			// valid "HU#<version>#" prefix but carries a truncated JSON payload. It must surface the SAME friendly
+			// "not recognized" message as any other bad code, not leak the raw "Failed converting payload" error.
 			final HuId tuId = createTU();
 			final String fullHuQRCode = huQRCodesService.generateForExistingHU(tuId).getSingleQRCode(tuId).getAsString();
 
@@ -398,7 +398,11 @@ class HUQRCodesServiceTest
 
 			assertThatThrownBy(() -> huQRCodesService.parse(truncatedHead))
 					.isInstanceOf(AdempiereException.class)
-					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+					.satisfies(ex -> {
+						final AdempiereException ae = (AdempiereException)ex;
+						assertThat(ae.isUserValidationError()).isTrue();
+						assertThat(ae.getErrorCode()).isEqualTo(MobileQRCodeMessages.NOT_RECOGNIZED.toAD_Message());
+					});
 		}
 	}
 }

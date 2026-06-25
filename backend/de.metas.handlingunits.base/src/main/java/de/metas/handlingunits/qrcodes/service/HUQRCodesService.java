@@ -416,13 +416,12 @@ public class HUQRCodesService
 			}
 			catch (final Exception ex)
 			{
-				// The type prefix (HU#/LM#) is handled, but the payload could not be converted into a QR code.
-				// This happens when a long QR code is split mid-stream on a slow scanner device (me03 #30625): the
-				// head fragment keeps the valid prefix but carries truncated JSON. Surface the same user-friendly
-				// "not recognized" message as any other bad code instead of leaking the raw conversion error.
-				final AdempiereException friendlyEx = MobileQRCodeMessages.newNotRecognizedException(scannedCode);
-				friendlyEx.initCause(ex);
-				throw friendlyEx;
+				// The type prefix (HU#/LM#) matched but the payload could not be converted into a QR code. This
+				// covers a long QR code split mid-stream on a slow scanner device (the head fragment keeps the valid
+				// prefix but carries truncated JSON) as well as an incompatible version field - the user can fix
+				// neither in the field. Surface the same user-friendly "not recognized" message as any other bad
+				// code instead of leaking the raw conversion error.
+				throw MobileQRCodeMessages.newNotRecognizedException(scannedCode, ex);
 			}
 		}
 
