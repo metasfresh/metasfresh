@@ -728,6 +728,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | Order_Identifier | ExpectedQtyDelivered |
       | oB_S29231_170    | 100                  |
 
+  @from:cucumber
   @Id:S30558_010
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
