@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-class PickingJobUnpickProductResolver
+public class PickingJobUnpickProductResolver
 {
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobProductService productService;
