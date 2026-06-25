@@ -1,6 +1,6 @@
 ARG REFNAME=local
 ARG REGISTRY=
-FROM ${REGISTRY}metasfreshdev/metas-mvn-backend:$REFNAME AS backend
+FROM ghcr.io/metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 # Aggregate SQL files in a separate stage to avoid copying entire backend to runtime
 # This stage runs on the backend image and only exports the small aggregated SQL

@@ -1,6 +1,6 @@
 ARG REFNAME=local
 ARG REGISTRY=
-FROM ${REGISTRY}metasfreshdev/metas-mvn-backend:$REFNAME AS backend
+FROM ghcr.io/metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 
