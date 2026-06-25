@@ -1,4 +1,4 @@
--- me03 30435 point 2 — show the per-line C_OrderLine.PreparationDate override on the sales-order-line tab.
+-- Show the per-line C_OrderLine.PreparationDate override on the sales-order-line tab.
 -- Core (standard) sales-order window 143, order-line tab 187: AD_Field 781250 + AD_UI_Element 652370 placed at
 -- UI seq 415 (between DatePromised 410 and Vendor 420), immediately after DatePromised (UI seq 410) in element group 1000005 ("main").
 -- The field + ui-element are cloned from the sibling DatePromised field (AD_Field 1123 / AD_UI_Element 554396)

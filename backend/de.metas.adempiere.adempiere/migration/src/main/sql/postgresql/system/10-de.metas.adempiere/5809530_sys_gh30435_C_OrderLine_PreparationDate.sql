@@ -1,4 +1,4 @@
--- me03 30435 point 2 — per-line preparation-date override on the sales order line.
+-- Per-line preparation-date override on the sales order line.
 -- C_OrderLine.PreparationDate: NULL => the line's preparation date is derived from its own delivery date
 -- (existing behaviour); SET => used verbatim as that line's picking date. For tourless customers the derived
 -- date equals the delivery date (no picking lead time), so the operator sets this to pick before the delivery

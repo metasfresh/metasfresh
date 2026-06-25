@@ -21,12 +21,11 @@ import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
-
-import java.sql.Timestamp;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
