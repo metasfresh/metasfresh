@@ -154,7 +154,7 @@ class OrderBLTest
 	////////////////////////////////
 
 	/**
-	 * AC3b: Sales order, bp with null InvoiceRule/IsAutoInvoice, BP group has
+	 * Sales order, bp with null InvoiceRule/IsAutoInvoice, BP group has
 	 * InvoiceRule=AfterDelivery and IsAutoInvoice=Y.
 	 * After setBPartner the order must carry the group's values.
 	 */
@@ -186,7 +186,7 @@ class OrderBLTest
 	}
 
 	/**
-	 * AC4: bp with explicit InvoiceRule=Immediate — partner value wins over group.
+	 * bp with explicit InvoiceRule=Immediate — partner value wins over group.
 	 */
 	@Test
 	void givenSalesOrder_bpHasExplicitImmediateInvoiceRule_whenSetBPartner_thenOrderGetsImmediateRule()
