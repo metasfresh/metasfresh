@@ -154,8 +154,9 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: IsFixedDatePromised (header flag, applies to ALL lines) — compares the per-line, override-inclusive
-		// M_Packageable_V.DeliveryDate, NOT DatePromised (which is the header promised date). Keep in sync with
+		// Filter: IsFixedDatePromised (header flag, applies to ALL lines) — compares the override-inclusive
+		// M_Packageable_V.DeliveryDate (= COALESCE(DeliveryDate_Override, DeliveryDate)). Do NOT gate on DatePromised:
+		// it has no override column, so gating on it would ignore a manual DeliveryDate_Override. Keep in sync with
 		// de.metas.handlingunits...ShipmentService's enqueue filter.
 		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
 		if (maximumFixedPromisedDate != null)

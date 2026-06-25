@@ -295,10 +295,11 @@ public class ShipmentService implements IShipmentService
 			//   - PreparationDate (pick date)                 ↔ header flag IsFixedPreparationDate ("pick after the prep date")
 			//   - DeliveryDate (line's promised delivery date ↔ header flag IsFixedDatePromised   ("ship after the promised date")
 			//     = line DatePromised, plus DeliveryDate_Override)
-			// The flag/column names differ (IsFixedDatePromised vs DeliveryDate) only because M_ShipmentSchedule has no
-			// DatePromised column — the per-line promised date lives in DeliveryDate. Do NOT use
-			// M_Packageable_V.DatePromised here: it is the *header* C_Order.DatePromised and would hold every line to
-			// the single header date, defeating the per-line behaviour.
+			// The gate compares DeliveryDate (= COALESCE(DeliveryDate_Override, DeliveryDate)) because it is the
+			// override-inclusive per-line date. Do NOT gate on M_Packageable_V.DatePromised: it is the per-line
+			// promised date WITHOUT the manual DeliveryDate_Override, so gating on it would ignore an override the
+			// user set. The flag/column names differ (IsFixedDatePromised vs DeliveryDate) for historical reasons —
+			// M_ShipmentSchedule stores the per-line promised date under the name DeliveryDate.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()
