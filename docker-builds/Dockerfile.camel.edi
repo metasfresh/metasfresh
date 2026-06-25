@@ -6,7 +6,7 @@ ARG REFNAME=local
 ARG CACHEBUST=1
 
 ARG REGISTRY=
-FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
+FROM ${REGISTRY}metasfreshdev/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:17-jre-jammy
 
