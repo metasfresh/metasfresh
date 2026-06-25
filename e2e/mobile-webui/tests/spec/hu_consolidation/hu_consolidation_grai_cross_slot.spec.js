@@ -1,14 +1,16 @@
 /**
- * Playwright E2E — GRAI-scan TU selection on the HU Consolidation PickingSlotScreen,
- * cross-slot negative path.
+ * TL;DR — In HU Consolidation, scanning a package that belongs to a DIFFERENT picking slot than
+ * the one the worker has open must be rejected with a clear error and must leave the open slot
+ * unchanged.
  *
- * Distinct masterdata setup from hu_consolidation_grai.spec.js (TWO picking slots + TWO
- * single-line sales orders), so it lives in its own spec file per the one-createMasterdata-per-file
- * rule (e2e/CLAUDE.md).
+ * Real-life flow:
+ *   1. Two packages are picked, one into each of two different slots.
+ *   2. The worker opens HU Consolidation and opens the first slot.
+ *   3. Scanning the barcode of the package that is in the OTHER slot → "LU is not at the picking
+ *      slot"; the open slot is unchanged.
+ *   4. Scanning the package that IS in the open slot then consolidates it and completes the job.
  *
- * Scenario: slot1 holds a P1 TU, slot2 holds a P2 TU. The consolidation job opens slot1; scanning
- * the GRAI of the TU that sits in slot2 must be rejected with LU_NOT_AT_SLOT — the TU is not in the
- * currently open slot. A sanity consolidation of the correct (slot1) TU then completes the job.
+ * In its own spec because it needs a different setup (two slots) than hu_consolidation_grai.spec.js.
  */
 
 import { test } from '../../../playwright.config';

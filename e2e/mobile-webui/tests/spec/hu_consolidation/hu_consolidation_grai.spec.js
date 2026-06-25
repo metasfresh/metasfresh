@@ -1,39 +1,17 @@
 /**
- * Playwright E2E — GRAI-scan-based TU selection on the HU Consolidation PickingSlotScreen.
- *
- * The feature under test (me03#29852):
- *   On the PickingSlotScreen the operator can scan a TU's GRAI barcode to select that TU for
- *   consolidation — instead of (or alongside) tapping the TU button by hand.
+ * TL;DR — In HU Consolidation, a worker scans a package's barcode on the Picking Slot screen to
+ * add that exact package onto the target pallet. This test proves the scan adds the right package
+ * and empties the slot.
  *
  * Real-life flow:
- *   1. Pick with the GRAI-scan picking flow so each TU in the picking slot carries a GRAI attribute.
- *      (Only a TU that was assigned a GRAI during picking is resolvable via getTopLevelHuIdByGrai.)
- *   2. Open HU Consolidation, start a job, set a target LU, open the picking slot screen.
- *   3. Scan each TU's GRAI → backend resolves the HU, consolidates it onto the target LU.
- *   4. Assert via Backend.expect that the target LU carries the expected storages.
+ *   1. Two packages (different products) are picked into a picking slot, each carrying its barcode.
+ *   2. The worker opens HU Consolidation, starts a job and chooses the target pallet.
+ *   3. The worker scans each package's barcode on the picking slot. Each scanned package moves
+ *      onto the target pallet; once both are scanned, the slot is empty.
  *
- * GRAI canonical format (see de.metas.handlingunits.grai.GRAI):
- *   "{companyPrefix}.{assetType}.{serial}"  — companyPrefix is 7 chars.
- *
- * All masterdata is created via the Backend masterdata API — never via the DB.
- *   - bpartners.<id>.graiRequired: 'Y' — enables GRAI scan requirement on picking
- *   - packingInstructions.<id>.graiMapping: true — generates a unique scannable GRAI,
- *     inserts an M_HU_PI_GRAI mapping, returns it as masterdata.packingInstructions.<id>.grai
- *
- * Picking approach — product aggregation + line-level TU target GRAI scan:
- *   - aggregationType: 'product' → isLineLevelPickTarget=true → line buttons visible on PickingJobScreen
- *   - pickTo: ['TU'] + NO setTargetLU during picking → each pick materialises as a top-level TU
- *     (qtyLUs=0) in the picking slot — exactly the shape HU Consolidation expects
- *   - GRAI is stamped at SelectPickTargetTUScreen (PickingGraiScanPanel) before the qty scan
- *   - createShipmentPolicy: 'NO' → TUs remain in slot after complete
- *
- * Why product aggregation (not sales_order aggregation):
- *   With sales_order aggregation isLineLevelPickTarget=false → no line-level TU button →
- *   PickingGraiScanPanel is unreachable. Product aggregation gives each line its own TU target.
- *
- * Negative paths covered:
- *   - Unknown GRAI (no matching HU) → HuNotFound error toast
- *   - GRAI of a TU NOT in the open picking slot → LuNotAtPickingSlot error toast
+ * Companion error-case tests (separate spec, hu_consolidation_grai_cross_slot.spec.js, and below):
+ *   - Scan a barcode that matches no package  → "No HU found for this QR code".
+ *   - Scan a package that is in a different slot → "LU is not at the picking slot".
  */
 
 import { test } from '../../../playwright.config';
