@@ -20,8 +20,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
 @Component
 @RequiredArgsConstructor
 class PickingJobUnpickProductResolver
