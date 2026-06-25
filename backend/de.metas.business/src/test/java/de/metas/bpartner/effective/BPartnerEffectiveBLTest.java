@@ -345,12 +345,11 @@ public class BPartnerEffectiveBLTest
 	}
 
 	/**
-	 * AC1 regression guard — me03 #30448: a BP-Group-level InvoiceRule+IsAutoInvoice default must reach
+	 * Regression guard: a BP-Group-level InvoiceRule+IsAutoInvoice default must reach
 	 * the partner's effective resolution for a sales order when the partner has no own value set.
 	 *
 	 * Scenario: C_BPartner with null InvoiceRule + null IsAutoInvoice,
 	 * assigned to a C_BP_Group that has InvoiceRule=AfterDelivery and IsAutoInvoice='Y'.
-	 * Expected: effective InvoiceRule == AfterDelivery, isAutoInvoice == true for SOTrx.SALES.
 	 */
 	@Test
 	public void getEffectiveValue_bpGroupInvoiceRuleAndIsAutoInvoice_reachesEffectiveForSales()
@@ -362,11 +361,17 @@ public class BPartnerEffectiveBLTest
 
 		final BPartnerEffective bPartnerEffective = bpartnerEffectiveBL.getById(bPartnerId);
 		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.SALES).isAfterDelivery())
-				.as("AC1: BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
+				.as("BP-Group InvoiceRule=AfterDelivery must reach effective sales invoice rule")
+				.isTrue();
+		assertThat(bPartnerEffective.getInvoiceRule(SOTrx.PURCHASE).isAfterDelivery())
+				.as("PURCHASE invoice rule falls back to system default when not set on partner or group")
 				.isTrue();
 		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.SALES))
-				.as("AC1: BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
+				.as("BP-Group IsAutoInvoice=Y must reach effective sales auto-invoice flag")
 				.isTrue();
+		assertThat(bPartnerEffective.isAutoInvoice(SOTrx.PURCHASE))
+				.as("IsAutoInvoice has no purchase-side effect")
+				.isFalse();
 	}
 
 	@Test
