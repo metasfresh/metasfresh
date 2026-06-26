@@ -48,9 +48,9 @@ export const DistributionJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be attached`, async () => {
+        await test.step(`Wait for all expected buttons to be visible`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 

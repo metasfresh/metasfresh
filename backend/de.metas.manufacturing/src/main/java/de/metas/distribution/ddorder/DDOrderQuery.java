@@ -45,7 +45,6 @@ public class DDOrderQuery
 	 */
 	@Nullable WarehouseId workplaceWarehouseId;
 	@Nullable LocatorId workplacePickFromLocatorId;
-	@Nullable InSetPredicate<LocatorId> locatorToIds;
 	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;
 	@Nullable Set<LocalDate> datesPromised;
