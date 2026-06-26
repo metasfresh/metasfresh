@@ -343,7 +343,6 @@ public class CalloutOrder extends CalloutEngine
 				+ " c.AD_User_ID,"
 				+ " COALESCE(p.PO_PriceList_ID, g.PO_PriceList_ID, pg.PO_PriceList_ID) AS PO_PriceList_ID,"
 				+ " lbill.C_BPartner_Location_ID AS Bill_Location_ID, "
-				+ " p.SalesRep_ID,"
 				+ " p.SO_DocTypeTarget_ID, "
 				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
@@ -413,12 +412,6 @@ public class CalloutOrder extends CalloutEngine
 					}
 				}
 
-				// Sales Rep - If BP has a default SalesRep then default it
-				final Integer salesRepId = rs.getInt("SalesRep_ID");
-				if (IsSOTrx && salesRepId != 0)
-				{
-					order.setSalesRep_ID(salesRepId);
-				}
 				/*
 				 * // PriceList (indirect: IsTaxIncluded & Currency) Integer ii = rs.getInt(IsSOTrx ? "M_PriceList_ID" : "PO_PriceList_ID"); if (!rs.wasNull())
 				 * mTab.setValue("M_PriceList_ID", ii); else { // get default PriceList int i = Env.getContextAsInt(ctx, "#M_PriceList_ID"); if (i != 0) mTab.setValue("M_PriceList_ID", new

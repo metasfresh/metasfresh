@@ -250,6 +250,19 @@ public class C_Order
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID },
+			skipIfCopying = true)
+	public void setSalesRepFromBPartner(final I_C_Order order)
+	{
+		// No isUIAction guard (intentional): this must also run when an order is created
+		// programmatically from an OLCand, not only from the UI callout.
+		if (order.isSOTrx())
+		{
+			orderBL.setSalesRep(order);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_PromotionCode_ID, I_C_Order.COLUMNNAME_C_PromotionCode2_ID })
 	public void validateNoDuplicatePromotionCode(@NonNull final I_C_Order order)
 	{
