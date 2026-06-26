@@ -89,6 +89,8 @@ export const postStepPicked = ({
   lotNo,
   setGrais,
   graiCodes,
+  setSerialNos,
+  serialNos,
   isCloseTarget = false,
 }) => {
   const realRejectedQtyReason =
@@ -114,6 +116,8 @@ export const postStepPicked = ({
     lotNo,
     setGrais,
     graiCodes,
+    setSerialNos,
+    serialNos,
     isCloseTarget,
   });
 };
