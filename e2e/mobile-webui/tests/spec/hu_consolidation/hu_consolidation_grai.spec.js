@@ -1,7 +1,7 @@
 /**
  * TL;DR — In HU Consolidation, a worker scans a package's barcode on the Picking Slot screen to
- * add that exact package onto the target pallet. This test proves the scan adds the right package
- * and empties the slot.
+ * add that exact package onto the target pallet. This test proves each scanned package ends up on
+ * the target pallet (the pallet holds both packages) and the slot is emptied.
  *
  * Real-life flow:
  *   1. Two packages (different products) are picked into a picking slot, each carrying its barcode.
@@ -223,6 +223,10 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
 
     await pickGraiTUsToPickingSlot({ masterdata });
 
+    // The target LU is created mid-flow (on the first consolidate); its global QR code is captured
+    // from the live job below so the end result — both TUs parented under it — can be asserted.
+    let targetLUQRCode;
+
     await test.step('HU Consolidation — scan both TU GRAIs', async () => {
         await ApplicationsListScreen.expectVisible();
         await ApplicationsListScreen.startApplication('huConsolidation');
@@ -247,18 +251,30 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
         await PickingSlotScreen.scanGRAI({ graiString: graiP2 });
         await PickingSlotScreen.waitNotLoading();
 
+        // Both TUs are now consolidated; the target is now an existing LU. Capture its QR code
+        // so the final assertion can check the LU actually contains both TUs as children.
+        targetLUQRCode = await HUConsolidationJobScreen.getCurrentTargetLUQRCode();
+
         await PickingSlotScreen.goBack();
         await HUConsolidationJobScreen.complete();
     });
 
-    // Both GRAI-scanned TUs survive consolidation (still carry their product + GRAI), and the
-    // picking slot is now empty — the TUs were moved out of the slot onto the target LU.
-    // NB: the hus keys are the masterdata ALIASES (tu1/tu2), already bound in the accumulated
-    // backend context by the picking expects — NOT the raw HU ids (a numeric id is rejected as
-    // an invalid QR code by the assert API).
+    // End result: the target LU now contains BOTH scanned TUs as its children (parent→child),
+    // each still carrying its product storage and its GRAI — i.e. consolidation actually parented
+    // them under the LU, not merely removed them from the slot. The picking slot is empty.
+    // NB: the tu1/tu2 keys are the masterdata ALIASES bound in the accumulated backend context by
+    // the picking expects; targetLUQRCode is the LU's global QR code captured above — both are
+    // valid `hus` matchers (a raw numeric HU id is rejected as an invalid QR code by the assert API).
     await Backend.expect({
-        title: 'GRAI-scan consolidation: both TUs consolidated, slot emptied',
+        title: 'GRAI-scan consolidation: both TUs parented under target LU, slot emptied',
         hus: {
+            // The actual end result: target LU → [tu1, tu2] (creation order), each with its GRAI.
+            [targetLUQRCode]: {
+                tus: [
+                    { storages: { P1: '4 PCE' }, attributes: { GRAI: graiP1 } },
+                    { storages: { P2: '5 PCE' }, attributes: { GRAI: graiP2 } },
+                ],
+            },
             tu1: { storages: { P1: '4 PCE' }, attributes: { GRAI: graiP1 } },
             tu2: { storages: { P2: '5 PCE' }, attributes: { GRAI: graiP2 } },
         },
