@@ -53,8 +53,13 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
         onClose();
       })
       .catch((axiosError) => {
-        // Stay on SCAN_TARGET (don't onClose) so the operator can retry after a transient submit error.
         toastError({ axiosError });
+        // Discriminate per mobile-webui CLAUDE.md § "API Error Surfacing": a server rejection (4xx/5xx, response
+        // present) won't succeed on retry → close so the operator can start over; a network failure (no response)
+        // may succeed on retry → stay on SCAN_TARGET. onClose() also still runs on the success (.then) path.
+        if (axiosError?.response) {
+          onClose();
+        }
       });
   };
 

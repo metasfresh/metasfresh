@@ -27,7 +27,9 @@ jest.mock('../../../../containers/activities/picking/unpick/UnpickProductScanDia
   const Mock = ({ onResolved }) => (
     <button
       data-testid="mock-product-resolved"
-      onClick={() => onResolved({ productId: 1, scannedCode: 'x', packedQty: 5, packedQtyUom: 'PCE' })}
+      onClick={() =>
+        onResolved({ productId: 1, scannedCode: 'x', packedQty: 5, packedQtyUom: 'PCE', unpickable: true })
+      }
     >
       resolve-product
     </button>
@@ -75,7 +77,7 @@ describe('UnpickPanel — onTargetSubmitted', () => {
     mockToastError.mockClear();
   });
 
-  it('stays on SCAN_TARGET and does NOT close on a transient submit error (allow retry)', async () => {
+  it('NETWORK failure (no response): stays on SCAN_TARGET and does NOT close (allow retry)', async () => {
     mockDispatch.mockReturnValue(Promise.reject(new Error('network blip')));
     const onClose = jest.fn();
     render(<UnpickPanel {...baseProps} onClose={onClose} />);
@@ -86,6 +88,17 @@ describe('UnpickPanel — onTargetSubmitted', () => {
     expect(onClose).not.toHaveBeenCalled();
     // Still on the target stage so the operator can retry.
     expect(screen.getByTestId('mock-target-submit')).toBeInTheDocument();
+  });
+
+  it('SERVER rejection (response present): toasts and closes so the operator starts over', async () => {
+    mockDispatch.mockReturnValue(Promise.reject({ response: { status: 422 } }));
+    const onClose = jest.fn();
+    render(<UnpickPanel {...baseProps} onClose={onClose} />);
+
+    driveToTargetSubmit();
+
+    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
+    expect(mockToastError).toHaveBeenCalledTimes(1);
   });
 
   it('closes exactly once on a successful submit', async () => {
