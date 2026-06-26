@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.printing.common/de.metas.printing.esb.base/CLAUDE.md

@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/misc/services/procurement-webui/procurement-webui-backend/CLAUDE.md

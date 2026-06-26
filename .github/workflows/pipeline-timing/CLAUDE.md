@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/.github/workflows/pipeline-timing/CLAUDE.md

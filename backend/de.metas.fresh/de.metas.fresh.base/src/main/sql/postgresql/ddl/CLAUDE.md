@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/CLAUDE.md

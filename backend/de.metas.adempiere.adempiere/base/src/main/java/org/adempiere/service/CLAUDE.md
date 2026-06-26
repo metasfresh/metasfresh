@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/backend/de.metas.adempiere.adempiere/base/src/main/java/org/adempiere/service/CLAUDE.md

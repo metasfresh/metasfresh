@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/misc/services/camel/de-metas-camel-externalsystems/de-metas-camel-leichundmehl/CLAUDE.md

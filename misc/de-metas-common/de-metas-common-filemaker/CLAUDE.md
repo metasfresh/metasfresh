@@ -1,1 +1,0 @@
-/home/tobi/work/mf15-ai-dev-support/claude/metasfresh/misc/de-metas-common/de-metas-common-filemaker/CLAUDE.md
