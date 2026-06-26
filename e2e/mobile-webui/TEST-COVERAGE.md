@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 59 | 62 | 95% |
+| Picking | 60 | 63 | 95% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -203,8 +203,9 @@
 | Pick 10 crates onto one LU; confirming the quantity auto-invokes the inline GRAI capture; capture all 10 GRAIs (one typed via manual entry, the rest scanned) → save enabled, the atomic pick is sent and the job completes | `picking/picking-grai-flowthrough.spec.js` |
 | Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
 | Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
+| "OK und LU schließen" still demands one GRAI per picked crate → GRAIs stamped, LU closed, job completes | `picking/picking-grai-flowthrough.spec.js` |
 
-**3/3 — 100%**
+**4/4 — 100%**
 
 ---
 
