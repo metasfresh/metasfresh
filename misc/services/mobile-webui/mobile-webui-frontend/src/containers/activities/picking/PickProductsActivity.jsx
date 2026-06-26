@@ -56,7 +56,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const lines = useMemo(() => getLinesArrayFromActivity(activity), [activity]);
   const groupedLines = useMemo(() => groupLinesByDisplayKey([...lines]), [lines]);
 
-  const anyLinePicked = lines.some((line) => line.qtyPicked > 0);
+  const isAnyLinePicked = lines.some((line) => line.qtyPicked > 0);
   const firstLineId = lines[0]?.pickingLineId;
 
   const onScanButtonClick = () => {
@@ -94,7 +94,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
         <ButtonWithIndicator
           testId="unpick-item-button"
           captionKey="activities.picking.unpick.unpickItemBtn"
-          disabled={!anyLinePicked}
+          disabled={!isAnyLinePicked}
           onClick={() => setUnpicking(true)}
         />
       )}
