@@ -29,8 +29,8 @@
 	<field name="zu_packen" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="zu_packen"/>
 	</field>
-	<field name="wo" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="wo"/>
+	<field name="status" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="status"/>
 	</field>
 	<field name="workplace" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="workplace"/>
@@ -47,12 +47,29 @@
 	<field name="m_product_id" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
 	</field>
+	<field name="picklist_group" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="picklist_group"/>
+	</field>
 	<variable name="workplace_header" class="java.lang.String" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{workplace}]]></variableExpression>
 	</variable>
 	<variable name="prep_date_header" class="java.sql.Timestamp" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{prep_date}]]></variableExpression>
 	</variable>
+	<group name="picklist_section" isReprintHeaderOnEachPage="true">
+		<groupExpression><![CDATA[$F{picklist_group}]]></groupExpression>
+		<groupHeader>
+			<band height="20" splitType="Stretch">
+				<textField>
+					<reportElement mode="Opaque" x="0" y="2" width="555" height="16" backcolor="#DDDDDD" uuid="66666666-6666-6666-6666-666666666601"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{picklist_group}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
+	</group>
 	<group name="product" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{m_product_id}]]></groupExpression>
 		<groupHeader>
@@ -157,25 +174,32 @@
 	<columnHeader>
 		<band height="16" splitType="Stretch">
 			<staticText>
-				<reportElement x="0" y="0" width="140" height="14" uuid="33333333-3333-3333-3333-333333333301"/>
+				<reportElement x="0" y="0" width="120" height="14" uuid="33333333-3333-3333-3333-333333333301"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[Lagernr.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="145" y="0" width="80" height="14" uuid="33333333-3333-3333-3333-333333333302"/>
+				<reportElement x="125" y="0" width="70" height="14" uuid="33333333-3333-3333-3333-333333333302"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[picken]]></text>
+				<text><![CDATA[Zu picken]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="230" y="0" width="140" height="14" uuid="33333333-3333-3333-3333-333333333303"/>
+				<reportElement x="200" y="0" width="70" height="14" uuid="33333333-3333-3333-3333-333333333305"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8" isBold="true"/>
+				</textElement>
+				<text><![CDATA[Gepickt]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="275" y="0" width="280" height="14" uuid="33333333-3333-3333-3333-333333333303"/>
 				<textElement>
 					<font fontName="Arial" size="8" isBold="true"/>
 				</textElement>
-				<text><![CDATA[wo]]></text>
+				<text><![CDATA[Status]]></text>
 			</staticText>
 			<line>
 				<reportElement x="0" y="15" width="555" height="1" uuid="33333333-3333-3333-3333-333333333304"/>
@@ -185,25 +209,32 @@
 	<detail>
 		<band height="14" splitType="Stretch">
 			<textField isBlankWhenNull="true">
-				<reportElement x="0" y="0" width="140" height="12" uuid="44444444-4444-4444-4444-444444444401"/>
+				<reportElement x="0" y="0" width="120" height="12" uuid="44444444-4444-4444-4444-444444444401"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{lagernr} != null ? $F{lagernr} : ""]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.##" isBlankWhenNull="true">
-				<reportElement x="145" y="0" width="80" height="12" uuid="44444444-4444-4444-4444-444444444402"/>
+				<reportElement x="125" y="0" width="70" height="12" uuid="44444444-4444-4444-4444-444444444404"/>
+				<textElement textAlignment="Right">
+					<font fontName="Arial" size="8"/>
+				</textElement>
+				<textFieldExpression><![CDATA[$F{zu_packen}]]></textFieldExpression>
+			</textField>
+			<textField pattern="#,##0.##" isBlankWhenNull="true">
+				<reportElement x="200" y="0" width="70" height="12" uuid="44444444-4444-4444-4444-444444444402"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{menge_at_locator}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="230" y="0" width="140" height="12" uuid="44444444-4444-4444-4444-444444444403"/>
+				<reportElement x="275" y="0" width="280" height="12" uuid="44444444-4444-4444-4444-444444444403"/>
 				<textElement>
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{wo} != null ? $F{wo} : ""]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{status} != null ? $F{status} : ""]]></textFieldExpression>
 			</textField>
 		</band>
 	</detail>
