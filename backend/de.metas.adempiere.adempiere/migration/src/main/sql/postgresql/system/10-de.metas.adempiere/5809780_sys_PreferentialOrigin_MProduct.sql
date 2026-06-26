@@ -39,7 +39,7 @@ WHERE AD_Language='en_US' AND AD_Reference_ID=542112
 -- AD_Ref_List: value DL (German name = code, English = code)
 -- 2026-06-26 14:00:10
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542112,544287 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','DL',TO_TIMESTAMP('2026-06-26 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'DL','DL')
+VALUES (0,0,542112 /*From ID Server*/,544287 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','DL',TO_TIMESTAMP('2026-06-26 14:00:10','YYYY-MM-DD HH24:MI:SS'),100,'DL','DL')
 ;
 
 -- 2026-06-26 14:00:11
@@ -63,7 +63,7 @@ WHERE AD_Language='en_US' AND AD_Ref_List_ID=544287
 -- AD_Ref_List: value EU (German name = code, English = code)
 -- 2026-06-26 14:00:20
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542112,544288 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','EU',TO_TIMESTAMP('2026-06-26 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'EU','EU')
+VALUES (0,0,542112 /*From ID Server*/,544288 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','EU',TO_TIMESTAMP('2026-06-26 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'EU','EU')
 ;
 
 -- 2026-06-26 14:00:21
@@ -106,6 +106,10 @@ WHERE AD_Element_ID=585055 AND AD_Language='en_US'
 
 -- 2026-06-26 14:01:13
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585055,'en_US')
+;
+
+-- 2026-06-26 14:01:14
+/* DDL */ select update_ad_element_on_ad_element_trl_update(585055,'en_US')
 ;
 
 -- 2026-06-26 14:01:18
