@@ -160,8 +160,7 @@ public final class EUVatIdValidator
 		final Pattern pattern = PATTERNS_BY_PREFIX.get(prefix);
 		if (pattern == null)
 		{
-			// Unknown / non-supported prefix — accept without checking
-			return true;
+			return false;
 		}
 
 		if (!pattern.matcher(normalised).matches())
@@ -754,7 +753,7 @@ public final class EUVatIdValidator
 		// n = "IT" + 11 digits
 		final String digits = n.substring(2);
 		// First 7 digits must not all be zero
-		if (digits.substring(0, 7).equals("0000000"))
+		if (digits.startsWith("0000000"))
 		{
 			return false;
 		}
