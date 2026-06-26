@@ -23,9 +23,12 @@ UPDATE AD_Table SET AD_Window_ID=140,Updated=TO_TIMESTAMP('2026-06-26 16:00:00',
 ;
 
 -- AD_Tab: Verpackungsmaterial (child of Product window 140, TabLevel 1)
--- Parent link via Parent_Column_ID = M_Product_PackagingMaterial.M_Product_ID (592892, IsParent='Y')
+-- Child->parent link via AD_Column_ID = M_Product_PackagingMaterial.M_Product_ID (592892, the FK in the child table).
+-- AD_Column_ID is the primary link-column mechanism (GridTabVO.buildLinkColumnNames: if AD_Column_ID is set
+-- it is used directly as the child link column). Verified working on 3todev; the Parent_Column_ID-only variant
+-- did not bind the tab there.
 -- 2026-06-26 16:00:10
-INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Parent_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,AD_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
 VALUES (0,585052,0,549326 /*From ID Server*/,542621,140,'Y',TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100,'Verpackungsmaterialien des Produkts.','D','N','Verpackungsmaterialien des Produkts (Materialtyp und Gewicht).','N','A','M_Product_PackagingMaterial','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Verpackungsmaterial',592892,'N',200,1,TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
@@ -134,3 +137,4 @@ VALUES (0,781254,0,549326,555469,652374 /*From ID Server*/,'F',TO_TIMESTAMP('202
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
 VALUES (0,781255,0,549326,555469,652375 /*From ID Server*/,'F',TO_TIMESTAMP('2026-06-26 16:03:10','YYYY-MM-DD HH24:MI:SS'),100,'Gewicht (g)','Y','N','N','Y','Y','N','N',0,'Gewicht (g)',20,20,0,TO_TIMESTAMP('2026-06-26 16:03:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
