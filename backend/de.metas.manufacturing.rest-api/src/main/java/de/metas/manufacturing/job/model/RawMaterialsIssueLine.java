@@ -9,6 +9,9 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
@@ -62,17 +65,31 @@ public class RawMaterialsIssueLine
 		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
 
-		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
+		this.qtyIssued = computeQtyIssued(this.steps, this.productId, this.qtyToIssue.getUomId())
+				.orElseGet(qtyToIssue::toZero);
 		this.seqNo = seqNo;
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
 	}
 
-	private static Optional<Quantity> computeQtyIssued(final @NonNull ImmutableList<RawMaterialsIssueStep> steps)
+	/**
+	 * Sums the quantities issued by the steps, expressed in {@code targetUomId} (the BOM line's UOM).
+	 * <p>
+	 * A step's issued qty comes back in the picked HU's UOM, which may differ from the BOM line's UOM
+	 * (e.g. a kg BOM line picked from a piece-stocked HU). Each step's issued qty is therefore converted
+	 * to {@code targetUomId} via the product's UOM conversion before being summed, so that the resulting
+	 * {@code qtyIssued} is comparable to {@code qtyToIssue}.
+	 */
+	private static Optional<Quantity> computeQtyIssued(
+			final @NonNull ImmutableList<RawMaterialsIssueStep> steps,
+			final @NonNull ProductId productId,
+			final @NonNull UomId targetUomId)
 	{
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 		return steps.stream()
 				.map(RawMaterialsIssueStep::getIssued)
 				.filter(Objects::nonNull)
 				.map(PPOrderIssueSchedule.Issued::getQtyIssued)
+				.map(qtyIssued -> uomConversionBL.convertQuantityTo(qtyIssued, productId, targetUomId))
 				.reduce(Quantity::add);
 	}
 
