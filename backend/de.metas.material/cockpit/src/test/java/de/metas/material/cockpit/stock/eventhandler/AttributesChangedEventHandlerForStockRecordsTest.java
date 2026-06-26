@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -67,6 +68,7 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 	{
 		AdempiereTestHelper.get().init();
 		stockDataUpdateRequestHandler = new StockDataUpdateRequestHandler(Mockito.mock(PostMaterialEventService.class));
+		SpringContextHolder.registerJUnitBean(stockDataUpdateRequestHandler);
 	}
 
 	@Test
