@@ -1,6 +1,7 @@
 -- IDs allocated from idserver.metas.de on 2026-06-26:
 --   AD_MigrationScript seq : 5809760
 --   AD_Table            542621  (M_Product_PackagingMaterial)
+--   AD_Sequence         556612  (table-ID sequence for M_Product_PackagingMaterial)
 --   AD_Element          585052  (M_Product_PackagingMaterial_ID — PK label)
 --   AD_Column           592884  (M_Product_PackagingMaterial_ID — PK)
 --   AD_Column           592885  (AD_Client_ID)
@@ -35,6 +36,11 @@ INSERT INTO AD_Table_Trl (AD_Language,AD_Table_ID, Name, IsTranslated,AD_Client_
 
 -- 2026-06-26T10:00:02.000Z
 UPDATE AD_Table_Trl SET IsTranslated='Y', Name='Packaging material',Updated=TO_TIMESTAMP('2026-06-26 10:00:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Table_ID=542621
+;
+
+-- Table-ID sequence for M_Product_PackagingMaterial (required for runtime PK allocation)
+-- 2026-06-26T10:00:03.000Z
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556612 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_Product_PackagingMaterial',1,'Y','N','Y','Y','M_Product_PackagingMaterial','N',1000000,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- Column: M_Product_PackagingMaterial.AD_Client_ID

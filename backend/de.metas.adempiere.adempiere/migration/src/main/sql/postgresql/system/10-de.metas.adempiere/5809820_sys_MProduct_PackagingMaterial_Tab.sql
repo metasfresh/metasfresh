@@ -29,7 +29,7 @@ UPDATE AD_Table SET AD_Window_ID=140,Updated=TO_TIMESTAMP('2026-06-26 16:00:00',
 -- did not bind the tab there.
 -- 2026-06-26 16:00:10
 INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,Description,EntityType,HasTree,Help,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,AD_Column_ID,Processing,SeqNo,TabLevel,Updated,UpdatedBy)
-VALUES (0,585052,0,549326 /*From ID Server*/,542621,140,'Y',TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100,'Verpackungsmaterialien des Produkts.','D','N','Verpackungsmaterialien des Produkts (Materialtyp und Gewicht).','N','A','M_Product_PackagingMaterial','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Verpackungsmaterial',592892,'N',200,1,TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,585052,0,549326 /*From ID Server*/,542621,140,'Y',TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100,'Verpackungsmaterialien des Produkts.','D','N','Verpackungsmaterialien des Produkts (Materialtyp und Gewicht).','N','A','M_Product_PackagingMaterial','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Verpackungsmaterial',592892,'N',183,1,TO_TIMESTAMP('2026-06-26 16:00:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2026-06-26 16:00:11
