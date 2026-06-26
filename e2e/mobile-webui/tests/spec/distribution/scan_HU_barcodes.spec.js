@@ -197,12 +197,16 @@ test('Scan a truncated (split) HU QR code where HU is expected → user-friendly
 
     const masterdata = await createMasterdata();
 
-    // A long HU QR code can be split mid-stream by a slow scanner device: the worker scans one HU but only
-    // the head fragment arrives — it keeps the valid "HU#<version>#" prefix yet carries a truncated, unparseable
-    // JSON payload.
+    // A long HU QR code can be split mid-stream by a slow scanner device: it arrives as TWO bad scans —
+    // the head fragment (keeps the valid "HU#<version>#" prefix but carries truncated, unparseable JSON) and
+    // the tail fragment (the remainder of the payload, without the prefix). Both must surface the same
+    // friendly QR_NOT_RECOGNIZED message, exactly as in the originally reported problem.
     const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
-    const truncatedHead = fullHuQRCode.substring(0, Math.floor(fullHuQRCode.length / 2));
-    expect(truncatedHead).toMatch(/^HU#/); // still looks like an HU QR head, but the payload is cut off
+    const splitAt = Math.floor(fullHuQRCode.length / 2);
+    const truncatedHead = fullHuQRCode.substring(0, splitAt);
+    const truncatedTail = fullHuQRCode.substring(splitAt);
+    expect(truncatedHead).toMatch(/^HU#/);     // head keeps the HU# prefix, payload is cut off
+    expect(truncatedTail).not.toMatch(/^HU#/); // tail is the prefix-less remainder
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -213,8 +217,15 @@ test('Scan a truncated (split) HU QR code where HU is expected → user-friendly
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.openPickFromScreen();
 
-    await expectErrorToast('Scan a truncated (split) HU QR code where HU is expected', async () => {
+    await expectErrorToast('Scan the truncated HU QR head where HU is expected', async () => {
         await DistributionLinePickFromScreen.typeHUQRCode(truncatedHead);
+        await GetQuantityDialog.waitForDialog();
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
+
+    await expectErrorToast('Scan the truncated HU QR tail where HU is expected', async () => {
+        await DistributionLinePickFromScreen.typeHUQRCode(truncatedTail);
         await GetQuantityDialog.waitForDialog();
     }, ({ textContent }) => {
         expect(textContent).toContain('QR_NOT_RECOGNIZED');

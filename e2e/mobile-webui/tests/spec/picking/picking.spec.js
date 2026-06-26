@@ -616,12 +616,16 @@ test('Scan a truncated (split) HU QR code during picking → user-friendly error
 
     const masterdata = await createMasterdata();
 
-    // A long HU QR code can be split mid-stream by a slow scanner device: the worker scans one HU during
-    // picking but only the head fragment arrives — it keeps the valid "HU#<version>#" prefix yet carries a
-    // truncated, unparseable JSON payload.
+    // A long HU QR code can be split mid-stream by a slow scanner device: it arrives as TWO bad scans —
+    // the head fragment (keeps the valid "HU#<version>#" prefix but carries truncated, unparseable JSON) and
+    // the tail fragment (the remainder of the payload, without the prefix). Both must surface the same
+    // friendly QR_NOT_RECOGNIZED message, exactly as in the originally reported problem.
     const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
-    const truncatedHead = fullHuQRCode.substring(0, Math.floor(fullHuQRCode.length / 2));
-    expect(truncatedHead).toMatch(/^HU#/);
+    const splitAt = Math.floor(fullHuQRCode.length / 2);
+    const truncatedHead = fullHuQRCode.substring(0, splitAt);
+    const truncatedTail = fullHuQRCode.substring(splitAt);
+    expect(truncatedHead).toMatch(/^HU#/);     // head keeps the HU# prefix, payload is cut off
+    expect(truncatedTail).not.toMatch(/^HU#/); // tail is the prefix-less remainder
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -632,9 +636,19 @@ test('Scan a truncated (split) HU QR code during picking → user-friendly error
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-    await expectErrorToast('Scanning a truncated HU QR code during picking', async () => {
+    await expectErrorToast('Scan the truncated HU QR head during picking', async () => {
         await PickingJobScreen.pickHU({
             qrCode: truncatedHead,
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
+
+    await expectErrorToast('Scan the truncated HU QR tail during picking', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: truncatedTail,
             isScanDirectly: true,
             expectedPickDirectly: true,
         });
