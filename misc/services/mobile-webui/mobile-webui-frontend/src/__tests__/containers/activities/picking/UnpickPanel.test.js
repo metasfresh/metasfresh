@@ -90,15 +90,18 @@ describe('UnpickPanel — onTargetSubmitted', () => {
     expect(screen.getByTestId('mock-target-submit')).toBeInTheDocument();
   });
 
-  it('SERVER rejection (response present): toasts and closes so the operator starts over', async () => {
+  it('SERVER rejection (response present): toasts but does NOT close — panel stays on SCAN_TARGET for a corrected scan', async () => {
     mockDispatch.mockReturnValue(Promise.reject({ response: { status: 422 } }));
     const onClose = jest.fn();
     render(<UnpickPanel {...baseProps} onClose={onClose} />);
 
     driveToTargetSubmit();
 
-    await waitFor(() => expect(onClose).toHaveBeenCalledTimes(1));
-    expect(mockToastError).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(mockToastError).toHaveBeenCalledTimes(1));
+    // A server rejection (e.g. a mis-scanned/incompatible target HU) is correctable in place, so the
+    // panel must stay open — same as the network-failure case — and let the operator re-scan or Cancel.
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.getByTestId('mock-target-submit')).toBeInTheDocument();
   });
 
   it('closes exactly once on a successful submit', async () => {
