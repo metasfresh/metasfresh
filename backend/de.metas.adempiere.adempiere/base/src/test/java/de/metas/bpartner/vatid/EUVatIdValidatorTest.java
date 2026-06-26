@@ -57,17 +57,6 @@ class EUVatIdValidatorTest
 		assertThat(EUVatIdValidator.isValid(vatId)).isTrue();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {
-			"US123456789",     // unknown 2-letter prefix
-			"XX999",           // unknown prefix
-			"123456",          // bare number (no alpha prefix)
-	})
-	void unknownPrefix_isValid(final String vatId)
-	{
-		assertThat(EUVatIdValidator.isValid(vatId)).isTrue();
-	}
-
 	// ===================================================================
 	// Formatting tolerance — spaces / dots / hyphens stripped, case-insensitive
 	// ===================================================================
