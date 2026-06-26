@@ -23,6 +23,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -77,6 +78,7 @@ jobs:
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
           echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
       - name: testspace push build infos
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           touch github_run.txt
           echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
@@ -239,6 +241,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -250,6 +253,7 @@ jobs:
           --tag metas-frontend:test \
           .
       - name: publish results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
@@ -594,6 +598,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -635,6 +640,7 @@ jobs:
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: push-results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
           docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
@@ -733,6 +739,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -761,6 +768,7 @@ jobs:
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
