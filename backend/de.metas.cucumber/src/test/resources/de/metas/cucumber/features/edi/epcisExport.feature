@@ -732,19 +732,14 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @Id:S30558_010
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S30558_010 — Two orders share one LU, sibling shipment not yet generated: function returns {} for ioA until ioB is also completed
-  ## Completion-ordering gate (me03 #30558): when two sales orders are picked onto ONE shared
-  ## physical pallet (ONE SSCC18), the function must return {} for the first-completed shipment
-  ## until ALL TUs on the LU are covered by a CO/CL shipment.
-  ## This scenario uses DO_NOT_CREATE + QuantityType=P (picked-only): both picking jobs
-  ## complete FIRST (so the LU physically holds all 15 TUs from both orders), then shipments
-  ## are generated sequentially. ioA is generated+completed alone (QuantityType=P restricts it
-  ## to order A's 5 picked TUs = 50 PCE). At that point ioB has no shipment yet — order B's
-  ## 10 TUs are physically on the shared LU but uncovered by any CO/CL shipment. The RED gate
-  ## assertion fires after completing ioA: the current (un-gated) function emits a non-empty
-  ## partial event for ioA because it sees no sibling M_InOut, so the 'returns empty object'
-  ## assertion FAILS. ioB is then generated+completed, closing the pallet; ioA then returns
-  ## the merged full event and ioB returns {}.
+  Scenario: S30558_010 — Both draft shipments generated first, then ioA completed first: gate returns {} for ioA until ioB is also completed
+  ## Completion-ordering gate (me03 #30558): both-drafts flow — generate BOTH shipments as
+  ## drafts FIRST (each claims its own picked TUs, QuantityType=P), then complete in order.
+  ## Completing ioA first while ioB is only a draft means order B's 10 TUs are covered only
+  ## by a draft shipment (not CO/CL). The RED gate assertion fires after completing ioA:
+  ## the current (un-gated) function emits a non-empty partial event, so the
+  ## 'returns empty object' assertion FAILS (intended RED). After ioB is also completed,
+  ## ioA (lower M_InOut_ID = owner) returns the merged full event; ioB returns {}.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
@@ -880,29 +875,36 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_HU_ID             | M_Attribute_ID.Value | Value              |
       | sharedLu_S30558_010 | SSCC18               | 987654321000003058 |
 
-    # ─── Generate + complete ioA alone (QuantityType=P = picked-only → 5 TUs = 50 PCE) ─
-    # ioB has no shipment yet; its 10 TUs are physically on the LU but uncovered.
+    # ─── Both-drafts flow: generate DRAFT for ssA, then separately for ssB ─────────────
+    # Each schedule claims its own picked TUs (QuantityType=P); generating both as drafts
+    # before completing either ensures no schedule sweeps the whole LU on its own.
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssA_S30558_010        | P            | true                | false       |
+      | ssA_S30558_010        | P            | false               | false       |
     Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
-      | ssA_S30558_010        | ioA_S30558_010 | CO            |
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | ssA_S30558_010        | ioA_S30558_010 |
 
-    # RED gate — ioB has no shipment yet (its 10 TUs are on the LU but uncovered by any CO/CL M_InOut):
-    # Correct post-fix behaviour: {} (LU not fully covered → gate blocks emission).
-    # This assertion MUST FAIL on the current (un-gated) code.
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ssB_S30558_010        | P            | false               | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | ssB_S30558_010        | ioB_S30558_010 |
+
+    # ─── Complete ioA first ───────────────────────────────────────────────────────────
+    And the shipment identified by ioA_S30558_010 is completed
+
+    # RED gate — ioB is still a draft (IP): order B's 10 TUs on the LU are covered only
+    # by a draft shipment, not a CO/CL. Correct post-fix behaviour: {} (LU not fully covered
+    # by completed shipments → gate blocks emission).
+    # This assertion MUST FAIL on the current (un-gated) code (intended RED).
     Then the EPCIS JSON export function returns empty object for M_InOut identified by ioA_S30558_010
 
-    # ─── Generate + complete ioB — now all 15 TUs on the LU are covered ─────────────
-    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
-      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssB_S30558_010        | P            | true                | false       |
-    Then after not more than 60s, M_InOut is found:
-      | M_ShipmentSchedule_ID | M_InOut_ID     | OPT.DocStatus |
-      | ssB_S30558_010        | ioB_S30558_010 | CO            |
+    # ─── Complete ioB — now all 15 TUs on the LU are covered by CO shipments ─────────
+    And the shipment identified by ioB_S30558_010 is completed
 
-    # ─── After both completions: ioA (lower ID = owner) returns the merged pallet ────
+    # ─── After both completions: ioA (lower M_InOut_ID = owner) returns the merged pallet ─
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S30558_010
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
@@ -926,15 +928,15 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @Id:S30558_020
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S30558_020 — Two orders share one LU, sibling shipment generated but still draft: function returns {} for ioA until ioB is also completed
-  ## Completion-ordering gate (me03 #30558): same shared-pallet setup as S30558_010.
-  ## Uses DO_NOT_CREATE: both picking jobs finish, then BOTH shipment schedules are
-  ## individually generated as DRAFT. Only ioA is completed; ioB remains DRAFT (IP).
-  ## State: ioA=CO, ioB=IP — order B's TUs on the LU are covered only by a draft shipment.
-  ## The RED gate assertion fires after completing ioA: the current (un-gated) function
-  ## emits a non-empty partial event because it does not check that the sibling is CO/CL,
-  ## so the 'returns empty object' assertion FAILS on current code (expected RED).
-  ## After ioB is completed, ioA returns the merged pallet; ioB returns {}.
+  Scenario: S30558_020 — Both draft shipments generated first, then ioB completed first: gate returns {} for ioB until ioA is also completed
+  ## Completion-ordering gate (me03 #30558): both-drafts flow — symmetric to S30558_010 but
+  ## completion order is reversed: ioB is completed first.
+  ## Generate BOTH shipments as drafts FIRST (each claims its own picked TUs, QuantityType=P),
+  ## then complete ioB first. At that point ioA is still a draft (IP) — order A's 5 TUs on
+  ## the LU are covered only by a draft shipment (not CO/CL). The RED gate assertion fires
+  ## after completing ioB: the current (un-gated) function emits a non-empty partial event,
+  ## so the 'returns empty object' assertion FAILS (intended RED). After ioA is also completed,
+  ## ioA (lower M_InOut_ID = owner) returns the merged full event; ioB returns {}.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
@@ -1070,29 +1072,36 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_HU_ID             | M_Attribute_ID.Value | Value              |
       | sharedLu_S30558_020 | SSCC18               | 987654321000003059 |
 
-    # ─── Generate DRAFT shipments for BOTH schedules, then complete ioA only ─────────
-    # State after: ioA=CO, ioB=IP (draft) — order B's TUs on the LU are covered only by a draft shipment.
+    # ─── Both-drafts flow: generate DRAFT for ssA, then separately for ssB ─────────────
+    # Each schedule claims its own picked TUs (QuantityType=P); generating both as drafts
+    # before completing either ensures no schedule sweeps the whole LU on its own.
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
-      | ssA_S30558_020        | PD           | false               | false       |
-      | ssB_S30558_020        | PD           | false               | false       |
+      | ssA_S30558_020        | P            | false               | false       |
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID     |
       | ssA_S30558_020        | ioA_S30558_020 |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ssB_S30558_020        | P            | false               | false       |
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID     |
       | ssB_S30558_020        | ioB_S30558_020 |
-    And the shipment identified by ioA_S30558_020 is completed
 
-    # RED gate: ioA=CO, ioB=IP — order B's TUs are covered only by a DRAFT shipment (not CO/CL).
-    # Correct post-fix behaviour: {} (sibling draft → LU not fully covered by completed shipments).
-    # This assertion MUST FAIL on the current (un-gated) code.
-    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioA_S30558_020
-
-    # ─── Complete ioB — now all 15 TUs on the LU are covered by CO shipments ─────────
+    # ─── Complete ioB first (symmetric ordering vs. S30558_010) ──────────────────────
     And the shipment identified by ioB_S30558_020 is completed
 
-    # ─── After both completions: ioA (lower ID = owner) returns the merged pallet ────
+    # RED gate — ioA is still a draft (IP): order A's 5 TUs on the LU are covered only
+    # by a draft shipment, not a CO/CL. Correct post-fix behaviour: {} (LU not fully covered
+    # by completed shipments → gate blocks emission).
+    # This assertion MUST FAIL on the current (un-gated) code (intended RED).
+    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S30558_020
+
+    # ─── Complete ioA — now all 15 TUs on the LU are covered by CO shipments ─────────
+    And the shipment identified by ioA_S30558_020 is completed
+
+    # ─── After both completions: ioA (lower M_InOut_ID = owner) returns the merged pallet ─
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S30558_020
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
@@ -1101,9 +1110,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000003059 | 15         |
     And the EPCIS JSON array field has:
-      | field            | expectedSize |
-      | desadvReferences | 2            |
-      | poReferences     | 2            |
+      | field               | expectedSize |
+      | desadvReferences    | 2            |
+      | poReferences        | 2            |
+      | shipmentDocumentNos | 2            |
     Then the EPCIS JSON pallet 0 crates are order-pure with POReferences:
       | poReference |
       | 1170000003  |
