@@ -240,6 +240,51 @@ public class C_Order_StepDef
 				.forEach(this::createOrder);
 	}
 
+	/**
+	 * Creates a single C_Order (same columns as {@code metasfresh contains C_Orders:}) and asserts that
+	 * the creation is rejected with an {@link AdempiereException}. Use this to verify a save-time
+	 * interceptor (e.g. the dummy-GRAI PO-reference validation) blocks the order.
+	 * <p>
+	 * Single row only. Columns: every column of {@code metasfresh contains C_Orders:} plus
+	 * <ul>
+	 *     <li><b>ErrorCode</b> (optional): when given, the thrown exception's {@code ErrorCode} must equal it.</li>
+	 * </ul>
+	 * <pre>
+	 * And metasfresh contains C_Orders expecting error:
+	 *   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    | ErrorCode                 |
+	 *   | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF | GRAI_POREFERENCE_TOO_LONG |
+	 * </pre>
+	 */
+	@Given("metasfresh contains C_Orders expecting error:")
+	public void metasfresh_contains_c_orders_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		if (tableRows.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple rows are not supported!");
+		}
+
+		AdempiereException caughtException = null;
+		try
+		{
+			metasfresh_contains_c_orders(dataTable);
+		}
+		catch (final AdempiereException e)
+		{
+			caughtException = e;
+		}
+
+		assertThat(caughtException)
+				.as("An AdempiereException should have been thrown while creating the C_Order")
+				.isNotNull();
+
+		final String expectedErrorCode = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorCode");
+		if (expectedErrorCode != null)
+		{
+			assertThat(caughtException.getErrorCode()).isEqualTo(expectedErrorCode);
+		}
+	}
+
 	public I_C_Order createOrder(final DataTableRow tableRow)
 	{
 		final String poReference = tableRow.getAsOptionalName(I_C_Order.COLUMNNAME_POReference).orElse(null);
