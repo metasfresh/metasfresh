@@ -53,8 +53,8 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
         onClose();
       })
       .catch((axiosError) => {
+        // Any failure keeps the panel on SCAN_TARGET so the operator can re-scan or Cancel; only success closes.
         toastError({ axiosError });
-        onClose();
       });
   };
 

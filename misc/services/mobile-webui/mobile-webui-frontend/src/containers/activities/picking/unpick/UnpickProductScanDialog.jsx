@@ -7,6 +7,11 @@ import BarcodeScannerComponent from '../../../../components/BarcodeScannerCompon
 import DialogButton from '../../../../components/dialogs/DialogButton';
 import Dialog from '../../../../components/dialogs/Dialog';
 
+// Trust the backend's single source of truth: JsonUnpickResolveResponse.unpickable (true when
+// packedQty>0). Don't recompute "is there something to unpick" from packedQty on the FE — that would
+// drift from the backend rule.
+export const isResolvedProductUnpickable = (response) => Boolean(response?.productId && response?.unpickable);
+
 // Stage 1 of UnpickPanel: scans a product GTIN and resolves it against the picking job; surfaces an
 // inline error when the scanned product is not packed in this job (the qty/target stages live in
 // UnpickPanel).
@@ -29,8 +34,7 @@ const UnpickProductScanDialog = ({ wfProcessId, onResolved, onCloseDialog }) => 
   const onResolvedResult = useCallback(
     (result) => {
       const response = result?.resolved;
-      const isPacked = response?.packedQty != null && Number(response.packedQty) > 0;
-      if (!response?.productId || !isPacked) {
+      if (!isResolvedProductUnpickable(response)) {
         setErrorMessage(trl('activities.picking.unpick.productNotInPackage'));
         return;
       }
