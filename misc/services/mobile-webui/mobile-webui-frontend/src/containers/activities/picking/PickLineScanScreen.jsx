@@ -209,7 +209,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
-    readAttributes: getReadAttributesFromActivity({ activity }),
+    // Per-line readAttributes (e.g. SerialNo for serial-no products); falls back to the job-level set.
+    readAttributes: line?.readAttributes ?? getReadAttributesFromActivity({ activity }),
   };
 };
 
@@ -411,6 +412,7 @@ const usePostQtyPicked = ({
     catchWeight = null,
     bestBeforeDate,
     lotNo,
+    serialNos,
     productNo,
     isCloseTarget = false,
     isDone = true,
@@ -454,6 +456,8 @@ const usePostQtyPicked = ({
         lotNo,
         setGrais,
         graiCodes,
+        setSerialNos: serialNos !== undefined,
+        serialNos,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

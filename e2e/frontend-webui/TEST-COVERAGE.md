@@ -1097,6 +1097,23 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 **Components Tested**:
 - HU Label Configuration window (541647) / M_HU_Label_Config
 - AutoPrintCopies default
+### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up migration 5809330's field changes
+3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner")
+4. Assert each of `VATaxID`, `TaxID`, `CommercialRegisterNumber` is present in the layout
+
+**Key Validations**:
+- Migration 5809330 made `TaxID` (Steuernummer) and `CommercialRegisterNumber` (Handelsregisternr) visible in tab 541852 alongside the already-shown `VATaxID` (USt-IdNr) — these back the CII seller fields BT-31/BT-32/BT-30
+- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
+- **Scope — presence only**: editability is NOT asserted here. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'` in migration 5809330) and verified by the window-designer
 
 ---
 

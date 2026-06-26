@@ -1,5 +1,7 @@
 package de.metas.einvoice;
 
+import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
+import de.metas.email.MailService;
 import de.metas.einvoice.cii.CiiMapper;
 import de.metas.einvoice.cii.CiiValidationResult;
 import de.metas.einvoice.cii.CiiValidator;
@@ -10,7 +12,6 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Invoice;
@@ -44,7 +45,6 @@ import java.util.Optional;
  * so callers do not need to check eligibility themselves.
  */
 @Service
-@RequiredArgsConstructor
 public class EInvoiceCiiService
 {
 	private static final Logger log = LoggerFactory.getLogger(EInvoiceCiiService.class);
@@ -68,7 +68,24 @@ public class EInvoiceCiiService
 	}
 
 	@NonNull private final EInvoiceConfigService configService;
+	@Nullable private final DocOutboundLogMailRecipientRegistry mailRecipientRegistry;
+	@Nullable private final MailService mailService;
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+	/**
+	 * {@code mailRecipientRegistry} and {@code mailService} are nullable so that existing tests
+	 * that do not exercise the BT-49/BT-34 resolvers can pass {@code null} without a NPE from a
+	 * {@code @NonNull} guard. In a live Spring context both beans are always present.
+	 */
+	public EInvoiceCiiService(
+			@NonNull final EInvoiceConfigService configService,
+			@Nullable final DocOutboundLogMailRecipientRegistry mailRecipientRegistry,
+			@Nullable final MailService mailService)
+	{
+		this.configService = configService;
+		this.mailRecipientRegistry = mailRecipientRegistry;
+		this.mailService = mailService;
+	}
 
 	/**
 	 * Generates a CII XML e-invoice for the given invoice and validates it against EN16931 rules.
@@ -91,7 +108,7 @@ public class EInvoiceCiiService
 		}
 
 		// Map invoice to CII domain object
-		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, config);
+		final CrossIndustryInvoiceType cii = new CiiMapper(mailRecipientRegistry, mailService).map(invoice, config);
 
 		// Marshal to XML
 		final String ciiXml = marshalToXml(cii);

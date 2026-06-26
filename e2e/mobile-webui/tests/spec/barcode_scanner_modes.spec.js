@@ -140,7 +140,7 @@ test('Honeywell CT60 keystroke-wedge mode — input is off-screen + readOnly, no
 
     await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
     await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
-    await BarcodeScannerComponent.expectCameraVideoAbsent();
+    await BarcodeScannerComponent.expectCameraModeInactive();
 });
 
 // Each test drives one real-world way a barcode reaches the app, end to end:
@@ -330,7 +330,7 @@ test.describe('Modes', () => {
         // readonly PRESENT — hard suppression for Android 11 firmware that ignores inputMode="none".
         await BarcodeScannerComponent.expectAttributes({ type: 'text', inputmode: 'none', readonly: true });
         await BarcodeScannerComponent.expectCssClass({ present: 'input-text-offscreen' });
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
     });
 
     // invisible=true (ApplicationsListScreen / BarcodeScannerButton callers):
@@ -353,7 +353,7 @@ test.describe('Modes', () => {
         // invisible=true → useBarcodeScannerModes returns hardware-only, no camera, no manual.
         // The component renders ONLY the off-screen #input-text and the keyboard listener.
         await BarcodeScannerComponent.expectAttached({});
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
         await BarcodeScannerComponent.expectFooterAbsent();
     });
 
@@ -390,7 +390,7 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectManualEntryInputPresent();
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
         // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
         // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
         await BarcodeScannerComponent.expectButtonPresent('barcode-scanner-back-to-scanner');
@@ -398,9 +398,9 @@ test.describe('Modes', () => {
 
     // camera toggle: hardware + camera both enabled →
     //   • footer toggle button present
-    //   • clicking toggle → <video> renders
+    //   • clicking toggle → camera mode becomes active (camera panel shown)
     // noinspection JSUnusedLocalSymbols
-    test('camera toggle — clicking hw/camera toggle renders <video>', async ({ page }) => {
+    test('camera toggle — clicking hw/camera toggle activates camera mode', async ({ page }) => {
         await allure.epic('E0295: Frontend MobileUI');
         await allure.feature('F12000: Frontend MobileUI');
         await allure.story('Barcode scanning modes');
@@ -419,12 +419,12 @@ test.describe('Modes', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Starting in hardware mode — no video yet.
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        // Starting in hardware mode — camera mode not active.
+        await BarcodeScannerComponent.expectCameraModeInactive();
         // Toggle to camera mode via footer button.
         await BarcodeScannerComponent.clickFooterButton('barcode-scanner-toggle-hw-camera');
-        // After toggle, <video> element must be rendered.
-        await BarcodeScannerComponent.expectCameraVideoPresent();
+        // After toggle, camera mode must be active (the camera panel is shown).
+        await BarcodeScannerComponent.expectCameraModeActive();
     });
 
     // THE canonical hardware-handheld deployment: hardware scanner is the default, manual typing is

@@ -53,7 +53,7 @@ Feature: XRechnung e-invoice generated, attached and emailed on sales-invoice co
     # AD_OrgBP_ID links this bpartner to sellerOrg — bPartnerDAO.retrieveOrgBPartner() (used by the CII
     # mapper for the seller) resolves the org-bpartner via C_BPartner.AD_OrgBP_ID, not AD_OrgInfo.
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | Value | Name        | CompanyName | M_PricingSystem_ID | TaxID       | AD_OrgBP_ID.Identifier |
+      | Identifier    | Value | Name        | CompanyName | M_PricingSystem_ID | VATaxID     | AD_OrgBP_ID.Identifier |
       | seller_org_bp | dt    | Muster GmbH | Muster GmbH | ps_1               | DE123456789 | sellerOrg              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | C_Country_ID | City   | Postal | Address1       |

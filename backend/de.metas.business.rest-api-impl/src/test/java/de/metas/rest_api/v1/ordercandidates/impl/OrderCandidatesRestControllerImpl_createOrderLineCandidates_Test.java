@@ -108,6 +108,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.table.MockLogEntriesRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
@@ -269,7 +270,7 @@ public class OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 
 		orderCandidatesRestControllerImpl = new OrderCandidatesRestController(
 				jsonConverters,
-				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting()),
+				new OLCandRepository(ExternalSystemRepository.newInstanceForUnitTesting(), Mockito.mock(CustomColumnService.class)),
 				bpartnerRestController,
 				NoopPerformanceMonitoringService.INSTANCE);
 
