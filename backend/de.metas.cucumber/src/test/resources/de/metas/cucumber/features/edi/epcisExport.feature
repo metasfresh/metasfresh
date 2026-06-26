@@ -481,16 +481,17 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @Id:S29231_170
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
-  Scenario: S29231_170 — Two mobile-picking jobs share one LU: EPCIS emits ONE event per physical SSCC (owner merges both orders, sibling returns {})
-  ## Contract per customer clarification (two orders picked onto one shared pallet):
+  Scenario: S29231_170 — Two mobile-picking jobs share one LU: EPCIS emits ONE merged event per physical SSCC on the pallet-closing completion; post-closure either sharer returns the full pallet
+  ## Close-driven semantics (two orders picked onto one shared pallet):
   ## When two sales orders are picked onto ONE shared physical pallet (ONE SSCC), the
-  ## get_epcis_events_json_fn must emit exactly ONE picking+commissioning event for that
-  ## SSCC. The owner shipment (lowest M_InOut_ID sharing the LU) returns the full event:
+  ## get_epcis_events_json_fn emits exactly ONE picking+commissioning event for that
+  ## SSCC once the pallet is fully closed (all sharers completed). The queried shipment
+  ## returns the full merged event:
   ##   - pallets[0].crates = ALL crates from both orders on that LU (15 total)
   ##   - desadvReferences[] size 2 (one per DESADV)
   ##   - poReferences[]     size 2 (one per order)
-  ## The sibling shipment (higher M_InOut_ID) must return {} (empty object) so the receiver's
-  ## system does not render a duplicate event for the same physical SSCC.
+  ## Post-closure, EITHER sharer (ioA or ioB) returns the full merged pallet — there is
+  ## no fixed owner; single-emission guarantee is covered by the Task-4 e2e scenario.
   ##
   ## The test uses two real mobile picking jobs (LUPickingTarget.ofExistingHU on the
   ## second job) to reproduce the shared-pallet shape via the production code path.
@@ -642,11 +643,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | dA_S29231_170            | bp_S29231_170            | oA_S29231_170         |
       | dB_S29231_170            | bp_S29231_170            | oB_S29231_170         |
 
-    # ─── Per-SSCC contract (customer clarification) ───────────────────────────────────
-    # ioA has the lower M_InOut_ID (created first) → it is the OWNER.
-    # The owner's event merges ALL crates from the shared physical LU (5 TUs from order A
-    # + 10 TUs from order B = 15 crates total) and carries both DESADV + PO references.
-    # ioB is the SIBLING → the function must return {} so no duplicate event is emitted.
+    # ─── Per-SSCC contract (close-driven semantics) ───────────────────────────────────
+    # Both shipments are completed (pallet fully closed). The queried shipment (ioA) returns
+    # the full merged event covering ALL crates from the shared physical LU (5 TUs from
+    # order A + 10 TUs from order B = 15 crates total) with both DESADV + PO references.
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S29231_170
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
@@ -672,13 +672,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | 1170000001  |
       | 1170000002  |
 
-    # ─── Sibling shipment B must return {} (no duplicate event for the same SSCC) ──────
-    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S29231_170
-
-    # ─── Export-relevance predicate (drives the scripted-adapter outbound WHERE-clause, so the
-    #     sibling is never selected for export → metasfresh never emits an empty EPCIS document) ──
-    Then the EPCIS export-relevance for M_InOut identified by ioA_S29231_170 is true
-    And the EPCIS export-relevance for M_InOut identified by ioB_S29231_170 is false
+    # ─── Post-closure: sibling (ioB) ALSO returns the merged pallet — no fixed owner ───
+    When the EPCIS JSON export function is called for M_InOut identified by ioB_S29231_170
+    And the EPCIS JSON pallet has:
+      | palletIndex | sscc               | crateCount |
+      | 0           | 987654321000001700 | 15         |
 
     # ─── DESADV-JSON regression via M_InOut_EDI_Export_JSON/invoke ───────────────────
     # Exercises get_desadv_packs_json_fn's per-M_InOut filter through the production REST
