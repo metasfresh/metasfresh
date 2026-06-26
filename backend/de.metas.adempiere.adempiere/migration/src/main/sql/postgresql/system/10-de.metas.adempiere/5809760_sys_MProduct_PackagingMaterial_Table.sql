@@ -206,12 +206,12 @@ UPDATE AD_Reference_Trl SET IsTranslated='Y', Name='Packaging material type', De
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,544283 /*From ID Server*/,542111,TO_TIMESTAMP('2026-06-26 10:02:10','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Papier/Pappe/Karton',TO_TIMESTAMP('2026-06-26 10:02:10','YYYY-MM-DD HH24:MI:SS'),100,'PPK','PPK')
 ;
 
--- 2026-06-26T10:02:10.500Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) VALUES ('de_DE',544283, '', 'Papier/Pappe/Karton', 'Y', 0, 0, TO_TIMESTAMP('2026-06-26 10:02:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-26 10:02:10','YYYY-MM-DD HH24:MI:SS'), 100, 'Y')
-;
-
 -- 2026-06-26T10:02:11.000Z
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Ref_List_ID=544283 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
+;
+
+-- 2026-06-26T10:02:11.500Z
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Papier/Pappe/Karton', Updated=TO_TIMESTAMP('2026-06-26 10:02:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544283
 ;
 
 -- 2026-06-26T10:02:12.000Z
@@ -227,7 +227,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 -- 2026-06-26T10:02:21.500Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) VALUES ('de_DE',544284, '', 'Polystyrol (PS)', 'Y', 0, 0, TO_TIMESTAMP('2026-06-26 10:02:20','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-26 10:02:20','YYYY-MM-DD HH24:MI:SS'), 100, 'Y')
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Polystyrol (PS)', Updated=TO_TIMESTAMP('2026-06-26 10:02:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544284
 ;
 
 -- 2026-06-26T10:02:22.000Z
@@ -243,7 +243,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 -- 2026-06-26T10:02:31.500Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) VALUES ('de_DE',544285, '', 'Polyethylen (PE)', 'Y', 0, 0, TO_TIMESTAMP('2026-06-26 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-26 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100, 'Y')
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Polyethylen (PE)', Updated=TO_TIMESTAMP('2026-06-26 10:02:31','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544285
 ;
 
 -- 2026-06-26T10:02:32.000Z
@@ -259,7 +259,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 -- 2026-06-26T10:02:41.500Z
-INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) VALUES ('de_DE',544286, '', 'Metall', 'Y', 0, 0, TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'), 100, 'Y')
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Metall', Updated=TO_TIMESTAMP('2026-06-26 10:02:41','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=544286
 ;
 
 -- 2026-06-26T10:02:42.000Z
