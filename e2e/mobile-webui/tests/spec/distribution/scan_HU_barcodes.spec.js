@@ -145,7 +145,7 @@ test('Scan locator QR code where HU is expected → user-friendly error', async 
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.openPickFromScreen();
@@ -173,13 +173,48 @@ test('Scan unrecognized barcode where HU is expected → user-friendly error', a
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.openPickFromScreen();
 
     await expectErrorToast('Scan unrecognized barcode where HU is expected', async () => {
         await DistributionLinePickFromScreen.typeHUQRCode('TOTALLY_UNKNOWN_FORMAT_XYZ');
+        await GetQuantityDialog.waitForDialog();
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR code where HU is expected → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    // A long HU QR code can be split mid-stream by a slow scanner device: the worker scans one HU but only
+    // the head fragment arrives — it keeps the valid "HU#<version>#" prefix yet carries a truncated, unparseable
+    // JSON payload.
+    const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
+    const truncatedHead = fullHuQRCode.substring(0, Math.floor(fullHuQRCode.length / 2));
+    expect(truncatedHead).toMatch(/^HU#/); // still looks like an HU QR head, but the payload is cut off
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('distribution');
+    await DistributionJobsListScreen.waitForScreen();
+    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId, expectHitCount: 1 });
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await DistributionJobScreen.clickLineButton({ index: 1 });
+    await DistributionLineScreen.openPickFromScreen();
+
+    await expectErrorToast('Scan a truncated (split) HU QR code where HU is expected', async () => {
+        await DistributionLinePickFromScreen.typeHUQRCode(truncatedHead);
         await GetQuantityDialog.waitForDialog();
     }, ({ textContent }) => {
         expect(textContent).toContain('QR_NOT_RECOGNIZED');
