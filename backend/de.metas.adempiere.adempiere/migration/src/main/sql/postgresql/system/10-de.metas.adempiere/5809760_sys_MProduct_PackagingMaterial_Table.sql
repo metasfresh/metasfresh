@@ -145,6 +145,22 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Packaging material', PrintName
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585052, 'en_US')
 ;
 
+-- 2026-06-26T10:01:24.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verpackungsmaterial', PrintName='Verpackungsmaterial', Updated=TO_TIMESTAMP('2026-06-26 10:01:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585052
+;
+
+-- 2026-06-26T10:01:25.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585052, 'de_DE')
+;
+
+-- 2026-06-26T10:01:26.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verpackungsmaterial', PrintName='Verpackungsmaterial', Updated=TO_TIMESTAMP('2026-06-26 10:01:26','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585052
+;
+
+-- 2026-06-26T10:01:27.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585052, 'de_CH')
+;
+
 -- Column: M_Product_PackagingMaterial.M_Product_PackagingMaterial_ID
 -- 2026-06-26T10:01:30.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsFacetFilter,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592884 /*From ID Server*/,585052,0,13,542621,'M_Product_PackagingMaterial_ID',TO_TIMESTAMP('2026-06-26 10:01:30','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','N','N','N','N','N','Y','Y','N','N','N','N','Y','N','N','Verpackungsmaterial','NP',0,0,TO_TIMESTAMP('2026-06-26 10:01:30','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -251,6 +267,22 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Packaging material type', Prin
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585053, 'en_US')
 ;
 
+-- 2026-06-26T10:03:04.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verpackungsmaterial-Typ', PrintName='Verpackungsmaterial-Typ', Updated=TO_TIMESTAMP('2026-06-26 10:03:04','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585053
+;
+
+-- 2026-06-26T10:03:05.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585053, 'de_DE')
+;
+
+-- 2026-06-26T10:03:06.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Verpackungsmaterial-Typ', PrintName='Verpackungsmaterial-Typ', Updated=TO_TIMESTAMP('2026-06-26 10:03:06','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585053
+;
+
+-- 2026-06-26T10:03:07.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585053, 'de_CH')
+;
+
 -- Column: M_Product_PackagingMaterial.PackagingMaterialType
 -- 2026-06-26T10:03:10.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsFacetFilter,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592893 /*From ID Server*/,585053,0,17,542111,542621,'PackagingMaterialType',TO_TIMESTAMP('2026-06-26 10:03:10','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','Y','N','N','N','N','N','N','N','N','N','N','N','N','Y','N','Y','Verpackungsmaterial-Typ','NP',0,0,TO_TIMESTAMP('2026-06-26 10:03:10','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -279,6 +311,22 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Weight (g)', PrintName='Weight
 
 -- 2026-06-26T10:03:23.000Z
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585054, 'en_US')
+;
+
+-- 2026-06-26T10:03:24.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Gewicht (g)', PrintName='Gewicht (g)', Updated=TO_TIMESTAMP('2026-06-26 10:03:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Element_ID=585054
+;
+
+-- 2026-06-26T10:03:25.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585054, 'de_DE')
+;
+
+-- 2026-06-26T10:03:26.000Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Gewicht (g)', PrintName='Gewicht (g)', Updated=TO_TIMESTAMP('2026-06-26 10:03:26','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Element_ID=585054
+;
+
+-- 2026-06-26T10:03:27.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585054, 'de_CH')
 ;
 
 -- Column: M_Product_PackagingMaterial.WeightInGram
@@ -310,6 +358,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
     UpdatedBy                 NUMERIC(10)                  NOT NULL,
     WeightInGram              NUMERIC,
     CONSTRAINT MProduct_MProductPackagingMaterial FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED,
-    CONSTRAINT M_Product_PackagingMaterial_Key PRIMARY KEY (M_Product_PackagingMaterial_ID)
+    CONSTRAINT M_Product_PackagingMaterial_Key PRIMARY KEY (M_Product_PackagingMaterial_ID),
+    CONSTRAINT PackagingMaterialType_Check CHECK (PackagingMaterialType IN ('PPK','PS','PE','ME'))
 )
 ;
