@@ -763,9 +763,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | plv_S30558_010         | p_S30558_010 | 5.0      | PCE      | Normal           |
 
+    # AllowConsolidateInOut=N so the two orders' shipments stay separate M_InOuts (no consolidation)
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
-      | bp_S30558_010 | Y          | ps_S30558_010      | 9900000305580 |
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           | AllowConsolidateInOut |
+      | bp_S30558_010 | Y          | ps_S30558_010      | 9900000305580 | N                     |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
       | bpLoc_S30558_010 | 2900000305580 | bp_S30558_010 | true                | true         |
@@ -963,9 +964,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
       | plv_S30558_020         | p_S30558_020 | 5.0      | PCE      | Normal           |
 
+    # AllowConsolidateInOut=N so the two orders' shipments stay separate M_InOuts (no consolidation)
     And metasfresh contains C_BPartners without locations:
-      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
-      | bp_S30558_020 | Y          | ps_S30558_020      | 9900000305582 |
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           | AllowConsolidateInOut |
+      | bp_S30558_020 | Y          | ps_S30558_020      | 9900000305582 | N                     |
     And metasfresh contains C_BPartner_Locations:
       | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
       | bpLoc_S30558_020 | 2900000305582 | bp_S30558_020 | true                | true         |
