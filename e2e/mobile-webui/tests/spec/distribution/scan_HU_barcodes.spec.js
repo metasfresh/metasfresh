@@ -186,27 +186,28 @@ test('Scan unrecognized barcode where HU is expected → user-friendly error', a
     });
 });
 
-// noinspection JSUnusedLocalSymbols
-test('Scan a truncated (split) HU QR code where HU is expected → user-friendly error', async ({ page }) => {
-    // === ALLURE METADATA ===
-    allure.epic('E0370: Intralogistic (HUs)');
-    allure.tag('F5114: MobileUI Distribution');
-        allure.tag('F5114');  // Standalone tag for Tags section;
-    allure.story('Scan HU barcodes');
-    allure.severity('normal');
-
+// A long HU QR code can be split mid-stream by a slow scanner device: it arrives as TWO bad scans —
+// the head fragment (keeps the valid "HU#<version>#" prefix but carries truncated, unparseable JSON) and
+// the tail fragment (the prefix-less remainder). Each fragment, scanned on its own exactly as the device
+// delivers it, must surface the friendly QR_NOT_RECOGNIZED message — never a silent failure or the raw
+// "Failed converting payload" developer error.
+//
+// The two fragments are verified in SEPARATE tests, each starting from a clean toast state. The app shows
+// exactly one error toast per scan by design (a fixed toastId — see mobile-webui CLAUDE.md "the user must
+// see exactly ONE error"), so two back-to-back scans within one test would race that de-duplication and
+// leave the second fragment's toast suppressed. Asserting a single shared toast instead would also fail to
+// catch a tail-specific regression — a raw tail error would be hidden under the head's friendly toast. One
+// scan per scenario keeps each fragment's handling independently observable.
+const expectTruncatedHuQRFragmentShowsFriendlyError = async ({ which }) => {
     const masterdata = await createMasterdata();
 
-    // A long HU QR code can be split mid-stream by a slow scanner device: it arrives as TWO bad scans —
-    // the head fragment (keeps the valid "HU#<version>#" prefix but carries truncated, unparseable JSON) and
-    // the tail fragment (the remainder of the payload, without the prefix). Both must surface the same
-    // friendly QR_NOT_RECOGNIZED message, exactly as in the originally reported problem.
     const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
     const splitAt = Math.floor(fullHuQRCode.length / 2);
     const truncatedHead = fullHuQRCode.substring(0, splitAt);
     const truncatedTail = fullHuQRCode.substring(splitAt);
     expect(truncatedHead).toMatch(/^HU#/);     // head keeps the HU# prefix, payload is cut off
     expect(truncatedTail).not.toMatch(/^HU#/); // tail is the prefix-less remainder
+    const fragment = which === 'head' ? truncatedHead : truncatedTail;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -217,17 +218,34 @@ test('Scan a truncated (split) HU QR code where HU is expected → user-friendly
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.openPickFromScreen();
 
-    await expectErrorToast('Scan the truncated HU QR head where HU is expected', async () => {
-        await DistributionLinePickFromScreen.typeHUQRCode(truncatedHead);
+    await expectErrorToast(`Scan the truncated HU QR ${which} where HU is expected`, async () => {
+        await DistributionLinePickFromScreen.typeHUQRCode(fragment);
         await GetQuantityDialog.waitForDialog();
     }, ({ textContent }) => {
         expect(textContent).toContain('QR_NOT_RECOGNIZED');
     });
+};
 
-    await expectErrorToast('Scan the truncated HU QR tail where HU is expected', async () => {
-        await DistributionLinePickFromScreen.typeHUQRCode(truncatedTail);
-        await GetQuantityDialog.waitForDialog();
-    }, ({ textContent }) => {
-        expect(textContent).toContain('QR_NOT_RECOGNIZED');
-    });
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR HEAD where HU is expected → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyError({ which: 'head' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR TAIL where HU is expected → user-friendly error', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Scan HU barcodes');
+    allure.severity('normal');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyError({ which: 'tail' });
 });
