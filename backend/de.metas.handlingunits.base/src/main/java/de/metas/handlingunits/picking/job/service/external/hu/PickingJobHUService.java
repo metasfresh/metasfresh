@@ -44,6 +44,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStep;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.movement.MoveHUCommand;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -387,6 +388,19 @@ public class PickingJobHUService
 	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}
 
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req) {return inventoryService.createInventoryForMissingQty(req);}
+
+	public MoveHUCommand.MoveHUCommandBuilder newMoveHUCommandBuilder()
+	{
+		return MoveHUCommand.builder().huQRCodesService(huQRCodesService);
+	}
+
+	public HUTransformService newHUTransformService(@NonNull final ImmutableSet<HuId> allowedReservedVhuIds)
+	{
+		return HUTransformService.builder()
+				.huQRCodesService(huQRCodesService)
+				.allowedReservedVhuIds(allowedReservedVhuIds)
+				.build();
+	}
 
 	public PickFromHUsSupplier newPickFromHUsSupplier()
 	{
