@@ -53,13 +53,12 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
         onClose();
       })
       .catch((axiosError) => {
+        // Any submit failure — a server rejection (4xx/5xx, e.g. a mis-scanned/incompatible target HU) OR a
+        // transient network failure — keeps the panel on SCAN_TARGET: toast the error and let the operator
+        // correct and re-scan, or Cancel to abort. A server rejection is recoverable in place (rescan the
+        // right target), so it should NOT kick the operator out of the flow any more than a network blip does;
+        // closing only on success keeps both failure modes consistent. onClose() runs on the success (.then) path.
         toastError({ axiosError });
-        // Discriminate per mobile-webui CLAUDE.md § "API Error Surfacing": a server rejection (4xx/5xx, response
-        // present) won't succeed on retry → close so the operator can start over; a network failure (no response)
-        // may succeed on retry → stay on SCAN_TARGET. onClose() also still runs on the success (.then) path.
-        if (axiosError?.response) {
-          onClose();
-        }
       });
   };
 

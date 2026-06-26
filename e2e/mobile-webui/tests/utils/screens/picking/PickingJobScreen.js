@@ -331,16 +331,20 @@ export const PickingJobScreen = {
         await PickingJobScreen.enterQtyToUnpick({ qty });
     }),
 
-    // Scans the target HU while the submit (the picking/event POST) is expected to fail at the network
-    // layer. The scan fires but the unpick does NOT commit; the panel must NOT close. Only commits the
-    // scan — the caller asserts the error toast and the still-open panel via expectOnTargetScanStage().
-    scanTargetHUNoCommit: async ({ qrCode }) => await step(`${NAME} - Scan target HU '${qrCode}' (no commit expected)`, async () => {
-        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'unpick-target-hu-scanner' });
+    // Scans a code at the target-HU stage when the submit (the picking/event POST) is expected to FAIL:
+    // either a transient network failure (no HTTP response) or a server rejection (4xx/5xx, e.g. the
+    // operator mis-scans the product GTIN they are holding instead of a target HU). The scan fires and is
+    // submitted, but the unpick does NOT commit and the panel must NOT close. Only commits the scan — the
+    // caller asserts the error toast and the still-open panel via expectOnTargetScanStage(); the caller's
+    // test.step / expectErrorToast label carries which failure mode is under test.
+    scanCodeAtTargetStageNoCommit: async ({ scannedCode }) => await step(`${NAME} - Scan '${scannedCode}' at target-HU stage (submit failure expected, no commit)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-target-hu-scanner' });
     }),
 
     // Asserts the unpick panel is still on the SCAN_TARGET stage: the target-HU scanner is still armed
-    // (the panel did not close back to the job screen). This is the network-failure invariant — a
-    // transient submit failure keeps the panel open so the operator can simply scan again.
+    // (the panel did not close back to the job screen). This is the submit-failure invariant — a failed
+    // submit (transient network OR a server rejection) keeps the panel open so the operator can simply
+    // scan again.
     expectOnTargetScanStage: async () => await step(`${NAME} - Expect still on target-HU scan stage`, async () => {
         await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
     }),

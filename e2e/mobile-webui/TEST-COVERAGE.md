@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 69 | 73 | 95% |
+| Picking | 70 | 74 | 95% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -89,6 +89,7 @@
 | Partial unpack: partial-unpick then complete the job → shipment carries the net packed qty in exactly one line, no negative counter-row | `picking/picking_partial_unpack.spec.js` |
 | Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/picking_partial_unpack.spec.js` |
 | Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/picking_partial_unpack.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -99,7 +100,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**15/16 — 94%**
+**16/17 — 94%**
 
 ### Order-based picking — filtering and facets
 

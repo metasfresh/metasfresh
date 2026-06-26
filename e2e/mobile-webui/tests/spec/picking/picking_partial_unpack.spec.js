@@ -406,7 +406,7 @@ test('Partial unpack - transient network failure on submit keeps the panel open 
 
     await test.step('Scan the target HU under the network fault -> error toast, panel stays on SCAN_TARGET', async () => {
         await expectErrorToast('Unpick submit network failure', async () => {
-            await PickingJobScreen.scanTargetHUNoCommit({ qrCode: targetHUQRCode });
+            await PickingJobScreen.scanCodeAtTargetStageNoCommit({ scannedCode: targetHUQRCode });
         });
         // The panel did NOT close: the target-HU scanner is still armed (a transient failure is
         // recoverable, so the operator can simply scan again).
@@ -432,6 +432,80 @@ test('Partial unpack - transient network failure on submit keeps the panel open 
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU' });
     await Backend.expect({
         title: 'after retry: 8 PCE stays packed on lu1, unpicked 4 PCE moved into target HU2 (80 + 4 = 84)',
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '8 PCE' } },
+            [targetHUQRCode]: { storages: { P1: '84 PCE' } },
+        }
+    });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Partial unpack - mis-scanning the product GTIN as the target HU is rejected by the backend; the panel stays open so the operator can scan the correct target', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Partial unpack by scanning a product GTIN');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata({ packedGtin: uniqueGtin14(), otherGtin: uniqueGtin14() });
+    const packedScan = gs1GtinScan(masterdata.products.P1.gtin);
+    const targetHUQRCode = masterdata.handlingUnits.HU2.qrCode;
+
+    const { pickingJobId } = await loginAndStartJob({ masterdata });
+
+    await test.step('Pick all 3 TU (12 PCE) from HU1', async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU' });
+        // Registers the dynamically-created `lu1` HU in the backend test context so the assertions
+        // below can refer to it by identifier.
+        await Backend.expect({
+            title: 'baseline: 12 PCE packed on lu1',
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: "12 PCE", qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
+            },
+            hus: { lu1: { huStatus: 'S', storages: { P1: '12 PCE' } } }
+        });
+    });
+
+    // Drive the unpick panel up to the target-HU scan (the SCAN_TARGET stage).
+    await PickingJobScreen.unpickAdvanceToTargetStage({ scannedCode: packedScan, expectDefaultQty: '12', qty: '4' });
+
+    // The operator mis-scans: at the "scan the target HU" step they re-scan the product GTIN they are
+    // holding instead of an actual target HU. The code IS submitted (postStepPartiallyUnPicked -> the
+    // picking/event POST); the backend rejects it (a product GTIN is not a valid target HU) with a 4xx,
+    // so axiosError.response is present. Unlike the transient-network case (no response), this is a real
+    // server rejection — the panel must STILL stay on SCAN_TARGET so the operator can correct the scan.
+    await test.step('Mis-scan the product GTIN as the target HU -> backend 4xx, error toast, panel stays on SCAN_TARGET', async () => {
+        await expectErrorToast('Unpick target server rejection', async () => {
+            await PickingJobScreen.scanCodeAtTargetStageNoCommit({ scannedCode: packedScan });
+        });
+        // The panel did NOT close: the target-HU scanner is still armed so the operator can scan the
+        // correct target HU (or Cancel to abort).
+        await PickingJobScreen.expectOnTargetScanStage();
+    });
+
+    // Nothing was committed: the 12 PCE are still fully packed on lu1, the target HU2 is untouched.
+    await Backend.expect({
+        title: 'after rejected mis-scan: nothing unpicked, 12 PCE still packed on lu1, target HU2 untouched',
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            [targetHUQRCode]: { storages: { P1: '80 PCE' } },
+        }
+    });
+
+    await test.step('Scan the correct target HU -> the unpick commits and the panel closes', async () => {
+        await PickingJobScreen.scanTargetHUAndCommit({ qrCode: targetHUQRCode });
+    });
+
+    // The corrected scan succeeded: the panel closed back to the job screen, 4 PCE were unpicked (line
+    // drops to 2 TU), and the unpicked 4 PCE landed in target HU2 (80 start + 4 = 84).
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '2 TU' });
+    await Backend.expect({
+        title: 'after corrected scan: 8 PCE stays packed on lu1, unpicked 4 PCE moved into target HU2 (80 + 4 = 84)',
         hus: {
             lu1: { huStatus: 'S', storages: { P1: '8 PCE' } },
             [targetHUQRCode]: { storages: { P1: '84 PCE' } },
