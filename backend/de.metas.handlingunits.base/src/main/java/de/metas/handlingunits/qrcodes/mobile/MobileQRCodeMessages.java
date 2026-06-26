@@ -10,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.LocatorQRCodeJsonConverter;
 
+import javax.annotation.Nullable;
+
 @UtilityClass
 public class MobileQRCodeMessages
 {
@@ -59,5 +61,15 @@ public class MobileQRCodeMessages
 	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode)
 	{
 		return new AdempiereException(NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
+	}
+
+	/**
+	 * Same as {@link #newNotRecognizedException(ScannedCode)} but keeps the original {@code cause} for diagnostics
+	 * (e.g. the raw payload-conversion failure of a truncated QR code).
+	 */
+	@NonNull
+	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode, @Nullable final Throwable cause)
+	{
+		return new AdempiereException(cause, NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
 	}
 }
