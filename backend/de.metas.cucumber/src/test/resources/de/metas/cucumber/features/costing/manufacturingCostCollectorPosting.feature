@@ -3,6 +3,7 @@
 @allure.label.feature:F1500_Costing
 @F1500
 @ghActions:run_on_executor6
+@Id:S28995_10
 Feature: Manufacturing cost collector posting - component issue vs material receipt signs
 ## F1500: Costing
 

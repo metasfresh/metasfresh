@@ -121,7 +121,6 @@ public class PPOrderCostsTest
 				.build();
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision);
-		orderCosts.toCollection().forEach(System.out::println);
 
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("70"));
 		this.assertThatPostCalculationAmt(orderCosts, productId2).isEqualByComparingTo(new BigDecimal("100"));
@@ -158,7 +157,6 @@ public class PPOrderCostsTest
 				.build();
 
 		orderCosts.updatePostCalculationAmounts(costingPrecision);
-		orderCosts.toCollection().forEach(System.out::println);
 
 		// total actual production cost = the component inbound (90), NOT 90 + the 90 already received
 		this.assertThatPostCalculationAmt(orderCosts, productId1).isEqualByComparingTo(new BigDecimal("90"));
