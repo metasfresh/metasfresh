@@ -38,23 +38,24 @@ Feature: Ship-after-date holds each order line until its own delivery date
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | IsFixedDatePromised |
       | order      | true    | bpartner      | 2022-08-16  | true                |
     And metasfresh contains C_OrderLines:
-      | Identifier       | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine_past   | order      | product      | 1          |
-      | orderLine_future | order      | product      | 1          |
+      | Identifier       | C_Order_ID | M_Product_ID | QtyEntered | DatePromised |
+      | orderLine_past   | order      | product      | 1          | 2022-08-10   |
+      | orderLine_future | order      | product      | 1          | 2022-08-20   |
     When the order identified by order is completed
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID   | IsToRecompute | QtyToDeliver |
       | schedule_past   | orderLine_past   | N             | 1            |
       | schedule_future | orderLine_future | N             | 1            |
-    # Give each line its own delivery date: the past one is shippable, the future one must be held back.
-    And update shipment schedules
-      | M_ShipmentSchedule_ID | DeliveryDate_Override |
-      | schedule_past         | 2022-08-10            |
-      | schedule_future       | 2022-08-20            |
+    # Each line keeps its OWN delivery date (its per-line DatePromised), which becomes the schedule's DeliveryDate:
+    # the past line is shippable, the future line must be held back.
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver |
-      | schedule_past         | 1            |
-      | schedule_future       | 1            |
+      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
+      | schedule_past         | 1            | 2022-08-10   |
+      | schedule_future       | 1            | 2022-08-20   |
+    And validate C_OrderLine:
+      | C_OrderLine_ID   | DatePromised |
+      | orderLine_past   | 2022-08-10   |
+      | orderLine_future | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -75,22 +76,23 @@ Feature: Ship-after-date holds each order line until its own delivery date
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | IsFixedDatePromised |
       | order      | true    | bpartner      | 2022-08-16  | false               |
     And metasfresh contains C_OrderLines:
-      | Identifier       | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine_past   | order      | product      | 1          |
-      | orderLine_future | order      | product      | 1          |
+      | Identifier       | C_Order_ID | M_Product_ID | QtyEntered | DatePromised |
+      | orderLine_past   | order      | product      | 1          | 2022-08-10   |
+      | orderLine_future | order      | product      | 1          | 2022-08-20   |
     When the order identified by order is completed
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID   | IsToRecompute | QtyToDeliver |
       | schedule_past   | orderLine_past   | N             | 1            |
       | schedule_future | orderLine_future | N             | 1            |
-    And update shipment schedules
-      | M_ShipmentSchedule_ID | DeliveryDate_Override |
-      | schedule_past         | 2022-08-10            |
-      | schedule_future       | 2022-08-20            |
+    # Same per-line delivery dates as above, but the flag is off — so neither line is held back.
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver |
-      | schedule_past         | 1            |
-      | schedule_future       | 1            |
+      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
+      | schedule_past         | 1            | 2022-08-10   |
+      | schedule_future       | 1            | 2022-08-20   |
+    And validate C_OrderLine:
+      | C_OrderLine_ID   | DatePromised |
+      | orderLine_past   | 2022-08-10   |
+      | orderLine_future | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |

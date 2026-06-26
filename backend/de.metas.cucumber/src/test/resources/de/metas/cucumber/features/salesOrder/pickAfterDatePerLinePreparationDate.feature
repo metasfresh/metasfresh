@@ -51,9 +51,14 @@ Feature: Pick-after-date holds each order line until its own preparation date
     # The per-line preparation date is derived from the per-line delivery date (no tour => prep == delivery date):
     # the past line is shippable, the future line must be held back.
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate |
-      | schedule_past         | 1            | 2022-08-10      |
-      | schedule_future       | 1            | 2022-08-20      |
+      | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate | DeliveryDate |
+      | schedule_past         | 1            | 2022-08-10      | 2022-08-10   |
+      | schedule_future       | 1            | 2022-08-20      | 2022-08-20   |
+    # Each line keeps its OWN DatePromised (not the header): that per-line delivery date drives the per-line prep date.
+    And validate C_OrderLine:
+      | C_OrderLine_ID   | DatePromised |
+      | orderLine_past   | 2022-08-10   |
+      | orderLine_future | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -82,8 +87,11 @@ Feature: Pick-after-date holds each order line until its own preparation date
     # Single-date order: the per-line delivery date equals the header DatePromised, so the base
     # PreparationDate equals the header's DatePromised under the default no-tour + fallback + offset-0 config.
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate |
-      | schedule              | 1            | 2022-08-16      |
+      | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate | DeliveryDate |
+      | schedule              | 1            | 2022-08-16      | 2022-08-16   |
+    And validate C_OrderLine:
+      | C_OrderLine_ID | DatePromised |
+      | orderLine      | 2022-08-16   |
 
   Scenario: An explicit per-line C_OrderLine.PreparationDate overrides the derived preparation date
     Given metasfresh contains C_Orders:
@@ -101,6 +109,12 @@ Feature: Pick-after-date holds each order line until its own preparation date
     # The override line's preparation date is its explicit C_OrderLine.PreparationDate (2022-08-05), NOT its
     # delivery date (2022-08-20). The derived line (no override) keeps prep == delivery date (no tour configured).
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | PreparationDate |
-      | schedule_override     | 2022-08-05      |
-      | schedule_derived      | 2022-08-10      |
+      | M_ShipmentSchedule_ID | PreparationDate | DeliveryDate |
+      | schedule_override     | 2022-08-05      | 2022-08-20   |
+      | schedule_derived      | 2022-08-10      | 2022-08-10   |
+    # The override line carries its explicit C_OrderLine.PreparationDate (2022-08-05) while its DatePromised stays
+    # 2022-08-20; the derived line has no override, so its preparation date falls back to its delivery date.
+    And validate C_OrderLine:
+      | C_OrderLine_ID     | DatePromised | PreparationDate |
+      | orderLine_override | 2022-08-20   | 2022-08-05      |
+      | orderLine_derived  | 2022-08-10   |                 |

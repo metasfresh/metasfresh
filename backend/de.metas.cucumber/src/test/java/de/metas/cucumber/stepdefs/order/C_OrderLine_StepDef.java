@@ -700,6 +700,13 @@ public class C_OrderLine_StepDef
 					softly.assertThat(TimeUtil.asLocalDate(orderLine.getDatePromised(), zoneId)).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised);
 				});
 
+		// per-line picking-date override (null => derived from the delivery date)
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getPreparationDate(), zoneId)).as(I_C_OrderLine.COLUMNNAME_PreparationDate).isEqualTo(preparationDate);
+				});
+
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())
 		{
