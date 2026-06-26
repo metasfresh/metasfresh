@@ -45,7 +45,7 @@ public class StockChangeSourceInfo
 		return new StockChangeSourceInfo(
 				(ResetStockPInstanceId)null,
 				Check.assumeGreaterThanZero(transactionId, "transactionId"),
-				-1);
+				null);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class StockChangeSourceInfo
 	ResetStockPInstanceId resetStockAdPinstanceId;
 	int transactionId;
 
-	/** HU that triggered the attribute change; -1 if not applicable. */
+	/** HU that triggered the attribute change; {@code null} if not applicable. */
 	@Nullable
 	Integer huId;
 
