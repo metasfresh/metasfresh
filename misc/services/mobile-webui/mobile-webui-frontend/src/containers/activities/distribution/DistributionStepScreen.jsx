@@ -17,7 +17,7 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { postDistributionUnpickEvent } from '../../../api/distribution';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { toastError } from '../../../utils/toast';
-import UnpickDialog from '../picking/UnpickDialog';
+import UnpickTargetScanDialog from '../picking/unpick/UnpickTargetScanDialog';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { useDistributionLineHeaders } from './DistributionLineScreen';
 
@@ -145,7 +145,9 @@ const DistributionStepScreen = () => {
 
   return (
     <div className="section pt-3">
-      {showTargetHUScanner && <UnpickDialog onSubmit={onUnpick} onCloseDialog={() => setShowTargetHUScanner(false)} />}
+      {showTargetHUScanner && (
+        <UnpickTargetScanDialog onSubmit={onUnpick} onCloseDialog={() => setShowTargetHUScanner(false)} />
+      )}
       <ButtonWithIndicator
         caption={pickFromHUCaption}
         completeStatus={pickFromHUStatus}
