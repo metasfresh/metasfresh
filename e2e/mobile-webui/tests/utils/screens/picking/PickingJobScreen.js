@@ -318,6 +318,33 @@ export const PickingJobScreen = {
         await PickingJobScreen.skipTargetHUAndCommit();
     }),
 
+    // Drives the unpick panel up to (but not through) the target-HU scan: open the panel, scan the
+    // product GTIN, enter the qty -> the panel is now on the SCAN_TARGET stage (the target-HU scanner
+    // is armed). Stops here so the caller can drive the target-HU submit itself (e.g. under a network
+    // fault) and assert on the in-between state.
+    unpickAdvanceToTargetStage: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}', advance to target-HU scan stage`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+    }),
+
+    // Scans the target HU while the submit (the picking/event POST) is expected to fail at the network
+    // layer. The scan fires but the unpick does NOT commit; the panel must NOT close. Only commits the
+    // scan — the caller asserts the error toast and the still-open panel via expectOnTargetScanStage().
+    scanTargetHUNoCommit: async ({ qrCode }) => await step(`${NAME} - Scan target HU '${qrCode}' (no commit expected)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'unpick-target-hu-scanner' });
+    }),
+
+    // Asserts the unpick panel is still on the SCAN_TARGET stage: the target-HU scanner is still armed
+    // (the panel did not close back to the job screen). This is the network-failure invariant — a
+    // transient submit failure keeps the panel open so the operator can simply scan again.
+    expectOnTargetScanStage: async () => await step(`${NAME} - Expect still on target-HU scan stage`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     // Negative path: scans a code that does not resolve to a product packed in this job. The single
     // error surface is the scanner's toast; wrap the call site in expectErrorToast(...) to assert it.
     scanProductCodeToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product code '${scannedCode}' (no advance expected)`, async () => {
