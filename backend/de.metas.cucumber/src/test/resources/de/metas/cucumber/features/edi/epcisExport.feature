@@ -737,7 +737,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   ## by a draft shipment (not CO/CL). The RED gate assertion fires after completing ioA:
   ## the current (un-gated) function emits a non-empty partial event, so the
   ## 'returns empty object' assertion FAILS (intended RED). After ioB is also completed,
-  ## ioA (lower M_InOut_ID = owner) returns the merged full event; ioB returns {}.
+  ## both ioA and ioB then return the full merged event — no fixed owner under the close-gate model.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
@@ -939,7 +939,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   ## the LU are covered only by a draft shipment (not CO/CL). The RED gate assertion fires
   ## after completing ioB: the current (un-gated) function emits a non-empty partial event,
   ## so the 'returns empty object' assertion FAILS (intended RED). After ioA is also completed,
-  ## ioA (lower M_InOut_ID = owner) returns the merged full event; ioB returns {}.
+  ## both ioA and ioB then return the full merged event — no fixed owner under the close-gate model.
     And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
     And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
 
