@@ -99,8 +99,8 @@ public class DistributionWorkflowLaunchersProvider
 		return DDOrderReferenceQuery.builder()
 				.sorting(config.getSorting())
 				.responsibleId(userId)
-				.warehouseToId(workplace != null ? workplace.getWarehouseId() : null)
-				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
+				.workplaceWarehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)

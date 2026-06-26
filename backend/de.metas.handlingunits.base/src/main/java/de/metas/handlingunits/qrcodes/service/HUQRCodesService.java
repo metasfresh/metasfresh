@@ -403,13 +403,25 @@ public class HUQRCodesService
 		final GlobalQRCode globalQRCode = scannedCode.toGlobalQRCodeIfMatching().orNullIfError();
 		if (globalQRCode != null)
 		{
-			if (HUQRCode.isHandled(globalQRCode))
+			try
 			{
-				return HUQRCode.fromGlobalQRCode(globalQRCode);
+				if (HUQRCode.isHandled(globalQRCode))
+				{
+					return HUQRCode.fromGlobalQRCode(globalQRCode);
+				}
+				else if (LMQRCode.isHandled(globalQRCode))
+				{
+					return LMQRCode.fromGlobalQRCode(globalQRCode);
+				}
 			}
-			else if (LMQRCode.isHandled(globalQRCode))
+			catch (final RuntimeException ex)
 			{
-				return LMQRCode.fromGlobalQRCode(globalQRCode);
+				// The type prefix (HU#/LM#) matched but the payload could not be converted into a QR code. This
+				// covers a long QR code split mid-stream on a slow scanner device (the head fragment keeps the valid
+				// prefix but carries truncated JSON) as well as an incompatible version field - the user can fix
+				// neither in the field. Surface the same user-friendly "not recognized" message as any other bad
+				// code instead of leaking the raw conversion error.
+				throw MobileQRCodeMessages.newNotRecognizedException(scannedCode, ex);
 			}
 		}
 

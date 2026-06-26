@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/computeCurrentBOMLineProductCost.sql
 DROP FUNCTION IF EXISTS computeCurrentBOMLineProductCost(
     p_pp_product_bomline_id numeric,
     p_date                  date
