@@ -353,14 +353,29 @@ export const PickingJobScreen = {
 
     expectOnProductScanStage: async () => await step(`${NAME} - Expect still on product-scan stage`, async () => {
         await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
-        await expect(page.locator('.get-qty-dialog')).toHaveCount(0);
+        await expect(page.locator('.get-qty-dialog')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     closeUnpickItem: async () => await step(`${NAME} - Close "Unpack item"`, async () => {
         await page.getByTestId('unpick-close-button').tap();
         await PickingJobScreen.waitForScreen();
     }),
+
+    // Simulates a transient network failure on the unpick submit by aborting the picking/event POST at
+    // the network layer (no HTTP response). With no axiosError.response, the unpick panel treats this as
+    // a recoverable failure -> toasts the error and stays on the SCAN_TARGET stage. Pair with
+    // unblockUnpickSubmit() to release the fault before the retry.
+    blockUnpickSubmit: async () => await step(`${NAME} - Block picking/event (simulate network fault on unpick submit)`, async () => {
+        await page.route(UNPICK_SUBMIT_ROUTE, route => route.abort('failed'));
+    }),
+
+    unblockUnpickSubmit: async () => await step(`${NAME} - Unblock picking/event (release network fault)`, async () => {
+        await page.unroute(UNPICK_SUBMIT_ROUTE);
+    }),
 };
+
+// The picking/event POST that the unpick submit (postStepPartiallyUnPicked) fires.
+const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 
 //
 //

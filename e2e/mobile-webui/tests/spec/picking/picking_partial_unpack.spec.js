@@ -402,10 +402,7 @@ test('Partial unpack - transient network failure on submit keeps the panel open 
     // Same network-fault technique as picking.spec.js "Network failure on complete": abort the submit
     // at the network layer (no HTTP response). With no `axiosError.response`, the panel treats this as
     // a transient failure -> toasts the error AND stays on SCAN_TARGET (does NOT close).
-    const unpickEventRoute = '**/picking/event';
-    await test.step('Block picking/event to simulate a network failure on the unpick submit', async () => {
-        await page.route(unpickEventRoute, route => route.abort('failed'));
-    });
+    await PickingJobScreen.blockUnpickSubmit();
 
     await test.step('Scan the target HU under the network fault -> error toast, panel stays on SCAN_TARGET', async () => {
         await expectErrorToast('Unpick submit network failure', async () => {
@@ -426,7 +423,7 @@ test('Partial unpack - transient network failure on submit keeps the panel open 
     });
 
     await test.step('Release the network fault and retry the same target-HU scan', async () => {
-        await page.unroute(unpickEventRoute);
+        await PickingJobScreen.unblockUnpickSubmit();
         await PickingJobScreen.scanTargetHUAndCommit({ qrCode: targetHUQRCode });
     });
 
