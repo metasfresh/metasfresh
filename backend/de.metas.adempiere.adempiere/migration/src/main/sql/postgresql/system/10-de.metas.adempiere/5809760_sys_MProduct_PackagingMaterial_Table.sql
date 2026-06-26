@@ -40,8 +40,11 @@ UPDATE AD_Table_Trl SET IsTranslated='Y', Name='Packaging material',Updated=TO_T
 
 -- Table-ID sequence for M_Product_PackagingMaterial (required for runtime PK allocation)
 -- 2026-06-26T10:00:03.000Z
-INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNewYear,StartNo,Updated,UpdatedBy) VALUES (0,0,556612 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_Product_PackagingMaterial',1,'Y','N','Y','Y','M_Product_PackagingMaterial','N',1000000,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Sequence (AD_Client_ID,AD_Org_ID,AD_Sequence_ID,Created,CreatedBy,CurrentNext,CurrentNextSys,Description,IncrementNo,IsActive,IsAudited,IsAutoSequence,IsTableID,Name,StartNo,Updated,UpdatedBy) VALUES (0,0,556612 /*From ID Server*/,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100,1000000,50000,'Table M_Product_PackagingMaterial',1,'Y','N','Y','Y','M_Product_PackagingMaterial',1000000,TO_TIMESTAMP('2026-06-26 10:00:03','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+-- 2026-06-26T10:00:04.000Z
+CREATE SEQUENCE M_PRODUCT_PACKAGINGMATERIAL_SEQ INCREMENT 1 MINVALUE 1 MAXVALUE 2147483647 START 1000000;
 
 -- Column: M_Product_PackagingMaterial.AD_Client_ID
 -- 2026-06-26T10:00:10.000Z
