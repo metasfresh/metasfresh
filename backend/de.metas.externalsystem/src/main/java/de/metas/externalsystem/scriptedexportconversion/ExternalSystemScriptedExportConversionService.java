@@ -355,21 +355,23 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * At document complete-time, records an eligibility status for EVERY trigger-on-complete config
-	 * of the record's table, then schedules the after-commit invocation for matching configs only.
+	 * Records eligibility (matching WhereClause → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending},
+	 * else {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}) for every
+	 * trigger-on-complete config of the record's table, then invokes the export for the matching ones.
 	 *
-	 * <ul>
-	 *   <li>WhereClause MATCHES → {@link de.metas.externalsystem.ExternalSystemExportStatus#Pending}
-	 *       + schedules the after-commit invocation (existing behaviour).</li>
-	 *   <li>WhereClause does NOT match → {@link de.metas.externalsystem.ExternalSystemExportStatus#DontSend}
-	 *       (EDI-consistency: DontSend is always persisted).</li>
-	 * </ul>
-	 *
-	 * <p>Status writes run in the same transaction (no InNewTrx). The invocation scheduling
-	 * stays after-commit. A status-write failure for one config is logged and swallowed so that
-	 * document completion is never aborted.
+	 * <p>After-commit because the WhereClause may read committed document state — e.g. the EPCIS
+	 * {@code epcis_has_events(m_inout_id)} clause requires {@code DocStatus IN ('CO','CL')}, which the
+	 * AFTER_COMPLETE interceptor fires before the engine saves. A per-config status-write failure is
+	 * swallowed so document completion is never aborted.
 	 */
-	public void recordCompleteTimeEligibilityAndScheduleInvocation(
+	public void recordEligibilityAndInvokeAfterCommit(
+			@NonNull final AdTableAndClientId tableAndClientId,
+			final int recordId)
+	{
+		trxManager.runAfterCommit(() -> recordEligibilityAndInvoke(tableAndClientId, recordId));
+	}
+
+	private void recordEligibilityAndInvoke(
 			@NonNull final AdTableAndClientId tableAndClientId,
 			final int recordId)
 	{
@@ -388,7 +390,8 @@ public class ExternalSystemScriptedExportConversionService
 
 		recordCompleteTimeEligibilityStatusesOnly(matchingConfigs, nonMatchingConfigs, recordId);
 
-		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionActionAfterCommit(config, recordId));
+		// Already running after-commit — invoke synchronously rather than re-scheduling after-commit.
+		matchingConfigs.forEach(config -> executeInvokeScriptedExportConversionAction(config, recordId));
 	}
 
 	/**

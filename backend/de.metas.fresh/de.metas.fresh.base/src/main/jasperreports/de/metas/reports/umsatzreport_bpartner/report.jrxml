@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Created with Jaspersoft Studio version 6.5.1.final using JasperReports Library version 6.5.1  -->
+<!-- Created with Jaspersoft Studio version 7.0.0.final using JasperReports Library version 6.5.1  -->
 <jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="report" pageWidth="595" pageHeight="842" columnWidth="595" leftMargin="0" rightMargin="0" topMargin="0" bottomMargin="0" resourceBundle="de/metas/reports/umsatzreport_bpartner/report" uuid="9ee5152e-1472-4ae4-ac36-02ca94f79b5d">
 	<property name="ireport.scriptlethandling" value="0"/>
 	<property name="ireport.encoding" value="UTF-8"/>
 	<property name="ireport.zoom" value="1.9487171000000079"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="fresh\it.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\hotfix.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
@@ -85,112 +85,128 @@
 					<textFieldExpression><![CDATA[$R{title}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="37" y="48" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{bp_name}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="37" y="59" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{type}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="37" y="70" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{timeperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="37" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="37" y="81" width="90" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{comparedperiod}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="181" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="126" y="70" width="258" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{base_period_start} != null ? $F{base_period_start} : "") + " - " + ($F{base_period_end} != null ? $F{base_period_end} : "")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="181" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="126" y="81" width="258" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[($F{comp_period_start} != null ? $F{comp_period_start} : "") + " - " + ($F{comp_period_end} != null ? $F{comp_period_end} : "")]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="181" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="126" y="59" width="258" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{purchase} : ($P{IsSOTrx}.equals("Y") ? $R{sales} : $R{all} )]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="181" y="48" width="95" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="126" y="48" width="258" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
+						<property name="com.jaspersoft.studio.unit.width" value="px"/>
+					</reportElement>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{bp_name}!=null ? $F{bp_name} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="425" y="48" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="457" y="48" width="130" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_activity} != null ? $F{param_activity} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="338" y="48" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="387" y="48" width="70" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{activity}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="425" y="59" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="457" y="59" width="130" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_product_category} != null ? $F{param_product_category} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="338" y="59" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="387" y="59" width="70" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{articlecategory}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="425" y="70" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="457" y="70" width="130" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_product} != null ? $F{param_product} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="338" y="70" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="387" y="70" width="70" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{article}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="425" y="81" width="145" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="457" y="81" width="130" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{all}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="338" y="81" width="88" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
+					<reportElement x="387" y="81" width="70" height="12" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 					<textElement>
 						<font fontName="Arial" size="8" isBold="true"/>
 					</textElement>
