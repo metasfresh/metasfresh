@@ -606,6 +606,43 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
     await PickingJobScreen.complete();
 });
 
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR code during picking → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+
+    // A long HU QR code can be split mid-stream by a slow scanner device: the worker scans one HU during
+    // picking but only the head fragment arrives — it keeps the valid "HU#<version>#" prefix yet carries a
+    // truncated, unparseable JSON payload.
+    const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
+    const truncatedHead = fullHuQRCode.substring(0, Math.floor(fullHuQRCode.length / 2));
+    expect(truncatedHead).toMatch(/^HU#/);
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast('Scanning a truncated HU QR code during picking', async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: truncatedHead,
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
+});
+
 //
 // Scan a Leich+Mehl QR code (LMQ format) with an empty lot-number part.
 // Format: LMQ#1#<weight>#<date>#<lot>#<product>
