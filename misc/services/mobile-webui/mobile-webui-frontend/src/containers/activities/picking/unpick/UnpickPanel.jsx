@@ -53,8 +53,8 @@ const UnpickPanel = ({ wfProcessId, activityId, lineId, onClose }) => {
         onClose();
       })
       .catch((axiosError) => {
+        // Stay on SCAN_TARGET (don't onClose) so the operator can retry after a transient submit error.
         toastError({ axiosError });
-        onClose();
       });
   };
 
