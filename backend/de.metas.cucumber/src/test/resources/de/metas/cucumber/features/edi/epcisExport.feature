@@ -904,7 +904,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # ─── Complete ioB — now all 15 TUs on the LU are covered by CO shipments ─────────
     And the shipment identified by ioB_S30558_010 is completed
 
-    # ─── After both completions: ioA (lower M_InOut_ID = owner) returns the merged pallet ─
+    # ─── After both completions (pallet fully shipped): the merged order-pure event is emitted ─
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S30558_010
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
@@ -922,8 +922,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | 1170000001  |
       | 1170000002  |
 
-    # ─── ioB (sibling) must return {} ────────────────────────────────────────────────
-    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S30558_010
+    # ─── Post-fix the sibling (ioB) ALSO returns the merged pallet — no fixed owner ───
+    When the EPCIS JSON export function is called for M_InOut identified by ioB_S30558_010
+    And the EPCIS JSON pallet has:
+      | palletIndex | sscc               | crateCount |
+      | 0           | 987654321000003058 | 15         |
 
   @Id:S30558_020
   @allure.label.epic:E0292_EDI
@@ -1101,7 +1104,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # ─── Complete ioA — now all 15 TUs on the LU are covered by CO shipments ─────────
     And the shipment identified by ioA_S30558_020 is completed
 
-    # ─── After both completions: ioA (lower M_InOut_ID = owner) returns the merged pallet ─
+    # ─── After both completions (pallet fully shipped): the merged order-pure event is emitted ─
     When the EPCIS JSON export function is called for M_InOut identified by ioA_S30558_020
     Then the EPCIS JSON pallets contain SSCC18 values in any order:
       | sscc18             |
@@ -1119,5 +1122,8 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | 1170000003  |
       | 1170000004  |
 
-    # ─── ioB (sibling) must return {} ────────────────────────────────────────────────
-    Then the EPCIS JSON export function returns empty object for M_InOut identified by ioB_S30558_020
+    # ─── Post-fix the sibling (ioB) ALSO returns the merged pallet — no fixed owner ───
+    When the EPCIS JSON export function is called for M_InOut identified by ioB_S30558_020
+    And the EPCIS JSON pallet has:
+      | palletIndex | sscc               | crateCount |
+      | 0           | 987654321000003059 | 15         |
