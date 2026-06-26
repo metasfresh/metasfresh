@@ -1,5 +1,6 @@
 package de.metas.einvoice;
 
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.email.MailService;
 import de.metas.einvoice.cii.CiiMapper;
@@ -131,6 +132,33 @@ public class EInvoiceCiiService
 				.build());
 	}
 
+	/**
+	 * Maps the four CII namespace URIs to their standard short prefixes.
+	 * Without this mapper, JAXB-RI assigns auto-generated prefixes (ns2, ns3, …) which are
+	 * semantically equivalent but fail the Mustangproject prefix check in
+	 * {@code CustomXMLProvider.setXML()} that expects {@code rsm:CrossIndustryInvoice}.
+	 */
+	private static final NamespacePrefixMapper CII_NAMESPACE_PREFIX_MAPPER = new NamespacePrefixMapper()
+	{
+		@Override
+		public String getPreferredPrefix(final String namespaceUri, final String suggestion, final boolean requirePrefix)
+		{
+			switch (namespaceUri)
+			{
+				case "urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100":
+					return "rsm";
+				case "urn:un:unece:uncefact:data:standard:ReusableAggregateBusinessInformationEntity:100":
+					return "ram";
+				case "urn:un:unece:uncefact:data:standard:UnqualifiedDataType:100":
+					return "udt";
+				case "urn:un:unece:uncefact:data:standard:QualifiedDataType:100":
+					return "qdt";
+				default:
+					return suggestion;
+			}
+		}
+	};
+
 	@NonNull
 	private String marshalToXml(@NonNull final CrossIndustryInvoiceType cii)
 	{
@@ -140,6 +168,10 @@ public class EInvoiceCiiService
 			final Marshaller marshaller = JAXB_CTX.createMarshaller();
 			marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, "UTF-8");
+			// Apply standard CII namespace prefixes (rsm/ram/udt/qdt) so the XML is accepted
+			// by Mustangproject's CustomXMLProvider.setXML() which checks for rsm:CrossIndustryInvoice.
+			// JAXB-RI property "com.sun.xml.bind.namespacePrefixMapper" is supported by jaxb-impl 2.x (Java 8).
+			marshaller.setProperty("com.sun.xml.bind.namespacePrefixMapper", CII_NAMESPACE_PREFIX_MAPPER);
 			final StringWriter sw = new StringWriter();
 			marshaller.marshal(new ObjectFactory().createCrossIndustryInvoice(cii), sw);
 			return sw.toString();
