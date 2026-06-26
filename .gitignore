@@ -69,3 +69,12 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 # github related
 .github/merge_to_master
 .github/integrate
+
+# claude related
+.claude
+**/CLAUDE.md
+**/CLAUDE.md.backup
+.mcp.json
+**/claude-docs
+**/REVIEW.md
+/docs/
