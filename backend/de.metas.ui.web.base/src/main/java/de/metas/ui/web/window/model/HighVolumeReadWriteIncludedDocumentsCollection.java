@@ -412,7 +412,9 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 	{
 		final Set<DocumentId> savedOrDeletedDocumentIds = new HashSet<>();
 
-		for (final Document document : getChangedDocuments())
+		// Iterate a defensive snapshot: saving a child fires onChildSaved -> forgetChangedDocument,
+		// which removes from _documentsWithChanges mid-loop and would throw ConcurrentModificationException.
+		for (final Document document : new ArrayList<>(getChangedDocuments()))
 		{
 			final DocumentSaveStatus saveStatus = document.saveIfHasChanges();
 			if (saveStatus.isSaved())

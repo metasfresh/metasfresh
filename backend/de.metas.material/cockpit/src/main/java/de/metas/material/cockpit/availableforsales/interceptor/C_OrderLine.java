@@ -3,10 +3,10 @@ package de.metas.material.cockpit.availableforsales.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfig;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
-import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo.ConfigQuery;
 import de.metas.material.cockpit.availableforsales.interceptor.AvailableForSalesUtil.CheckAvailableForSalesRequest;
 import de.metas.material.cockpit.availableforsales.model.I_C_OrderLine;
 import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -71,13 +71,8 @@ public class C_OrderLine
 			return; // nothing to do
 		}
 
-		final OrgId orgId = OrgId.ofRepoId(orderLineRecord.getAD_Org_ID());
-
-		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(
-				ConfigQuery.builder()
-						.clientId(ClientId.ofRepoId(orderLineRecord.getAD_Client_ID()))
-						.orgId(orgId)
-						.build());
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(orderLineRecord.getAD_Client_ID(), orderLineRecord.getAD_Org_ID());
+		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(clientAndOrgId);
 		if (!config.isFeatureEnabled())
 		{
 			return; // nothing to do
@@ -86,7 +81,7 @@ public class C_OrderLine
 		// has to contain everything that the method to be invoked after commit needs
 		final CheckAvailableForSalesRequest checkAvailableForSalesRequest = availableForSalesUtil.createRequest(orderLineRecord);
 
-		availableForSalesUtil.checkAndUpdateOrderLineRecords(ImmutableList.of(checkAvailableForSalesRequest), config, orgId);
+		availableForSalesUtil.checkAndUpdateOrderLineRecords(ImmutableList.of(checkAvailableForSalesRequest), config, clientAndOrgId);
 	}
 
 	@ModelChange( //
