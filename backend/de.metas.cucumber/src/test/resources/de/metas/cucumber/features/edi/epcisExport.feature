@@ -929,6 +929,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000003058 | 15         |
 
+  @from:cucumber
   @Id:S30558_020
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
