@@ -141,6 +141,10 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Packaging material', PrintName='Packaging material', Updated=TO_TIMESTAMP('2026-06-26 10:01:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585052
 ;
 
+-- 2026-06-26T10:01:23.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585052, 'en_US')
+;
+
 -- Column: M_Product_PackagingMaterial.M_Product_PackagingMaterial_ID
 -- 2026-06-26T10:01:30.000Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsFacetFilter,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592884 /*From ID Server*/,585052,0,13,542621,'M_Product_PackagingMaterial_ID',TO_TIMESTAMP('2026-06-26 10:01:30','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','N','N','N','N','N','Y','Y','N','N','N','N','Y','N','N','Verpackungsmaterial','NP',0,0,TO_TIMESTAMP('2026-06-26 10:01:30','YYYY-MM-DD HH24:MI:SS'),100,0)
@@ -157,7 +161,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 -- Column: M_Product_PackagingMaterial.M_Product_ID
 -- Parent FK to M_Product.
 -- 2026-06-26T10:01:40.000Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsFacetFilter,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592892 /*From ID Server*/,454,0,19,542621,'XX','M_Product_ID',TO_TIMESTAMP('2026-06-26 10:01:40','YYYY-MM-DD HH24:MI:SS'),100,'N','Produkt, Leistung, Artikel','D',0,10,'Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','N','N','N','N','N','N','N','Y','Y','N','N','N','Y','N','N','Produkt','NP',0,0,TO_TIMESTAMP('2026-06-26 10:01:40','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,CloningStrategy,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsCalculated,IsEncrypted,IsFacetFilter,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsSyncDatabase,IsTranslated,IsUpdateable,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,592892 /*From ID Server*/,454,0,19,542621,'X','M_Product_ID',TO_TIMESTAMP('2026-06-26 10:01:40','YYYY-MM-DD HH24:MI:SS'),100,'N','Produkt, Leistung, Artikel','D',0,10,'Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','N','N','N','N','N','N','N','Y','Y','N','N','N','Y','N','N','Produkt','NP',0,0,TO_TIMESTAMP('2026-06-26 10:01:40','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2026-06-26T10:01:41.000Z
@@ -219,7 +223,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Polyethylene (PE)', Updated=T
 ;
 
 -- 2026-06-26T10:02:40.000Z
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,544286 /*From ID Server*/,542111,TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Metall',TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'),100,'Metall','Metall')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,544286 /*From ID Server*/,542111,TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Metall',TO_TIMESTAMP('2026-06-26 10:02:40','YYYY-MM-DD HH24:MI:SS'),100,'ME','ME')
 ;
 
 -- 2026-06-26T10:02:41.000Z
@@ -241,6 +245,10 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2026-06-26T10:03:02.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Packaging material type', PrintName='Packaging material type', Updated=TO_TIMESTAMP('2026-06-26 10:03:02','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585053
+;
+
+-- 2026-06-26T10:03:03.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585053, 'en_US')
 ;
 
 -- Column: M_Product_PackagingMaterial.PackagingMaterialType
@@ -267,6 +275,10 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- 2026-06-26T10:03:22.000Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Weight (g)', PrintName='Weight (g)', Updated=TO_TIMESTAMP('2026-06-26 10:03:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Element_ID=585054
+;
+
+-- 2026-06-26T10:03:23.000Z
+/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585054, 'en_US')
 ;
 
 -- Column: M_Product_PackagingMaterial.WeightInGram
@@ -298,7 +310,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
     UpdatedBy                 NUMERIC(10)                  NOT NULL,
     WeightInGram              NUMERIC,
     CONSTRAINT MProduct_MProductPackagingMaterial FOREIGN KEY (M_Product_ID) REFERENCES public.M_Product DEFERRABLE INITIALLY DEFERRED,
-    CONSTRAINT M_Product_PackagingMaterial_Key PRIMARY KEY (M_Product_PackagingMaterial_ID),
-    CONSTRAINT PackagingMaterialType_Check CHECK (PackagingMaterialType IN ('PPK','PS','PE','Metall'))
+    CONSTRAINT M_Product_PackagingMaterial_Key PRIMARY KEY (M_Product_PackagingMaterial_ID)
 )
 ;
