@@ -18,10 +18,12 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
@@ -306,13 +308,30 @@ public class DDOrderLowLevelDAO
 		}
 
 		//
-		// Warehouse (from OR to)
-		if (query.getFromOrToWarehouseId() != null)
+		// Workplace visibility: ships FROM the workplace warehouse, OR delivers TO it
+		// (the destination side optionally narrowed to the workplace's pick-from locator).
+		final WarehouseId workplaceWarehouseId = query.getWorkplaceWarehouseId();
+		if (workplaceWarehouseId != null)
 		{
-			queryBuilder.addCompositeQueryFilter()
-					.setJoinOr()
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, query.getFromOrToWarehouseId())
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, query.getFromOrToWarehouseId());
+			final ICompositeQueryFilter<I_DD_Order> workplaceFilter = queryBuilder.addCompositeQueryFilter().setJoinOr();
+
+			// source side: order ships FROM the workplace warehouse (not gated by the pick-from locator)
+			workplaceFilter.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_From_ID, workplaceWarehouseId);
+
+			// destination side: order delivers TO the workplace warehouse...
+			final ICompositeQueryFilter<I_DD_Order> toSide = workplaceFilter.addCompositeQueryFilter().setJoinAnd();
+			toSide.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Warehouse_To_ID, workplaceWarehouseId);
+
+			// ...and, when the workplace has a pick-from locator, only orders with a line delivering to that locator
+			final LocatorId workplacePickFromLocatorId = query.getWorkplacePickFromLocatorId();
+			if (workplacePickFromLocatorId != null)
+			{
+				final IQuery<I_DD_OrderLine> linesDeliveredToLocator = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+						.addOnlyActiveRecordsFilter()
+						.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, workplacePickFromLocatorId)
+						.create();
+				toSide.addFilter(InSubQueryFilter.of(I_DD_Order.COLUMN_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, linesDeliveredToLocator));
+			}
 		}
 
 		//

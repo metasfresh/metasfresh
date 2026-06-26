@@ -8,6 +8,7 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -22,4 +23,5 @@ public class DDOrderReferenceQuery
 	boolean excludeAlreadyStarted;
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
 	@Nullable WarehouseId workplaceWarehouseId;
+	@Nullable LocatorId workplacePickFromLocatorId;
 }
