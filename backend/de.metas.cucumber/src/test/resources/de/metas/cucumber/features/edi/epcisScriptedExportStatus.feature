@@ -294,7 +294,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
       | Identifier    | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
       | bpLoc_040     | 2900000305584 | bp_040        | true                | true         |
     And metasfresh contains C_BPartner_EDI_Setting:
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDesadvSendingMode | EdiDESADV_ExternalSystem_Config_ID | Identifier       |
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | EdiDESADVSendingMode | EdiDESADV_ExternalSystem_Config_ID | Identifier       |
       | bp_040        | true                 | 9900000305584         | E                    | esConfig_040                       | edi_setting_040  |
 
     And metasfresh contains C_BPartner_Product
