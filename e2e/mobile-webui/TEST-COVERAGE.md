@@ -10,7 +10,7 @@
 | Barcode Scanner Modes | 7 | 12 | 58% |
 | Picking | 60 | 63 | 95% |
 | Distribution | 34 | 37 | 92% |
-| Manufacturing | 23 | 29 | 79% |
+| Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
 | Inventory | 1 | 3 | 33% |
@@ -330,6 +330,15 @@
 | Receive using two custom QR code formats (catch-weight + lot + dates) → WeightNet and CU child records validated | `manufacturing/receive_using_customQRCodeFormat.spec.js` |
 
 **6/6 — 100%**
+
+### Receipt — editable Lot / Best-Before
+
+| Scenario | Test |
+|---|---|
+| Receive finished goods entering Lot + Best-Before (inputs shown by default) → produced HU carries both attributes | `manufacturing/receiving_editable_attributes.spec.js` |
+| Receive finished goods leaving Lot + Best-Before empty → produced HU gets no such attribute | `manufacturing/receiving_editable_attributes.spec.js` |
+
+**2/2 — 100%**
 
 ### Receipt — by-products
 
