@@ -1,5 +1,5 @@
 ARG REFNAME=local
-ARG REGISTRY=
+ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-camel:$REFNAME AS camel
 
 FROM eclipse-temurin:17.0.5_8-jdk
