@@ -1,5 +1,6 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+ARG REGISTRY=ghcr.io/
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 FROM eclipse-temurin:8-jre-jammy
 
