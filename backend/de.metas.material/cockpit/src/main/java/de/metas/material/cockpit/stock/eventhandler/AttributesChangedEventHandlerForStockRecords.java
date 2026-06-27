@@ -11,7 +11,6 @@ import de.metas.material.event.attributes.AttributesChangedEvent;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import lombok.NonNull;
-import org.compiere.SpringContextHolder;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -55,17 +54,10 @@ public class AttributesChangedEventHandlerForStockRecords
 {
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler;
 
-	/** Spring-managed constructor (production). */
 	public AttributesChangedEventHandlerForStockRecords(
 			@NonNull final StockDataUpdateRequestHandler dataUpdateRequestHandler)
 	{
 		this.dataUpdateRequestHandler = dataUpdateRequestHandler;
-	}
-
-	/** Test constructor: obtains the handler from the SpringContextHolder JUnit bean registry. */
-	AttributesChangedEventHandlerForStockRecords()
-	{
-		this(SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class));
 	}
 
 	@Override
@@ -78,7 +70,7 @@ public class AttributesChangedEventHandlerForStockRecords
 	public void handleEvent(@NonNull final AttributesChangedEvent event)
 	{
 		final ProductId productId = ProductId.ofRepoId(event.getProductId());
-		final BigDecimal qty = event.getQty();
+		final BigDecimal qtyBD = event.getQty();
 		final StockChangeSourceInfo sourceInfo = StockChangeSourceInfo.ofHuAttributeChange(event.getHuId());
 
 		final AttributesKey oldAttributesKey = event.getOldStorageAttributes().getAttributesKey();
@@ -95,7 +87,7 @@ public class AttributesChangedEventHandlerForStockRecords
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(StockDataUpdateRequest.builder()
 				.identifier(fromIdentifier)
-				.onHandQtyChange(qty.negate())
+				.onHandQtyChange(qtyBD.negate())
 				.sourceInfo(sourceInfo)
 				.build());
 
@@ -110,7 +102,7 @@ public class AttributesChangedEventHandlerForStockRecords
 
 		dataUpdateRequestHandler.handleDataUpdateRequest(StockDataUpdateRequest.builder()
 				.identifier(toIdentifier)
-				.onHandQtyChange(qty)
+				.onHandQtyChange(qtyBD)
 				.sourceInfo(sourceInfo)
 				.build());
 	}

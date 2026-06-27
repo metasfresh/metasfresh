@@ -20,7 +20,6 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -68,7 +67,6 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 	{
 		AdempiereTestHelper.get().init();
 		stockDataUpdateRequestHandler = new StockDataUpdateRequestHandler(Mockito.mock(PostMaterialEventService.class));
-		SpringContextHolder.registerJUnitBean(stockDataUpdateRequestHandler);
 	}
 
 	@Test
@@ -83,8 +81,8 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 		// Sanity check: stock on keyA exists before handler call
 		assertThat(getQtyOnHand(keyA)).isEqualByComparingTo(QTY);
 
-		// When: call the stub handler with an AttributesChangedEvent(old=A, new=B)
-		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords();
+		// When: the handler processes an AttributesChangedEvent(old=A, new=B)
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
 		handler.handleEvent(AttributesChangedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
 				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
@@ -96,13 +94,134 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.huId(333)
 				.build());
 
-		// Then (RED): stub no-ops, so keyA still has QTY and keyB has nothing
-		// Task 3 will implement re-key logic to make these assertions pass green.
+		// Then: qty has moved off the old key and onto the new key
 		assertThat(getQtyOnHand(keyA))
 				.as("MD_Stock for old attributesKey A must be 0 after re-key")
 				.isEqualByComparingTo(BigDecimal.ZERO);
 		assertThat(getQtyOnHand(keyB))
 				.as("MD_Stock for new attributesKey B must equal QTY after re-key")
+				.isEqualByComparingTo(QTY);
+	}
+
+	/**
+	 * AC2 — full lifecycle: receipt → attribute change → shipment leaves both keys at zero.
+	 */
+	@Test
+	public void fullLifecycle_receiptThenAttrChangeThenShipment_zeroesBothKeys()
+	{
+		final AttributesKey keyA = attributesKey(5000);
+		final AttributesKey keyB = attributesKey(6000);
+
+		// Receipt: seed MD_Stock(product=2, warehouse=1, keyA) = +Q
+		seedStock(keyA, QTY);
+
+		// Attribute change: re-key from A → B
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-01-02T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(QTY)
+				.oldStorageAttributes(attributesKeyWithASI(5000))
+				.newStorageAttributes(attributesKeyWithASI(6000))
+				.huId(666)
+				.build());
+
+		// Sanity: after re-key, keyB must hold QTY
+		final I_MD_Stock keyBAfterReKey = getMDStockRecord(PRODUCT_ID, keyB);
+		assertThat(keyBAfterReKey)
+				.as("MD_Stock(keyB) row must exist after re-key")
+				.isNotNull();
+		assertThat(keyBAfterReKey.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must equal QTY after re-key")
+				.isEqualByComparingTo(QTY);
+
+		// Shipment: issue −Q under keyB (simulates shipment booking under new attributes key)
+		seedStock(keyB, QTY.negate());
+
+		// Assert: both keys end at 0 — no phantom +/− pair
+		final I_MD_Stock keyAFinal = getMDStockRecord(PRODUCT_ID, keyA);
+		assertThat(keyAFinal)
+				.as("MD_Stock(keyA) row must exist after full lifecycle (genuinely zeroed)")
+				.isNotNull();
+		assertThat(keyAFinal.getQtyOnHand())
+				.as("MD_Stock(keyA).QtyOnHand must be 0 after full lifecycle")
+				.isEqualByComparingTo(BigDecimal.ZERO);
+
+		final I_MD_Stock keyBFinal = getMDStockRecord(PRODUCT_ID, keyB);
+		assertThat(keyBFinal)
+				.as("MD_Stock(keyB) row must exist after shipment (genuinely zeroed)")
+				.isNotNull();
+		assertThat(keyBFinal.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must be 0 after shipment")
+				.isEqualByComparingTo(BigDecimal.ZERO);
+	}
+
+	/**
+	 * AC4 — repeated re-keys (e.g. nightly MonthsUntilExpiry transitions) converge with no leftover on intermediate keys.
+	 */
+	@Test
+	public void repeatedRewrites_convergeNoLeftover()
+	{
+		final AttributesKey keyA = attributesKey(7000);
+		final AttributesKey keyB = attributesKey(8000);
+		final AttributesKey keyC = attributesKey(9000);
+
+		// Seed MD_Stock(product=2, warehouse=1, keyA) = +Q
+		seedStock(keyA, QTY);
+
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+
+		// First re-key: A → B
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-01-03T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(QTY)
+				.oldStorageAttributes(attributesKeyWithASI(7000))
+				.newStorageAttributes(attributesKeyWithASI(8000))
+				.huId(777)
+				.build());
+
+		// Second re-key: B → C
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-01-04T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(QTY)
+				.oldStorageAttributes(attributesKeyWithASI(8000))
+				.newStorageAttributes(attributesKeyWithASI(9000))
+				.huId(777)
+				.build());
+
+		// keyA must be zeroed
+		final I_MD_Stock keyARow = getMDStockRecord(PRODUCT_ID, keyA);
+		assertThat(keyARow)
+				.as("MD_Stock(keyA) row must exist (genuinely zeroed, not absent)")
+				.isNotNull();
+		assertThat(keyARow.getQtyOnHand())
+				.as("MD_Stock(keyA).QtyOnHand must be 0 — no leftover after two re-keys")
+				.isEqualByComparingTo(BigDecimal.ZERO);
+
+		// keyB must be zeroed (no accumulation from the intermediate step)
+		final I_MD_Stock keyBRow = getMDStockRecord(PRODUCT_ID, keyB);
+		assertThat(keyBRow)
+				.as("MD_Stock(keyB) row must exist (genuinely zeroed, not absent)")
+				.isNotNull();
+		assertThat(keyBRow.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must be 0 — no leftover after second re-key")
+				.isEqualByComparingTo(BigDecimal.ZERO);
+
+		// keyC must hold +Q
+		final I_MD_Stock keyCRow = getMDStockRecord(PRODUCT_ID, keyC);
+		assertThat(keyCRow)
+				.as("MD_Stock(keyC) row must exist after second re-key")
+				.isNotNull();
+		assertThat(keyCRow.getQtyOnHand())
+				.as("MD_Stock(keyC).QtyOnHand must equal QTY after two successive re-keys")
 				.isEqualByComparingTo(QTY);
 	}
 
@@ -138,6 +257,22 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.firstOnly(I_MD_Stock.class);
 
 		return record != null ? record.getQtyOnHand() : BigDecimal.ZERO;
+	}
+
+	/**
+	 * Returns the MD_Stock row for the given product/warehouse/attributesKey, or {@code null} if absent.
+	 * Use this for row-existence assertions before reading QtyOnHand — avoids the vacuous-zero of
+	 * {@link #getQtyOnHand} which returns ZERO for both a missing row and a genuinely-zeroed row.
+	 */
+	private I_MD_Stock getMDStockRecord(final int productId, @NonNull final AttributesKey attributesKey)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Stock.class)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, WAREHOUSE_ID)
+				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
+				.create()
+				.firstOnly(I_MD_Stock.class);
 	}
 
 	private static AttributesKeyWithASI attributesKeyWithASI(final int attributeValueRepoId)
