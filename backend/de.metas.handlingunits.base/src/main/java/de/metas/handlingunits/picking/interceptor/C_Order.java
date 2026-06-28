@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.order.OrderId;
 import lombok.NonNull;
@@ -47,7 +48,7 @@ public class C_Order
 	}
 
 	/**
-	 * For a sales order, fail fast when the order's customer requires dummy GRAIs but the PO reference cannot
+	 * For a completed sales order, fail fast when the order's customer requires dummy GRAIs but the PO reference cannot
 	 * form a valid dummy-GRAI serial prefix — so the back-office actor who can fix the PO reference gets the
 	 * feedback at data entry / completion, instead of the picker hitting it only at picking completion.
 	 */
@@ -57,7 +58,10 @@ public class C_Order
 		{
 			return;
 		}
-
+		if (!DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
+		{
+			return; // as long as the sales-order is no completed, we shall not worry about this
+		}
 		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 		pickingJobService.assertDummyGRAIPrerequisitesForSalesOrder(salesOrderId, customerId, order.getPOReference());
