@@ -45,7 +45,7 @@ import java.util.Collection;
  * by issuing a FROM leg (subtract) and a TO leg (add).
  *
  * <p>No MRP-exclusion guard: MD_Stock tracks real on-hand qty regardless of
- * warehouse exclusion (see cockpit/CLAUDE.md "Warehouse exclusion").</p>
+ * warehouse exclusion, consistent with the transaction-driven MD_Stock handler.</p>
  */
 @Service
 @Profile(Profiles.PROFILE_App)

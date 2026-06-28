@@ -237,10 +237,11 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.storageAttributesKey(attributesKey)
 				.build();
 
+		// seeding represents a receipt/shipment booking (transaction-driven), not an attribute change
 		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(qty)
-				.sourceInfo(StockChangeSourceInfo.ofHuAttributeChange(333))
+				.sourceInfo(StockChangeSourceInfo.ofTransactionId(1))
 				.build();
 
 		stockDataUpdateRequestHandler.handleDataUpdateRequest(request);
