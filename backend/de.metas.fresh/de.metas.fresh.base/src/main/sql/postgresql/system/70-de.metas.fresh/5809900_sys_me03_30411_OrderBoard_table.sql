@@ -456,6 +456,9 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Waiting',Updated=TO_TIMESTAMP('2026-06-28 11:27:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544292 AND AD_Language='en_US'
 ;
 
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-28 11:27:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544292 AND AD_Language IN ('de_DE','de_CH')
+;
+
 -- Ref_List: K = In Kommissionierung
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,542115/*From ID Server*/,544293/*From ID Server*/,TO_TIMESTAMP('2026-06-28 11:28:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','In Kommissionierung',TO_TIMESTAMP('2026-06-28 11:28:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'K')
 ;
@@ -466,6 +469,9 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='In Picking',Updated=TO_TIMESTAMP('2026-06-28 11:28:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544293 AND AD_Language='en_US'
 ;
 
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-28 11:28:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544293 AND AD_Language IN ('de_DE','de_CH')
+;
+
 -- Ref_List: P = Abgeschlossen
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,542115/*From ID Server*/,544294/*From ID Server*/,TO_TIMESTAMP('2026-06-28 11:29:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Abgeschlossen',TO_TIMESTAMP('2026-06-28 11:29:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'P')
 ;
@@ -474,4 +480,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTra
 ;
 
 UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Completed',Updated=TO_TIMESTAMP('2026-06-28 11:29:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544294 AND AD_Language='en_US'
+;
+
+UPDATE AD_Ref_List_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-06-28 11:29:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Ref_List_ID=544294 AND AD_Language IN ('de_DE','de_CH')
 ;
