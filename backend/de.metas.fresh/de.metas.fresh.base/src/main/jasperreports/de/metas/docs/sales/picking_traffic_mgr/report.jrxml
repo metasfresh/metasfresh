@@ -20,34 +20,44 @@
 	<queryString>
 		<![CDATA[SELECT * FROM report.TrafficMgr_PickingList($P{p_m_shipmentschedule_ids}, $P{p_view_id})]]>
 	</queryString>
-	<field name="artikel" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="artikel"/>
+	<field name="productvalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productvalue"/>
+		<property name="com.jaspersoft.studio.field.label" value="productvalue"/>
 	</field>
-	<field name="kz" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="kz"/>
+	<field name="productname" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="productname"/>
+		<property name="com.jaspersoft.studio.field.label" value="productname"/>
 	</field>
-	<field name="zu_packen" class="java.math.BigDecimal">
-		<property name="com.jaspersoft.studio.field.label" value="zu_packen"/>
+	<field name="qtytopick" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="qtytopick"/>
+		<property name="com.jaspersoft.studio.field.label" value="qtytopick"/>
 	</field>
 	<field name="status" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="status"/>
 		<property name="com.jaspersoft.studio.field.label" value="status"/>
 	</field>
 	<field name="workplace" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="workplace"/>
 		<property name="com.jaspersoft.studio.field.label" value="workplace"/>
 	</field>
 	<field name="prep_date" class="java.sql.Timestamp">
+		<property name="com.jaspersoft.studio.field.name" value="prep_date"/>
 		<property name="com.jaspersoft.studio.field.label" value="prep_date"/>
 	</field>
 	<field name="lagernr" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="lagernr"/>
 		<property name="com.jaspersoft.studio.field.label" value="lagernr"/>
 	</field>
 	<field name="menge_at_locator" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="menge_at_locator"/>
 		<property name="com.jaspersoft.studio.field.label" value="menge_at_locator"/>
 	</field>
 	<field name="m_product_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.name" value="m_product_id"/>
 		<property name="com.jaspersoft.studio.field.label" value="m_product_id"/>
 	</field>
 	<field name="picklist_group" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="picklist_group"/>
 		<property name="com.jaspersoft.studio.field.label" value="picklist_group"/>
 	</field>
 	<variable name="workplace_header" class="java.lang.String" resetType="None" calculation="First">
@@ -89,7 +99,7 @@
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{artikel} != null ? $F{artikel} : ""]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{productvalue}!= null ?$F{productvalue} : ""]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="165" y="2" width="30" height="14" uuid="11111111-1111-1111-1111-111111111104"/>
@@ -103,7 +113,7 @@
 					<textElement>
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{kz} != null ? $F{kz} : ""]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{productname}!= null ?$F{productname}: ""]]></textFieldExpression>
 				</textField>
 				<staticText>
 					<reportElement x="420" y="2" width="60" height="14" uuid="11111111-1111-1111-1111-111111111106"/>
@@ -117,7 +127,7 @@
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{zu_packen}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$F{qtytopick}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
@@ -220,7 +230,7 @@
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{zu_packen}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{qtytopick}]]></textFieldExpression>
 			</textField>
 			<textField pattern="#,##0.##" isBlankWhenNull="true">
 				<reportElement x="200" y="0" width="70" height="12" uuid="44444444-4444-4444-4444-444444444402"/>
