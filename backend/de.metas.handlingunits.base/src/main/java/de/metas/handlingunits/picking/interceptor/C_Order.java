@@ -1,9 +1,11 @@
 package de.metas.handlingunits.picking.interceptor;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.order.OrderId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -13,23 +15,10 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order
 {
-	private final PickingJobService pickingJobService;
-
-	public C_Order(
-			@NonNull final PickingJobService pickingJobService)
-	{
-		this.pickingJobService = pickingJobService;
-	}
-
-	// ifColumnsChanged is honoured only for CHANGE timings; on AFTER_NEW the framework ignores it. So a
-	// dedicated NEW handler validates every newly created sales order (a no-op unless it requires dummy GRAIs).
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void validateDummyGRAIPrerequisitesOnNew(@NonNull final I_C_Order order)
-	{
-		assertDummyGRAIPrerequisites(order);
-	}
+	@NonNull private final PickingJobService pickingJobService;
 
 	// Watches POReference only — intentionally NOT C_BPartner_ID. Switching an existing order's customer
 	// to a dummy-GRAI customer (PO reference untouched) is a rare back-office action; it is not re-validated
@@ -37,6 +26,10 @@ public class C_Order
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
 	public void validateDummyGRAIPrerequisitesOnPOReferenceChange(@NonNull final I_C_Order order)
 	{
+		if (!DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
+		{
+			return;
+		}
 		assertDummyGRAIPrerequisites(order);
 	}
 
@@ -47,7 +40,7 @@ public class C_Order
 	}
 
 	/**
-	 * For a sales order, fail fast when the order's customer requires dummy GRAIs but the PO reference cannot
+	 * For a completed sales order, fail fast when the order's customer requires dummy GRAIs but the PO reference cannot
 	 * form a valid dummy-GRAI serial prefix — so the back-office actor who can fix the PO reference gets the
 	 * feedback at data entry / completion, instead of the picker hitting it only at picking completion.
 	 */
@@ -57,7 +50,6 @@ public class C_Order
 		{
 			return;
 		}
-
 		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 		pickingJobService.assertDummyGRAIPrerequisitesForSalesOrder(salesOrderId, customerId, order.getPOReference());
