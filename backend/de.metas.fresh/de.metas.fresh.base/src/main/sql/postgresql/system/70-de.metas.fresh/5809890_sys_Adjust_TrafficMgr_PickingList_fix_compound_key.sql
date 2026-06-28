@@ -48,13 +48,13 @@ BEGIN
                  LEFT JOIN M_Locator loc ON loc.M_Warehouse_ID = pjs.M_Warehouse_ID AND loc.IsDefault = 'Y'
         WHERE p_m_shipmentschedule_ids IS NOT NULL
           AND (
-                (p_m_shipmentschedule_ids = 'all'
-                    AND pjs.M_ShipmentSchedule_ID IN (SELECT vs.IntKey1
-                                                      FROM T_WEBUI_ViewSelection vs
-                                                      WHERE vs.UUID = p_view_id))
+            (p_m_shipmentschedule_ids = 'all'
+                AND pjs.M_ShipmentSchedule_ID IN (SELECT vs.IntKey1
+                                                  FROM T_WEBUI_ViewSelection vs
+                                                  WHERE vs.UUID = p_view_id))
                 OR
-                (p_m_shipmentschedule_ids <> 'all'
-                    AND pjs.M_ShipmentSchedule_ID = ANY (REGEXP_SPLIT_TO_ARRAY(p_m_shipmentschedule_ids, ',')::INT[]))
+            (p_m_shipmentschedule_ids <> 'all'
+                AND pjs.M_ShipmentSchedule_ID = ANY (REGEXP_SPLIT_TO_ARRAY(p_m_shipmentschedule_ids, ',')::INT[]))
             )
         ORDER BY (CASE WHEN pjs.qtypicked > 0 THEN 2 ELSE 1 END), p.Value, wh.Name;
 END;
