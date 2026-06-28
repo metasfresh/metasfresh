@@ -91,6 +91,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_SO_Invoice_Aggregation_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_AllowConsolidateInOut;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID;
@@ -355,6 +356,8 @@ public class C_BPartner_StepDef
 		row.getAsOptionalEnum(COLUMNNAME_PaymentRulePO, PaymentRule.class).ifPresent(paymentRulePO -> bPartnerRecord.setPaymentRulePO(paymentRulePO.getCode()));
 		row.getAsOptionalEnum(COLUMNNAME_PO_InvoiceRule, InvoiceRule.class).ifPresent(poInvoiceRule -> bPartnerRecord.setPO_InvoiceRule(poInvoiceRule.getCode()));
 		row.getAsOptionalBoolean(COLUMNNAME_IsAllowActionPrice).ifPresent(bPartnerRecord::setIsAllowActionPrice);
+
+		row.getAsOptionalBoolean(COLUMNNAME_AllowConsolidateInOut).ifPresent(bPartnerRecord::setAllowConsolidateInOut);
 
 		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_OrgBP_ID)
 				.map(orgTable::getIdAsInt)

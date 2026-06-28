@@ -1117,6 +1117,39 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
+### 39. Price List Version — Colliding ValidFrom (`pricelist-version-colliding-date.spec.js`)
+
+**Features Tested**:
+- F32070: Price List Copy using Price List Schema
+
+**Epic**: E0260: Pricing
+
+**Window**: Price List (540321), included tab Price List Version (`AD_Tab-540777`), table `M_PriceList_Version`
+
+**Workflow**:
+1. Login, open price list 2008396 (seed data: already has a PLV dated 2015-01-01)
+2. Add a new Price List Version via the included tab's "Add new" button
+3. Set `ValidFrom` to the same date (2015-01-01) → the save fails on the unique index
+   `validfromuniqueindexonpricelist`
+4. Open the `M_DiscountSchema_ID` (Price List Schema) dropdown
+
+**Key Validations**:
+- The colliding save fails server-side with the friendly duplicate-date message
+  (asserted from the PLV PATCH `saveStatus.error`)
+- The document is NOT evicted from the WebUI cache: no HTTP 404 on the PLV document path
+  (regression guard — this was the bug)
+- The Price List Schema dropdown still resolves after the failed save
+
+**Known gap (tracked separately)**: the WebUI "Add new" overlay does not currently surface the
+duplicate-date message on screen (silent failure) — the test documents this and asserts only what
+the eviction fix guarantees.
+
+**Components Tested**: DateWidget, LoginHelper, network-response assertions (404 + saveStatus)
+
+**Prerequisite data**: standard demo seed (price list 2008396 + its 2015-01-01 PLV); no DB access
+
+---
+
 ## Test Architecture
 
 ### Page Objects
