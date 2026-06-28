@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 
 const NAME = 'GetQuantityDialog';
@@ -197,6 +197,10 @@ export const GetQuantityDialog = {
         if (qtyNotFoundReason != null) {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
+
+        // Capture mode only (UAT_CAPTURE): hold the filled dialog on the recorder for a few frames
+        // so the entered values are captured before OK closes it. No-op / full speed otherwise.
+        await holdForCaptureIfEnabled();
 
         if (closeTarget) {
             await GetQuantityDialog.clickDoneAndCloseTarget({ expectedError });

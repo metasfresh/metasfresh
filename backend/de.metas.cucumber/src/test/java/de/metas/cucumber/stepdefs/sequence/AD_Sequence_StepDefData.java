@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.cucumber
  * %%
- * Copyright (C) 2024 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,29 +20,16 @@
  * #L%
  */
 
-package org.adempiere.mm.attributes.api;
+package de.metas.cucumber.stepdefs.sequence;
 
-import de.metas.document.sequence.DocSequenceId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.service.ClientId;
-import org.eevolution.api.PPOrderId;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_AD_Sequence;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class LotNoContext
+/** Step-def data store for {@link I_AD_Sequence} records. */
+public class AD_Sequence_StepDefData extends StepDefData<I_AD_Sequence>
 {
-	@NonNull
-	DocSequenceId sequenceId;
-
-	@NonNull
-	ClientId clientId;
-
-	/** The PP_Order this lot number is generated for; exposed to a {@link de.metas.document.sequenceno.CustomSequenceNoProvider} via the eval-context {@code Record_ID}. */
-	@Nullable
-	PPOrderId ppOrderId;
-
+	public AD_Sequence_StepDefData()
+	{
+		super(I_AD_Sequence.class);
+	}
 }
