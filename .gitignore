@@ -61,4 +61,11 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 
 .claude/
 .claudeignore
+
+# claude related
 **/CLAUDE.md
+**/CLAUDE.md.backup
+.mcp.json
+**/claude-docs
+**/REVIEW.md
+/docs/
