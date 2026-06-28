@@ -24,20 +24,16 @@ public class C_Order
 		this.pickingJobService = pickingJobService;
 	}
 
-	// ifColumnsChanged is honoured only for CHANGE timings; on AFTER_NEW the framework ignores it. So a
-	// dedicated NEW handler validates every newly created sales order (a no-op unless it requires dummy GRAIs).
-	@ModelChange(timings = ModelValidator.TYPE_AFTER_NEW)
-	public void validateDummyGRAIPrerequisitesOnNew(@NonNull final I_C_Order order)
-	{
-		assertDummyGRAIPrerequisites(order);
-	}
-
 	// Watches POReference only — intentionally NOT C_BPartner_ID. Switching an existing order's customer
 	// to a dummy-GRAI customer (PO reference untouched) is a rare back-office action; it is not re-validated
 	// at save and is caught instead by the BEFORE_COMPLETE backstop below. (me03 30607 — deliberate scope.)
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = I_C_Order.COLUMNNAME_POReference)
 	public void validateDummyGRAIPrerequisitesOnPOReferenceChange(@NonNull final I_C_Order order)
 	{
+		if (!DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
+		{
+			return; // as long as the sales-order is no completed, we shall not worry about this
+		}
 		assertDummyGRAIPrerequisites(order);
 	}
 
@@ -57,10 +53,6 @@ public class C_Order
 		if (!order.isSOTrx())
 		{
 			return;
-		}
-		if (!DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
-		{
-			return; // as long as the sales-order is no completed, we shall not worry about this
 		}
 		final OrderId salesOrderId = OrderId.ofRepoId(order.getC_Order_ID());
 		final BPartnerId customerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
