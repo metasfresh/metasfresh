@@ -45,6 +45,23 @@ Feature: Dummy-GRAI prerequisite — validate the sales order PO reference at th
       | orderLine  | order                 | product                 | 10         |
     Then completing the order identified by order is rejected with error code GRAI_POREFERENCE_TOO_LONG
 
+  Scenario: Cloning a dummy-GRAI sales order with a too-long PO reference is allowed (the prerequisite is enforced only at completion)
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name              | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
+      | dummyGRAICustomer | dummyGRAICustomer | Y              | ps                            | D            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    |
+      | order      | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    When C_Order is cloned
+      | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
+      | order                 | clonedOrder                       |
+    Then validate the created orders
+      | C_Order_ID.Identifier | DocStatus | POReference    |
+      | clonedOrder           | DR        | TOOLONG-PO-REF |
+
   Scenario: A valid PO reference (max 10 chars) for a dummy-GRAI customer is accepted and the order completes
     Given metasfresh contains C_BPartners:
       | Identifier        | Name              | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |

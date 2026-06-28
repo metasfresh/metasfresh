@@ -5,6 +5,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.order.OrderId;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -14,15 +15,10 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_Order.class)
 @Component
+@RequiredArgsConstructor
 public class C_Order
 {
-	private final PickingJobService pickingJobService;
-
-	public C_Order(
-			@NonNull final PickingJobService pickingJobService)
-	{
-		this.pickingJobService = pickingJobService;
-	}
+	@NonNull private final PickingJobService pickingJobService;
 
 	// Watches POReference only — intentionally NOT C_BPartner_ID. Switching an existing order's customer
 	// to a dummy-GRAI customer (PO reference untouched) is a rare back-office action; it is not re-validated
@@ -32,7 +28,7 @@ public class C_Order
 	{
 		if (!DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed())
 		{
-			return; // as long as the sales-order is no completed, we shall not worry about this
+			return;
 		}
 		assertDummyGRAIPrerequisites(order);
 	}
