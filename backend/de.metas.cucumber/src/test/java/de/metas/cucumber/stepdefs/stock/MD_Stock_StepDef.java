@@ -35,7 +35,6 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQuery;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -120,7 +119,7 @@ public class MD_Stock_StepDef
 
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalForColumnName(row, "QtyOnHand");
 
-		final I_MD_Stock mdStock = buildStockQuery(productId, row).firstOnly(I_MD_Stock.class);
+		final I_MD_Stock mdStock = buildStockQuery(productId, row).create().firstOnly(I_MD_Stock.class);
 		return mdStock != null && mdStock.getQtyOnHand().compareTo(qtyOnHand) == 0;
 	}
 
@@ -131,7 +130,7 @@ public class MD_Stock_StepDef
 
 		final I_M_Product product = productTable.get(productIdentifier);
 
-		final I_MD_Stock mdStock = buildStockQuery(product.getM_Product_ID(), row).firstOnly(I_MD_Stock.class);
+		final I_MD_Stock mdStock = buildStockQuery(product.getM_Product_ID(), row).create().firstOnly(I_MD_Stock.class);
 		assertThat(mdStock).isNotNull();
 		assertThat(mdStock.getQtyOnHand()).isEqualTo(qtyOnHand);
 	}
@@ -141,7 +140,7 @@ public class MD_Stock_StepDef
 	 * and {@code AttributesKey} filters derived from the DataTable row.
 	 */
 	@NonNull
-	private IQuery<I_MD_Stock> buildStockQuery(final int productId, @NonNull final Map<String, String> row)
+	private IQueryBuilder<I_MD_Stock> buildStockQuery(final int productId, @NonNull final Map<String, String> row)
 	{
 		final IQueryBuilder<I_MD_Stock> builder = queryBL.createQueryBuilder(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId);
@@ -161,7 +160,7 @@ public class MD_Stock_StepDef
 			builder.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString());
 		}
 
-		return builder.create();
+		return builder;
 	}
 
 	@NonNull
