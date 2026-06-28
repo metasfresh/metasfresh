@@ -20,6 +20,7 @@ import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -27,6 +28,8 @@ import org.mockito.Mockito;
 import java.math.BigDecimal;
 import java.time.Instant;
 
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /*
@@ -225,6 +228,175 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.isEqualByComparingTo(QTY);
 	}
 
+	/**
+	 * U1 — no-op event: old and new storage attributes are identical.
+	 * The handler currently has no short-circuit, so this test is expected to FAIL (RED) until the guard is added.
+	 * The assertion is written with passing intent: if old == new, no MD_Stock row should be created.
+	 */
+	@Test
+	public void ignoresChangeThatDoesNotAlterAttributesKey()
+	{
+		// No seed — no pre-existing MD_Stock row for this key.
+		final AttributesKey sameKey = attributesKey(1000);
+
+		// Fire event where old == new (identity re-key: nothing really changed)
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-06-01T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(new BigDecimal("13"))
+				.oldStorageAttributes(attributesKeyWithASI(1000))
+				.newStorageAttributes(attributesKeyWithASI(1000))
+				.huId(100)
+				.build());
+
+		// No row should exist — a no-op event must not create a phantom stock entry.
+		assertThat(getMDStockRecord(PRODUCT_ID, sameKey))
+				.as("No MD_Stock row should be created when old == new attributes key (identity re-key is a no-op)")
+				.isNull();
+	}
+
+	/**
+	 * U2 — partial re-key: two HUs share keyA (total 20). Moving qty 10 to keyB leaves 10 on keyA.
+	 */
+	@Test
+	public void reKeyMovesOnlyChangedHusQty_leavesRemainderOnOldKey()
+	{
+		final AttributesKey keyA = attributesKey(2100);
+		final AttributesKey keyB = attributesKey(2200);
+
+		// Seed two HUs worth of qty under keyA (total = 20)
+		seedStock(keyA, new BigDecimal("10"));
+		seedStock(keyA, new BigDecimal("10"));
+
+		// Fire event: move only one HU's qty (10) from keyA → keyB
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-06-02T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(new BigDecimal("10"))
+				.oldStorageAttributes(attributesKeyWithASI(2100))
+				.newStorageAttributes(attributesKeyWithASI(2200))
+				.huId(201)
+				.build());
+
+		// keyA still holds the remainder (10), not zeroed
+		final I_MD_Stock keyARow = getMDStockRecord(PRODUCT_ID, keyA);
+		assertThat(keyARow)
+				.as("MD_Stock(keyA) row must exist after partial re-key")
+				.isNotNull();
+		assertThat(keyARow.getQtyOnHand())
+				.as("MD_Stock(keyA).QtyOnHand must be 10 (remainder — one HU still on old key)")
+				.isEqualByComparingTo(new BigDecimal("10"));
+
+		// keyB received exactly the moved qty
+		final I_MD_Stock keyBRow = getMDStockRecord(PRODUCT_ID, keyB);
+		assertThat(keyBRow)
+				.as("MD_Stock(keyB) row must exist after partial re-key")
+				.isNotNull();
+		assertThat(keyBRow.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must be 10 (the moved HU qty)")
+				.isEqualByComparingTo(new BigDecimal("10"));
+	}
+
+	/**
+	 * U3 — uneven split: seed 12+8=20 on keyA, move 8 → keyB. keyA must show 12, keyB must show 8.
+	 */
+	@Test
+	public void reKeyUnevenSplit_movesExactChangedQty()
+	{
+		final AttributesKey keyA = attributesKey(2300);
+		final AttributesKey keyB = attributesKey(2400);
+
+		seedStock(keyA, new BigDecimal("12"));
+		seedStock(keyA, new BigDecimal("8"));
+
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(WAREHOUSE_ID))
+				.date(Instant.parse("2026-06-03T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(new BigDecimal("8"))
+				.oldStorageAttributes(attributesKeyWithASI(2300))
+				.newStorageAttributes(attributesKeyWithASI(2400))
+				.huId(230)
+				.build());
+
+		// keyA retains the untouched qty (12)
+		final I_MD_Stock keyARow = getMDStockRecord(PRODUCT_ID, keyA);
+		assertThat(keyARow)
+				.as("MD_Stock(keyA) row must exist after uneven split")
+				.isNotNull();
+		assertThat(keyARow.getQtyOnHand())
+				.as("MD_Stock(keyA).QtyOnHand must be 12 after moving 8 to keyB")
+				.isEqualByComparingTo(new BigDecimal("12"));
+
+		// keyB receives exactly the moved qty (8)
+		final I_MD_Stock keyBRow = getMDStockRecord(PRODUCT_ID, keyB);
+		assertThat(keyBRow)
+				.as("MD_Stock(keyB) row must exist after uneven split")
+				.isNotNull();
+		assertThat(keyBRow.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must be 8 (exact moved qty)")
+				.isEqualByComparingTo(new BigDecimal("8"));
+	}
+
+	/**
+	 * U4 — MRP-excluded warehouse: re-key happens regardless of MRP_Exclude flag.
+	 * MD_Stock tracks real on-hand qty even for warehouses excluded from material disposition.
+	 */
+	@Test
+	public void reKeysStockEvenForMrpExcludedWarehouse()
+	{
+		// Create a warehouse record with MRP_Exclude = "Y"
+		final I_M_Warehouse warehouseRecord = newInstance(I_M_Warehouse.class);
+		warehouseRecord.setMRP_Exclude("Y");
+		saveRecord(warehouseRecord);
+		final int mrpExcludedWarehouseId = warehouseRecord.getM_Warehouse_ID();
+		final WarehouseId mrpExcludedWarehouseIdObj = WarehouseId.ofRepoId(mrpExcludedWarehouseId);
+
+		final AttributesKey keyA = attributesKey(2500);
+		final AttributesKey keyB = attributesKey(2600);
+
+		// Seed stock under the MRP-excluded warehouse
+		seedStockForWarehouse(mrpExcludedWarehouseId, keyA, new BigDecimal("13"));
+
+		// Fire re-key event on the MRP-excluded warehouse
+		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
+		handler.handleEvent(AttributesChangedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_ID, ORG_ID))
+				.warehouseId(mrpExcludedWarehouseIdObj)
+				.date(Instant.parse("2026-06-04T00:00:00.00Z"))
+				.productId(PRODUCT_ID)
+				.qty(new BigDecimal("13"))
+				.oldStorageAttributes(attributesKeyWithASI(2500))
+				.newStorageAttributes(attributesKeyWithASI(2600))
+				.huId(250)
+				.build());
+
+		// Re-key must have happened: keyA zeroed, keyB has qty — no MRP-exclusion guard suppresses this
+		final I_MD_Stock keyARow = getMDStockRecordForWarehouse(mrpExcludedWarehouseId, PRODUCT_ID, keyA);
+		assertThat(keyARow)
+				.as("MD_Stock(keyA, mrpExcludedWarehouse) must exist (genuinely zeroed)")
+				.isNotNull();
+		assertThat(keyARow.getQtyOnHand())
+				.as("MD_Stock(keyA).QtyOnHand must be 0 after re-key (MRP-excluded warehouse still tracked)")
+				.isEqualByComparingTo(BigDecimal.ZERO);
+
+		final I_MD_Stock keyBRow = getMDStockRecordForWarehouse(mrpExcludedWarehouseId, PRODUCT_ID, keyB);
+		assertThat(keyBRow)
+				.as("MD_Stock(keyB, mrpExcludedWarehouse) must exist after re-key")
+				.isNotNull();
+		assertThat(keyBRow.getQtyOnHand())
+				.as("MD_Stock(keyB).QtyOnHand must be 13 after re-key (MRP-excluded warehouse still tracked)")
+				.isEqualByComparingTo(new BigDecimal("13"));
+	}
+
 	// --- helpers ---
 
 	private void seedStock(@NonNull final AttributesKey attributesKey, @NonNull final BigDecimal qty)
@@ -284,5 +456,35 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 	private static AttributesKey attributesKey(final int attributeValueRepoId)
 	{
 		return AttributesKey.ofAttributeValueIds(AttributeValueId.ofRepoId(attributeValueRepoId));
+	}
+
+	/** Variant of {@link #seedStock} that seeds against an arbitrary warehouse ID (for MRP-exclusion tests). */
+	private void seedStockForWarehouse(final int warehouseId, @NonNull final AttributesKey attributesKey, @NonNull final BigDecimal qty)
+	{
+		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
+				.clientId(ClientId.ofRepoId(CLIENT_ID))
+				.orgId(OrgId.ofRepoId(ORG_ID))
+				.warehouseId(WarehouseId.ofRepoId(warehouseId))
+				.productId(ProductId.ofRepoId(PRODUCT_ID))
+				.storageAttributesKey(attributesKey)
+				.build();
+
+		stockDataUpdateRequestHandler.handleDataUpdateRequest(StockDataUpdateRequest.builder()
+				.identifier(identifier)
+				.onHandQtyChange(qty)
+				.sourceInfo(StockChangeSourceInfo.ofTransactionId(1))
+				.build());
+	}
+
+	/** Variant of {@link #getMDStockRecord} that queries against an arbitrary warehouse ID. */
+	private I_MD_Stock getMDStockRecordForWarehouse(final int warehouseId, final int productId, @NonNull final AttributesKey attributesKey)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_MD_Stock.class)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
+				.create()
+				.firstOnly(I_MD_Stock.class);
 	}
 }

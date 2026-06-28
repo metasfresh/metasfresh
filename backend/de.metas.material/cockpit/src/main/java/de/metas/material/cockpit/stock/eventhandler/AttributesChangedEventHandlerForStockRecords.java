@@ -69,12 +69,21 @@ public class AttributesChangedEventHandlerForStockRecords
 	@Override
 	public void handleEvent(@NonNull final AttributesChangedEvent event)
 	{
+		final AttributesKey oldAttributesKey = event.getOldStorageAttributes().getAttributesKey();
+		final AttributesKey newAttributesKey = event.getNewStorageAttributes().getAttributesKey();
+
+		// The event fires on ANY attribute change, including non-storage-relevant ones,
+		// which leave the storage AttributesKey unchanged (old == new, often both NONE).
+		// Nothing moves between buckets, so skip — otherwise we'd issue two offsetting
+		// MD_Stock deltas and fire spurious StockChangedEvents on every attribute change.
+		if (oldAttributesKey.equals(newAttributesKey))
+		{
+			return;
+		}
+
 		final ProductId productId = ProductId.ofRepoId(event.getProductId());
 		final BigDecimal qtyBD = event.getQty();
 		final StockChangeSourceInfo sourceInfo = StockChangeSourceInfo.ofHuAttributeChange(event.getHuId());
-
-		final AttributesKey oldAttributesKey = event.getOldStorageAttributes().getAttributesKey();
-		final AttributesKey newAttributesKey = event.getNewStorageAttributes().getAttributesKey();
 
 		// FROM leg: subtract qty from old bucket
 		final StockDataRecordIdentifier fromIdentifier = StockDataRecordIdentifier.builder()
