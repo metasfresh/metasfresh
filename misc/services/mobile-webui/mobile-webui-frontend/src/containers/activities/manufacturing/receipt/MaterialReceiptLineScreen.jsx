@@ -20,6 +20,7 @@ import Spinner from '../../../../components/Spinner';
 import { useScreenDefinition } from '../../../../hooks/useScreenDefinition';
 import { getWFProcessScreenLocation } from '../../../../routes/workflow_locations';
 import { APPLICATION_ID_Picking } from '../../../../apps/picking';
+import { getReadAttributesFromActivity } from '../../../../reducers/wfProcesses/picking/getReadAttributesFromActivity';
 
 const MaterialReceiptLineScreen = () => {
   const { history, url, applicationId, wfProcessId, activityId, lineId } = useScreenDefinition({
@@ -42,6 +43,7 @@ const MaterialReceiptLineScreen = () => {
     },
     pickTo,
     customQRCodeFormats,
+    readAttributes,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
   const [showSpinner, setShowSpinner] = useState(false);
 
@@ -161,6 +163,7 @@ const MaterialReceiptLineScreen = () => {
           uom={uom}
           caption={trl('activities.mfg.receipts.btnReceiveProducts')}
           customQRCodeFormats={customQRCodeFormats}
+          readAttributes={readAttributes}
         />
       </div>
     </>
@@ -180,6 +183,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     lineProps,
     pickTo: getPickTo({ wfProcess }),
     customQRCodeFormats,
+    readAttributes: getReadAttributesFromActivity({ activity }),
   };
 };
 

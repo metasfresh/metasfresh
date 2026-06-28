@@ -54,6 +54,15 @@ export const GetQuantityDialog = {
         await clickAndType(field, lotNo);
     }),
 
+    typeBestBeforeDate: async (bestBeforeDate) => await test.step(`${NAME} - Type BestBeforeDate '${bestBeforeDate}'`, async () => {
+        // The Best-Before field is a DateInput. With the default config
+        // (mobileui.frontend.dateInput.isUseNativeComponent=N) it renders as a text input
+        // expecting the DD.MM.YYYY display format; fill() sets the whole value in one event.
+        const field = page.getByTestId('bestBeforeDate');
+        await field.tap();
+        await field.fill(bestBeforeDate);
+    }),
+
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
         // Replace `.` with locale-appropriate decimal, e.g., `,` for some regions
         const correctedQty = `${qty}`.replace('.', (1.1).toLocaleString().substring(1, 2));
@@ -116,6 +125,21 @@ export const GetQuantityDialog = {
         );
     }),
 
+    clickDoneAndCloseTarget: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK und LU schließen`, async () => {
+        const doneAndCloseButton = page.getByTestId('confirmDoneAndCloseTarget-button');
+
+        await expectErrorToastIf(
+            !!expectedError,
+            `${expectedError}`,
+            async () => {
+                await doneAndCloseButton.tap();
+                await GetQuantityDialog.expectComponentsDisabled();
+                await GetQuantityDialog.waitToClose();
+            },
+            ({ textContent }) => expect(textContent).toContain(expectedError)
+        );
+    }),
+
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
         await page.getByTestId('cancel-button').tap();
         await GetQuantityDialog.expectComponentsDisabled();
@@ -136,7 +160,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError, closeTarget = false }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -152,6 +176,9 @@ export const GetQuantityDialog = {
         }
         if (lotNo != null) {
             await GetQuantityDialog.typeLotNo(lotNo);
+        }
+        if (bestBeforeDate != null) {
+            await GetQuantityDialog.typeBestBeforeDate(bestBeforeDate);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);
@@ -171,7 +198,11 @@ export const GetQuantityDialog = {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
 
-        await GetQuantityDialog.clickDone({ expectedError });
+        if (closeTarget) {
+            await GetQuantityDialog.clickDoneAndCloseTarget({ expectedError });
+        } else {
+            await GetQuantityDialog.clickDone({ expectedError });
+        }
     }),
 };
 
