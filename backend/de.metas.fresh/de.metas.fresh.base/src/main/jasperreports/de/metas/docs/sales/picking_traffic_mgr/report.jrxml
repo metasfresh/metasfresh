@@ -66,6 +66,9 @@
 	<variable name="prep_date_header" class="java.sql.Timestamp" resetType="None" calculation="First">
 		<variableExpression><![CDATA[$F{prep_date}]]></variableExpression>
 	</variable>
+	<variable name="product_qty_sum" class="java.math.BigDecimal" resetType="Group" resetGroup="product" calculation="Sum">
+		<variableExpression><![CDATA[$F{qtytopick}]]></variableExpression>
+	</variable>
 	<group name="picklist_section" isReprintHeaderOnEachPage="true">
 		<groupExpression><![CDATA[$F{picklist_group}]]></groupExpression>
 		<groupHeader>
@@ -122,12 +125,12 @@
 					</textElement>
 					<text><![CDATA[zu packen:]]></text>
 				</staticText>
-				<textField pattern="#,##0.##" isBlankWhenNull="true">
+				<textField pattern="#,##0.##" isBlankWhenNull="true" evaluationTime="Group" evaluationGroup="product">
 					<reportElement x="483" y="2" width="72" height="14" uuid="11111111-1111-1111-1111-111111111107"/>
 					<textElement textAlignment="Right">
 						<font fontName="Arial" size="9" isBold="true"/>
 					</textElement>
-					<textFieldExpression><![CDATA[$F{qtytopick}]]></textFieldExpression>
+					<textFieldExpression><![CDATA[$V{product_qty_sum}]]></textFieldExpression>
 				</textField>
 			</band>
 		</groupHeader>
