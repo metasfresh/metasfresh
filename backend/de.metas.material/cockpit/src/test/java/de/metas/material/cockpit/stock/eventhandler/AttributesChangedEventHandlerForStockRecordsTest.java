@@ -229,9 +229,8 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 	}
 
 	/**
-	 * U1 — no-op event: old and new storage attributes are identical.
-	 * The handler currently has no short-circuit, so this test is expected to FAIL (RED) until the guard is added.
-	 * The assertion is written with passing intent: if old == new, no MD_Stock row should be created.
+	 * A change that does not alter the storage AttributesKey (old == new — e.g. a non-storage
+	 * attribute changed) must be a no-op: no MD_Stock row created, no offsetting deltas.
 	 */
 	@Test
 	public void ignoresChangeThatDoesNotAlterAttributesKey()
@@ -364,7 +363,7 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 		final AttributesKey keyB = attributesKey(2600);
 
 		// Seed stock under the MRP-excluded warehouse
-		seedStockForWarehouse(mrpExcludedWarehouseId, keyA, new BigDecimal("13"));
+		seedStockForWarehouse(mrpExcludedWarehouseIdObj, keyA, new BigDecimal("13"));
 
 		// Fire re-key event on the MRP-excluded warehouse
 		final AttributesChangedEventHandlerForStockRecords handler = new AttributesChangedEventHandlerForStockRecords(stockDataUpdateRequestHandler);
@@ -380,7 +379,7 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.build());
 
 		// Re-key must have happened: keyA zeroed, keyB has qty — no MRP-exclusion guard suppresses this
-		final I_MD_Stock keyARow = getMDStockRecordForWarehouse(mrpExcludedWarehouseId, PRODUCT_ID, keyA);
+		final I_MD_Stock keyARow = getMDStockRecordForWarehouse(mrpExcludedWarehouseIdObj, PRODUCT_ID, keyA);
 		assertThat(keyARow)
 				.as("MD_Stock(keyA, mrpExcludedWarehouse) must exist (genuinely zeroed)")
 				.isNotNull();
@@ -388,7 +387,7 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.as("MD_Stock(keyA).QtyOnHand must be 0 after re-key (MRP-excluded warehouse still tracked)")
 				.isEqualByComparingTo(BigDecimal.ZERO);
 
-		final I_MD_Stock keyBRow = getMDStockRecordForWarehouse(mrpExcludedWarehouseId, PRODUCT_ID, keyB);
+		final I_MD_Stock keyBRow = getMDStockRecordForWarehouse(mrpExcludedWarehouseIdObj, PRODUCT_ID, keyB);
 		assertThat(keyBRow)
 				.as("MD_Stock(keyB, mrpExcludedWarehouse) must exist after re-key")
 				.isNotNull();
@@ -458,13 +457,13 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 		return AttributesKey.ofAttributeValueIds(AttributeValueId.ofRepoId(attributeValueRepoId));
 	}
 
-	/** Variant of {@link #seedStock} that seeds against an arbitrary warehouse ID (for MRP-exclusion tests). */
-	private void seedStockForWarehouse(final int warehouseId, @NonNull final AttributesKey attributesKey, @NonNull final BigDecimal qty)
+	/** Variant of {@link #seedStock} that seeds against an arbitrary warehouse (for MRP-exclusion tests). */
+	private void seedStockForWarehouse(@NonNull final WarehouseId warehouseId, @NonNull final AttributesKey attributesKey, @NonNull final BigDecimal qty)
 	{
 		final StockDataRecordIdentifier identifier = StockDataRecordIdentifier.builder()
 				.clientId(ClientId.ofRepoId(CLIENT_ID))
 				.orgId(OrgId.ofRepoId(ORG_ID))
-				.warehouseId(WarehouseId.ofRepoId(warehouseId))
+				.warehouseId(warehouseId)
 				.productId(ProductId.ofRepoId(PRODUCT_ID))
 				.storageAttributesKey(attributesKey)
 				.build();
@@ -476,13 +475,13 @@ public class AttributesChangedEventHandlerForStockRecordsTest
 				.build());
 	}
 
-	/** Variant of {@link #getMDStockRecord} that queries against an arbitrary warehouse ID. */
-	private I_MD_Stock getMDStockRecordForWarehouse(final int warehouseId, final int productId, @NonNull final AttributesKey attributesKey)
+	/** Variant of {@link #getMDStockRecord} that queries against an arbitrary warehouse. */
+	private I_MD_Stock getMDStockRecordForWarehouse(@NonNull final WarehouseId warehouseId, final int productId, @NonNull final AttributesKey attributesKey)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Stock.class)
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseId.getRepoId())
 				.addEqualsFilter(I_MD_Stock.COLUMN_AttributesKey, attributesKey.getAsString())
 				.create()
 				.firstOnly(I_MD_Stock.class);
