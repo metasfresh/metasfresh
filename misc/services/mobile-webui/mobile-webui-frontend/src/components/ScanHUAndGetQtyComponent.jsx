@@ -221,6 +221,7 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    serialNos,
     productNo,
     barcodeType,
     isCloseTarget = false,
@@ -239,14 +240,19 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       productionDate,
       lotNo,
+      serialNos,
       productNo,
       isCloseTarget,
       isDone,
     };
 
     // GRAI Flow-Through: when GRAI scanning is required, do not report the pick yet — auto-invoke the
-    // inline GRAI capture (one GRAI per picked crate) and report qty + GRAIs together on save.
-    if (graiScanEnabled && qtyEnteredAndValidated > 0 && !isCloseTarget) {
+    // inline GRAI capture (one GRAI per picked crate) and report qty + GRAIs together on save. This
+    // applies to BOTH the plain "OK" and the "OK und LU schließen" (isCloseTarget) completion paths:
+    // the close-LU result carries isCloseTarget through pendingGraiResult, so on save the backend
+    // stamps the GRAIs and then closes the LU within the same atomic pick. Closing the LU must never
+    // be a way to skip the GRAI scan for a GRAI-required partner.
+    if (graiScanEnabled && qtyEnteredAndValidated > 0) {
       setGraiCodes([]);
       setPendingGraiResult(result);
       setProgressStatus(STATUS_READ_GRAI);

@@ -136,6 +136,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_SalesRep_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -168,6 +169,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Description;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
@@ -238,6 +240,51 @@ public class C_Order_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Order_ID)
 				.forEach(this::createOrder);
+	}
+
+	/**
+	 * Creates a single C_Order (same columns as {@code metasfresh contains C_Orders:}) and asserts that
+	 * the creation is rejected with an {@link AdempiereException}. Use this to verify a save-time
+	 * interceptor (e.g. the dummy-GRAI PO-reference validation) blocks the order.
+	 * <p>
+	 * Single row only. Columns: every column of {@code metasfresh contains C_Orders:} plus
+	 * <ul>
+	 *     <li><b>ErrorCode</b> (optional): when given, the thrown exception's {@code ErrorCode} must equal it.</li>
+	 * </ul>
+	 * <pre>
+	 * And metasfresh contains C_Orders expecting error:
+	 *   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    | ErrorCode                 |
+	 *   | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF | GRAI_POREFERENCE_TOO_LONG |
+	 * </pre>
+	 */
+	@Given("metasfresh contains C_Orders expecting error:")
+	public void metasfresh_contains_c_orders_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		if (tableRows.size() > 1)
+		{
+			throw new IllegalArgumentException("Multiple rows are not supported!");
+		}
+
+		AdempiereException caughtException = null;
+		try
+		{
+			metasfresh_contains_c_orders(dataTable);
+		}
+		catch (final AdempiereException e)
+		{
+			caughtException = e;
+		}
+
+		assertThat(caughtException)
+				.as("An AdempiereException should have been thrown while creating the C_Order")
+				.isNotNull();
+
+		final String expectedErrorCode = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorCode");
+		if (expectedErrorCode != null)
+		{
+			assertThat(caughtException.getErrorCode()).isEqualTo(expectedErrorCode);
+		}
 	}
 
 	public I_C_Order createOrder(final DataTableRow tableRow)
@@ -685,10 +732,11 @@ public class C_Order_StepDef
 	/**
 	 * Validates {@code C_Order} records against expected values.
 	 * <p>
-	 * gh#28565: Added validation for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 *   <li>{@code Description} (optional) — expected order description text</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -787,6 +835,9 @@ public class C_Order_StepDef
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_OrderType)
+				.ifPresent(orderType -> softly.assertThat(order.getOrderType()).as("OrderType for Identifier=%s", identifierStr).isEqualTo(orderType));
+
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> {
 					final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
@@ -814,6 +865,10 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
 				.map(userTable::get)
 				.ifPresent(user -> softly.assertThat(order.getAD_User_ID()).as("AD_User_ID for Identifier=%s", identifierStr).isEqualTo(user.getAD_User_ID()));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SalesRep_ID)
+				.map(userTable::get)
+				.ifPresent(salesRepUser -> softly.assertThat(order.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(salesRepUser.getAD_User_ID()));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
 				.map(bpartnerTable::get)
@@ -961,6 +1016,11 @@ public class C_Order_StepDef
 							.as("PreparationDate for Identifier=%s", identifierStr)
 							.isEqualTo(preparationDate);
 				});
+
+		row.getAsOptionalString(COLUMNNAME_Description)
+				.ifPresent(description -> softly.assertThat(order.getDescription())
+						.as("Description for Identifier=%s", identifierStr)
+						.isEqualTo(description));
 
 		softly.assertAll();
 	}

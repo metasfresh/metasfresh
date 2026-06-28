@@ -334,6 +334,46 @@ BEGIN
                    AND ha.vhu_id = ha_vtu.m_hu_id
              )),
 
+         tu_order_ref AS MATERIALIZED (
+             -- Per-crate SOURCE-ORDER reference. A crate (TU) is order-pure: it is assigned to exactly
+             -- one shipment line, hence one order. We resolve that order's POReference and the
+             -- shipment's delivery-note (M_InOut.DocumentNo) so each PACKING event references only its
+             -- own order (one po + one desadv) instead of the merged pallet-level set. me03 #30279.
+             -- Keyed by the TU/vTU m_hu_id (individual_tu_ids.tu_hu_id / ha_items_with_vtu.vtu_hu_id),
+             -- which is exactly the HU the m_hu_assignment points at (m_tu_hu_id or vhu_id).
+             -- Scoped to the already-discovered TUs so the m_hu_assignment scan stays bounded.
+             SELECT hu_id, poreference, shipment_documentno
+             FROM (
+                 SELECT asg.hu_id,
+                        ord.poreference,
+                        io.documentno                                                  AS shipment_documentno,
+                        ROW_NUMBER() OVER (PARTITION BY asg.hu_id ORDER BY io.m_inout_id) AS rn
+                 FROM (
+                          SELECT ha.record_id, ha.m_tu_hu_id AS hu_id
+                          FROM m_hu_assignment ha
+                          WHERE ha.ad_table_id = v_m_inoutline_table_id
+                            AND ha.isactive = 'Y'
+                            AND ha.m_tu_hu_id IN (SELECT tu_hu_id FROM individual_tu_ids
+                                                  UNION ALL
+                                                  SELECT vtu_hu_id FROM ha_items_with_vtu)
+                          UNION ALL
+                          SELECT ha.record_id, ha.vhu_id AS hu_id
+                          FROM m_hu_assignment ha
+                          WHERE ha.ad_table_id = v_m_inoutline_table_id
+                            AND ha.isactive = 'Y'
+                            AND ha.vhu_id IN (SELECT tu_hu_id FROM individual_tu_ids
+                                              UNION ALL
+                                              SELECT vtu_hu_id FROM ha_items_with_vtu)
+                      ) asg
+                          JOIN m_inoutline iol ON iol.m_inoutline_id = asg.record_id
+                          JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+                          LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
+                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
+                 WHERE iol.isactive = 'Y'
+                   AND io.docstatus IN ('CO', 'CL')
+             ) ranked
+             WHERE rn = 1),
+
          hu_attrs AS MATERIALIZED (
              -- Single pivot scan of m_hu_attribute for ALL relevant HU IDs and the 3 needed
              -- attribute IDs — replaces 6 separate LEFT JOIN m_hu_attribute (3 per TU type)
@@ -368,9 +408,12 @@ BEGIN
                     it.tu_pi_item_product_id,
                     NULLIF(TRIM(ha.grai_value), '') AS grai_raw,
                     ha.lot_number,
-                    ha.best_before_date
+                    ha.best_before_date,
+                    tor.poreference                 AS po_reference,
+                    tor.shipment_documentno
              FROM individual_tu_ids it
-                      LEFT JOIN hu_attrs ha ON ha.m_hu_id = it.tu_hu_id),
+                      LEFT JOIN hu_attrs ha ON ha.m_hu_id = it.tu_hu_id
+                      LEFT JOIN tu_order_ref tor ON tor.hu_id = it.tu_hu_id),
 
          individual_tu_items AS (
              -- Items for ALL individual TUs in ONE batch query
@@ -410,9 +453,12 @@ BEGIN
                             ARRAY []::text[]
                     ) AS grai_arr,
                     ha.lot_number,
-                    ha.best_before_date
+                    ha.best_before_date,
+                    tor.poreference AS po_reference,
+                    tor.shipment_documentno
              FROM ha_items_with_vtu hwv
-                      LEFT JOIN hu_attrs ha ON ha.m_hu_id = hwv.attr_hu_id),
+                      LEFT JOIN hu_attrs ha ON ha.m_hu_id = hwv.attr_hu_id
+                      LEFT JOIN tu_order_ref tor ON tor.hu_id = hwv.vtu_hu_id),
 
          aggregated_tu_items AS (
              -- Items for ALL aggregated TUs in ONE batch query — no m_hu join needed (vtu_hu_id from atb)
@@ -456,7 +502,9 @@ BEGIN
                     it.lot_number,
                     it.best_before_date,
                     1 AS sort_ord,
-                    iti.items_json
+                    iti.items_json,
+                    it.po_reference,
+                    it.shipment_documentno
              FROM individual_tus it
                       LEFT JOIN individual_tu_items iti ON iti.tu_hu_id = it.tu_hu_id
 
@@ -477,7 +525,9 @@ BEGIN
                     atb.lot_number,
                     atb.best_before_date,
                     gs AS sort_ord,
-                    ati.items_json
+                    ati.items_json,
+                    atb.po_reference,
+                    atb.shipment_documentno
              FROM aggregated_tu_base atb
                       LEFT JOIN aggregated_tu_items ati ON ati.tu_hu_id = atb.tu_hu_id
                       CROSS JOIN GENERATE_SERIES(1, GREATEST(atb.qty::int, 1)) AS gs),
@@ -504,7 +554,9 @@ BEGIN
                     lot_number,
                     best_before_date,
                     sort_ord,
-                    items_json
+                    items_json,
+                    po_reference,
+                    shipment_documentno
              FROM all_crates_raw)
 
     SELECT JSONB_BUILD_OBJECT(
@@ -578,6 +630,9 @@ BEGIN
                                                          'lotNumber', c.lot_number,
                                                          'bestBeforeDate', c.best_before_date,
                                                          'tuHuId', c.tu_hu_id,
+                                                         -- per-crate source-order refs so PACKING events are order-pure (me03 #30279)
+                                                         'poReference', c.po_reference,
+                                                         'shipmentDocumentNo', c.shipment_documentno,
                                                          'items', COALESCE(c.items_json, '[]'::jsonb)
                                                  ) ORDER BY c.tu_hu_id
                                          )               AS crates_json

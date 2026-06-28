@@ -6,6 +6,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
@@ -112,6 +113,7 @@ public class JsonPickingJobConverterCommand
 					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
 							.displayGroupKey(group.getKey())
 							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+							.readAttributes(computeLineReadAttributes(line))
 							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
 									getAdditionalHeaderProperties(line), jsonOpts))
 							.build()
@@ -119,6 +121,21 @@ public class JsonPickingJobConverterCommand
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	/**
+	 * Per-line read attributes = the job-level set plus {@link PickAttribute#SerialNo} when this line's product
+	 * opts into serial-no picking and its attribute set supports SerialNo.
+	 */
+	@NonNull
+	private Set<PickAttribute> computeLineReadAttributes(@NonNull final PickingJobLine line)
+	{
+		final Set<PickAttribute> base = pickingJobOptions.getPickAttributes().getAttributesToReadSet();
+		if (!productService.isSerialNoPickingEnabled(line.getProductId()))
+		{
+			return base;
+		}
+		return ImmutableSet.<PickAttribute>builder().addAll(base).add(PickAttribute.SerialNo).build();
 	}
 
 	@Nullable

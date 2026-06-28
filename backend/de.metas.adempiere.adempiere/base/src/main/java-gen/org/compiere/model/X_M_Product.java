@@ -848,6 +848,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setIsSerialNoPicked (final boolean IsSerialNoPicked)
+	{
+		set_Value (COLUMNNAME_IsSerialNoPicked, IsSerialNoPicked);
+	}
+
+	@Override
+	public boolean isSerialNoPicked() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSerialNoPicked);
+	}
+
+	@Override
 	public void setIsSold (final boolean IsSold)
 	{
 		set_Value (COLUMNNAME_IsSold, IsSold);

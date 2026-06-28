@@ -12,6 +12,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsIdAndCaption;
 import de.metas.handlingunits.HuPackingInstructionsItemId;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.handlingunits.model.I_M_HU_PI;
@@ -72,6 +73,7 @@ import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -418,6 +420,8 @@ public class PickingJobService implements PickingSlotListener
 						.bestBeforeDate(event.getBestBeforeDate())
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
+						.isSetSerialNos(event.isSetSerialNos())
+						.serialNos(event.getSerialNos())
 						.isCloseTarget(event.isCloseTarget())
 						.isSetGrais(event.isSetGrais())
 						.graiCodes(event.getGraiCodes())
@@ -754,6 +758,34 @@ public class PickingJobService implements PickingSlotListener
 			return GRAIRequired.No;
 		}
 		return bpartnerService.getGRAIRequired(customerId);
+	}
+
+	/**
+	 * Validates the dummy-GRAI prerequisites for a sales order whose customer is in
+	 * {@link GRAIRequired#YesWithDummyGRAIs} mode: the order's PO reference must be able to form a valid
+	 * dummy-GRAI serial prefix (present after trim, max 10 characters). Throws the translated, operator-facing
+	 * message otherwise. No-op for any other GRAI mode.
+	 * <p>
+	 * The GRAI mode is resolved from the order's customer — the same source the picking-completion backstop
+	 * uses — so this early validation predicts (and stays consistent with) the completion-time check.
+	 */
+	public void assertDummyGRAIPrerequisitesForSalesOrder(
+			@NonNull final OrderId salesOrderId,
+			@Nullable final BPartnerId customerId,
+			@Nullable final String poReference)
+	{
+		if (getGRAIRequired(customerId) != GRAIRequired.YesWithDummyGRAIs)
+		{
+			return;
+		}
+
+		final String serialPrefix = StringUtils.trimBlankToNull(poReference);
+		if (serialPrefix == null)
+		{
+			throw new AdempiereException(DummyGRAITemplate.MSG_DUMMY_GRAI_POREFERENCE_MISSING, salesOrderId);
+		}
+
+		DummyGRAITemplate.assertValidSerialPrefix(serialPrefix);
 	}
 
 	public PickingJob closeLUAndTUPickingTargets(@NonNull final PickingJob pickingJob)

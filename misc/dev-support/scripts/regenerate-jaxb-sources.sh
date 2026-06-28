@@ -34,6 +34,7 @@ MODULES=(
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response"
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_450_request"
     "backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_450_response"
+    "backend/de.metas.einvoice.base"
     "misc/services/camel/de-metas-camel-edi"
 )
 

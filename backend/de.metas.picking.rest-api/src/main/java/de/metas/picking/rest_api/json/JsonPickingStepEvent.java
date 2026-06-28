@@ -70,6 +70,8 @@ public class JsonPickingStepEvent
 	@Nullable @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd") LocalDate bestBeforeDate;
 	boolean setLotNo;
 	@Nullable String lotNo;
+	boolean setSerialNos;
+	@Nullable List<String> serialNos;
 	boolean isCloseTarget;
 	boolean setGrais;
 	@Nullable List<String> graiCodes;

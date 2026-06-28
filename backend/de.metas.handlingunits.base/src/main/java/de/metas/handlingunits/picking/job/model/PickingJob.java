@@ -200,6 +200,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
 	}
 
+	public boolean isPickingSlotRequired() {return header.isPickingSlotRequired();}
+
 	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
 
 	public boolean isProcessed()
