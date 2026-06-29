@@ -36,7 +36,7 @@ WHERE AD_Element_ID=585073 AND AD_Language='en_US'
 
 -- Element: IsWarnShelfLifeUndercut - de_DE translation
 -- 2026-06-29T10:00:18.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Warnung wenn Restlaufzeit Vorgabe unterschritten', PrintName='Warnung wenn Restlaufzeit Vorgabe unterschritten',
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Warnung wenn Restlaufzeit Vorgabe unterschritten', PrintName='Warnung wenn Restlaufzeit Vorgabe unterschritten',
 Updated=TO_TIMESTAMP('2026-06-29 10:00:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Element_ID=585073 AND AD_Language='de_DE'
 ;
@@ -57,7 +57,7 @@ WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='de_DE' AND trl.A
 
 -- Element: IsWarnShelfLifeUndercut - de_CH translation
 -- 2026-06-29T10:00:26.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Warnung wenn Restlaufzeit Vorgabe unterschritten', PrintName='Warnung wenn Restlaufzeit Vorgabe unterschritten',
+UPDATE AD_Element_Trl SET IsTranslated='N', Name='Warnung wenn Restlaufzeit Vorgabe unterschritten', PrintName='Warnung wenn Restlaufzeit Vorgabe unterschritten',
 Updated=TO_TIMESTAMP('2026-06-29 10:00:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Element_ID=585073 AND AD_Language='de_CH'
 ;
@@ -144,13 +144,13 @@ AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl tt WHERE tt.AD_Language=l.AD_Langua
 
 -- AD_Message_Trl: de_DE
 -- 2026-06-29T10:03:12.000Z
-UPDATE AD_Message_Trl SET MsgText='RLZ zu kurz!', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-29 10:03:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+UPDATE AD_Message_Trl SET MsgText='RLZ zu kurz!', IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-29 10:03:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Message_ID=545767 AND AD_Language='de_DE'
 ;
 
 -- AD_Message_Trl: de_CH
 -- 2026-06-29T10:03:13.000Z
-UPDATE AD_Message_Trl SET MsgText='RLZ zu kurz!', IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-29 10:03:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
+UPDATE AD_Message_Trl SET MsgText='RLZ zu kurz!', IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-29 10:03:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100
 WHERE AD_Message_ID=545767 AND AD_Language='de_CH'
 ;
 
