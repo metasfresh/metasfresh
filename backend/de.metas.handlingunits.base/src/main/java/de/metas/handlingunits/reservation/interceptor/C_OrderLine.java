@@ -13,6 +13,7 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -64,6 +65,15 @@ public class C_OrderLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void deleteReservation(@NonNull final I_C_OrderLine orderLineRecord)
 	{
+		queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
+				.create()
+				.update(rs -> {
+					rs.setIsActive(false);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+
 		queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
