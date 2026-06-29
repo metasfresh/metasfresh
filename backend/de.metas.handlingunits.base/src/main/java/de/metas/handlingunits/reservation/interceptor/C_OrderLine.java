@@ -69,7 +69,8 @@ public class C_OrderLine
 				.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
 				.create()
-				.update(rs -> {
+				.updateDirectly(rs -> {
+					rs.setProcessed(false);
 					rs.setIsActive(false);
 					return IQueryUpdater.MODEL_UPDATED;
 				});
