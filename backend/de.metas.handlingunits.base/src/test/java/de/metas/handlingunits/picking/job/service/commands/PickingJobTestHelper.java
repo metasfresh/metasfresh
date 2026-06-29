@@ -42,6 +42,7 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -236,7 +237,8 @@ public class PickingJobTestHelper
 				PickingShipmentService.newInstanceForUnitTesting(),
 				configService,
 				pickingJobScheduleService,
-				huService
+				huService,
+				new PickingShelfLifeCheck(productService, bpartnerService)
 		);
 
 		huTracer = new HUTracerInstance()
