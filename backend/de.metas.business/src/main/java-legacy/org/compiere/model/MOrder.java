@@ -453,14 +453,27 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
-
-		final InvoiceRule invoiceRule = isSOTrx() ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
+		// Resolve via the effective BILL partner (coalesce Bill_BPartner_ID → C_BPartner_ID) so that
+		// BP-group InvoiceRule / IsAutoInvoice are picked up — mirrors OrderBL.setBPartner.
+		if (isSOTrx())
 		{
-			setInvoiceRule(invoiceRule.getCode());
+			final I_C_BPartner billPartner = getBill_BPartner_ID() > 0
+					? bPartnerDAO.getById(BPartnerId.ofRepoId(getBill_BPartner_ID()))
+					: bp;
+			final de.metas.bpartner.effective.BPartnerEffective bpEffective =
+					SpringContextHolder.instance.getBean(de.metas.bpartner.effective.BPartnerEffectiveBL.class)
+							.getByRecord(billPartner);
+			final SOTrx soTrx = SOTrx.ofBoolean(true);
+			setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+			setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
+		}
+		else
+		{
+			final InvoiceRule invoiceRule = InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
+			if (invoiceRule != null)
+			{
+				setInvoiceRule(invoiceRule.getCode());
+			}
 		}
 
 		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
