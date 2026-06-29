@@ -329,3 +329,64 @@ Feature: invoice rules
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00703_Invoice_Rule
+  @F00703
+  @Id:S30448_TC1
+  @ghActions:run_on_executor5
+  Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value
+    # Verifies that MOrder.setBPartner (called from beforeSave when no location is set) resolves
+    # InvoiceRule and IsAutoInvoice via BPartnerEffectiveBL (group chain), not raw bp.getInvoiceRule().
+    # RED: before fix, MOrder.setBPartner reads raw bp.getInvoiceRule() → null for a group-only rule → no InvoiceRule set.
+    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
+      | Identifier | Name                           |
+      | product    | d_invRuleGroupInheritance_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier     | Name                           | Value                           | OPT.IsActive |
+      | pricingSystem  | d_invRuleGroupInheritance_ps   | d_invRuleGroupInheritance_psv   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList  | pricingSystem                 | DE                        | EUR                 | d_invRuleGroupInheritance_pl    | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID.Identifier | Name                             | ValidFrom  |
+      | priceListVersion | priceList                 | d_invRuleGroupInheritance_plv    | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | productPrice | priceListVersion                  | product                 | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BP_Groups:
+      | Identifier | OPT.InvoiceRule | OPT.IsAutoInvoice |
+      | bpGroup    | D               | Y                 |
+    And metasfresh contains C_BPartners:
+      | Identifier | Name                             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | C_BP_Group_ID.Identifier |
+      | customer   | d_invRuleGroupInheritance_cust   | N            | Y              | pricingSystem                 | bpGroup                  |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | customerLocation | 0123456789013         | customer                 | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order      | true    | customer                 | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    When the order identified by order is completed
+    Then validate the created orders
+      | C_Order_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | order                 | D           | true          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule  | orderLine                 | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                  | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                  | shipment              |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | invoiceCandidate                  | D           | true          |

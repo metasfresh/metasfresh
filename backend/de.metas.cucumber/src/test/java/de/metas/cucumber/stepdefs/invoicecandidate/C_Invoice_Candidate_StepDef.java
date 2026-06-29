@@ -138,6 +138,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsToClear;
@@ -630,6 +631,12 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Reason)
 								.ifPresent(reason -> softly.assertThat(finalInvoiceCandidate.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice)
+								.ifPresent(isAutoInvoice -> softly.assertThat(finalInvoiceCandidate.isAutoInvoice()).as("IsAutoInvoice").isEqualTo(isAutoInvoice));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
+								.ifPresent(invoiceRule -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule()).as("InvoiceRule").isEqualTo(invoiceRule));
 
 						softly.assertAll();
 					}
