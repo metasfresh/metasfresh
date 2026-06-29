@@ -46,7 +46,7 @@ public class JsonCreateBPartnerRequest
 	@Nullable String eInvoiceBuyerReference;
 
 	/**
-	 * Sets {@code C_BPartner.VATaxID} (VAT identification number, e.g. {@code "DE123456789"}).
+	 * Sets {@code C_BPartner.VATaxID} (VAT identification number, e.g. {@code "DE136695976"}).
 	 * Required by EN16931 for both seller (resolved via org-bpartner) and buyer.
 	 * If null, the field is left unchanged.
 	 */
