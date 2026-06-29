@@ -79,37 +79,23 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		final PreparationDateAndTour preparationDateAndTour = computePreparationDateAndTour0(order, datePromised, fallbackToDatePromised, timeZone);
 
 		order.setPreparationDate(TimeUtil.asTimestamp(preparationDateAndTour.getPreparationDate()));
-		final TourId tourId = preparationDateAndTour.getTourId();
-		// convention: clear an FK setter with -1 (see docs/coding-rules/java-general.md), matching the original
-		order.setM_Tour_ID(tourId != null ? tourId.getRepoId() : -1);
+		order.setM_Tour_ID(TourId.toRepoId(preparationDateAndTour.getTourId()));
 
 		return true;
 	}
 
-	@Override
-	public ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final ZonedDateTime deliveryDate)
+	// Derive the preparation date from a (per-line) deliveryDate using the same tour / no-tour-fallback / offset /
+	// sysconfig logic the order header uses; fallbackToDatePromised=true mirrors the system/OLCand path so a non-null
+	// date is returned even without a configured tour. Does NOT mutate the order.
+	@Nullable
+	private ZonedDateTime computePreparationDate(@NonNull final I_C_Order order, @NonNull final ZonedDateTime deliveryDate)
 	{
-		// Defensive: the tour calculation requires a bpartner location. A shipment-schedule order always has one,
-		// but if it is somehow absent, fall back to the order's already-stored PreparationDate (legacy behavior)
-		// rather than risk an NPE in the tour calculation. (The header path setPreparationDateAndTour0 instead
-		// returns false / leaves the value untouched here; this method must return a non-null date to the
-		// shipment-schedule provider, so it returns the stored value rather than skipping.)
+		final ZoneId timeZone = orderBL.getTimeZone(order);
+		// the tour calculation needs a bpartner location; if absent, fall back to the order's stored preparation date
 		if (BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID()) == null)
 		{
-			return TimeUtil.asZonedDateTime(order.getPreparationDate());
+			return TimeUtil.asZonedDateTime(order.getPreparationDate(), timeZone);
 		}
-
-		final ZoneId timeZone = orderBL.getTimeZone(order);
-		// Apply the SAME tour-found / no-tour-fallback / offset / sysconfig logic the header uses,
-		// but derived from the given (per-line) deliveryDate instead of the header's DatePromised.
-		//
-		// fallbackToDatePromised=true mirrors the system/OLCand order-creation path
-		// (de.metas.tourplanning.model.validator.C_Order.setPreparationDate => fallbackToDatePromised = !isUIAction).
-		// This guarantees a non-null preparation date even when no tour is configured (fallback to the delivery date),
-		// so that for a single-date order (deliveryDate == header DatePromised) this returns exactly what the header
-		// carries today => no regression for single-date orders when SYSCONFIG_Fallback_PreparationDate=true (the
-		// production default). (A UI-created order under the non-default sysconfig=false could differ, but the
-		// IsFixedPreparationDate / OLCand flow this feeds is always system-created, i.e. header fallback=true too.)
 		return computePreparationDateAndTour0(order, deliveryDate, true, timeZone).getPreparationDate();
 	}
 
