@@ -655,8 +655,6 @@ public class OrderBL implements IOrderBL
 		}
 
 		//
-		// Default Invoice/Payment Rule (resolved via BP group chain: partner → group → parent → system default)
-		// Use the effective bill partner (coalesce Bill_BPartner_ID → C_BPartner_ID), consistent with CalloutOrder.
 		final org.compiere.model.I_C_BPartner billPartner =
 				order.getBill_BPartner_ID() > 0
 						? bPartnerBL.getById(BPartnerId.ofRepoId(order.getBill_BPartner_ID()), I_C_BPartner.class)

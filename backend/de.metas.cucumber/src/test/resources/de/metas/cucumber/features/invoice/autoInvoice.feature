@@ -112,7 +112,7 @@ Feature: Enqueue order candidate and auto invoice after shipped
     # Guard scenario: when an OLCand request explicitly sets invoiceRule=I (Immediate) and isAutoInvoice=false,
     # those values must be preserved on the resulting order even though the BP's group has InvoiceRule=D/IsAutoInvoice=Y.
     # The OLCand path sets the location before save, so MOrder.beforeSave skips setBPartner → no group override.
-    And metasfresh contains M_PricingSystems
+    Given metasfresh contains M_PricingSystems
       | Identifier        | Name                              | Value                             | OPT.IsActive |
       | psOLCandGuard     | d_olcandGuard_pricingSystem       | d_olcandGuard_pricingSystemValue  | true         |
     And metasfresh contains M_PriceLists

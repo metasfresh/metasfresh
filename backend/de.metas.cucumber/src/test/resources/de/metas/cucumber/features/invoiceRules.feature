@@ -338,7 +338,6 @@ Feature: invoice rules
   Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value
     # Verifies that MOrder.setBPartner (called from beforeSave when no location is set) resolves
     # InvoiceRule and IsAutoInvoice via BPartnerEffectiveBL (group chain), not raw bp.getInvoiceRule().
-    # RED: before fix, MOrder.setBPartner reads raw bp.getInvoiceRule() → null for a group-only rule → no InvoiceRule set.
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
       | Identifier | Name                           |
