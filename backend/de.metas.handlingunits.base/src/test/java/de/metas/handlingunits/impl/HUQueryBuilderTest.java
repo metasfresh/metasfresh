@@ -200,7 +200,7 @@ public class HUQueryBuilderTest
 	}
 
 	/**
-	 * Regression guard for me03#29477:
+	 * Regression guard:
 	 * An UNSET numeric attribute on a sales-order line's ASI must not be coerced to 0 and applied as a hard
 	 * HU-attribute filter. The fix lives in {@code AttributeSetInstanceBL.extractAttributeInstanceValue}: an
 	 * unset {@code ValueNumber} (SQL-NULL) is now preserved as {@code null} so the HU-filter loop skips it,
