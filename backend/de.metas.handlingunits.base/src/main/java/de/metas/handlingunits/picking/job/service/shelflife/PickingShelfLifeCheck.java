@@ -54,7 +54,6 @@ public class PickingShelfLifeCheck
 			return false;
 		}
 
-		// undercut when: bestBeforeDate < deliveryDate + guaranteedDays
 		return bestBeforeDate.isBefore(deliveryDate.plusDays(guaranteedDays));
 	}
 

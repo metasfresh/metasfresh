@@ -128,6 +128,10 @@ class PickingShelfLifeCheckTest
 			// With guaranteedDays=0:  guaranteedDays <= 0 → never undercut
 			// So isTrue proves that fallback to 5 occurred.
 			assertThat(check(bestBeforeDate, deliveryDate)).isTrue();
+
+			// A negative BP value (not > 0) likewise falls through to the product value.
+			givenGuaranteedDays(-1, 5);
+			assertThat(check(bestBeforeDate, deliveryDate)).isTrue();
 		}
 	}
 
@@ -135,7 +139,7 @@ class PickingShelfLifeCheckTest
 	class no_undercut_special_cases
 	{
 		@Test
-		void guaranteed_days_zero_or_negative_never_undercus()
+		void guaranteed_days_zero_or_negative_never_undercuts()
 		{
 			// Both BP and product return 0 → guaranteedDays=0 → condition is false
 			givenGuaranteedDays(0, 0);
@@ -147,7 +151,7 @@ class PickingShelfLifeCheckTest
 		}
 
 		@Test
-		void null_bestBeforeDate_never_undercus()
+		void null_bestBeforeDate_never_undercuts()
 		{
 			// bestBeforeDate is null → condition is false regardless of guaranteedDays
 			givenGuaranteedDays(30, 20);

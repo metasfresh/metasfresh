@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.commands;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -133,7 +134,7 @@ class PickingJobPickShelfLifeGuard_Test
 		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
 		return CollectionUtils.singleElement(line.getSteps().stream()
 				.map(PickingJobStep::getId)
-				.collect(java.util.stream.Collectors.toList()));
+				.collect(ImmutableSet.toImmutableSet()));
 	}
 
 	/** Returns the single line from the given picking job. */
