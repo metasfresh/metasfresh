@@ -2,6 +2,7 @@ import { test } from "../../../../playwright.config";
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobsListFiltersScreen } from "../../../utils/screens/picking/PickingJobsListFiltersScreen";
 import { Backend } from "../../../utils/screens/Backend";
 import { LoginScreen } from "../../../utils/screens/LoginScreen";
 
@@ -33,6 +34,8 @@ const createMasterdata = async () => {
                         { field: 'HANDOVER_LOCATION', isShowInSummary: true },
                         { field: 'DATE_READY', isShowInSummary: true },
                     ],
+                    // Facet filters under test — Customer + DeliveryDate (standard) + HandoverLocation (the addition).
+                    filters: ['Customer', 'DeliveryDate', 'HandoverLocation'],
                 }
             },
             bpartners: {
@@ -67,7 +70,6 @@ test('Picking job-list caption shows handover location + delivery date', async (
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
     const customerName = "Kunde 30117 Test"; // set above; the masterdata response does not echo the bpartner name
-    const salesOrderId = masterdata.salesOrders.SO1.id; // sales_order aggregation → launcher keyed by data-salesorderid
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -79,8 +81,30 @@ test('Picking job-list caption shows handover location + delivery date', async (
     //  - the delivery date (DATE_READY) — year-only, format-agnostic,
     //  - the handover/delivery location (HANDOVER_LOCATION) — proven by the 4th non-empty field.
     await PickingJobsListScreen.expectJobCaption({
-        salesOrderId,
+        documentNo, // locate the launcher by the document number shown in its caption (unique per run)
         contains: [documentNo, customerName, '2025'],
         fieldCount: 4,
     });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Picking job-list filter offers a delivery-location (Lieferort) facet', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.tag('F00230.3');
+    allure.story('MobileUI Picking Filter — job list can be filtered by delivery/handover location');
+    allure.severity('normal');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+
+    // Open the filter screen and assert the HandoverLocation (Lieferort) facet is offered — the
+    // delivery-location filter this issue adds, alongside the standard customer + delivery-date facets.
+    await PickingJobsListScreen.clickFilterButton();
+    await PickingJobsListFiltersScreen.expectFacetGroupOffered({ groupPrefix: 'HandoverLocation' });
 });

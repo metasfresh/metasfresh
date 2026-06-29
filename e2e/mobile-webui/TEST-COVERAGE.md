@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 61 | 64 | 95% |
+| Picking | 62 | 65 | 95% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -103,9 +103,10 @@
 |---|---|
 | Facet filter shows only jobs scheduled for current workplace | `picking/facets.spec.js` |
 | Filter by qty available at locator → only jobs with sufficient stock shown | `picking/filterByQtyAvailableAtLocator.spec.js` |
+| Profile configured with HandoverLocation filter → filter screen offers a delivery-location (Lieferort) facet | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Multiple jobs for same customer → aggregation count correct | — |
 
-**2/3 — 67%**
+**3/4 — 75%**
 
 ### Order-based picking — pick-all and attributes
 
