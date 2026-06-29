@@ -30,6 +30,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
@@ -68,82 +69,86 @@ class CreatePOFromSOsNotPurchasedTest
 		return orderLine;
 	}
 
-	@Test
-	void collectNotPurchasedProducts_mixedLines_returnsOnlyNotPurchased()
+	@Nested
+	class CollectNotPurchasedProducts
 	{
-		// given
-		final I_M_Product purchasedProduct = createProduct("P001", "Purchased Product", true);
-		final I_M_Product notPurchasedProduct1 = createProduct("NP001", "Not Purchased One", false);
-		final I_M_Product notPurchasedProduct2 = createProduct("NP002", "Not Purchased Two", false);
+		@Test
+		void mixedLines_returnsOnlyNotPurchased()
+		{
+			// given
+			final I_M_Product purchasedProduct = createProduct("P001", "Purchased Product", true);
+			final I_M_Product notPurchasedProduct1 = createProduct("NP001", "Not Purchased One", false);
+			final I_M_Product notPurchasedProduct2 = createProduct("NP002", "Not Purchased Two", false);
 
-		final I_C_OrderLine lineWithPurchased = createOrderLine(purchasedProduct);
-		final I_C_OrderLine lineWithNotPurchased1 = createOrderLine(notPurchasedProduct1);
-		final I_C_OrderLine lineWithNotPurchased2 = createOrderLine(notPurchasedProduct2);
+			final I_C_OrderLine lineWithPurchased = createOrderLine(purchasedProduct);
+			final I_C_OrderLine lineWithNotPurchased1 = createOrderLine(notPurchasedProduct1);
+			final I_C_OrderLine lineWithNotPurchased2 = createOrderLine(notPurchasedProduct2);
 
-		final List<I_C_OrderLine> lines = Arrays.asList(lineWithPurchased, lineWithNotPurchased1, lineWithNotPurchased2);
+			final List<I_C_OrderLine> lines = Arrays.asList(lineWithPurchased, lineWithNotPurchased1, lineWithNotPurchased2);
 
-		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			// when
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
-		// then
-		assertThat(result).hasSize(2);
-		assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()));
-		assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()));
-		assertThat(result).doesNotContainKey(ProductId.ofRepoId(purchasedProduct.getM_Product_ID()));
+			// then
+			assertThat(result).hasSize(2);
+			assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()));
+			assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()));
+			assertThat(result).doesNotContainKey(ProductId.ofRepoId(purchasedProduct.getM_Product_ID()));
 
-		assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()))).isEqualTo("NP001 (Not Purchased One)");
-		assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()))).isEqualTo("NP002 (Not Purchased Two)");
-	}
+			assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()))).isEqualTo("NP001 (Not Purchased One)");
+			assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()))).isEqualTo("NP002 (Not Purchased Two)");
+		}
 
-	@Test
-	void collectNotPurchasedProducts_deduplicatesProductId()
-	{
-		// given - two lines with the same not-purchased product
-		final I_M_Product notPurchasedProduct = createProduct("NP003", "Dedup Product", false);
+		@Test
+		void deduplicatesProductId()
+		{
+			// given - two lines with the same not-purchased product
+			final I_M_Product notPurchasedProduct = createProduct("NP003", "Dedup Product", false);
 
-		final I_C_OrderLine line1 = createOrderLine(notPurchasedProduct);
-		final I_C_OrderLine line2 = createOrderLine(notPurchasedProduct);
+			final I_C_OrderLine line1 = createOrderLine(notPurchasedProduct);
+			final I_C_OrderLine line2 = createOrderLine(notPurchasedProduct);
 
-		final List<I_C_OrderLine> lines = Arrays.asList(line1, line2);
+			final List<I_C_OrderLine> lines = Arrays.asList(line1, line2);
 
-		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			// when
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
-		// then — same product appears only once (dedup by ProductId)
-		assertThat(result).hasSize(1);
-		assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct.getM_Product_ID()));
-	}
+			// then — same product appears only once (dedup by ProductId)
+			assertThat(result).hasSize(1);
+			assertThat(result).containsKey(ProductId.ofRepoId(notPurchasedProduct.getM_Product_ID()));
+		}
 
-	@Test
-	void collectNotPurchasedProducts_allPurchased_returnsEmpty()
-	{
-		// given
-		final I_M_Product p1 = createProduct("P002", "Purchased A", true);
-		final I_M_Product p2 = createProduct("P003", "Purchased B", true);
+		@Test
+		void allPurchased_returnsEmpty()
+		{
+			// given
+			final I_M_Product p1 = createProduct("P002", "Purchased A", true);
+			final I_M_Product p2 = createProduct("P003", "Purchased B", true);
 
-		final List<I_C_OrderLine> lines = Arrays.asList(createOrderLine(p1), createOrderLine(p2));
+			final List<I_C_OrderLine> lines = Arrays.asList(createOrderLine(p1), createOrderLine(p2));
 
-		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			// when
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
-		// then
-		assertThat(result).isEmpty();
-	}
+			// then
+			assertThat(result).isEmpty();
+		}
 
-	@Test
-	void collectNotPurchasedProducts_orderLinesWithoutProduct_areSkipped()
-	{
-		// given — a line with product_id = 0 (no product set)
-		final I_C_OrderLine lineWithNoProduct = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
-		lineWithNoProduct.setM_Product_ID(0);
-		InterfaceWrapperHelper.saveRecord(lineWithNoProduct);
+		@Test
+		void orderLinesWithoutProduct_areSkipped()
+		{
+			// given — a line with product_id = 0 (no product set)
+			final I_C_OrderLine lineWithNoProduct = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+			lineWithNoProduct.setM_Product_ID(0);
+			InterfaceWrapperHelper.saveRecord(lineWithNoProduct);
 
-		final List<I_C_OrderLine> lines = Arrays.asList(lineWithNoProduct);
+			final List<I_C_OrderLine> lines = Arrays.asList(lineWithNoProduct);
 
-		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			// when
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
-		// then — lines without product are skipped (neither an offender nor a pass)
-		assertThat(result).isEmpty();
+			// then — lines without product are skipped (neither an offender nor a pass)
+			assertThat(result).isEmpty();
+		}
 	}
 }
