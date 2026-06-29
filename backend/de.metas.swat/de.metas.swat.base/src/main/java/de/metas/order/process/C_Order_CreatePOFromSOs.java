@@ -40,7 +40,7 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
@@ -66,9 +66,12 @@ import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IProductBOMDAO;
 
 import java.sql.Timestamp;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Creates purchase order(s) from sales order(s).
@@ -127,7 +130,7 @@ public class C_Order_CreatePOFromSOs
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
+		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
 
 		final Iterator<I_C_Order> it = orderCreatePOFromSOsDAO.createSalesOrderIterator(
 				this,
@@ -140,35 +143,41 @@ public class C_Order_CreatePOFromSOs
 				p_DatePromised_To,
 				p_IsVendorInOrderLinesRequired);
 
-		final String purchaseQtySource = orderCreatePOFromSOsBL.getConfigPurchaseQtySource();
-		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
-				purchaseQtySource,
-				p_TypeOfPurchase);
-
-		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
-		workpackageAggregator.setGroupsBufferSize(100);
-
+		// Pass 1 — buffer all (order, lines) pairs and collect any not-purchased offenders.
+		// The iterator is a one-shot DB cursor, so we must buffer before touching the aggregator.
+		// If any offender is found we abort HERE — before the aggregator sees a single line,
+		// preventing partial POs from being written to the DB.
+		final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered = new ArrayList<>();
 		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
-
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
+			collectNotPurchasedProducts(salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
+			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
+		}
 
-			// Collect any not-purchased products from these lines; offending lines are skipped from aggregation
-			final LinkedHashMap<ProductId, String> notPurchasedInThisSO = collectNotPurchasedProducts(salesOrderLines);
-			notPurchasedInThisSO.forEach((productId, label) -> notPurchasedProducts.putIfAbsent(productId, label));
+		if (!notPurchasedProducts.isEmpty())
+		{
+			throw new AdempiereException(
+					AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased"),
+					String.join(", ", notPurchasedProducts.values()))
+					.markAsUserValidationError();
+		}
 
-			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
+		// Pass 2 — all lines are purchasable; aggregate normally.
+		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
+		final CreatePOFromSOsAggregator workpackageAggregator = new CreatePOFromSOsAggregator(this,
+				purchaseQtySource,
+				p_TypeOfPurchase);
+		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
+		workpackageAggregator.setGroupsBufferSize(100);
+
+		for (final Map.Entry<I_C_Order, List<I_C_OrderLine>> entry : buffered)
+		{
+			for (final I_C_OrderLine salesOrderLine : entry.getValue())
 			{
-				final int productRepoId = salesOrderLine.getM_Product_ID();
-				if (productRepoId > 0 && notPurchasedInThisSO.containsKey(ProductId.ofRepoId(productRepoId)))
-				{
-					// offending line — skip, already recorded above
-					continue;
-				}
-
 				if (p_isPurchaseBOMComponents)
 				{
 					final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
@@ -183,24 +192,13 @@ public class C_Order_CreatePOFromSOs
 								.map(orderLine -> this.fromOrderLineCandidate(orderLine, salesOrderLine))
 								.forEach(orderLine -> addLineToAggregator(purchaseOrderLineCount, workpackageAggregator, orderLine));
 					}
-					else
-					{
-						// not a BOM, don't add it to the aggregator
-					}
+					// else: not a BOM — skip
 				}
 				else
 				{
 					addLineToAggregator(purchaseOrderLineCount, workpackageAggregator, salesOrderLine);
 				}
 			}
-		}
-
-		if (!notPurchasedProducts.isEmpty())
-		{
-			throw new AdempiereException(
-					AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased"),
-					String.join(", ", notPurchasedProducts.values()))
-					.markAsUserValidationError();
 		}
 
 		workpackageAggregator.closeAllGroups();
@@ -216,7 +214,6 @@ public class C_Order_CreatePOFromSOs
 				});
 
 		return MSG_OK;
-
 	}
 
 	/**
@@ -227,7 +224,7 @@ public class C_Order_CreatePOFromSOs
 	 */
 	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(@NonNull final List<I_C_OrderLine> orderLines)
 	{
-		final IProductBL productBL = Services.get(IProductBL.class);
+		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final LinkedHashMap<ProductId, String> result = new LinkedHashMap<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -237,12 +234,14 @@ public class C_Order_CreatePOFromSOs
 				continue;
 			}
 			final ProductId productId = ProductId.ofRepoId(productRepoId);
-			if (!productBL.isPurchased(productId))
+			if (result.containsKey(productId))
 			{
-				result.computeIfAbsent(productId, id -> {
-					final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productRepoId, I_M_Product.class);
-					return product.getValue() + " (" + product.getName() + ")";
-				});
+				continue; // already recorded (dedup)
+			}
+			final I_M_Product product = productDAO.getById(productId);
+			if (!product.isPurchased())
+			{
+				result.put(productId, product.getValue() + " (" + product.getName() + ")");
 			}
 		}
 		return result;
