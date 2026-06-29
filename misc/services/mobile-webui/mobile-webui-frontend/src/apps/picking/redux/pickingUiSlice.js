@@ -1,8 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getApplicationState } from '../../index';
 
-// Keep in sync with APPLICATION_ID_Picking in apps/picking/index.js — imported here
-// directly to avoid a circular dependency (index.js imports this module).
+// Keep in sync with APPLICATION_ID_Picking in apps/picking/index.js. Hardcoded here to avoid a
+// direct child-to-parent import from apps/picking/index.js (which imports this module); the cycle
+// via apps/index.js already exists and is tolerated by the bundler (refs resolve at call time).
 const APPLICATION_ID_PICKING = 'picking';
 
 //
