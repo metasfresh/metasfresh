@@ -351,7 +351,7 @@ public class CreateBPartnerCommand
 		CountryId resolvedCountryId = countryId;
 		if (locationRequest.getCountryCode() != null)
 		{
-			final CountryId lookedUp = de.metas.util.Services.get(ICountryDAO.class)
+			final CountryId lookedUp = Services.get(ICountryDAO.class)
 					.getCountryIdByCountryCodeOrNull(locationRequest.getCountryCode());
 			if (lookedUp != null)
 			{
