@@ -54,6 +54,15 @@ import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
+	/** SysConfig name that gates all IsPurchased/IsSold enforcement (me03#30496). Default 'N' (off). */
+	String SYSCONFIG_EnforcePurchaseSalesFlags = "M_Product_EnforcePurchaseSalesFlags";
+
+	/**
+	 * Returns {@code true} when the {@value #SYSCONFIG_EnforcePurchaseSalesFlags} SysConfig is set to 'Y'
+	 * for the given client/org, meaning IsPurchased/IsSold enforcement is active.
+	 */
+	boolean isPurchaseSalesEnforcementEnabled(@NonNull ClientId clientId, @NonNull OrgId orgId);
+
 	I_M_Product getById(ProductId productId);
 
 	I_M_Product getByIdInTrx(ProductId productId);

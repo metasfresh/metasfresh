@@ -44,6 +44,7 @@ import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
@@ -92,6 +93,7 @@ public final class ProductBL implements IProductBL
 	private final IProductCostingBL productCostingBL = Services.get(IProductCostingBL.class);
 	private final IUOMConversionDAO uomConversionDAO = Services.get(IUOMConversionDAO.class);
 	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public I_M_Product getById(@NonNull final ProductId productId)
@@ -448,6 +450,12 @@ public final class ProductBL implements IProductBL
 		{
 			throw new AdempiereException(MSG_M_Product_NotSold, product.getValue(), product.getName());
 		}
+	}
+
+	@Override
+	public boolean isPurchaseSalesEnforcementEnabled(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePurchaseSalesFlags, false, clientId.getRepoId(), orgId.getRepoId());
 	}
 
 	@Override
