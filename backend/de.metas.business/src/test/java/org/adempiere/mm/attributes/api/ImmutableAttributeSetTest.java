@@ -270,13 +270,16 @@ public class ImmutableAttributeSetTest
 
 	/**
 	 * Verifies that a NUMBER attribute whose ValueNumber is SQL-NULL (never set) is returned as {@code null},
-	 * not as {@code BigDecimal.ZERO}.  That zero-coercion is the root cause of the spurious HU filter
-	 * "MonthsUntilExpiry = 0" that hides fresh stock.
+	 * not as {@code BigDecimal.ZERO}. The root cause is {@code AttributeSetInstanceBL.extractAttributeInstanceValue}
+	 * returning {@code BigDecimal.ZERO} for a never-set {@code ValueNumber} column, because
+	 * {@code X_M_AttributeInstance.getValueNumber()} coerces SQL-NULL to {@code BigDecimal.ZERO}; that coerced zero
+	 * then becomes the spurious HU filter "MonthsUntilExpiry = 0" that hides fresh stock. This test verifies the fix:
+	 * {@code InterfaceWrapperHelper.getValueOrNull} now preserves SQL-NULL as Java {@code null} in that branch.
 	 *
 	 * Also verifies that a genuinely set value of {@code 0} is still returned as {@code 0}.
 	 */
 	@Test
-	public void testNumericAsi_unsetValueNumber_isNull_notZero()
+	public void testNumericAsi_unsetIsNull_setZeroIsZero()
 	{
 		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
