@@ -205,7 +205,7 @@ public class C_OrderLine
 	}, ifColumnsChanged = {
 			I_C_OrderLine.COLUMNNAME_M_Product_ID
 	})
-	public void validateProductIsPurchasedOrSold(@NonNull final I_C_OrderLine orderLine)
+	public void validateProductIsPurchasedOrSold(final I_C_OrderLine orderLine)
 	{
 		if (orderLine.getM_Product_ID() <= 0)
 		{

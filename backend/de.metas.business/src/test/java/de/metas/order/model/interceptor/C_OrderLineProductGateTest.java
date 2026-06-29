@@ -32,16 +32,11 @@ class C_OrderLineProductGateTest
 	{
 		AdempiereTestHelper.get().init();
 
-		// Register services BEFORE constructing the interceptor —
-		// the interceptor initialises its service fields eagerly via Services.get().
 		orderBL = mock(IOrderBL.class);
 		productBL = mock(IProductBL.class);
 		Services.registerService(IOrderBL.class, orderBL);
 		Services.registerService(IProductBL.class, productBL);
 
-		// The C_OrderLine constructor calls
-		// Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this).
-		// In unit tests we invoke methods directly — a no-op mock is sufficient.
 		Services.registerService(IProgramaticCalloutProvider.class, mock(IProgramaticCalloutProvider.class));
 
 		interceptor = new C_OrderLine(
@@ -50,11 +45,6 @@ class C_OrderLineProductGateTest
 				mock(de.metas.bpartner.BPartnerSupplierApprovalService.class));
 	}
 
-	/**
-	 * Build a minimal I_C_OrderLine in the POJO store.
-	 * Stub orderBL.getById() to return the matching I_C_Order.
-	 * Stub productBL.assertSellable/assertPurchasable based on the flags.
-	 */
 	private I_C_OrderLine orderLine(final boolean soTrx, final boolean purchased, final boolean sold)
 	{
 		final I_M_Product p = InterfaceWrapperHelper.newInstance(I_M_Product.class);
@@ -112,6 +102,13 @@ class C_OrderLineProductGateTest
 		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, true, true)))
 				.doesNotThrowAnyException();
 		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(false, true, true)))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void salesOrder_notPurchasedButSold_doesNotThrow()
+	{
+		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, false, true)))
 				.doesNotThrowAnyException();
 	}
 }
