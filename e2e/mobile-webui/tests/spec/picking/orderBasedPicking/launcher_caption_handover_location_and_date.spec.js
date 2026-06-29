@@ -67,7 +67,7 @@ test('Picking job-list caption shows handover location + delivery date', async (
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
     const customerName = "Kunde 30117 Test"; // set above; the masterdata response does not echo the bpartner name
-    const locationId = masterdata.bpartners.customer1.locations.customer1_location1.id;
+    const salesOrderId = masterdata.salesOrders.SO1.id; // sales_order aggregation → launcher keyed by data-salesorderid
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -79,7 +79,7 @@ test('Picking job-list caption shows handover location + delivery date', async (
     //  - the delivery date (DATE_READY) — year-only, format-agnostic,
     //  - the handover/delivery location (HANDOVER_LOCATION) — proven by the 4th non-empty field.
     await PickingJobsListScreen.expectJobCaption({
-        customerLocationId: locationId,
+        salesOrderId,
         contains: [documentNo, customerName, '2025'],
         fieldCount: 4,
     });
