@@ -10,6 +10,8 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.IProductBL;
 import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -177,10 +179,14 @@ import java.util.Set;
 
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
-		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, Env.getClientAndOrgId());
+		final ClientAndOrgId clientAndOrgId = Env.getClientAndOrgId();
+		final boolean enforce = Services.get(IProductBL.class).isPurchaseSalesEnforcementEnabled(
+				clientAndOrgId.getClientId(),
+				clientAndOrgId.getOrgId());
+		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, clientAndOrgId);
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
-			return ProductLookupDescriptor
+			final ProductLookupDescriptor.BuilderWithStockInfo builder = ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -189,13 +195,16 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
-					.isFallbackToBasePricelist(isFallbackToBasePriceList)
-					.restrictByOrderType(SOTrx.SALES)
-					.build();
+					.isFallbackToBasePricelist(isFallbackToBasePriceList);
+			if (enforce)
+			{
+				builder.restrictByOrderType(SOTrx.SALES);
+			}
+			return builder.build();
 		}
 		else
 		{
-			return ProductLookupDescriptor
+			final ProductLookupDescriptor.BuilderWithStockInfo builder = ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -204,9 +213,12 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
-					.isFallbackToBasePricelist(isFallbackToBasePriceList)
-					.restrictByOrderType(SOTrx.PURCHASE)
-					.build();
+					.isFallbackToBasePricelist(isFallbackToBasePriceList);
+			if (enforce)
+			{
+				builder.restrictByOrderType(SOTrx.PURCHASE);
+			}
+			return builder.build();
 		}
 	}
 
