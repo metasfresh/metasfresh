@@ -473,6 +473,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
+	}
+
+	@Nullable
 	public ProductValueAndName getSingleProductValueAndName()
 	{
 		ProductId productId = null;

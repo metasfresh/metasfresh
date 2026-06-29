@@ -237,6 +237,13 @@
                 <version>17.0.0</version>
             </dependency>
 
+            <!-- Adobe XMP library required by JasperReports for PDF/A XMP metadata (ZUGFeRD) -->
+            <dependency>
+                <groupId>com.adobe.xmp</groupId>
+                <artifactId>xmpcore</artifactId>
+                <version>6.1.11</version>
+            </dependency>
+
         </dependencies>
 
     </dependencyManagement>

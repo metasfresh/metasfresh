@@ -134,6 +134,36 @@ export const postStepUnPicked = ({ wfProcessId, activityId, lineId, stepId, huQR
   });
 };
 
+export const resolveUnpickByScannedCode = ({ wfProcessId, scannedCode }) => {
+  return axios
+    .post(`${apiBasePath}/picking/unpick/resolve`, { wfProcessId, scannedCode })
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const postStepPartiallyUnPicked = ({
+  wfProcessId,
+  activityId,
+  lineId,
+  scannedCode,
+  unpickProductId,
+  unpickQty,
+  unpickToTargetQRCode,
+}) => {
+  // Job-scoped removal: no pickingStepId, so the backend reverses the product across the whole job.
+  // huQRCode is structurally required (non-blank) by the event DTO but unused on the product+qty
+  // subset path, so the scanned product code stands in for it.
+  return postEvent({
+    wfProcessId,
+    wfActivityId: activityId,
+    pickingLineId: lineId,
+    type: 'UNPICK',
+    huQRCode: scannedCode,
+    unpickProductId,
+    unpickQty,
+    unpickToTargetQRCode,
+  });
+};
+
 const postEvent = (event) => {
   return axios.post(`${apiBasePath}/picking/event`, event).then((response) => unboxAxiosResponse(response));
 };
