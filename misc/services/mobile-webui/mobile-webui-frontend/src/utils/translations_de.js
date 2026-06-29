@@ -155,6 +155,7 @@ const translations = {
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
       noMatchingLines: 'Keine passende Packzeile gefunden',
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

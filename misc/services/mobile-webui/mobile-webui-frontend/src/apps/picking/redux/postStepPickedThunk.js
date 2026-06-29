@@ -1,35 +1,19 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
 import { completePickingJob, postStepPicked } from '../../../api/picking';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { getPickingJobCompleteStatus } from '../../../reducers/wfProcesses/picking/getPickingJobCompleteStatus';
 import { pickingJobsListLocation } from '../../../routes/picking';
-import YesNoDialog from '../../../components/dialogs/YesNoDialog';
-import { extractErrorCodeFromAxiosError, extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
+import {
+  extractErrorCodeFromAxiosError,
+  extractUserFriendlyErrorMessageFromAxiosError,
+  toastNotification,
+} from '../../../utils/toast';
+import {
+  clearPendingShelfLifeConfirmation,
+  setPendingShelfLifeConfirmation,
+  storePendingShelfLifeResolver,
+} from './pickingUiSlice';
 
 const RLZ_TOO_SHORT_ERROR_CODE = 'RLZ_TooShort';
-
-/**
- * Shows a YesNoDialog using ReactDOM.render into a temporary DOM node.
- * Resolves to true if the user clicks Yes, false if No.
- */
-const confirmShelfLifeWarning = (message) => {
-  return new Promise((resolve) => {
-    const container = document.createElement('div');
-    document.body.appendChild(container);
-
-    const cleanup = (result) => {
-      ReactDOM.unmountComponentAtNode(container);
-      document.body.removeChild(container);
-      resolve(result);
-    };
-
-    ReactDOM.render(
-      <YesNoDialog promptQuestion={message} onYes={() => cleanup(true)} onNo={() => cleanup(false)} />,
-      container
-    );
-  });
-};
 
 export const postStepPickedThunk =
   ({
@@ -51,7 +35,6 @@ export const postStepPickedThunk =
     setLotNo,
     lotNo,
     isCloseTarget = false,
-    isShelfLifeConfirmed = false,
   }) =>
   async (dispatch, getState) => {
     const pickParams = {
@@ -72,19 +55,27 @@ export const postStepPickedThunk =
       setLotNo,
       lotNo,
       isCloseTarget,
-      isShelfLifeConfirmed,
     };
 
     let wfProcess;
     try {
-      wfProcess = await postStepPicked(pickParams);
+      wfProcess = await postStepPicked({ ...pickParams, isShelfLifeConfirmed: false });
     } catch (axiosError) {
       const errorCode = extractErrorCodeFromAxiosError(axiosError);
       if (errorCode === RLZ_TOO_SHORT_ERROR_CODE) {
         const warningMessage = extractUserFriendlyErrorMessageFromAxiosError({ axiosError });
-        const confirmed = await confirmShelfLifeWarning(warningMessage);
+
+        // Ask the user via a declarative, state-driven dialog rendered in the React tree.
+        const confirmed = await new Promise((resolve) => {
+          storePendingShelfLifeResolver(resolve);
+          dispatch(setPendingShelfLifeConfirmation({ message: warningMessage }));
+        });
+
+        dispatch(clearPendingShelfLifeConfirmation());
+
         if (!confirmed) {
-          // User chose not to confirm shelf-life warning — abort quietly, no pick
+          // User declined — notify the operator and abort the pick.
+          toastNotification({ messageKey: 'activities.picking.rlzConfirmDeclined' });
           return { isPickingJobCompleted: false };
         }
         // User confirmed — retry with isShelfLifeConfirmed=true
