@@ -84,6 +84,16 @@ public interface IProductBL extends ISingletonService
 
 	boolean isStocked(@Nullable ProductId productId);
 
+	boolean isPurchased(@NonNull ProductId productId);
+
+	boolean isSold(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsPurchased. */
+	void assertPurchasable(@NonNull ProductId productId);
+
+	/** @throws org.adempiere.exceptions.AdempiereException (user validation error) if the product is not flagged IsSold. */
+	void assertSellable(@NonNull ProductId productId);
+
 	boolean isItemType(@Nullable ProductId productId);
 
 	boolean isDiverse(ProductId productId);

@@ -16,6 +16,7 @@ import de.metas.gs1.GS1ProductCodesCollection.GS1ProductCodesCollectionBuilder;
 import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.gs1.ean13.EAN13ProductCode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -412,6 +413,43 @@ public final class ProductBL implements IProductBL
 		Check.assumeNotNull(product, "product not null");
 		return product.isPurchased()
 				&& product.isSold();
+	}
+
+	private static final AdMessageKey MSG_M_Product_NotPurchased = AdMessageKey.of("MSG_M_Product_NotPurchased");
+	private static final AdMessageKey MSG_M_Product_NotSold = AdMessageKey.of("MSG_M_Product_NotSold");
+
+	@Override
+	public boolean isPurchased(@NonNull final ProductId productId)
+	{
+		return getById(productId).isPurchased();
+	}
+
+	@Override
+	public boolean isSold(@NonNull final ProductId productId)
+	{
+		return getById(productId).isSold();
+	}
+
+	@Override
+	public void assertPurchasable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isPurchased())
+		{
+			throw new AdempiereException(MSG_M_Product_NotPurchased, product.getValue(), product.getName())
+					.markAsUserValidationError();
+		}
+	}
+
+	@Override
+	public void assertSellable(@NonNull final ProductId productId)
+	{
+		final I_M_Product product = getById(productId);
+		if (!product.isSold())
+		{
+			throw new AdempiereException(MSG_M_Product_NotSold, product.getValue(), product.getName())
+					.markAsUserValidationError();
+		}
 	}
 
 	@Override
