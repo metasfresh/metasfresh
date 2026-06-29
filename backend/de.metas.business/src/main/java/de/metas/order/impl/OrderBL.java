@@ -655,11 +655,10 @@ public class OrderBL implements IOrderBL
 		}
 
 		//
-		final org.compiere.model.I_C_BPartner billPartner =
-				order.getBill_BPartner_ID() > 0
-						? bPartnerBL.getById(BPartnerId.ofRepoId(order.getBill_BPartner_ID()), I_C_BPartner.class)
-						: bp;
-		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(billPartner);
+		final BPartnerId billBPartnerId = order.getBill_BPartner_ID() > 0
+				? BPartnerId.ofRepoId(order.getBill_BPartner_ID())
+				: BPartnerId.ofRepoId(bp.getC_BPartner_ID());
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(billBPartnerId);
 		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
 		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
