@@ -1,22 +1,33 @@
 package de.metas.purchasecandidate.material.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.PackageDimensions;
+import de.metas.product.Product;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.purchasecandidate.PurchaseCandidate;
 import de.metas.purchasecandidate.PurchaseCandidateId;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfoService;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -53,6 +64,9 @@ public class PurchaseCandidateRequestedHandlerTest
 	private static final OrgId ORG_ID = OrgId.ofRepoId(1);
 
 	private BPartnerProductEffectiveBL bpartnerProductEffectiveBL;
+	private ProductRepository productRepository;
+	private PurchaseCandidateRepository purchaseCandidateRepository;
+	private IProductBL productBL;
 	private PurchaseCandidateRequestedHandler handler;
 
 	@BeforeEach
@@ -60,10 +74,15 @@ public class PurchaseCandidateRequestedHandlerTest
 	{
 		AdempiereTestHelper.get().init();
 
+		productBL = mock(IProductBL.class);
+		Services.registerService(IProductBL.class, productBL);
+
 		bpartnerProductEffectiveBL = mock(BPartnerProductEffectiveBL.class);
+		productRepository = mock(ProductRepository.class);
+		purchaseCandidateRepository = mock(PurchaseCandidateRepository.class);
 		handler = new PurchaseCandidateRequestedHandler(
-				mock(ProductRepository.class),
-				mock(PurchaseCandidateRepository.class),
+				productRepository,
+				purchaseCandidateRepository,
 				mock(PostMaterialEventService.class),
 				mock(VendorProductInfoService.class),
 				bpartnerProductEffectiveBL);
@@ -137,6 +156,50 @@ public class PurchaseCandidateRequestedHandlerTest
 		final ZonedDateTime result = handler.computePurchaseDateOrderedOrNull(datePromised, VENDOR_ID, PRODUCT_ID, ORG_ID, planning);
 
 		assertThat(result).isEqualTo(datePromised); // minusDays(0)
+	}
+
+	// --------------------------------------------------
+	// IsPurchased guard tests (AC-P4)
+	// --------------------------------------------------
+
+	@Test
+	public void handleEvent_notPurchasedProduct_doesNotCreateCandidate()
+	{
+		// given: a product with IsPurchased=N
+		final Product notPurchasedProduct = Product.builder()
+				.id(PRODUCT_ID)
+				.orgId(ORG_ID)
+				.uomId(UomId.ofRepoId(1))
+				.value("TEST")
+				.productCategoryId(ProductCategoryId.ofRepoId(1))
+				.name(TranslatableStrings.anyLanguage("Test Product"))
+				.productType("I")
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
+				.build();
+		when(productRepository.getById(PRODUCT_ID)).thenReturn(notPurchasedProduct);
+		when(productBL.isPurchased(PRODUCT_ID)).thenReturn(false);
+
+		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, ORG_ID.getRepoId()))
+				.supplyCandidateRepoId(10)
+				.purchaseMaterialDescriptor(buildMaterialDescriptorForProduct(PRODUCT_ID))
+				.build();
+
+		// when
+		handler.handleEvent(event);
+
+		// then: no candidate is saved
+		verify(purchaseCandidateRepository, never()).save(any(PurchaseCandidate.class));
+	}
+
+	private static de.metas.material.event.commons.MaterialDescriptor buildMaterialDescriptorForProduct(final ProductId productId)
+	{
+		return de.metas.material.event.commons.MaterialDescriptor.builder()
+				.productDescriptor(de.metas.material.event.commons.ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
+				.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(40))
+				.quantity(java.math.BigDecimal.TEN)
+				.date(de.metas.common.util.time.SystemTime.asInstant())
+				.build();
 	}
 
 }

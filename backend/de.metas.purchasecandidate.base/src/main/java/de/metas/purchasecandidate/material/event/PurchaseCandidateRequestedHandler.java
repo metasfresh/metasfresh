@@ -30,12 +30,15 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.document.dimension.Dimension;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.logging.LogManager;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.product.IProductBL;
+import org.slf4j.Logger;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
@@ -82,6 +85,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<PurchaseCandidateRequestedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PurchaseCandidateRequestedHandler.class);
+
 	public static final ThreadLocal<Boolean> INTERCEPTOR_SHALL_POST_EVENT_FOR_PURCHASE_CANDIDATE_RECORD = ThreadLocal.withInitial(() -> false);
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final PurchaseCandidateRepository purchaseCandidateRepository;
@@ -111,6 +116,12 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
 		final OrgId orgId = event.getOrgId();
+
+		if (!Services.get(IProductBL.class).isPurchased(product.getId()))
+		{
+			logger.debug("Skipping purchase candidate creation - product {} is not flagged IsPurchased", product.getId());
+			return;
+		}
 
 		final VendorProductInfo vendorProductInfos = vendorProductInfosRepo
 				.getDefaultVendorProductInfo(product.getId(), orgId)
