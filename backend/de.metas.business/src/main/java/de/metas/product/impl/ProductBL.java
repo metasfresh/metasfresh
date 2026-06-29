@@ -436,8 +436,7 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = getById(productId);
 		if (!product.isPurchased())
 		{
-			throw new AdempiereException(MSG_M_Product_NotPurchased, product.getValue(), product.getName())
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_M_Product_NotPurchased, product.getValue(), product.getName());
 		}
 	}
 
@@ -447,8 +446,7 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = getById(productId);
 		if (!product.isSold())
 		{
-			throw new AdempiereException(MSG_M_Product_NotSold, product.getValue(), product.getName())
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_M_Product_NotSold, product.getValue(), product.getName());
 		}
 	}
 
