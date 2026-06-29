@@ -46,16 +46,17 @@ Feature: Ship-after-date holds each order line until its own delivery date
       | Identifier      | C_OrderLine_ID   | IsToRecompute | QtyToDeliver |
       | schedule_past   | orderLine_past   | N             | 1            |
       | schedule_future | orderLine_future | N             | 1            |
-    # Each line keeps its OWN delivery date (its per-line DatePromised), which becomes the schedule's DeliveryDate:
-    # the past line is shippable, the future line must be held back.
-    And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
-      | schedule_past         | 1            | 2022-08-10   |
-      | schedule_future       | 1            | 2022-08-20   |
+    # Order line (upstream): each line keeps its OWN delivery date (its per-line DatePromised).
     And validate C_OrderLine:
       | C_OrderLine_ID   | DatePromised |
       | orderLine_past   | 2022-08-10   |
       | orderLine_future | 2022-08-20   |
+    # That per-line DatePromised becomes the schedule's DeliveryDate: the past line is shippable, the
+    # future line must be held back.
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
+      | schedule_past         | 1            | 2022-08-10   |
+      | schedule_future       | 1            | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -84,15 +85,16 @@ Feature: Ship-after-date holds each order line until its own delivery date
       | Identifier      | C_OrderLine_ID   | IsToRecompute | QtyToDeliver |
       | schedule_past   | orderLine_past   | N             | 1            |
       | schedule_future | orderLine_future | N             | 1            |
-    # Same per-line delivery dates as above, but the flag is off — so neither line is held back.
-    And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
-      | schedule_past         | 1            | 2022-08-10   |
-      | schedule_future       | 1            | 2022-08-20   |
+    # Order line (upstream): same per-line delivery dates as above.
     And validate C_OrderLine:
       | C_OrderLine_ID   | DatePromised |
       | orderLine_past   | 2022-08-10   |
       | orderLine_future | 2022-08-20   |
+    # The flag is off — so neither line is held back.
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | QtyToDeliver | DeliveryDate |
+      | schedule_past         | 1            | 2022-08-10   |
+      | schedule_future       | 1            | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |

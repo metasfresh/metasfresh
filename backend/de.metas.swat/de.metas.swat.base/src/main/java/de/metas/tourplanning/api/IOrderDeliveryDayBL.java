@@ -42,4 +42,31 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	@Nullable
 	ZonedDateTime computePreparationDate(@NonNull I_C_Order order, @NonNull I_C_OrderLine orderLine, @NonNull ZonedDateTime deliveryDate);
 
+	/**
+	 * The effective per-line delivery date: an explicit {@code C_OrderLine.PresetDateShipped} wins, then the line's
+	 * own {@code DatePromised}, finally the order header's {@code DatePromised}. This is the single source of truth for
+	 * the delivery date used both to build the shipment schedule and to (re)derive the line's {@code PreparationDate}.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if no delivery date can be determined.
+	 */
+	ZonedDateTime computeDeliveryDate(@NonNull I_C_Order order, @NonNull I_C_OrderLine orderLine);
+
+	/**
+	 * Sales side: (re)derive and store this order line's {@code PreparationDate} from its own delivery date
+	 * ({@link #computeDeliveryDate}), so the line always reflects the value the shipment schedule will receive
+	 * initially. User overrides live on {@code M_ShipmentSchedule.PreparationDate_Override}, never on the line — hence
+	 * the line is always derived, never preserved. No-op for purchase or processed orders. Does NOT save the line.
+	 *
+	 * @return true if a preparation date was set on the line.
+	 */
+	boolean setLinePreparationDate(@NonNull I_C_OrderLine orderLine);
+
+	/**
+	 * Purchase side: a line's product change can change the order's tour, so recompute the order header's
+	 * preparation date + tour from the given line and save the order. No-op for sales orders.
+	 *
+	 * @return true if a preparation date was set on the order header.
+	 */
+	boolean updatePurchaseHeaderPreparationDate(@NonNull I_C_OrderLine orderLine);
+
 }

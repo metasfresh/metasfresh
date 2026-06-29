@@ -157,11 +157,13 @@ public class C_OrderLine_StepDef
 	 * Selected optional columns:
 	 * <ul>
 	 *   <li>{@code DatePromised} (optional) — per-line promised/delivery date; when set, this line's delivery date
-	 *       (and therefore its shipment-schedule {@code PreparationDate}, unless overridden below) is derived from it
-	 *       instead of the order header's {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
-	 *   <li>{@code PreparationDate} (optional) — explicit per-line preparation-date override; when set, it is used
-	 *       verbatim as this line's shipment-schedule {@code PreparationDate} (instead of deriving from the delivery
-	 *       date). Parsed as a local date in the order line's org time zone.</li>
+	 *       (and therefore its derived {@code PreparationDate}) is taken from it instead of the order header's
+	 *       {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *   <li>{@code PreparationDate} (optional) — normally NOT set here: the model interceptor derives it from the
+	 *       line's delivery date so the line always mirrors the shipment schedule's initial {@code PreparationDate}.
+	 *       A value set here is overwritten by that derivation whenever {@code DatePromised}/{@code PresetDateShipped}
+	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
+	 *       a local date in the order line's org time zone.</li>
 	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
 	 * </ul>
 	 */

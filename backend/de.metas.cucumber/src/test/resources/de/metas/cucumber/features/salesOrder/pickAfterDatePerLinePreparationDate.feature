@@ -8,8 +8,9 @@ Feature: Pick-after-date holds each order line until its own preparation date
   order line back until that line's OWN preparation date, not the whole order until the header date.
   The base M_ShipmentSchedule.PreparationDate is derived per order line from the line's own delivery date
   (per-line C_OrderLine.DatePromised), using the same tour / fallback / offset logic as the order header.
-  With no tour configured the preparation date equals the delivery date, so the two lines get different
-  preparation dates; only the line whose preparation date has been reached is shippable.
+  The derived preparation date is also written back to C_OrderLine.PreparationDate, so each line always
+  reflects the value its shipment schedule receives initially. With no tour configured the preparation date
+  equals the delivery date (offset 0); only the line whose preparation date has been reached is shippable.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -44,21 +45,22 @@ Feature: Pick-after-date holds each order line until its own preparation date
       | orderLine_past   | order      | product      | 1          | 2022-08-10   |
       | orderLine_future | order      | product      | 1          | 2022-08-20   |
     When the order identified by order is completed
-    Then after not more than 60s, M_ShipmentSchedules are found:
+    # Order line (upstream): each line keeps its OWN DatePromised; the per-line preparation date is derived from it
+    # (no tour => prep == delivery date) and written back to C_OrderLine.PreparationDate.
+    Then validate C_OrderLine:
+      | C_OrderLine_ID   | DatePromised | PreparationDate |
+      | orderLine_past   | 2022-08-10   | 2022-08-10      |
+      | orderLine_future | 2022-08-20   | 2022-08-20      |
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier      | C_OrderLine_ID   | IsToRecompute | QtyToDeliver |
       | schedule_past   | orderLine_past   | N             | 1            |
       | schedule_future | orderLine_future | N             | 1            |
-    # The per-line preparation date is derived from the per-line delivery date (no tour => prep == delivery date):
+    # The per-line preparation date becomes the shipment schedule's PreparationDate:
     # the past line is shippable, the future line must be held back.
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate | DeliveryDate |
       | schedule_past         | 1            | 2022-08-10      | 2022-08-10   |
       | schedule_future       | 1            | 2022-08-20      | 2022-08-20   |
-    # Each line keeps its OWN DatePromised (not the header): that per-line delivery date drives the per-line prep date.
-    And validate C_OrderLine:
-      | C_OrderLine_ID   | DatePromised |
-      | orderLine_past   | 2022-08-10   |
-      | orderLine_future | 2022-08-20   |
 
     When 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
@@ -81,40 +83,44 @@ Feature: Pick-after-date holds each order line until its own preparation date
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | orderLine  | order      | product      | 1          |
     When the order identified by order is completed
-    Then after not more than 60s, M_ShipmentSchedules are found:
+    # Single-date order: the line's delivery date equals the header DatePromised, so the derived per-line
+    # PreparationDate (and its C_OrderLine.PreparationDate) equals the header DatePromised (no tour, offset 0).
+    Then validate C_OrderLine:
+      | C_OrderLine_ID | DatePromised | PreparationDate |
+      | orderLine      | 2022-08-16   | 2022-08-16      |
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
       | schedule   | orderLine      | N             | 1            |
-    # Single-date order: the per-line delivery date equals the header DatePromised, so the base
-    # PreparationDate equals the header's DatePromised under the default no-tour + fallback + offset-0 config.
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | QtyToDeliver | PreparationDate | DeliveryDate |
       | schedule              | 1            | 2022-08-16      | 2022-08-16   |
-    And validate C_OrderLine:
-      | C_OrderLine_ID | DatePromised |
-      | orderLine      | 2022-08-16   |
 
-  Scenario: An explicit per-line C_OrderLine.PreparationDate overrides the derived preparation date
-    Given metasfresh contains C_Orders:
+  Scenario: The preparation-date offset is applied when deriving the per-line preparation date
+    # With a -24h fallback offset the derived preparation date is one day before the delivery date, proving the
+    # line's PreparationDate is genuinely derived (delivery date - offset), not merely copied from DatePromised.
+    Given set sys config int value -24 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | IsFixedPreparationDate |
       | order      | true    | bpartner      | 2022-08-16  | false                  |
     And metasfresh contains C_OrderLines:
-      | Identifier         | C_Order_ID | M_Product_ID | QtyEntered | DatePromised | PreparationDate |
-      | orderLine_override | order      | product      | 1          | 2022-08-20   | 2022-08-05      |
-      | orderLine_derived  | order      | product      | 1          | 2022-08-10   |                 |
+      | Identifier      | C_Order_ID | M_Product_ID | QtyEntered | DatePromised |
+      | orderLine_early | order      | product      | 1          | 2022-08-10   |
+      | orderLine_late  | order      | product      | 1          | 2022-08-20   |
     When the order identified by order is completed
-    Then after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier        | C_OrderLine_ID     | IsToRecompute |
-      | schedule_override | orderLine_override | N             |
-      | schedule_derived  | orderLine_derived  | N             |
-    # The override line's preparation date is its explicit C_OrderLine.PreparationDate (2022-08-05), NOT its
-    # delivery date (2022-08-20). The derived line (no override) keeps prep == delivery date (no tour configured).
+    # prep = delivery date - 24h = DatePromised - 1 day, on both the order line and its shipment schedule.
+    Then validate C_OrderLine:
+      | C_OrderLine_ID  | DatePromised | PreparationDate |
+      | orderLine_early | 2022-08-10   | 2022-08-09      |
+      | orderLine_late  | 2022-08-20   | 2022-08-19      |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID  | IsToRecompute |
+      | schedule_early | orderLine_early | N             |
+      | schedule_late  | orderLine_late  | N             |
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID | PreparationDate | DeliveryDate |
-      | schedule_override     | 2022-08-05      | 2022-08-20   |
-      | schedule_derived      | 2022-08-10      | 2022-08-10   |
-    # The override line carries its explicit C_OrderLine.PreparationDate (2022-08-05) while its DatePromised stays
-    # 2022-08-20; the derived line has no override, so its preparation date falls back to its delivery date.
-    And validate C_OrderLine:
-      | C_OrderLine_ID     | DatePromised | PreparationDate |
-      | orderLine_override | 2022-08-20   | 2022-08-05      |
-      | orderLine_derived  | 2022-08-10   |                 |
+      | schedule_early        | 2022-08-09      | 2022-08-10   |
+      | schedule_late         | 2022-08-19      | 2022-08-20   |
+
+  Scenario: Reset the preparation-date offset sysconfig
+    # Isolation: restore the default offset so sibling features on this executor are not affected.
+    Given set sys config int value 0 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours

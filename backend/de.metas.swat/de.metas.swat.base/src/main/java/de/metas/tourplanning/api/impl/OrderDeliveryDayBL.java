@@ -9,6 +9,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
@@ -16,6 +17,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -112,6 +114,77 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			return TimeUtil.asZonedDateTime(lineOverride, orderBL.getTimeZone(order));
 		}
 		return computePreparationDate(order, deliveryDate);
+	}
+
+	@Override
+	public ZonedDateTime computeDeliveryDate(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine)
+	{
+		final ZonedDateTime deliveryDate = computeDeliveryDateOrNull(order, orderLine, orderBL.getTimeZone(order));
+		if (deliveryDate == null)
+		{
+			throw new AdempiereException("@NotFound@ @DeliveryDate@")
+					.appendParametersToMessage()
+					.setParameter("orderLine", orderLine)
+					.setParameter("order", order);
+		}
+		return deliveryDate;
+	}
+
+	/**
+	 * The per-line delivery date: an explicit {@code C_OrderLine.PresetDateShipped} wins, then the line's own
+	 * {@code DatePromised}, finally the order header's {@code DatePromised}. Returns {@code null} when none is set.
+	 */
+	@VisibleForTesting
+	@Nullable
+	static ZonedDateTime computeDeliveryDateOrNull(@NonNull final I_C_Order order, @NonNull final I_C_OrderLine orderLine, @NonNull final ZoneId timeZone)
+	{
+		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped(), timeZone);
+		if (presetDateShipped != null)
+		{
+			return presetDateShipped;
+		}
+		final ZonedDateTime lineDatePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
+		if (lineDatePromised != null)
+		{
+			return lineDatePromised;
+		}
+		return TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
+	}
+
+	@Override
+	public boolean setLinePreparationDate(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		// The per-line preparation date is a sales concept; purchase orders recompute the header (updatePurchaseHeaderPreparationDate).
+		if (!order.isSOTrx() || order.isProcessed())
+		{
+			return false;
+		}
+
+		final ZonedDateTime deliveryDate = computeDeliveryDateOrNull(order, orderLine, orderBL.getTimeZone(order));
+		if (deliveryDate == null)
+		{
+			return false;
+		}
+
+		// Reuse the exact derive path the shipment-schedule provider uses, so the line's PreparationDate always equals
+		// the schedule's initial PreparationDate. Overrides live on M_ShipmentSchedule.PreparationDate_Override.
+		final ZonedDateTime preparationDate = computePreparationDate(order, deliveryDate);
+		orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
+		return preparationDate != null;
+	}
+
+	@Override
+	public boolean updatePurchaseHeaderPreparationDate(@NonNull final I_C_OrderLine orderLine)
+	{
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+		if (order.isSOTrx())
+		{
+			return false;
+		}
+		final boolean set = setPreparationDateAndTour(order, /* fallbackToDatePromised= */ true);
+		orderBL.save(order);
+		return set;
 	}
 
 	/**

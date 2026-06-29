@@ -2,15 +2,12 @@ package de.metas.inoutcandidate.spi.impl;
 
 import java.time.ZonedDateTime;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
 
-import com.google.common.annotations.VisibleForTesting;
 
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
@@ -89,7 +86,7 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 		// on, every line is held until its OWN delivery date (not the whole order until the header date). Same shape
 		// for IsFixedPreparationDate (header flag, all lines) + the per-line preparation date. Enforced in
 		// de.metas.handlingunits...ShipmentService's enqueue filter.
-		final ZonedDateTime deliveryDate = computeOrderLineDeliveryDate(orderLine, order);
+		final ZonedDateTime deliveryDate = orderDeliveryDayBL.computeDeliveryDate(order, orderLine);
 
 		return ShipmentScheduleReferencedLine.builder()
 				.recordRef(TableRecordReference.of(I_C_Order.Table_Name, orderId))
@@ -104,38 +101,6 @@ public class ShipmentScheduleOrderReferenceProvider implements ShipmentScheduleR
 	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		return OrderAndLineId.ofRepoIds(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
-	}
-
-	@VisibleForTesting
-	static ZonedDateTime computeOrderLineDeliveryDate(
-			@NonNull final I_C_OrderLine orderLine,
-			@NonNull final I_C_Order order)
-	{
-		final ZonedDateTime presetDateShipped = TimeUtil.asZonedDateTime(orderLine.getPresetDateShipped());
-		if (presetDateShipped != null)
-		{
-			return presetDateShipped;
-		}
-
-		// Fetch it from order line if possible
-		final ZonedDateTime datePromised = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
-		if (datePromised != null)
-		{
-			return datePromised;
-		}
-
-		// Fetch it from order header if possible
-		final ZonedDateTime datePromisedFromOrder = TimeUtil.asZonedDateTime(order.getDatePromised());
-		if (datePromisedFromOrder != null)
-		{
-			return datePromisedFromOrder;
-		}
-
-		// Fail miserably...
-		throw new AdempiereException("@NotFound@ @DeliveryDate@")
-				.appendParametersToMessage()
-				.setParameter("oderLine", orderLine)
-				.setParameter("order", order);
 	}
 
 	private static DocumentLineDescriptor createDocumentLineDescriptor(
