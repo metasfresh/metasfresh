@@ -53,6 +53,8 @@ const createMasterdata = async () => {
     });
 };
 
+// The `page` fixture param must stay even though it's unused here: destructuring it triggers the
+// playwright.config fixture that calls setCurrentPage(page), which the screen objects rely on.
 // noinspection JSUnusedLocalSymbols
 test('Picking job-list caption shows handover location + delivery date', async ({ page }) => {
     allure.epic('E0105: Picking');
