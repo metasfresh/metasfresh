@@ -33,9 +33,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 {
@@ -107,5 +110,26 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 				AdempiereException.class,
 				() -> receiptScheduleDAO.deleteByOrderLineId(orderLineId),
 				"Should throw when a receipt already exists for the schedule");
+	}
+
+	@Test
+	public void deleteByOrderLineId_withReversedReceiptAlloc_deletesSchedule()
+	{
+		// Alloc has M_InOutLine_ID set but IsActive=false — receipt was reversed.
+		// The guard must NOT block deletion; only active received allocs should block.
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+		final I_M_ReceiptSchedule_Alloc alloc = createReceiptScheduleAlloc(rs, 999 /* M_InOutLine_ID set, as after reversal */);
+		alloc.setIsActive(false);
+		saveRecord(alloc);
+
+		Assertions.assertDoesNotThrow(() -> receiptScheduleDAO.deleteByOrderLineId(orderLineId));
+
+		final boolean stillExists = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.anyMatch();
+		Assertions.assertFalse(stillExists, "Receipt schedule should have been deleted after reversed-receipt alloc");
 	}
 }

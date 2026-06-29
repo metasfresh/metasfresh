@@ -106,7 +106,10 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	/**
 	 * Delete all {@link I_M_ReceiptSchedule} records linked to the given order line.
-	 * Uses direct SQL to bypass the BEFORE_DELETE interceptor that blocks deletion of processed schedules.
+	 *
+	 * @throws org.adempiere.exceptions.AdempiereException if any linked schedule has an active
+	 *                                                      {@link I_M_ReceiptSchedule_Alloc} with {@code M_InOutLine_ID} set,
+	 *                                                      indicating that goods have already been received and deletion would corrupt receipt history.
 	 */
 	void deleteByOrderLineId(@NonNull OrderLineId orderLineId);
 }

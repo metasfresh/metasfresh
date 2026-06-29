@@ -24,6 +24,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -68,7 +69,7 @@ import java.util.Set;
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	public static final String CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE = "CannotDeleteOrderLine_ReceiptSchedule";
+	private static final String CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE = "CannotDeleteOrderLine_ReceiptSchedule";
 
 	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
@@ -425,8 +426,20 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.create()
 				.deleteDirectly();
 
-		// deleteDirectly goes straight to SQL, bypassing model interceptors guard that blocks deletion of Processed=Y records.
-		receiptSchedulesForOrderLine.deleteDirectly();
+		// Clear Processed=Y via direct SQL to bypass only the M_ReceiptSchedule model-validator guard that blocks
+		// deletion of processed records. updateDirectly targets only this specific guard — it does NOT skip any
+		// other model interceptors. The subsequent model-based delete() correctly triggers all of them:
+		//   - TYPE_BEFORE_DELETE: M_ReceiptSchedule_PostMaterialEvent fires ReceiptScheduleDeletedEvent to
+		//     update material disposition (MD candidates).
+		//   - TYPE_AFTER_DELETE: M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder on the
+		//     order line. This is harmless in the primary use-case (order line deletion) since the order line
+		//     is removed immediately after but fires correctly if this method is called in other contexts.
+		receiptSchedulesForOrderLine.updateDirectly(rs -> {
+			rs.setProcessed(false);
+			return IQueryUpdater.MODEL_UPDATED;
+		});
+
+		receiptSchedulesForOrderLine.delete();
 	}
 
 	@NonNull
