@@ -56,7 +56,7 @@ Feature: ZUGFeRD e-invoice generated, embedded in PDF/A-3 and emailed on sales-i
     #    linked as sellerOrg's org-bpartner (CII mapper reads seller from org-bpartner). ──
     And metasfresh contains C_BPartners without locations:
       | Identifier    | Value | Name        | CompanyName | M_PricingSystem_ID | VATaxID     | AD_OrgBP_ID.Identifier |
-      | seller_org_bp | zfd   | Muster GmbH | Muster GmbH | ps_1               | DE123456789 | sellerOrg              |
+      | seller_org_bp | zfd   | Muster GmbH | Muster GmbH | ps_1               | DE136695976 | sellerOrg              |
     And metasfresh contains C_BPartner_Locations:
       | Identifier      | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | C_Country_ID | City   | Postal | Address1       |
       | seller_location | 4099999000002 | seller_org_bp            | true         | true         | DE           | Berlin | 10115  | Musterstraße 1 |

@@ -112,7 +112,7 @@ de_DE to prove the full page-object flow is language-independent.
                             // auto-generate a unique Value; GLN is not required for ZUGFeRD EN16931
                             // validity (VATaxID covers BR-CO-26; BT-34 comes from the mailbox).
                             name: 'Muster GmbH',
-                            vatTaxId: 'DE123456789',
+                            vatTaxId: 'DE136695976',
                             isCustomer: false,
                             // true: the masterdata shares one pricing system across bpartners, and the
                             // first-created one sets its price list's IsSOPriceList — the buyer needs a sales list.
@@ -148,7 +148,7 @@ de_DE to prove the full page-object flow is language-independent.
                             isEInvoiceRecipeint: true,
                             eInvoiceType: 'Z',
                             eInvoiceBuyerReference: '991-1234512345-06',
-                            vatTaxId: 'DE987654321',
+                            vatTaxId: 'DE811569869',
                             locations: {
                                 buyerLoc: {
                                     city: 'Hamburg',
