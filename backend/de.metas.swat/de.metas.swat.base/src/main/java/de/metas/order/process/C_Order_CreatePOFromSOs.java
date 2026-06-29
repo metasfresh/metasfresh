@@ -24,6 +24,7 @@ package de.metas.order.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import org.adempiere.exceptions.AdempiereException;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.notification.INotificationBL;
@@ -40,6 +41,7 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
@@ -56,6 +58,7 @@ import org.adempiere.util.lang.Mutable;
 import org.apache.commons.collections4.IteratorUtils;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.PO;
 import org.compiere.model.X_C_OrderLine;
 import org.compiere.util.Env;
@@ -64,6 +67,7 @@ import org.eevolution.api.IProductBOMDAO;
 
 import java.sql.Timestamp;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /**
@@ -144,13 +148,27 @@ public class C_Order_CreatePOFromSOs
 		workpackageAggregator.setItemAggregationKeyBuilder(new CreatePOFromSOsAggregationKeyBuilder(p_Vendor_ID, this, p_IsVendorInOrderLinesRequired));
 		workpackageAggregator.setGroupsBufferSize(100);
 
+		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
+
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
+
+			// Collect any not-purchased products from these lines; offending lines are skipped from aggregation
+			collectNotPurchasedProducts(salesOrderLines).forEach((productId, label) ->
+					notPurchasedProducts.putIfAbsent(productId, label));
+
 			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 			{
+				final int productRepoId = salesOrderLine.getM_Product_ID();
+				if (productRepoId > 0 && !Services.get(IProductBL.class).isPurchased(ProductId.ofRepoId(productRepoId)))
+				{
+					// offending line — skip, already recorded above
+					continue;
+				}
+
 				if (p_isPurchaseBOMComponents)
 				{
 					final ProductId productId = ProductId.ofRepoId(salesOrderLine.getM_Product_ID());
@@ -176,6 +194,15 @@ public class C_Order_CreatePOFromSOs
 				}
 			}
 		}
+
+		if (!notPurchasedProducts.isEmpty())
+		{
+			throw new AdempiereException(
+					AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased"),
+					String.join(", ", notPurchasedProducts.values()))
+					.markAsUserValidationError();
+		}
+
 		workpackageAggregator.closeAllGroups();
 
 		workpackageAggregator.getSkippedLinesMessage()
@@ -190,6 +217,35 @@ public class C_Order_CreatePOFromSOs
 
 		return MSG_OK;
 
+	}
+
+	/**
+	 * Collects all order lines whose product has {@code IsPurchased=N}.
+	 * Lines without a product (product_id &lt;= 0) are skipped.
+	 * The returned map is keyed by {@link ProductId} (deduplication) and the value is {@code "<Value> (<Name>)"}.
+	 * Insertion order is preserved (first occurrence wins on duplicate).
+	 */
+	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(@NonNull final List<I_C_OrderLine> orderLines)
+	{
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final LinkedHashMap<ProductId, String> result = new LinkedHashMap<>();
+		for (final I_C_OrderLine orderLine : orderLines)
+		{
+			final int productRepoId = orderLine.getM_Product_ID();
+			if (productRepoId <= 0)
+			{
+				continue;
+			}
+			final ProductId productId = ProductId.ofRepoId(productRepoId);
+			if (!productBL.isPurchased(productId))
+			{
+				result.computeIfAbsent(productId, id -> {
+					final I_M_Product product = InterfaceWrapperHelper.loadOutOfTrx(productRepoId, I_M_Product.class);
+					return product.getValue() + " (" + product.getName() + ")";
+				});
+			}
+		}
+		return result;
 	}
 
 	private void addLineToAggregator(final Mutable<Integer> purchaseOrderLineCount, final CreatePOFromSOsAggregator workpackageAggregator, final I_C_OrderLine salesOrderLine)
