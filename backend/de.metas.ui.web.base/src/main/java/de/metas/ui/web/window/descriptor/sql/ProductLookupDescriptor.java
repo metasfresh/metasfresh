@@ -12,10 +12,10 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.IMsgBL;
-import de.metas.lang.SOTrx;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
@@ -61,6 +61,7 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
@@ -802,9 +803,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return;
 		}
-		final String flagColumn = restrictByOrderType.isSales() ? "IsSold" : "IsPurchased";
+		final String flagColumn = restrictByOrderType.isSales() ? I_M_Product.COLUMNNAME_IsSold : I_M_Product.COLUMNNAME_IsPurchased;
 		sqlWhereClause.append("\n AND EXISTS (")
-				.append("SELECT 1 FROM " + org.compiere.model.I_M_Product.Table_Name + " mp")
+				.append("SELECT 1 FROM " + I_M_Product.Table_Name + " mp")
 				.append(" WHERE mp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
 				.append(" AND mp.").append(flagColumn).append("=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
