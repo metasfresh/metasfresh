@@ -27,11 +27,14 @@ import java.util.List;
 
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
 
@@ -59,5 +62,48 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 		Assertions.assertEquals(rs2, schedulesList.get(2), "Invalid receipt schedule at index 2");
 		Assertions.assertEquals(rs3, schedulesList.get(3), "Invalid receipt schedule at index 3");
 		Assertions.assertEquals(rs4, schedulesList.get(4), "Invalid receipt schedule at index 4");
+	}
+
+	@Test
+	public void deleteByOrderLineId_noAllocations_deletesSchedule()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+		createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+
+		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
+
+		final boolean stillExists = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.anyMatch();
+		Assertions.assertFalse(stillExists, "Receipt schedule should have been deleted");
+	}
+
+	@Test
+	public void deleteByOrderLineId_withUnreceivedAlloc_deletesSchedule()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+		createReceiptScheduleAlloc(rs, 0 /* no M_InOutLine_ID = not yet received */);
+
+		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
+
+		Assertions.assertFalse(
+				InterfaceWrapperHelper.isActive(InterfaceWrapperHelper.load(rs.getM_ReceiptSchedule_ID(), I_M_ReceiptSchedule.class)),
+				"Receipt schedule should have been deleted");
+	}
+
+	@Test
+	public void deleteByOrderLineId_withReceivedAlloc_throws()
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+		createReceiptScheduleAlloc(rs, 999 /* non-zero M_InOutLine_ID = goods already received */);
+
+		Assertions.assertThrows(
+				AdempiereException.class,
+				() -> receiptScheduleDAO.deleteByOrderLineId(orderLineId),
+				"Should throw when a receipt already exists for the schedule");
 	}
 }

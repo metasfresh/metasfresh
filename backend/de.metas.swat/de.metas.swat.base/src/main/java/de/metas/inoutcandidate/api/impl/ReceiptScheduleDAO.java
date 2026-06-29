@@ -15,14 +15,17 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
+import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
@@ -385,6 +388,41 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	{
 		return buildQuery(query)
 				.firstIdOnlyOptional(ReceiptScheduleId::ofRepoId);
+	}
+
+	@Override
+	public void deleteByOrderLineId(@NonNull final OrderLineId orderLineId)
+	{
+		final IQuery<I_M_ReceiptSchedule> receiptSchedulesForOrderLine = queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create();
+
+		// Guard: refuse to delete if any receipt schedule has already been received (has M_ReceiptSchedule_Alloc with M_InOutLine_ID set).
+		// Deleting such schedules would corrupt receipt and invoice-candidate history.
+		final boolean hasReceivedAllocations = queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
+				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
+				.addNotNull(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID)
+				.create()
+				.anyMatch();
+		if (hasReceivedAllocations)
+		{
+			throw new AdempiereException("Cannot delete order line: a receipt already exists for the linked receipt schedule.")
+					.appendParametersToMessage()
+					.setParameter("orderLineId", orderLineId);
+		}
+
+		// updateDirectly bypasses model interceptors and goes straight to SQL.
+		// We unset Processed and IsActive here first so that the subsequent .delete() call is not blocked by that guard.
+		receiptSchedulesForOrderLine
+				.updateDirectly(rs -> {
+					rs.setProcessed(false);
+					rs.setIsActive(false);
+					return IQueryUpdater.MODEL_UPDATED;
+				});
+
+		receiptSchedulesForOrderLine.delete();
 	}
 
 	@NonNull

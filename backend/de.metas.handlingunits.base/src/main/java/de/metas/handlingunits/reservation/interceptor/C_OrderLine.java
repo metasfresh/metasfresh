@@ -5,15 +5,14 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
-import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
-import org.adempiere.ad.dao.IQueryBL;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -54,7 +53,7 @@ import java.util.Properties;
 public class C_OrderLine
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Init
 	public void registerCallouts()
@@ -63,23 +62,9 @@ public class C_OrderLine
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
-	public void deleteReservation(@NonNull final I_C_OrderLine orderLineRecord)
+	public void beforeOrderLineDeleted(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		queryBL
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
-				.create()
-				.updateDirectly(rs -> {
-					rs.setProcessed(false);
-					rs.setIsActive(false);
-					return IQueryUpdater.MODEL_UPDATED;
-				});
-
-		queryBL
-				.createQueryBuilder(I_M_ReceiptSchedule.class)
-				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineRecord.getC_OrderLine_ID())
-				.create()
-				.delete();
+		receiptScheduleDAO.deleteByOrderLineId(OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID()));
 	}
 
 	@ModelChange( //

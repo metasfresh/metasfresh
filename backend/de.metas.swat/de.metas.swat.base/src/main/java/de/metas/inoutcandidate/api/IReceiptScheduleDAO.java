@@ -28,6 +28,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -102,4 +103,10 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	@NonNull
 	Optional<ReceiptScheduleId> getIdByQuery(@NonNull ReceiptScheduleQuery query);
+
+	/**
+	 * Delete all {@link I_M_ReceiptSchedule} records linked to the given order line.
+	 * Uses direct SQL to bypass the BEFORE_DELETE interceptor that blocks deletion of processed schedules.
+	 */
+	void deleteByOrderLineId(@NonNull OrderLineId orderLineId);
 }
