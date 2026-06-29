@@ -165,7 +165,7 @@ Feature: Enqueue order candidate and auto invoice after shipped
     ]
 }
 """
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
     "externalHeaderId": "olcandGuard30448",
