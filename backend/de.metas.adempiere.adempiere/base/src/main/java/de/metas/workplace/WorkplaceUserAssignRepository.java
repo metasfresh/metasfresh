@@ -67,10 +67,8 @@ public class WorkplaceUserAssignRepository
 	}
 
 	@NonNull
-	private Optional<I_C_Workplace_User_Assign> retrieveRecordByUserId(final @NonNull UserId userId)
+	private Optional<I_C_Workplace_User_Assign> retrieveRecordByUserIdIncludingInactive(final @NonNull UserId userId)
 	{
-		// Like retrieveActiveRecordByUserId but without the active filter, so an upsert also reuses a
-		// deactivated row (one assignment per user, as in UserWorkstationAssignmentRepository).
 		return queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
 				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
 				.create()
@@ -85,7 +83,7 @@ public class WorkplaceUserAssignRepository
 		// Reuse the user's existing row regardless of IsActive: the unique index
 		// One_User_Per_Org (AD_User_ID, AD_Org_ID) spans inactive rows too, so inserting a
 		// second row for a user who has a deactivated assignment would violate it.
-		final I_C_Workplace_User_Assign record = retrieveRecordByUserId(userId)
+		final I_C_Workplace_User_Assign record = retrieveRecordByUserIdIncludingInactive(userId)
 				.orElseGet(() -> InterfaceWrapperHelper.newInstance(I_C_Workplace_User_Assign.class));
 
 		record.setIsActive(true);
