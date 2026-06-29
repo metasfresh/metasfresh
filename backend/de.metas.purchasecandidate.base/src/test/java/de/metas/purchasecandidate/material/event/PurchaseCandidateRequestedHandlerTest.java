@@ -163,10 +163,6 @@ public class PurchaseCandidateRequestedHandlerTest
 		assertThat(result).isEqualTo(datePromised); // minusDays(0)
 	}
 
-	// --------------------------------------------------
-	// IsPurchased guard tests (AC-P4)
-	// --------------------------------------------------
-
 	@Test
 	public void handleEvent_notPurchasedProduct_doesNotCreateCandidate()
 	{
