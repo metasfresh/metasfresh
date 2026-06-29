@@ -33,6 +33,7 @@ import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -153,107 +154,111 @@ class OrderBLTest
 	// setBPartner - InvoiceRule + IsAutoInvoice resolution via BP group
 	////////////////////////////////
 
-	/**
-	 * Sales order, bp with null InvoiceRule/IsAutoInvoice, BP group has
-	 * InvoiceRule=AfterDelivery and IsAutoInvoice=Y.
-	 * After setBPartner the order must carry the group's values.
-	 */
-	@Test
-	void givenSalesOrder_bpHasNullInvoiceRule_bpGroupHasAfterDelivery_whenSetBPartner_thenOrderGetsGroupValues()
+	@Nested
+	class SetBPartner_InvoiceRuleAndIsAutoInvoice
 	{
-		// setup BP group with InvoiceRule=AfterDelivery, IsAutoInvoice=Y
-		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
-		bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
-		saveRecord(bpGroup);
+		/**
+		 * Sales order, bp with null InvoiceRule/IsAutoInvoice, BP group has
+		 * InvoiceRule=AfterDelivery and IsAutoInvoice=Y.
+		 * After setBPartner the order must carry the group's values.
+		 */
+		@Test
+		void bpHasNullInvoiceRule_bpGroupHasAfterDelivery_thenOrderGetsGroupValues()
+		{
+			// setup BP group with InvoiceRule=AfterDelivery, IsAutoInvoice=Y
+			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+			bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+			bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
+			saveRecord(bpGroup);
 
-		// bp has no own InvoiceRule / IsAutoInvoice
-		final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
-		saveRecord(bp);
+			// bp has no own InvoiceRule / IsAutoInvoice
+			final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+			saveRecord(bp);
 
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setIsSOTrx(true);
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setIsSOTrx(true);
 
-		orderBL.setBPartner(order, bp);
+			orderBL.setBPartner(order, bp);
 
-		assertThat(order.getInvoiceRule())
-				.as("order InvoiceRule must be AfterDelivery (from BP group)")
-				.isEqualTo(InvoiceRule.AfterDelivery.getCode());
-		assertThat(order.isAutoInvoice())
-				.as("order IsAutoInvoice must be true (from BP group)")
-				.isTrue();
-	}
+			assertThat(order.getInvoiceRule())
+					.as("order InvoiceRule must be AfterDelivery (from BP group)")
+					.isEqualTo(InvoiceRule.AfterDelivery.getCode());
+			assertThat(order.isAutoInvoice())
+					.as("order IsAutoInvoice must be true (from BP group)")
+					.isTrue();
+		}
 
-	/**
-	 * Order has a distinct Bill_BPartner_ID. The bill partner's group has InvoiceRule=AfterDelivery + IsAutoInvoice=Y,
-	 * while the passed (ship) bp's group has InvoiceRule=Immediate + IsAutoInvoice=N.
-	 * After setBPartner the order must carry the BILL partner's effective values, not the ship bp's.
-	 */
-	@Test
-	void givenSalesOrder_separateBillBPartnerWithAfterDelivery_whenSetBPartner_thenOrderGetsBillPartnerValues()
-	{
-		// ship bp group: InvoiceRule=Immediate, IsAutoInvoice=N
-		final I_C_BP_Group shipGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		shipGroup.setInvoiceRule(InvoiceRule.Immediate.getCode());
-		shipGroup.setIsAutoInvoice(StringUtils.ofBoolean(false));
-		saveRecord(shipGroup);
+		/**
+		 * Order has a distinct Bill_BPartner_ID. The bill partner's group has InvoiceRule=AfterDelivery + IsAutoInvoice=Y,
+		 * while the passed (ship) bp's group has InvoiceRule=Immediate + IsAutoInvoice=N.
+		 * After setBPartner the order must carry the BILL partner's effective values, not the ship bp's.
+		 */
+		@Test
+		void separateBillBPartnerWithAfterDelivery_thenOrderGetsBillPartnerValues()
+		{
+			// ship bp group: InvoiceRule=Immediate, IsAutoInvoice=N
+			final I_C_BP_Group shipGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+			shipGroup.setInvoiceRule(InvoiceRule.Immediate.getCode());
+			shipGroup.setIsAutoInvoice(StringUtils.ofBoolean(false));
+			saveRecord(shipGroup);
 
-		final I_C_BPartner shipBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		shipBp.setC_BP_Group_ID(shipGroup.getC_BP_Group_ID());
-		saveRecord(shipBp);
+			final I_C_BPartner shipBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			shipBp.setC_BP_Group_ID(shipGroup.getC_BP_Group_ID());
+			saveRecord(shipBp);
 
-		// bill bp group: InvoiceRule=AfterDelivery, IsAutoInvoice=Y
-		final I_C_BP_Group billGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		billGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
-		billGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
-		saveRecord(billGroup);
+			// bill bp group: InvoiceRule=AfterDelivery, IsAutoInvoice=Y
+			final I_C_BP_Group billGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+			billGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+			billGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
+			saveRecord(billGroup);
 
-		final I_C_BPartner billBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		billBp.setC_BP_Group_ID(billGroup.getC_BP_Group_ID());
-		saveRecord(billBp);
+			final I_C_BPartner billBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			billBp.setC_BP_Group_ID(billGroup.getC_BP_Group_ID());
+			saveRecord(billBp);
 
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setIsSOTrx(true);
-		order.setBill_BPartner_ID(billBp.getC_BPartner_ID());
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setIsSOTrx(true);
+			order.setBill_BPartner_ID(billBp.getC_BPartner_ID());
 
-		orderBL.setBPartner(order, shipBp);
+			orderBL.setBPartner(order, shipBp);
 
-		assertThat(order.getInvoiceRule())
-				.as("order InvoiceRule must come from the BILL partner (AfterDelivery), not the ship bp (Immediate)")
-				.isEqualTo(InvoiceRule.AfterDelivery.getCode());
-		assertThat(order.isAutoInvoice())
-				.as("order IsAutoInvoice must come from the BILL partner (true), not the ship bp (false)")
-				.isTrue();
-	}
+			assertThat(order.getInvoiceRule())
+					.as("order InvoiceRule must come from the BILL partner (AfterDelivery), not the ship bp (Immediate)")
+					.isEqualTo(InvoiceRule.AfterDelivery.getCode());
+			assertThat(order.isAutoInvoice())
+					.as("order IsAutoInvoice must come from the BILL partner (true), not the ship bp (false)")
+					.isTrue();
+		}
 
-	/**
-	 * bp with explicit InvoiceRule=Immediate — partner value wins over group.
-	 */
-	@Test
-	void givenSalesOrder_bpHasExplicitImmediateInvoiceRule_whenSetBPartner_thenOrderGetsImmediateRule()
-	{
-		// setup BP group with InvoiceRule=AfterDelivery (lower-priority)
-		final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
-		bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
-		saveRecord(bpGroup);
+		/**
+		 * bp with explicit InvoiceRule=Immediate — partner value wins over group.
+		 */
+		@Test
+		void bpHasExplicitImmediateInvoiceRule_thenOrderGetsImmediateRule()
+		{
+			// setup BP group with InvoiceRule=AfterDelivery (lower-priority)
+			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+			bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+			saveRecord(bpGroup);
 
-		// bp has explicit InvoiceRule=Immediate
-		final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
-		bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
-		bp.setInvoiceRule(InvoiceRule.Immediate.getCode());
-		saveRecord(bp);
+			// bp has explicit InvoiceRule=Immediate
+			final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+			bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
+			bp.setInvoiceRule(InvoiceRule.Immediate.getCode());
+			saveRecord(bp);
 
-		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
-		order.setIsSOTrx(true);
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setIsSOTrx(true);
 
-		orderBL.setBPartner(order, bp);
+			orderBL.setBPartner(order, bp);
 
-		assertThat(order.getInvoiceRule())
-				.as("order InvoiceRule must be Immediate (partner value wins)")
-				.isEqualTo(InvoiceRule.Immediate.getCode());
-		assertThat(order.isAutoInvoice())
-				.as("order IsAutoInvoice must be false (no group value set)")
-				.isFalse();
+			assertThat(order.getInvoiceRule())
+					.as("order InvoiceRule must be Immediate (partner value wins)")
+					.isEqualTo(InvoiceRule.Immediate.getCode());
+			assertThat(order.isAutoInvoice())
+					.as("order IsAutoInvoice must be false (no group value set)")
+					.isFalse();
+		}
 	}
 }
