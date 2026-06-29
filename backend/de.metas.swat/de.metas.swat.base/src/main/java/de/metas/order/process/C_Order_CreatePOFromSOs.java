@@ -22,6 +22,8 @@
 
 package de.metas.order.process;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.i18n.AdMessageKey;
@@ -219,19 +221,24 @@ public class C_Order_CreatePOFromSOs
 	}
 
 	/**
-	 * Collects all order lines whose product has {@code IsPurchased=N}.
-	 * Lines without a product (product_id &lt;= 0) are skipped.
-	 * The returned map is keyed by {@link ProductId} (deduplication) and the value is {@code "<Value> (<Name>)"}.
-	 * Insertion order is preserved (first occurrence wins on duplicate).
-	 * <p>
-	 * The {@link IProductDAO} is passed in (rather than retrieved via {@code Services.get} in the body) so this
-	 * helper can be unit-tested directly with the {@code AdempiereTestHelper} in-memory DAO, without instantiating
-	 * the enclosing {@link JavaProcess} (whose Spring-bean fields cannot be initialised in a plain unit test).
+	 * Collects, in encounter order, the not-purchased products ({@code IsPurchased=N}) among the given lines,
+	 * keyed by {@link ProductId} (dedup) with value {@code "<Value> (<Name>)"}. Lines without a product are skipped.
+	 * {@link IProductDAO} is a parameter so this helper is unit-testable without instantiating the {@link JavaProcess}.
 	 */
 	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(
 			@NonNull final IProductDAO productDAO,
 			@NonNull final List<I_C_OrderLine> orderLines)
 	{
+		final ImmutableSet<ProductId> productIds = orderLines.stream()
+				.map(I_C_OrderLine::getM_Product_ID)
+				.filter(id -> id > 0)
+				.map(ProductId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Map<ProductId, I_M_Product> productsById = Maps.uniqueIndex(
+				productDAO.getByIds(productIds),
+				product -> ProductId.ofRepoId(product.getM_Product_ID()));
+
 		final LinkedHashMap<ProductId, String> result = new LinkedHashMap<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{
@@ -245,8 +252,8 @@ public class C_Order_CreatePOFromSOs
 			{
 				continue; // already recorded (dedup)
 			}
-			final I_M_Product product = productDAO.getById(productId);
-			if (!product.isPurchased())
+			final I_M_Product product = productsById.get(productId);
+			if (product != null && !product.isPurchased())
 			{
 				result.put(productId, product.getValue() + " (" + product.getName() + ")");
 			}
