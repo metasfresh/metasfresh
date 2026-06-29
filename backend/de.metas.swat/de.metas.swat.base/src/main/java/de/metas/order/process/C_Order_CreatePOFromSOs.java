@@ -42,6 +42,7 @@ import de.metas.order.createFrom.po_from_so.impl.CreatePOFromSOsAggregator;
 import de.metas.order.model.I_C_Order;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -119,6 +120,7 @@ public class C_Order_CreatePOFromSOs
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	/**
@@ -147,10 +149,12 @@ public class C_Order_CreatePOFromSOs
 				p_DatePromised_To,
 				p_IsVendorInOrderLinesRequired);
 
-		// Pass 1 — buffer all (order, lines) pairs and collect any not-purchased offenders.
+		final boolean enforcePurchaseSalesFlags = productBL.isPurchaseSalesEnforcementEnabled(getClientId(), getOrgId());
+
+		// Pass 1 — buffer all (order, lines) pairs.
 		// The iterator is a one-shot DB cursor, so we must buffer before touching the aggregator.
-		// If any offender is found we abort HERE — before the aggregator sees a single line,
-		// preventing partial POs from being written to the DB.
+		// When the enforcement gate is ON, we also collect not-purchased offenders and abort
+		// before the aggregator sees a single line, preventing partial POs from being written to the DB.
 		final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered = new ArrayList<>();
 		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
@@ -158,11 +162,14 @@ public class C_Order_CreatePOFromSOs
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
-			collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
+			if (enforcePurchaseSalesFlags)
+			{
+				collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
+			}
 			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
 		}
 
-		if (!notPurchasedProducts.isEmpty())
+		if (enforcePurchaseSalesFlags && !notPurchasedProducts.isEmpty())
 		{
 			throw new AdempiereException(
 					MSG_CreatePOFromSOs_ProductsNotPurchased,
