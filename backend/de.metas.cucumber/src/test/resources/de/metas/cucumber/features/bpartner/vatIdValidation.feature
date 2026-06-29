@@ -1,11 +1,12 @@
 @from:cucumber
 @ghActions:run_on_executor3
 @allure.label.epic:E2200_Automatic_Tax_Determination
-@allure.label.feature:F66030_Partner_Location_VAT_ID
+@allure.label.feature:F66040_Business_Partner_VAT_ID_Validation
 Feature: VAT-ID format is validated when saving a Business Partner
   When a Business Partner (or its location) is saved, the VAT-ID is checked against the country's
-  format and check digit. Invalid values are rejected with a user error; values with an unsupported
-  (non-EU/non-listed) prefix or an empty value are accepted. The check can be switched off per system.
+  format and check digit. An empty value is accepted; any non-empty value is rejected unless it is a
+  valid VAT-ID of a supported country (its prefix must be one of the recognised set). The check can be
+  switched off per system.
 
   Background:
     Given infrastructure and metasfresh are running

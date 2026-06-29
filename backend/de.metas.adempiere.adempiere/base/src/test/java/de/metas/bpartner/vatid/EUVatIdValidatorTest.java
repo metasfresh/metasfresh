@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EUVatIdValidatorTest
 {
 	// ===================================================================
-	// Edge cases — null / blank / unknown prefix → always true
+	// Edge cases — null / blank → accepted; unrecognised prefix → rejected
 	// ===================================================================
 
 	@Test
@@ -55,6 +55,14 @@ class EUVatIdValidatorTest
 	void emptyOrBlank_isValid(final String vatId)
 	{
 		assertThat(EUVatIdValidator.isValid(vatId)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "US123456789", "XX999", "123456" })
+	void unrecognisedPrefix_isRejected(final String vatId)
+	{
+		// Only an empty value or a supported country's valid VAT-ID is accepted; everything else is rejected.
+		assertThat(EUVatIdValidator.isValid(vatId)).isFalse();
 	}
 
 	// ===================================================================
