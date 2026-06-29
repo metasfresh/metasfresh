@@ -9,8 +9,11 @@ import static org.mockito.Mockito.when;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.material.event.commons.EventDescriptor;
+import de.metas.material.event.commons.MaterialDescriptor;
+import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.event.PostMaterialEventService;
@@ -29,9 +32,11 @@ import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -192,13 +197,13 @@ public class PurchaseCandidateRequestedHandlerTest
 		verify(purchaseCandidateRepository, never()).save(any(PurchaseCandidate.class));
 	}
 
-	private static de.metas.material.event.commons.MaterialDescriptor buildMaterialDescriptorForProduct(final ProductId productId)
+	private static MaterialDescriptor buildMaterialDescriptorForProduct(final ProductId productId)
 	{
-		return de.metas.material.event.commons.MaterialDescriptor.builder()
-				.productDescriptor(de.metas.material.event.commons.ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
-				.warehouseId(org.adempiere.warehouse.WarehouseId.ofRepoId(40))
-				.quantity(java.math.BigDecimal.TEN)
-				.date(de.metas.common.util.time.SystemTime.asInstant())
+		return MaterialDescriptor.builder()
+				.productDescriptor(ProductDescriptor.completeForProductIdAndEmptyAttribute(productId.getRepoId()))
+				.warehouseId(WarehouseId.ofRepoId(40))
+				.quantity(BigDecimal.TEN)
+				.date(SystemTime.asInstant())
 				.build();
 	}
 

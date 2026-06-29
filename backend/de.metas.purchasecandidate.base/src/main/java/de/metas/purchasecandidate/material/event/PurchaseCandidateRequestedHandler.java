@@ -37,8 +37,6 @@ import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
 import de.metas.material.planning.IProductPlanningDAO;
-import de.metas.product.IProductBL;
-import org.slf4j.Logger;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.purchasecandidate.async.C_PurchaseCandidates_GeneratePurchaseOrders;
@@ -49,6 +47,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.product.IProductBL;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -70,6 +69,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import org.springframework.context.annotation.Profile;
@@ -98,6 +98,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
@@ -117,7 +118,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
 		final OrgId orgId = event.getOrgId();
 
-		if (!Services.get(IProductBL.class).isPurchased(product.getId()))
+		if (!productBL.isPurchased(product.getId()))
 		{
 			logger.debug("Skipping purchase candidate creation - product {} is not flagged IsPurchased", product.getId());
 			return;
