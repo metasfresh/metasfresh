@@ -12,6 +12,7 @@ import de.metas.order.IOrderBL;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.IOrderDeliveryDayBL;
 import de.metas.tourplanning.model.TourId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.Value;
@@ -131,6 +132,8 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 			@NonNull final ZoneId timeZone)
 	{
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID());
+		// both callers reach this only with a bpartner location set; calculateTourAndPreparationDate below requires it
+		Check.assumeNotNull(bpartnerLocationId, "C_BPartner_Location_ID is set for {}", order);
 
 		final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
 
