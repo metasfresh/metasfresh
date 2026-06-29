@@ -21,6 +21,28 @@ export const PickingJobsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    /**
+     * Reads a single job launcher's caption (the " | "-joined display fields) and asserts on it.
+     * @param contains - substrings that must all be present in the caption
+     * @param fieldCount - if set, the expected number of non-empty " | "-separated caption fields
+     * @returns the caption text (also logged, to aid assertion tuning)
+     */
+    expectJobCaption: async ({ documentNo, salesOrderId, customerLocationId, contains = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerLocationId });
+        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toHaveCount(1);
+        const caption = (await button.innerText()).trim();
+        console.log(`${NAME} - job caption = ${JSON.stringify(caption)}`);
+        for (const text of contains) {
+            expect(caption, `caption should contain "${text}"`).toContain(text);
+        }
+        if (fieldCount != null) {
+            const fields = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);
+            expect(fields.length, `expected ${fieldCount} non-empty caption fields, caption was: ${caption}`).toBe(fieldCount);
+        }
+        return caption;
+    }),
+
     clickFilterButton: async () => await test.step(`${NAME} - Click filter button`, async () => {
         await page.locator('#filter-button').tap();
         await PickingJobsListFiltersScreen.waitForScreen();

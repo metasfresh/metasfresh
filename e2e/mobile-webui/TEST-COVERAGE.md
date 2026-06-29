@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 60 | 63 | 95% |
+| Picking | 61 | 64 | 95% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -92,9 +92,10 @@
 | Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
+| Profile configured with HandoverLocation + DateReady summary fields → job-list caption shows the delivery location and delivery date alongside document number + customer | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**10/11 — 91%**
+**11/12 — 92%**
 
 ### Order-based picking — filtering and facets
 

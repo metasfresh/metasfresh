@@ -1,11 +1,9 @@
 import { test } from "../../../../playwright.config";
-import { expect } from '@playwright/test';
 import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
 import { Backend } from "../../../utils/screens/Backend";
 import { LoginScreen } from "../../../utils/screens/LoginScreen";
-import { page } from "../../../utils/common";
 
 // me03 #30117 / F00230.3 — MobileUI Picking job-LIST caption must show the handover/delivery
 // location and the delivery (ready) date, in addition to the customer name + document number, so
@@ -55,16 +53,18 @@ const createMasterdata = async () => {
     });
 };
 
-test('Picking job-list caption shows handover location + delivery date', async () => {
+// noinspection JSUnusedLocalSymbols
+test('Picking job-list caption shows handover location + delivery date', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
     allure.tag('F00230.3');
     allure.story('MobileUI Picking Filter — job-list caption shows handover location and delivery date');
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
-    const customerName = "Kunde 30117 Test"; // the name we set above (masterdata response does not echo bpartner name)
+    const customerName = "Kunde 30117 Test"; // set above; the masterdata response does not echo the bpartner name
     const locationId = masterdata.bpartners.customer1.locations.customer1_location1.id;
 
     await LoginScreen.login(masterdata.login.user);
@@ -72,21 +72,13 @@ test('Picking job-list caption shows handover location + delivery date', async (
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
 
-    // Read the actual launcher caption for the job (located by its delivery-location id).
-    const button = page.locator(`.wflauncher-button[data-customerlocationid="${locationId}"]`);
-    await expect(button).toHaveCount(1);
-    const caption = (await button.innerText()).trim();
-    console.log(`[30117] launcher caption = ${JSON.stringify(caption)}`);
-
-    // Document number + customer name still present (no regression).
-    expect(caption, 'caption should contain the document number').toContain(documentNo);
-    expect(caption, 'caption should contain the customer name').toContain(customerName);
-
-    // DATE_READY: the delivery/ready date (datePromised 2025-03-15) is shown — format-agnostic year check.
-    expect(caption, 'caption should contain the delivery date (DATE_READY)').toContain('2025');
-
-    // HANDOVER_LOCATION: a 4th, non-empty segment is rendered (the location/address) — proving the
-    // field shows up beyond document/customer/date.
-    const segments = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);
-    expect(segments.length, `caption should have 4 non-empty fields, got: ${caption}`).toBe(4);
+    // The launcher caption shows all four configured summary fields:
+    //  - DocumentNo + Customer (no regression),
+    //  - the delivery date (DATE_READY) — year-only, format-agnostic,
+    //  - the handover/delivery location (HANDOVER_LOCATION) — proven by the 4th non-empty field.
+    await PickingJobsListScreen.expectJobCaption({
+        customerLocationId: locationId,
+        contains: [documentNo, customerName, '2025'],
+        fieldCount: 4,
+    });
 });
