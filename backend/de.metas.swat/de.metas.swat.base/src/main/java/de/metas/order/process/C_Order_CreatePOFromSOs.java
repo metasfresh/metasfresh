@@ -226,7 +226,7 @@ public class C_Order_CreatePOFromSOs
 	 * When {@code purchaseBOMComponents} is {@code true} <em>and</em> a line's product has BOMs, Pass 2 will
 	 * BOM-explode that line — the parent itself never becomes a PO line. Such lines are therefore excluded from
 	 * the not-purchased check, mirroring the exact branch condition used in Pass 2:
-	 * {@code p_isPurchaseBOMComponents && bomDAO.hasBOMs(productId)}.
+	 * {@code purchaseBOMComponents && bomDAO.hasBOMs(productId)}.
 	 * <p>
 	 * {@link IProductDAO} and {@link IProductBOMDAO} are parameters so this helper is unit-testable without
 	 * instantiating the {@link JavaProcess}.
@@ -260,8 +260,6 @@ public class C_Order_CreatePOFromSOs
 			{
 				continue; // already recorded (dedup)
 			}
-			// Mirror Pass 2: when purchasing BOM components, a product with BOMs is exploded into its
-			// components and the parent never becomes a PO line — skip it from the not-purchased check.
 			if (purchaseBOMComponents && bomDAO.hasBOMs(productId))
 			{
 				continue;
