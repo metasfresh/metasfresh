@@ -49,7 +49,8 @@ class ProductBLTest
 	void assertPurchasable_throwsWhenNotPurchased()
 	{
 		final ProductId notPurchased = createProduct(false, true);
-		assertThatThrownBy(() -> productBL.assertPurchasable(notPurchased)).isInstanceOf(AdempiereException.class);
+		assertThatThrownBy(() -> productBL.assertPurchasable(notPurchased))
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
 		assertThatCode(() -> productBL.assertPurchasable(createProduct(true, true))).doesNotThrowAnyException();
 	}
 
@@ -57,7 +58,8 @@ class ProductBLTest
 	void assertSellable_throwsWhenNotSold()
 	{
 		final ProductId notSold = createProduct(true, false);
-		assertThatThrownBy(() -> productBL.assertSellable(notSold)).isInstanceOf(AdempiereException.class);
+		assertThatThrownBy(() -> productBL.assertSellable(notSold))
+				.isInstanceOfSatisfying(AdempiereException.class, ex -> assertThat(ex.isUserValidationError()).isTrue());
 		assertThatCode(() -> productBL.assertSellable(createProduct(true, true))).doesNotThrowAnyException();
 	}
 }
