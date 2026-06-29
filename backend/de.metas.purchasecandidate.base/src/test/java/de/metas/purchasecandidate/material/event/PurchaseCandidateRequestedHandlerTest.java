@@ -1,6 +1,7 @@
 package de.metas.purchasecandidate.material.event;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -31,6 +32,7 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -198,12 +200,7 @@ public class PurchaseCandidateRequestedHandlerTest
 	@Test
 	public void gateDisabled_notPurchasedProduct_stillCreatesCandidate()
 	{
-		// given: a product with IsPurchased=N but enforcement gate DISABLED
-		// The handler must NOT skip at the IsPurchased guard; it proceeds to
-		// getDefaultVendorProductInfo. We verify this by confirming execution
-		// passes the guard (exception from VendorProductInfoService is the first
-		// thing that would happen after the guard, so AdempiereException means
-		// the guard was passed, not skipped).
+		// given: gate DISABLED — handler bypasses IsPurchased check and throws on missing VendorProductInfo
 		final Product notPurchasedProduct = Product.builder()
 				.id(PRODUCT_ID)
 				.orgId(ORG_ID)
@@ -229,8 +226,8 @@ public class PurchaseCandidateRequestedHandlerTest
 
 		// when / then: gate is off → handler does NOT return early; it proceeds past the
 		// IsPurchased check and throws because VendorProductInfo is missing (mock returns empty)
-		org.assertj.core.api.Assertions.assertThatThrownBy(() -> handler.handleEvent(event))
-				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+		assertThatThrownBy(() -> handler.handleEvent(event))
+				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Missing vendorProductInfos");
 
 		// also confirm the early-return path (guard) was NOT taken
