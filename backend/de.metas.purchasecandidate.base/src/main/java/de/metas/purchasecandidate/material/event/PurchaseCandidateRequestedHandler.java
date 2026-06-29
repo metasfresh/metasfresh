@@ -66,9 +66,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.service.ClientId;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
