@@ -2,12 +2,14 @@ package de.metas.order.model.interceptor;
 
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import de.metas.interfaces.I_C_OrderLine;
 import org.compiere.model.I_C_Order;
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -38,6 +41,9 @@ class C_OrderLineProductGateTest
 		Services.registerService(IProductBL.class, productBL);
 
 		Services.registerService(IProgramaticCalloutProvider.class, mock(IProgramaticCalloutProvider.class));
+
+		// Gate is ON by default so existing throw-tests keep their behavior
+		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(true);
 
 		interceptor = new C_OrderLine(
 				mock(de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler.class),
@@ -109,6 +115,18 @@ class C_OrderLineProductGateTest
 	void salesOrder_notPurchasedButSold_doesNotThrow()
 	{
 		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, false, true)))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void gateDisabled_doesNotThrow()
+	{
+		// Gate OFF — enforcement must be inert regardless of IsSold/IsPurchased flags
+		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(false);
+
+		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, true, false)))
+				.doesNotThrowAnyException();
+		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(false, false, true)))
 				.doesNotThrowAnyException();
 	}
 }

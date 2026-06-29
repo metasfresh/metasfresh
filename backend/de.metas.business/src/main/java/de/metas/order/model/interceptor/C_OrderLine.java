@@ -20,6 +20,7 @@ import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import org.adempiere.service.ClientId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -214,6 +215,13 @@ public class C_OrderLine
 
 		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
 
 		if (order.isSOTrx())
 		{
