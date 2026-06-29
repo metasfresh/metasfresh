@@ -47,6 +47,7 @@ import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
+import org.adempiere.service.ClientId;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
@@ -117,8 +118,9 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 
 		final Product product = productRepository.getById(ProductId.ofRepoId(materialDescriptor.getProductId()));
 		final OrgId orgId = event.getOrgId();
+		final ClientId clientId = event.getClientId();
 
-		if (!productBL.isPurchased(product.getId()))
+		if (productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId) && !productBL.isPurchased(product.getId()))
 		{
 			logger.debug("Skipping purchase candidate creation - product {} is not flagged IsPurchased", product.getId());
 			return;

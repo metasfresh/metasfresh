@@ -11,12 +11,12 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
-import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -31,6 +31,7 @@ import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import de.metas.purchasecandidate.VendorProductInfoService;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -166,7 +167,7 @@ public class PurchaseCandidateRequestedHandlerTest
 	@Test
 	public void handleEvent_notPurchasedProduct_doesNotCreateCandidate()
 	{
-		// given: a product with IsPurchased=N
+		// given: a product with IsPurchased=N and enforcement gate ENABLED
 		final Product notPurchasedProduct = Product.builder()
 				.id(PRODUCT_ID)
 				.orgId(ORG_ID)
@@ -179,6 +180,7 @@ public class PurchaseCandidateRequestedHandlerTest
 				.build();
 		when(productRepository.getById(PRODUCT_ID)).thenReturn(notPurchasedProduct);
 		when(productBL.isPurchased(PRODUCT_ID)).thenReturn(false);
+		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(true);
 
 		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, ORG_ID.getRepoId()))
@@ -190,6 +192,48 @@ public class PurchaseCandidateRequestedHandlerTest
 		handler.handleEvent(event);
 
 		// then: no candidate is saved
+		verify(purchaseCandidateRepository, never()).save(any(PurchaseCandidate.class));
+	}
+
+	@Test
+	public void gateDisabled_notPurchasedProduct_stillCreatesCandidate()
+	{
+		// given: a product with IsPurchased=N but enforcement gate DISABLED
+		// The handler must NOT skip at the IsPurchased guard; it proceeds to
+		// getDefaultVendorProductInfo. We verify this by confirming execution
+		// passes the guard (exception from VendorProductInfoService is the first
+		// thing that would happen after the guard, so AdempiereException means
+		// the guard was passed, not skipped).
+		final Product notPurchasedProduct = Product.builder()
+				.id(PRODUCT_ID)
+				.orgId(ORG_ID)
+				.uomId(UomId.ofRepoId(1))
+				.value("TEST")
+				.productCategoryId(ProductCategoryId.ofRepoId(1))
+				.name(TranslatableStrings.anyLanguage("Test Product"))
+				.productType("I")
+				.packageDimensions(PackageDimensions.UNSPECIFIED)
+				.build();
+		when(productRepository.getById(PRODUCT_ID)).thenReturn(notPurchasedProduct);
+		when(productBL.isPurchased(PRODUCT_ID)).thenReturn(false);
+		when(productBL.isPurchaseSalesEnforcementEnabled(any(ClientId.class), any(OrgId.class))).thenReturn(false);
+		// vendorProductInfosRepo is a mock from @BeforeEach returning empty by default →
+		// handler will throw AdempiereException("Missing vendorProductInfos…") proving it
+		// passed the IsPurchased gate and continued.
+
+		final PurchaseCandidateRequestedEvent event = PurchaseCandidateRequestedEvent.builder()
+				.eventDescriptor(EventDescriptor.ofClientAndOrg(5, ORG_ID.getRepoId()))
+				.supplyCandidateRepoId(10)
+				.purchaseMaterialDescriptor(buildMaterialDescriptorForProduct(PRODUCT_ID))
+				.build();
+
+		// when / then: gate is off → handler does NOT return early; it proceeds past the
+		// IsPurchased check and throws because VendorProductInfo is missing (mock returns empty)
+		org.assertj.core.api.Assertions.assertThatThrownBy(() -> handler.handleEvent(event))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("Missing vendorProductInfos");
+
+		// also confirm the early-return path (guard) was NOT taken
 		verify(purchaseCandidateRepository, never()).save(any(PurchaseCandidate.class));
 	}
 
