@@ -199,6 +199,32 @@ public class C_OrderLine
 		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
 	}
 
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateProductIsPurchasedOrSold(@NonNull final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		if (order.isSOTrx())
+		{
+			productBL.assertSellable(productId);
+		}
+		else
+		{
+			productBL.assertPurchasable(productId);
+		}
+	}
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setProjectToOrderline(final I_C_OrderLine orderLine)
 	{
