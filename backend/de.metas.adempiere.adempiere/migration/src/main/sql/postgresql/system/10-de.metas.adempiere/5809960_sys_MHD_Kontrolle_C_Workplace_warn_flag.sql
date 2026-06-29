@@ -130,8 +130,8 @@ VALUES (0,781317,0,547260,551258,652424 /*From ID Server*/,'F',TO_TIMESTAMP('202
 
 -- AD_Message: RLZ_TooShort
 -- 2026-06-29T10:03:00.000Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545767 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-29 10:03:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','RLZ zu kurz!','I',TO_TIMESTAMP('2026-06-29 10:03:00','YYYY-MM-DD HH24:MI:SS'),100,'RLZ_TooShort')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,ErrorCode,Updated,UpdatedBy,Value)
+VALUES (0,545767 /*From ID Server*/,0,TO_TIMESTAMP('2026-06-29 10:03:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','RLZ zu kurz!','E','RLZ_TooShort',TO_TIMESTAMP('2026-06-29 10:03:00','YYYY-MM-DD HH24:MI:SS'),100,'RLZ_TooShort')
 ;
 
 -- 2026-06-29T10:03:01.000Z
