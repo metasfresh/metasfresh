@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
+import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
@@ -14,6 +15,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
@@ -22,6 +24,7 @@ import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -370,7 +373,7 @@ public class CreateBPartnerCommand
 		{
 			locationRecord.setAddress1(locationRequest.getAddress1());
 		}
-		InterfaceWrapperHelper.saveRecord(locationRecord);
+		Services.get(ILocationDAO.class).save(locationRecord);
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
 	}
 
@@ -389,7 +392,7 @@ public class CreateBPartnerCommand
 		bankAccount.setC_Currency_ID(currencyId.getRepoId());
 		bankAccount.setIBAN(req.getIban());
 		bankAccount.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(bankAccount);
+		Services.get(IBPBankAccountDAO.class).save(bankAccount);
 	}
 
 	private PricingSystemId createPricingSystem()
