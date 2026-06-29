@@ -182,9 +182,7 @@ test('RLZ warning: flag ON, short shelf life → decline No → pick aborted', a
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickNoButton();
 
-        // Declining aborts the pick: the qty dialog re-opens; cancel it back to the job screen
-        await GetQuantityDialog.waitForDialog();
-        await GetQuantityDialog.clickCancel();
+        // Declining aborts the pick — the operator returns to the picking job screen, nothing picked.
         await PickingJobScreen.waitForScreen();
     });
 
