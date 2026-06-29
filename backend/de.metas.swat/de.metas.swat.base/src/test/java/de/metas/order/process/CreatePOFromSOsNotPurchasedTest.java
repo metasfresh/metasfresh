@@ -29,25 +29,31 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
+import org.eevolution.api.IProductBOMDAO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CreatePOFromSOsNotPurchasedTest
 {
 	private IProductDAO productDAO;
+	private IProductBOMDAO bomDAO;
 
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
 		productDAO = Services.get(IProductDAO.class);
+		bomDAO = mock(IProductBOMDAO.class);
 	}
 
 	private I_M_Product createProduct(final String value, final String name, final boolean isPurchased)
@@ -87,7 +93,7 @@ class CreatePOFromSOsNotPurchasedTest
 			final List<I_C_OrderLine> lines = Arrays.asList(lineWithPurchased, lineWithNotPurchased1, lineWithNotPurchased2);
 
 			// when
-			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, bomDAO, false, lines);
 
 			// then
 			assertThat(result).hasSize(2);
@@ -97,6 +103,12 @@ class CreatePOFromSOsNotPurchasedTest
 
 			assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()))).isEqualTo("NP001 (Not Purchased One)");
 			assertThat(result.get(ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()))).isEqualTo("NP002 (Not Purchased Two)");
+
+			// insertion order is preserved (NP001 encountered before NP002 in the input)
+			assertThat(new ArrayList<>(result.keySet()))
+					.containsExactly(
+							ProductId.ofRepoId(notPurchasedProduct1.getM_Product_ID()),
+							ProductId.ofRepoId(notPurchasedProduct2.getM_Product_ID()));
 		}
 
 		@Test
@@ -111,7 +123,7 @@ class CreatePOFromSOsNotPurchasedTest
 			final List<I_C_OrderLine> lines = Arrays.asList(line1, line2);
 
 			// when
-			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, bomDAO, false, lines);
 
 			// then — same product appears only once (dedup by ProductId)
 			assertThat(result).hasSize(1);
@@ -128,7 +140,7 @@ class CreatePOFromSOsNotPurchasedTest
 			final List<I_C_OrderLine> lines = Arrays.asList(createOrderLine(p1), createOrderLine(p2));
 
 			// when
-			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, bomDAO, false, lines);
 
 			// then
 			assertThat(result).isEmpty();
@@ -145,9 +157,30 @@ class CreatePOFromSOsNotPurchasedTest
 			final List<I_C_OrderLine> lines = Arrays.asList(lineWithNoProduct);
 
 			// when
-			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, bomDAO, false, lines);
 
 			// then — lines without product are skipped (neither an offender nor a pass)
+			assertThat(result).isEmpty();
+		}
+
+		@Test
+		void bomParentWithIsPurchasedFalse_skippedWhenPurchaseBOMComponentsEnabled()
+		{
+			// given — BOM parent product: IsPurchased=false but has BOMs → Pass 2 will explode it,
+			// so Pass 1 must NOT flag it as a not-purchased offender.
+			final I_M_Product bomParent = createProduct("BOM001", "BOM Parent", false);
+			final ProductId bomParentId = ProductId.ofRepoId(bomParent.getM_Product_ID());
+
+			// BOM DAO mock: the BOM parent has BOMs
+			when(bomDAO.hasBOMs(bomParentId)).thenReturn(true);
+
+			final I_C_OrderLine bomParentLine = createOrderLine(bomParent);
+			final List<I_C_OrderLine> lines = Arrays.asList(bomParentLine);
+
+			// when — purchaseBOMComponents=true mirrors the Pass 2 flag being set
+			final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, bomDAO, true, lines);
+
+			// then — BOM parent is skipped; no false-positive abort
 			assertThat(result).isEmpty();
 		}
 	}

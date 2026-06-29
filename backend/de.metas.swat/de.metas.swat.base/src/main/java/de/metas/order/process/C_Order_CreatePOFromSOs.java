@@ -158,7 +158,7 @@ public class C_Order_CreatePOFromSOs
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
-			collectNotPurchasedProducts(productDAO, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
+			collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
 			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
 		}
 
@@ -222,10 +222,19 @@ public class C_Order_CreatePOFromSOs
 	/**
 	 * Collects, in encounter order, the not-purchased products ({@code IsPurchased=N}) among the given lines,
 	 * keyed by {@link ProductId} (dedup) with value {@code "<Value> (<Name>)"}. Lines without a product are skipped.
-	 * {@link IProductDAO} is a parameter so this helper is unit-testable without instantiating the {@link JavaProcess}.
+	 * <p>
+	 * When {@code purchaseBOMComponents} is {@code true} <em>and</em> a line's product has BOMs, Pass 2 will
+	 * BOM-explode that line — the parent itself never becomes a PO line. Such lines are therefore excluded from
+	 * the not-purchased check, mirroring the exact branch condition used in Pass 2:
+	 * {@code p_isPurchaseBOMComponents && bomDAO.hasBOMs(productId)}.
+	 * <p>
+	 * {@link IProductDAO} and {@link IProductBOMDAO} are parameters so this helper is unit-testable without
+	 * instantiating the {@link JavaProcess}.
 	 */
 	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(
 			@NonNull final IProductDAO productDAO,
+			@NonNull final IProductBOMDAO bomDAO,
+			final boolean purchaseBOMComponents,
 			@NonNull final List<I_C_OrderLine> orderLines)
 	{
 		final ImmutableSet<ProductId> productIds = orderLines.stream()
@@ -250,6 +259,12 @@ public class C_Order_CreatePOFromSOs
 			if (result.containsKey(productId))
 			{
 				continue; // already recorded (dedup)
+			}
+			// Mirror Pass 2: when purchasing BOM components, a product with BOMs is exploded into its
+			// components and the parent never becomes a PO line — skip it from the not-purchased check.
+			if (purchaseBOMComponents && bomDAO.hasBOMs(productId))
+			{
+				continue;
 			}
 			final I_M_Product product = productsById.get(productId);
 			if (product != null && !product.isPurchased())
