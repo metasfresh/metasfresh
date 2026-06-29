@@ -24,7 +24,6 @@ package de.metas.order.process;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import org.adempiere.exceptions.AdempiereException;
 import de.metas.i18n.AdMessageKey;
 import de.metas.lang.SOTrx;
 import de.metas.notification.INotificationBL;
@@ -50,6 +49,7 @@ import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -157,13 +157,13 @@ public class C_Order_CreatePOFromSOs
 					purchaseQtySource);
 
 			// Collect any not-purchased products from these lines; offending lines are skipped from aggregation
-			collectNotPurchasedProducts(salesOrderLines).forEach((productId, label) ->
-					notPurchasedProducts.putIfAbsent(productId, label));
+			final LinkedHashMap<ProductId, String> notPurchasedInThisSO = collectNotPurchasedProducts(salesOrderLines);
+			notPurchasedInThisSO.forEach((productId, label) -> notPurchasedProducts.putIfAbsent(productId, label));
 
 			for (final I_C_OrderLine salesOrderLine : salesOrderLines)
 			{
 				final int productRepoId = salesOrderLine.getM_Product_ID();
-				if (productRepoId > 0 && !Services.get(IProductBL.class).isPurchased(ProductId.ofRepoId(productRepoId)))
+				if (productRepoId > 0 && notPurchasedInThisSO.containsKey(ProductId.ofRepoId(productRepoId)))
 				{
 					// offending line — skip, already recorded above
 					continue;
