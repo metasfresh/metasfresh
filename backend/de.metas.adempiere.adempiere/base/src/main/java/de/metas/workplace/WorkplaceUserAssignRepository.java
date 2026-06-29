@@ -29,7 +29,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Workplace_User_Assign;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -70,11 +69,10 @@ public class WorkplaceUserAssignRepository
 	@NonNull
 	private Optional<I_C_Workplace_User_Assign> retrieveRecordByUserId(final @NonNull UserId userId)
 	{
-		// Scope to (AD_User_ID, AD_Org_ID) — the columns of the unique index One_User_Per_Org — so the
-		// lookup matches the org the new row would be created in and can return at most one row.
+		// Like retrieveActiveRecordByUserId but without the active filter, so an upsert also reuses a
+		// deactivated row (one assignment per user, as in UserWorkstationAssignmentRepository).
 		return queryBL.createQueryBuilder(I_C_Workplace_User_Assign.class)
 				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_User_ID, userId)
-				.addEqualsFilter(I_C_Workplace_User_Assign.COLUMNNAME_AD_Org_ID, Env.getAD_Org_ID(Env.getCtx()))
 				.create()
 				.firstOnlyOptional(I_C_Workplace_User_Assign.class);
 	}
