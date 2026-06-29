@@ -1,4 +1,4 @@
--- me03#30496 (dt204): Add SysConfig gate for product IsPurchased/IsSold enforcement.
+-- Add SysConfig gate for product IsPurchased/IsSold enforcement.
 -- When Y, the system enforces IsPurchased/IsSold flags on order lines and related lookups.
 -- When N (default), enforcement is skipped — preserving legacy behaviour for all tenants
 -- that have not explicitly opted in.
@@ -12,5 +12,5 @@ VALUES (0, 0, 541826 /*From ID Server*/, 'O',
         'D', 'Y',
         'M_Product_EnforcePurchaseSalesFlags',
         'N',
-        'When Y, IsPurchased and IsSold flags are enforced on order lines and product lookups (me03#30496). Default N preserves legacy behaviour for tenants that have not opted in.')
+        'When Y, IsPurchased and IsSold flags are enforced on order lines and product lookups. Default N preserves legacy behaviour for tenants that have not opted in.')
 ;
