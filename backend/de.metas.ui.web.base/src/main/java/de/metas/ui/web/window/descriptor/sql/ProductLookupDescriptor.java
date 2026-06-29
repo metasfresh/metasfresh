@@ -61,7 +61,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MLookupFactory.LanguageInfo;
@@ -803,9 +802,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return;
 		}
-		final String flagColumn = restrictByOrderType.isSales() ? I_M_Product.COLUMNNAME_IsSold : I_M_Product.COLUMNNAME_IsPurchased;
+		final String flagColumn = restrictByOrderType.isSales() ? org.compiere.model.I_M_Product.COLUMNNAME_IsSold : org.compiere.model.I_M_Product.COLUMNNAME_IsPurchased;
 		sqlWhereClause.append("\n AND EXISTS (")
-				.append("SELECT 1 FROM " + I_M_Product.Table_Name + " mp")
+				.append("SELECT 1 FROM " + org.compiere.model.I_M_Product.Table_Name + " mp")
 				.append(" WHERE mp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
 				.append(" AND mp.").append(flagColumn).append("=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
