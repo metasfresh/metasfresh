@@ -20,17 +20,16 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy;
-import org.adempiere.ad.dao.IQueryUpdater;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
 import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_InOut;
@@ -69,6 +68,7 @@ import java.util.Set;
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	public static final String CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE = "CannotDeleteOrderLine_ReceiptSchedule";
 
 	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
@@ -398,31 +398,35 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.create();
 
-		// Guard: refuse to delete if any receipt schedule has already been received (has M_ReceiptSchedule_Alloc with M_InOutLine_ID set).
-		// Deleting such schedules would corrupt receipt and invoice-candidate history.
+		// Guard: refuse to delete if any receipt schedule has an active alloc with M_InOutLine_ID set.
+		// IsActive=false allocs indicate reversed receipts and must not block deletion.
+		// Deleting schedules with active received allocs would corrupt receipt and invoice-candidate history.
 		final boolean hasReceivedAllocations = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
 				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
 				.addNotNull(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_InOutLine_ID)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.anyMatch();
 		if (hasReceivedAllocations)
 		{
-			throw new AdempiereException("Cannot delete order line: a receipt already exists for the linked receipt schedule.")
-					.appendParametersToMessage()
-					.setParameter("orderLineId", orderLineId);
+			throw new AdempiereException("@" + CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE + "@");
 		}
 
-		// updateDirectly bypasses model interceptors and goes straight to SQL.
-		// We unset Processed and IsActive here first so that the subsequent .delete() call is not blocked by that guard.
-		receiptSchedulesForOrderLine
-				.updateDirectly(rs -> {
-					rs.setProcessed(false);
-					rs.setIsActive(false);
-					return IQueryUpdater.MODEL_UPDATED;
-				});
+		// Delete all alloc records first to satisfy the FK constraint
+		// M_ReceiptSchedule_Alloc.M_ReceiptSchedule_ID → M_ReceiptSchedule before the parent rows are removed.
+		// Two alloc categories can exist here:
+		//   - Unreceived allocs (M_InOutLine_ID=null): normal unprocessed planning allocations.
+		//   - Reversed-receipt allocs (IsActive=false, M_InOutLine_ID set): the receipt was reversed,
+		//     so the alloc was deactivated and the HU destroyed; safe to delete.
+		// Active allocs with M_InOutLine_ID set (real open receipts) were rejected by the guard above.
+		queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
+				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
+				.create()
+				.deleteDirectly();
 
-		receiptSchedulesForOrderLine.delete();
+		// deleteDirectly goes straight to SQL, bypassing model interceptors guard that blocks deletion of Processed=Y records.
+		receiptSchedulesForOrderLine.deleteDirectly();
 	}
 
 	@NonNull

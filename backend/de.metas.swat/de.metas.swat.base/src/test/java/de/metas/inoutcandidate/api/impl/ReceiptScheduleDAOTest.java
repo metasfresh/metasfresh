@@ -28,7 +28,6 @@ import java.util.List;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -89,9 +88,12 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 
 		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
 
-		Assertions.assertFalse(
-				InterfaceWrapperHelper.isActive(InterfaceWrapperHelper.load(rs.getM_ReceiptSchedule_ID(), I_M_ReceiptSchedule.class)),
-				"Receipt schedule should have been deleted");
+		final boolean stillExists = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.anyMatch();
+		Assertions.assertFalse(stillExists, "Receipt schedule should have been deleted");
 	}
 
 	@Test

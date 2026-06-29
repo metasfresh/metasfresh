@@ -61,9 +61,19 @@ public class C_OrderLine
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
+	// Note: receipt schedule cleanup belongs conceptually in de.metas.business, but adding
+	// IReceiptScheduleDAO there would create a circular Maven dependency
+	// (de.metas.handlingunits.base → de.metas.swat.base → de.metas.business).
+	// This interceptor lives in de.metas.handlingunits.base, which already depends on
+	// de.metas.swat.base, making it the lowest layer where the call is possible.
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeOrderLineDeleted(@NonNull final I_C_OrderLine orderLineRecord)
 	{
+		// Receipt schedules only exist for purchase order lines
+		if (orderLineRecord.getC_Order().isSOTrx())
+		{
+			return;
+		}
 		receiptScheduleDAO.deleteByOrderLineId(OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID()));
 	}
 
