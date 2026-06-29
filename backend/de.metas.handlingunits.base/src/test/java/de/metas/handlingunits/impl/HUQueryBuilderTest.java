@@ -293,8 +293,29 @@ public class HUQueryBuilderTest
 				.isTrue();
 
 		// -----------------------------------------------------------------------
-		// AC2b: order-line ASI has MonthsUntilExpiry = 0  → HU does NOT match, excluded.
+		// AC2b: order-line ASI has MonthsUntilExpiry = 0.
+		//   - the HU with MonthsUntilExpiry=7 must NOT match (excluded);
+		//   - a second HU with MonthsUntilExpiry=0 MUST match (returned) — this proves the
+		//     "=0" filter is well-formed and not merely rejecting everything.
 		// -----------------------------------------------------------------------
+		final I_M_HU huWithZero = newInstance(I_M_HU.class);
+		huWithZero.setHUStatus(X_M_HU.HUSTATUS_Active);
+		huWithZero.setM_Locator_ID(locator.getM_Locator_ID());
+		save(huWithZero);
+		POJOWrapper.setInstanceName(huWithZero, "hu-MonthsUntilExpiry=0");
+
+		final I_M_HU_Storage huStorageZero = newInstance(I_M_HU_Storage.class);
+		huStorageZero.setM_HU(huWithZero);
+		huStorageZero.setM_Product_ID(product.getM_Product_ID());
+		save(huStorageZero);
+
+		final I_M_HU_Attribute huAttrZero = newInstance(I_M_HU_Attribute.class);
+		huAttrZero.setM_HU_ID(huWithZero.getM_HU_ID());
+		huAttrZero.setM_Attribute_ID(attr.getM_Attribute_ID());
+		huAttrZero.setValueNumber(BigDecimal.ZERO);
+		huAttrZero.setIsActive(true);
+		save(huAttrZero);
+
 		final ImmutableAttributeSet asiSet0 = loadAsiSet_withNumericAttribute_set(attr, BigDecimal.ZERO);
 
 		final IQueryFilter<I_M_HU> filterFor0 = newHuQueryBuilder()
@@ -304,6 +325,10 @@ public class HUQueryBuilderTest
 		assertThat(filterFor0.accept(hu))
 				.as("AC2b: HU with MonthsUntilExpiry=7 must NOT be returned when order-line ASI has MonthsUntilExpiry=0")
 				.isFalse();
+
+		assertThat(filterFor0.accept(huWithZero))
+				.as("AC2b: HU with MonthsUntilExpiry=0 MUST be returned when order-line ASI has MonthsUntilExpiry=0 (the =0 filter is well-formed)")
+				.isTrue();
 	}
 
 	/**
