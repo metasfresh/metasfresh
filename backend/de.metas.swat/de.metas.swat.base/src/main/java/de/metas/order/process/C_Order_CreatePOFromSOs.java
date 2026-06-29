@@ -164,7 +164,6 @@ public class C_Order_CreatePOFromSOs
 
 		if (!notPurchasedProducts.isEmpty())
 		{
-			// The AdMessageKey(..., params) constructor already flags this as a user validation error.
 			throw new AdempiereException(
 					MSG_CreatePOFromSOs_ProductsNotPurchased,
 					String.join(", ", notPurchasedProducts.values()));
