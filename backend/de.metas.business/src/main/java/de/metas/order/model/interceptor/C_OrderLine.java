@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
+import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.i18n.AdMessageKey;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.lang.SOTrx;
@@ -135,6 +136,13 @@ public class C_OrderLine
 					ol.setRef_OrderLine(null);
 					return IQueryUpdater.MODEL_UPDATED;
 				});
+
+		// 30516
+		queryBL
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID())
+				.create()
+				.delete();
 
 	}
 
