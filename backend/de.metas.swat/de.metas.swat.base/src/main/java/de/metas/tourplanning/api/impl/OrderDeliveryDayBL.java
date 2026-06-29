@@ -170,6 +170,12 @@ public class OrderDeliveryDayBL implements IOrderDeliveryDayBL
 		// Reuse the exact derive path the shipment-schedule provider uses, so the line's PreparationDate always equals
 		// the schedule's initial PreparationDate. Overrides live on M_ShipmentSchedule.PreparationDate_Override.
 		final ZonedDateTime preparationDate = computePreparationDate(order, deliveryDate);
+		if (preparationDate == null)
+		{
+			// Reachable only when the order has no C_BPartner_Location_ID and no stored header PreparationDate; leaving
+			// the line's PreparationDate empty lets the shipment-schedule provider re-derive it the same way later.
+			logger.debug("No preparation date derived for C_OrderLine {} (deliveryDate={}); leaving it empty", orderLine, deliveryDate);
+		}
 		orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate));
 		return preparationDate != null;
 	}

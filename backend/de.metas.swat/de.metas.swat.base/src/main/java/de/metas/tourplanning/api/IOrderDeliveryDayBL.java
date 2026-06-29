@@ -31,13 +31,15 @@ public interface IOrderDeliveryDayBL extends ISingletonService
 	boolean setPreparationDateAndTour(I_C_Order order, boolean fallbackToDatePromised);
 
 	/**
-	 * Resolves a per-line preparation date: if the order line carries an explicit {@code C_OrderLine.PreparationDate}
-	 * override it is returned verbatim; otherwise the preparation date is derived from the given {@code deliveryDate}
-	 * using the same tour / no-tour-fallback / offset / sysconfig logic the order header uses. This is the single owner
-	 * of the override-or-derive decision — callers must not branch on the override themselves. Does NOT mutate the line.
+	 * Resolves the per-line preparation date for the shipment-schedule provider: if
+	 * {@code C_OrderLine.PreparationDate} is set (normally the derived value written back by
+	 * {@link #setLinePreparationDate}) it is returned as-is; otherwise it is derived fresh from the given
+	 * {@code deliveryDate} using the same tour / no-tour-fallback / offset / sysconfig logic the order header uses.
+	 * Does NOT mutate the line. Preparation-date overrides live on {@code M_ShipmentSchedule.PreparationDate_Override},
+	 * not on the line.
 	 *
-	 * @return the explicit per-line override (if set), else the derived preparation date (which may be {@code null}
-	 *         when there is no usable tour and the fallback is disabled).
+	 * @return the stored per-line preparation date (if set), else the derived preparation date (which may be
+	 *         {@code null} when there is no usable tour and the fallback is disabled).
 	 */
 	@Nullable
 	ZonedDateTime computePreparationDate(@NonNull I_C_Order order, @NonNull I_C_OrderLine orderLine, @NonNull ZonedDateTime deliveryDate);
