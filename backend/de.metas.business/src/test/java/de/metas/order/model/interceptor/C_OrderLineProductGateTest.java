@@ -1,5 +1,6 @@
 package de.metas.order.model.interceptor;
 
+import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -11,7 +12,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
-import de.metas.interfaces.I_C_OrderLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
