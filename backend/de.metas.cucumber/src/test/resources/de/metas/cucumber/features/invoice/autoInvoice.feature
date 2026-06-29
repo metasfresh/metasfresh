@@ -107,7 +107,6 @@ Feature: Enqueue order candidate and auto invoice after shipped
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
-  @F00703
   @Id:S30448_TC2
   Scenario: OLCand explicit invoiceRule and isAutoInvoice win over BP-group defaults
     # Guard scenario: when an OLCand request explicitly sets invoiceRule=I (Immediate) and isAutoInvoice=false,

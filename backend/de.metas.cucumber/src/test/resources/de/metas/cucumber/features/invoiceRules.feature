@@ -333,7 +333,6 @@ Feature: invoice rules
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00703_Invoice_Rule
-  @F00703
   @Id:S30448_TC1
   @ghActions:run_on_executor5
   Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value

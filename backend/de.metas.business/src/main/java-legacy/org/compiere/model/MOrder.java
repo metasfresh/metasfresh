@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
@@ -453,27 +455,17 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
-		// Resolve via the effective BILL partner (coalesce Bill_BPartner_ID → C_BPartner_ID) so that
-		// BP-group InvoiceRule / IsAutoInvoice are picked up — mirrors OrderBL.setBPartner.
-		if (isSOTrx())
+		// Use effective bill partner so group-chain InvoiceRule / IsAutoInvoice are resolved — mirrors OrderBL.setBPartner.
 		{
 			final I_C_BPartner billPartner = getBill_BPartner_ID() > 0
 					? bPartnerDAO.getById(BPartnerId.ofRepoId(getBill_BPartner_ID()))
 					: bp;
-			final de.metas.bpartner.effective.BPartnerEffective bpEffective =
-					SpringContextHolder.instance.getBean(de.metas.bpartner.effective.BPartnerEffectiveBL.class)
+			final BPartnerEffective bpEffective =
+					SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class)
 							.getByRecord(billPartner);
-			final SOTrx soTrx = SOTrx.ofBoolean(true);
+			final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx());
 			setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 			setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
-		}
-		else
-		{
-			final InvoiceRule invoiceRule = InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-			if (invoiceRule != null)
-			{
-				setInvoiceRule(invoiceRule.getCode());
-			}
 		}
 
 		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
