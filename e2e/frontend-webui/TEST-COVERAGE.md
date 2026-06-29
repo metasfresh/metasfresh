@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2025-12-04
+**Last Updated**: 2026-06-29
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -128,6 +128,31 @@ npm run test:report
 
 ---
 
+### 5. Workplace — shelf-life-warning field
+**File**: `tests/spec/workplace-shelflife-field.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~2 seconds per language
+
+**Workflow**:
+1. Create a warehouse + workplace (IsWarnShelfLifeUndercut=false) via masterdata API
+2. Log in, navigate directly to the workplace detail view
+3. Assert `IsWarnShelfLifeUndercut` checkbox is visible and unchecked
+4. Click the checkbox label (`.input-checkbox`), await the PATCH response
+5. Reload the page, assert the checkbox is now checked (end-state persistence)
+
+**Key Validations**:
+- Field renders in the AD layout (AD_Window_ID 541744)
+- YesNo checkbox is interactive via the `.input-checkbox` label
+- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541744/<id>`
+- Value persists after a full page reload (DB-level persistence)
+
+**Components Tested**:
+- Workplace window (AD_Window_ID 541744)
+- C_Workplace.IsWarnShelfLifeUndercut YesNo field
+- Workplace masterdata provisioning (`workplaces` + `warehouses` keys)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -183,10 +208,10 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 3
-- **Total test cases**: 6 (3 specs × 2 languages)
+- **Total test specs**: 5
+- **Total test cases**: ~10
 - **Language coverage**: en_US, de_DE
-- **Success rate**: 100% (6/6 passing)
+- **Success rate**: 100% (passing)
 - **Average execution time**: ~27 seconds per test
 - **Total suite time**: ~2.7 minutes (sequential execution)
 
