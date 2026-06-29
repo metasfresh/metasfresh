@@ -182,10 +182,32 @@ test('Serial-no product with NO attribute set: checkbox alone still prompts, ser
 
         // the picked HU carries the scanned serial — proving storage works without a product attribute set
         await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
+            },
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '999 PCE' } },
                 vhu1: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { SerialNo: serial } },
             }
         });
+    });
+
+    // completion persists the serial through to the shipped HU — the serial is not lost at shipment time.
+    await PickingJobScreen.complete();
+    await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: { qtyPicked: [{ qtyPicked: "1 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: true, shipmentLineId: 'shipmentLine1' }] }
+                }
+            }
+        },
+        hus: {
+            vhu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { SerialNo: serial } },
+        }
     });
 });

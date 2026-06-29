@@ -39,8 +39,7 @@ class PickingJobProductServiceTest
 
 	private ProductId createProduct(final boolean serialNoPicked)
 	{
-		// Build the product directly (mirrors CreateProductCommand): NO M_AttributeSet_ID is set,
-		// so M_Product.M_AttributeSet_ID stays None — modelling a serial-no product with no attribute set.
+		// mirrors CreateProductCommand — no attribute set is assigned, by design.
 		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
 		product.setValue("P1");
 		product.setName("P1");
