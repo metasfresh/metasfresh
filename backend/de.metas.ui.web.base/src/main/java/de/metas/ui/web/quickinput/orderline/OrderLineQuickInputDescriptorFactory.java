@@ -190,6 +190,7 @@ import java.util.Set;
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.SALES)
 					.build();
 		}
 		else
@@ -204,6 +205,7 @@ import java.util.Set;
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.PURCHASE)
 					.build();
 		}
 	}
