@@ -80,8 +80,8 @@ class WorkplaceUserAssignRepositoryTest
 				.workplaceId(workplaceB)
 				.build());
 
-		// must REUSE the single row (reactivate + repoint), not insert a duplicate
-		// (a duplicate would violate the unique index One_User_Per_Org (AD_User_ID, AD_Org_ID) in the DB)
+		// the unique index One_User_Per_Org (AD_User_ID, AD_Org_ID) spans inactive rows,
+		// so the row must be reused, not re-inserted
 		final List<I_C_Workplace_User_Assign> rows = retrieveAllForUser();
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).isActive()).isTrue();
@@ -105,6 +105,22 @@ class WorkplaceUserAssignRepositoryTest
 		final List<I_C_Workplace_User_Assign> rows = retrieveAllForUser();
 		assertThat(rows).hasSize(1);
 		assertThat(rows.get(0).getC_Workplace_ID()).isEqualTo(workplaceB.getRepoId());
+		assertThat(repository.getWorkplaceIdByUserId(userId)).contains(workplaceB);
+	}
+
+	@Test
+	void reassign_invalidates_the_cached_workplace_lookup()
+	{
+		createRow(workplaceA, true);
+		// warm the byUserId CCache with the old value
+		assertThat(repository.getWorkplaceIdByUserId(userId)).contains(workplaceA);
+
+		repository.create(WorkplaceAssignmentCreateRequest.builder()
+				.userId(userId)
+				.workplaceId(workplaceB)
+				.build());
+
+		// the save must invalidate the cache so the next read returns the new workplace
 		assertThat(repository.getWorkplaceIdByUserId(userId)).contains(workplaceB);
 	}
 }
