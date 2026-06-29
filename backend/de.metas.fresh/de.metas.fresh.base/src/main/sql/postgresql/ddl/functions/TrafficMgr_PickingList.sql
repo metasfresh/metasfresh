@@ -6,9 +6,9 @@ CREATE OR REPLACE FUNCTION report.TrafficMgr_PickingList(
 )
     RETURNS TABLE
             (
-                artikel          VARCHAR,
-                kz               VARCHAR,
-                zu_packen        NUMERIC,
+                productValue          VARCHAR,
+                productname               VARCHAR,
+                QtyToPick        NUMERIC,
                 status           VARCHAR,
                 workplace        VARCHAR,
                 prep_date        TIMESTAMP WITH TIME ZONE,
@@ -20,14 +20,16 @@ CREATE OR REPLACE FUNCTION report.TrafficMgr_PickingList(
     LANGUAGE plpgsql
 AS
 $$
--- NOTE: assumes T_WEBUI_ViewSelection.IntKey1 = M_ShipmentSchedule_ID for the Traffic Manager view.
--- If the view uses a compound key where IntKey1 = M_Picking_Job_Schedule_ID, change IntKey1 → IntKey2
--- and the filter column accordingly.
 BEGIN
+    -- M_Picking_Job_Schedule_view has a compound key (M_ShipmentSchedule_ID, M_Picking_Job_Schedule_ID).
+    -- WebUI passes selected IDs as "M_ShipmentSchedule_ID$M_Picking_Job_Schedule_ID" (e.g. "1002746$0").
+    -- Strip the $xxx suffix so each element can be cast to INT.
+    p_m_shipmentschedule_ids := REGEXP_REPLACE(p_m_shipmentschedule_ids, '\$[^,]*', '', 'g');
+
     RETURN QUERY
-        SELECT p.Value::VARCHAR                                                                   AS artikel,
-               p.Name::VARCHAR                                                                    AS kz,
-               pjs.QtyToPick                                                                      AS zu_packen,
+        SELECT p.Value::VARCHAR                                                                   AS productValue,
+               p.Name::VARCHAR                                                                    AS productname,
+               pjs.QtyToPick                                                                      AS QtyToPick,
                CASE
                    WHEN pjs.processed = 'Y' THEN 'Verarbeitet'
                    WHEN pjs.isassigned = 'Y' THEN 'Zugewiesen'
