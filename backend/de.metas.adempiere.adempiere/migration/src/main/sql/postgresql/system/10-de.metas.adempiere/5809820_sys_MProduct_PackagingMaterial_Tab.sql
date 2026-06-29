@@ -138,3 +138,255 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 VALUES (0,781255,0,549326,555469,652375 /*From ID Server*/,'F',TO_TIMESTAMP('2026-06-26 16:03:10','YYYY-MM-DD HH24:MI:SS'),100,'Gewicht (g)','Y','N','N','Y','Y','N','N',0,'Gewicht (g)',20,20,0,TO_TIMESTAMP('2026-06-26 16:03:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+
+
+-- Run mode: SWING_CLIENT
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Verpackungsmaterial
+-- Column: M_Product_PackagingMaterial.M_Product_PackagingMaterial_ID
+-- 2026-06-29T10:42:52.172Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592884,781308,0,549326,TO_TIMESTAMP('2026-06-29 10:42:51.542000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,10,'D','Y','N','N','N','N','N','N','N','Verpackungsmaterial',TO_TIMESTAMP('2026-06-29 10:42:51.542000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:52.212Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781308 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:52.275Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(585052)
+;
+
+-- 2026-06-29T10:42:52.361Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781308
+;
+
+-- 2026-06-29T10:42:52.400Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781308)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Mandant
+-- Column: M_Product_PackagingMaterial.AD_Client_ID
+-- 2026-06-29T10:42:52.855Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592885,781309,0,549326,TO_TIMESTAMP('2026-06-29 10:42:52.489000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.',10,'D','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2026-06-29 10:42:52.489000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:52.895Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781309 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:52.935Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102)
+;
+
+-- 2026-06-29T10:42:53.067Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781309
+;
+
+-- 2026-06-29T10:42:53.106Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781309)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Sektion
+-- Column: M_Product_PackagingMaterial.AD_Org_ID
+-- 2026-06-29T10:42:53.541Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592886,781310,0,549326,TO_TIMESTAMP('2026-06-29 10:42:53.186000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten',10,'D','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','Sektion',TO_TIMESTAMP('2026-06-29 10:42:53.186000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:53.582Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781310 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:53.624Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113)
+;
+
+-- 2026-06-29T10:42:53.757Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781310
+;
+
+-- 2026-06-29T10:42:53.797Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781310)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Aktiv
+-- Column: M_Product_PackagingMaterial.IsActive
+-- 2026-06-29T10:42:54.237Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592887,781311,0,549326,TO_TIMESTAMP('2026-06-29 10:42:53.878000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv',1,'D','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2026-06-29 10:42:53.878000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:54.278Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781311 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:54.317Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348)
+;
+
+-- 2026-06-29T10:42:54.445Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781311
+;
+
+-- 2026-06-29T10:42:54.484Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781311)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Erstellt
+-- Column: M_Product_PackagingMaterial.Created
+-- 2026-06-29T10:42:54.919Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592888,781312,0,549326,TO_TIMESTAMP('2026-06-29 10:42:54.564000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag erstellt wurde',29,'D','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Y','Y','N','N','N','N','N','Erstellt',TO_TIMESTAMP('2026-06-29 10:42:54.564000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:54.960Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781312 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:55.001Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(245)
+;
+
+-- 2026-06-29T10:42:55.108Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781312
+;
+
+-- 2026-06-29T10:42:55.148Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781312)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Erstellt durch
+-- Column: M_Product_PackagingMaterial.CreatedBy
+-- 2026-06-29T10:42:55.596Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592889,781313,0,549326,TO_TIMESTAMP('2026-06-29 10:42:55.228000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag erstellt hat',10,'D','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.','Y','Y','N','N','N','N','N','Erstellt durch',TO_TIMESTAMP('2026-06-29 10:42:55.228000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:55.637Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781313 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:55.678Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(246)
+;
+
+-- 2026-06-29T10:42:55.764Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781313
+;
+
+-- 2026-06-29T10:42:55.802Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781313)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Aktualisiert
+-- Column: M_Product_PackagingMaterial.Updated
+-- 2026-06-29T10:42:56.247Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592890,781314,0,549326,TO_TIMESTAMP('2026-06-29 10:42:55.884000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Datum, an dem dieser Eintrag aktualisiert wurde',29,'D','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Y','Y','N','N','N','N','N','Aktualisiert',TO_TIMESTAMP('2026-06-29 10:42:55.884000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:56.287Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781314 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:56.327Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(607)
+;
+
+-- 2026-06-29T10:42:56.388Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781314
+;
+
+-- 2026-06-29T10:42:56.426Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781314)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Aktualisiert durch
+-- Column: M_Product_PackagingMaterial.UpdatedBy
+-- 2026-06-29T10:42:56.873Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592891,781315,0,549326,TO_TIMESTAMP('2026-06-29 10:42:56.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Nutzer, der diesen Eintrag aktualisiert hat',10,'D','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.','Y','Y','N','N','N','N','N','Aktualisiert durch',TO_TIMESTAMP('2026-06-29 10:42:56.506000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:56.914Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781315 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:56.955Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(608)
+;
+
+-- 2026-06-29T10:42:57.043Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781315
+;
+
+-- 2026-06-29T10:42:57.082Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781315)
+;
+
+-- Field: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> Produkt
+-- Column: M_Product_PackagingMaterial.M_Product_ID
+-- 2026-06-29T10:42:57.523Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,592892,781316,0,549326,TO_TIMESTAMP('2026-06-29 10:42:57.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt, Leistung, Artikel',10,'D','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','N','N','N','N','N','Produkt',TO_TIMESTAMP('2026-06-29 10:42:57.162000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- 2026-06-29T10:42:57.563Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781316 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2026-06-29T10:42:57.604Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(454)
+;
+
+-- 2026-06-29T10:42:57.696Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781316
+;
+
+-- 2026-06-29T10:42:57.735Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(781316)
+;
+
+-- UI Section: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main
+-- UI Column: 20
+-- 2026-06-29T10:43:18.227Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,549578,547832,TO_TIMESTAMP('2026-06-29 10:43:17.934000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y',20,TO_TIMESTAMP('2026-06-29 10:43:17.934000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20
+-- UI Element Group: flag
+-- 2026-06-29T10:43:29.503Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549578,555476,TO_TIMESTAMP('2026-06-29 10:43:29.189000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','flag',10,TO_TIMESTAMP('2026-06-29 10:43:29.189000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Column: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20
+-- UI Element Group: org
+-- 2026-06-29T10:43:36.269Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,549578,555477,TO_TIMESTAMP('2026-06-29 10:43:36.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Y','org',20,TO_TIMESTAMP('2026-06-29 10:43:36.013000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20 -> flag.Aktiv
+-- Column: M_Product_PackagingMaterial.IsActive
+-- 2026-06-29T10:44:24.895Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781311,0,549326,555476,652421,'F',TO_TIMESTAMP('2026-06-29 10:44:24.345000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','N','N','Aktiv',10,0,0,TO_TIMESTAMP('2026-06-29 10:44:24.345000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20 -> org.Sektion
+-- Column: M_Product_PackagingMaterial.AD_Org_ID
+-- 2026-06-29T10:44:51.940Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781310,0,549326,555477,652422,'F',TO_TIMESTAMP('2026-06-29 10:44:51.415000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','N','N','Sektion',10,0,0,TO_TIMESTAMP('2026-06-29 10:44:51.415000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20 -> org.Mandant
+-- Column: M_Product_PackagingMaterial.AD_Client_ID
+-- 2026-06-29T10:45:21.139Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781309,0,549326,555477,652423,'F',TO_TIMESTAMP('2026-06-29 10:45:20.591000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','Y','N','N','Mandant',20,0,0,TO_TIMESTAMP('2026-06-29 10:45:20.591000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
+;
+
+-- UI Element: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20 -> flag.Aktiv
+-- Column: M_Product_PackagingMaterial.IsActive
+-- 2026-06-29T10:45:36.641Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2026-06-29 10:45:36.640000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=652421
+;
+
+-- UI Element: Produkt(140,D) -> Verpackungsmaterial(549326,D) -> main -> 20 -> org.Sektion
+-- Column: M_Product_PackagingMaterial.AD_Org_ID
+-- 2026-06-29T10:45:36.880Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2026-06-29 10:45:36.879000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=652422
+;
+
