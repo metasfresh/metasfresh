@@ -54,7 +54,7 @@ import java.util.Set;
 
 public interface IProductBL extends ISingletonService
 {
-	/** SysConfig name that gates all IsPurchased/IsSold enforcement (me03#30496). Default 'N' (off). */
+	/** SysConfig name that gates all IsPurchased/IsSold enforcement. Default 'N' (off). */
 	String SYSCONFIG_EnforcePurchaseSalesFlags = "M_Product_EnforcePurchaseSalesFlags";
 
 	/**
