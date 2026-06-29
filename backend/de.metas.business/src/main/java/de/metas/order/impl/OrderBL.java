@@ -656,7 +656,12 @@ public class OrderBL implements IOrderBL
 
 		//
 		// Default Invoice/Payment Rule (resolved via BP group chain: partner → group → parent → system default)
-		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(bp);
+		// Use the effective bill partner (coalesce Bill_BPartner_ID → C_BPartner_ID), consistent with CalloutOrder.
+		final org.compiere.model.I_C_BPartner billPartner =
+				order.getBill_BPartner_ID() > 0
+						? bPartnerBL.getById(BPartnerId.ofRepoId(order.getBill_BPartner_ID()), org.compiere.model.I_C_BPartner.class)
+						: bp;
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getByRecord(billPartner);
 		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
 		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));

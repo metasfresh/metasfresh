@@ -186,6 +186,48 @@ class OrderBLTest
 	}
 
 	/**
+	 * Order has a distinct Bill_BPartner_ID. The bill partner's group has InvoiceRule=AfterDelivery + IsAutoInvoice=Y,
+	 * while the passed (ship) bp's group has InvoiceRule=Immediate + IsAutoInvoice=N.
+	 * After setBPartner the order must carry the BILL partner's effective values, not the ship bp's.
+	 */
+	@Test
+	void givenSalesOrder_separateBillBPartnerWithAfterDelivery_whenSetBPartner_thenOrderGetsBillPartnerValues()
+	{
+		// ship bp group: InvoiceRule=Immediate, IsAutoInvoice=N
+		final I_C_BP_Group shipGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		shipGroup.setInvoiceRule(InvoiceRule.Immediate.getCode());
+		shipGroup.setIsAutoInvoice(StringUtils.ofBoolean(false));
+		saveRecord(shipGroup);
+
+		final I_C_BPartner shipBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		shipBp.setC_BP_Group_ID(shipGroup.getC_BP_Group_ID());
+		saveRecord(shipBp);
+
+		// bill bp group: InvoiceRule=AfterDelivery, IsAutoInvoice=Y
+		final I_C_BP_Group billGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
+		billGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
+		billGroup.setIsAutoInvoice(StringUtils.ofBoolean(true));
+		saveRecord(billGroup);
+
+		final I_C_BPartner billBp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
+		billBp.setC_BP_Group_ID(billGroup.getC_BP_Group_ID());
+		saveRecord(billBp);
+
+		final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		order.setBill_BPartner_ID(billBp.getC_BPartner_ID());
+
+		orderBL.setBPartner(order, shipBp);
+
+		assertThat(order.getInvoiceRule())
+				.as("order InvoiceRule must come from the BILL partner (AfterDelivery), not the ship bp (Immediate)")
+				.isEqualTo(InvoiceRule.AfterDelivery.getCode());
+		assertThat(order.isAutoInvoice())
+				.as("order IsAutoInvoice must come from the BILL partner (true), not the ship bp (false)")
+				.isTrue();
+	}
+
+	/**
 	 * bp with explicit InvoiceRule=Immediate — partner value wins over group.
 	 */
 	@Test
