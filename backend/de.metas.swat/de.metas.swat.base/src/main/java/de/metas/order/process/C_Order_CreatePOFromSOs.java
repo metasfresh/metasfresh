@@ -117,6 +117,7 @@ public class C_Order_CreatePOFromSOs
 	private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 	private final OrderGroupRepository orderGroupsRepo = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final IProductBOMDAO bomDAO = Services.get(IProductBOMDAO.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	/**
 	 * Task http://dewiki908/mediawiki/index.php/07228_Create_bestellung_from_auftrag_more_than_once_%28100300573628%29
@@ -126,6 +127,7 @@ public class C_Order_CreatePOFromSOs
 	private final INotificationBL userNotifications = Services.get(INotificationBL.class);
 
 	private static final AdMessageKey MSG_SKIPPED_C_ORDERLINE_IDS = AdMessageKey.of("SkippedOrderLines");
+	private static final AdMessageKey MSG_CreatePOFromSOs_ProductsNotPurchased = AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased");
 
 	@Override
 	protected String doIt() throws Exception
@@ -154,16 +156,16 @@ public class C_Order_CreatePOFromSOs
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
-			collectNotPurchasedProducts(salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
+			collectNotPurchasedProducts(productDAO, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
 			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
 		}
 
 		if (!notPurchasedProducts.isEmpty())
 		{
+			// The AdMessageKey(..., params) constructor already flags this as a user validation error.
 			throw new AdempiereException(
-					AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased"),
-					String.join(", ", notPurchasedProducts.values()))
-					.markAsUserValidationError();
+					MSG_CreatePOFromSOs_ProductsNotPurchased,
+					String.join(", ", notPurchasedProducts.values()));
 		}
 
 		// Pass 2 — all lines are purchasable; aggregate normally.
@@ -221,10 +223,15 @@ public class C_Order_CreatePOFromSOs
 	 * Lines without a product (product_id &lt;= 0) are skipped.
 	 * The returned map is keyed by {@link ProductId} (deduplication) and the value is {@code "<Value> (<Name>)"}.
 	 * Insertion order is preserved (first occurrence wins on duplicate).
+	 * <p>
+	 * The {@link IProductDAO} is passed in (rather than retrieved via {@code Services.get} in the body) so this
+	 * helper can be unit-tested directly with the {@code AdempiereTestHelper} in-memory DAO, without instantiating
+	 * the enclosing {@link JavaProcess} (whose Spring-bean fields cannot be initialised in a plain unit test).
 	 */
-	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(@NonNull final List<I_C_OrderLine> orderLines)
+	static LinkedHashMap<ProductId, String> collectNotPurchasedProducts(
+			@NonNull final IProductDAO productDAO,
+			@NonNull final List<I_C_OrderLine> orderLines)
 	{
-		final IProductDAO productDAO = Services.get(IProductDAO.class);
 		final LinkedHashMap<ProductId, String> result = new LinkedHashMap<>();
 		for (final I_C_OrderLine orderLine : orderLines)
 		{

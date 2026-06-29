@@ -22,7 +22,9 @@
 
 package de.metas.order.process;
 
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
@@ -38,10 +40,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CreatePOFromSOsNotPurchasedTest
 {
+	private IProductDAO productDAO;
+
 	@BeforeEach
 	void setUp()
 	{
 		AdempiereTestHelper.get().init();
+		productDAO = Services.get(IProductDAO.class);
 	}
 
 	private I_M_Product createProduct(final String value, final String name, final boolean isPurchased)
@@ -78,7 +83,7 @@ class CreatePOFromSOsNotPurchasedTest
 		final List<I_C_OrderLine> lines = Arrays.asList(lineWithPurchased, lineWithNotPurchased1, lineWithNotPurchased2);
 
 		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(lines);
+		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
 		// then
 		assertThat(result).hasSize(2);
@@ -102,7 +107,7 @@ class CreatePOFromSOsNotPurchasedTest
 		final List<I_C_OrderLine> lines = Arrays.asList(line1, line2);
 
 		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(lines);
+		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
 		// then — same product appears only once (dedup by ProductId)
 		assertThat(result).hasSize(1);
@@ -119,7 +124,7 @@ class CreatePOFromSOsNotPurchasedTest
 		final List<I_C_OrderLine> lines = Arrays.asList(createOrderLine(p1), createOrderLine(p2));
 
 		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(lines);
+		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
 		// then
 		assertThat(result).isEmpty();
@@ -136,7 +141,7 @@ class CreatePOFromSOsNotPurchasedTest
 		final List<I_C_OrderLine> lines = Arrays.asList(lineWithNoProduct);
 
 		// when
-		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(lines);
+		final LinkedHashMap<ProductId, String> result = C_Order_CreatePOFromSOs.collectNotPurchasedProducts(productDAO, lines);
 
 		// then — lines without product are skipped (neither an offender nor a pass)
 		assertThat(result).isEmpty();
