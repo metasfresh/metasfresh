@@ -456,7 +456,6 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     # Isolation: restore the default offset so sibling features on this executor are not affected.
     Given set sys config int value 0 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
 
-  @ignore #FIXME: olCand process doesn't give error details in general
   @from:cucumber
   @allure.label.epic:E0100_Sales
   @allure.label.feature:F00122
@@ -578,9 +577,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
 
-    # The process call is handled in audited async mode: the synchronous 400 response carries no body and the
-    # candidate is not flagged with IsError. The translated AD_Index_Table.ErrorMsg is stored on the request-audit's
-    # response (api_response_audit). The PUT's own request-audit id is taken from its X-Api-Request-Audit-ID response
+    # The process call is handled in audited async mode: the synchronous 400 response carries the JsonError body
+    # (the candidate itself is not flagged with IsError). The translated AD_Index_Table.ErrorMsg is stored on the
+    # request-audit's response (api_response_audit). The PUT's own request-audit id is taken from its X-Api-Request-Audit-ID response
     # header (RESTUtil stores it into the test context), so the assertion below resolves the EXACT request-audit of
     # this PUT - we must NOT overwrite it with a "last audit record" guess. Assert its stored response is the HTTP 400
     # JsonError whose body contains the translated message (base language, German).
