@@ -98,6 +98,7 @@
 | Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
+| Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows exactly 3 fields: document number, delivery location and delivery date | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
 **16/17 — 94%**
@@ -108,9 +109,10 @@
 |---|---|
 | Facet filter shows only jobs scheduled for current workplace | `picking/facets.spec.js` |
 | Filter by qty available at locator → only jobs with sufficient stock shown | `picking/filterByQtyAvailableAtLocator.spec.js` |
+| Profile configured with HandoverLocation filter → filter screen offers a delivery-location (Lieferort) facet | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Multiple jobs for same customer → aggregation count correct | — |
 
-**2/3 — 67%**
+**3/4 — 75%**
 
 ### Order-based picking — pick-all and attributes
 
