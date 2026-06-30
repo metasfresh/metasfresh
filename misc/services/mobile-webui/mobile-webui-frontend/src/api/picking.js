@@ -80,6 +80,7 @@ export const postStepPicked = ({
   setLotNo,
   lotNo,
   isCloseTarget = false,
+  isShelfLifeConfirmed = false,
 }) => {
   const realRejectedQtyReason =
     qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
@@ -103,6 +104,7 @@ export const postStepPicked = ({
     setLotNo,
     lotNo,
     isCloseTarget,
+    isShelfLifeConfirmed,
   });
 };
 
