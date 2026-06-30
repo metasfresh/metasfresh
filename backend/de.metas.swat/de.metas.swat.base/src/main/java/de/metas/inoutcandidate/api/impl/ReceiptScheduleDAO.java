@@ -398,6 +398,16 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		// Intentionally no addOnlyActiveRecordsFilter(): when an order line is deleted, all linked receipt
 		// schedules must be cleaned up regardless of their IsActive state. Leaving IsActive=false schedules
 		// behind would leave orphaned rows tied to a non-existent order line.
+		// Note on double ReceiptScheduleDeletedEvent: for any IsActive=false schedule in the result set,
+		// the TYPE_BEFORE_DELETE fired by delete() below will post a ReceiptScheduleDeletedEvent via
+		// M_ReceiptSchedule_PostMaterialEvent. A prior event was posted when the schedule was deactivated.
+		// This double-fire is harmless: in normal application flow, inactivateReceiptSchedules() immediately
+		// follows setIsActive(false) with deleteRecord(), so IsActive=false schedules never persist as a
+		// steady state. If one does exist (e.g. after a crash), its QtyToMove will be 0 (the updateQtys
+		// interceptor zeroes it on deactivation), making the second event a no-op for MRP.
+		// Note on getQtyOrdered in the deletion event: IReceiptScheduleQtysBL.getQtyOrdered() reads the
+		// QtyOrdered column directly and is not affected by the Processed=false written by updateDirectly()
+		// below, so the event reports the correct ordered quantity.
 		final IQuery<I_M_ReceiptSchedule> receiptSchedulesForOrderLine = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)

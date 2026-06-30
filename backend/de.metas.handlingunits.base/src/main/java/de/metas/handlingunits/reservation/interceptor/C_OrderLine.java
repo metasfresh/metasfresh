@@ -69,8 +69,12 @@ public class C_OrderLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeOrderLineDeleted(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		// Receipt schedules only exist for purchase order lines
-		if (orderLineRecord.getC_Order().isSOTrx())
+		// Receipt schedules only exist for purchase order lines.
+		// Guard against null: getC_Order() returns null when C_Order_ID <= 0 (malformed data).
+		// Treat that as a no-op to avoid NPE; deleteByOrderLineId will be a no-op anyway since
+		// no receipt schedules can be linked to an order-less order line.
+		final org.compiere.model.I_C_Order order = orderLineRecord.getC_Order();
+		if (order == null || order.isSOTrx())
 		{
 			return;
 		}
