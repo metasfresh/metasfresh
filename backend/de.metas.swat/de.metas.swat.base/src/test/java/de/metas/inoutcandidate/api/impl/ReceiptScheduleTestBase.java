@@ -38,6 +38,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.document.dimension.ReceiptScheduleDimensionFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.order.OrderLineId;
 import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
@@ -414,17 +415,17 @@ public abstract class ReceiptScheduleTestBase
 	/**
 	 * Creates an {@link I_M_ReceiptSchedule_Alloc} for the given receipt schedule.
 	 *
-	 * @param inOutLineId set to a positive value to simulate a received alloc (goods were received); 0 means not yet received
+	 * @param inOutLineId non-null to simulate a received alloc (goods were received); null means not yet received
 	 */
 	protected I_M_ReceiptSchedule_Alloc createReceiptScheduleAlloc(
 			final I_M_ReceiptSchedule receiptSchedule,
-			final int inOutLineId)
+			@Nullable final InOutLineId inOutLineId)
 	{
 		final I_M_ReceiptSchedule_Alloc alloc = InterfaceWrapperHelper.newInstance(I_M_ReceiptSchedule_Alloc.class);
 		alloc.setM_ReceiptSchedule_ID(receiptSchedule.getM_ReceiptSchedule_ID());
-		if (inOutLineId > 0)
+		if (inOutLineId != null)
 		{
-			alloc.setM_InOutLine_ID(inOutLineId);
+			alloc.setM_InOutLine_ID(inOutLineId.getRepoId());
 		}
 		saveRecord(alloc);
 		return alloc;

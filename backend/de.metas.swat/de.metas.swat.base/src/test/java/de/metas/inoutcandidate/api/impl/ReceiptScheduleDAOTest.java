@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inout.InOutLineId;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
 import de.metas.order.OrderLineId;
 import de.metas.util.Services;
@@ -101,7 +102,7 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 		// in the HU module's test suite.
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
 		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
-		createReceiptScheduleAlloc(rs, 0 /* no M_InOutLine_ID = not yet received */);
+		createReceiptScheduleAlloc(rs, null /* no M_InOutLine_ID = not yet received */);
 
 		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
 
@@ -118,7 +119,7 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
 		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
-		createReceiptScheduleAlloc(rs, 999 /* non-zero M_InOutLine_ID = goods already received */);
+		createReceiptScheduleAlloc(rs, InOutLineId.ofRepoId(999) /* M_InOutLine_ID set = goods already received */);
 
 		Assertions.assertThrows(
 				AdempiereException.class,
@@ -133,7 +134,7 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 		// The guard must NOT block deletion; only active received allocs should block.
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
 		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
-		final I_M_ReceiptSchedule_Alloc alloc = createReceiptScheduleAlloc(rs, 999 /* M_InOutLine_ID set, as after reversal */);
+		final I_M_ReceiptSchedule_Alloc alloc = createReceiptScheduleAlloc(rs, InOutLineId.ofRepoId(999) /* M_InOutLine_ID set, as after reversal */);
 		alloc.setIsActive(false);
 		saveRecord(alloc);
 
@@ -174,7 +175,7 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
 
 		final I_M_ReceiptSchedule rs1 = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
-		createReceiptScheduleAlloc(rs1, 0 /* unreceived alloc */);
+		createReceiptScheduleAlloc(rs1, null /* unreceived alloc */);
 
 		createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 5, orderLineId);
 
