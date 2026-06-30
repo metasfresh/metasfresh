@@ -131,7 +131,7 @@ public class C_Order_CreatePOFromSOs
 	private final INotificationBL userNotifications = Services.get(INotificationBL.class);
 
 	private static final AdMessageKey MSG_SKIPPED_C_ORDERLINE_IDS = AdMessageKey.of("SkippedOrderLines");
-	private static final AdMessageKey MSG_CreatePOFromSOs_ProductsNotPurchased = AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased");
+	private static final AdMessageKey MSG_CREATE_PO_FROM_SOS_PRODUCTS_NOT_PURCHASED = AdMessageKey.of("MSG_CreatePOFromSOs_ProductsNotPurchased");
 
 	@Override
 	protected String doIt() throws Exception
@@ -149,32 +149,20 @@ public class C_Order_CreatePOFromSOs
 				p_DatePromised_To,
 				p_IsVendorInOrderLinesRequired);
 
-		final boolean enforcePurchaseSalesFlags = productBL.isPurchaseSalesEnforcementEnabled(getClientId(), getOrgId());
-
 		// Pass 1 — buffer all (order, lines) pairs.
 		// The iterator is a one-shot DB cursor, so we must buffer before touching the aggregator.
-		// When the enforcement gate is ON, we also collect not-purchased offenders and abort
-		// before the aggregator sees a single line, preventing partial POs from being written to the DB.
 		final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered = new ArrayList<>();
-		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
 		for (final I_C_Order salesOrder : IteratorUtils.asIterable(it))
 		{
 			final List<I_C_OrderLine> salesOrderLines = orderCreatePOFromSOsDAO.retrieveOrderLines(salesOrder,
 					p_allowMultiplePOOrders,
 					purchaseQtySource);
-			if (enforcePurchaseSalesFlags)
-			{
-				collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, salesOrderLines).forEach(notPurchasedProducts::putIfAbsent);
-			}
 			buffered.add(new AbstractMap.SimpleImmutableEntry<>(salesOrder, salesOrderLines));
 		}
 
-		if (enforcePurchaseSalesFlags && !notPurchasedProducts.isEmpty())
-		{
-			throw new AdempiereException(
-					MSG_CreatePOFromSOs_ProductsNotPurchased,
-					String.join(", ", notPurchasedProducts.values()));
-		}
+		// Abort before the aggregator writes a single line if the purchase/sales gate is on and
+		// any buffered line references a not-purchased product (prevents partial POs). No-op when off.
+		assertAllProductsPurchasable(buffered);
 
 		// Pass 2 — all lines are purchasable; aggregate normally.
 		final Mutable<Integer> purchaseOrderLineCount = new Mutable<>(0);
@@ -224,6 +212,33 @@ public class C_Order_CreatePOFromSOs
 				});
 
 		return MSG_OK;
+	}
+
+	/**
+	 * Enforcement gate for the purchase/sales flags. Fast-returns (no-op) when the gate is off; when on,
+	 * aborts — before the aggregator writes any PO line — if any buffered sales-order line references a
+	 * not-purchased product, with one message listing every offender (so no partial PO is created).
+	 */
+	private void assertAllProductsPurchasable(@NonNull final List<Map.Entry<I_C_Order, List<I_C_OrderLine>>> buffered)
+	{
+		if (!productBL.isPurchaseSalesEnforcementEnabled(getClientId(), getOrgId()))
+		{
+			return;
+		}
+
+		final LinkedHashMap<ProductId, String> notPurchasedProducts = new LinkedHashMap<>();
+		for (final Map.Entry<I_C_Order, List<I_C_OrderLine>> entry : buffered)
+		{
+			collectNotPurchasedProducts(productDAO, bomDAO, p_isPurchaseBOMComponents, entry.getValue())
+					.forEach(notPurchasedProducts::putIfAbsent);
+		}
+
+		if (!notPurchasedProducts.isEmpty())
+		{
+			throw new AdempiereException(
+					MSG_CREATE_PO_FROM_SOS_PRODUCTS_NOT_PURCHASED,
+					String.join(", ", notPurchasedProducts.values()));
+		}
 	}
 
 	/**

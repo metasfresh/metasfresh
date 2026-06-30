@@ -12,7 +12,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static de.metas.product.IProductBL.SYSCONFIG_EnforcePurchaseSalesFlags;
+import static de.metas.product.IProductBL.SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS;
 import static de.metas.util.Services.get;
 import static org.assertj.core.api.Assertions.*;
 
@@ -78,7 +78,7 @@ class ProductBLTest
 	@Test
 	void isPurchaseSalesEnforcementEnabled_trueWhenSysConfigSetToTrue()
 	{
-		get(ISysConfigBL.class).setValue(SYSCONFIG_EnforcePurchaseSalesFlags, true, ClientId.SYSTEM, OrgId.ANY);
+		get(ISysConfigBL.class).setValue(SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS, true, ClientId.SYSTEM, OrgId.ANY);
 		assertThat(productBL.isPurchaseSalesEnforcementEnabled(ClientId.SYSTEM, OrgId.ANY)).isTrue();
 	}
 }

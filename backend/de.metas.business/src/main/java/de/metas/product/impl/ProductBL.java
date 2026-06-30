@@ -83,6 +83,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public final class ProductBL implements IProductBL
 {
 	private static final Logger logger = LogManager.getLogger(ProductBL.class);
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_PURCHASED = AdMessageKey.of("MSG_M_Product_NotPurchased");
+	private static final AdMessageKey MSG_M_PRODUCT_NOT_SOLD = AdMessageKey.of("MSG_M_Product_NotSold");
 
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
@@ -417,9 +419,6 @@ public final class ProductBL implements IProductBL
 				&& product.isSold();
 	}
 
-	private static final AdMessageKey MSG_M_Product_NotPurchased = AdMessageKey.of("MSG_M_Product_NotPurchased");
-	private static final AdMessageKey MSG_M_Product_NotSold = AdMessageKey.of("MSG_M_Product_NotSold");
-
 	@Override
 	public boolean isPurchased(@NonNull final ProductId productId)
 	{
@@ -438,7 +437,7 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = getById(productId);
 		if (!product.isPurchased())
 		{
-			throw new AdempiereException(MSG_M_Product_NotPurchased, product.getValue(), product.getName());
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_PURCHASED, product.getValue(), product.getName());
 		}
 	}
 
@@ -448,14 +447,14 @@ public final class ProductBL implements IProductBL
 		final I_M_Product product = getById(productId);
 		if (!product.isSold())
 		{
-			throw new AdempiereException(MSG_M_Product_NotSold, product.getValue(), product.getName());
+			throw new AdempiereException(MSG_M_PRODUCT_NOT_SOLD, product.getValue(), product.getName());
 		}
 	}
 
 	@Override
 	public boolean isPurchaseSalesEnforcementEnabled(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
-		return sysConfigBL.getBooleanValue(SYSCONFIG_EnforcePurchaseSalesFlags, false, clientId.getRepoId(), orgId.getRepoId());
+		return sysConfigBL.getBooleanValue(SYSCONFIG_ENFORCE_PURCHASE_SALES_FLAGS, false, clientId.getRepoId(), orgId.getRepoId());
 	}
 
 	@Override
