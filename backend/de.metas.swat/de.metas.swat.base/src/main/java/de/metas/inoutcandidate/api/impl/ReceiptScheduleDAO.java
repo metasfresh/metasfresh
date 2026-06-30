@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.document.engine.IDocument;
 import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
@@ -69,7 +70,7 @@ import java.util.Set;
 public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private static final String CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE = "CannotDeleteOrderLine_ReceiptSchedule";
+	private static final AdMessageKey MSG_CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE = AdMessageKey.of("CannotDeleteOrderLine_ReceiptSchedule");
 
 	@Override
 	public Iterator<I_M_ReceiptSchedule> retrieve(final IQuery<I_M_ReceiptSchedule> query)
@@ -411,7 +412,7 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 				.anyMatch();
 		if (hasReceivedAllocations)
 		{
-			throw new AdempiereException("@" + CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE + "@");
+			throw new AdempiereException(MSG_CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE);
 		}
 
 		// Delete all alloc records first to satisfy the FK constraint
@@ -421,19 +422,34 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		//   - Reversed-receipt allocs (IsActive=false, M_InOutLine_ID set): the receipt was reversed,
 		//     so the alloc was deactivated and the HU destroyed; safe to delete.
 		// Active allocs with M_InOutLine_ID set (real open receipts) were rejected by the guard above.
+		//
+		// deleteDirectly() is used intentionally here and is safe to bypass the M_ReceiptSchedule_Alloc
+		// model interceptor (updateQtyMovedSubtract / onReceiptScheduleDeleted), for two reasons:
+		//   1. Inactive allocs (reversed receipts) return zero qty from getQtysIfActive → the interceptor
+		//      would be a no-op anyway.
+		//   2. Active unreceived allocs (M_InOutLine_ID=null) carry no QtyMoved contribution, and the parent
+		//      receipt schedule is deleted in this same operation so any accounting adjustment is moot.
+		// INVARIANT: this safety holds only because both allocs AND their parent receipt schedules are always
+		// deleted together in this method. Do not split this operation without re-evaluating the interceptor bypass.
 		queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
 				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
 				.create()
 				.deleteDirectly();
 
-		// Clear Processed=Y via direct SQL to bypass only the M_ReceiptSchedule model-validator guard that blocks
-		// deletion of processed records. updateDirectly targets only this specific guard — it does NOT skip any
-		// other model interceptors. The subsequent model-based delete() correctly triggers all of them:
-		//   - TYPE_BEFORE_DELETE: M_ReceiptSchedule_PostMaterialEvent fires ReceiptScheduleDeletedEvent to
-		//     update material disposition (MD candidates).
-		//   - TYPE_AFTER_DELETE: M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder on the
-		//     order line. This is harmless in the primary use-case (order line deletion) since the order line
-		//     is removed immediately after but fires correctly if this method is called in other contexts.
+		// updateDirectly() goes straight to SQL and bypasses ALL model interceptors — not just the processed
+		// guard, but also M_ReceiptSchedule_PostMaterialEvent. We need this for two reasons:
+		//   1. M_ReceiptSchedule_PostMaterialEvent watches COLUMNNAME_Processed in its ifColumnsChanged list.
+		//      A normal model-based update setting Processed=false would fire a spurious ReceiptScheduleUpdatedEvent
+		//      immediately before the delete, causing MRP to process a phantom "supply restored" signal that is
+		//      immediately contradicted by the ReceiptScheduleDeletedEvent that follows. Using updateDirectly()
+		//      suppresses that spurious event entirely.
+		//   2. The Processed=true flag prevents model-based deletion (the ADempiere PO layer guards processed
+		//      records). Clearing it via SQL unblocks the subsequent delete().
+		// Material disposition is handled correctly by the model-based delete() call below, which fires all
+		// TYPE_BEFORE_DELETE and TYPE_AFTER_DELETE interceptors:
+		//   - M_ReceiptSchedule_PostMaterialEvent posts ReceiptScheduleDeletedEvent → MRP removes the supply.
+		//   - M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder on the order line
+		//     (harmless when the order line is also being deleted immediately after).
 		receiptSchedulesForOrderLine.updateDirectly(rs -> {
 			rs.setProcessed(false);
 			return IQueryUpdater.MODEL_UPDATED;

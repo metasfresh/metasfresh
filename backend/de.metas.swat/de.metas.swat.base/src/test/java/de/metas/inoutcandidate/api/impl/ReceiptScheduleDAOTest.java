@@ -132,4 +132,45 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 				.anyMatch();
 		Assertions.assertFalse(stillExists, "Receipt schedule should have been deleted after reversed-receipt alloc");
 	}
+
+	@Test
+	public void deleteByOrderLineId_withProcessedSchedule_deletesSchedule()
+	{
+		// The updateDirectly(Processed=false) bypass must allow deletion of a Processed=Y schedule.
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+		rs.setProcessed(true);
+		saveRecord(rs);
+
+		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
+
+		final boolean stillExists = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.anyMatch();
+		Assertions.assertFalse(stillExists, "Processed receipt schedule should have been deleted");
+	}
+
+	@Test
+	public void deleteByOrderLineId_withMultipleSchedules_deletesAll()
+	{
+		// Two schedules on the same order line: one with an unreceived alloc, one clean.
+		// Both must be deleted to verify the bulk-delete sub-query covers all rows.
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+
+		final I_M_ReceiptSchedule rs1 = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
+		createReceiptScheduleAlloc(rs1, 0 /* unreceived alloc */);
+
+		createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 5, orderLineId);
+
+		receiptScheduleDAO.deleteByOrderLineId(orderLineId);
+
+		final long remaining = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_ReceiptSchedule.class)
+				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.count();
+		Assertions.assertEquals(0, remaining, "All receipt schedules for the order line should have been deleted");
+	}
 }
