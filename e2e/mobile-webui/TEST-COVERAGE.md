@@ -92,7 +92,7 @@
 | Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
-| Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows document number, delivery location and delivery date, with the customer name appearing once via the location address | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
+| Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows exactly 3 fields: document number, delivery location and delivery date | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
 **11/12 — 92%**

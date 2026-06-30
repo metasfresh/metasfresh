@@ -6,9 +6,9 @@ import { PickingJobsListFiltersScreen } from "../../../utils/screens/picking/Pic
 import { Backend } from "../../../utils/screens/Backend";
 import { LoginScreen } from "../../../utils/screens/LoginScreen";
 
-// me03 #30117 / F00230.3 — MobileUI Picking job-LIST caption must show the handover/delivery
-// location and the delivery (ready) date, in addition to the customer name + document number, so
-// pickers can tell apart several jobs for the same customer. Pure picking-profile configuration:
+// F00230.3 — MobileUI Picking job-LIST caption must show the handover/delivery location and the
+// delivery (ready) date alongside the document number, so pickers can tell apart several jobs for
+// the same customer. Pure picking-profile configuration:
 // the launcher caption is built from the profile's IsDisplayInSummary fields (DisplayValueProvider),
 // joined with " | ". HANDOVER_LOCATION renders the handover location, falling back to the ship-to
 // address when no handover location is set (this masterdata sets only the ship-to location, so it
