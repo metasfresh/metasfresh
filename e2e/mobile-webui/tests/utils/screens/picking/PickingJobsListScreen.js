@@ -21,13 +21,22 @@ export const PickingJobsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    // Wait until a specific job launcher is visible in the list. The list is websocket-driven and
+    // populates a moment after the screen renders, so callers that act on the list (e.g. opening the
+    // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
+    waitForJobVisible: async ({ documentNo }) => await test.step(`${NAME} - Wait for job '${documentNo}' visible`, async () => {
+        await locateJobButtons({ documentNo }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     /**
      * Reads a single job launcher's caption (the " | "-joined display fields) and asserts on it.
      * @param contains - substrings that must all be present in the caption
+     * @param containsOnce - substrings that must each appear EXACTLY once in the caption
+     *        (used to prove de-duplication, e.g. the customer name is not repeated)
      * @param fieldCount - if set, the expected number of non-empty " | "-separated caption fields
      * @returns the caption text (also logged, to aid assertion tuning)
      */
-    expectJobCaption: async ({ documentNo, salesOrderId, customerLocationId, contains = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
+    expectJobCaption: async ({ documentNo, salesOrderId, customerLocationId, contains = [], containsOnce = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
         const button = locateJobButtons({ documentNo, salesOrderId, customerLocationId });
         await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toHaveCount(1);
@@ -35,6 +44,10 @@ export const PickingJobsListScreen = {
         console.log(`${NAME} - job caption = ${JSON.stringify(caption)}`);
         for (const text of contains) {
             expect(caption, `caption should contain "${text}"`).toContain(text);
+        }
+        for (const text of containsOnce) {
+            const occurrences = caption.split(text).length - 1;
+            expect(occurrences, `caption should contain "${text}" exactly once, caption was: ${caption}`).toBe(1);
         }
         if (fieldCount != null) {
             const fields = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);

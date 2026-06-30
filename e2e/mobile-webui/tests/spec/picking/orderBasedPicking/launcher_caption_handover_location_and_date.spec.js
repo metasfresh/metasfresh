@@ -15,7 +15,9 @@ import { LoginScreen } from "../../../utils/screens/LoginScreen";
 // also covers that fallback path). DATE_READY renders the sales order's datePromised.
 
 const createMasterdata = async () => {
-    return await Backend.createMasterdata({
+    // Unique per run so parallel runs / repeated runs never collide on the bpartner name.
+    const customerName = `Kunde-${Date.now()}`;
+    const masterdata = await Backend.createMasterdata({
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
@@ -26,11 +28,14 @@ const createMasterdata = async () => {
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     pickTo: ['LU_TU'],
-                    // The field set under test — the two additions (HANDOVER_LOCATION + DATE_READY)
-                    // plus the context fields, all shown in the launcher summary.
+                    // The summary caption shows DocumentNo + HANDOVER_LOCATION + DATE_READY.
+                    // CUSTOMER is configured but kept OUT of the summary (isShowInSummary:false,
+                    // still in the detailed view): the handover-location address already leads
+                    // with the customer name, so showing Customer in the summary too would repeat
+                    // the name. This mirrors the picking-profile config the feature ships with.
                     fields: [
                         { field: 'DOCUMENT_NO', isShowInSummary: true },
-                        { field: 'CUSTOMER', isShowInSummary: true },
+                        { field: 'CUSTOMER', isShowInSummary: false, isShowInDetailed: true },
                         { field: 'HANDOVER_LOCATION', isShowInSummary: true },
                         { field: 'DATE_READY', isShowInSummary: true },
                     ],
@@ -39,7 +44,7 @@ const createMasterdata = async () => {
                 }
             },
             bpartners: {
-                "customer1": { name: "Kunde 30117 Test", locations: { customer1_location1: {} } },
+                "customer1": { name: customerName, locations: { customer1_location1: {} } },
             },
             warehouses: { "wh": {} },
             pickingSlots: { slot1: {} },
@@ -61,6 +66,9 @@ const createMasterdata = async () => {
             },
         }
     });
+    // The masterdata response does not echo the bpartner name; expose the one we set so assertions can use it.
+    masterdata.customerName = customerName;
+    return masterdata;
 };
 
 // The `page` fixture param must stay even though it's unused here: destructuring it triggers the
@@ -76,21 +84,24 @@ test('Picking job-list caption shows handover location + delivery date', async (
 
     const masterdata = await createMasterdata();
     const documentNo = masterdata.salesOrders.SO1.documentNo;
-    const customerName = "Kunde 30117 Test"; // set above; the masterdata response does not echo the bpartner name
+    const customerName = masterdata.customerName;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
 
-    // The launcher caption shows all four configured summary fields:
-    //  - DocumentNo + Customer (no regression),
-    //  - the delivery date (DATE_READY) — year-only, format-agnostic,
-    //  - the handover/delivery location (HANDOVER_LOCATION) — proven by the 4th non-empty field.
+    // The launcher caption shows the three configured summary fields:
+    //  - the document number,
+    //  - the handover/delivery location (HANDOVER_LOCATION) — its address leads with the customer name,
+    //  - the delivery date (DATE_READY) — year-only, format-agnostic.
+    // Customer is configured but kept out of the summary, so the customer name appears EXACTLY ONCE
+    // (via the handover-location address), never duplicated.
     await PickingJobsListScreen.expectJobCaption({
         documentNo, // locate the launcher by the document number shown in its caption (unique per run)
-        contains: [documentNo, customerName, '2025'],
-        fieldCount: 4,
+        contains: [documentNo, '2025'],
+        containsOnce: [customerName],
+        fieldCount: 3,
     });
 });
 
@@ -104,11 +115,15 @@ test('Picking job-list filter offers a delivery-location (Lieferort) facet', asy
     allure.severity('normal');
 
     const masterdata = await createMasterdata();
+    const documentNo = masterdata.salesOrders.SO1.documentNo;
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
+    // The facet groups are computed from the jobs currently in the list, which load async — wait for
+    // our job to be present before opening the filter, otherwise no Customer facet is offered yet.
+    await PickingJobsListScreen.waitForJobVisible({ documentNo });
 
     // Facets are progressive: Customer first, then DeliveryDate, then HandoverLocation. Drill the
     // cascade (select this run's customer → its delivery date) and assert the HandoverLocation
