@@ -203,9 +203,10 @@ async function expectProductInPicker(page, productCode) {
 /**
  * Assert that a product is NOT offered in the quick-input dropdown.
  *
- * Strategy: after the search spinner settles and the debounce window
- * passes (same wait budget as the positive case), assert that no
- * .input-dropdown-list-option contains the product code.
+ * Strategy: use Playwright's polling assertion so we wait for the search
+ * to fully settle before concluding the product is absent, rather than
+ * taking a point-in-time count snapshot that can pass before the dropdown
+ * has rendered (false pass masking a real filtering regression).
  *
  * We deliberately avoid waitFor(state:'visible') here because the picker
  * may show a "no results" placeholder or an empty list — both are correct.
@@ -214,13 +215,9 @@ async function expectProductInPicker(page, productCode) {
  * @param {string} productCode
  */
 async function expectProductAbsentFromPicker(page, productCode) {
-  // Give the UI the same settling time as the positive case
-  await page.waitForTimeout(800);
-
   const matchingOptions = page.locator('.input-dropdown-list-option').getByText(productCode);
-  const count = await matchingOptions.count();
-  expect(count).toBe(0);
-  console.log(`[PASS] Blocked product "${productCode}" is absent from picker (count=${count})`);
+  await expect(matchingOptions).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+  console.log(`[PASS] Blocked product "${productCode}" is absent from picker`);
 }
 
 // ============================================================================
@@ -241,6 +238,7 @@ testCases.forEach(({ language, label }) => {
       page,
     }) => {
       allure.epic('E0320: QM');
+      allure.feature('F00320: Produktfreigabe für Verkauf');
       allure.tag('F00320: Produktfreigabe für Verkauf');
       allure.tag('F00320');
       allure.tag('F00315: Produktfreigabe für Einkauf');
@@ -267,8 +265,10 @@ SALES order, while a control product with IsSold=Y remains visible.
 4. Clear field → type ControlProduct code → assert it IS in the dropdown
 
 ### Absence Assertion Strategy
-After the search spinner settles and the 800 ms debounce window passes,
-assert that .input-dropdown-list-option matching the blocked code has count=0.
+After the search spinner settles (typeProductAndWaitForDropdown), use
+Playwright's polling assertion (toHaveCount 0) so the test waits for the
+search to fully settle before concluding the product is absent — no
+fixed sleep, no point-in-time count snapshot.
       `);
 
       test.setTimeout(180000);
@@ -315,6 +315,7 @@ assert that .input-dropdown-list-option matching the blocked code has count=0.
       page,
     }) => {
       allure.epic('E0320: QM');
+      allure.feature('F00315: Produktfreigabe für Einkauf');
       allure.tag('F00315: Produktfreigabe für Einkauf');
       allure.tag('F00315');
       allure.tag('F00320: Produktfreigabe für Verkauf');
