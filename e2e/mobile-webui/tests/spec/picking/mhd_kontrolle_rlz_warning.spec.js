@@ -10,8 +10,6 @@ import { YesNoDialog } from '../../utils/dialogs/YesNoDialog';
 import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerComponent';
 
 /**
- * https://github.com/metasfresh/me03/issues/30209
- *
  * Tests for the shelf-life (MHD / RLZ) warning dialog in mobile UI picking.
  *
  * When C_Workplace.IsWarnShelfLifeUndercut=Y and the picked HU's HU_BestBeforeDate
