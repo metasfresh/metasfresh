@@ -22,6 +22,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -686,7 +687,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
-		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams);
+		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
@@ -796,9 +797,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private void appendFilterByOrderType(
 			@NonNull final StringBuilder sqlWhereClause,
-			@NonNull final SqlParamsCollector sqlWhereClauseParams)
+			@NonNull final SqlParamsCollector sqlWhereClauseParams,
+			@NonNull final LookupDataSourceContext evalCtx)
 	{
 		if (restrictByOrderType == null)
+		{
+			return;
+		}
+		final ClientId clientId = ClientId.ofRepoId(param_AD_Client_ID.getValueAsInteger(evalCtx));
+		final OrgId orgId = OrgId.ofRepoId(param_AD_Org_ID.getValueAsInteger(evalCtx));
+		if (!Services.get(IProductBL.class).isPurchaseSalesEnforcementEnabled(clientId, orgId))
 		{
 			return;
 		}

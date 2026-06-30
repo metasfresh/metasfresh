@@ -11,7 +11,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.product.IProductBL;
 import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -83,7 +82,6 @@ import java.util.Set;
 	public static final ReferenceId AD_Reference_M_HU_PI = ReferenceId.ofRepoId(540396);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
 	private final AvailableForSalesConfigRepo availableForSalesConfigRepo;
@@ -181,13 +179,10 @@ import java.util.Set;
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
 		final ClientAndOrgId clientAndOrgId = Env.getClientAndOrgId();
-		final boolean enforce = productBL.isPurchaseSalesEnforcementEnabled(
-				clientAndOrgId.getClientId(),
-				clientAndOrgId.getOrgId());
 		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, clientAndOrgId);
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
-			final ProductLookupDescriptor.BuilderWithStockInfo builder = ProductLookupDescriptor
+			return ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -196,16 +191,13 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
-					.isFallbackToBasePricelist(isFallbackToBasePriceList);
-			if (enforce)
-			{
-				builder.restrictByOrderType(SOTrx.SALES);
-			}
-			return builder.build();
+					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.SALES)
+					.build();
 		}
 		else
 		{
-			final ProductLookupDescriptor.BuilderWithStockInfo builder = ProductLookupDescriptor
+			return ProductLookupDescriptor
 					.builderWithStockInfo()
 					.bpartnerParamName(I_C_Order.COLUMNNAME_C_BPartner_ID)
 					.pricingDateParamName(I_C_Order.COLUMNNAME_DatePromised)
@@ -214,12 +206,9 @@ import java.util.Set;
 					.availableToPromiseAdapter(availableToPromiseAdapter)
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
-					.isFallbackToBasePricelist(isFallbackToBasePriceList);
-			if (enforce)
-			{
-				builder.restrictByOrderType(SOTrx.PURCHASE);
-			}
-			return builder.build();
+					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.PURCHASE)
+					.build();
 		}
 	}
 
