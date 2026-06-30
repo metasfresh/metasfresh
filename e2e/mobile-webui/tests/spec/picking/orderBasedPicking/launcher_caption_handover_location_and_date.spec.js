@@ -42,14 +42,21 @@ const createMasterdata = async () => {
                 "customer1": { name: "Kunde 30117 Test", locations: { customer1_location1: {} } },
             },
             warehouses: { "wh": {} },
-            products: { "P1": { price: 1 } },
+            pickingSlots: { slot1: {} },
+            products: { "P1": { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                "PI": { lu: "LU", qtyTUsPerLU: 20, tu: "TU", product: "P1", qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                "HU1": { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
             salesOrders: {
                 "SO1": {
                     bpartner: 'customer1',
                     location: 'customer1_location1',
                     warehouse: 'wh',
                     datePromised: '2025-03-15T08:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: 20 }],
+                    lines: [{ product: 'P1', qty: 12, piItemProduct: 'TU' }],
                 },
             },
         }
