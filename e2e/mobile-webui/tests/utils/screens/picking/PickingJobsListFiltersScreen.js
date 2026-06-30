@@ -26,6 +26,16 @@ export const PickingJobsListFiltersScreen = {
         await expect(facet).toBeVisible();
     }),
 
+    // Tap the first facet of a group (e.g. 'DeliveryDate') without needing its exact value id —
+    // used to drill the progressive facet cascade. Waits for the list to settle after the tap.
+    clickFirstFacetOfGroup: async ({ groupPrefix }) => await test.step(`${NAME} - Click first '${groupPrefix}' facet`, async () => {
+        await PickingJobsListFiltersScreen.waitLoadingDone();
+        const facet = page.locator(`.group button[data-testid^="${groupPrefix}_"]`).first();
+        await facet.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await facet.tap();
+        await PickingJobsListFiltersScreen.waitLoadingDone();
+    }),
+
     filterByDocumentNo: async (documentNo) => await test.step(`${NAME} - Filter by documentNo ${documentNo}`, async () => {
         await page.locator('#filterByDocumentNo-button').tap();
         await GetDocumentNoDialog.waitForDialog();

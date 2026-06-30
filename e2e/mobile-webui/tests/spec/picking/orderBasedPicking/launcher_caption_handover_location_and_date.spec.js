@@ -110,8 +110,11 @@ test('Picking job-list filter offers a delivery-location (Lieferort) facet', asy
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
 
-    // Open the filter screen and assert the HandoverLocation (Lieferort) facet is offered — the
-    // delivery-location filter this issue adds, alongside the standard customer + delivery-date facets.
+    // Facets are progressive: Customer first, then DeliveryDate, then HandoverLocation. Drill the
+    // cascade (select this run's customer → its delivery date) and assert the HandoverLocation
+    // (Lieferort) facet is then offered — the delivery-location filter this issue adds.
     await PickingJobsListScreen.clickFilterButton();
+    await PickingJobsListFiltersScreen.clickFacet({ facetId: 'Customer_' + masterdata.bpartners.customer1.id });
+    await PickingJobsListFiltersScreen.clickFirstFacetOfGroup({ groupPrefix: 'DeliveryDate' });
     await PickingJobsListFiltersScreen.expectFacetGroupOffered({ groupPrefix: 'HandoverLocation' });
 });
