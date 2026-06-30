@@ -307,6 +307,40 @@ public class OrderTest
 		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
 	}
 
+	/**
+	 * On a programmatic BEFORE_CHANGE (C_BPartner_ID changed on an order that already carries a provided
+	 * bill partner), the provided Bill_BPartner is preserved — not re-resolved from the new partner's group.
+	 */
+	@Test
+	public void setBillBPartner_doesNotOverwriteProvidedBillBPartner_onProgrammaticChange()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+		final I_C_BPartner providedBill = createBPartnerInGroup("ProvidedBill", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member1 = createBPartnerInGroup("Member1", deviatingGroup);
+		final I_C_BPartner member2 = createBPartnerInGroup("Member2", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member1.getC_BPartner_ID());
+		order.setBill_BPartner_ID(providedBill.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		// a programmatic partner change must not re-resolve the already-provided bill partner
+		order.setC_BPartner_ID(member2.getC_BPartner_ID());
+		save(order);
+
+		Assertions.assertEquals(providedBill.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
 	private I_C_BP_Group createPlainBPGroup()
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
