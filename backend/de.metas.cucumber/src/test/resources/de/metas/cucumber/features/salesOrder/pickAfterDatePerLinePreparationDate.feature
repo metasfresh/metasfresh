@@ -17,6 +17,8 @@ Feature: Pick-after-date holds each order line until its own preparation date
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
     And metasfresh has date and time 2022-08-16T13:30:13+01:00[Europe/Berlin]
+    # Isolation: start every scenario from the default preparation-date offset (one scenario below overrides it to -24h).
+    And set sys config int value 0 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |

@@ -13,6 +13,8 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # Isolation: start every scenario from the default preparation-date offset (one scenario below overrides it to -24h).
+    And set sys config int value 0 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
 
   @from:cucumber
 @allure.label.epic:E0100_Sales
@@ -326,10 +328,10 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     # proving the per-line preparation date is genuinely DERIVED on the OLCand -> order path (not copied from DatePromised).
     And set sys config int value -24 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
 
-    # The 3 OLCands share the same externalHeaderId `22062026`, externalSystemCode, org, poReference and dateOrdered,
-    # but have DIFFERENT dateRequired (-> C_OLCand.DatePromised). DatePromised is NOT part of the order-aggregation key,
-    # so they aggregate into ONE C_Order (ExternalId=22062026) with 3 lines — rather than 3 separate orders that would
-    # collide on the C_Order_ExternalHeader_ID unique index (ExternalSystem_ID, ExternalId, AD_Org_ID).
+    # - Same externalHeaderId `22062026` / externalSystemCode / org / poReference / dateOrdered across all 3 OLCands.
+    # - DIFFERENT dateRequired (-> C_OLCand.DatePromised) per OLCand.
+    # - DatePromised is NOT part of the order-aggregation key -> all 3 aggregate into ONE C_Order (ExternalId=22062026), 3 lines.
+    # - (Otherwise 3 separate orders would collide on the C_Order_ExternalHeader_ID unique index = ExternalSystem_ID, ExternalId, AD_Org_ID.)
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
