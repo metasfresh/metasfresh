@@ -1,6 +1,7 @@
 ARG REFNAME=local
-FROM metasfresh/metas-mvn-common:$REFNAME as common
-FROM metasfresh/metas-mvn-backend:$REFNAME as backend
+ARG REGISTRY=ghcr.io/
+FROM ${REGISTRY}metasfresh/metas-mvn-common:$REFNAME AS common
+FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 FROM maven:3.8.4-jdk-8 as junit
 
