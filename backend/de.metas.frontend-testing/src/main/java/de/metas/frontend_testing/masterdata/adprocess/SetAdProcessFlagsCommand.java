@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.masterdata.adprocess;
 
+import de.metas.process.IADProcessDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -9,8 +10,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Process;
 
 import java.util.List;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
@@ -52,7 +51,7 @@ public class SetAdProcessFlagsCommand
 			{
 				process.setIsPdfA3Output(isPdfA3Output);
 			}
-			saveRecord(process);
+			Services.get(IADProcessDAO.class).save(process);
 		}
 	}
 }
