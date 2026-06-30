@@ -1,5 +1,9 @@
 name: cicd
 on: [push, workflow_dispatch]
+permissions:
+  contents: read
+  packages: read
+
 env:
   PIPELINE_VERSION: '0.3.6'
 jobs:
@@ -75,6 +79,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -85,54 +94,54 @@ jobs:
           docker buildx build \
           --file docker-builds/Dockerfile.common \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
-          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.backend \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-backend-dist
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.backend.dist \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.camel \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-camel-dist
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.camel.dist \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
           --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         uses: nick-fields/retry@v4
@@ -141,30 +150,37 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
-            docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-common:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }}
       - name: push-maven-dists
         run: |
-          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
-          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
+          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} ghcr.io/metasfresh/metas-mvn-backend-dist:${{ needs.init.outputs.tag-fixed }}
+          docker run --rm --env GITHUB_ACTOR=${{ github.actor }} --env GITHUB_TOKEN=${{ github.token }} ghcr.io/metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }}
 
   frontend:
     runs-on: ubuntu-latest
     needs: init
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: build-frontend
         run: |
           docker buildx build \
@@ -207,6 +223,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -218,6 +235,7 @@ jobs:
           --tag metas-frontend:test \
           .
       - name: publish results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
@@ -240,6 +258,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: prepare
         env:
           INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
@@ -358,6 +381,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -434,6 +462,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: prepare
         env:
           INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
@@ -515,13 +548,21 @@ jobs:
     name: test (java)
     runs-on: ubuntu-latest
     needs: [init, java]
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -535,23 +576,23 @@ jobs:
           docker buildx build \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: run-junit-tests-j14
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
         uses: nick-fields/retry@v4
@@ -560,12 +601,13 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
-            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
+            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: push-results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
           testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
           testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
@@ -585,12 +627,19 @@ jobs:
     name: build (cucumber)
     runs-on: ubuntu-latest
     needs: [init, java]
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -602,8 +651,8 @@ jobs:
           --file docker-builds/Dockerfile.cucumber \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-images
         uses: nick-fields/retry@v4
@@ -612,8 +661,8 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
-            docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-            docker push metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+            docker push ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-floating }}
   cucumber-run:
     name: test (cucumber)
     runs-on: ubuntu-latest
@@ -648,7 +697,13 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         with:
           domain: metasfresh
           token: ${{ secrets.TESTSPACE_TOKEN }}
@@ -667,13 +722,17 @@ jobs:
         timeout-minutes: 120
         run: |
           mkdir cucumber
-          docker pull metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
-          docker cp "$(docker create --name tempcopytainer metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
+          docker pull ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
+          docker cp "$(docker create --name tempcopytainer ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}):/compose.yml" . && docker rm tempcopytainer
+          # compose.yml references ${mfregistry:-metasfresh}/metas-cucumber (the Docker Hub name); the image
+          # now lives on GHCR. Retag the pulled ghcr image under that name so compose uses the local image.
+          docker tag ghcr.io/metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }} metasfresh/metas-cucumber:${{ needs.init.outputs.tag-fixed }}
           docker compose up --abort-on-container-exit --exit-code-from cucumber 2>&1 | tee cucumber.log && echo "${PIPESTATUS[0]}" > cucumber.exit-code
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
+        continue-on-error: true  # testspace retired — never fail the build on it
         run: |
           find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
@@ -709,6 +768,11 @@ jobs:
         with:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: start docker compose
         working-directory: docker-builds/compose/
         env:
