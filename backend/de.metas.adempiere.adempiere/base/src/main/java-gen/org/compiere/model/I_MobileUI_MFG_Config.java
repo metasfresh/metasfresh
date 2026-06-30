@@ -98,7 +98,8 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allow issuing any HU.
+	 * Set No Raw Material Check.
+	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -107,7 +108,8 @@ public interface I_MobileUI_MFG_Config
 	void setIsAllowIssuingAnyHU (boolean IsAllowIssuingAnyHU);
 
 	/**
-	 * Get Allow issuing any HU.
+	 * Get No Raw Material Check.
+	 * Allows scanning and issuing HUs that are not in the manufacturing issue plan
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -119,8 +121,54 @@ public interface I_MobileUI_MFG_Config
 	String COLUMNNAME_IsAllowIssuingAnyHU = "IsAllowIssuingAnyHU";
 
 	/**
-	 * Set Scan Resource QR Code.
-	 * User needs to scan the resource QR code first
+	 * Set Best Before Date editable.
+	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsBestBeforeDateEditable (boolean IsBestBeforeDateEditable);
+
+	/**
+	 * Get Best Before Date editable.
+	 * Allows editing the Best-Before-Date (MHD) when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isBestBeforeDateEditable();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsBestBeforeDateEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsBestBeforeDateEditable", null);
+	String COLUMNNAME_IsBestBeforeDateEditable = "IsBestBeforeDateEditable";
+
+	/**
+	 * Set Lot Number editable.
+	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsLotNumberEditable (boolean IsLotNumberEditable);
+
+	/**
+	 * Get Lot Number editable.
+	 * Allows editing the Lot Number when receiving finished goods in mobile manufacturing.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isLotNumberEditable();
+
+	ModelColumn<I_MobileUI_MFG_Config, Object> COLUMN_IsLotNumberEditable = new ModelColumn<>(I_MobileUI_MFG_Config.class, "IsLotNumberEditable", null);
+	String COLUMNNAME_IsLotNumberEditable = "IsLotNumberEditable";
+
+	/**
+	 * Set Workstation Scan Required.
+	 * User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -129,8 +177,8 @@ public interface I_MobileUI_MFG_Config
 	void setIsScanResourceRequired (boolean IsScanResourceRequired);
 
 	/**
-	 * Get Scan Resource QR Code.
-	 * User needs to scan the resource QR code first
+	 * Get Workstation Scan Required.
+	 * User must scan a workstation QR code before starting manufacturing work. Only orders for the assigned workstation are displayed.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -164,6 +212,7 @@ public interface I_MobileUI_MFG_Config
 
 	/**
 	 * Set Receive Unit Type.
+	 * Determines whether the receive quantity is entered in CU or TU
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -173,6 +222,7 @@ public interface I_MobileUI_MFG_Config
 
 	/**
 	 * Get Receive Unit Type.
+	 * Determines whether the receive quantity is entered in CU or TU
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
