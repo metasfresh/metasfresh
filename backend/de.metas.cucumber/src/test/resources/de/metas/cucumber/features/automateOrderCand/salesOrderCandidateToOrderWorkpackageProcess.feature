@@ -464,9 +464,9 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   - the differing bill partner is part of the order-aggregation key (forces a separate order) but NOT of the
     C_Order_ExternalHeader_ID unique index tuple (ExternalSystem_ID, ExternalId, AD_Org_ID)
   - both forced orders therefore carry the same C_Order.ExternalId=18062027 -> the second order save violates the
-    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg. In the audited async mode the
-    candidate is NOT flagged IsError and the synchronous response has no body; the message is surfaced as the
-    HTTP 400 JsonError stored on the request-audit's response (api_response_audit), retrievable via the request-audit id
+    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg. The candidate is NOT flagged IsError;
+    the HTTP 400 response carries the JsonError body, which is also stored on the request-audit's response
+    (api_response_audit) and retrievable via the request-audit id
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | IsActive |
       | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true     |
