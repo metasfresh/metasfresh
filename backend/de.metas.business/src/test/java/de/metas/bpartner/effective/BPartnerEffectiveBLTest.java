@@ -398,7 +398,6 @@ public class BPartnerEffectiveBLTest
 		final I_C_BPartner_Location memberBillToLoc = InterfaceWrapperHelper.newInstance(I_C_BPartner_Location.class);
 		memberBillToLoc.setC_BPartner_ID(memberBP.getC_BPartner_ID());
 		saveRecord(memberBillToLoc);
-		final BPartnerLocationId memberBillToLocId = BPartnerLocationId.ofRepoId(memberBPId, memberBillToLoc.getC_BPartner_Location_ID());
 
 		// per-member-BP bill-to partner (separate from centralBilling)
 		final I_C_BPartner memberBillToBP = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
@@ -420,7 +419,7 @@ public class BPartnerEffectiveBLTest
 		relation.setIsActive(true);
 		saveRecord(relation);
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, memberBillToLocId);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(memberBillToBPId, memberBillToBPLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -450,7 +449,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -487,7 +486,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
 
 		final BPartnerLocationId expectedBillLocId = BPartnerLocationId.ofRepoId(centralBillingId, centralLoc.getC_BPartner_Location_ID());
 		assertThat(resolution).isNotNull();
@@ -507,7 +506,7 @@ public class BPartnerEffectiveBLTest
 		saveRecord(memberBP);
 		final BPartnerId memberBPId = BPartnerId.ofRepoId(memberBP.getC_BPartner_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId, null);
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(memberBPId);
 
 		assertThat(resolution).isNull();
 	}

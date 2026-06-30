@@ -341,6 +341,36 @@ public class OrderTest
 		Assertions.assertEquals(providedBill.getC_BPartner_ID(), order.getBill_BPartner_ID());
 	}
 
+	/**
+	 * The standard own-bill-to default (Bill_BPartner == C_BPartner, as set by setBillLocation before this
+	 * interceptor) is NOT a "provided" bill partner — the deviating-group resolution still overwrites it.
+	 * Guards against the OLCand guard being too broad and suppressing the feature for programmatic orders.
+	 */
+	@Test
+	public void setBillBPartner_overwritesOwnBillToDefault_withGroupBill()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		// simulate the own-bill-to default that setBillLocation sets before this interceptor
+		order.setBill_BPartner_ID(member.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
 	private I_C_BP_Group createPlainBPGroup()
 	{
 		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);

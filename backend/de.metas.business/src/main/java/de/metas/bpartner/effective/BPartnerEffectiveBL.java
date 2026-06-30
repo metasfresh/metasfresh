@@ -220,20 +220,15 @@ public class BPartnerEffectiveBL
 	}
 
 	/**
-	 * Resolves the effective bill-to partner for a given order partner + location.
+	 * Resolves the effective bill-to partner for a given order partner.
 	 * Precedence: per-partner C_BP_Relation (IsBillTo=Y) → partner's association group Bill_BPartner → parent association group Bill_BPartner → null.
 	 */
 	@Nullable
-	public BillBPartnerResolution getEffectiveBillBPartner(
-			@NonNull final BPartnerId bPartnerId,
-			@Nullable final BPartnerLocationId bPartnerLocationId)
+	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId)
 	{
 		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
-		final I_C_BPartner_Location locationRecord = bPartnerLocationId != null
-				? bpartnerDAO.getBPartnerLocationById(bPartnerLocationId)
-				: null;
 
-		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillBPartnerRelationFirstEncountered(bPartnerRecord, bPartnerRecord, locationRecord);
+		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillToBPartnerRelationOrNull(bPartnerId);
 		if (billRelation != null)
 		{
 			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());

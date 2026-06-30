@@ -723,21 +723,25 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
-		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory):
-		// only (re)resolve on a UI action, or when no bill partner has been provided yet.
-		if (!InterfaceWrapperHelper.isUIAction(order) && BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()) != null)
-		{
-			return;
-		}
-
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 		if (bPartnerId == null)
 		{
 			return;
 		}
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, order.getC_BPartner_Location_ID());
 
-		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId, bPartnerLocationId);
+		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory) —
+		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
+		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
+		// (re)resolved. On a UI action we always (re)resolve.
+		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		if (!InterfaceWrapperHelper.isUIAction(order)
+				&& providedBillBPartnerId != null
+				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId))
+		{
+			return;
+		}
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
 		if (resolution != null)
 		{
 			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
