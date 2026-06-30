@@ -300,7 +300,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   Scenario: OLCands sharing externalHeaderId but with different DatePromised aggregate into ONE order
   - create 3 olcands with the same externalHeaderId, externalSystemCode and org but DIFFERING DatePromised (dateRequired)
   - process them
-  - verify that exactly ONE C_Order with 3 order lines is created (DatePromised must no longer split the order)
+  - verify that exactly ONE C_Order with 3 order lines is created (DatePromised is not part of the order-split key)
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | IsActive |
       | ps_scenario_22062026 | pricing_system_scenario_22062026 | pricing_system_scenario_22062026 | true     |
@@ -322,12 +322,14 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
     And metasfresh contains C_BPartner_Locations:
       | Identifier               | GLN           | C_BPartner_ID   |
       | olCand_Customer_location | 9988776655443 | olCand_Customer |
+    # Use a -24h preparation-date offset so each derived PreparationDate is one day before its delivery date,
+    # proving the per-line preparation date is genuinely DERIVED on the OLCand -> order path (not copied from DatePromised).
+    And set sys config int value -24 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
 
-    # we create 3 OLCands with the same externalHeaderId `22062026`, same externalSystemCode and org, same poReference and dateOrdered,
-    # but DIFFERENT dateRequired (which maps to C_OLCand.DatePromised).
-    # Before the fix, the differing DatePromised splits them into 3 separate C_Orders, each carrying the same
-    # C_Order.ExternalId=22062026 -> the unique index C_Order_ExternalHeader_ID is violated and processing fails.
-    # After the fix, DatePromised is no longer part of the order-split key, so they aggregate into ONE C_Order with 3 lines.
+    # The 3 OLCands share the same externalHeaderId `22062026`, externalSystemCode, org, poReference and dateOrdered,
+    # but have DIFFERENT dateRequired (-> C_OLCand.DatePromised). DatePromised is NOT part of the order-aggregation key,
+    # so they aggregate into ONE C_Order (ExternalId=22062026) with 3 lines — rather than 3 separate orders that would
+    # collide on the C_Order_ExternalHeader_ID unique index (ExternalSystem_ID, ExternalId, AD_Org_ID).
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
@@ -422,27 +424,35 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 
     # The header DatePromised must equal the EARLIEST DatePromised among the lines (2026-07-01).
     And validate the created orders
-      | C_Order_ID | externalId | C_BPartner_ID   | C_BPartner_Location_ID   | DateOrdered | DatePromised | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus |
-      | order_1    | 22062026   | olCand_Customer | olCand_Customer_location | 2026-06-22  | 2026-07-01   | SOO         | EUR          | F            | S               | 22062026    | true      | CO        |
-    # Each order line must keep the DatePromised (dateRequired) of its own source candidate.
-    # The line is matched by QtyOrdered: qty 2 -> 2026-07-01, qty 1 -> 2026-07-08, qty 3 -> 2026-07-15.
+      | C_Order_ID | externalId | DatePromised | DocStatus |
+      | order_1    | 22062026   | 2026-07-01   | CO        |
+    # Each line keeps the DatePromised (dateRequired) of its own source candidate (matched by QtyOrdered:
+    # qty 2 -> 2026-07-01, qty 1 -> 2026-07-08, qty 3 -> 2026-07-15); its PreparationDate is derived from that
+    # per-line delivery date minus the 24h offset (one day earlier).
     And validate the created order lines
-      | C_OrderLine_ID | C_Order_ID | DatePromised | M_Product_ID     | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
-      | orderLine_1    | order_1    | 2026-07-01   | product_22062026 | 0            | 2          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_2    | order_1    | 2026-07-08   | product_22062026 | 0            | 1          | 0           | 10    | 0        | EUR          | true      |
-      | orderLine_3    | order_1    | 2026-07-15   | product_22062026 | 0            | 3          | 0           | 10    | 0        | EUR          | true      |
-    # The per-line DatePromised flows through to each line's shipment schedule: with no tour configured the
-    # base PreparationDate equals the delivery date, which equals the line's own DatePromised.
+      | C_OrderLine_ID | C_Order_ID | M_Product_ID     | QtyOrdered | DatePromised | PreparationDate |
+      | orderLine_1    | order_1    | product_22062026 | 2          | 2026-07-01   | 2026-06-30      |
+      | orderLine_2    | order_1    | product_22062026 | 1          | 2026-07-08   | 2026-07-07      |
+      | orderLine_3    | order_1    | product_22062026 | 3          | 2026-07-15   | 2026-07-14      |
+    # The per-line dates flow through to each line's shipment schedule: DeliveryDate = the line's own DatePromised,
+    # and (no tour configured) the base PreparationDate = DeliveryDate minus the 24h offset (one day earlier).
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | schedule_1 | orderLine_1    | N             |
       | schedule_2 | orderLine_2    | N             |
       | schedule_3 | orderLine_3    | N             |
     And after not more than 60s, validate shipment schedules:
-      | M_ShipmentSchedule_ID | PreparationDate |
-      | schedule_1            | 2026-07-01      |
-      | schedule_2            | 2026-07-08      |
-      | schedule_3            | 2026-07-15      |
+      | M_ShipmentSchedule_ID | PreparationDate | DeliveryDate |
+      | schedule_1            | 2026-06-30      | 2026-07-01   |
+      | schedule_2            | 2026-07-07      | 2026-07-08   |
+      | schedule_3            | 2026-07-14      | 2026-07-15   |
+
+  @from:cucumber
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00122
+  Scenario: Reset the preparation-date offset sysconfig
+    # Isolation: restore the default offset so sibling features on this executor are not affected.
+    Given set sys config int value 0 for sys config de.metas.tourplanning.api.impl.OrderDeliveryDay.Fallback_PreparationDate_Offset_Hours
 
   @ignore #FIXME: olCand process doesn't give error details in general
   @from:cucumber
