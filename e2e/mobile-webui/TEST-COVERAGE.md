@@ -8,11 +8,11 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 70 | 74 | 95% |
-| Distribution | 40 | 41 | 98% |
-| Manufacturing | 23 | 29 | 79% |
+| Picking | 83 | 87 | 95% |
+| Distribution | 38 | 41 | 93% |
+| Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
-| HU Consolidation | 4 | 5 | 80% |
+| HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
 
 ---
@@ -394,6 +394,15 @@
 
 **6/6 — 100%**
 
+### Receipt — editable Lot / Best-Before
+
+| Scenario | Test |
+|---|---|
+| Receive finished goods entering Lot + Best-Before (inputs shown by default) → produced HU carries both attributes | `manufacturing/receiving_editable_attributes.spec.js` |
+| Receive finished goods leaving Lot + Best-Before empty → produced HU gets no such attribute | `manufacturing/receiving_editable_attributes.spec.js` |
+
+**2/2 — 100%**
+
 ### Receipt — by-products
 
 | Scenario | Test |
@@ -470,6 +479,17 @@
 | ❌ setTargetLU fails (LU already holds different customer's goods) → error shown | — |
 
 **4/5 — 80%**
+
+### GRAI-scan TU selection
+
+| Scenario | Test |
+|---|---|
+| Scan each picked TU's GRAI on the picking slot → both TUs consolidated onto the target LU, slot emptied | `hu_consolidation/hu_consolidation_grai.spec.js` |
+| Scan an unknown GRAI → "No HU found" error, nothing consolidated | `hu_consolidation/hu_consolidation_grai.spec.js` |
+| Scan the GRAI of a TU sitting in a different picking slot → "HU not at picking slot" error | `hu_consolidation/hu_consolidation_grai_cross_slot.spec.js` |
+| Scan a garbage / non-GRAI barcode → rejected ("No HU found"), nothing consolidated | `hu_consolidation/hu_consolidation_grai.spec.js` |
+
+**4/4 — 100%**
 
 ---
 

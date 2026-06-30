@@ -74,12 +74,13 @@ BEGIN
     -- Cache the AD_Table_ID for M_InOutLine — used 4× below as the m_hu_assignment.ad_table_id filter
     v_m_inoutline_table_id := get_table_id('M_InOutLine');
 
-    -- One event per physical SSCC. A shipment is a "sibling" only when it shares physical LU(s)
-    -- (via m_hu_assignment) with other shipments but is NOT the lowest-id owner of ANY of them —
-    -- such siblings emit nothing (the owner's export carries the SSCC, referencing all orders).
-    -- A shipment that touches no shared LU via m_hu_assignment (sole owner, no HU picking, or LUs
-    -- discoverable only via the QtyPicked fallback) is NEVER suppressed here — it falls through to
-    -- the normal export below. The owner election ignores voided/inactive shipments (docstatus).
+    -- Close-gate: a shipment that touches at least one LU via an active m_hu_assignment emits
+    -- nothing (returns '{}') as long as there exists a child TU on any of those touched LUs that
+    -- is NOT yet covered by a CO/CL shipment. "Covered" means an active m_hu_assignment from that
+    -- TU's m_tu_hu_id or vhu_id to an inoutline of a completed/closed (CO/CL) m_inout.
+    -- Only once every TU on every touched LU is covered does this gate pass through, allowing the
+    -- closer (the last CO/CL shipment) to emit the merged SSCC event for all shared orders.
+    -- Shipments that touch no LU via m_hu_assignment (QtyPicked-only fallback) are never gated.
     IF EXISTS (
         -- touches at least one LU via an active m_hu_assignment
         SELECT 1
@@ -90,24 +91,35 @@ BEGIN
           AND ha.isactive = 'Y'
           AND iol.m_inout_id = p_m_inout_id
     )
-    AND NOT EXISTS (
-        -- ... but owns NONE of them (is not the lowest-id active owner of any touched LU)
+    AND EXISTS (
+        -- Close-gate (AC1): block emission until EVERY physical child TU on every touched LU is
+        -- covered by a CO/CL shipment. This is intentional: we emit one complete merged event only
+        -- once the entire physical pallet is shipped. A TU that belongs to a still-open (IP) or
+        -- not-yet-assigned shipment will keep the gate open. When this shipment touches multiple
+        -- LUs the gate is all-or-nothing across ALL of them — the event is emitted together for
+        -- the complete set of LUs or not at all.
         SELECT 1
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
+                 -- enumerate child TUs of each touched LU via the HU hierarchy
+                 JOIN m_hu lu ON lu.m_hu_id = ha.m_lu_hu_id
+                 JOIN m_hu_item hi ON hi.m_hu_id = lu.m_hu_id
+                                  AND hi.itemtype IN ('HU', 'HA')
+                 JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IS NOT NULL
           AND ha.isactive = 'Y'
           AND iol.m_inout_id = p_m_inout_id
-          AND p_m_inout_id = (
-              SELECT MIN(iol2.m_inout_id)
+          -- TU is uncovered: no active m_hu_assignment from this TU to a CO/CL inoutline
+          AND NOT EXISTS (
+              SELECT 1
               FROM m_hu_assignment ha2
                        JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
                        JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id
               WHERE ha2.ad_table_id = v_m_inoutline_table_id
-                AND ha2.m_lu_hu_id = ha.m_lu_hu_id
                 AND ha2.isactive = 'Y'
                 AND iol2.isactive = 'Y'
+                AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
                 AND io2.docstatus IN ('CO', 'CL')
           )
     )
@@ -129,13 +141,12 @@ BEGIN
           AND iol.m_inout_id = p_m_inout_id
     ),
     shared_lu_inout AS MATERIALIZED (
-        -- (lu, m_inout) pairs: every active completed/closed shipment that has goods physically
-        -- assigned to an LU. Voided/reversed/in-progress shipments are excluded so they can never
-        -- be elected owner (which would otherwise silence the active shipment for that SSCC).
-        -- Scoped to the LUs THIS shipment touches (this_inout_lu): the m_lu_hu_id IN-list lets the
-        -- m_hu_assignment_m_lu_hu_id index drive the scan (a handful of LUs) instead of a full
-        -- table scan. Owner election is unchanged — for each of THIS shipment's LUs we still see
-        -- ALL shipments sharing it (the filter is on m_lu_hu_id, not m_inout_id), so MIN() is exact.
+        -- (lu, m_inout) pairs: every CO/CL shipment that has goods physically assigned to an LU
+        -- touched by THIS shipment. Voided/reversed/in-progress shipments are excluded.
+        -- Scoped to the LUs THIS shipment touches (this_inout_lu) so the m_lu_hu_id IN-list
+        -- drives the m_hu_assignment_m_lu_hu_id index (a handful of LUs) instead of a full scan.
+        -- Used to enumerate all sibling CO/CL shipments sharing an LU — feeds DESADV/PO reference
+        -- aggregation (desadv_agg, po_agg, pallet_list) and gives the full set of co-shippers.
         SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
@@ -146,13 +157,6 @@ BEGIN
           AND iol.isactive = 'Y'
           AND io.docstatus IN ('CO', 'CL')
     ),
-    lu_owner AS MATERIALIZED (
-        -- Owner of each physical LU = the lowest M_InOut_ID sharing it. Deterministic, stable.
-        SELECT lu_hu_id, MIN(m_inout_id) AS owner_inout_id
-        FROM shared_lu_inout
-        GROUP BY lu_hu_id
-    ),
-
     inout_context AS (
         -- Materialize all context data ONCE to avoid correlated subqueries
         SELECT io.m_inout_id,
@@ -204,14 +208,8 @@ BEGIN
                      JOIN m_inout mio ON mio.m_inout_id = link.m_inout_id
                      WHERE link.isactive = 'Y'
                        AND link.m_inout_id IN (
-                           -- always this shipment's own DESADVs ...
-                           SELECT io.m_inout_id
-                           UNION
-                           -- ... plus those of sibling shipments sharing an LU this shipment owns
-                           SELECT s.m_inout_id
-                           FROM shared_lu_inout s
-                                    JOIN lu_owner o ON o.lu_hu_id = s.lu_hu_id
-                           WHERE o.owner_inout_id = io.m_inout_id
+                           -- all shipments sharing a touched LU (includes this shipment and all siblings)
+                           SELECT DISTINCT m_inout_id FROM shared_lu_inout
                        )
                  ) desadv_agg ON true
                  LEFT JOIN c_bpartner_location bpl_desadv_buyer
@@ -265,22 +263,16 @@ BEGIN
                          AND ha2.isactive = 'Y'
                    )
              ) lwp
-                      -- Keep LUs this shipment OWNS (shared pallets: owner emits the SSCC), plus LUs
-                      -- with no owner row at all (QtyPicked-only fallback LUs are not in lu_owner,
-                      -- which is built from m_hu_assignment) so the fallback path keeps working.
-                      LEFT JOIN lu_owner o ON o.lu_hu_id = lwp.lu_hu_id
-             WHERE o.owner_inout_id = (SELECT m_inout_id FROM inout_context)
-                OR o.owner_inout_id IS NULL
              GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (
              -- CASE A: individual TU HU IDs across all pallets — no attribute joins yet.
              --
              -- Scoped to TUs allocated to SOME shipment via m_hu_assignment (excludes unshipped
-             -- TUs on a partial pallet). Under the one-EPCIS-event-per-physical-SSCC rule the
-             -- scope gate is the OWNED LU (pallet_list, restricted to LUs this shipment owns), NOT
-             -- the M_InOut: when two shipments share a physical LU, the owner's event intentionally
-             -- merges the individual TUs of BOTH source orders onto that one SSCC.
+             -- TUs on a partial pallet). Under the close-gate / closer-emits model, pallet_list
+             -- covers ALL LUs touched by any of the CO/CL sibling shipments (not owner-restricted).
+             -- When two shipments share a physical LU, the emitting shipment merges the individual
+             -- TUs of BOTH source orders onto that one SSCC.
              SELECT lu_hu.m_hu_id                 AS lu_hu_id,
                     pl.lu_poreference_padded,
                     tu_hu.m_hu_id                 AS tu_hu_id,
@@ -305,10 +297,10 @@ BEGIN
              --         both attribute lookup and storage item joins (avoids double m_hu scan).
              --
              -- Scoped to HA aggregates allocated to SOME shipment via m_hu_assignment; ha_item.qty
-             -- carries the crate count. Under the one-EPCIS-event-per-physical-SSCC rule the scope
-             -- gate is the OWNED LU (pallet_list), NOT the M_InOut: when two shipments share a
-             -- physical LU, the owner's event intentionally merges the HA aggregates of
-             -- BOTH source orders onto that one SSCC.
+             -- carries the crate count. Under the close-gate / closer-emits model, pallet_list
+             -- covers ALL LUs touched by any of the CO/CL sibling shipments (not owner-restricted).
+             -- When two shipments share a physical LU, the emitting shipment merges the HA
+             -- aggregates of BOTH source orders onto that one SSCC.
              SELECT lu_hu.m_hu_id                           AS lu_hu_id,
                     pl.lu_poreference_padded,
                     ha_item.m_hu_item_id                    AS tu_hu_id,
