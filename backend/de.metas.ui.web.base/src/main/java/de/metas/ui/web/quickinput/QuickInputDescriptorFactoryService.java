@@ -13,6 +13,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_AD_SysConfig;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,7 +50,11 @@ public class QuickInputDescriptorFactoryService
 	private static final Logger logger = LogManager.getLogger(QuickInputDescriptorFactoryService.class);
 
 	private final ImmutableListMultimap<IQuickInputDescriptorFactory.MatchingKey, IQuickInputDescriptorFactory> factories;
-	private final CCache<QuickInputDescriptorKey, QuickInputDescriptor> descriptors = CCache.newCache("QuickInputDescriptors", 10, 0);
+	private final CCache<QuickInputDescriptorKey, QuickInputDescriptor> descriptors = CCache.<QuickInputDescriptorKey, QuickInputDescriptor>builder()
+			.cacheName("QuickInputDescriptors")
+			.initialCapacity(10)
+			.additionalTableNameToResetFor(I_AD_SysConfig.Table_Name)
+			.build();
 
 	@Autowired
 	private QuickInputDescriptorFactoryService(final Optional<List<IQuickInputDescriptorFactory>> factoriesList)
