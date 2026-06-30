@@ -251,6 +251,80 @@ public class OrderTest
 		Assertions.assertEquals("City", order.getIncotermLocation());
 	}
 
+	/**
+	 * A programmatically created order (e.g. from an OLCand) that already carries a provided Bill_BPartner
+	 * must NOT have it overwritten by the deviating-bill-partner group resolution.
+	 */
+	@Test
+	public void setBillBPartner_doesNotOverwriteProvidedBillBPartner_whenNotUIAction()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+		final I_C_BPartner providedBill = createBPartnerInGroup("ProvidedBill", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setBill_BPartner_ID(providedBill.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(providedBill.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	/**
+	 * When no Bill_BPartner is provided, the deviating-bill-partner group resolution still applies.
+	 */
+	@Test
+	public void setBillBPartner_appliesGroupBill_whenNoBillBPartnerProvided()
+	{
+		final I_C_BP_Group plainGroup = createPlainBPGroup();
+		final I_C_BPartner centralBilling = createBPartnerInGroup("CentralBilling", plainGroup);
+
+		final I_C_BP_Group deviatingGroup = newInstance(I_C_BP_Group.class);
+		deviatingGroup.setName("DeviatingBillGroup");
+		deviatingGroup.setValue("DeviatingBillGroup");
+		deviatingGroup.setIsDeviatingBillBPartner(true);
+		deviatingGroup.setBill_BPartner_ID(centralBilling.getC_BPartner_ID());
+		save(deviatingGroup);
+
+		final I_C_BPartner member = createBPartnerInGroup("Member", deviatingGroup);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setC_BPartner_ID(member.getC_BPartner_ID());
+		order.setIsSOTrx(true);
+		save(order);
+
+		Assertions.assertEquals(centralBilling.getC_BPartner_ID(), order.getBill_BPartner_ID());
+	}
+
+	private I_C_BP_Group createPlainBPGroup()
+	{
+		final I_C_BP_Group group = newInstance(I_C_BP_Group.class);
+		group.setName("PlainGroup");
+		group.setValue("PlainGroup");
+		save(group);
+		return group;
+	}
+
+	private I_C_BPartner createBPartnerInGroup(final String name, final I_C_BP_Group group)
+	{
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class);
+		bpartner.setName(name);
+		bpartner.setC_BP_Group(group);
+		save(bpartner);
+		return bpartner;
+	}
+
 	@Test
 	public void testSetPOIncoterms_fromBPartner()
 	{

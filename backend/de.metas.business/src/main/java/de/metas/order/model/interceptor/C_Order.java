@@ -710,6 +710,13 @@ public class C_Order
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
 	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
+		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory):
+		// only (re)resolve on a UI action, or when no bill partner has been provided yet.
+		if (!InterfaceWrapperHelper.isUIAction(order) && BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID()) != null)
+		{
+			return;
+		}
+
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
 		if (bPartnerId == null)
 		{
