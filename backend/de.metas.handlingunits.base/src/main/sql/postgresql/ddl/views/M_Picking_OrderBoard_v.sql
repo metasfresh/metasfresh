@@ -5,7 +5,7 @@ SELECT
         b.c_uom_id::text || '_' ||
         COALESCE(b.isassigned, '') || '_' ||
         COALESCE(b.processed, '') || '_' ||
-        COALESCE(CAST(b.deliverydate AS text), '') || '_' ||
+        COALESCE(CAST(b.deliverydate AS date)::text, '') || '_' ||
         loc.c_country_id::text || '_' ||
         b.ad_client_id::text || '_' ||
         b.ad_org_id::text
