@@ -30,19 +30,22 @@ import { waitForTabAllowsNew } from '../utils/WebAPIValidation';
 // ============================================================================
 
 /**
- * Create masterdata for the gate tests.
+ * Create masterdata for the SALES gate test.
  *
- * Enables the gate via the sysconfigs map (auto-restored after the test run).
+ * One pricing system is shared per request and the first bpartner's
+ * isSoPriceList fixes its SOTrx (see de.metas.frontend-testing CLAUDE.md).
+ * This request contains only CUSTOMER1 (isSoPriceList:true) so the shared
+ * pricing system gets a SALES price list — required for a sales order.
+ *
  * Creates:
  *  - One user (for login)
- *  - One customer  (for sales order)
- *  - One vendor    (for purchase order)
+ *  - One customer  (for sales order, isSoPriceList:true → sales price list)
  *  - BlockedProduct: IsSold=false, IsPurchased=false
- *  - ControlProduct: IsSold=true, IsPurchased=true (API defaults — explicitly set for clarity)
+ *  - ControlProduct: IsSold=true, IsPurchased=true
  *
  * @param {string} language
  */
-async function createMasterdata(language) {
+async function createSalesMasterdata(language) {
   return await Backend.createMasterdata({
     request: {
       sysconfigs: {
@@ -62,6 +65,57 @@ async function createMasterdata(language) {
           isSoPriceList: true,
           name: 'PSGCustomer',
         },
+      },
+      products: {
+        BlockedProduct: {
+          name: 'PSGBLOCKED',
+          type: 'Item',
+          isSold: false,
+          isPurchased: false,
+          prices: [{ price: 5.0, currencyCode: 'EUR' }],
+        },
+        ControlProduct: {
+          name: 'PSGCONTROL',
+          type: 'Item',
+          isSold: true,
+          isPurchased: true,
+          prices: [{ price: 10.0, currencyCode: 'EUR' }],
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Create masterdata for the PURCHASE gate test.
+ *
+ * One pricing system is shared per request and the first bpartner's
+ * isSoPriceList fixes its SOTrx (see de.metas.frontend-testing CLAUDE.md).
+ * This request contains only VENDOR1 (isSoPriceList:false) so the shared
+ * pricing system gets a PURCHASE price list — required for a purchase order.
+ *
+ * Creates:
+ *  - One user (for login)
+ *  - One vendor    (for purchase order, isSoPriceList:false → purchase price list)
+ *  - BlockedProduct: IsSold=false, IsPurchased=false
+ *  - ControlProduct: IsSold=true, IsPurchased=true
+ *
+ * @param {string} language
+ */
+async function createPurchaseMasterdata(language) {
+  return await Backend.createMasterdata({
+    request: {
+      sysconfigs: {
+        M_Product_EnforcePurchaseSalesFlags: 'Y',
+      },
+      login: {
+        user: {
+          language,
+          firstname: 'PSG',
+          lastname: 'Test',
+        },
+      },
+      bpartners: {
         VENDOR1: {
           isVendor: true,
           isCustomer: false,
@@ -273,7 +327,7 @@ fixed sleep, no point-in-time count snapshot.
 
       test.setTimeout(180000);
 
-      const masterdata = await createMasterdata(language);
+      const masterdata = await createSalesMasterdata(language);
       allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 
       const batchEntryButton = await openOrderInBatchEntryMode(page, masterdata, 'sales', language);
@@ -344,7 +398,7 @@ while a control product with IsPurchased=Y remains visible.
 
       test.setTimeout(180000);
 
-      const masterdata = await createMasterdata(language);
+      const masterdata = await createPurchaseMasterdata(language);
       allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
 
       const batchEntryButton = await openOrderInBatchEntryMode(page, masterdata, 'purchase', language);
