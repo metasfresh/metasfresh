@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 83 | 87 | 95% |
+| Picking | 84 | 88 | 95% |
 | Distribution | 38 | 41 | 93% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
