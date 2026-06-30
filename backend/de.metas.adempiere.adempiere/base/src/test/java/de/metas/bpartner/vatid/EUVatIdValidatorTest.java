@@ -41,7 +41,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class EUVatIdValidatorTest
 {
 	// ===================================================================
-	// Edge cases — null / blank / unknown prefix → always true
+	// Edge cases — null / blank / too-short → accepted; unrecognised prefix → rejected
 	// ===================================================================
 
 	@Test
@@ -55,6 +55,23 @@ class EUVatIdValidatorTest
 	void emptyOrBlank_isValid(final String vatId)
 	{
 		assertThat(EUVatIdValidator.isValid(vatId)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "A", "." })
+	void tooShortToHavePrefix_isAccepted(final String vatId)
+	{
+		// A non-blank value that normalises to fewer than two characters can't carry a country prefix → accepted.
+		assertThat(EUVatIdValidator.isValid(vatId)).isTrue();
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = { "US123456789", "XX999", "123456" })
+	void unrecognisedPrefix_isRejected(final String vatId)
+	{
+		// Apart from the empty/too-short cases above, a value is accepted only if it is a supported country's
+		// valid VAT-ID; an unrecognised prefix is rejected.
+		assertThat(EUVatIdValidator.isValid(vatId)).isFalse();
 	}
 
 	// ===================================================================

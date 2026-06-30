@@ -133,9 +133,10 @@ public final class EUVatIdValidator
 	 * Returns {@code true} if the given VAT-ID value is acceptable to store, {@code false} if it must be rejected.
 	 *
 	 * <ul>
-	 *   <li>Null, empty, or blank values are always accepted ({@code true}).</li>
-	 *   <li>Values whose first two normalised characters are not a recognised prefix are
-	 *       accepted without further checking — lenient pass-through for other formats.</li>
+	 *   <li>Null, empty, blank, or any value that normalises to fewer than two characters is always
+	 *       accepted ({@code true}).</li>
+	 *   <li>Any other value whose first two normalised characters are not one of the supported country
+	 *       prefixes is <em>rejected</em> ({@code false}).</li>
 	 *   <li>Values with a recognised prefix must pass both the structural regex and the
 	 *       country-specific check-digit algorithm.</li>
 	 * </ul>
