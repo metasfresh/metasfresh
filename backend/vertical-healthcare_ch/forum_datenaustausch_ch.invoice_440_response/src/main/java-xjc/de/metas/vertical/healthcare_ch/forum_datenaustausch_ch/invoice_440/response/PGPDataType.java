@@ -59,8 +59,8 @@ public class PGPDataType {
      * <p>
      * You are getting this "catch-all" property because of the following reason: 
      * The field name "PGPKeyPacket" is used by two different parts of a schema. See: 
-     * line 219 of file:/home/metas-ts/work/wt/new_dawn_uat_mf-docker/metasfresh/backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response/xmldsig-core-schema.xsd
-     * line 214 of file:/home/metas-ts/work/wt/new_dawn_uat_mf-docker/metasfresh/backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response/xmldsig-core-schema.xsd
+     * line 219 of file:/home/teo/workspaces/ic114/.wt-30698-metasfresh/backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response/xmldsig-core-schema.xsd
+     * line 214 of file:/home/teo/workspaces/ic114/.wt-30698-metasfresh/backend/vertical-healthcare_ch/forum_datenaustausch_ch.invoice_440_response/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response/xmldsig-core-schema.xsd
      * <p>
      * To get rid of this property, apply a property customization to one 
      * of both of the following declarations to change their names: 

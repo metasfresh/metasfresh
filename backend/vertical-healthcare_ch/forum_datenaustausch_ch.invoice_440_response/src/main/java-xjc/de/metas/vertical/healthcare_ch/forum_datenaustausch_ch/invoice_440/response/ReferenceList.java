@@ -43,7 +43,7 @@ public class ReferenceList {
         @XmlElementRef(name = "DataReference", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class, required = false),
         @XmlElementRef(name = "KeyReference", namespace = "http://www.w3.org/2001/04/xmlenc#", type = JAXBElement.class, required = false)
     })
-    protected List<JAXBElement<ReferenceType>> dataReferenceOrKeyReference;
+    protected List<JAXBElement<ReferenceType2>> dataReferenceOrKeyReference;
 
     /**
      * Gets the value of the dataReferenceOrKeyReference property.
@@ -63,14 +63,14 @@ public class ReferenceList {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link JAXBElement }{@code <}{@link ReferenceType }{@code >}
-     * {@link JAXBElement }{@code <}{@link ReferenceType }{@code >}
+     * {@link JAXBElement }{@code <}{@link ReferenceType2 }{@code >}
+     * {@link JAXBElement }{@code <}{@link ReferenceType2 }{@code >}
      * 
      * 
      */
-    public List<JAXBElement<ReferenceType>> getDataReferenceOrKeyReference() {
+    public List<JAXBElement<ReferenceType2>> getDataReferenceOrKeyReference() {
         if (dataReferenceOrKeyReference == null) {
-            dataReferenceOrKeyReference = new ArrayList<JAXBElement<ReferenceType>>();
+            dataReferenceOrKeyReference = new ArrayList<JAXBElement<ReferenceType2>>();
         }
         return this.dataReferenceOrKeyReference;
     }

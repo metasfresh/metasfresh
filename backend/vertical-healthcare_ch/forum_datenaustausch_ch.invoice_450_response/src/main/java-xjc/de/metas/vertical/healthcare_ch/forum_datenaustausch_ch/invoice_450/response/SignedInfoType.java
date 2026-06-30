@@ -49,7 +49,7 @@ public class SignedInfoType {
     @XmlElement(name = "SignatureMethod", required = true)
     protected SignatureMethodType signatureMethod;
     @XmlElement(name = "Reference", required = true)
-    protected List<ReferenceType2> reference;
+    protected List<ReferenceType> reference;
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -122,13 +122,13 @@ public class SignedInfoType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ReferenceType2 }
+     * {@link ReferenceType }
      * 
      * 
      */
-    public List<ReferenceType2> getReference() {
+    public List<ReferenceType> getReference() {
         if (reference == null) {
-            reference = new ArrayList<ReferenceType2>();
+            reference = new ArrayList<ReferenceType>();
         }
         return this.reference;
     }

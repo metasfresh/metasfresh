@@ -36,7 +36,7 @@ import javax.xml.bind.annotation.XmlType;
 public class CipherReferenceType {
 
     @XmlElement(name = "Transforms", namespace = "http://www.w3.org/2001/04/xmlenc#")
-    protected TransformsType transforms;
+    protected TransformsType2 transforms;
     @XmlAttribute(name = "URI", required = true)
     @XmlSchemaType(name = "anyURI")
     protected String uri;
@@ -46,10 +46,10 @@ public class CipherReferenceType {
      * 
      * @return
      *     possible object is
-     *     {@link TransformsType }
+     *     {@link TransformsType2 }
      *     
      */
-    public TransformsType getTransforms() {
+    public TransformsType2 getTransforms() {
         return transforms;
     }
 
@@ -58,10 +58,10 @@ public class CipherReferenceType {
      * 
      * @param value
      *     allowed object is
-     *     {@link TransformsType }
+     *     {@link TransformsType2 }
      *     
      */
-    public void setTransforms(TransformsType value) {
+    public void setTransforms(TransformsType2 value) {
         this.transforms = value;
     }
 
