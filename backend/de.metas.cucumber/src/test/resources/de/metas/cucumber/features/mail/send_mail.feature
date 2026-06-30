@@ -15,5 +15,5 @@ Feature: Test sending an outbound mail
 @allure.label.feature:F00192
   Scenario: SMTP
     Given email successfully sent
-      | mailbox.type | mailbox.smtp.host$env | mailbox.smtp.port | mailbox.smtp.auth | mailbox.from$env | mailbox.smtp.username$env | mailbox.smtp.password$env | mailbox.smtp.startTLS | to$env         | subject      | message      |
-      | smtp         | TEST_SMTP_HOST        | 587               | true              | TEST_SMTP_FROM   | TEST_SMTP_USER            | TEST_SMTP_PASSWORD        | true                  | TEST_SMTP_FROM | test subject | test message |
+      | mailbox.type | mailbox.smtp.host$env | mailbox.smtp.port$env | mailbox.smtp.auth | mailbox.from$env | mailbox.smtp.username$env | mailbox.smtp.password$env | mailbox.smtp.startTLS$env | to$env         | subject      | message      |
+      | smtp         | TEST_SMTP_HOST        | TEST_SMTP_PORT        | true              | TEST_SMTP_FROM   | TEST_SMTP_USER            | TEST_SMTP_PASSWORD        | TEST_SMTP_STARTTLS        | TEST_SMTP_FROM | test subject | test message |
