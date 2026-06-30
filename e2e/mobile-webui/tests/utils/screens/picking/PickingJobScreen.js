@@ -248,6 +248,12 @@ export const PickingJobScreen = {
         await PickingJobsListScreen.waitForScreen();
     }),
 
+    expectUnpickItemButtonEnabled: async () => await step(`${NAME} - Expect "Unpack item" button enabled`, async () => {
+        const button = page.getByTestId('unpick-item-button');
+        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+    }),
+
     clickUnpickItem: async () => await step(`${NAME} - Click "Unpack item"`, async () => {
         await page.getByTestId('unpick-item-button').tap();
         // The unpick panel replaces the job screen; wait for the job-screen scan button to be gone so
