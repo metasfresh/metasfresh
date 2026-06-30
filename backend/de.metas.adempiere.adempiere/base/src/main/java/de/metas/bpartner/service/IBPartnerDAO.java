@@ -241,9 +241,11 @@ public interface IBPartnerDAO extends ISingletonService
 	boolean hasMoreLocations(Properties ctx, int bpartnerId, int excludeBPLocationId, @Nullable String trxName);
 
 	/**
-	 * @return the active bill-to {@link I_C_BP_Relation} for the given partner (the relation that redirects
-	 * billing to another partner), or {@code null} if there is none. Shared by {@code retrieveBillToLocation}
-	 * (own-bill-to first, this as fallback) and the effective bill-partner resolution.
+	 * @return the single active bill-to {@link I_C_BP_Relation} for the given partner (the relation that
+	 * redirects billing to another partner), or {@code null} if there is none. Shared by
+	 * {@code retrieveBillToLocation} (own-bill-to first, this as fallback) and the effective bill-partner
+	 * resolution. Assumes at most one active {@code IsBillTo} relation per partner; throws (via
+	 * {@code firstOnly}) if several exist.
 	 */
 	@Nullable
 	I_C_BP_Relation retrieveBillToBPartnerRelationOrNull(BPartnerId bPartnerId);
