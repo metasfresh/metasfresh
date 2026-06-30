@@ -5,9 +5,10 @@
 Feature: Dummy-GRAI prerequisite — validate the sales order PO reference at the source
   # For a customer in GRAIRequired = YesWithDummyGRAIs ('D') mode, dummy GRAIs are generated at picking
   # completion using the sales order PO reference as the serial prefix (max 10 characters). This validates
-  # that prerequisite early, when the sales order is saved by the back-office actor who can fix it — instead
-  # of failing only at picking completion with a raw technical message. A non-GRAI customer and a valid
-  # PO reference are unaffected.
+  # that prerequisite at sales-order completion, so the back-office actor who can fix the PO reference gets
+  # the feedback then — instead of failing only at picking completion with a raw technical message. The PO
+  # reference stays editable while the order is a draft (so cloning is unaffected). A non-GRAI customer and a
+  # valid PO reference are unaffected.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -32,13 +33,36 @@ Feature: Dummy-GRAI prerequisite — validate the sales order PO reference at th
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp         | plv                               | product                 | 10.0     | PCE               | Normal                        |
 
-  Scenario: A too-long PO reference is rejected when saving a sales order for a dummy-GRAI customer
+  Scenario: A too-long PO reference is rejected when completing a sales order for a dummy-GRAI customer
     Given metasfresh contains C_BPartners:
       | Identifier        | Name              | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
       | dummyGRAICustomer | dummyGRAICustomer | Y              | ps                            | D            |
-    Then metasfresh contains C_Orders expecting error:
-      | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    | ErrorCode                 |
-      | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF | GRAI_POREFERENCE_TOO_LONG |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    |
+      | order      | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    Then completing the order identified by order is rejected with error code GRAI_POREFERENCE_TOO_LONG
+
+  Scenario: Cloning a dummy-GRAI sales order is allowed — the clone is a draft whose PO reference is not yet set (the prerequisite is enforced only at completion)
+    Given metasfresh contains C_BPartners:
+      | Identifier        | Name              | OPT.IsCustomer | M_PricingSystem_ID.Identifier | GRAIRequired |
+      | dummyGRAICustomer | dummyGRAICustomer | Y              | ps                            | D            |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference |
+      | order      | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | PO-123456   |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    # Cloning does not copy POReference, so the clone has none — exactly the "missing PO reference" state that
+    # must NOT be rejected at save (the picker/back-office fills it before completion).
+    When C_Order is cloned
+      | C_Order_ID.Identifier | ClonedOrder.C_Order_ID.Identifier |
+      | order                 | clonedOrder                       |
+    Then validate the created orders
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | DocStatus |
+      | clonedOrder           | dummyGRAICustomer        | DR        |
 
   Scenario: A valid PO reference (max 10 chars) for a dummy-GRAI customer is accepted and the order completes
     Given metasfresh contains C_BPartners:

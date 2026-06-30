@@ -8,9 +8,9 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 70 | 74 | 95% |
-| Distribution | 40 | 41 | 98% |
-| Manufacturing | 23 | 29 | 79% |
+| Picking | 83 | 87 | 95% |
+| Distribution | 38 | 41 | 93% |
+| Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
