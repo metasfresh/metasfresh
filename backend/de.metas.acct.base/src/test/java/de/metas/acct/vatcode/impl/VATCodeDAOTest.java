@@ -2,6 +2,7 @@ package de.metas.acct.vatcode.impl;
 
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
 import de.metas.util.Services;
@@ -173,7 +174,9 @@ public class VATCodeDAOTest
 				.setIsSOTrx(true)
 				.setDate(date_2016_01_01)
 				.setAmountType(null)
-				.build()).orElse(null);
+				.build())
+				.map(VATCodeMatchingResponse::getVatCode)
+				.orElse(null);
 
 		assertThat(actualVATCode)
 				.as("When AmountType is null, some matching code must be returned")
@@ -182,7 +185,9 @@ public class VATCodeDAOTest
 
 	private void assertVATCode(final VATCode expectedVATCode, final VATCodeMatchingRequest request)
 	{
-		final VATCode actualVATCode = vatCodeDAO.findVATCode(request).orElse(null);
+		final VATCode actualVATCode = vatCodeDAO.findVATCode(request)
+				.map(VATCodeMatchingResponse::getVatCode)
+				.orElse(null);
 		assertThat(actualVATCode)
 				.as("request=" + request)
 				.withFailMessage("Invalid VATCode for " + request)

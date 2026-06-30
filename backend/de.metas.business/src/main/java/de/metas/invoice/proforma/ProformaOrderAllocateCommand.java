@@ -28,7 +28,7 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.paymentterm.PaymentTerm;
 import de.metas.payment.paymentterm.PaymentTermBreak;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -59,7 +59,7 @@ class ProformaOrderAllocateCommand
 
 	@NonNull private final PaymentTermService paymentTermService;
 	@NonNull private final ProformaOrderAllocRepository proformaOrderAllocRepository;
-	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
+	@NonNull private final OrderPayScheduleLCStepService orderPayScheduleLCStepService;
 
 	@NonNull private final InvoiceId proformaInvoiceId;
 	@NonNull private final OrderId purchaseOrderId;
@@ -87,7 +87,7 @@ class ProformaOrderAllocateCommand
 		final ProformaOrderAlloc alloc = proformaOrderAllocRepository.create(proformaInvoiceId, purchaseOrderId);
 
 		// Delegate LC_Date stamping to the authority function — recomputeLCStep is the sole writer of LC_Date.
-		orderPayScheduleLCService.recomputeLCStep(purchaseOrderId);
+		orderPayScheduleLCStepService.recomputeLCStep(purchaseOrderId);
 
 		return alloc;
 	}

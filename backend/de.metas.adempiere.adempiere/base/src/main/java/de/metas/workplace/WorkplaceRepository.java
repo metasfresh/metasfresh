@@ -29,7 +29,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import de.metas.bpartner.BPGroupId;
 import de.metas.cache.CCache;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.inout.PriorityRule;
 import de.metas.order.OrderPickingType;
@@ -49,7 +51,9 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Workplace;
+import org.compiere.model.I_C_Workplace_BP_Group;
 import org.compiere.model.I_C_Workplace_Carrier_Product;
+import org.compiere.model.I_C_Workplace_DocType;
 import org.compiere.model.I_C_Workplace_ExternalSystem;
 import org.compiere.model.I_C_Workplace_Product;
 import org.compiere.model.I_C_Workplace_ProductCategory;
@@ -58,8 +62,13 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
+/**
+ * Repository Tables: C_Workplace, C_Workplace_Product, C_Workplace_ProductCategory, C_Workplace_Carrier_Product, C_Workplace_ExternalSystem, C_Workplace_BP_Group, C_Workplace_DocType
+ * Repository Cluster: WorkplaceRepository
+ */
 @Repository
 public class WorkplaceRepository
 {
@@ -70,6 +79,8 @@ public class WorkplaceRepository
 			.additionalTableNameToResetFor(I_C_Workplace_ProductCategory.Table_Name)
 			.additionalTableNameToResetFor(I_C_Workplace_Carrier_Product.Table_Name)
 			.additionalTableNameToResetFor(I_C_Workplace_ExternalSystem.Table_Name)
+			.additionalTableNameToResetFor(I_C_Workplace_BP_Group.Table_Name)
+			.additionalTableNameToResetFor(I_C_Workplace_DocType.Table_Name)
 			.build();
 
 	public static WorkplaceRepository newInstanceForUnitTesting()
@@ -98,6 +109,8 @@ public class WorkplaceRepository
 
 	public List<Workplace> getAllActive() {return getMap().getAllActive();}
 
+	public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId) {return getMap().getPackingPlacePickFromLocatorIds(warehouseId);}
+
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
 		if (request.getPickFromLocatorId() != null && !WarehouseId.equals(request.getWarehouseId(), request.getPickFromLocatorId().getWarehouseId()))
@@ -112,6 +125,7 @@ public class WorkplaceRepository
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
+		record.setIsPackingPlace(request.isPackingPlace());
 
 		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
@@ -141,6 +155,16 @@ public class WorkplaceRepository
 		if(!request.getExternalSystemIds().isEmpty())
 		{
 			request.getExternalSystemIds().forEach(externalSystemId -> createExternalSystem(externalSystemId, record));
+		}
+
+		if(!request.getBpGroupIds().isEmpty())
+		{
+			request.getBpGroupIds().forEach(bpGroupId -> createBPGroup(bpGroupId, record));
+		}
+
+		if(!request.getDocTypeIds().isEmpty())
+		{
+			request.getDocTypeIds().forEach(docTypeId -> createDocType(docTypeId, record));
 		}
 
 		return getById(WorkplaceId.ofRepoId(record.getC_Workplace_ID()));
@@ -182,6 +206,24 @@ public class WorkplaceRepository
 		InterfaceWrapperHelper.save(record);
 	}
 
+	private void createBPGroup(@NonNull final BPGroupId bpGroupId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_BP_Group record = InterfaceWrapperHelper.newInstance(I_C_Workplace_BP_Group.class);
+		record.setC_BP_Group_ID(bpGroupId.getRepoId());
+		record.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		record.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(record);
+	}
+
+	private void createDocType(@NonNull final DocTypeId docTypeId, @NonNull final I_C_Workplace workplace)
+	{
+		final I_C_Workplace_DocType record = InterfaceWrapperHelper.newInstance(I_C_Workplace_DocType.class);
+		record.setC_DocType_ID(docTypeId.getRepoId());
+		record.setC_Workplace_ID(workplace.getC_Workplace_ID());
+		record.setAD_Org_ID(workplace.getAD_Org_ID());
+		InterfaceWrapperHelper.save(record);
+	}
+
 	@NonNull
 	private WorkplacesMap getMap()
 	{
@@ -210,6 +252,8 @@ public class WorkplaceRepository
 		final Multimap<WorkplaceId, ProductCategoryId> categoriesByWorkplace = loadProductCategories(workplaceIds);
 		final Multimap<WorkplaceId, CarrierProductId> carrierProductsByWorkplace = loadCarrierProducts(workplaceIds);
 		final Multimap<WorkplaceId, ExternalSystemId> externalSystemsByWorkplace = loadExternalSystems(workplaceIds);
+		final Multimap<WorkplaceId, BPGroupId> bpGroupsByWorkplace = loadBPGroups(workplaceIds);
+		final Multimap<WorkplaceId, DocTypeId> docTypesByWorkplace = loadDocTypes(workplaceIds);
 
 		final ImmutableList<Workplace> list = workplaceRecords.stream()
 				.map(record -> fromRecord(
@@ -217,7 +261,9 @@ public class WorkplaceRepository
 						productsByWorkplace,
 						categoriesByWorkplace,
 						carrierProductsByWorkplace,
-						externalSystemsByWorkplace
+						externalSystemsByWorkplace,
+						bpGroupsByWorkplace,
+						docTypesByWorkplace
 				))
 				.collect(ImmutableList.toImmutableList());
 
@@ -280,13 +326,43 @@ public class WorkplaceRepository
 				));
 	}
 
+	private Multimap<WorkplaceId, BPGroupId> loadBPGroups(@NonNull final Set<WorkplaceId> workplaceIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Workplace_BP_Group.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Workplace_BP_Group.COLUMNNAME_C_Workplace_ID, workplaceIds)
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
+						record -> BPGroupId.ofRepoId(record.getC_BP_Group_ID()),
+						HashMultimap::create
+				));
+	}
+
+	private Multimap<WorkplaceId, DocTypeId> loadDocTypes(@NonNull final Set<WorkplaceId> workplaceIds)
+	{
+		return queryBL.createQueryBuilder(I_C_Workplace_DocType.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_Workplace_DocType.COLUMNNAME_C_Workplace_ID, workplaceIds)
+				.create()
+				.stream()
+				.collect(Multimaps.toMultimap(
+						record -> WorkplaceId.ofRepoId(record.getC_Workplace_ID()),
+						record -> DocTypeId.ofRepoId(record.getC_DocType_ID()),
+						HashMultimap::create
+				));
+	}
+
 	@NonNull
 	private static Workplace fromRecord(
 			@NonNull final I_C_Workplace record,
 			@NonNull final Multimap<WorkplaceId, ProductId> productsByWorkplace,
 			@NonNull final Multimap<WorkplaceId, ProductCategoryId> categoriesByWorkplace,
 			@NonNull final Multimap<WorkplaceId, CarrierProductId> carrierProductsByWorkplace,
-			@NonNull final Multimap<WorkplaceId, ExternalSystemId> externalSystemsByWorkplace)
+			@NonNull final Multimap<WorkplaceId, ExternalSystemId> externalSystemsByWorkplace,
+			@NonNull final Multimap<WorkplaceId, BPGroupId> bpGroupsByWorkplace,
+			@NonNull final Multimap<WorkplaceId, DocTypeId> docTypesByWorkplace)
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(record.getM_Warehouse_ID());
 		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(record.getC_Workplace_ID());
@@ -301,11 +377,14 @@ public class WorkplaceRepository
 				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
 				.orderPickingType(OrderPickingType.ofNullableCode(record.getOrderPickingType()))
 				.maxPickingJobs(record.getMaxPickingJobs())
+				.isPackingPlace(record.isPackingPlace())
 				// Add child collections
 				.productIds(ImmutableSet.copyOf(productsByWorkplace.get(workplaceId)))
 				.productCategoryIds(ImmutableSet.copyOf(categoriesByWorkplace.get(workplaceId)))
 				.carrierProductIds(ImmutableSet.copyOf(carrierProductsByWorkplace.get(workplaceId)))
 				.externalSystemIds(ImmutableSet.copyOf(externalSystemsByWorkplace.get(workplaceId)))
+				.bpartnerGroupIds(ImmutableSet.copyOf(bpGroupsByWorkplace.get(workplaceId)))
+				.docTypeIds(ImmutableSet.copyOf(docTypesByWorkplace.get(workplaceId)))
 				.build();
 	}
 
@@ -358,6 +437,16 @@ public class WorkplaceRepository
 		{
 			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
 			return workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(10);
+		}
+
+		public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+		{
+			return allActive.stream()
+					.filter(Workplace::isPackingPlace)
+					.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
+					.map(Workplace::getPickFromLocatorId)
+					.filter(Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

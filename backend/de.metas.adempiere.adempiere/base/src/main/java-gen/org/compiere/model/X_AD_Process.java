@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_Process
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1041533436L;
+	private static final long serialVersionUID = 1719866973L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -285,7 +285,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getEntityType()
+	public java.lang.String getEntityType() 
 	{
 		return get_ValueAsString(COLUMNNAME_EntityType);
 	}
@@ -297,7 +297,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public java.lang.String getFilenamePattern()
+	public java.lang.String getFilenamePattern() 
 	{
 		return get_ValueAsString(COLUMNNAME_FilenamePattern);
 	}
@@ -369,7 +369,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isIncludeCSVHeaderRow()
+	public boolean isIncludeCSVHeaderRow() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsIncludeCSVHeaderRow);
 	}
@@ -408,6 +408,18 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isOneInstanceOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsOneInstanceOnly);
+	}
+
+	@Override
+	public void setIsPdfA3Output (final boolean IsPdfA3Output)
+	{
+		set_Value (COLUMNNAME_IsPdfA3Output, IsPdfA3Output);
+	}
+
+	@Override
+	public boolean isPdfA3Output() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPdfA3Output);
 	}
 
 	@Override
@@ -528,6 +540,27 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getName() 
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
+	}
+
+	/** 
+	 * OpenTarget AD_Reference_ID=542096
+	 * Reference name: ProcessOpenTarget
+	 */
+	public static final int OPENTARGET_AD_Reference_ID=542096;
+	/** ModalOverlay = O */
+	public static final String OPENTARGET_ModalOverlay = "O";
+	/** NewBrowserTab = N */
+	public static final String OPENTARGET_NewBrowserTab = "N";
+	@Override
+	public void setOpenTarget (final @Nullable java.lang.String OpenTarget)
+	{
+		set_Value (COLUMNNAME_OpenTarget, OpenTarget);
+	}
+
+	@Override
+	public java.lang.String getOpenTarget() 
+	{
+		return get_ValueAsString(COLUMNNAME_OpenTarget);
 	}
 
 	/** 

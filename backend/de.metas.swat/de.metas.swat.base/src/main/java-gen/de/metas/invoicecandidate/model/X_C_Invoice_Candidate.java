@@ -1,32 +1,10 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -35,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 785660730L;
+	private static final long serialVersionUID = -1523030592L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -488,63 +466,9 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public int getC_Incoterms_ID()
+	public int getC_Incoterms_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
-	}
-
-	@Override
-	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
-	}
-
-	@Override
-	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
-	{
-		if (C_PromotionCode_ID < 1)
-			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
-		else
-			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
-	}
-
-	@Override
-	public int getC_PromotionCode_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
-	}
-
-	@Override
-	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
-	{
-		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
-	}
-
-	@Override
-	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
-	{
-		if (C_PromotionCode2_ID < 1)
-			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
-		else
-			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
-	}
-
-	@Override
-	public int getC_PromotionCode2_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
 	}
 
 	@Override
@@ -804,14 +728,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setC_OrderSO_ID (final int C_OrderSO_ID)
 	{
-		if (C_OrderSO_ID < 1)
+		if (C_OrderSO_ID < 1) 
 			set_Value (COLUMNNAME_C_OrderSO_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_OrderSO_ID, C_OrderSO_ID);
 	}
 
 	@Override
-	public int getC_OrderSO_ID()
+	public int getC_OrderSO_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderSO_ID);
 	}
@@ -870,6 +794,60 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode2()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode2(final org.compiere.model.I_C_PromotionCode C_PromotionCode2)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode2_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode2);
+	}
+
+	@Override
+	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
+	{
+		if (C_PromotionCode2_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode2_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_PromotionCode getC_PromotionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class);
+	}
+
+	@Override
+	public void setC_PromotionCode(final org.compiere.model.I_C_PromotionCode C_PromotionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_C_PromotionCode_ID, org.compiere.model.I_C_PromotionCode.class, C_PromotionCode);
+	}
+
+	@Override
+	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
+	{
+		if (C_PromotionCode_ID < 1) 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
+	}
+
+	@Override
+	public int getC_PromotionCode_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
 	}
 
 	@Override
@@ -1188,6 +1166,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		return get_ValueAsInt(COLUMNNAME_First_Ship_BPLocation_ID);
 	}
 
+	@Override
+	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
+	{
+		throw new IllegalArgumentException ("GrandTotal is virtual column");	}
+
+	@Override
+	public BigDecimal getGrandTotal() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
 	/** 
 	 * GroupCompensationAmtType AD_Reference_ID=540759
 	 * Reference name: GroupCompensationAmtType
@@ -1376,6 +1366,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String INVOICERULE_EFFECTIVE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_EFFECTIVE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_EFFECTIVE_Manual = "M";
 	@Override
 	public void setInvoiceRule_Effective (final @Nullable java.lang.String InvoiceRule_Effective)
 	{
@@ -1404,6 +1396,8 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String INVOICERULE_OVERRIDE_OrderCompletelyDelivered = "C";
 	/** After Pick = P */
 	public static final String INVOICERULE_OVERRIDE_AfterPick = "P";
+	/** Manual = M */
+	public static final String INVOICERULE_OVERRIDE_Manual = "M";
 	@Override
 	public void setInvoiceRule_Override (final @Nullable java.lang.String InvoiceRule_Override)
 	{
@@ -1485,6 +1479,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isDeliveryClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeliveryClosed);
+	}
+
+	@Override
+	public void setIsEdiInvoicRecipient (final boolean IsEdiInvoicRecipient)
+	{
+		throw new IllegalArgumentException ("IsEdiInvoicRecipient is virtual column");	}
+
+	@Override
+	public boolean isEdiInvoicRecipient() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsEdiInvoicRecipient);
 	}
 
 	@Override
@@ -1684,6 +1689,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public boolean isToRecompute() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsToRecompute);
+	}
+
+	@Override
+	public void setIsWithoutCharge (final boolean IsWithoutCharge)
+	{
+		set_Value (COLUMNNAME_IsWithoutCharge, IsWithoutCharge);
+	}
+
+	@Override
+	public boolean isWithoutCharge() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWithoutCharge);
 	}
 
 	@Override
@@ -1966,10 +1983,10 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public static final String PAYMENTRULE_KreditkarteExtern = "U";
 	/** Sofortüberweisung = R */
 	public static final String PAYMENTRULE_Sofortueberweisung = "R";
-	/** Rückerstattung = E */
-	public static final String PAYMENTRULE_Rueckerstattung = "E";
-	/** Verrechnung = F */
-	public static final String PAYMENTRULE_Verrechnung = "F";
+	/** Reimbursement = E */
+	public static final String PAYMENTRULE_Reimbursement = "E";
+	/** Settlement = F */
+	public static final String PAYMENTRULE_Settlement = "F";
 	@Override
 	public void setPaymentRule (final @Nullable java.lang.String PaymentRule)
 	{
@@ -2197,17 +2214,6 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getProductType() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProductType);
-	}
-
-	@Override
-	public void setPurchaser_User_ID (final int Purchaser_User_ID)
-	{
-		throw new IllegalArgumentException ("Purchaser_User_ID is virtual column");	}
-
-	@Override
-	public int getPurchaser_User_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Purchaser_User_ID);
 	}
 
 	@Override
@@ -2563,6 +2569,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setReason (final @Nullable java.lang.String Reason)
+	{
+		set_Value (COLUMNNAME_Reason, Reason);
+	}
+
+	@Override
+	public java.lang.String getReason() 
+	{
+		return get_ValueAsString(COLUMNNAME_Reason);
+	}
+
+	@Override
 	public void setReasonDiscount (final @Nullable java.lang.String ReasonDiscount)
 	{
 		set_Value (COLUMNNAME_ReasonDiscount, ReasonDiscount);
@@ -2587,6 +2605,17 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getRecord_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Record_ID);
+	}
+
+	@Override
+	public void setSalesRep_ID (final int SalesRep_ID)
+	{
+		throw new IllegalArgumentException ("SalesRep_ID is virtual column");	}
+
+	@Override
+	public int getSalesRep_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
 	}
 
 	@Override
@@ -2731,17 +2760,5 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public void setGrandTotal (final @Nullable BigDecimal GrandTotal)
-	{
-		throw new IllegalArgumentException ("GrandTotal is virtual column");	}
-
-	@Override
-	public BigDecimal getGrandTotal()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_GrandTotal);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

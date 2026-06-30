@@ -1,6 +1,8 @@
 package de.metas.workplace;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPGroupId;
+import de.metas.document.DocTypeId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.order.OrderPickingType;
 import de.metas.picking.api.PickingSlotId;
@@ -28,9 +30,13 @@ public class WorkplaceCreateRequest
 	@Nullable SeqNo seqNo;
 	@Nullable OrderPickingType orderPickingType;
 	int maxPickingJobs;
+	/** Defaults to {@code true} to match the {@code C_Workplace.IsPackingPlace} DB column default ('Y'): a workplace created without an explicit role is a packing place, preserving the pre-existing launcher behaviour. */
+	@Builder.Default boolean isPackingPlace = true;
 
 	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
 	@NonNull @Singular ImmutableSet<ProductId> productIds;
 	@NonNull @Singular ImmutableSet<ExternalSystemId> externalSystemIds;
 	@NonNull @Singular ImmutableSet<CarrierProductId> carrierProductIds;
+	@NonNull @Singular ImmutableSet<BPGroupId> bpGroupIds;
+	@NonNull @Singular ImmutableSet<DocTypeId> docTypeIds;
 }

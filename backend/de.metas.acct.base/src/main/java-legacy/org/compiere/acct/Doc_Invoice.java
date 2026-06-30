@@ -746,7 +746,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final Fact rcFact = newFact(as);
 				// VSt (Vorsteuer / input tax) — debit the tax receivable
 				final FactLine vstLeg = rcFact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAccount(docTax.getTaxCreditAcct(as))
 						.setAmtSource(currencyId, docTax.getReverseChargeTaxAmt(), null)
 						.alsoAddZeroLine()
 						.buildAndAdd();
@@ -773,7 +773,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			else
 			{
 				final FactLine tl = fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAccount(docTax.getTaxCreditAcct(as))
 						.setAmtSource(currencyId, docTax.getTaxAmt(), null)
 						.alsoAddZeroLine()
 						.buildAndAddNotNull();
@@ -950,7 +950,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 				final Fact rcFact = newFact(as);
 				// VSt (Vorsteuer / input tax) — credit to reverse the original VSt debit
 				final FactLine vstLeg = rcFact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAccount(docTax.getTaxCreditAcct(as))
 						.setAmtSource(currencyId, null, docTax.getReverseChargeTaxAmt())
 						.alsoAddZeroLine()
 						.buildAndAdd();
@@ -977,7 +977,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 			else
 			{
 				final FactLine tl = fact.createLine()
-						.setAccount(docTax.getTaxCreditOrExpense(as))
+						.setAccount(docTax.getTaxCreditAcct(as))
 						.setAmtSource(currencyId, null, docTax.getTaxAmt())
 						.alsoAddZeroLine()
 						.buildAndAddNotNull();

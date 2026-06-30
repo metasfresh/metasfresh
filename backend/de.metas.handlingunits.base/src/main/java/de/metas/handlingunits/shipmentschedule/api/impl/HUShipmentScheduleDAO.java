@@ -98,7 +98,8 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 		return queryBuilder;
 	}
 
-	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	@Override
+	public List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedNotDeliveredForTopLevelHU(@NonNull final I_M_HU topLevelHU)
 	{
 		return queryByTopLevelHU(topLevelHU)
 				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, null) // Not delivered

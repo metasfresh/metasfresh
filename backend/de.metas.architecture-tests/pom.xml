@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<artifactId>de.metas.parent</artifactId>
+		<groupId>de.metas</groupId>
+		<version>10.0.0</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<groupId>de.metas.architecture-tests</groupId>
+	<artifactId>de.metas.architecture-tests</artifactId>
+	<version>10.0.0</version>
+	<packaging>jar</packaging>
+
+	<description>
+		Whole-backend ArchUnit architecture tests. Has no production code; it depends on the assembly modules
+		(metasfresh-dist-serverRoot + metasfresh-webui-api) whose transitive classpath forms the complete
+		backend closure that ArchUnit analyses. The frozen gating rules run over every backend module; the
+		report-only no-cycles check is opt-in (-Darchunit.cycles=true).
+	</description>
+
+	<properties>
+		<metasfresh.version>10.0.0</metasfresh.version>
+	</properties>
+
+	<dependencies>
+
+		<!-- Whole-backend closure: serverRoot (app-server) + webui-api assembly modules.
+		     Their full transitive dependency sets are pulled onto the test classpath by Maven,
+		     so ArchUnit's importPackages() sees the classes of every backend module at once.
+		     The uber-jars themselves contain only Spring Boot loader classes at the root level;
+		     the nested BOOT-INF/lib/*.jar entries are opaque to ArchUnit and to Maven's resolver,
+		     which resolves each dependency as a normal thin jar via the POM graph instead. -->
+		<dependency>
+			<groupId>de.metas.dist</groupId>
+			<artifactId>metasfresh-dist-serverRoot</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>de.metas.ui.web</groupId>
+			<artifactId>metasfresh-webui-api</artifactId>
+			<version>${metasfresh.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- ArchUnit — core lib (rules run from Jupiter @Test). Version managed in parent-pom.
+		     junit-jupiter (the engine that runs these tests) is inherited from de.metas.parent. -->
+		<dependency>
+			<groupId>com.tngtech.archunit</groupId>
+			<artifactId>archunit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<!-- Whole-backend ArchUnit import loads ~25 k+ classes into heap; raise JVM heap accordingly. -->
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<argLine>@{argLine} -Xms512m -Xmx4g -Dfile.encoding=UTF-8</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>

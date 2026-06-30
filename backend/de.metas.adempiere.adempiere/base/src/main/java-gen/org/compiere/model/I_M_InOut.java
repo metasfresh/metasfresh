@@ -1793,6 +1793,33 @@ public interface I_M_InOut
 	String COLUMNNAME_SendEMail = "SendEMail";
 
 	/**
+	 * Set Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setTrackingURL (@Nullable java.lang.String TrackingURL);
+
+	/**
+	 * Get Tracking URL.
+	 * URL of the shipper to track shipments
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	@Nullable java.lang.String getTrackingURL();
+
+	ModelColumn<I_M_InOut, Object> COLUMN_TrackingURL = new ModelColumn<>(I_M_InOut.class, "TrackingURL", null);
+	String COLUMNNAME_TrackingURL = "TrackingURL";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

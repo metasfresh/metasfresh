@@ -21,6 +21,7 @@ import {
   FRONTEND_BASE_URL,
   SLOW_ACTION_TIMEOUT,
   FAST_ACTION_TIMEOUT,
+  VERY_SLOW_ACTION_TIMEOUT,
 } from '../utils/common';
 
 const TEST_WINDOW_ID = 127;
@@ -532,13 +533,20 @@ test.describe('PATCH Response Handling', () => {
         // field metadata
         const nameInput = getNameInput(page);
 
-        // Intercept the PATCH to verify it actually fires (not blocked)
+        // Intercept the PATCH to verify it actually fires (not blocked).
+        // Use VERY_SLOW_ACTION_TIMEOUT (40s) rather than the shared
+        // SLOW_ACTION_TIMEOUT (20s): the post-modal-teardown PATCH path is
+        // genuinely slower than a typical master-field PATCH because the
+        // modal scope's document lock + render bookkeeping must settle before
+        // the master scope can re-acquire and PATCH. Under cold-container CI
+        // conditions this exceeds 20s. Bumping SLOW_ACTION_TIMEOUT globally
+        // would mask real slow-down regressions in other tests.
         const patchPromise = page.waitForResponse(
           (response) =>
             response.url().includes('/rest/api/window') &&
             response.request().method() === 'PATCH' &&
             response.status() === 200,
-          { timeout: SLOW_ACTION_TIMEOUT }
+          { timeout: VERY_SLOW_ACTION_TIMEOUT }
         );
 
         await setTextField(page, nameInput, 'Edited On Master After Modal');

@@ -22,9 +22,11 @@
 
 package de.metas.material.dispo.service.event.handler.ppordercandidate;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.util.time.SystemTime;
+import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -50,11 +52,14 @@ import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ProductPlanningService;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -71,6 +76,8 @@ import java.util.function.Function;
 public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventHandler
 		implements MaterialEventHandler<PPOrderCandidateAdvisedEvent>
 {
+	private static final Logger logger = LogManager.getLogger(PPOrderCandidateAdvisedHandler.class);
+
 	@NonNull private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 	@NonNull private final PostMaterialEventService materialEventService;
 	@NonNull private final ProductPlanningService productPlanningService;
@@ -103,6 +110,15 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 	public void handleEvent(@NonNull final PPOrderCandidateAdvisedEvent event)
 	{
 		validateEvent(event);
+
+		if (isWarehouseExcludedFromMaterialDispo(event))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(event.getPpOrderCandidate().getPpOrderData().getWarehouseId()));
+			return;
+		}
 
 		final PPOrderCandidateAdvisedEvent eventWithRecomputedQty = getEventWithRecomputedQtyAndDate(event);
 

@@ -32,7 +32,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.inoutcandidate.ShipmentConstraintId;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -126,7 +128,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+	@NonNull private final ShipmentConstraintService shipmentConstraintService;
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -154,6 +156,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
+				new ShipmentConstraintService(new de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintRepository()),
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService,
@@ -829,13 +832,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateShipmentConstraints(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final int billBPartnerId = sched.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(sched.getBill_BPartner_ID());
+		final java.util.Optional<ShipmentConstraintId> constraintId = billBPartnerId != null
+				? shipmentConstraintService.getDeliveryStopConstraintIdFor(billBPartnerId)
+				: java.util.Optional.empty();
+		if (constraintId.isPresent())
 		{
 			sched.setIsDeliveryStop(true);
-			sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
+			sched.setM_Shipment_Constraint_ID(constraintId.get().getRepoId());
 		}
 		else
 		{

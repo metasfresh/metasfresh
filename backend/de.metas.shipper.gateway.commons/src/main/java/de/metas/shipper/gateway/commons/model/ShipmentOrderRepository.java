@@ -125,6 +125,7 @@ public class ShipmentOrderRepository
 				.productName(item.getProductName())
 				.productValue(item.getArticleValue())
 				.customsTariff(item.getCustomsTariffNumber())
+				.countryOfOrigin(item.getCountryOfOrigin())
 				.totalWeightInKg(item.getTotalWeightInKg())
 				.unitPrice(Money.of(item.getPrice(), currencyId))
 				.totalValue(Money.of(item.getTotalPrice(), currencyId))
@@ -154,6 +155,7 @@ public class ShipmentOrderRepository
 						.street1(po.getShipper_StreetName1())
 						.street2(po.getShipper_StreetName2())
 						.houseNo(po.getShipper_StreetNumber())
+						.attention(po.getShipper_Attention())
 						.country(CountryCode.ofAlpha2(po.getShipper_CountryISO2Code()))
 						.bpartnerId(po.getC_BPartner_ID())
 						.build())
@@ -165,6 +167,7 @@ public class ShipmentOrderRepository
 						.street1(po.getReceiver_StreetName1())
 						.street2(po.getReceiver_StreetName2())
 						.houseNo(po.getReceiver_StreetNumber())
+						.attention(po.getReceiver_Attention())
 						.country(CountryCode.ofAlpha2(po.getReceiver_CountryISO2Code()))
 						.build())
 				.shipperEORI(po.getShipper_EORI())
@@ -311,6 +314,7 @@ public class ShipmentOrderRepository
 		po.setShipper_StreetNumber(shipperAddress.getHouseNo());
 		po.setShipper_ZipCode(shipperAddress.getZipCode());
 		po.setShipper_City(shipperAddress.getCity());
+		po.setShipper_Attention(shipperAddress.getAttention());
 		final CountryCode shipperCountry = shipperAddress.getCountry();
 		po.setShipper_CountryISO2Code(shipperCountry.getAlpha2());
 
@@ -322,6 +326,7 @@ public class ShipmentOrderRepository
 		po.setReceiver_StreetNumber(receiverAddress.getHouseNo());
 		po.setReceiver_ZipCode(receiverAddress.getZipCode());
 		po.setReceiver_City(receiverAddress.getCity());
+		po.setReceiver_Attention(receiverAddress.getAttention());
 		final CountryCode receiverCountry = receiverAddress.getCountry();
 		po.setReceiver_CountryISO2Code(receiverCountry.getAlpha2());
 
@@ -386,6 +391,7 @@ public class ShipmentOrderRepository
 		po.setProductName(item.getProductName());
 		po.setArticleValue(item.getProductValue());
 		po.setCustomsTariffNumber(item.getCustomsTariff());
+		po.setCountryOfOrigin(item.getCountryOfOrigin());
 		Check.assumeEquals(item.getTotalValue().getCurrencyId(), item.getUnitPrice().getCurrencyId());
 		po.setPrice(item.getUnitPrice().toBigDecimal());
 		po.setC_Currency_ID(item.getUnitPrice().getCurrencyId().getRepoId());

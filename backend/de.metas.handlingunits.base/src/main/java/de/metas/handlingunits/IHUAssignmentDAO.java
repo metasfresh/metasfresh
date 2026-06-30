@@ -23,7 +23,10 @@ package de.metas.handlingunits;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import org.adempiere.ad.table.api.AdTableId;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -248,4 +251,11 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 * Make sure the tu is set
 	 */
 	List<I_M_HU_Assignment> retrieveTableHUAssignmentsNoTopFilterTUMandatory(IContextAware contextProvider, int adTableId, I_M_HU hu);
+
+	/**
+	 * Returns all active {@code M_HU_Assignment} records where {@code M_HU_ID} is one of the given HU IDs
+	 * and the assignment references the given table.
+	 */
+	List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(@NonNull ImmutableSet<HuId> huIds, @NonNull AdTableId adTableId);
+
 }

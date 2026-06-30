@@ -76,7 +76,7 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | maturing_hus_10 | rawgood_hu_10 | rawGood      | 10  |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
@@ -84,7 +84,7 @@ Feature: Maturing scenarios
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
       | oc_1       | false     | maturedGood  | bom_1             | prodPlanning           | 540006        | 10 PCE     | 10 PCE       | 0 PCE        | 2023-05-31T22:00:00Z | 2023-05-31T22:00:00Z | false    | true       | maturingConfig              | maturingConfigLine               | rawgood_hu_10 |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
@@ -149,7 +149,7 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID.Identifier | M_HU_ID.Identifier | M_Product_ID.Identifier | Qty |
       | rawgood_hus_20             | rawgood_hu_20      | rawGood                 | 20  |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
@@ -161,7 +161,7 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | Qty |
       | rawgood_hus_20  | 15  |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
@@ -204,7 +204,7 @@ Feature: Maturing scenarios
       | M_HU_Storage_ID | M_HU_ID       | M_Product_ID | Qty |
       | rawgood_hus_30  | rawgood_hu_30 | rawGood      | 30  |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 
@@ -216,7 +216,7 @@ Feature: Maturing scenarios
       | M_HU_ID       | MovementDate         |
       | rawgood_hu_30 | 2024-01-01T21:00:00Z |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
 

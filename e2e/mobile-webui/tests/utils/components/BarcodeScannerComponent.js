@@ -173,16 +173,15 @@ export const BarcodeScannerComponent = {
         }
     }),
 
-    // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
-    // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
-    // regression that would silently re-enable the camera capture preview.
-    //
-    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — a
-    // <video> that doesn't appear within seconds is not going to appear, and falling back
-    // to the 120s global assertion timeout would silently consume the test budget on a
-    // genuine regression.
-    expectCameraVideoAbsent: async () => await test.step(`${NAME} - Expect no camera <video> rendered`, async () => {
-        await expect(page.locator('.barcode-scanner video')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    // Asserts camera mode is NOT active — the CameraModePanel wrapper (`.camera-mode-panel`,
+    // rendered iff activeMode===CAMERA) is not mounted. Used by hardware-scanner-only deployments
+    // (camera disabled) to guard against a regression that would silently re-enable camera capture.
+    // We assert on the always-mounted wrapper rather than the inner <video> — see
+    // expectCameraModeActive for why the <video> is unreliable.
+    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — falling back
+    // to the 120s global assertion timeout would silently consume the test budget on a genuine regression.
+    expectCameraModeInactive: async () => await test.step(`${NAME} - Expect camera mode not active`, async () => {
+        await expect(page.locator('.camera-mode-panel')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
@@ -229,9 +228,17 @@ export const BarcodeScannerComponent = {
         await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly', { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    // Asserts the device camera <video> element IS rendered inside .barcode-scanner.
-    expectCameraVideoPresent: async () => await test.step(`${NAME} - Expect camera <video> rendered`, async () => {
-        await expect(page.locator('.barcode-scanner video')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    // Asserts camera mode IS active by checking the always-mounted CameraModePanel wrapper
+    // (`.camera-mode-panel`, rendered iff activeMode===CAMERA).
+    // NOT the inner <video>: CameraModePanel renders the <video> only `{!isProcessing && <video/>}`,
+    // so it unmounts whenever a barcode is processed. In CI the synthetic fake-media stream
+    // (--use-fake-device-for-media-stream) can make ZXing false-positive a 1-D barcode → isProcessing
+    // flips → the <video> unmounts mid-assertion (and a getUserMedia error tears the panel down via
+    // onCancel). Asserting on the stable wrapper verifies the toggle switched into camera mode without
+    // depending on a transient, hardware-feed-dependent element. Real video-feed validation needs
+    // physical camera hardware and cannot be deterministic in CI.
+    expectCameraModeActive: async () => await test.step(`${NAME} - Expect camera mode active`, async () => {
+        await expect(page.locator('.camera-mode-panel')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',
@@ -240,13 +247,14 @@ export const BarcodeScannerComponent = {
         await page.getByTestId(testId).tap();
     }),
 
-    // Asserts a footer button (by testId) IS shown.
-    expectFooterButtonPresent: async (testId) => await test.step(`${NAME} - Expect footer button present '${testId}'`, async () => {
+    // Asserts a button (by testId) IS shown. The testId may be a footer button or a
+    // mode-panel button (e.g. 'barcode-scanner-back-to-scanner', rendered by ManualModePanel).
+    expectButtonPresent: async (testId) => await test.step(`${NAME} - Expect button present '${testId}'`, async () => {
         await expect(page.getByTestId(testId)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    // Asserts a footer button (by testId) is NOT shown.
-    expectFooterButtonAbsent: async (testId) => await test.step(`${NAME} - Expect footer button absent '${testId}'`, async () => {
+    // Asserts a button (by testId) is NOT shown.
+    expectButtonAbsent: async (testId) => await test.step(`${NAME} - Expect button absent '${testId}'`, async () => {
         await expect(page.getByTestId(testId)).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 }

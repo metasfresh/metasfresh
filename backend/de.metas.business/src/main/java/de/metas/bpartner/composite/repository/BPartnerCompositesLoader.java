@@ -401,6 +401,7 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.attention(trimBlankToNull(bPartnerLocationRecord.getAttention()))
 				.vatTaxId(VATIdentifier.ofNullable(bPartnerLocationRecord.getVATaxID()))
 				.build();
 

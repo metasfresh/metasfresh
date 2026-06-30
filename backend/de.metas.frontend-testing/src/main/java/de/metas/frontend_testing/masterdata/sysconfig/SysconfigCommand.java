@@ -26,15 +26,11 @@ public class SysconfigCommand
 			.put("mobileui.frontend.barcodeScanner.showInputText", "Y")
 			.put("mobileui.frontend.barcodeScanner.isInputTextReadonly", "Y")
 			// Reset the per-instance scanner-mode knobs too — a test that flips them (e.g. the
-			// Honeywell CT60 keystroke-wedge contract test, or the camera-mode tests) must not leak
-			// its setting onto unrelated specs in the same run (the reset runs before every test).
-			// Camera scanning is OFF by default in tests: it is irrelevant to non-camera workflows,
-			// brings a getUserMedia render-race flake in CI, and renders a stray hardware<->camera
-			// toggle. The camera-mode tests in barcode_scanner_modes.spec.js opt back in explicitly
-			// (cameraEnabled:'Y'). Both the new mode key and the legacy alias are set off, so the
-			// effective value is camera-off regardless of the alias-retirement state.
-			.put("mobileui.frontend.barcodeScanner.useCamera", "N")
-			.put("mobileui.frontend.barcodeScanner.mode.camera.enabled", "N")
+			// Honeywell CT60 keystroke-wedge contract test) must not leak readOnly=Y or
+			// useCamera=N onto unrelated specs in the same run. Defaults match the framework
+			// fall-backs in BarcodeScannerComponent.jsx (useCamera=true, offscreen/visible
+			// readOnly=false) and the core seed migrations 5807370 / 5807430.
+			.put("mobileui.frontend.barcodeScanner.useCamera", "Y")
 			.put("mobileui.frontend.barcodeScanner.offscreenInput.readOnly", "N")
 			.put("mobileui.frontend.barcodeScanner.visibleInput.readOnly", "N")
 			.build();

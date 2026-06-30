@@ -27,7 +27,9 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -40,6 +42,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyBL;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -140,6 +143,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
@@ -172,8 +176,10 @@ public class OrderBL implements IOrderBL
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
-	private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
-	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerOrderParamsRepository> bpartnerOrderParamsRepository = SpringContextHolder.lazyBean(BPartnerOrderParamsRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerProductEffectiveBL> bpartnerProductEffectiveBL = SpringContextHolder.lazyBean(BPartnerProductEffectiveBL.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
 
 	@Override
 	public I_C_Order getById(@NonNull final OrderId orderId)
@@ -1107,6 +1113,14 @@ public class OrderBL implements IOrderBL
 		return docTypeBL.isPrepay(docTypeId);
 	}
 
+	@Override
+	@NonNull
+	public DocBaseAndSubType getDocBaseAndSubType(@NonNull final I_C_Order order)
+	{
+		final DocTypeId docTypeId = Check.assumeNotNull(getDocTypeIdEffectiveOrNull(order), "DocTypeId is not null for order {}", order);
+		return docTypeBL.getDocBaseAndSubTypeById(docTypeId);
+	}
+
 	@Nullable
 	private DocTypeId getDocTypeIdEffectiveOrNull(@NonNull final I_C_Order order)
 	{
@@ -1116,8 +1130,7 @@ public class OrderBL implements IOrderBL
 			return docTypeId;
 		}
 
-		final DocTypeId docTypeTargetId = DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
-		return docTypeTargetId;
+		return DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID());
 	}
 
 	@Override
@@ -1125,14 +1138,6 @@ public class OrderBL implements IOrderBL
 	public I_C_DocType getDocTypeOrNull(@NonNull final I_C_Order order)
 	{
 		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()))
-				.map(docTypeBL::getById)
-				.orElse(null);
-	}
-
-	@Nullable
-	private I_C_DocType getDocTypeTargetOrNull(@NonNull final I_C_Order order)
-	{
-		return Optional.ofNullable(DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()))
 				.map(docTypeBL::getById)
 				.orElse(null);
 	}
@@ -1338,6 +1343,22 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public void setSalesRep(@NonNull final I_C_Order order)
+	{
+		final BPartnerId bpartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bpartnerId == null)
+		{
+			return;
+		}
+
+		final UserId salesRepId = bpartnerEffectiveBL.get().getById(bpartnerId).getSalesRepId();
+		if (salesRepId != null)
+		{
+			order.setSalesRep_ID(salesRepId.getRepoId());
+		}
+	}
+
+	@Override
 	public void setWeightFromLines(@NonNull final I_C_Order order)
 	{
 		final List<I_C_OrderLine> lines = orderDAO.retrieveOrderLines(OrderId.ofRepoId(order.getC_Order_ID()));
@@ -1446,6 +1467,13 @@ public class OrderBL implements IOrderBL
 	}
 
 	@Override
+	public PaymentTermId getPaymentTermId(@NonNull final OrderId orderId)
+	{
+		final I_C_Order orderRecord = getById(orderId);
+		return getPaymentTermId(orderRecord);
+	}
+
+	@Override
 	public PaymentTermId getPaymentTermId(@NonNull final I_C_Order orderRecord)
 	{
 		return PaymentTermId.ofRepoId(orderRecord.getC_PaymentTerm_ID());
@@ -1519,5 +1547,24 @@ public class OrderBL implements IOrderBL
 			orderLine.setM_AttributeSetInstance_ID(attributeSetInstanceId.getRepoId());
 		}
 
+	}
+
+	@Override
+	public int getMaxPurchaseTransportDays(@NonNull final I_C_Order order)
+	{
+		if(order.isSOTrx())
+		{
+			return 0;
+		}
+
+		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		return orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(line -> ProductId.ofRepoIdOrNull(line.getM_Product_ID()))
+				.filter(Objects::nonNull)
+				.mapToInt(productId -> bpartnerProductEffectiveBL.get().getPurchaseTransportDays(vendorId, productId, orgId))
+				.max()
+				.orElse(0);
 	}
 }

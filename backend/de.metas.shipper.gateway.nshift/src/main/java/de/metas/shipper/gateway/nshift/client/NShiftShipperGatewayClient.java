@@ -38,7 +38,9 @@ import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogCreateRequest;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderLogRepository;
 import de.metas.shipper.gateway.commons.model.ShipperConfig;
+import de.metas.shipper.gateway.commons.servicelevel.ShipperServiceLevelConfigList;
 import de.metas.shipper.gateway.nshift.NShiftConstants;
+import de.metas.shipper.gateway.spi.ShipperConfigRequest;
 import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
@@ -51,6 +53,7 @@ import de.metas.shipping.ShipperGatewayId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_Carrier_Config;
 import org.slf4j.Logger;
 
 import java.util.Base64;
@@ -74,6 +77,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	private final static PackageLabelType DEFAULT_LABEL_TYPE = new PackageLabelType() {};
 	@NonNull private final ShipperConfig shipperConfig;
 	@NonNull private final ShipperMappingConfigList mappingConfigs;
+	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
 
 	@Override
 	@NonNull
@@ -179,9 +183,13 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 				.build();
 	}
 
-	public JsonShipperConfig getJsonShipperConfig()
+	@Override
+	public JsonShipperConfig getJsonShipperConfigEffective(@NonNull final ShipperConfigRequest request)
 	{
-		return jsonConverter.toJsonShipperConfig(shipperConfig);
+		final JsonShipperConfig baseConfig = jsonConverter.toJsonShipperConfig(shipperConfig);
+		return serviceLevelConfigs.getEffectiveServiceLevel(request)
+				.map(effectiveLevel -> baseConfig.withAdditionalProperty(I_Carrier_Config.COLUMNNAME_ServiceLevel, effectiveLevel))
+				.orElse(baseConfig);
 	}
 
 }

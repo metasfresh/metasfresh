@@ -156,6 +156,35 @@ public class CreateMasterdataCommandTest
 	}
 
 	@Test
+	public void hu_request_builder_withLocator_shouldPreserveLocator()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.locator(Identifier.ofString("locatorB"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isEqualTo(Identifier.ofString("locatorB"));
+	}
+
+	@Test
+	public void hu_request_builder_withoutLocator_shouldDefaultToNull()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isNull();
+	}
+
+	@Test
 	public void request_builder_withContext_shouldPreserveContext()
 	{
 		// given

@@ -351,6 +351,7 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
 			bpartnerLocationRecord.setFax(partnerLocation.getFax());
 			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+			bpartnerLocationRecord.setAttention(partnerLocation.getAttention());
 
 			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
 			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
@@ -557,6 +558,12 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setExternalId(ExternalId.toValue(bpartnerContact.getExternalId()));
 			bpartnerContactRecord.setIsActive(bpartnerContact.isActive());
 			bpartnerContactRecord.setC_BPartner_ID(bpartnerId.getRepoId());
+			// FIXME: disabled — AD_User.Value has no unique constraint, and BPartnerDAO.getBPartnerContactIdBy queries by Value
+			// using firstOnlyOrNull which would throw on duplicates. Add a unique constraint on AD_User.Value before enabling.
+			// if (!isBlank(bpartnerContact.getValue()))
+			// {
+			// 	bpartnerContactRecord.setValue(bpartnerContact.getValue());
+			// }
 
 			final String name = CoalesceUtil.coalesce(
 					StringUtils.trimBlankToNull(bpartnerContact.getName()),

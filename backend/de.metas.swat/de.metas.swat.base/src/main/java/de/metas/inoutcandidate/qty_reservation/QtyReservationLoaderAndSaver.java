@@ -108,6 +108,8 @@ class QtyReservationLoaderAndSaver
 			@NonNull final I_M_QtyReservation record,
 			@NonNull final QtyReservation domain)
 	{
+		record.setQty(domain.getQty().toBigDecimal());
+		record.setQtyTU(domain.getQtyTU().toBigDecimal());
 		record.setQtyDelivered(domain.getQtyDelivered().toBigDecimal());
 		record.setProcessed(domain.isFullyDelivered());
 	}

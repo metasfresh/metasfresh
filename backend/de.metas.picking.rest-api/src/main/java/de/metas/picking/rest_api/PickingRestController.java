@@ -26,6 +26,9 @@ import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonHU;
 import de.metas.common.handlingunits.JsonHUList;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingResult;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingScanRequest;
+import de.metas.handlingunits.picking.job.massprinting.MassPrintingService;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.PickingJobQtyAvailable;
@@ -38,6 +41,8 @@ import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.handlingunits.rest_api.JsonGetByQRCodeRequest;
 import de.metas.mobile.application.service.MobileApplicationService;
 import de.metas.picking.rest_api.json.JsonGetHUInfoByScannedCodeRequest;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingResult;
+import de.metas.picking.rest_api.json.massprinting.JsonMassPrintingScanRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineRequest;
 import de.metas.picking.rest_api.json.JsonGetNextEligibleLineResponse;
 import de.metas.picking.rest_api.json.JsonHUInfo;
@@ -49,6 +54,8 @@ import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
 import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
@@ -89,6 +96,7 @@ public class PickingRestController
 	@NonNull private final WorkflowRestController workflowRestController;
 	@NonNull private final HandlingUnitsService handlingUnitsService;
 	@NonNull private final HUQRCodesService huQRCodesService;
+	@NonNull private final MassPrintingService massPrintingService;
 
 	private void assertApplicationAccess()
 	{
@@ -314,6 +322,38 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
+	/**
+	 * Resolves a scanned product barcode (GTIN/EAN13/product code) against the given picking job
+	 * and returns the product info plus the total packed qty for that product in the job.
+	 * Read-only; does not mutate any state.
+	 *
+	 * <p>Request: {@code { "wfProcessId": "...", "scannedCode": "<barcode>" }}
+	 * <p>Response: {@code { "productId": "123", "productName": "...", "packedQty": 5.0, "packedQtyUom": "Stk", "unpickable": true }}
+	 */
+	@PostMapping("/unpick/resolve")
+	public @NonNull JsonUnpickResolveResponse resolveUnpick(@RequestBody @NonNull final JsonUnpickResolveRequest request)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.resolveUnpick(request, getLoggedUserId(), Env.getADLanguageOrBaseLanguage());
+	}
+
+	@PostMapping("/massPrinting/scan")
+	public @NonNull JsonMassPrintingResult massPrintingScan(@RequestBody @NonNull final JsonMassPrintingScanRequest request)
+	{
+		assertApplicationAccess();
+
+		final HUQRCode luQRCode = toHUQRCode(request.getScannedCode());
+		final HuId luId = huQRCodesService.getHuIdByQRCode(luQRCode);
+
+		final MassPrintingResult result = massPrintingService.scan(
+				MassPrintingScanRequest.builder()
+						.luId(luId)
+						.pickerId(getLoggedUserId())
+						.build());
+
+		return JsonMassPrintingResult.of(result);
 	}
 
 	@PostMapping("/job/{wfProcessId}/pickAll")

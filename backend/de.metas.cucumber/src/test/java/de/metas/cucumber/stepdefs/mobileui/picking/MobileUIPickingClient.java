@@ -149,7 +149,7 @@ public class MobileUIPickingClient
 				.findFirst();
 	}
 
-	public JsonWFProcess pickLine(JsonPickingStepEvent request)
+	public JsonWFProcess pickLine(@NonNull final JsonPickingStepEvent request)
 	{
 		Check.assumeEquals(request.getType(), JsonPickingStepEvent.EventType.PICK, "Invalid type: {}", request);
 		return pickingRestController.postEvent(request);

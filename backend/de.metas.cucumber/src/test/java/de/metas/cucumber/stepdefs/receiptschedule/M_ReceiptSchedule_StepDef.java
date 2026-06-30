@@ -58,7 +58,6 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -127,9 +126,6 @@ public class M_ReceiptSchedule_StepDef
 		final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
 		InterfaceWrapperHelper.refresh(receiptSchedule);
 
-		final StepDefDataIdentifier orderIdentifier = row.getAsIdentifier(COLUMNNAME_C_Order_ID);
-		final I_C_Order order = orderTable.get(orderIdentifier);
-
 		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(COLUMNNAME_C_OrderLine_ID);
 		final I_C_OrderLine orderLine = orderLineTable.get(orderLineIdentifier);
 
@@ -156,7 +152,10 @@ public class M_ReceiptSchedule_StepDef
 		final StepDefDataIdentifier warehouseIdentifier = row.getAsIdentifier(COLUMNNAME_M_Warehouse_ID);
 		final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
 
-		softly.assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID());
+		row.getAsOptionalIdentifier(COLUMNNAME_C_Order_ID)
+				.map(orderTable::get)
+				.ifPresent(order -> softly.assertThat(receiptSchedule.getC_Order_ID()).isEqualTo(order.getC_Order_ID()));
+
 		softly.assertThat(receiptSchedule.getC_OrderLine_ID()).isEqualTo(orderLine.getC_OrderLine_ID());
 		softly.assertThat(receiptSchedule.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 		softly.assertThat(receiptSchedule.getC_BPartner_Location_ID()).isEqualTo(bPartnerLocationID);
@@ -183,8 +182,12 @@ public class M_ReceiptSchedule_StepDef
 		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsClosed)
 				.ifPresent(isClosed -> softly.assertThat(receiptSchedule.isIsClosed()).as("IsClosed").isEqualTo(isClosed));
 
+		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> softly.assertThat(receiptSchedule.isDeliveryStop()).as("IsDeliveryStop").isEqualTo(isDeliveryStop));
+
 		row.getAsOptionalString(COLUMNNAME_ExternalHeaderId)
-						.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
+				.ifPresent(externalHeaderId -> softly.assertThat(receiptSchedule.getExternalHeaderId()).as(COLUMNNAME_ExternalHeaderId).isEqualTo(externalHeaderId));
 
 		row.getAsOptionalString(COLUMNNAME_ExternalLineId)
 				.ifPresent(externalLineId -> softly.assertThat(receiptSchedule.getExternalLineId()).as(COLUMNNAME_ExternalLineId).isEqualTo(externalLineId));
@@ -266,14 +269,16 @@ public class M_ReceiptSchedule_StepDef
 		final StepDefDataIdentifier orderLineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
 		final OrderLineId purchaseOrderLineId = orderLineTable.getId(orderLineIdentifier);
 
-
-
-		 final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
+		final IQueryBuilder<I_M_ReceiptSchedule> queryBuilder = queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_C_OrderLine_ID, purchaseOrderLineId);
 
 		// to prevent that we continue before updates are finished
 		// on order complete (also after reactivating), we update async, but without any invalidation we could check like on shipment schedules
 		row.getAsOptionalBigDecimal(COLUMNNAME_QtyOrdered).ifPresent(qtyOrdered -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMN_QtyOrdered, qtyOrdered));
+		// IsDeliveryStop is updated asynchronously by the M_Shipment_Constraint interceptor — include it in the
+		// polling query so the load step waits for the expected value (gh#28631).
+		row.getAsOptionalBoolean(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(isDeliveryStop -> queryBuilder.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_IsDeliveryStop, isDeliveryStop));
 
 		final I_M_ReceiptSchedule receiptSchedule = queryBuilder.create().firstOnly(I_M_ReceiptSchedule.class);
 		if (receiptSchedule == null)

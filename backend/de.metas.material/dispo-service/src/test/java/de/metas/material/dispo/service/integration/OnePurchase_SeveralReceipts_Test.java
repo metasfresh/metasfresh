@@ -116,6 +116,14 @@ public class OnePurchase_SeveralReceipts_Test
 		dimensionFactories.add(new MDCandidateDimensionFactory());
 		dimensionService = new DimensionService(dimensionFactories);
 		SpringContextHolder.registerJUnitBean(dimensionService);
+		SpringContextHolder.registerJUnitBean(org.adempiere.warehouse.api.IWarehouseBL.class, new org.adempiere.warehouse.api.impl.WarehouseBL());
+
+		// Pre-create the warehouse used by this test so WarehouseBL.isIgnoreInMaterialDispo can load it.
+		{
+			final org.compiere.model.I_M_Warehouse warehouse = org.adempiere.model.InterfaceWrapperHelper.newInstance(org.compiere.model.I_M_Warehouse.class);
+			org.adempiere.model.InterfaceWrapperHelper.setValue(warehouse, org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID, 55);
+			org.adempiere.model.InterfaceWrapperHelper.saveRecord(warehouse);
+		}
 
 		setupServices();
 	}

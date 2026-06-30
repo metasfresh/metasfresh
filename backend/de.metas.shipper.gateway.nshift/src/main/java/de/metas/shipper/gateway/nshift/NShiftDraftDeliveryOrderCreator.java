@@ -34,6 +34,10 @@ import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.location.ILocationDAO;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -58,6 +62,7 @@ import de.metas.shipper.gateway.spi.model.PickupDate;
 import de.metas.shipping.PurchaseOrderToShipperTransportationRepository;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -67,10 +72,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -100,16 +105,18 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
 
+	@NonNull
 	@Override
 	public ShipperGatewayId getShipperGatewayId() {return NShiftConstants.SHIPPER_GATEWAY_ID;}
 
 	@NonNull
 	@Override
-	public @NotNull DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
+	public DeliveryOrder createDraftDeliveryOrder(@NonNull final CreateDraftDeliveryOrderRequest request)
 	{
 		final DeliveryOrderKey deliveryOrderKey = request.getDeliveryOrderKey();
 
@@ -142,7 +149,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.receiverEORI(deliverToBPartner.getEORI())
 				//
 				// Pickup aka Shipper
-				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation))
+				.pickupAddress(toPickFromAddress(pickupFromBPartner, pickupFromLocation, pickupFromBPLocation))
 				.pickupContact(toContact(pickupFromBPartner, pickupFromBPLocation, pickupFromContact))
 				.pickupDate(PickupDate.builder()
 						.date(pickupDate)
@@ -151,7 +158,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 						.build())
 				//
 				// Delivery aka Receiver
-				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation))
+				.deliveryAddress(toDeliverToAddress(deliverToBPartner, deliverToLocation, deliverToBPLocation))
 				.deliveryContact(toContact(deliverToBPartner, deliverToBPLocation, deliverToContact))
 				//
 				// Delivery content
@@ -164,19 +171,22 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 	}
 
-	private static Address toPickFromAddress(final I_C_BPartner pickupFromBPartner, final I_C_Location pickupFromLocation)
+	@NonNull
+	private static Address toPickFromAddress(@NonNull final I_C_BPartner pickupFromBPartner, @NonNull final I_C_Location pickupFromLocation, @NonNull final I_C_BPartner_Location pickupFromBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation , pickupFromBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(pickupFromLocation, pickupFromBPartner, pickupFromBPLocation)
 				.build();
 	}
 
-	private static Address toDeliverToAddress(final I_C_BPartner deliverToBPartner, final I_C_Location deliverToLocation)
+	@NonNull
+	private static Address toDeliverToAddress(@NonNull final I_C_BPartner deliverToBPartner, @NonNull final I_C_Location deliverToLocation, @NonNull final I_C_BPartner_Location deliverToBPLocation)
 	{
-		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation , deliverToBPartner)
+		return DeliveryOrderUtil.prepareAddressFromLocationBP(deliverToLocation, deliverToBPartner, deliverToBPLocation)
 				.bpartnerId(deliverToBPartner.getC_BPartner_ID()) // used for label archive
 				.build();
 	}
 
+	@NonNull
 	private static ContactPerson toContact(@NonNull final I_C_BPartner bPartner,
 										   @NonNull final I_C_BPartner_Location bPLocation,
 										   @Nullable final User contact)
@@ -184,13 +194,14 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		return DeliveryOrderUtil.getContactPerson(bPartner, bPLocation, contact);
 	}
 
-	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NotNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
+	@NonNull
+	private ImmutableList<DeliveryOrderParcel> toDeliveryOrderLines(@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos)
 	{
 		return packageInfos.stream()
 				.map(packageInfo -> {
 					final ImmutableList<DeliveryOrderItem> deliveryOrderItems = purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents()
 							.stream()
-							.map(this::createDeliveryOrderItems)
+							.map(this::createDeliveryOrderItem)
 							.collect(ImmutableList.toImmutableList());
 					return DeliveryOrderParcel.builder()
 							.packageDimensions(packageInfo.getPackageDimension())
@@ -203,7 +214,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private DeliveryOrderItem createDeliveryOrderItems(@NonNull final PackageItem packageItem)
+	@NonNull
+	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
 		Check.assumeNotNull(packageItem.getQuantity(), "quantity must not be null, for packageItem " + packageItem);
 		final ProductId productId = packageItem.getProductId();
@@ -220,10 +232,13 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
+		final String countryOfOrigin = readCountryOfOrigin(packageItem);
+
 		return DeliveryOrderItem.builder()
 				.productName(product.getName().getDefaultValue())
 				.productValue(product.getValue())
 				.customsTariff(customsTariff)
+				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
 				.shippedQuantity(packageItem.getQuantity())
 				.unitPrice(unitPrice)
@@ -231,7 +246,26 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.build();
 	}
 
-	private Optional<BigDecimal> computeNominalGrossWeightInKg(final PackageItem packageItem)
+	private static final AttributeCode ATTR_COUNTRY_OF_ORIGIN = HUAttributeConstants.ATTR_CountryOfOrigin;
+
+	@Nullable
+	private String readCountryOfOrigin(@NonNull final PackageItem packageItem)
+	{
+		final AttributeSetInstanceId asiId = packageItem.getInOutLineASIId();
+		if (asiId.isNone())
+		{
+			return null;
+		}
+		final ImmutableAttributeSet attributeSet = asiBL.getImmutableAttributeSetById(asiId);
+		if (!attributeSet.hasAttribute(ATTR_COUNTRY_OF_ORIGIN))
+		{
+			return null;
+		}
+		return attributeSet.getValueAsStringOrNull(ATTR_COUNTRY_OF_ORIGIN);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> computeNominalGrossWeightInKg(@NonNull final PackageItem packageItem)
 	{
 		final ProductId productId = packageItem.getProductId();
 		final Quantity quantity = packageItem.getQuantity();

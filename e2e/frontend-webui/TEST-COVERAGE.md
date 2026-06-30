@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-03-04
+**Last Updated**: 2026-06-23
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -992,42 +992,174 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 ---
 
-### 38. GRAI to Packing Instruction Mapping (`hu-pi-grai-mapping.spec.js`)
+### 38. Invoice DueDate Read-Only (`invoice_dueDate_readonly.spec.js`)
 
 **Features Tested**:
-- F00230: MobileUI Picking (GRAI scan-picking — desktop mapping window)
+- F00765: Due Date Management
+
+**Epic**: E0340: Invoicing
+
+**Workflow**:
+1. REST login (authenticate + loginComplete via page.request — bypasses the UI login race)
+2. Create a customer via `Backend.createMasterdata()` (requires port 8282)
+3. Create a drafted sales invoice via the document REST API on window 167 (NEW → C_BPartner_ID → first C_DocTypeTarget_ID → first C_PaymentTerm_ID), checking `validStatus.valid === true` to confirm it persisted
+4. Navigate directly to the created invoice by id (no list view, no dependence on any seed record)
+5. Open SubHeader → Advanced Edit modal (click path; Alt+E is unreliable when grid sub-tab has focus)
+6. Assert the DueDate input (`.panel-modal .form-field-DueDate input`) is disabled
+7. Assert force-clicking the input does not open the date-picker popup
+
+**Key Validations**:
+- `AD_Field.IsReadOnly='Y'` on C_Invoice.DueDate renders as a disabled DatePicker input
+- Calendar popup stays closed on click (DatePicker no-ops when readonly)
+- Seed-independent: creates its own customer + drafted invoice, so it passes on an empty invoice grid (e.g. customer CI seed DBs). **Requires port 8282** (App server) for `Backend.createMasterdata()`
+
+### 39. Workplace Window — Auto-Assign Restriction Fields (`workplace-window.spec.js`)
+
+**Features Tested**:
+- F00251: Worplace Traffic Rules
 
 **Epic**: E0105: Picking
 
-**Window**: GRAI to Packing Instruction Mapping (542157), table `M_HU_PI_GRAI`
-
 **Workflow**:
-1. Provision a prerequisite M_HU_PI (TU packing instruction) via the Backend
-   masterdata API (`packingInstructions`) — the response returns the unique PI name
-2. Login, navigate to window 542157
-3. Create a new record (Alt+N): select the M_HU_PI (List widget) by its name,
-   enter GRAI_CompanyPrefix + GRAI_AssetType (Text widgets), save
-4. Verify the record persisted (WebAPI: validStatus.valid, saveStatus.saved) and read
-   back the raw GRAI_CompanyPrefix / GRAI_AssetType / M_HU_PI_ID values
-5. Create a SECOND record with the SAME (GRAI_CompanyPrefix, GRAI_AssetType)
-6. Verify the save is rejected by the global unique index
-   `M_HU_PI_GRAI_CompanyPrefix_AssetType_UIdx` (WebAPI saveStatus: error=true,
-   saved=false, presentInDatabase=false, reason names the index)
+1. Login via `Backend.createMasterdata()` user in de_DE and en_US (requires port 8282)
+2. Navigate to the Workplace window (541744)
+3. Fetch `/rest/api/window/541744/layout` and assert all 8 auto-assign restriction fields (Kommissionierart/Order Picking Type, Priorität/Priority + the 6 Labels multi-selects: Produkte, Produktkategorien, Lieferweg-Produkte, Externe Systeme, Geschäftspartnergruppen, Auftrags-Belegarten) carry the language-correct caption and the matching-semantics tooltip ("Einschränkung für die automatische Arbeitsplatz-Zuordnung …" / "Restriction for the automatic workplace assignment …")
+4. Create a new Workplace via the UI (Name + Warehouse), set a BP-Group restriction via the Labels widget, reload, assert the chip persisted
 
 **Key Validations**:
-- M_HU_PI_GRAI mapping creation via the dedicated WebUI window
-- Persistence verified language-independently via the WebAPI (raw field values)
-- The domain invariant "one GRAI resolves to exactly one TU type": a duplicate
-  (CompanyPrefix, AssetType) is rejected by the unique index through the UI
+- All matching fields live in the "restrictions" element group with explanatory tooltips (window-overhaul migration 5807330)
+- Labels captions resolve via AD_UI_Element.AD_Name_ID → AD_Element_Trl (language-specific); Labels tooltips are German in every language (AD_UI_Element.Description has no _Trl)
+- A BP-Group restriction set through the Labels widget is persisted on the record
 
-**Components Tested**: ListWidget, TextWidget, WidgetCommon, WebAPIValidation utility
+### 40. Stock per Week — Open Empty, Load on Filter (`stock-per-week-open-empty.spec.js`)
 
-**Prerequisite data**: M_HU_PI provisioned through the Backend masterdata
-`packingInstructions` command (never via the DB)
+**Features Tested**:
+- F19100: Stock per week
+- F19100
+
+**Epic**: E0155: Material Disposition
+
+**Workflow** (de_DE and en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user (login only — no seeded products/price lists)
+2. **Standalone open** — navigate to window 542159 (Bestand pro Woche, ~782k-row MD_Stock_PerWeek_V) with no filter; assert 0 grid rows and the localized "please filter first" hint is shown in `.empty-info-text` (the view is NOT scanned)
+3. **Filtered view via REST** — create a documentView for 542159 with a `WeekStartDate` filter; assert `emptyResultText` is absent in the response (the queryIfNoFilters guard does not fire once a filter is supplied)
+
+**Key Validations**:
+- The open-empty guard short-circuits to an EmptyReason (AD_Messages `webui.view.emptyReason.pleaseFilterFirst.text`/`.hint`) when no filter is applied, and stops firing when one is
+- Step 2 asserts the deterministic guard behaviour only (not data-dependent row counts)
+- The REST base is resolved from the page's runtime `window.config.API_URL` so the authenticated browser session carries to it on both static-build and dev-server stack topologies
+
+### 41. Tax — EN16931 VAT Category field (`tax-en16931-vat-category.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US, requires port 8282):
+1. Login via `Backend.createMasterdata()` user
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up the newly-added field
+3. Navigate to Tax record 540010 (OSS CY 19%) in window 137
+4. Assert `EN16931VATCategory` field is present and has `widgetType-List` CSS class
+5. Assert the record is valid (`assertRecordIsValid`) before editing — else UI changes won't persist
+6. Read current value via WebAPI `getFieldData`; choose a different known code to stay idempotent across retries
+7. Change the dropdown value via `data-testid="option-{code}"` (language-independent)
+8. Wait for auto-save; read back via WebAPI `getFieldData` — assert `fieldData.value.key` matches
+9. Restore original value and verify via WebAPI
+
+**Key Validations**:
+- The `form-field-EN16931VATCategory` wrapper is rendered as a `widgetType-List`
+- Dropdown options use stable `data-testid="option-S"`, `option-AE"` etc.
+- WebAPI returns `{ key, caption }` for List fields (not a bare string)
+- The test is fully idempotent: it reads current value and round-trips, not depending on a fixed initial state
 
 ---
 
-### 39. Price List Version — Colliding ValidFrom (`pricelist-version-colliding-date.spec.js`)
+### 4. HU Label Configuration — Create Record
+**File**: `tests/spec/hu-label-config-create.spec.js`
+**Status**: ✅ Passing (German)
+**Duration**: ~6 seconds
+
+**Workflow**:
+1. Navigate to HU Label Configuration window (541647) → new record
+2. Set the label report process (the only mandatory field without a default)
+3. Leave IsAutoPrint at its `N` default (so the AutoPrintCopies field stays hidden)
+4. Verify the record becomes valid, persists, and AutoPrintCopies defaulted to `1`
+
+**Key Validations**:
+- New record creation in a grid window
+- A mandatory field hidden by DisplayLogic must still get a default (regression guard
+  for the AutoPrintCopies default — without it the WebUI saves the record with
+  AutoPrintCopies = `0`, i.e. "print zero copies"; the direct-INSERT path fails with a
+  NOT-NULL violation)
+- `validStatus.valid` + `saveStatus.saved` polling
+
+**Components Tested**:
+- HU Label Configuration window (541647) / M_HU_Label_Config
+- AutoPrintCopies default
+### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
+
+### 43. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany (current fields; the spec itself is window-generic)
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US **and** de_DE, requires port 8282):
+1. Create test user in the run's language via `Backend.createMasterdata()`, login (language-independent CSS selectors)
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) so field-visibility migrations are reflected without a restart
+3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner", table C_BPartner)
+4. Assert each column in `EXPECTED_DISPLAYED_FIELDS` is present in the layout
+
+**Key Validations**:
+- **Window-generic, not e-Invoicing-specific**: `EXPECTED_DISPLAYED_FIELDS` is the extension point — future issues that make a C_BPartner column visible in window 540676 append it there. Currently holds the me03 #30508 / migration 5809330 e-Invoicing seller identifiers: `VATaxID` (USt-IdNr, BT-31/48), `TaxID` (Steuernummer, BT-32), `CommercialRegisterNumber` (Handelsregisternr, BT-30)
+- **Language-independent**: every assertion is on the C_BPartner **DB ColumnName** (language-invariant, via `field.field` in the layout JSON), never on a UI caption; the test runs in **both en_US and de_DE** to prove the login + layout flow is language-independent
+- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
+- **Scope — presence only**: editability is NOT asserted. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'`) and verified by the window-designer
+
+---
+
+### 43. ZUGFeRD e-Invoice — archived PDF embeds factur-x.xml (`zugferd-invoice.spec.js`)
+**Status**: CI-validated (requires port 8282)
+**Duration**: ~90 seconds per language (ZUGFeRD assembly adds latency)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US **and** de_DE):
+1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured
+   as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner
+   (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`);
+   `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`.
+   (No mock report service — the real report service renders PDF/A-3.)
+2. Login in the run's language, create + complete Sales Order (qty=1) via SalesOrderPage.
+3. Navigate to Shipment Schedule (Alt+6), create shipment (ShipmentSchedulePage).
+4. Navigate to Invoice Candidates (Alt+6), create invoice (InvoiceCandidatePage).
+5. Navigate to completed Invoice (Alt+6), open detail view (InvoicePage).
+6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30s) for an `ARR-*` entry.
+7. Download the archived PDF via `GET …/attachments/ARR-{id}`.
+8. Assert `factur-x.xml` embedded (`PdfValidator.validateZugferdAttachment()`).
+9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
+
+**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive
+entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint —
+it is the only copy that contains the embedded factur-x.xml.
+
+**Language independence**: All selectors use data-testid / data-cy / ColumnName IDs (no localized
+text). The ZUGFeRD assertion is binary (embedded or not) — language does not affect it. Running
+in both en_US and de_DE proves the full page-object flow is language-independent.
+
+**Components Tested**:
+- All O2C page objects: SalesOrderPage, ShipmentSchedulePage, InvoiceCandidatePage, InvoicePage
+- `PdfValidator.validateZugferdAttachment()` — ZUGFeRD-specific assertion
+- WebUI attachments REST endpoint — archive entry download (`ARR-*` prefix)
+
+---
+
+### 44. Price List Version — Colliding ValidFrom (`pricelist-version-colliding-date.spec.js`)
 
 **Features Tested**:
 - F32070: Price List Copy using Price List Schema
@@ -1059,7 +1191,6 @@ the eviction fix guarantees.
 **Prerequisite data**: standard demo seed (price list 2008396 + its 2015-01-01 PLV); no DB access
 
 ---
-
 ## Test Architecture
 
 ### Page Objects
@@ -1133,8 +1264,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 34 files
-- **Total test cases**: 46+ (34 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 59 files
+- **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test

@@ -28,6 +28,7 @@ import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyId;
@@ -68,6 +69,9 @@ import java.util.Set;
 public interface IOrderBL extends ISingletonService
 {
 	I_C_Order getById(OrderId orderId);
+
+	/** Returns max(PurchaseTransportDays across all order lines), or 0 if there are no lines or no transport days. */
+	int getMaxPurchaseTransportDays(I_C_Order order);
 
 	/**
 	 * Sets price list if there is a price list for the given order's location and pricing system.
@@ -282,6 +286,9 @@ public interface IOrderBL extends ISingletonService
 
 	void reserveStock(I_C_Order order, I_C_OrderLine... orderLines);
 
+	@NonNull
+	DocBaseAndSubType getDocBaseAndSubType(@NonNull I_C_Order order);
+
 	@Nullable
 	I_C_DocType getDocTypeOrNull(I_C_Order order);
 
@@ -325,6 +332,8 @@ public interface IOrderBL extends ISingletonService
 	Map<OrderId, String> getDocumentNosByIds(@NonNull Collection<OrderId> orderIds);
 
 	void setIncoterms(@NonNull I_C_Order order);
+
+	void setSalesRep(@NonNull I_C_Order order);
 
 	void setWeightFromLines(@NonNull I_C_Order order);
 
@@ -373,6 +382,8 @@ public interface IOrderBL extends ISingletonService
 		final BigDecimal luQty = orderLine.getQtyLU();
 		return luQty != null && luQty.signum() > 0;
 	}
+
+	PaymentTermId getPaymentTermId(@NonNull OrderId orderId);
 
 	PaymentTermId getPaymentTermId(@NonNull I_C_Order orderRecord);
 

@@ -99,6 +99,10 @@ public class Doc_Payment extends Doc<DocLine<Doc_Payment>>
 	 *      -
 	 * </pre>
 	 *
+	 * The bank/clearing-account decision tree (charge / IsPrepayment / default) MUST stay
+	 * in sync with {@code DocLine_Allocation.getPaymentAcct(AcctSchema, PaymentId)} —
+	 * otherwise the allocation will not reverse what this method posted.
+	 *
 	 * @param as accounting schema
 	 * @return Fact
 	 */

@@ -190,6 +190,29 @@ public interface I_C_Doc_Outbound_Config
 	String COLUMNNAME_DocBaseType = "DocBaseType";
 
 	/**
+	 * Set External System Config.
+	 * External-system configuration this record is linked to.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 * External-system configuration this record is linked to.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_C_Doc_Outbound_Config, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_C_Doc_Outbound_Config.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

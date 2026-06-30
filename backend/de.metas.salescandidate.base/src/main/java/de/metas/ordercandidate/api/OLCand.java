@@ -39,6 +39,7 @@ import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
@@ -103,6 +104,10 @@ public final class OLCand implements IProductPriceAware
 	@Getter private final String email;
 	@Getter private final AdIssueId adIssueId;
 	@Getter private final String headerAggregationKey;
+	@Nullable @Getter private final PromotionCodeId promotionCodeId;
+	@Nullable @Getter private final PromotionCodeId promotionCode2Id;
+	@Getter private final boolean isWithoutCharge;
+	@Nullable @Getter private final String reason;
 
 	@Builder
 	private OLCand(
@@ -132,7 +137,11 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final String phone,
 			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
-			@Nullable final String headerAggregationKey)
+			@Nullable final String headerAggregationKey,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			final boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -186,6 +195,11 @@ public final class OLCand implements IProductPriceAware
 		this.adIssueId = adIssueId;
 
 		this.headerAggregationKey = headerAggregationKey;
+
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 
 	@Override

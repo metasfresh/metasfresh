@@ -7,7 +7,9 @@ import de.metas.acct.model.X_C_VAT_Code;
 import de.metas.acct.vatcode.CreateVATCodeRequest;
 import de.metas.acct.vatcode.IVATCodeDAO;
 import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeAmountType;
 import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.acct.vatcode.VATCodeMatchingResponse;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
@@ -61,7 +63,7 @@ public class VATCodeDAO implements IVATCodeDAO
 
 	@Override
 	@NonNull
-	public Optional<VATCode> findVATCode(@NonNull final VATCodeMatchingRequest request)
+	public Optional<VATCodeMatchingResponse> findVATCode(@NonNull final VATCodeMatchingRequest request)
 	{
 		final Properties ctx = Env.getCtx();
 
@@ -77,7 +79,10 @@ public class VATCodeDAO implements IVATCodeDAO
 		{
 			if (isMatching(matching, request))
 			{
-				return Optional.of(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()));
+				return Optional.of(VATCodeMatchingResponse.builder()
+						.vatCode(VATCode.of(matching.getVATCode(), matching.getC_VAT_Code_ID()))
+						.vatCodeAmountType(VATCodeAmountType.ofNullableCode(matching.getAmountType()))
+						.build());
 			}
 		}
 

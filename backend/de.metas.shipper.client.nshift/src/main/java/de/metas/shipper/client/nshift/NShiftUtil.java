@@ -22,6 +22,7 @@
 
 package de.metas.shipper.client.nshift;
 
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.util.Check;
 import de.metas.shipper.client.nshift.json.JsonAddress;
@@ -30,6 +31,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 
 @UtilityClass
 public class NShiftUtil
@@ -67,5 +70,30 @@ public class NShiftUtil
 		}
 
 		return addressBuilder;
+	}
+
+	public static JsonAddress buildAddressWithAttentionFromMappings(
+			@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress,
+			@Nullable final JsonContact contact,
+			@NonNull final JsonAddressKind kind,
+			@NonNull final NShiftMappingConfigs mappingConfigs,
+			@NonNull final Function<String, String> valueProvider)
+	{
+		final String attentionAttributeType = kind == JsonAddressKind.SENDER
+				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
+				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
+		return buildNShiftAddressBuilder(commonAddress, contact, kind)
+				.attention(mappingConfigs.getSingleValue(attentionAttributeType, valueProvider))
+				.build();
+	}
+
+	public static <T, R> Function<T, Optional<R>> withFallback(
+			@NonNull final Function<T, Optional<R>> primary,
+			@NonNull final Function<T, Optional<R>> fallback)
+	{
+		return t -> {
+			final Optional<R> value = primary.apply(t);
+			return value.isPresent() ? value : fallback.apply(t);
+		};
 	}
 }

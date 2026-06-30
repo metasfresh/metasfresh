@@ -1,6 +1,7 @@
 package org.compiere.model;
 
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_OrderPaySchedule
@@ -51,6 +52,29 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Berechtigter Betrag.
+	 * Betrag, auf den der Prozentsatz angewendet wird
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBaseAmt (@Nullable BigDecimal BaseAmt);
+
+	/**
+	 * Get Berechtigter Betrag.
+	 * Betrag, auf den der Prozentsatz angewendet wird
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBaseAmt();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_BaseAmt = new ModelColumn<>(I_C_OrderPaySchedule.class, "BaseAmt", null);
+	String COLUMNNAME_BaseAmt = "BaseAmt";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -71,6 +95,29 @@ public interface I_C_OrderPaySchedule
 	int getC_Currency_ID();
 
 	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/**
+	 * Set Invoice.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Invoice_ID (int C_Invoice_ID);
+
+	/**
+	 * Get Invoice.
+	 * Invoice Identifier
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Invoice_ID();
+
+	ModelColumn<I_C_OrderPaySchedule, org.compiere.model.I_C_Invoice> COLUMN_C_Invoice_ID = new ModelColumn<>(I_C_OrderPaySchedule.class, "C_Invoice_ID", org.compiere.model.I_C_Invoice.class);
+	String COLUMNNAME_C_Invoice_ID = "C_Invoice_ID";
 
 	/**
 	 * Set Sales order.
@@ -208,24 +255,24 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_DueAmt = "DueAmt";
 
 	/**
-	 * Set Actual due amount.
-	 * Actual amount allocated to this pay-schedule step
+	 * Set Tatsächlich fälliger Betrag.
+	 * Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDueAmt_Actual (@javax.annotation.Nullable BigDecimal DueAmt_Actual);
+	void setDueAmt_Actual (@Nullable BigDecimal DueAmt_Actual);
 
 	/**
-	 * Get Actual due amount.
-	 * Actual amount allocated to this pay-schedule step
+	 * Get Tatsächlich fälliger Betrag.
+	 * Tatsächlicher Betrag, der diesem Zahlungsplan-Schritt zugewiesen wurde
 	 *
 	 * <br>Type: Amount
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@javax.annotation.Nullable BigDecimal getDueAmt_Actual();
+	BigDecimal getDueAmt_Actual();
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_DueAmt_Actual = new ModelColumn<>(I_C_OrderPaySchedule.class, "DueAmt_Actual", null);
 	String COLUMNNAME_DueAmt_Actual = "DueAmt_Actual";
@@ -277,6 +324,52 @@ public interface I_C_OrderPaySchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Paid.
+	 * When checked, this pay-schedule line is paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPaid (boolean IsPaid);
+
+	/**
+	 * Get Paid.
+	 * When checked, this pay-schedule line is paid.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPaid();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_OrderPaySchedule.class, "IsPaid", null);
+	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_InOut_ID (int M_InOut_ID);
+
+	/**
+	 * Get Shipment/ Receipt.
+	 * Material Shipment Document
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_InOut_ID();
+
+	ModelColumn<I_C_OrderPaySchedule, org.compiere.model.I_M_InOut> COLUMN_M_InOut_ID = new ModelColumn<>(I_C_OrderPaySchedule.class, "M_InOut_ID", org.compiere.model.I_M_InOut.class);
+	String COLUMNNAME_M_InOut_ID = "M_InOut_ID";
+
+	/**
 	 * Set Offset days.
 	 *
 	 * <br>Type: Integer
@@ -319,6 +412,29 @@ public interface I_C_OrderPaySchedule
 
 	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_Percent = new ModelColumn<>(I_C_OrderPaySchedule.class, "Percent", null);
 	String COLUMNNAME_Percent = "Percent";
+
+	/**
+	 * Set Reference date.
+	 * Date the due date is computed from (DueDate = ReferenceDate + OffsetDays).
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReferenceDate (@Nullable java.sql.Timestamp ReferenceDate);
+
+	/**
+	 * Get Reference date.
+	 * Date the due date is computed from (DueDate = ReferenceDate + OffsetDays).
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getReferenceDate();
+
+	ModelColumn<I_C_OrderPaySchedule, Object> COLUMN_ReferenceDate = new ModelColumn<>(I_C_OrderPaySchedule.class, "ReferenceDate", null);
+	String COLUMNNAME_ReferenceDate = "ReferenceDate";
 
 	/**
 	 * Set Reference Date Type.

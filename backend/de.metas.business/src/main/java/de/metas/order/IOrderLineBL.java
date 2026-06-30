@@ -25,6 +25,7 @@ package de.metas.order;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.money.Money;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
@@ -242,4 +243,6 @@ public interface IOrderLineBL extends ISingletonService
 	void setTax(@NonNull org.compiere.model.I_C_OrderLine orderLine);
 
 	void setGrossWeightInKg(@NonNull I_C_OrderLine orderLine);
+
+	Money getLineGrossAmt(@NonNull I_C_OrderLine orderLine);
 }

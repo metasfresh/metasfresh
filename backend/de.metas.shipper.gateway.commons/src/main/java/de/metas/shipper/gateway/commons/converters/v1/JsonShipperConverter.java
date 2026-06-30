@@ -176,6 +176,7 @@ public class JsonShipperConverter
 				.zipCode(address.getZipCode())
 				.city(address.getCity())
 				.bpartnerId(bpartnerId)
+				.attention(address.getAttention())
 				.build();
 	}
 
@@ -217,6 +218,7 @@ public class JsonShipperConverter
 				.productName(item.getProductName())
 				.productValue(item.getProductValue())
 				.customsTariff(item.getCustomsTariff())
+				.countryOfOrigin(item.getCountryOfOrigin())
 				.shippedQuantity(JsonQuantity.builder()
 						.value(item.getShippedQuantity().toBigDecimal())
 						.uomCode(item.getShippedQuantity().getUOMSymbol())
@@ -244,7 +246,7 @@ public class JsonShipperConverter
 	}
 
 	@NonNull
-	private JsonMappingConfigList toJsonMappingConfigList(@NonNull final ShipperMappingConfigList configs)
+	public JsonMappingConfigList toJsonMappingConfigList(@NonNull final ShipperMappingConfigList configs)
 	{
 		if (configs == ShipperMappingConfigList.EMPTY)
 		{

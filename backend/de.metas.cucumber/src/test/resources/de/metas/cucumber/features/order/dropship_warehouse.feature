@@ -128,7 +128,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
     When the order identified by so_dw2 is completed
 
     # Drain the event queue so any async processing that would create MD_Candidates has a chance to run
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Assert: no MD_Candidate demand rows created for the dropship-warehouse product
     Then no MD_Candidate exists for M_Product_ID product_dw
@@ -156,7 +156,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | so_dw3                   | false   | POO         | CO            | true           |
 
     # Drain the event queue so any PO-completion async processing has a chance to run
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Assert: still zero non-STOCK MD_Candidate rows after PO completion + queue drain
     Then no MD_Candidate exists for M_Product_ID product_dw
@@ -190,7 +190,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | po_dw4         | so_dw4                   | false   | POO         | CO            | true           |
 
     # Drain the material queue first so async work has a chance to complete.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Register the PO's project as `proj1` (created by the PO's own BEFORE_COMPLETE).
     And validate the created orders
@@ -304,7 +304,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
 
     # Drain the event queue so the full SupplyRequired → PurchaseCandidate → PO → ReceiptSchedule
     # → MD_Candidate chain has time to run
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Assert: at least one SUPPLY/PURCHASE MD_Candidate row exists for product_dw — confirming
     # that the bypass did NOT short-circuit the standard material-disposition flow on a regular warehouse
@@ -336,7 +336,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | po_dw10_B      | so_dw10                  | vendor_dw_2       | false   | POO         | CO            | true           |
 
     # Drain the material queue first so async work has a chance to complete.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Each PO has its OWN project — register them as projA and projB.
     And validate the created orders
@@ -397,7 +397,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | po_dw11    | pol_dw11_1     | product_dw_2     |
 
     # Drain the material queue so any ReceiptScheduleCreatedEvent short-circuit has run.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # The receipt schedule was created by PO completion; locate and register it.
     # Note: CreatePOFromSOsAggregator.java:324 uses AD_OrgInfo.DropShip_Warehouse_ID
@@ -422,7 +422,7 @@ Feature: Dropship-warehouse SO auto-creates a PO and bypasses material dispositi
       | hu_dw11            | rs_dw11                         | receipt_dw11          |
 
     # Drain the event queue so any TransactionCreatedEvent processing has a chance to run.
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # CORE assertion: even after the receipt fires m_transaction rows and TransactionCreatedEvent,
     # zero non-STOCK MD_Candidate rows must exist because isDropShipWarehouse=true triggers the

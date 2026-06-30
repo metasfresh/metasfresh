@@ -91,6 +91,7 @@ Feature: HU_DateReceived attribute population
     Then M_HU_Attribute is validated
       | M_HU_ID | M_Attribute_ID.Value | ValueDate  |
       | hu      | HU_DateReceived      | 2025-04-01 |
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
   @from:cucumber
   Scenario: HU_DateReceived populated with the inventory MovementDate when a new HU is created via inventory
@@ -130,8 +131,8 @@ Feature: HU_DateReceived attribute population
       | so_l1      | so         | product      | 10         |
     And the order identified by so is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | sched      | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched      | so_l1          | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
       | sched                 | D            | true                | false       | true                                |
@@ -194,8 +195,8 @@ Feature: HU_DateReceived attribute population
       | so_l1      | so         | product      | 10         |
     And the order identified by so is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | sched      | so_l1          | N             |
+      | Identifier | C_OrderLine_ID | IsToRecompute | QtyToDeliver |
+      | sched      | so_l1          | N             | 10           |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday | IsOnTheFlyPickToPackingInstructions |
       | sched                 | D            | false               | false       | true                                |

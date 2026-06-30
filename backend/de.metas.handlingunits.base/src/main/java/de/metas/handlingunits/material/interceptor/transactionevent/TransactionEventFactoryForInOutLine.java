@@ -2,7 +2,7 @@
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2026 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -75,26 +75,24 @@ public class TransactionEventFactoryForInOutLine
 
 	public List<MaterialEvent> createEventsForInOutLine(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final boolean shipment = X_M_Transaction.MOVEMENTTYPE_CustomerReturns.equals(transaction.getMovementType())
 				|| X_M_Transaction.MOVEMENTTYPE_CustomerShipment.equals(transaction.getMovementType());
 
 		if (shipment)
 		{
-			return createEventsForShipment(transaction, deleted, isDropShipWarehouse);
+			return createEventsForShipment(transaction, deleted);
 		}
 		else
 		{
-			return createEventsForReceipt(transaction, deleted, isDropShipWarehouse);
+			return createEventsForReceipt(transaction, deleted);
 		}
 	}
 
 	private List<MaterialEvent> createEventsForShipment(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -156,7 +154,6 @@ public class TransactionEventFactoryForInOutLine
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			else
@@ -170,7 +167,6 @@ public class TransactionEventFactoryForInOutLine
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.shipmentId(shipmentLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.minMaxDescriptor(minMaxDescriptor)
 						.build();
 			}
@@ -181,8 +177,7 @@ public class TransactionEventFactoryForInOutLine
 
 	private List<MaterialEvent> createEventsForReceipt(
 			@NonNull final TransactionDescriptor transaction,
-			final boolean deleted,
-			final boolean isDropShipWarehouse)
+			final boolean deleted)
 	{
 		final boolean directMovementWarehouse = isDirectMovementWarehouse(transaction.getWarehouseId());
 
@@ -226,7 +221,6 @@ public class TransactionEventFactoryForInOutLine
 						.receiptScheduleIdsQtys(receiptScheduleIds2Qtys)
 						.receiptId(receiptLineId)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			else
@@ -239,7 +233,6 @@ public class TransactionEventFactoryForInOutLine
 						.receiptId(receiptLineId)
 						.huOnHandQtyChangeDescriptors(huOnHandQtyChangeDescriptors)
 						.directMovementWarehouse(directMovementWarehouse)
-						.isDropShipWarehouse(isDropShipWarehouse)
 						.build();
 			}
 			events.add(event);

@@ -84,8 +84,9 @@ SELECT SUM(il.qtyEntered)                                                       
        REGEXP_REPLACE(pip.EAN_TU::text, '\s+$'::text, ''::text)                  AS EAN_TU,
        REGEXP_REPLACE(pip.UPC::text, '\s+$'::text, ''::text)                     AS UPC_TU,
        REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       COALESCE( -- if there is no explicit asi_data GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
+       COALESCE( -- if there is no explicit asi_data GTIN, fall back to the buyer-specific EAN_CU on the same M_Product_ASI_Data row (EAN_CU and GTIN_CU are semantically equivalent for modern EAN-13/EAN-14 codes); only when both are missing do we fall back to the supplier-side base M_Product.GTIN
                NULLIF(REGEXP_REPLACE(asi_data.GTIN::text, '\s+$'::text, ''::text), ''::text),
+               NULLIF(REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text), ''::text),
                REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)
        )                                                                         AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text)             AS Buyer_EAN_CU,

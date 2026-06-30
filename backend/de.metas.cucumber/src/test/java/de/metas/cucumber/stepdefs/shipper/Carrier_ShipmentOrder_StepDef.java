@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.inout.InOutId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.shipper.gateway.commons.model.ShipmentOrderRepository;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipper.gateway.spi.model.Address;
@@ -49,10 +50,14 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/** Step definitions for {@code Carrier_ShipmentOrder} — finding, validating, and updating carrier shipment orders and their parcels. */
 @RequiredArgsConstructor
 public class Carrier_ShipmentOrder_StepDef
 {
@@ -68,7 +73,7 @@ public class Carrier_ShipmentOrder_StepDef
 	 * {@code DeliveryOrderWorkpackageProcessor} (the AWB is the last thing the chain writes).
 	 */
 	@And("^after not more than (.*)s, Carrier_ShipmentOrder is found:$")
-	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void findCarrierShipmentOrder(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
 		DataTableRows.of(dataTable).forEach(row -> {
 			try
@@ -124,6 +129,24 @@ public class Carrier_ShipmentOrder_StepDef
 		carrierShipmentOrderTable.put(row.getAsIdentifier(), resultHolder[0]);
 	}
 
+	/**
+	 * Validates persisted parcel records for a {@link DeliveryOrder}, one row per parcel.
+	 * Each row is matched to a parcel by {@code awb} value (order-independent).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_ShipmentOrder_ID</b> — (required, identifier-ref) carrier shipment order alias<br>
+	 *   <b>awb</b> — (required) air waybill number; used as the parcel discriminator<br>
+	 *   <b>TrackingURL</b> — (required) expected tracking URL<br>
+	 *   <b>HasPdfLabel</b> — (optional) if true, asserts the parcel has a non-empty PDF label<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And validate Carrier_ShipmentOrder_Parcels:
+	 *   | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
+	 *   | cso_1                    | awb1 | trackingUrl1 | true        |
+	 *   | cso_1                    | awb2 | trackingUrl2 | true        |
+	 * </pre>
+	 */
 	@And("validate Carrier_ShipmentOrder_Parcels:")
 	public void validateCarrierShipmentOrderParcels(@NonNull final DataTable dataTable)
 	{
@@ -131,28 +154,27 @@ public class Carrier_ShipmentOrder_StepDef
 			final DeliveryOrder order = carrierShipmentOrderTable.get(
 					row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_ShipmentOrder_ID));
 
-			final List<DeliveryOrderParcel> parcels = order.getDeliveryOrderParcels();
-			assertThat(parcels).as("Parcels for Carrier_ShipmentOrder_ID=%s", order.getId()).isNotEmpty();
-
 			final String expectedAwb = row.getAsString(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_awb);
-			final String expectedTrackingUrl = row.getAsString(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_TrackingURL);
-			final boolean checkPdfLabel = row.getAsOptionalBoolean("HasPdfLabel").orElseFalse();
+
+			final DeliveryOrderParcel parcel = order.getDeliveryOrderParcels().stream()
+					.filter(p -> expectedAwb.equals(p.getAwb()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("No parcel found with awb=" + expectedAwb
+							+ " in Carrier_ShipmentOrder_ID=" + order.getId()));
 
 			final SoftAssertions softly = new SoftAssertions();
-			for (final DeliveryOrderParcel parcel : parcels)
+			softly.assertThat(parcel.getAwb())
+					.as("parcel.awb for Carrier_ShipmentOrder_ID=%s", order.getId())
+					.isEqualTo(expectedAwb);
+			row.getAsOptionalString(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_TrackingURL).ifPresent(expected -> softly
+					.assertThat(parcel.getTrackingUrl())
+					.as("parcel.TrackingURL for Carrier_ShipmentOrder_ID=%s", order.getId())
+					.isEqualTo(expected));
+			if (row.getAsOptionalBoolean("HasPdfLabel").orElseFalse())
 			{
-				softly.assertThat(parcel.getAwb())
-						.as("parcel.awb for Carrier_ShipmentOrder_ID=%s", order.getId())
-						.isEqualTo(expectedAwb);
-				softly.assertThat(parcel.getTrackingUrl())
-						.as("parcel.TrackingURL for Carrier_ShipmentOrder_ID=%s", order.getId())
-						.isEqualTo(expectedTrackingUrl);
-				if (checkPdfLabel)
-				{
-					softly.assertThat(parcel.getLabelPdfBase64())
-							.as("parcel.PdfLabelData for Carrier_ShipmentOrder_ID=%s", order.getId())
-							.isNotEmpty();
-				}
+				softly.assertThat(parcel.getLabelPdfBase64())
+						.as("parcel.PdfLabelData for Carrier_ShipmentOrder_ID=%s", order.getId())
+						.isNotEmpty();
 			}
 			softly.assertAll();
 		});
@@ -222,7 +244,9 @@ public class Carrier_ShipmentOrder_StepDef
 	}
 
 	/**
-	 * Items are matched by {@code ProductName} when supplied; otherwise the order must have exactly one item.
+	 * Items are matched by {@code ProductName} and optionally by {@code QtyShipped} when supplied;
+	 * if neither is present the order must have exactly one item.
+	 * {@code CountryOfOrigin} is an assertion-only column — not used for matching.
 	 */
 	@And("validate Carrier_ShipmentOrder_Items:")
 	public void validateCarrierShipmentOrderItems(@NonNull final DataTable dataTable)
@@ -233,27 +257,47 @@ public class Carrier_ShipmentOrder_StepDef
 
 			final List<DeliveryOrderItem> allItems = order.getDeliveryOrderParcels().stream()
 					.flatMap(p -> p.getItems().stream())
-					.collect(java.util.stream.Collectors.toList());
+					.collect(Collectors.toList());
 
-			final DeliveryOrderItem item = row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_ProductName)
-					.map(expectedProductName -> allItems.stream()
-							.filter(it -> expectedProductName.equals(it.getProductName()))
-							.findFirst()
-							.orElseThrow(() -> new AssertionError(
-									"No delivery order item with productName='" + expectedProductName
-											+ "' in Carrier_ShipmentOrder_ID=" + order.getId())))
-					.orElseGet(() -> {
-						assertThat(allItems)
-								.as("Expected exactly one delivery order item in Carrier_ShipmentOrder_ID=%s (supply ProductName to disambiguate)", order.getId())
-								.hasSize(1);
-						return allItems.get(0);
-					});
+			final Optional<String> productNameOpt = row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_ProductName);
+			final Optional<java.math.BigDecimal> qtyOpt = row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_QtyShipped);
+
+			final DeliveryOrderItem item;
+			if (productNameOpt.isPresent() || qtyOpt.isPresent())
+			{
+				Stream<DeliveryOrderItem> filtered = allItems.stream();
+				if (productNameOpt.isPresent())
+				{
+					final String expectedProductName = productNameOpt.get();
+					filtered = filtered.filter(it -> expectedProductName.equals(it.getProductName()));
+				}
+				if (qtyOpt.isPresent())
+				{
+					final java.math.BigDecimal expectedQty = qtyOpt.get();
+					filtered = filtered.filter(it -> expectedQty.compareTo(it.getShippedQuantity().toBigDecimal()) == 0);
+				}
+				final String matchKey = productNameOpt.map(n -> "productName='" + n + "'").orElse("")
+						+ qtyOpt.map(q -> (productNameOpt.isPresent() ? ", " : "") + "qty=" + q).orElse("");
+				item = filtered.findFirst()
+						.orElseThrow(() -> new AssertionError(
+								"No delivery order item with " + matchKey
+										+ " in Carrier_ShipmentOrder_ID=" + order.getId()));
+			}
+			else
+			{
+				assertThat(allItems)
+						.as("Expected exactly one delivery order item in Carrier_ShipmentOrder_ID=%s (supply ProductName or QtyShipped to disambiguate)", order.getId())
+						.hasSize(1);
+				item = allItems.get(0);
+			}
 
 			final SoftAssertions softly = new SoftAssertions();
 			row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_ArticleValue).ifPresent(expected -> softly
 					.assertThat(item.getProductValue()).as("productValue").isEqualTo(expected));
 			row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_CustomsTariffNumber).ifPresent(expected -> softly
 					.assertThat(item.getCustomsTariff()).as("customsTariff").isEqualTo(expected));
+			row.getAsOptionalString(I_Carrier_ShipmentOrder_Item.COLUMNNAME_CountryOfOrigin).ifPresent(expected -> softly
+					.assertThat(item.getCountryOfOrigin()).as("countryOfOrigin").isEqualTo(expected));
 			row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_QtyShipped).ifPresent(expected -> softly
 					.assertThat(item.getShippedQuantity().toBigDecimal()).as("shippedQuantity").isEqualByComparingTo(expected));
 			row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_Price).ifPresent(expected -> softly
@@ -263,6 +307,57 @@ public class Carrier_ShipmentOrder_StepDef
 			row.getAsOptionalBigDecimal(I_Carrier_ShipmentOrder_Item.COLUMNNAME_TotalWeightInKg).ifPresent(expected -> softly
 					.assertThat(item.getTotalWeightInKg()).as("totalWeightInKg").isEqualByComparingTo(expected));
 			softly.assertAll();
+		});
+	}
+
+	/**
+	 * Sets (or clears) the {@code TrackingURL} on all {@link I_Carrier_ShipmentOrder_Parcel} rows
+	 * that belong to the given {@link I_Carrier_ShipmentOrder}.
+	 *
+	 * <p>In production the carrier gateway writes the TrackingURL; this step simulates that
+	 * callback so the notification-delay gate can be released in tests without a live gateway.</p>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_ShipmentOrder_ID</b> — (required, identifier-ref) carrier shipment order whose parcels are updated<br>
+	 *   <b>TrackingURL</b> — (required, null-allowed) URL to set; use {@code null} to clear<br>
+	 * @cucumber.depends StepDefData: Carrier_ShipmentOrder_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update Carrier_ShipmentOrder_Parcel TrackingURL:
+	 *   | Carrier_ShipmentOrder_ID | TrackingURL                    |
+	 *   | cso_1                    | https://track.example.com/p123 |
+	 * </pre>
+	 */
+	@And("update Carrier_ShipmentOrder_Parcel TrackingURL:")
+	public void updateCarrierShipmentOrderParcelTrackingURL(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final DeliveryOrder order = carrierShipmentOrderTable.get(
+					row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_ShipmentOrder_ID));
+
+			final String trackingURLRaw = row.getAsOptionalString(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_TrackingURL)
+					.orElse(null);
+			// "null" token (literal string "null" or dash) maps to Java null → clears the TrackingURL in the DB
+			final String trackingURL = de.metas.cucumber.stepdefs.DataTableUtil.nullToken2Null(trackingURLRaw);
+
+			final List<I_Carrier_ShipmentOrder_Parcel> parcels = queryBL
+					.createQueryBuilder(I_Carrier_ShipmentOrder_Parcel.class)
+					.addEqualsFilter(
+							I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_Carrier_ShipmentOrder_ID,
+							order.getId().getRepoId())
+					.create()
+					.list();
+
+			assertThat(parcels)
+					.as("Parcels for Carrier_ShipmentOrder_ID=%s", order.getId())
+					.isNotEmpty();
+
+			for (final I_Carrier_ShipmentOrder_Parcel parcel : parcels)
+			{
+				parcel.setTrackingURL(trackingURL);
+				InterfaceWrapperHelper.save(parcel);
+			}
 		});
 	}
 }

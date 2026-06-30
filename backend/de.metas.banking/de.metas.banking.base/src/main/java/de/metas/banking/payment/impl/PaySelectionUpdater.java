@@ -23,7 +23,6 @@ import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.order.paymentschedule.OrderPayScheduleStatus;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Check;
 import de.metas.util.Services;

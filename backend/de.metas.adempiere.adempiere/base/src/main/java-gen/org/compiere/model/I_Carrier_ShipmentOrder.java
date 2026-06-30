@@ -310,6 +310,27 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_PickupTimeTo = "PickupTimeTo";
 
 	/**
+	 * Set Attn. (Receiver).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_Attention (@Nullable java.lang.String Receiver_Attention);
+
+	/**
+	 * Get Attn. (Receiver).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiver_Attention();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_Attention = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_Attention", null);
+	String COLUMNNAME_Receiver_Attention = "Receiver_Attention";
+
+	/**
 	 * Set Empfängerort.
 	 *
 	 * <br>Type: String
@@ -331,7 +352,28 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Receiver_City = "Receiver_City";
 
 	/**
-	 * Set Empfänger Ländercode (ISO-2).
+	 * Set Contact Name Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_ContactName (@Nullable java.lang.String Receiver_ContactName);
+
+	/**
+	 * Get Contact Name Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiver_ContactName();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_ContactName = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_ContactName", null);
+	String COLUMNNAME_Receiver_ContactName = "Receiver_ContactName";
+
+	/**
+	 * Set Country Code Receiver (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -340,7 +382,7 @@ public interface I_Carrier_ShipmentOrder
 	void setReceiver_CountryISO2Code (@Nullable java.lang.String Receiver_CountryISO2Code);
 
 	/**
-	 * Get Empfänger Ländercode (ISO-2).
+	 * Get Country Code Receiver (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -350,6 +392,27 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_CountryISO2Code = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_CountryISO2Code", null);
 	String COLUMNNAME_Receiver_CountryISO2Code = "Receiver_CountryISO2Code";
+
+	/**
+	 * Set Department Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setReceiver_Department (@Nullable java.lang.String Receiver_Department);
+
+	/**
+	 * Get Department Receiver.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getReceiver_Department();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_Department = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_Department", null);
+	String COLUMNNAME_Receiver_Department = "Receiver_Department";
 
 	/**
 	 * Set E-Mail Empfänger.
@@ -373,7 +436,7 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Receiver_Email = "Receiver_Email";
 
 	/**
-	 * Set Receiver EORI.
+	 * Set EORI Number Receiver.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -382,7 +445,7 @@ public interface I_Carrier_ShipmentOrder
 	void setReceiver_EORI (@Nullable java.lang.String Receiver_EORI);
 
 	/**
-	 * Get Receiver EORI.
+	 * Get EORI Number Receiver.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -541,48 +604,6 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Receiver_ZipCode = "Receiver_ZipCode";
 
 	/**
-	 * Set Contact Name Receiver.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReceiver_ContactName (@Nullable java.lang.String Receiver_ContactName);
-
-	/**
-	 * Get Contact Name Receiver.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getReceiver_ContactName();
-
-	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_ContactName = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_ContactName", null);
-	String COLUMNNAME_Receiver_ContactName = "Receiver_ContactName";
-
-	/**
-	 * Set Department Receiver.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setReceiver_Department (@Nullable java.lang.String Receiver_Department);
-
-	/**
-	 * Get Department Receiver.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getReceiver_Department();
-
-	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Receiver_Department = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Receiver_Department", null);
-	String COLUMNNAME_Receiver_Department = "Receiver_Department";
-
-	/**
 	 * Set Lieferdatum.
 	 *
 	 * <br>Type: Date
@@ -602,6 +623,27 @@ public interface I_Carrier_ShipmentOrder
 
 	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_ShipmentDate = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "ShipmentDate", null);
 	String COLUMNNAME_ShipmentDate = "ShipmentDate";
+
+	/**
+	 * Set Attn. (Shipper).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setShipper_Attention (@Nullable java.lang.String Shipper_Attention);
+
+	/**
+	 * Get Attn. (Shipper).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getShipper_Attention();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_Shipper_Attention = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "Shipper_Attention", null);
+	String COLUMNNAME_Shipper_Attention = "Shipper_Attention";
 
 	/**
 	 * Set Lieferort.
@@ -646,7 +688,7 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Shipper_ContactName = "Shipper_ContactName";
 
 	/**
-	 * Set Lieferant Ländercode (ISO-2).
+	 * Set Country Code Shipper (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -655,7 +697,7 @@ public interface I_Carrier_ShipmentOrder
 	void setShipper_CountryISO2Code (@Nullable java.lang.String Shipper_CountryISO2Code);
 
 	/**
-	 * Get Lieferant Ländercode (ISO-2).
+	 * Get Country Code Shipper (ISO-2).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -709,7 +751,7 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Shipper_Email = "Shipper_Email";
 
 	/**
-	 * Set Shipper EORI.
+	 * Set EORI Number Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -718,7 +760,7 @@ public interface I_Carrier_ShipmentOrder
 	void setShipper_EORI (@Nullable java.lang.String Shipper_EORI);
 
 	/**
-	 * Get Shipper EORI.
+	 * Get EORI Number Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -730,7 +772,7 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Shipper_EORI = "Shipper_EORI";
 
 	/**
-	 * Set Lieferant Name 1.
+	 * Set Name 1 Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -739,7 +781,7 @@ public interface I_Carrier_ShipmentOrder
 	void setShipper_Name1 (@Nullable java.lang.String Shipper_Name1);
 
 	/**
-	 * Get Lieferant Name 1.
+	 * Get Name 1 Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -751,7 +793,7 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_Shipper_Name1 = "Shipper_Name1";
 
 	/**
-	 * Set  Lieferant Name 2.
+	 * Set Name 2 Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -760,7 +802,7 @@ public interface I_Carrier_ShipmentOrder
 	void setShipper_Name2 (@Nullable java.lang.String Shipper_Name2);
 
 	/**
-	 * Get  Lieferant Name 2.
+	 * Get Name 2 Shipper.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Warehouse
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehouse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 895356713L;
+	private static final long serialVersionUID = 461286522L;
 
     /** Standard Constructor */
     public X_M_Warehouse (final Properties ctx, final int M_Warehouse_ID, @Nullable final String trxName)
@@ -32,6 +32,21 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
+	{
+		if (AD_User_ID < 0) 
+			set_Value (COLUMNNAME_AD_User_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
+	}
+
+	@Override
+	public int getAD_User_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
 	@Override
@@ -107,6 +122,33 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public org.eevolution.model.I_DD_NetworkDistribution getDD_NetworkDistribution()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution(final org.eevolution.model.I_DD_NetworkDistribution DD_NetworkDistribution)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_NetworkDistribution_ID, org.eevolution.model.I_DD_NetworkDistribution.class, DD_NetworkDistribution);
+	}
+
+	@Override
+	public void setDD_NetworkDistribution_ID (final int DD_NetworkDistribution_ID)
+	{
+		if (DD_NetworkDistribution_ID < 1) 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_NetworkDistribution_ID, DD_NetworkDistribution_ID);
+	}
+
+	@Override
+	public int getDD_NetworkDistribution_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_NetworkDistribution_ID);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -131,13 +173,25 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
+	public void setIsAutoDistributionOrder (final boolean IsAutoDistributionOrder)
+	{
+		set_Value (COLUMNNAME_IsAutoDistributionOrder, IsAutoDistributionOrder);
+	}
+
+	@Override
+	public boolean isAutoDistributionOrder() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsAutoDistributionOrder);
+	}
+
+	@Override
 	public void setIsDropShipWarehouse (final boolean IsDropShipWarehouse)
 	{
 		set_Value (COLUMNNAME_IsDropShipWarehouse, IsDropShipWarehouse);
 	}
 
 	@Override
-	public boolean isDropShipWarehouse()
+	public boolean isDropShipWarehouse() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDropShipWarehouse);
 	}
@@ -149,7 +203,7 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
-	public boolean isInTransit()
+	public boolean isInTransit() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsInTransit);
 	}
@@ -215,90 +269,6 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	}
 
 	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class);
-	}
-
-	@Override
-	public void setM_Warehouse_PickingGroup(final org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class, M_Warehouse_PickingGroup);
-	}
-
-	@Override
-	public void setM_Warehouse_PickingGroup_ID (final int M_Warehouse_PickingGroup_ID)
-	{
-		if (M_Warehouse_PickingGroup_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, M_Warehouse_PickingGroup_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_PickingGroup_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_PickingGroup_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class);
-	}
-
-	@Override
-	public void setM_Warehouse_Type(final org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
-	{
-		set_ValueFromPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class, M_Warehouse_Type);
-	}
-
-	@Override
-	public void setM_Warehouse_Type_ID (final int M_Warehouse_Type_ID)
-	{
-		if (M_Warehouse_Type_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_Type_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_Type_ID, M_Warehouse_Type_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_Type_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Type_ID);
-	}
-
-	@Override
-	public void setM_WarehouseSource_ID (final int M_WarehouseSource_ID)
-	{
-		if (M_WarehouseSource_ID < 1) 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_WarehouseSource_ID, M_WarehouseSource_ID);
-	}
-
-	@Override
-	public int getM_WarehouseSource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_M_Warehouse_Group getManufacturing_Warehouse_Group()
 	{
 		return get_ValueAsPO(COLUMNNAME_Manufacturing_Warehouse_Group_ID, org.compiere.model.I_M_Warehouse_Group.class);
@@ -344,6 +314,90 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	public java.lang.String getMRP_Exclude() 
 	{
 		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse_PickingGroup getM_Warehouse_PickingGroup()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class);
+	}
+
+	@Override
+	public void setM_Warehouse_PickingGroup(final org.compiere.model.I_M_Warehouse_PickingGroup M_Warehouse_PickingGroup)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_PickingGroup_ID, org.compiere.model.I_M_Warehouse_PickingGroup.class, M_Warehouse_PickingGroup);
+	}
+
+	@Override
+	public void setM_Warehouse_PickingGroup_ID (final int M_Warehouse_PickingGroup_ID)
+	{
+		if (M_Warehouse_PickingGroup_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_PickingGroup_ID, M_Warehouse_PickingGroup_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_PickingGroup_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_PickingGroup_ID);
+	}
+
+	@Override
+	public void setM_WarehouseSource_ID (final int M_WarehouseSource_ID)
+	{
+		if (M_WarehouseSource_ID < 1) 
+			set_Value (COLUMNNAME_M_WarehouseSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_WarehouseSource_ID, M_WarehouseSource_ID);
+	}
+
+	@Override
+	public int getM_WarehouseSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_WarehouseSource_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Warehouse_Type getM_Warehouse_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class);
+	}
+
+	@Override
+	public void setM_Warehouse_Type(final org.compiere.model.I_M_Warehouse_Type M_Warehouse_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Warehouse_Type_ID, org.compiere.model.I_M_Warehouse_Type.class, M_Warehouse_Type);
+	}
+
+	@Override
+	public void setM_Warehouse_Type_ID (final int M_Warehouse_Type_ID)
+	{
+		if (M_Warehouse_Type_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_Type_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_Type_ID, M_Warehouse_Type_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_Type_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_Type_ID);
 	}
 
 	@Override
@@ -420,20 +474,4 @@ public class X_M_Warehouse extends org.compiere.model.PO implements I_M_Warehous
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
-
-	@Override
-	public void setAD_User_ID (final int AD_User_ID)
-	{
-		if (AD_User_ID < 0)
-			set_Value (COLUMNNAME_AD_User_ID, null);
-		else
-			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
-	}
-
-	@Override
-	public int getAD_User_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
-	}
-
 }

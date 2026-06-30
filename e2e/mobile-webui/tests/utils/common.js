@@ -6,6 +6,9 @@ export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localh
 
 export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1sec
 export const FAST_ACTION_TIMEOUT = 5000; // 5sec
+// Window for the keyboard barcode-reader hook to flush a scanned barcode (rateMs default 300ms).
+// Used only for the negative dedup assertion (count must NOT change), where there's no new DOM to poll.
+export const BARCODE_HOOK_FLUSH_MS = 500;
 export const SLOW_ACTION_TIMEOUT = 20000; // 20sec
 export const VERY_SLOW_ACTION_TIMEOUT = 40000; //40sec
 export const ID_BACK_BUTTON = '#Back-button';
@@ -34,6 +37,28 @@ export const holdForCaptureIfEnabled = async () => {
 };
 
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
+
+/**
+ * Simulate a device / browser Back button press (the hardware Back key on a handheld, or the browser
+ * Back). This is a pure NO-OP in the app — useDeviceBackButton absorbs it, so the screen does not change
+ * and the operator stays where they are. It explicitly does NOT behave like the on-screen footer Back
+ * button. Use this to assert the no-op contract; for real Back navigation use a screen object's
+ * goBack() (e.g. PickingJobScreen.goBack() / SelectPickTargetLUScreen.goBack()).
+ */
+export const pressDeviceBack = async () => await step(`Press device/browser Back button`, async () => {
+    await page.goBack({ timeout: SLOW_ACTION_TIMEOUT });
+});
+
+// Simulates the operator mashing the hardware/browser Back button rapidly: several back traversals
+// dispatched within a single event-loop tick (the worst case — exactly what happens on a busy handheld
+// when queued hardware-Back presses are delivered in a burst before the page can react). page.goBack()
+// awaits each navigation and so cannot reproduce this; firing window.history.back() synchronously can.
+export const mashDeviceBack = async (times = 12) => await step(`Mash device/browser Back ${times}x rapidly`, async () => {
+    await page.evaluate((n) => {
+        for (let i = 0; i < n; i++) window.history.back();
+    }, times);
+    await page.waitForTimeout(FAST_ACTION_TIMEOUT);
+});
 
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;

@@ -136,6 +136,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_SalesRep_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -168,6 +169,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Description;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
@@ -293,12 +295,10 @@ public class C_Order_StepDef
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(bpLocationId -> order.setC_BPartner_Location_ID(bpLocationId.getRepoId()));
 
-		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if (Check.isNotBlank(userIdentifier))
-		{
-			final I_AD_User user = userTable.get(userIdentifier);
-			order.setAD_User_ID(user.getAD_User_ID());
-		}
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
+				.map(userTable::get)
+				.ifPresent(user -> order.setAD_User_ID(user.getAD_User_ID()));
 
 		final String billBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(billBPartnerIdentifier))
@@ -351,10 +351,9 @@ public class C_Order_StepDef
 		final Instant preparationDate = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_PreparationDate).orElse(null);
 		final Instant datePromised = tableRow.getAsOptionalInstant(I_C_Order.COLUMNNAME_DatePromised).orElse(null);
 
-		final Instant preparationDateToBeSet = CoalesceUtil.coalesce(preparationDate, datePromised);
-		if (preparationDateToBeSet != null)
+		if (preparationDate != null)
 		{
-			order.setPreparationDate(Timestamp.from(preparationDateToBeSet));
+			order.setPreparationDate(Timestamp.from(preparationDate));
 		}
 
 		final Instant datePromisedToBeSet = CoalesceUtil.coalesce(datePromised, preparationDate);
@@ -723,10 +722,11 @@ public class C_Order_StepDef
 	/**
 	 * Validates {@code C_Order} records against expected values.
 	 * <p>
-	 * gh#28565: Added validation for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 *   <li>{@code Description} (optional) — expected order description text</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -825,6 +825,9 @@ public class C_Order_StepDef
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
 
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_OrderType)
+				.ifPresent(orderType -> softly.assertThat(order.getOrderType()).as("OrderType for Identifier=%s", identifierStr).isEqualTo(orderType));
+
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> {
 					final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
@@ -852,6 +855,10 @@ public class C_Order_StepDef
 		row.getAsOptionalIdentifier(COLUMNNAME_AD_User_ID)
 				.map(userTable::get)
 				.ifPresent(user -> softly.assertThat(order.getAD_User_ID()).as("AD_User_ID for Identifier=%s", identifierStr).isEqualTo(user.getAD_User_ID()));
+
+		row.getAsOptionalIdentifier(COLUMNNAME_SalesRep_ID)
+				.map(userTable::get)
+				.ifPresent(salesRepUser -> softly.assertThat(order.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(salesRepUser.getAD_User_ID()));
 
 		row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
 				.map(bpartnerTable::get)
@@ -983,12 +990,27 @@ public class C_Order_StepDef
 					else
 					{
 						final LocalDate expectedDate = LocalDate.parse(rawValue);
-						final ZoneId zoneId = orgDAO.getTimeZone(orgId);
-						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date(), zoneId))
+						// Wall-clock interpretation (no zoneId): matches the production read at
+						// OrderPayScheduleService#toOrderSchedulingContext (TimeUtil.asLocalDate(getLC_Date())).
+						// LC_Date is on a deprecation path; don't introduce a new instant-based read here.
+						softly.assertThat(TimeUtil.asLocalDate(order.getLC_Date()))
 								.as("LC_Date for Identifier=%s", identifierStr)
 								.isEqualTo(expectedDate);
 					}
 				});
+
+		row.getAsOptionalLocalDate(COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getPreparationDate(), zoneId))
+							.as("PreparationDate for Identifier=%s", identifierStr)
+							.isEqualTo(preparationDate);
+				});
+
+		row.getAsOptionalString(COLUMNNAME_Description)
+				.ifPresent(description -> softly.assertThat(order.getDescription())
+						.as("Description for Identifier=%s", identifierStr)
+						.isEqualTo(description));
 
 		softly.assertAll();
 	}

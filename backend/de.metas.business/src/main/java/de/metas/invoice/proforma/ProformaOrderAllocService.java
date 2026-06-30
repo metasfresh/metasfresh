@@ -26,7 +26,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.service.OrderPayScheduleLCService;
+import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.payment.paymentterm.PaymentTermService;
 import de.metas.util.Services;
@@ -47,7 +47,7 @@ public class ProformaOrderAllocService
 
 	@NonNull private final ProformaOrderAllocRepository repository;
 	@NonNull private final PaymentTermService paymentTermService;
-	@NonNull private final OrderPayScheduleLCService orderPayScheduleLCService;
+	@NonNull private final OrderPayScheduleLCStepService orderPayScheduleLCStepService;
 
 	@NonNull
 	public ProformaOrderAlloc getById(@NonNull final ProformaOrderAllocId proformaOrderAllocId)
@@ -60,7 +60,7 @@ public class ProformaOrderAllocService
 		ProformaOrderAllocateCommand.builder()
 				.proformaOrderAllocRepository(repository)
 				.paymentTermService(paymentTermService)
-				.orderPayScheduleLCService(orderPayScheduleLCService)
+				.orderPayScheduleLCStepService(orderPayScheduleLCStepService)
 				.proformaInvoiceId(proformaInvoiceId)
 				.purchaseOrderId(purchaseOrderId)
 				.build()
@@ -88,6 +88,17 @@ public class ProformaOrderAllocService
 		// Capture orderId before deletion — the alloc row will be gone after deleteById.
 		final OrderId orderId = alloc.getOrderId();
 		repository.deleteById(alloc.getId());
-		orderPayScheduleLCService.recomputeLCStep(orderId);
+		orderPayScheduleLCStepService.recomputeLCStep(orderId);
+	}
+
+	/**
+	 * Removes every active allocation linked to the given proforma invoice. Each row goes through
+	 * {@link #deallocate(ProformaOrderAlloc)}, which guards against deallocating when a
+	 * completed/closed proforma payment still references the invoice and recomputes the LC step
+	 * for the order. No-op when the invoice has zero active allocations.
+	 */
+	public void deallocateAll(@NonNull final InvoiceId proformaInvoiceId)
+	{
+		repository.getByInvoiceId(proformaInvoiceId).forEach(this::deallocate);
 	}
 }

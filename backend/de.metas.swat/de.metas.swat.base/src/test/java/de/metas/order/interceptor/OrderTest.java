@@ -29,6 +29,8 @@ import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -37,7 +39,7 @@ import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
 import de.metas.user.UserGroupRepository;
 import de.metas.user.UserRepository;
@@ -180,6 +182,8 @@ public class OrderTest
 		doctype.setName(name);
 		doctype.setDescription(description);
 		doctype.setDocumentNote(documentNote);
+		doctype.setDocBaseType(DocBaseType.SalesOrder.getCode());
+		doctype.setDocSubType(DocSubType.StandardOrder.getCode());
 
 		doctype.setCopyDescriptionAndDocumentNote(CopyDescriptionAndDocumentNote.CopyDescAndDocumentNote.getCode());
 

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 858145598L;
+	private static final long serialVersionUID = -1997047345L;
 
     /** Standard Constructor */
     public X_M_InOut (final Properties ctx, final int M_InOut_ID, @Nullable final String trxName)
@@ -1319,6 +1319,17 @@ public class X_M_InOut extends org.compiere.model.PO implements I_M_InOut, org.c
 	public boolean isSendEMail() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_SendEMail);
+	}
+
+	@Override
+	public void setTrackingURL (final @Nullable java.lang.String TrackingURL)
+	{
+		throw new IllegalArgumentException ("TrackingURL is virtual column");	}
+
+	@Override
+	public java.lang.String getTrackingURL() 
+	{
+		return get_ValueAsString(COLUMNNAME_TrackingURL);
 	}
 
 	@Override

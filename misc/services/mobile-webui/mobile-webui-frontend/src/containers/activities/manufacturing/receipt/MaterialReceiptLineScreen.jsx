@@ -35,6 +35,8 @@ const MaterialReceiptLineScreen = () => {
       aggregateToLU,
       aggregateToTU,
       currentReceivingHU,
+      availableReceivingTargets,
+      availableReceivingTUTargets,
       productName,
       uom,
       catchWeightUomSymbol,
@@ -148,6 +150,14 @@ const MaterialReceiptLineScreen = () => {
     allowReceivingQty = true;
   }
 
+  // When the quantity action stays disabled because no receiving Gebinde can be resolved,
+  // surface the backend's localized reason as a hint (instead of a silently-disabled button).
+  // Safe to key off emptyReason: the backend sets it ONLY when the target lists are empty
+  // (MaterialReceiptActivityHandler.getNewTU/LUTargets) — it is never present alongside targets.
+  const noGebindeReason = !allowReceivingQty
+    ? availableReceivingTargets?.emptyReason || availableReceivingTUTargets?.emptyReason
+    : null;
+
   return (
     <>
       {showSpinner && <Spinner />}
@@ -165,6 +175,11 @@ const MaterialReceiptLineScreen = () => {
           customQRCodeFormats={customQRCodeFormats}
           readAttributes={readAttributes}
         />
+        {noGebindeReason && (
+          <p className="help is-danger" data-testid="receive-no-gebinde-hint">
+            {noGebindeReason}
+          </p>
+        )}
       </div>
     </>
   );
