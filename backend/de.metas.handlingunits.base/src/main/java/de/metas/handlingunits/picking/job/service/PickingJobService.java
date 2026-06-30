@@ -33,6 +33,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
+import de.metas.handlingunits.picking.job.model.PickingJobUnpickResolveResult;
 import de.metas.handlingunits.picking.job.model.PickingSlotSuggestions;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -44,7 +45,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobReopenCommand;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.unpick.PickingJobUnPickCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackCommand;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
@@ -115,6 +116,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
+	@NonNull private final PickingJobUnpickProductResolver unpickProductResolver;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -442,6 +444,8 @@ public class PickingJobService implements PickingSlotListener
 						.onlyPickingJobStepId(event.getPickingStepId())
 						.onlyPickFromKey(event.getPickFromKey())
 						.unpickToHU(event.getUnpickToTargetQRCode())
+						.productId(event.getUnpickProductId())
+						.qtyToUnpick(event.getQtyToUnpick())
 						//
 						.build().execute();
 			}
@@ -960,4 +964,23 @@ public class PickingJobService implements PickingSlotListener
 				.request(request)
 				.build().execute();
 	}
+
+	/**
+	 * Resolves a scanned product barcode against the given picking job and computes
+	 * the total packed qty for the matched product (across all steps), for partial-unpick purposes.
+	 *
+	 * <p>Supports GS1 (GTIN), EAN13, and Custom (product-value) QR code formats.
+	 * For a standard HU QR code the method is not meaningful and throws.
+	 */
+	@NonNull
+	public PickingJobUnpickResolveResult resolveUnpick(
+			@NonNull final PickingJobId pickingJobId,
+			@NonNull final ScannedCode scannedCode,
+			@NonNull final UserId callerId)
+	{
+		final PickingJob pickingJob = getById(pickingJobId);
+		pickingJob.assertCanBeEditedBy(callerId);
+		return unpickProductResolver.resolve(pickingJob, scannedCode);
+	}
+
 }

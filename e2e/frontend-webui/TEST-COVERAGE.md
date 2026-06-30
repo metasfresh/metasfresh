@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-06-19
+**Last Updated**: 2026-06-23
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1099,21 +1099,63 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 - AutoPrintCopies default
 ### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
 
+### 43. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
+
+**Features Tested**:
+- F00751: e-Invoicing Germany (current fields; the spec itself is window-generic)
+
+**Epic**: E0340: Invoicing
+
+**Workflow** (en_US **and** de_DE, requires port 8282):
+1. Create test user in the run's language via `Backend.createMasterdata()`, login (language-independent CSS selectors)
+2. Reset webui metadata cache (`GET /rest/api/cache/reset`) so field-visibility migrations are reflected without a restart
+3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner", table C_BPartner)
+4. Assert each column in `EXPECTED_DISPLAYED_FIELDS` is present in the layout
+
+**Key Validations**:
+- **Window-generic, not e-Invoicing-specific**: `EXPECTED_DISPLAYED_FIELDS` is the extension point — future issues that make a C_BPartner column visible in window 540676 append it there. Currently holds the me03 #30508 / migration 5809330 e-Invoicing seller identifiers: `VATaxID` (USt-IdNr, BT-31/48), `TaxID` (Steuernummer, BT-32), `CommercialRegisterNumber` (Handelsregisternr, BT-30)
+- **Language-independent**: every assertion is on the C_BPartner **DB ColumnName** (language-invariant, via `field.field` in the layout JSON), never on a UI caption; the test runs in **both en_US and de_DE** to prove the login + layout flow is language-independent
+- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
+- **Scope — presence only**: editability is NOT asserted. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'`) and verified by the window-designer
+
+---
+
+### 43. ZUGFeRD e-Invoice — archived PDF embeds factur-x.xml (`zugferd-invoice.spec.js`)
+**Status**: CI-validated (requires port 8282)
+**Duration**: ~90 seconds per language (ZUGFeRD assembly adds latency)
+
 **Features Tested**:
 - F00751: e-Invoicing Germany
 
 **Epic**: E0340: Invoicing
 
-**Workflow** (en_US, requires port 8282):
-1. Login via `Backend.createMasterdata()` user
-2. Reset webui metadata cache (`GET /rest/api/cache/reset`) to pick up migration 5809330's field changes
-3. Fetch the window layout via WebAPI `GET /rest/api/window/540676/layout` (window 540676 "Organisation Stammdaten", tab 541852 "Geschäftspartner")
-4. Assert each of `VATaxID`, `TaxID`, `CommercialRegisterNumber` is present in the layout
+**Workflow** (en_US **and** de_DE):
+1. `createMasterdata`: seller BPartner (VATaxID, DE address, default contact, IBAN) configured
+   as org-bpartner of the login org via `orgSeller`; ZUGFeRD buyer BPartner
+   (`isEInvoiceRecipeint=true`, `eInvoiceType=Z`, `eInvoiceBuyerReference`);
+   `adProcessFlags` set `IsPdfA3Output=true` on `de/metas/docs/sales/invoice`.
+   (No mock report service — the real report service renders PDF/A-3.)
+2. Login in the run's language, create + complete Sales Order (qty=1) via SalesOrderPage.
+3. Navigate to Shipment Schedule (Alt+6), create shipment (ShipmentSchedulePage).
+4. Navigate to Invoice Candidates (Alt+6), create invoice (InvoiceCandidatePage).
+5. Navigate to completed Invoice (Alt+6), open detail view (InvoicePage).
+6. Poll `GET /rest/api/window/167/{invoiceId}/attachments` (up to 30s) for an `ARR-*` entry.
+7. Download the archived PDF via `GET …/attachments/ARR-{id}`.
+8. Assert `factur-x.xml` embedded (`PdfValidator.validateZugferdAttachment()`).
+9. Assert invoice content intact (documentNo + product + qty via `PdfValidator.validate()`).
 
-**Key Validations**:
-- Migration 5809330 made `TaxID` (Steuernummer) and `CommercialRegisterNumber` (Handelsregisternr) visible in tab 541852 alongside the already-shown `VATaxID` (USt-IdNr) — these back the CII seller fields BT-31/BT-32/BT-30
-- **Data-independent**: verifies pure AD_Field/AD_UI_Element layout metadata via the `/layout` endpoint — no C_BPartner records needed (window 540676 has `isinsertrecord=N` + a WhereClause `ad_orgbp_id IS NOT NULL` that excludes seed-DB rows, so `/NEW` and hardcoded record IDs are non-options)
-- **Scope — presence only**: editability is NOT asserted here. The `/layout` endpoint carries no per-record readonly flag (and defaults every text element to `viewEditorRenderMode='never'`); editability is enforced at the AD level (`AD_Field.IsReadOnly='N'` in migration 5809330) and verified by the window-designer
+**Archive strategy**: Alt+P triggers a fresh re-render without the embedded CII. The AD_Archive
+entry (written at invoice AFTER_COMPLETE time) is fetched via the WebUI attachments REST endpoint —
+it is the only copy that contains the embedded factur-x.xml.
+
+**Language independence**: All selectors use data-testid / data-cy / ColumnName IDs (no localized
+text). The ZUGFeRD assertion is binary (embedded or not) — language does not affect it. Running
+in both en_US and de_DE proves the full page-object flow is language-independent.
+
+**Components Tested**:
+- All O2C page objects: SalesOrderPage, ShipmentSchedulePage, InvoiceCandidatePage, InvoicePage
+- `PdfValidator.validateZugferdAttachment()` — ZUGFeRD-specific assertion
+- WebUI attachments REST endpoint — archive entry download (`ARR-*` prefix)
 
 ---
 
@@ -1223,8 +1265,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 57 files
-- **Total test cases**: 47+ (35 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages)
+- **Total test specs**: 59 files
+- **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test

@@ -246,10 +246,14 @@ public class EInvoiceCiiServiceTest
 
 		final EInvoiceCiiService.GenerateAndValidateResult result = resultOpt.get();
 
-		// XML must be non-empty and contain CII namespace markers
+		// XML must be non-empty and contain CII namespace markers.
+		// The root MUST carry the standard "rsm:" prefix (not JAXB's auto-generated ns2/ns3):
+		// Mustangproject's CustomXMLProvider.setXML() checks for rsm:CrossIndustryInvoice, so a
+		// regression in the NamespacePrefixMapper would silently break ZUGFeRD embedding.
 		assertThat(result.getCiiXml())
 				.isNotEmpty()
-				.contains("CrossIndustryInvoice")
+				.contains("rsm:CrossIndustryInvoice")
+				.doesNotContain("ns2:CrossIndustryInvoice")
 				.contains("RE-SERVICE-001");
 
 		// Validation result must be present
