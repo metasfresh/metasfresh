@@ -1,24 +1,7 @@
-/*
- * #%L
- * de.metas.handlingunits.base
- * %%
- * Copyright (C) 2026 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- M_Packageable_V.DatePromised: source it per order line (override-inclusive: COALESCE(DeliveryDate_Override,
+-- DeliveryDate)) instead of the header C_Order.DatePromised, so the per-line ship-after gate
+-- (IsFixedDatePromised) and any DatePromised consumer see each line's own date. Same value as the DeliveryDate
+-- column; the order(DatePromised)-vs-schedule(DeliveryDate) naming is bridged once, in this view.
 
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
