@@ -406,6 +406,11 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		// Guard: refuse to delete if any receipt schedule has an active alloc with M_InOutLine_ID set.
 		// IsActive=false allocs indicate reversed receipts and must not block deletion.
 		// Deleting schedules with active received allocs would corrupt receipt and invoice-candidate history.
+		// Note: there is a narrow TOCTOU window between this check and the delete() below — a concurrent
+		// receipt posting could insert a received alloc after the anyMatch() returns false. This is an
+		// accepted risk: receipt confirmation is always a user-triggered, transactional operation making
+		// the window extremely unlikely, and the DEFERRABLE INITIALLY DEFERRED FK on M_ReceiptSchedule_Alloc
+		// provides a last-resort safety net at commit time.
 		final boolean hasReceivedAllocations = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
 				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
@@ -427,11 +432,15 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		//      suppresses that spurious event entirely.
 		//   2. The Processed=true flag prevents model-based deletion (the ADempiere PO layer guards processed
 		//      records). Clearing it via SQL unblocks the subsequent delete().
+		// This also clears Processed=false on any IsActive=false schedules in scope, which is harmless
+		// since they are deleted in the very next statement.
 		// The model-based delete() below fires all TYPE_BEFORE_DELETE interceptors, which correctly handle:
 		//   - HU lifecycle: M_ReceiptSchedule validator in de.metas.handlingunits.base destroys any
-		//     Planning-status HUs pre-assigned to the schedule, then deletes all linked alloc rows
-		//     model-by-model so their own interceptors fire. The FK on M_ReceiptSchedule_Alloc is
-		//     DEFERRABLE INITIALLY DEFERRED, so alloc deletions inside TYPE_BEFORE_DELETE are safe.
+		//     Planning-status HUs pre-assigned to the schedule, then deletes ALL linked alloc rows
+		//     model-by-model (active and inactive) so their own interceptors fire. The receipt documents
+		//     (M_InOut / M_InOutLine) are NOT touched — only the alloc booking links are removed, which
+		//     is safe. The FK on M_ReceiptSchedule_Alloc is DEFERRABLE INITIALLY DEFERRED, so alloc
+		//     deletions inside TYPE_BEFORE_DELETE are valid before the parent row is removed.
 		//   - MRP: M_ReceiptSchedule_PostMaterialEvent posts ReceiptScheduleDeletedEvent → MRP removes the supply.
 		//   - Order line quantities: M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder
 		//     (harmless when the order line is also being deleted immediately after).
