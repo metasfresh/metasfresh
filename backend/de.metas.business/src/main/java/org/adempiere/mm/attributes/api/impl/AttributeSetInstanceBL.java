@@ -569,7 +569,7 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 		}
 		else if (AttributeValueType.NUMBER.equals(valueType))
 		{
-			return record.getValueNumber();
+			return InterfaceWrapperHelper.getValueOrNull(record, I_M_AttributeInstance.COLUMNNAME_ValueNumber);
 		}
 		else if (AttributeValueType.STRING.equals(valueType))
 		{
