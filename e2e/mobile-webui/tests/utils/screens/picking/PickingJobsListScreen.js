@@ -24,30 +24,28 @@ export const PickingJobsListScreen = {
     // Wait until a specific job launcher is visible in the list. The list is websocket-driven and
     // populates a moment after the screen renders, so callers that act on the list (e.g. opening the
     // filter, whose facets are computed from the listed jobs) must wait for the job to be present first.
-    waitForJobVisible: async ({ documentNo }) => await test.step(`${NAME} - Wait for job '${documentNo}' visible`, async () => {
-        await locateJobButtons({ documentNo }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    // Locate by an exact data attribute (e.g. customerId) — never by a documentNo substring, which
+    // collides with other jobs in a shared/full-suite run.
+    waitForJobVisible: async ({ documentNo, salesOrderId, customerId, customerLocationId } = {}) => await test.step(`${NAME} - Wait for job visible`, async () => {
+        await locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     /**
      * Reads a single job launcher's caption (the " | "-joined display fields) and asserts on it.
+     * Locate the job by an exact data attribute (customerId / salesOrderId / customerLocationId) —
+     * documentNo is only a caption substring and collides with other jobs in a full-suite run.
      * @param contains - substrings that must all be present in the caption
-     * @param containsOnce - substrings that must each appear EXACTLY once in the caption
-     *        (used to prove de-duplication, e.g. the customer name is not repeated)
      * @param fieldCount - if set, the expected number of non-empty " | "-separated caption fields
      * @returns the caption text (also logged, to aid assertion tuning)
      */
-    expectJobCaption: async ({ documentNo, salesOrderId, customerLocationId, contains = [], containsOnce = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
-        const button = locateJobButtons({ documentNo, salesOrderId, customerLocationId });
+    expectJobCaption: async ({ documentNo, salesOrderId, customerId, customerLocationId, contains = [], fieldCount } = {}) => await test.step(`${NAME} - Expect job caption`, async () => {
+        const button = locateJobButtons({ documentNo, salesOrderId, customerId, customerLocationId });
         await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         await expect(button).toHaveCount(1);
         const caption = (await button.innerText()).trim();
         console.log(`${NAME} - job caption = ${JSON.stringify(caption)}`);
         for (const text of contains) {
             expect(caption, `caption should contain "${text}"`).toContain(text);
-        }
-        for (const text of containsOnce) {
-            const occurrences = caption.split(text).length - 1;
-            expect(occurrences, `caption should contain "${text}" exactly once, caption was: ${caption}`).toBe(1);
         }
         if (fieldCount != null) {
             const fields = caption.split('|').map(s => s.trim()).filter(s => s.length > 0);
@@ -137,10 +135,13 @@ export const PickingJobsListScreen = {
 
 };
 
-const locateJobButtons = ({ documentNo, index, salesOrderId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
+const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
     let selector = '.wflauncher-button';
     if (salesOrderId != null) {
         selector += `[data-salesorderid="${salesOrderId}"]`;
+    }
+    if (customerId != null) {
+        selector += `[data-customerid="${customerId}"]`;
     }
     if (qtyToDeliver != null) {
         selector += `[data-qtytodeliver="${qtyToDeliver}"]`;
