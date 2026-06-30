@@ -131,6 +131,10 @@ public class CreateProductCommand
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());
@@ -300,6 +304,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 

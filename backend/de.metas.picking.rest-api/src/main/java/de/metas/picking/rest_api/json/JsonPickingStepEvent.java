@@ -73,4 +73,9 @@ public class JsonPickingStepEvent
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;
+
+	//
+	// Shelf-life acknowledgement (PICK only)
+	/** When {@code true} the picker has acknowledged the shelf-life warning and the guard is skipped. */
+	boolean isShelfLifeConfirmed;
 }

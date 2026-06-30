@@ -15,4 +15,6 @@ public class JsonWorkplaceRequest
 	@Nullable Identifier warehouse;
 	@Nullable Identifier pickingSlot;
 	@Nullable Identifier pickFromLocator;
+	/** C_Workplace.IsWarnShelfLifeUndercut — when true, a shelf-life undercut warning dialog is shown to the picker */
+	@Nullable Boolean warnShelfLifeUndercut;
 }

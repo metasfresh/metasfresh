@@ -53,6 +53,7 @@ import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUServic
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.requests.ReleasePickingSlotRequest;
@@ -104,6 +105,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -337,6 +339,7 @@ public class PickingJobService implements PickingSlotListener
 						.isSetLotNo(event.isSetLotNo())
 						.lotNo(event.getLotNo())
 						.isCloseTarget(event.isCloseTarget())
+						.isShelfLifeConfirmed(event.isShelfLifeConfirmed())
 						//
 						.build()
 						.execute();
@@ -375,7 +378,8 @@ public class PickingJobService implements PickingSlotListener
 				.pickingJobService(this)
 				.pickingJobRepository(pickingJobRepository)
 				.pickingSlotService(pickingSlotService)
-				.huService(huService);
+				.huService(huService)
+				.shelfLifeCheck(shelfLifeCheck);
 	}
 
 	public void unassignAllByUserId(@NonNull final UserId userId)
