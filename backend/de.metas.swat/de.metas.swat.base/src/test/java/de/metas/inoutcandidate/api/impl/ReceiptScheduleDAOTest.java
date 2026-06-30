@@ -67,6 +67,15 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 	}
 
 	@Test
+	public void deleteByOrderLineId_noSchedules_isNoOp()
+	{
+		// Order line with no linked receipt schedules: method must complete without throwing.
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
+
+		Assertions.assertDoesNotThrow(() -> receiptScheduleDAO.deleteByOrderLineId(orderLineId));
+	}
+
+	@Test
 	public void deleteByOrderLineId_noAllocations_deletesSchedule()
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
@@ -85,6 +94,11 @@ public class ReceiptScheduleDAOTest extends ReceiptScheduleTestBase
 	@Test
 	public void deleteByOrderLineId_withUnreceivedAlloc_deletesSchedule()
 	{
+		// Note: this test only verifies that the receipt schedule row is removed.
+		// Alloc row cleanup is delegated to the M_ReceiptSchedule TYPE_BEFORE_DELETE interceptor in
+		// de.metas.handlingunits.base (M_ReceiptSchedule.onReceiptScheduleDelete), which is not
+		// registered in the unit-test context. Integration coverage for alloc + HU destruction lives
+		// in the HU module's test suite.
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(createOrderLine(createOrder(warehouse1), product1_wh1).getC_OrderLine_ID());
 		final I_M_ReceiptSchedule rs = createReceiptScheduleForOrderLine(bpartner1, warehouse1, date, product1_wh1, 10, orderLineId);
 		createReceiptScheduleAlloc(rs, 0 /* no M_InOutLine_ID = not yet received */);

@@ -395,6 +395,9 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 	@Override
 	public void deleteByOrderLineId(@NonNull final OrderLineId orderLineId)
 	{
+		// Intentionally no addOnlyActiveRecordsFilter(): when an order line is deleted, all linked receipt
+		// schedules must be cleaned up regardless of their IsActive state. Leaving IsActive=false schedules
+		// behind would leave orphaned rows tied to a non-existent order line.
 		final IQuery<I_M_ReceiptSchedule> receiptSchedulesForOrderLine = queryBL
 				.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.addEqualsFilter(I_M_ReceiptSchedule.COLUMNNAME_C_OrderLine_ID, orderLineId)
