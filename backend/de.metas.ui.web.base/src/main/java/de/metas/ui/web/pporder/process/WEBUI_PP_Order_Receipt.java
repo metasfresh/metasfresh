@@ -67,7 +67,6 @@ public class WEBUI_PP_Order_Receipt
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
-
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private static final String SYSCONFIG_OverrideCaptionWithPackingInfo =
