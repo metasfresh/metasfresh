@@ -40,11 +40,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * (subset) unpick spread across MULTIPLE top-level CUs — the branch the single-CU Playwright spec
  * ({@code picking_partial_unpack_cu.spec.js}) cannot reach (it only has one picked CU).
  * <p>
- * Two bare CUs are picked in two separate steps (older first, newer last); a subset unpick of more than the
- * newest CU's qty must take the WHOLE newest CU and BOUNDARY-SPLIT the older one (LIFO, newest-first). We
- * assert the SELECTION (which step is whole vs the boundary, and the boundary carve qty) rather than executing
- * the physical split: per this module's CLAUDE.md the in-memory HU harness does not materialise a partial-CU
- * boundary split; the executed split is proven against the running stack by the Playwright spec above.
+ * Two bare CUs (6 each) are picked in two separate steps; a subset unpick of 8 must partition across the two
+ * CUs as exactly ONE whole CU (6) plus ONE boundary split carving the remaining 2 — together the requested 8.
+ * We assert that PARTITION invariant (one-whole + one-boundary + the boundary carve qty), NOT which specific
+ * CU ends up whole vs boundary: both picked CUs share the same createdAt under the test's fixed clock, so the
+ * newest-first tie-break is not observable here. We assert the SELECTION rather than executing the physical
+ * split: per this module's CLAUDE.md the in-memory HU harness does not materialise a partial-CU boundary
+ * split; the executed split is proven against the running stack by the Playwright spec above.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobUnPick_LifoSelection_Test
@@ -59,7 +61,7 @@ class PickingJobUnPick_LifoSelection_Test
 	}
 
 	@Test
-	void subsetUnpick_takesWholeNewestCU_thenBoundarySplitsOlderCU()
+	void subsetUnpick_acrossMultipleCUs_producesOneWholeCUAndOneBoundarySplit()
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
