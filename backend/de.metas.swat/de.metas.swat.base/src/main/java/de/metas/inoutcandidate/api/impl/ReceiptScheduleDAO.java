@@ -415,27 +415,6 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 			throw new AdempiereException(MSG_CANNOT_DELETE_ORDER_LINE_RECEIPT_SCHEDULE);
 		}
 
-		// Delete all alloc records first to satisfy the FK constraint
-		// M_ReceiptSchedule_Alloc.M_ReceiptSchedule_ID → M_ReceiptSchedule before the parent rows are removed.
-		// Two alloc categories can exist here:
-		//   - Unreceived allocs (M_InOutLine_ID=null): normal unprocessed planning allocations.
-		//   - Reversed-receipt allocs (IsActive=false, M_InOutLine_ID set): the receipt was reversed,
-		//     so the alloc was deactivated and the HU destroyed; safe to delete.
-		// Active allocs with M_InOutLine_ID set (real open receipts) were rejected by the guard above.
-		//
-		// deleteDirectly() is used intentionally here and is safe to bypass the M_ReceiptSchedule_Alloc
-		// model interceptor (updateQtyMovedSubtract / onReceiptScheduleDeleted), for two reasons:
-		//   1. Inactive allocs (reversed receipts) return zero qty from getQtysIfActive → the interceptor
-		//      would be a no-op anyway.
-		//   2. Active unreceived allocs (M_InOutLine_ID=null) carry no QtyMoved contribution, and the parent
-		//      receipt schedule is deleted in this same operation so any accounting adjustment is moot.
-		// INVARIANT: this safety holds only because both allocs AND their parent receipt schedules are always
-		// deleted together in this method. Do not split this operation without re-evaluating the interceptor bypass.
-		queryBL.createQueryBuilder(I_M_ReceiptSchedule_Alloc.class)
-				.addInSubQueryFilter(I_M_ReceiptSchedule_Alloc.COLUMNNAME_M_ReceiptSchedule_ID, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID, receiptSchedulesForOrderLine)
-				.create()
-				.deleteDirectly();
-
 		// updateDirectly() goes straight to SQL and bypasses ALL model interceptors — not just the processed
 		// guard, but also M_ReceiptSchedule_PostMaterialEvent. We need this for two reasons:
 		//   1. M_ReceiptSchedule_PostMaterialEvent watches COLUMNNAME_Processed in its ifColumnsChanged list.
@@ -445,10 +424,13 @@ public class ReceiptScheduleDAO implements IReceiptScheduleDAO
 		//      suppresses that spurious event entirely.
 		//   2. The Processed=true flag prevents model-based deletion (the ADempiere PO layer guards processed
 		//      records). Clearing it via SQL unblocks the subsequent delete().
-		// Material disposition is handled correctly by the model-based delete() call below, which fires all
-		// TYPE_BEFORE_DELETE and TYPE_AFTER_DELETE interceptors:
-		//   - M_ReceiptSchedule_PostMaterialEvent posts ReceiptScheduleDeletedEvent → MRP removes the supply.
-		//   - M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder on the order line
+		// The model-based delete() below fires all TYPE_BEFORE_DELETE interceptors, which correctly handle:
+		//   - HU lifecycle: M_ReceiptSchedule validator in de.metas.handlingunits.base destroys any
+		//     Planning-status HUs pre-assigned to the schedule, then deletes all linked alloc rows
+		//     model-by-model so their own interceptors fire. The FK on M_ReceiptSchedule_Alloc is
+		//     DEFERRABLE INITIALLY DEFERRED, so alloc deletions inside TYPE_BEFORE_DELETE are safe.
+		//   - MRP: M_ReceiptSchedule_PostMaterialEvent posts ReceiptScheduleDeletedEvent → MRP removes the supply.
+		//   - Order line quantities: M_ReceiptSchedule.propagateQtysToOrderLine resets QtyOrderedOverUnder
 		//     (harmless when the order line is also being deleted immediately after).
 		receiptSchedulesForOrderLine.updateDirectly(rs -> {
 			rs.setProcessed(false);
