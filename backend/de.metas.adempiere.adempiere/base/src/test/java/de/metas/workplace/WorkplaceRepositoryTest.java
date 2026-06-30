@@ -27,7 +27,9 @@ import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WorkplaceRepositoryTest
 {
@@ -51,5 +53,25 @@ public class WorkplaceRepositoryTest
 				.warehouseId(WarehouseId.ofRepoId(1))
 				.build());
 		assertNotNull(workplace2);
+	}
+
+	@Test
+	public void isWarnShelfLifeUndercut_roundTrip()
+	{
+		final WorkplaceRepository repo = WorkplaceRepository.newInstanceForUnitTesting();
+
+		final Workplace withFlagTrue = repo.create(WorkplaceCreateRequest.builder()
+				.name("WarnTrue")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.warnShelfLifeUndercut(true)
+				.build());
+		assertTrue(withFlagTrue.isWarnShelfLifeUndercut(), "Workplace created with warnShelfLifeUndercut=true must load back as true");
+
+		final Workplace withFlagFalse = repo.create(WorkplaceCreateRequest.builder()
+				.name("WarnFalse")
+				.warehouseId(WarehouseId.ofRepoId(1))
+				.warnShelfLifeUndercut(false)
+				.build());
+		assertFalse(withFlagFalse.isWarnShelfLifeUndercut(), "Workplace created with warnShelfLifeUndercut=false must load back as false");
 	}
 }

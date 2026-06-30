@@ -151,6 +151,7 @@ const translations = {
       pickingSlot: 'Packing slot',
       pickAll: 'Quick Pack',
       noMatchingLines: 'No matching lines found',
+      rlzConfirmDeclined: 'Pick skipped — shelf life too short',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
