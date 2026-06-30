@@ -464,9 +464,11 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
   - the differing bill partner is part of the order-aggregation key (forces a separate order) but NOT of the
     C_Order_ExternalHeader_ID unique index tuple (ExternalSystem_ID, ExternalId, AD_Org_ID)
   - both forced orders therefore carry the same C_Order.ExternalId=18062027 -> the second order save violates the
-    unique index -> processing fails with the translated AD_Index_Table.ErrorMsg. The candidate is NOT flagged IsError;
-    the HTTP 400 response carries the JsonError body, which is also stored on the request-audit's response
-    (api_response_audit) and retrievable via the request-audit id
+    C_Order_ExternalHeader_ID unique index -> processing fails. The candidate is NOT flagged IsError; the process call
+    returns HTTP 400 with a JsonError body, stored on the request-audit's response (api_response_audit).
+  - order creation runs in an async workpackage, so the 400 body carries the generic async-batch wrapper message
+    ("WorkPackage completed with an exception"); the specific translated AD_Index_Table.ErrorMsg is recorded on the
+    failed C_Queue_WorkPackage.errormsg / AD_Issue.
     Given metasfresh contains M_PricingSystems
       | Identifier           | Name                             | Value                            | IsActive |
       | ps_scenario_18062027 | pricing_system_scenario_18062027 | pricing_system_scenario_18062027 | true     |
@@ -577,12 +579,12 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
 }
 """
 
-    # The process call is handled in audited async mode: the synchronous 400 response carries the JsonError body
-    # (the candidate itself is not flagged with IsError). The translated AD_Index_Table.ErrorMsg is stored on the
-    # request-audit's response (api_response_audit). The PUT's own request-audit id is taken from its X-Api-Request-Audit-ID response
-    # header (RESTUtil stores it into the test context), so the assertion below resolves the EXACT request-audit of
-    # this PUT - we must NOT overwrite it with a "last audit record" guess. Assert its stored response is the HTTP 400
-    # JsonError whose body contains the translated message (base language, German).
+    # The synchronous 400 response carries a JsonError body (the candidate itself is not flagged with IsError), stored
+    # on the request-audit's response (api_response_audit). The PUT's own request-audit id is taken from its
+    # X-Api-Request-Audit-ID response header (RESTUtil stores it into the test context), so the assertion below resolves
+    # the EXACT request-audit of this PUT - we must NOT overwrite it with a "last audit record" guess.
+    # Order creation runs in an async workpackage, so the body carries the generic async-batch wrapper message
+    # (the specific translated AD_Index_Table.ErrorMsg lives on the failed C_Queue_WorkPackage.errormsg / AD_Issue).
     And after not more than 60s, there are added records in API_Response_Audit
-      | HttpCode | Body                                                                                                                                                   |
-      | 400      | Auftragskandidaten mit derselben externen Auftragsreferenz können nicht zu einem Auftrag zusammengefasst werden, da sich ihre Kopfdaten unterscheiden. |
+      | HttpCode | Body                                    |
+      | 400      | WorkPackage completed with an exception |
