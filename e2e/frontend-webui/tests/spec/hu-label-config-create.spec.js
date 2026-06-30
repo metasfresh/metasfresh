@@ -91,7 +91,7 @@ test.describe("HU Label Configuration window — create a new record", () => {
       .waitFor({ state: "detached", timeout: SLOW_ACTION_TIMEOUT })
       .catch(() => {});
 
-    // Proof of the gh30334 fix. AutoPrintCopies is a mandatory NOT-NULL column whose field is an
+    // Proof of the fix. AutoPrintCopies is a mandatory NOT-NULL column whose field is an
     // advanced, DisplayLogic-gated field (@IsAutoPrint/N@=Y): it is hidden whenever IsAutoPrint
     // stays at its N default. Before the fix the INSERT omitted the column and the NOT-NULL
     // constraint was violated, so a record with only the label process set could not be saved.
