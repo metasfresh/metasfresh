@@ -145,8 +145,10 @@ public class CreateProductCommand
 			productRecord.setIsSerialNoPicked(isSerialNoPicked);
 		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		final Boolean isSold = request.getIsSold();
+		productRecord.setIsSold(isSold != null ? isSold : true);
+		final Boolean isPurchased = request.getIsPurchased();
+		productRecord.setIsPurchased(isPurchased != null ? isPurchased : true);
 
 		// Set M_AttributeSet_ID if attributeSetName is provided
 		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
