@@ -15,6 +15,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -88,11 +89,22 @@ class C_OrderLineProductGateTest
 		return ol;
 	}
 
-	@Test
-	void salesOrder_notSold_throws()
+	@Nested
+	class SalesOrder
 	{
-		assertThatThrownBy(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, true, false)))
-				.isInstanceOf(AdempiereException.class);
+		@Test
+		void notSold_throws()
+		{
+			assertThatThrownBy(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, true, false)))
+					.isInstanceOf(AdempiereException.class);
+		}
+
+		@Test
+		void notPurchasedButSold_doesNotThrow()
+		{
+			assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, false, true)))
+					.doesNotThrowAnyException();
+		}
 	}
 
 	@Test
@@ -108,13 +120,6 @@ class C_OrderLineProductGateTest
 		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, true, true)))
 				.doesNotThrowAnyException();
 		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(false, true, true)))
-				.doesNotThrowAnyException();
-	}
-
-	@Test
-	void salesOrder_notPurchasedButSold_doesNotThrow()
-	{
-		assertThatCode(() -> interceptor.validateProductIsPurchasedOrSold(orderLine(true, false, true)))
 				.doesNotThrowAnyException();
 	}
 

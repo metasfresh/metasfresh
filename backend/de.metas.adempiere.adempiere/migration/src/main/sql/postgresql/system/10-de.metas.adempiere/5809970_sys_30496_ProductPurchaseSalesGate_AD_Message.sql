@@ -1,4 +1,4 @@
--- AD_Messages for the product purchase/sales gate feature (me03 30496).
+-- AD_Messages for the product purchase/sales gate feature.
 -- Shown when a product is blocked from purchase or sale due to IsPurchased/IsSold=N.
 -- Also shown when CreatePOFromSOs is attempted for products not marked as purchased.
 --

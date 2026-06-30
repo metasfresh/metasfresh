@@ -171,6 +171,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
@@ -806,7 +807,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 		final ClientId clientId = ClientId.ofRepoId(param_AD_Client_ID.getValueAsInteger(evalCtx));
 		final OrgId orgId = OrgId.ofRepoId(param_AD_Org_ID.getValueAsInteger(evalCtx));
-		if (!Services.get(IProductBL.class).isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
 		{
 			return;
 		}

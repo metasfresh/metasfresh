@@ -213,7 +213,6 @@ public class C_OrderLine
 			return;
 		}
 
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 
 		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
@@ -223,6 +222,7 @@ public class C_OrderLine
 			return;
 		}
 
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 		if (order.isSOTrx())
 		{
 			productBL.assertSellable(productId);
