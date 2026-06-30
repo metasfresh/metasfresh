@@ -37,7 +37,7 @@ import javax.xml.bind.annotation.XmlType;
 public class RetrievalMethodType {
 
     @XmlElement(name = "Transforms", namespace = "http://www.w3.org/2000/09/xmldsig#")
-    protected TransformsType transforms;
+    protected TransformsType2 transforms;
     @XmlAttribute(name = "URI")
     @XmlSchemaType(name = "anyURI")
     protected String uri;
@@ -50,10 +50,10 @@ public class RetrievalMethodType {
      * 
      * @return
      *     possible object is
-     *     {@link TransformsType }
+     *     {@link TransformsType2 }
      *     
      */
-    public TransformsType getTransforms() {
+    public TransformsType2 getTransforms() {
         return transforms;
     }
 
@@ -62,10 +62,10 @@ public class RetrievalMethodType {
      * 
      * @param value
      *     allowed object is
-     *     {@link TransformsType }
+     *     {@link TransformsType2 }
      *     
      */
-    public void setTransforms(TransformsType value) {
+    public void setTransforms(TransformsType2 value) {
         this.transforms = value;
     }
 

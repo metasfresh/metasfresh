@@ -41,7 +41,7 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 public class ManifestType {
 
     @XmlElement(name = "Reference", namespace = "http://www.w3.org/2000/09/xmldsig#", required = true)
-    protected List<ReferenceType> reference;
+    protected List<ReferenceType2> reference;
     @XmlAttribute(name = "Id")
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     @XmlID
@@ -66,13 +66,13 @@ public class ManifestType {
      * 
      * <p>
      * Objects of the following type(s) are allowed in the list
-     * {@link ReferenceType }
+     * {@link ReferenceType2 }
      * 
      * 
      */
-    public List<ReferenceType> getReference() {
+    public List<ReferenceType2> getReference() {
         if (reference == null) {
-            reference = new ArrayList<ReferenceType>();
+            reference = new ArrayList<ReferenceType2>();
         }
         return this.reference;
     }

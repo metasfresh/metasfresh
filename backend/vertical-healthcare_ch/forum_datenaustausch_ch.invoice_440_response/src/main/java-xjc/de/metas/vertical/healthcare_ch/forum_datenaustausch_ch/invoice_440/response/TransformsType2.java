@@ -29,12 +29,12 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "TransformsType", namespace = "http://www.w3.org/2001/04/xmlenc#", propOrder = {
+@XmlType(name = "TransformsType", namespace = "http://www.w3.org/2000/09/xmldsig#", propOrder = {
     "transform"
 })
 public class TransformsType2 {
 
-    @XmlElement(name = "Transform", namespace = "http://www.w3.org/2000/09/xmldsig#", required = true)
+    @XmlElement(name = "Transform", required = true)
     protected List<TransformType> transform;
 
     /**
