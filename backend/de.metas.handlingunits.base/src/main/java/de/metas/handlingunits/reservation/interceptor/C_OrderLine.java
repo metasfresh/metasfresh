@@ -6,6 +6,8 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_C_Order;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.inoutcandidate.api.IReceiptScheduleDAO;
+import de.metas.order.IOrderBL;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -53,6 +55,7 @@ import java.util.Properties;
 public class C_OrderLine
 {
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IReceiptScheduleDAO receiptScheduleDAO = Services.get(IReceiptScheduleDAO.class);
 
 	@Init
@@ -69,12 +72,8 @@ public class C_OrderLine
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void beforeOrderLineDeleted(@NonNull final I_C_OrderLine orderLineRecord)
 	{
-		// Receipt schedules only exist for purchase order lines.
-		// Guard against null: getC_Order() returns null when C_Order_ID <= 0 (malformed data).
-		// Treat that as a no-op to avoid NPE; deleteByOrderLineId will be a no-op anyway since
-		// no receipt schedules can be linked to an order-less order line.
-		final org.compiere.model.I_C_Order order = orderLineRecord.getC_Order();
-		if (order == null || order.isSOTrx())
+		// Receipt schedules only exist for purchase order lines
+		if (orderBL.isSalesOrder(OrderId.ofRepoId(orderLineRecord.getC_Order_ID())))
 		{
 			return;
 		}
