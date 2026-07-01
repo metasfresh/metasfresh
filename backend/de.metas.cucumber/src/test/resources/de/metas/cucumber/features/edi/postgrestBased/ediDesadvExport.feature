@@ -702,8 +702,11 @@ Feature: EDI DESADV export via postgREST
 
     # Same shape as "includes unshipped order lines": one shipped line (-> pack) and one
     # unshipped line (-> would be a non-closed no-pack line). With the suppression toggle ON,
-    # the non-closed no-pack line must be omitted entirely (the receiver's SAP treats any
+    # the non-closed no-pack line must be omitted entirely (the receiving system treats any
     # no-pack line it receives as a closed delivery link).
+    # NOTE: uses its own POReference (omitClosedRef) — DESADV aggregates orders by
+    # (bpartner, POReference), so sharing partialShipRef with the sibling scenario on this
+    # executor would merge both orders into one DESADV and collide on line numbers.
     Given metasfresh contains M_Products:
       | Identifier      |
       | prod_shipped    |
@@ -744,8 +747,8 @@ Feature: EDI DESADV export via postgREST
 
     # Order with 2 lines
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference   |
-      | o_ns       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | partialShipRef    |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DatePromised | OPT.POReference |
+      | o_ns       | true    | customer1     | 2025-04-17  | 2025-04-18Z  | omitClosedRef   |
     And metasfresh contains C_OrderLines:
       | Identifier    | C_Order_ID | M_Product_ID    | QtyEntered | OPT.M_HU_PI_Item_Product_ID |
       | ol_shipped    | o_ns       | prod_shipped    | 100        | huPiProd_ns                 |
