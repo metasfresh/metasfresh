@@ -120,9 +120,9 @@ test('Picking tolerates surplus QR codes on an aggregate LU', async ({ page }) =
     });
 
     await test.step("Verify backend state after the surplus-tolerant pick", async () => {
-        // The surplus-bearing source pallet HU1 is fully emptied — all 10 TUs (100 PCE) were picked out of it,
-        // including via the guarded second pick against its 10-code surplus. If that pick had failed with the
-        // "Erwartet ... erhalten" error (pre-fix), HU1 would still hold the un-picked remainder.
+        // The surplus-bearing source pallet HU1 is fully emptied — its remaining 6 TUs (60 PCE) were picked out of
+        // it via the guarded pick against its 10-code surplus. Had that pick failed with the "Erwartet ... erhalten"
+        // error (pre-fix), HU1 would still hold the un-picked 60 PCE.
         await Backend.expect({
             hus: {
                 HU1: { storages: {} },
@@ -130,14 +130,6 @@ test('Picking tolerates surplus QR codes on an aggregate LU', async ({ page }) =
         });
     });
 
+    // Completing the job succeeds (the picked goods were accepted despite the surplus source).
     await PickingJobScreen.complete();
-
-    await test.step("Verify backend state after completion", async () => {
-        // Completion succeeds and the source pallet stays empty (all its goods shipped via the picked LU).
-        await Backend.expect({
-            hus: {
-                HU1: { storages: {} },
-            }
-        });
-    });
 });

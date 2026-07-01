@@ -9,12 +9,11 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
@@ -53,7 +52,6 @@ public class CreateHUCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -141,17 +139,17 @@ public class CreateHUCommand
 	{
 		trxManager.runInThreadInheritedTrx(() -> {
 			final ImmutableSet.Builder<HuId> huIds = ImmutableSet.builder();
-			collectHuAndIncludedHuIds(huId, huIds);
+			collectHuAndIncludedHuIds(handlingUnitsBL.getById(huId), huIds);
 			huQRCodesService.generateForExistingHUs(huIds.build());
 		});
 	}
 
-	private void collectHuAndIncludedHuIds(@NonNull final HuId huId, @NonNull final ImmutableSet.Builder<HuId> collector)
+	private void collectHuAndIncludedHuIds(@NonNull final I_M_HU hu, @NonNull final ImmutableSet.Builder<HuId> collector)
 	{
-		collector.add(huId);
-		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(huId))
+		collector.add(HuId.ofRepoId(hu.getM_HU_ID()));
+		for (final I_M_HU includedHU : handlingUnitsBL.retrieveIncludedHUs(hu))
 		{
-			collectHuAndIncludedHuIds(HuId.ofRepoId(includedHU.getM_HU_ID()), collector);
+			collectHuAndIncludedHuIds(includedHU, collector);
 		}
 	}
 
@@ -165,7 +163,7 @@ public class CreateHUCommand
 	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
 	{
 		huTrxBL.process(huContext -> {
-			final I_M_HU aggregateTU = findAggregateTU(huId);
+			final I_M_HU aggregateTU = findAggregateTU(handlingUnitsBL.getById(huId));
 			if (aggregateTU == null)
 			{
 				throw new AdempiereException("No aggregate TU found under HU " + huId + " to split TUs out of");
@@ -175,20 +173,19 @@ public class CreateHUCommand
 	}
 
 	/**
-	 * Find the aggregate TU in the HU hierarchy rooted at {@code huId} (the HU itself if it is the aggregate, else the
+	 * Find the aggregate TU in the HU hierarchy rooted at {@code hu} (the HU itself if it is the aggregate, else the
 	 * first aggregate among its included HUs, recursively).
 	 */
 	@Nullable
-	private I_M_HU findAggregateTU(@NonNull final HuId huId)
+	private I_M_HU findAggregateTU(@NonNull final I_M_HU hu)
 	{
-		final I_M_HU hu = handlingUnitsBL.getById(huId);
 		if (handlingUnitsBL.isAggregateHU(hu))
 		{
 			return hu;
 		}
-		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(huId))
+		for (final I_M_HU includedHU : handlingUnitsBL.retrieveIncludedHUs(hu))
 		{
-			final I_M_HU found = findAggregateTU(HuId.ofRepoId(includedHU.getM_HU_ID()));
+			final I_M_HU found = findAggregateTU(includedHU);
 			if (found != null)
 			{
 				return found;
