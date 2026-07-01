@@ -143,27 +143,6 @@ public interface I_C_Workplace
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Warn when guaranteed remaining shelf life is undercut.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsWarnShelfLifeUndercut (boolean IsWarnShelfLifeUndercut);
-
-	/**
-	 * Get Warn when guaranteed remaining shelf life is undercut.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isWarnShelfLifeUndercut();
-
-	ModelColumn<I_C_Workplace, Object> COLUMN_IsWarnShelfLifeUndercut = new ModelColumn<>(I_C_Workplace.class, "IsWarnShelfLifeUndercut", null);
-	String COLUMNNAME_IsWarnShelfLifeUndercut = "IsWarnShelfLifeUndercut";
-
-	/**
 	 * Set Max. Picking Jobs.
 	 * Specifies the maximum number of picking jobs allowed for this workplace.
 	 *
