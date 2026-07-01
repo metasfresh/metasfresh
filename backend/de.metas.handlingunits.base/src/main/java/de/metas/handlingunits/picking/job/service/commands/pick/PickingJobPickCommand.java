@@ -908,10 +908,7 @@ public class PickingJobPickCommand
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
 		// An aggregate can hold more active QR codes than its current TU count (codes are generated one-per-TU
 		// and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus; error only on a deficit.
-		if (huQRCodes.size() < tu.getQtyTU().toInt())
-		{
-			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
-		}
+		assertEnoughQRCodes(huQRCodes, tu.getQtyTU().toInt());
 
 		final List<Quantity> qtyPickedPerTU = qtyPicked.spreadEqually(tu.getQtyTU().toInt());
 
@@ -943,10 +940,7 @@ public class PickingJobPickCommand
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
 		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
 		// so a surplus is fine; error only when there are zero codes.
-		if (huQRCodes.size() < 1)
-		{
-			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
-		}
+		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
 		return ImmutableList.of(
@@ -958,6 +952,26 @@ public class PickingJobPickCommand
 						.createdAt(SystemTime.asInstant())
 						.build()
 		);
+	}
+
+	/**
+	 * The me03 #30767 QR-code count guard for picking, shared by both {@code toPickingJobStepPickedToHU} overloads.
+	 * <p>
+	 * An aggregate HU can hold MORE active QR codes than its current TU count (codes are generated one-per-TU and
+	 * are never trimmed when TUs are split/picked out), so the pick must TOLERATE a surplus and only ever consume
+	 * the first {@code requiredCount} codes. It errors only on a DEFICIT — strictly fewer codes than needed
+	 * ({@code < requiredCount}) — never on a surplus. Pre-#30767 this used {@code != requiredCount}, which threw on
+	 * a surplus with "Erwartet {0} QR-Codes, aber nur {1} erhalten".
+	 * <p>
+	 * Package-visible so {@code PickingJobPickCommand_QRCodeSurplusToleranceTest} exercises the real production
+	 * predicate (reverting the operator here fails that test).
+	 */
+	static void assertEnoughQRCodes(@NonNull final List<HUQRCode> huQRCodes, final int requiredCount)
+	{
+		if (huQRCodes.size() < requiredCount)
+		{
+			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, requiredCount, huQRCodes.size());
+		}
 	}
 
 	private LUTUResult pickWholeTUs(
