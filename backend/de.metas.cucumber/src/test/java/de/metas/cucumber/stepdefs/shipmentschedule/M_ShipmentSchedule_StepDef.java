@@ -86,7 +86,11 @@ import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+
+import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -119,6 +123,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
@@ -156,6 +161,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
@@ -367,6 +373,10 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
 	 *   <b>Processed</b> — (optional) true/false<br>
 	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>PreparationDate</b> — (optional) expected per-line base preparation date, as a plain calendar date
+	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
+	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
+	 *     as a plain calendar date compared in the order's time zone<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -948,6 +958,20 @@ public class M_ShipmentSchedule_StepDef
 		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
 		tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsDeliveryStop)
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isDeliveryStop()).as("IsDeliveryStop for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
+
+		// Compare the schedule's per-line dates at DATE granularity in the order's time zone — these are date fields,
+		// and a plain date in the feature (e.g. 2022-08-10) means "that calendar day in the org tz", not UTC midnight.
+		final ZoneId scheduleZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+
+		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate)
+				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getPreparationDate(), scheduleZoneId))
+						.as("PreparationDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(expected));
+
+		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate)
+				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getDeliveryDate(), scheduleZoneId))
+						.as("DeliveryDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(expected));
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
