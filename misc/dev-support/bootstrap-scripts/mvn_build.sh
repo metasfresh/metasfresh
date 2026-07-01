@@ -218,7 +218,9 @@ GIT_COMMON_DIR="$(git -C "$WORKSPACE_ROOT" rev-parse --git-common-dir 2>/dev/nul
 if [ -n "$GIT_COMMON_DIR" ]; then
     # git-common-dir may be relative to WORKSPACE_ROOT; make it absolute
     case "$GIT_COMMON_DIR" in /*) ;; *) GIT_COMMON_DIR="$WORKSPACE_ROOT/$GIT_COMMON_DIR" ;; esac
-    MAIN_ROOT="$(cd "$GIT_COMMON_DIR/.." && pwd)"     # common dir is <main-root>/.git
+    # common dir is <main-root>/.git; on the rare cd failure fall back to WORKSPACE_ROOT
+    # so the build never aborts under `set -e` (matches the not-a-git-repo branch below)
+    MAIN_ROOT="$(cd "$GIT_COMMON_DIR/.." 2>/dev/null && pwd)" || MAIN_ROOT="$WORKSPACE_ROOT"
 else
     MAIN_ROOT="$WORKSPACE_ROOT"                        # not a git repo -> keep old behaviour
 fi
