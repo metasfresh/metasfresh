@@ -1135,7 +1135,7 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
   @allure.label.feature:F5410_EPCIS_JSON_Export
   Scenario: S30771_010 — cuGTIN resolved from M_Product_ASI_Data when M_Product.GTIN is null and no C_BPartner_Product GTIN exists
   ## RED scenario: product has M_Product.GTIN=null and no GTIN in C_BPartner_Product.
-  ## A wildcard M_Product_ASI_Data row carries GTIN=7617027633185.
+  ## A wildcard M_Product_ASI_Data row carries GTIN=4060000000772.
   ## The EPCIS function currently resolves cuGTIN only from C_BPartner_Product/M_Product.GTIN
   ## and never reads M_Product_ASI_Data — so cuGTIN comes out null.
   ## This scenario asserts the ASI_Data GTIN and therefore FAILS (intended RED).
@@ -1169,10 +1169,11 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | bp_S30771_010 | p_S30771_010  |
 
     # Wildcard ASI_Data row: no C_BPartner_ID (matches any buyer), no ASI (matches any ASI), SeqNo=10
-    # This is the only source of GTIN for this product — mirrors the real P000864 case.
+    # This is the only source of GTIN for this product — mirrors the case where
+    # M_Product.GTIN is null and only M_Product_ASI_Data carries the GTIN.
     And metasfresh contains M_Product_ASI_Data:
-      | Identifier    | M_Product_ID  | SeqNo | GTIN          |
-      | asiData_30771 | p_S30771_010  | 10    | 7617027633185 |
+      | Identifier         | M_Product_ID | SeqNo | GTIN          |
+      | asiData_S30771_010 | p_S30771_010 | 10    | 4060000000772 |
 
     # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
     And metasfresh contains M_Products:
@@ -1273,10 +1274,10 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
       | pack_S30771_010    | d_S30771_010             | false               |
 
     # ─── CORE ASSERTION (RED) ────────────────────────────────────────────────────────
-    # cuGTIN must be resolved from M_Product_ASI_Data (7617027633185).
+    # cuGTIN must be resolved from M_Product_ASI_Data (4060000000772).
     # Current code only checks C_BPartner_Product.gtin / M_Product.gtin — both null here.
-    # This assertion FAILS on the current code: item.cuGTIN is null, expected 7617027633185.
+    # This assertion FAILS on the current code: item.cuGTIN is null, expected 4060000000772.
     When the EPCIS JSON export function is called for M_InOut identified by io_S30771_010
     Then the EPCIS JSON item has:
       | palletIndex | crateIndex | itemIndex | cuGTIN        |
-      | 0           | 0          | 0         | 7617027633185 |
+      | 0           | 0          | 0         | 4060000000772 |
