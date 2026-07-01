@@ -6,6 +6,7 @@ import de.metas.user.UserId;
 import de.metas.util.InSetPredicate;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -32,8 +33,8 @@ class DistributionJobQueriesTest
 		// Given: regular (non-packing) workplace — locatorToId set, excludeLocatorToIds absent
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
-				.warehouseToId(W1)
-				.locatorToId(L1)
+				.workplaceWarehouseId(W1)
+				.workplacePickFromLocatorId(L1)
 				.excludeLocatorToIds(null)
 				.build();
 
@@ -58,8 +59,8 @@ class DistributionJobQueriesTest
 		final ImmutableSet<LocatorId> packingLocators = ImmutableSet.of(L1, L2);
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
-				.warehouseToId(W1)
-				.locatorToId(null)
+				.workplaceWarehouseId(W1)
+				.workplacePickFromLocatorId(null)
 				.excludeLocatorToIds(packingLocators)
 				.build();
 
@@ -73,5 +74,46 @@ class DistributionJobQueriesTest
 
 		final Set<LocatorId> excludeLocatorToIds = result.getExcludeLocatorToIds();
 		assertThat(excludeLocatorToIds).containsExactlyInAnyOrderElementsOf(packingLocators);
+	}
+
+	@Nested
+	class Workplace
+	{
+		@Test
+		void mapsWarehouseAndPickFromLocator()
+		{
+			final WarehouseId workplaceWarehouseId = WarehouseId.ofRepoId(201);
+			final LocatorId workplacePickFromLocatorId = LocatorId.ofRepoId(201, 301);
+
+			final DDOrderReferenceQuery referenceQuery = DDOrderReferenceQuery.builder()
+					.responsibleId(UserId.ofRepoId(1000))
+					.workplaceWarehouseId(workplaceWarehouseId)
+					.workplacePickFromLocatorId(workplacePickFromLocatorId)
+					.build();
+
+			final DDOrderQuery query = DistributionJobQueries.toActiveNotAssignedDDOrderQuery(referenceQuery);
+
+			// the workplace warehouse + pick-from locator drive the from-or-to visibility predicate
+			assertThat(query.getWorkplaceWarehouseId()).isEqualTo(workplaceWarehouseId);
+			assertThat(query.getWorkplacePickFromLocatorId()).isEqualTo(workplacePickFromLocatorId);
+			// no facet => match-anything (InSetPredicate.any()), not a narrowing filter
+			assertThat(query.getWarehouseToIds()).isEqualTo(InSetPredicate.any());
+		}
+
+		@Test
+		void withoutPickFromLocator_leavesLocatorNull()
+		{
+			final WarehouseId workplaceWarehouseId = WarehouseId.ofRepoId(201);
+
+			final DDOrderReferenceQuery referenceQuery = DDOrderReferenceQuery.builder()
+					.responsibleId(UserId.ofRepoId(1000))
+					.workplaceWarehouseId(workplaceWarehouseId)
+					.build();
+
+			final DDOrderQuery query = DistributionJobQueries.toActiveNotAssignedDDOrderQuery(referenceQuery);
+
+			assertThat(query.getWorkplaceWarehouseId()).isEqualTo(workplaceWarehouseId);
+			assertThat(query.getWorkplacePickFromLocatorId()).isNull();
+		}
 	}
 }

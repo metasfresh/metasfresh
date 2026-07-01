@@ -191,6 +191,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Open demand remaining',
         skippedProducts: 'Skipped products',
       },
+      rlzConfirmDeclined: 'Pick skipped — shelf life too short',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

@@ -147,6 +147,10 @@ public class CreateProductCommand
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
 		productRecord.setIsSold(true);
 		productRecord.setIsPurchased(true);
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 
 		// Set M_AttributeSet_ID if attributeSetName is provided
 		final String attributeSetName = StringUtils.trimBlankToNull(request.getAttributeSetName());
@@ -336,6 +340,7 @@ public class CreateProductCommand
 				.bPartnerId(bpartnerId)
 				.usedForCustomer(true)
 				.cuEAN(ean13 != null ? ean13.getAsString() : null)
+				.shelfLifeMinDays(bpartner.getShelfLifeMinDays())
 				.build());
 	}
 
