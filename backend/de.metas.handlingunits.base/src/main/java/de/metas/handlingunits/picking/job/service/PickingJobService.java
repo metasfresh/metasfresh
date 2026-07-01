@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.dao.ValueRestriction;
@@ -85,6 +86,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -833,6 +835,12 @@ public class PickingJobService implements PickingSlotListener
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
 			final ImmutableSet<HuId> closedLUIds = closedHUIdsCollector.getLUIds();
+
+			// me03 #30763: persist the picking consignee (BPartner + delivery location) on the just-closed LUs when
+			// they carry no partner, so the per-BPartner M_HU_Label_Config matches and the SSCC label auto-prints.
+			// Must run BEFORE printLULabels so the label lookup (keyed on the LU's own bpartner) selects the config.
+			stampConsigneeOnClosedLUs(pickingJob, closedLUIds);
+
 			huService.printLULabels(closedLUIds);
 			huService.printTULabels(closedHUIdsCollector.getTopLevelTUIds());
 
@@ -853,6 +861,51 @@ public class PickingJobService implements PickingSlotListener
 		}
 
 		return pickingJobChanged;
+	}
+
+	/**
+	 * me03 #30763 — persists the picking consignee on each just-closed LU that carries no BPartner yet, so the
+	 * per-BPartner {@code M_HU_Label_Config} matches and the SSCC label auto-prints (both at close and on later re-print).
+	 * <p>
+	 * The consignee is resolved <b>per LU</b> from the pre-close picking job: header-level pick targets
+	 * (SALES_ORDER / DELIVERY_LOCATION aggregation) carry the job's delivery location; line-level pick targets
+	 * (PRODUCT aggregation) carry their own line's delivery location. A job may span multiple consignees, so this
+	 * never applies a blanket customer id. Only LUs actually closed by this operation (in {@code closedLUIds}) are stamped.
+	 */
+	private void stampConsigneeOnClosedLUs(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final ImmutableSet<HuId> closedLUIds)
+	{
+		if (closedLUIds.isEmpty())
+		{
+			return;
+		}
+
+		final Map<HuId, BPartnerLocationId> luId2consignee = new HashMap<>();
+
+		// header-level pick target (SALES_ORDER / DELIVERY_LOCATION aggregation) -> job delivery location
+		final BPartnerLocationId headerConsignee = pickingJob.getDeliveryBPLocationId();
+		if (headerConsignee != null)
+		{
+			pickingJob.getLuPickingTarget(null)
+					.filter(LUPickingTarget::isExistingLU)
+					.ifPresent(target -> luId2consignee.put(target.getLuIdNotNull(), headerConsignee));
+		}
+
+		// line-level pick targets (PRODUCT aggregation) -> each line's own delivery location
+		pickingJob.streamLines().forEach(line ->
+				pickingJob.getLuPickingTarget(line.getId())
+						.filter(LUPickingTarget::isExistingLU)
+						.ifPresent(target -> luId2consignee.put(target.getLuIdNotNull(), line.getDeliveryBPLocationId())));
+
+		for (final HuId closedLUId : closedLUIds)
+		{
+			final BPartnerLocationId consignee = luId2consignee.get(closedLUId);
+			if (consignee != null)
+			{
+				huService.setBPartnerAndLocationIfNotSet(closedLUId, consignee);
+			}
+		}
 	}
 
 	@NonNull
