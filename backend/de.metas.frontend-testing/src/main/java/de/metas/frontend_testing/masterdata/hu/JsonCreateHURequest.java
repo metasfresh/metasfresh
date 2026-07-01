@@ -20,6 +20,7 @@ public class JsonCreateHURequest
 	@Nullable Identifier packingInstructions;
 	@Nullable Boolean generateHUQRCode;
 	@Nullable Boolean generateHUQRCodesForAllTUs;
+	@Nullable Integer splitOutTUsCountAfterQRCodes;
 	@Nullable Boolean sourceHU;
 	@Nullable BigDecimal weightNet;
 	@Nullable String lotNo;
@@ -38,6 +39,16 @@ public class JsonCreateHURequest
 	 */
 	@JsonIgnore
 	public boolean isGenerateHUQRCodesForAllTUs() {return generateHUQRCodesForAllTUs != null && generateHUQRCodesForAllTUs;}
+
+	/**
+	 * After the full-count QR codes are generated (see {@link #generateHUQRCodesForAllTUs}), split this many whole TUs
+	 * OUT of the aggregate — a NON-picking repack, mirroring the real-world path that produces the me03 #30767 surplus:
+	 * QR codes are generated at the aggregate's high-water TU count, then a repack lowers the TU count WITHOUT trimming
+	 * the QR-code assignments. The result is an Active, still-pickable aggregate carrying MORE active QR codes than its
+	 * current TU count (the surplus). Only meaningful together with {@code generateHUQRCodesForAllTUs=true}.
+	 */
+	@JsonIgnore
+	public int getSplitOutTUsCountAfterQRCodes() {return splitOutTUsCountAfterQRCodes != null ? splitOutTUsCountAfterQRCodes : 0;}
 
 	@JsonIgnore
 	public boolean isSourceHU() { return sourceHU != null && sourceHU;}

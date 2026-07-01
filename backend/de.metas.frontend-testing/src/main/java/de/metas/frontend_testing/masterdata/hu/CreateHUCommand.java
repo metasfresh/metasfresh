@@ -1,16 +1,17 @@
 package de.metas.frontend_testing.masterdata.hu;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -99,6 +100,11 @@ public class CreateHUCommand
 			generateQRCodesForAllTUs(huId);
 		}
 
+		if (request.getSplitOutTUsCountAfterQRCodes() > 0)
+		{
+			splitOutTUsLeavingQRCodesBehind(huId, request.getSplitOutTUsCountAfterQRCodes());
+		}
+
 		final String huQRCodeStr;
 		if (request.isGenerateHUQRCode())
 		{
@@ -127,8 +133,9 @@ public class CreateHUCommand
 	 * Generate one active {@code M_HU_QRCode_Assignment} per TU for the given HU <b>and every HU included under it</b>,
 	 * mirroring the desktop "Print Labels" / {@code M_HU_Report_QRCode} process (which runs
 	 * {@code huQRCodesService.generateForExistingHUs(selectedHuIds)}). The HU keeps its current status — no picking, no
-	 * split — so the codes stay at the current (full) TU count. Picking a subset of the TUs out afterwards then leaves
-	 * more active assignments than the current TU count: the me03 #30767 "surplus" state.
+	 * split — so the codes stay at the current (full) TU count. Combined with {@code splitOutTUsCountAfterQRCodes}
+	 * (a non-picking repack that lowers the TU count without trimming these codes), this yields the me03 #30767
+	 * "surplus" state: more active assignments than the current TU count.
 	 */
 	private void generateQRCodesForAllTUs(@NonNull final HuId huId)
 	{
@@ -146,6 +153,48 @@ public class CreateHUCommand
 		{
 			collectHuAndIncludedHuIds(HuId.ofRepoId(includedHU.getM_HU_ID()), collector);
 		}
+	}
+
+	/**
+	 * Split {@code count} whole TUs out of the aggregate reachable from the given HU — a NON-picking repack that
+	 * lowers the aggregate's TU count WITHOUT trimming its QR-code assignments (the me03 #30767 surplus mechanism).
+	 * Routes through {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} (the same qty-decrease-without-QR-cleanup
+	 * path a real repack uses), so the source aggregate is left Active and re-pickable with more active
+	 * {@code M_HU_QRCode_Assignment} rows than its now-reduced TU count.
+	 */
+	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
+	{
+		huTrxBL.process(huContext -> {
+			final I_M_HU aggregateTU = findAggregateTU(huId);
+			if (aggregateTU == null)
+			{
+				throw new AdempiereException("No aggregate TU found under HU " + huId + " to split TUs out of");
+			}
+			HUTransformService.newInstance(huContext).tuToNewTUs(aggregateTU, QtyTU.ofInt(count));
+		});
+	}
+
+	/**
+	 * Find the aggregate TU in the HU hierarchy rooted at {@code huId} (the HU itself if it is the aggregate, else the
+	 * first aggregate among its included HUs, recursively).
+	 */
+	@Nullable
+	private I_M_HU findAggregateTU(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		if (handlingUnitsBL.isAggregateHU(hu))
+		{
+			return hu;
+		}
+		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(huId))
+		{
+			final I_M_HU found = findAggregateTU(HuId.ofRepoId(includedHU.getM_HU_ID()));
+			if (found != null)
+			{
+				return found;
+			}
+		}
+		return null;
 	}
 
 	private @NonNull HuId createCU()
