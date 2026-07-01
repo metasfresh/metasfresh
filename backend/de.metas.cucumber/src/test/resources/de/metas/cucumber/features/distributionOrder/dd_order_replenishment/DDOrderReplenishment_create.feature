@@ -51,6 +51,11 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
       | stockWH        | customer      | customerLocation       |
+    # The stocking warehouse's default locator is flagged as a ground-floor locator so the replenishment service
+    # considers it when computing the required allocation (IsGroundLocator=Y is required by the ground-filter).
+    And metasfresh contains M_Locator:
+      | Identifier    | M_Warehouse_ID | Value    | IsGroundLocator | PriorityNo |
+      | stockLocator  | stockWH        | Standard | Y               | 10         |
     # The packing warehouse's default locator is captured so it can be used as the workstation's pick-from locator.
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID | MRP_Exclude | IsAutoDistributionOrder | DD_NetworkDistribution_ID | M_Locator_ID   |
@@ -70,8 +75,8 @@ Feature: DD_Order replenishment — create a distribution order for a packing-wa
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | stockInventory            | 2021-10-12   | stockWH        |
     And metasfresh contains M_InventoriesLines:
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
-      | stockInventory            | stockInventoryLine            | product                 | 0       | 5        | PCE          |
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | stockInventory            | stockInventoryLine            | product                 | stockLocator | 0       | 5        | PCE          |
     And complete inventory with inventoryIdentifier 'stockInventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |

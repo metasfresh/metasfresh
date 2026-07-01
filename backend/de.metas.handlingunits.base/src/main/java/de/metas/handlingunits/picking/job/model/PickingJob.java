@@ -220,6 +220,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getPickingSlotId);
 	}
 
+	public boolean isPickingSlotRequired() {return header.isPickingSlotRequired();}
+
 	public boolean isDisplayPickingSlotSuggestions() {return header.isDisplayPickingSlotSuggestions();}
 
 	public boolean isProcessed()
@@ -488,6 +490,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return streamLines()
 				.map(PickingJobLine::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
 	}
 
 	@Nullable

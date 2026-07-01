@@ -74,7 +74,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;

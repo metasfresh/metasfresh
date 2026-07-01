@@ -47,14 +47,14 @@ public class HUQueryBuilderTest
 		save(wh);
 
 		final I_M_Locator locator = newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(wh);
+		locator.setM_Warehouse_ID(wh.getM_Warehouse_ID());
 		save(locator);
 
 		final I_M_Warehouse otherWh = newInstance(I_M_Warehouse.class);
 		save(otherWh);
 
 		final I_M_Locator otherLocator = newInstance(I_M_Locator.class);
-		otherLocator.setM_Warehouse(otherWh);
+		otherLocator.setM_Warehouse_ID(otherWh.getM_Warehouse_ID());
 		save(otherLocator);
 
 		product = newInstance(I_M_Product.class);

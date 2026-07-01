@@ -359,6 +359,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 				.deliveryRenderedAddress(record.getDeliveryToAddress())
 				.isAllowPickingAnyHU(record.isAllowPickingAnyHU())
 				.isAnonymousPickHUsOnTheFly(pickingJobOptions.isAnonymousPickHUsOnTheFly())
+				.isPickingSlotRequired(pickingJobOptions.isPickingSlotRequired())
 				.isDisplayPickingSlotSuggestions(pickingJobOptions.getDisplayPickingSlotSuggestions().orElseFalse())
 				.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 				.handoverLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getHandOver_Partner_ID(), record.getHandOver_Location_ID()))

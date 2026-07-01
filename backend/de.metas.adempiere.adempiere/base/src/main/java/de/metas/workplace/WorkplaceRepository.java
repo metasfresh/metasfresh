@@ -62,6 +62,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -108,6 +109,8 @@ public class WorkplaceRepository
 
 	public List<Workplace> getAllActive() {return getMap().getAllActive();}
 
+	public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId) {return getMap().getPackingPlacePickFromLocatorIds(warehouseId);}
+
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
 		if (request.getPickFromLocatorId() != null && !WarehouseId.equals(request.getWarehouseId(), request.getPickFromLocatorId().getWarehouseId()))
@@ -122,6 +125,7 @@ public class WorkplaceRepository
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
+		record.setIsPackingPlace(request.isPackingPlace());
 
 		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
@@ -373,6 +377,7 @@ public class WorkplaceRepository
 				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
 				.orderPickingType(OrderPickingType.ofNullableCode(record.getOrderPickingType()))
 				.maxPickingJobs(record.getMaxPickingJobs())
+				.isPackingPlace(record.isPackingPlace())
 				// Add child collections
 				.productIds(ImmutableSet.copyOf(productsByWorkplace.get(workplaceId)))
 				.productCategoryIds(ImmutableSet.copyOf(categoriesByWorkplace.get(workplaceId)))
@@ -432,6 +437,16 @@ public class WorkplaceRepository
 		{
 			final Workplace workplace = getAllActive().stream().max(Comparator.comparing(v -> v.getSeqNo().toInt())).orElse(null);
 			return workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(10);
+		}
+
+		public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+		{
+			return allActive.stream()
+					.filter(Workplace::isPackingPlace)
+					.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
+					.map(Workplace::getPickFromLocatorId)
+					.filter(Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

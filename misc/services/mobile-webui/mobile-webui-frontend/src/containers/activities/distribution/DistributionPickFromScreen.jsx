@@ -7,13 +7,13 @@ import { distributionJobScreenLocation, distributionLineScreenLocation } from '.
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { resolveDistributionScannedBarcodeToParsedQRCode } from '../../../apps/distribution/services/barcodeResolverService';
 import { useSearchParams } from '../../../hooks/useSearchParams';
-import { formatQtyToHumanReadableStr } from '../../../utils/qtys';
 import { useMobileLocation } from '../../../hooks/useMobileLocation';
 import { getLineByIdFromActivity, useWFActivity } from '../../../reducers/wfProcesses';
 import { computeQtyToPickRemaining } from '../../../reducers/wfProcesses/distribution/computeQtyToPickRemaining';
 import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { isRequireScanningProductCode } from '../../../reducers/wfProcesses/distribution/getDistributionJobCompleteStatus';
 import { postDistributionPickFromThunk } from '../../../apps/distribution/redux/postDistributionPickFromThunk';
+import { useDistributionLineHeaders } from './DistributionLineScreen';
 
 const DistributionPickFromScreen = () => {
   const {
@@ -142,6 +142,7 @@ const getLineInfo = ({ activity, lineId }) => {
     uom: line.uom,
     qtyToMove: line.qtyToMove,
     qtyToPickRemaining: computeQtyToPickRemaining({ line }),
+    pickFromLocator: line.pickFromLocator,
   };
 };
 
@@ -152,29 +153,15 @@ const useDistributionScreenDefinition = () => {
   const huQRCode = urlParams.get('huQRCode');
 
   const activity = useWFActivity({ wfProcessId, activityId });
-  const { productName, uom, qtyToMove } = getLineInfo({ activity, lineId });
+  const headers = useDistributionLineHeaders({ wfProcessId, activityId, lineId });
 
   const { history } = useScreenDefinition({
     screenId: 'DistributionLinePickFromScreen',
     captionKey: 'activities.distribution.scanHU',
-    back:
-      lineId != null
-        ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
-        : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
-    values: [
-      {
-        caption: trl('general.Product'),
-        value: productName,
-        bold: true,
-        hidden: productName == null,
-      },
-      {
-        caption: trl('general.QtyToMove'),
-        value: qtyToMove != null ? formatQtyToHumanReadableStr({ qty: qtyToMove, uom }) : null,
-        bold: true,
-        hidden: qtyToMove == null,
-      },
-    ],
+    back: lineId
+      ? distributionLineScreenLocation({ applicationId, wfProcessId, activityId, lineId })
+      : distributionJobScreenLocation({ applicationId, wfProcessId, activityId }),
+    values: headers,
   });
 
   return { history, applicationId, wfProcessId, activityId, activity, lineId, huQRCode };

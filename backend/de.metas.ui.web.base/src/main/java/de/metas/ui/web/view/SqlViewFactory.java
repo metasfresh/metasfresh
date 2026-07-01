@@ -41,6 +41,8 @@ import de.metas.ui.web.document.geo_location.GeoLocationDocumentService;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
 import de.metas.ui.web.view.descriptor.SqlViewBinding;
+import de.metas.ui.web.view.descriptor.SqlViewBindingCustomizer;
+import de.metas.ui.web.view.descriptor.SqlViewBindingCustomizerMap;
 import de.metas.ui.web.view.descriptor.SqlViewBindingFactory;
 import de.metas.ui.web.view.descriptor.SqlViewCustomizerMap;
 import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
@@ -88,6 +90,7 @@ public class SqlViewFactory implements IViewFactory
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
 			@NonNull final WebuiDocumentReferencesService webuiDocumentReferencesService,
 			@NonNull final List<SqlViewCustomizer> viewCustomizersList,
+			@NonNull final List<SqlViewBindingCustomizer> viewBindingCustomizersList,
 			@NonNull final List<DefaultViewProfileIdProvider> defaultViewProfileIdProviders,
 			@NonNull final Optional<List<ViewHeaderPropertiesProvider>> headerPropertiesProvider,
 			@NonNull final Optional<List<SqlDocumentFilterConverter>> filterConverters,
@@ -103,9 +106,13 @@ public class SqlViewFactory implements IViewFactory
 		this.defaultProfileIdProvider = makeDefaultProfileIdProvider(defaultViewProfileIdProviders, viewCustomizers);
 		logger.info("Default ProfileId providers: {}", this.defaultProfileIdProvider);
 
+		final SqlViewBindingCustomizerMap viewBindingCustomizers = SqlViewBindingCustomizerMap.ofCollection(viewBindingCustomizersList);
+		logger.info("View binding customizers: {}", viewBindingCustomizers);
+
 		final SqlViewBindingFactory viewBindingsFactory = SqlViewBindingFactory.builder()
 				.documentDescriptorFactory(documentDescriptorFactory)
 				.viewCustomizers(viewCustomizers)
+				.viewBindingCustomizers(viewBindingCustomizers)
 				.filterConverters(filterConverters.orElseGet(ImmutableList::of))
 				.filterConverterDecoratorsProvider(filterConverterDecoratorsProvider)
 				.viewInvalidationAdvisors(viewInvalidationAdvisors)

@@ -56,6 +56,7 @@ public class CreateWorkplaceCommand
 						.pickingSlotId(request.getPickingSlot() != null
 								? context.getId(request.getPickingSlot(), PickingSlotId.class)
 								: null)
+						.isPackingPlace(request.getIsPackingPlace() == null || request.getIsPackingPlace())
 						.build()
 		);
 		context.putIdentifier(identifier, workplace.getId());

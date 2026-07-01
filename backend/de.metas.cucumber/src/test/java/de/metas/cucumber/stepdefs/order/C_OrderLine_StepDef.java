@@ -52,6 +52,8 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
@@ -102,6 +104,7 @@ import org.junit.jupiter.api.Assertions;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -127,6 +130,7 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
@@ -146,7 +150,23 @@ public class C_OrderLine_StepDef
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
 
-	/** Creates {@code C_OrderLine} records (one per DataTable row) on the referenced orders. */
+	/**
+	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
+	 * <p>
+	 * Required columns: {@code C_Order_ID} (identifier-ref), {@code M_Product_ID} (identifier-ref), {@code QtyEntered}.<br>
+	 * Selected optional columns:
+	 * <ul>
+	 *   <li>{@code DatePromised} (optional) — per-line promised/delivery date; when set, this line's delivery date
+	 *       (and therefore its derived {@code PreparationDate}) is taken from it instead of the order header's
+	 *       {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *   <li>{@code PreparationDate} (optional) — normally NOT set here: the model interceptor derives it from the
+	 *       line's delivery date so the line always mirrors the shipment schedule's initial {@code PreparationDate}.
+	 *       A value set here is overwritten by that derivation whenever {@code DatePromised}/{@code PresetDateShipped}
+	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
+	 *       a local date in the order line's org time zone.</li>
+	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
@@ -245,6 +265,18 @@ public class C_OrderLine_StepDef
 					orderLine.setPriceActual(price);
 				});
 
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised, orderLineZoneId));
+				});
+
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate, orderLineZoneId));
+				});
+
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
 				.ifPresent(orderLine::setDescription);
 
@@ -332,6 +364,11 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates {@code C_OrderLine} records. The line is located by {@code (C_Order_ID, M_Product_ID, QtyOrdered)},
+	 * then every present column is asserted (each column is an optional assertion). The date columns
+	 * ({@code DateOrdered}, {@code DatePromised}) are compared as a start-of-day {@code Timestamp}.
+	 */
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
@@ -658,6 +695,19 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered));
+
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getDatePromised(), zoneId)).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised);
+				});
+
+		// per-line picking-date override (null => derived from the delivery date)
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getPreparationDate(), zoneId)).as(I_C_OrderLine.COLUMNNAME_PreparationDate).isEqualTo(preparationDate);
+				});
 
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())

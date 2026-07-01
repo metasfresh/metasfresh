@@ -12,6 +12,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
@@ -24,4 +25,5 @@ public class DDOrderReferenceQuery
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
 	@Nullable WarehouseId warehouseToId;
 	@Nullable LocatorId locatorToId;
+	@Nullable Set<LocatorId> excludeLocatorToIds;
 }
