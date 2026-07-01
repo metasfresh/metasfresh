@@ -5,9 +5,11 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
@@ -50,6 +52,7 @@ public class CreateHUCommand
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	@NonNull private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	@NonNull private final InventoryService inventoryService;
 	@NonNull private final HUQRCodesService huQRCodesService;
@@ -91,6 +94,11 @@ public class CreateHUCommand
 
 		context.putIdentifier(identifier, huId);
 
+		if (request.isGenerateHUQRCodesForAllTUs())
+		{
+			generateQRCodesForAllTUs(huId);
+		}
+
 		final String huQRCodeStr;
 		if (request.isGenerateHUQRCode())
 		{
@@ -113,6 +121,31 @@ public class CreateHUCommand
 				.warehouseId(getWarehouseId())
 				.externalBarcode(huAttributes != null && huAttributes.hasAttribute(AttributeConstants.ATTR_ExternalBarcode) ? huAttributes.getValueAsString(AttributeConstants.ATTR_ExternalBarcode) : null)
 				.build();
+	}
+
+	/**
+	 * Generate one active {@code M_HU_QRCode_Assignment} per TU for the given HU <b>and every HU included under it</b>,
+	 * mirroring the desktop "Print Labels" / {@code M_HU_Report_QRCode} process (which runs
+	 * {@code huQRCodesService.generateForExistingHUs(selectedHuIds)}). The HU keeps its current status — no picking, no
+	 * split — so the codes stay at the current (full) TU count. Picking a subset of the TUs out afterwards then leaves
+	 * more active assignments than the current TU count: the me03 #30767 "surplus" state.
+	 */
+	private void generateQRCodesForAllTUs(@NonNull final HuId huId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> {
+			final ImmutableSet.Builder<HuId> huIds = ImmutableSet.builder();
+			collectHuAndIncludedHuIds(huId, huIds);
+			huQRCodesService.generateForExistingHUs(huIds.build());
+		});
+	}
+
+	private void collectHuAndIncludedHuIds(@NonNull final HuId huId, @NonNull final ImmutableSet.Builder<HuId> collector)
+	{
+		collector.add(huId);
+		for (final I_M_HU includedHU : handlingUnitsDAO.retrieveIncludedHUs(huId))
+		{
+			collectHuAndIncludedHuIds(HuId.ofRepoId(includedHU.getM_HU_ID()), collector);
+		}
 	}
 
 	private @NonNull HuId createCU()
