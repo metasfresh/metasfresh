@@ -427,7 +427,7 @@ Feature: invoice rules
 {
     "requests": [
         {
-            "orgCode": "DE06",
+            "orgCode": "001",
             "externalHeaderId": "olcandGuard30448",
             "externalLineId": "olcandGuard30448_0",
             "externalSystemCode": "Other",
