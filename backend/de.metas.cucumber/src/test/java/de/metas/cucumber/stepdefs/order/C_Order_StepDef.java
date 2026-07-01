@@ -160,6 +160,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Partner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsAutoInvoice;
 import static org.compiere.model.I_C_Order.COLUMNNAME_IsDropShip;
 import static org.compiere.model.I_C_Order.COLUMNNAME_IsUseHandOver_Location;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
@@ -704,6 +705,8 @@ public class C_Order_StepDef
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 *   <li>{@code Description} (optional) — expected order description text</li>
+	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
 	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 * </ul>
 	 */
@@ -871,6 +874,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
 				.ifPresent(invoiceRule -> softly.assertThat(order.getInvoiceRule()).as("InvoiceRule for Identifier=%s", identifierStr).isEqualTo(invoiceRule));
+
+		row.getAsOptionalBoolean(COLUMNNAME_IsAutoInvoice)
+				.ifPresent(isAutoInvoice -> softly.assertThat(order.isAutoInvoice()).as("IsAutoInvoice for Identifier=%s", identifierStr).isEqualTo(isAutoInvoice));
 
 		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(order.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID for Identifier=%s", identifierStr).isEqualTo(paymentTermId));
