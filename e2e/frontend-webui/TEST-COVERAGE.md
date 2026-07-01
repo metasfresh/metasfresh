@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-06-23
+**Last Updated**: 2026-06-30
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1135,6 +1135,40 @@ in both en_US and de_DE proves the full page-object flow is language-independent
 
 ---
 
+### 44. Product Purchase/Sales Gate (`product-purchase-sales-gate.spec.js`)
+**Status**: ✅ Passing (English, German)
+**Duration**: ~30 seconds per language
+
+**Features Tested**:
+- F00315: Purchase Gate (Produktfreigabe für Einkauf)
+- F00320: Sales Gate (Produktfreigabe für Verkauf)
+
+**Epic**: E0380: Masterdata Products
+
+**Workflow** (en_US **and** de_DE):
+1. Create test customer and vendor via `Backend.createMasterdata()`
+2. Create product with IsSold=N (not for sale) via `Backend.createMasterdata()`
+3. Create second product with IsSold=Y (control, selectable)
+4. Create sales order with customer, open batch entry → verify product picker HIDES IsSold=N product → control product remains selectable
+5. Complete sales order
+6. Create purchase order with vendor, open batch entry → verify product picker HIDES IsPurchased=N product → control product remains selectable
+7. Validate both workflows in both languages (language-independent selectors only)
+
+**Key Validations**:
+- SysConfig-gated product visibility in order mass-entry (Schnellerfassung)
+- IsSold=N product hidden from sales order batch entry
+- IsPurchased=N product hidden from purchase order batch entry
+- Control products (flags Y) remain selectable in both cases
+- Batch entry filter behavior is language-independent (`data-testid`, `data-cy` selectors)
+
+**Components Tested**:
+- Sales Order window (143) - Order Lines tab batch entry
+- Purchase Order window (181) - Order Lines tab batch entry
+- Product lookup widget filtering logic
+- SysConfig-gated visibility enforcement
+
+---
+
 
 ## Test Architecture
 
@@ -1209,8 +1243,8 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 59 files
-- **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
+- **Total test specs**: 60 files
+- **Total test cases**: 50+ (37 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages; product-purchase-sales-gate has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test
