@@ -1,3 +1,5 @@
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/functions/desadv_json/get_desadv_lines_no_pack_json_fn.sql
+--
 -- DESADV JSON: optionally omit no-pack lines whose delivery is not closed.
 -- Adds a SysConfig-gated filter to get_desadv_lines_no_pack_json_fn: when
 -- de.metas.edi.desadv.OmitNonClosedNoPackLines = 'Y', a no-pack line is kept only if its
