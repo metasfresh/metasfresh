@@ -117,7 +117,7 @@ public class PickingJobPickCommand_QRCodeSurplusToleranceTest
 		InterfaceWrapperHelper.refresh(aggregateTU);
 
 		// then (surplus precondition): active QR-code assignments (3) now EXCEED the current TU count (2).
-		// This is the exact "surplus" state #30767 is about.
+		// This is the exact "surplus" state under test.
 		final int tuCountAfterSplit = tuCountOf(aggregateTU);
 		final long activeAssignmentsAfterSplit = countActiveAssignments(aggregateHuId);
 		assertThat(tuCountAfterSplit)

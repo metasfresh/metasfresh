@@ -7,10 +7,10 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
 
 /**
- * me03 #30767 — mobile picking must TOLERATE an aggregate HU that carries MORE active QR-code assignments
+ * Mobile picking must TOLERATE an aggregate HU that carries MORE active QR-code assignments
  * than its current TU count (a "surplus").
  *
- * Real-world mechanism (see the issue's INVESTIGATION.md / REPRODUCE.md):
+ * Real-world mechanism:
  *  - QR codes are generated one-per-TU for an aggregate HU at its TU count AT GENERATION TIME (the desktop
  *    "Print Labels" / M_HU_Report_QRCode process runs huQRCodesService.generateForExistingHUs on the selected
  *    HU while it stays Active), and are NEVER trimmed when TUs are later split/picked out.
@@ -21,7 +21,7 @@ import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
  *    PickingJobPickCommand#toPickingJobStepPickedToHU reads the source's surplus codes via
  *    getOrCreateQRCodesByHuId and, pre-fix, hard-failed the `#codes == qtyTU` equality check with
  *    "Erwartet {0} QR-Codes, aber nur {1} erhalten".
- *  - The shipped fix (PR metasfresh#24917) relaxed the guard (PickingJobPickCommand.assertEnoughQRCodes) to
+ *  - The shipped fix relaxed the guard (PickingJobPickCommand.assertEnoughQRCodes) to
  *    error only on a DEFICIT (`< qtyTU`) and to consume only the first N codes — so a surplus is tolerated.
  *
  * This spec reproduces the surplus faithfully, entirely through the mobile UI + masterdata API:
