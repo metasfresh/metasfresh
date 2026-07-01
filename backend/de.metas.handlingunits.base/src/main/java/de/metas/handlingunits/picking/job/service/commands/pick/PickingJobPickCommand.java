@@ -141,7 +141,7 @@ public class PickingJobPickCommand
 	/** When {@code true} the picker has acknowledged the shelf-life warning; the guard is skipped. */
 	private final boolean isShelfLifeConfirmed;
 	/** When {@code true} the picking profile requires a shelf-life undercut warning before the pick can be confirmed. */
-	private final boolean warnShelfLifeUndercut;
+	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -213,6 +213,8 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
+
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
@@ -227,7 +229,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -280,7 +281,7 @@ public class PickingJobPickCommand
 
 		this.isCloseTarget = isCloseTarget;
 		this.isShelfLifeConfirmed = isShelfLifeConfirmed;
-		this.warnShelfLifeUndercut = configService.getPickingJobOptions(getLine().getCustomerId()).isWarnShelfLifeUndercut();
+		this.isWarnShelfLifeUndercut = pickingJobOptions.isWarnShelfLifeUndercut();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -1016,7 +1017,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		if (!warnShelfLifeUndercut)
+		if (!isWarnShelfLifeUndercut)
 		{
 			return;
 		}

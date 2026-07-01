@@ -541,7 +541,7 @@ public class PickingJobTestHelper
 	/**
 	 * Sets the {@code isWarnShelfLifeUndercut} flag on the picking profile and creates a workplace assigned to the given user.
 	 * The guard is now driven by the picking profile ({@link de.metas.handlingunits.picking.config.mobileui.PickingJobOptions#isWarnShelfLifeUndercut()});
-	 * the workplace itself no longer carries this flag (me03-30209 RT3).
+	 * the workplace itself no longer carries this flag.
 	 */
 	public Workplace createWorkplaceWithShelfLifeFlag(
 			final boolean warnShelfLifeUndercut,
