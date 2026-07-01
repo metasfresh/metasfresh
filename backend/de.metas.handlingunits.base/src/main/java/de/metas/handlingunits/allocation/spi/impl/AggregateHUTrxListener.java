@@ -22,6 +22,7 @@ package de.metas.handlingunits.allocation.spi.impl;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -228,9 +229,18 @@ public class AggregateHUTrxListener implements IHUTrxListener
 		}
 
 		// TODO: i think we can move this shit or something better into a model interceptor that is fired when item.qty is changed
+		final List<I_M_HU> includedHUs = handlingUnitsDAO.retrieveIncludedHUs(item);
+		if (!includedHUs.isEmpty())
 		{
 			// update the tare of our aggregate VHU (*if* its storage has such a thing)
-			final I_M_HU aggregateVHU = handlingUnitsDAO.retrieveIncludedHUs(item).get(0);
+			final I_M_HU aggregateVHU = includedHUs.get(0);
+
+			// The aggregate's TU count (item.getQty()) was just reduced above. QR-code assignments are only ever
+			// added (one per TU) and removed on HU-destroy, so the now-excess assignments would stay active and
+			// make the aggregate carry more active QR codes than TUs, breaking the mobile picking check
+			// (#QRCodes == getQtyTU()). Deactivate the surplus, keeping the current TU count.
+			huqrCodesService.deactivateSurplusAssignments(HuId.ofRepoId(aggregateVHU.getM_HU_ID()), item.getQty().intValueExact());
+
 			final IAttributeStorage aggregateVHUAttributeStorage = huContext.getHUAttributeStorageFactory().getAttributeStorage(aggregateVHU);
 
 			final IWeightable aggregateVHUWeightable = Weightables.wrap(aggregateVHUAttributeStorage);

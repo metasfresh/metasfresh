@@ -173,6 +173,41 @@ public class HUQRCodesRepository
 				});
 	}
 
+	/**
+	 * Soft-delete the SURPLUS active {@code M_HU_QRCode_Assignment} rows of the given HU: keep the oldest
+	 * {@code keepCount} active assignments (ordered ascending by {@code Created}, then
+	 * {@code M_HU_QRCode_Assignment_ID}) and set {@code IsActive='N'} on every row beyond that.
+	 * <p>
+	 * Needed because splitting/picking TUs out of an aggregate HU reduces its TU count (its
+	 * {@code M_HU_Item.Qty}) but leaves the previously-generated QR-code assignments active, so the aggregate
+	 * ends up with more active assignments than TUs. Mobile picking then fails its
+	 * {@code #QRCodes == getQtyTU()} check. Keeping the oldest ones deactivates the newer surplus.
+	 * <p>
+	 * When {@code keepCount <= 0}, all active assignments are deactivated.
+	 */
+	public void deactivateSurplusAssignments(@NonNull final HuId huId, final int keepCount)
+	{
+		final List<I_M_HU_QRCode_Assignment> activeAssignments = queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_ID, huId)
+				.orderBy(I_M_HU_QRCode_Assignment.COLUMNNAME_Created)
+				.orderBy(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_Assignment_ID)
+				.create()
+				.list();
+
+		final int keep = Math.max(keepCount, 0);
+		if (activeAssignments.size() <= keep)
+		{
+			return; // no surplus to deactivate
+		}
+
+		activeAssignments.subList(keep, activeAssignments.size())
+				.forEach(assignment -> {
+					assignment.setIsActive(false);
+					InterfaceWrapperHelper.save(assignment);
+				});
+	}
+
 	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		return getHUAssignmentByQRCode(qrCode)

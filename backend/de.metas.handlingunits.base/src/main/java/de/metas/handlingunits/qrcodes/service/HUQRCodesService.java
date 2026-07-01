@@ -313,6 +313,17 @@ public class HUQRCodesService
 		huQRCodesRepository.deactivateAssignmentsByHuId(huId);
 	}
 
+	/**
+	 * Keep the oldest {@code keepCount} active QR-code assignments of the given HU and soft-delete the rest.
+	 * Called when an aggregate HU's TU count drops (split/pick out of the aggregate) so its active
+	 * assignments stay in sync with the current TU count. See
+	 * {@link HUQRCodesRepository#deactivateSurplusAssignments(HuId, int)}.
+	 */
+	public void deactivateSurplusAssignments(@NonNull final HuId huId, final int keepCount)
+	{
+		huQRCodesRepository.deactivateSurplusAssignments(huId, keepCount);
+	}
+
 	private List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId, boolean isGenerateQRCodesIfMissing)
 	{
 		if (isGenerateQRCodesIfMissing)
