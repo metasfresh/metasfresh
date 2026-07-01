@@ -99,7 +99,7 @@ test('Close-LU: closed LU + cascade carry consignee — header-level (DELIVERY_L
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('Close-LU stamps picking consignee on the LU');
+    allure.story('Closed LU + cascade carry the picking consignee');
     allure.severity('critical');
 
     const masterdata = await createMasterdata({ aggregationType: 'delivery_location' });
@@ -168,7 +168,7 @@ test('Close-LU: closed LU + cascade carry consignee — line-level (PRODUCT aggr
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
-    allure.story('Close-LU stamps picking consignee on the LU');
+    allure.story('Closed LU + cascade carry the picking consignee');
     allure.severity('critical');
 
     const masterdata = await createMasterdata({ aggregationType: 'product' });
