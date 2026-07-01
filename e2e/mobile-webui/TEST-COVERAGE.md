@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 62 | 65 | 95% |
+| Picking | 63 | 66 | 95% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -169,8 +169,9 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
+| Aggregate LU carries more active QR codes than its current TU count (surplus) → picking tolerates the surplus and completes | `picking/picking_qrCodeSurplus.spec.js` |
 
-**5/5 — 100%**
+**6/6 — 100%**
 
 ### Product-based picking
 
