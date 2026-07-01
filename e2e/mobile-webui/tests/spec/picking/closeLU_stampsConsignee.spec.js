@@ -8,15 +8,32 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
 /**
- * me03 #30763 — at mobile picking "close LU" the just-closed LU must carry the consignee's
- * C_BPartner_ID + C_BPartner_Location_ID, so the per-BPartner M_HU_Label_Config matches and the
- * SSCC label auto-prints. The LU is materialised WITHOUT a partner during picking; the fix stamps
- * the consignee (per-LU, resolved from the picking job) at close-LU time.
+ * me03 #30763 — the per-BPartner M_HU_Label_Config lookup keys on the closed LU's own
+ * C_BPartner_ID + C_BPartner_Location_ID. So the picking consignee must be present on the closed LU
+ * (and, via the M_HU updateChildren cascade, on its TU/CU) for the correct SSCC label to auto-print
+ * and to re-print later. This spec proves that end state end-to-end for both HU-shape branches.
  *
  * The pick-target scope depends on the picking-profile aggregation type (module rule
  * de.metas.handlingunits.base/.../job/service/CLAUDE.md): PRODUCT is line-level, SALES_ORDER /
  * DELIVERY_LOCATION are header-level. Each HU-shape branch needs its own E2E coverage, so both
  * shapes are exercised below against the running stack (in-memory JUnit does not prove HU flush).
+ *
+ * On the timing of the stamp in THIS mobile picking flow: the pick-target LU is a new-LU target
+ * built from a packing instruction (setTargetLU offers only PI-based targets — PickingJobService
+ * getLUAvailableTargets), so it is materialised on the first pick by PackToHUsProducer with
+ * packForShipping=true (the picking flow never sets packForShipping=false — that is only the
+ * distribution flow, DistributionJobPickFromCommand). packForShipping=true makes
+ * setupPackToDestinationCommonOptions stamp the producer's ship-to BPartner+location, so
+ * HUBuilder.createHU stamps the freshly-created LU with the line's delivery location already at PICK
+ * time. Therefore a genuinely partner-less LU *before close* is NOT reproducible through the mobile
+ * picking UI in this harness (the customer's real partner-less LUs originate from a different
+ * materialisation path — e.g. loading into a pre-existing partner-less LU — that the mobile UI does
+ * not expose as a pick target, and that the frontend-testing masterdata API cannot provision). The
+ * close-time PickingJobService.stampConsigneeOnClosedLUs is guarded to only-if-unset, so here it is a
+ * safety net that no-ops; what the customer actually observes (and what this test guards) is that the
+ * closed LU + its children carry the correct consignee so the label config matches. We therefore
+ * assert that true end state, at pick and after close, rather than a partner-less precondition that
+ * this flow cannot produce.
  */
 
 const createMasterdata = async ({ aggregationType }) => {
@@ -78,7 +95,7 @@ const createMasterdata = async ({ aggregationType }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Close-LU stamps consignee — header-level (DELIVERY_LOCATION aggregation)', async ({ page }) => {
+test('Close-LU: closed LU + cascade carry consignee — header-level (DELIVERY_LOCATION aggregation)', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -102,30 +119,35 @@ test('Close-LU stamps consignee — header-level (DELIVERY_LOCATION aggregation)
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 TU', qtyPicked: '5 TU' });
     });
 
-    // the LU carries NO partner while still open (materialised without one)
+    // While still open, the picked LU already carries the consignee (stamped at pick time; see header
+    // comment) — the label-config key is present on the LU, its TU and its CU, end-to-end.
     await Backend.expect({
-        title: 'before close-LU: the LU has no bpartner yet',
+        title: 'while open: the picked LU carries the consignee',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'openLU' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'openLU', tu: 'openTU', vhu: 'openVHU' }] }
                 }
             }
         },
         hus: {
-            openLU: { huStatus: 'S', bpartner: '-' },
+            openLU: { huStatus: 'S', bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            openTU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            openVHU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
         }
     });
 
     await PickingJobScreen.closeTargetLU();
 
-    // after close-LU the fix stamps the consignee (bpartner + delivery location) onto the closed LU
+    // After close-LU the closed LU (and its cascaded TU/CU) carry the consignee (bpartner + delivery
+    // location), so the per-BPartner M_HU_Label_Config matches for the close-time auto-print and for a
+    // later re-print. This is the customer-facing guarantee of me03 #30763 (AC1/AC2).
     await Backend.expect({
-        title: 'after close-LU: the closed LU carries the consignee',
+        title: 'after close-LU: the closed LU + cascade carry the consignee',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'closedLU' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'closedLU', tu: 'closedTU', vhu: 'closedVHU' }] }
                 }
             }
         },
@@ -135,12 +157,14 @@ test('Close-LU stamps consignee — header-level (DELIVERY_LOCATION aggregation)
                 bpartner: 'customer1',
                 bpartnerLocation: 'customer1_location1',
             },
+            closedTU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            closedVHU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Close-LU stamps consignee — line-level (PRODUCT aggregation)', async ({ page }) => {
+test('Close-LU: closed LU + cascade carry consignee — line-level (PRODUCT aggregation)', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -170,28 +194,35 @@ test('Close-LU stamps consignee — line-level (PRODUCT aggregation)', async ({ 
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 TU', qtyPicked: '5 TU' });
     });
 
+    // While still open, the picked LU already carries the consignee (stamped at pick time; see header
+    // comment) — the label-config key is present on the LU, its TU and its CU, end-to-end.
     await Backend.expect({
-        title: 'before close-LU: the LU has no bpartner yet',
+        title: 'while open: the picked LU carries the consignee',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'openLU' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'openLU', tu: 'openTU', vhu: 'openVHU' }] }
                 }
             }
         },
         hus: {
-            openLU: { huStatus: 'S', bpartner: '-' },
+            openLU: { huStatus: 'S', bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            openTU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            openVHU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
         }
     });
 
     await PickingJobScreen.closeTargetLU();
 
+    // After close-LU the closed LU (and its cascaded TU/CU) carry the consignee (bpartner + delivery
+    // location), so the per-BPartner M_HU_Label_Config matches for the close-time auto-print and for a
+    // later re-print. This is the customer-facing guarantee of me03 #30763 (AC1/AC2).
     await Backend.expect({
-        title: 'after close-LU: the closed LU carries the consignee',
+        title: 'after close-LU: the closed LU + cascade carry the consignee',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
-                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'closedLU' }] }
+                    P1: { qtyPicked: [{ qtyPicked: "20 PCE", qtyTUs: 5, qtyLUs: 1, lu: 'closedLU', tu: 'closedTU', vhu: 'closedVHU' }] }
                 }
             }
         },
@@ -201,6 +232,8 @@ test('Close-LU stamps consignee — line-level (PRODUCT aggregation)', async ({ 
                 bpartner: 'customer1',
                 bpartnerLocation: 'customer1_location1',
             },
+            closedTU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
+            closedVHU: { bpartner: 'customer1', bpartnerLocation: 'customer1_location1' },
         }
     });
 });
