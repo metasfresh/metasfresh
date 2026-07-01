@@ -1,5 +1,6 @@
 -- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_OrderBoard_v.sql
 -- Run mode: SWING_CLIENT
+-- UI: none — M_Picking_OrderBoard_v backs the mobile Picking Order Board REST API only; no AD_Window is required
 
 -- IDs allocated from idserver.metas.de on 2026-06-28:
 --   AD_Table      542622  (M_Picking_OrderBoard_v)
@@ -108,7 +109,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Order Board', PrintName='Order Board',Updated=TO_TIMESTAMP('2026-06-28 11:01:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585064 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:01:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585064 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:01:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585064 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -131,7 +132,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product Number', PrintName='Product Number',Updated=TO_TIMESTAMP('2026-06-28 11:02:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585057 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585057 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585057 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -154,7 +155,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product Name', PrintName='Product Name',Updated=TO_TIMESTAMP('2026-06-28 11:03:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585058 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585058 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:03:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585058 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -177,7 +178,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Order Board Status', PrintName='Order Board Status',Updated=TO_TIMESTAMP('2026-06-28 11:04:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585059 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:04:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585059 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:04:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585059 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -200,7 +201,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Country Name', PrintName='Country Name',Updated=TO_TIMESTAMP('2026-06-28 11:05:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585060 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:05:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585060 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:05:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585060 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -223,7 +224,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Total Qty', PrintName='Total Qty',Updated=TO_TIMESTAMP('2026-06-28 11:06:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585061 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585061 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:06:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585061 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
@@ -246,7 +247,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Order Lines', PrintName='Order Lines',Updated=TO_TIMESTAMP('2026-06-28 11:07:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585062 AND AD_Language='en_US'
 ;
 
-UPDATE AD_Element_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-06-28 11:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585062 AND AD_Language IN ('de_DE','de_CH')
+UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:07:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585062 AND AD_Language IN ('de_DE','de_CH')
 ;
 
 UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
