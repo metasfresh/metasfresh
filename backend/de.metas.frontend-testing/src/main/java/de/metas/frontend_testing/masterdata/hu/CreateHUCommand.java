@@ -132,7 +132,7 @@ public class CreateHUCommand
 	 * mirroring the desktop "Print Labels" / {@code M_HU_Report_QRCode} process (which runs
 	 * {@code huQRCodesService.generateForExistingHUs(selectedHuIds)}). The HU keeps its current status — no picking, no
 	 * split — so the codes stay at the current (full) TU count. Combined with {@code splitOutTUsCountAfterQRCodes}
-	 * (a non-picking repack that lowers the TU count without trimming these codes), this yields the me03 #30767
+	 * (a non-picking repack that lowers the TU count without trimming these codes), this yields the QR-code
 	 * "surplus" state: more active assignments than the current TU count.
 	 */
 	private void generateQRCodesForAllTUs(@NonNull final HuId huId)
@@ -155,7 +155,7 @@ public class CreateHUCommand
 
 	/**
 	 * Split {@code count} whole TUs out of the aggregate reachable from the given HU — a NON-picking repack that
-	 * lowers the aggregate's TU count WITHOUT trimming its QR-code assignments (the me03 #30767 surplus mechanism).
+	 * lowers the aggregate's TU count WITHOUT trimming its QR-code assignments (the QR-code surplus mechanism).
 	 * Routes through {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} (the same qty-decrease-without-QR-cleanup
 	 * path a real repack uses), so the source aggregate is left Active and re-pickable with more active
 	 * {@code M_HU_QRCode_Assignment} rows than its now-reduced TU count.

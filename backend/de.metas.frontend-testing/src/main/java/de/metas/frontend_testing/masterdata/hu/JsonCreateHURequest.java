@@ -33,7 +33,7 @@ public class JsonCreateHURequest
 	/**
 	 * When {@code true}, generate one active {@code M_HU_QRCode_Assignment} per TU for the created HU and every HU
 	 * included under it (the full-count QR-code generation that the desktop "Print Labels" / {@code M_HU_Report_QRCode}
-	 * process does for an aggregate LU while it stays Active). Used to set up the me03 #30767 "surplus" state:
+	 * process does for an aggregate LU while it stays Active). Used to set up the QR-code "surplus" state:
 	 * generate full-count codes on an active aggregate, then pick out a subset of its TUs so the code count exceeds the
 	 * current TU count.
 	 */
@@ -42,7 +42,7 @@ public class JsonCreateHURequest
 
 	/**
 	 * After the full-count QR codes are generated (see {@link #generateHUQRCodesForAllTUs}), split this many whole TUs
-	 * OUT of the aggregate — a NON-picking repack, mirroring the real-world path that produces the me03 #30767 surplus:
+	 * OUT of the aggregate — a NON-picking repack, mirroring the real-world path that produces the QR-code surplus:
 	 * QR codes are generated at the aggregate's high-water TU count, then a repack lowers the TU count WITHOUT trimming
 	 * the QR-code assignments. The result is an Active, still-pickable aggregate carrying MORE active QR codes than its
 	 * current TU count (the surplus). Only meaningful together with {@code generateHUQRCodesForAllTUs=true}.
