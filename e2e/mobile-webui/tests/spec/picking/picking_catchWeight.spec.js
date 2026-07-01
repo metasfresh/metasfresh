@@ -196,18 +196,22 @@ test('Leich+Mehl', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            // Observed ground truth (running soft_panda_hotfix backend): this multi-scan catch-weight
-            // pick (5 CUs cu2..cu5 aggregated) leaves the whole tree — LU, TU and CUs — partner-less
-            // ('-') while the job is open; the consignee is stamped only on complete/ship (see the 'E'
-            // block below, all 'BP1'). Differs from the single manual-qty 'Manual' test above, whose
-            // target LU is already 'BP1' at the intermediate state. Values are what each flow was
-            // observed to produce, not assumed.
-            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
-            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
-            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
-            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
-            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
-            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            // Consignee is intentionally NOT asserted at this intermediate 'S' state for this flow.
+            // Unlike the top-level-CU/TU picks (GS1/EAN13/Custom QR/Happy) — which pick pack-for-shipping
+            // and carry 'BP1' stably at 'S' — this flow sets an explicit LU+TU pick target
+            // (setTargetLU/setTargetTU above). The consignee stamp on that materialised LU/TU tree is
+            // applied asynchronously and its flush is NOT gated by the pickings/shipment-schedule fence, so
+            // the consignee value at this point-in-time RACES: it reads 'BP1' on a slower backend (CI) but
+            // '-' on a faster local read (verified flipping across environments with --repeat-each=5). To
+            // stay deterministic we assert only huStatus/storages/attributes here and defer the consignee
+            // assertion to the 'E' block below (all 'BP1', stamped by close-LU) plus the dedicated
+            // closeLU_stampsConsignee.spec.js.
+            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
         }
     });
 
@@ -308,8 +312,10 @@ test('GS1', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '7.52 kg' });
 
-    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
-    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // While the job is still open, the picked TU already carries the consignee: the mobile pick
+    // materialises the pick-target with packForShipping=true, which stamps the ship-to BPartner +
+    // location at PICK time (PackToHUsProducer). So the consignee is present from 'S' through 'E'
+    // (see the 'E' block below, 'BP1'). The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
@@ -325,7 +331,7 @@ test('GS1', async ({ page }) => {
             }
         },
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -379,8 +385,10 @@ test('EAN13 with prefix 28', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '261 g' });
 
-    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
-    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // While the job is still open, the picked TU already carries the consignee: the mobile pick
+    // materialises the pick-target with packForShipping=true, which stamps the ship-to BPartner +
+    // location at PICK time (PackToHUsProducer). So the consignee is present from 'S' through 'E'
+    // (see the 'E' block below, 'BP1'). The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
@@ -396,7 +404,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
             }
         },
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -481,8 +489,10 @@ test('EAN13 with prefix 29', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '574 g' });
 
-    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
-    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // While the job is still open, the picked TU already carries the consignee: the mobile pick
+    // materialises the pick-target with packForShipping=true, which stamps the ship-to BPartner +
+    // location at PICK time (PackToHUsProducer). So the consignee is present from 'S' through 'E'
+    // (see the 'E' block below, 'BP1'). The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
@@ -498,7 +508,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
             }
         },
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -600,8 +610,10 @@ test('Custom QR code format', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '9.999 kg' });
 
-    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
-    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // While the job is still open, the picked TU already carries the consignee: the mobile pick
+    // materialises the pick-target with packForShipping=true, which stamps the ship-to BPartner +
+    // location at PICK time (PackToHUsProducer). So the consignee is present from 'S' through 'E'
+    // (see the 'E' block below, 'BP1'). The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
@@ -617,7 +629,7 @@ test('Custom QR code format', async ({ page }) => {
             }
         },
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
