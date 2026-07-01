@@ -410,14 +410,9 @@ class OLCandOrderFactory
 	/**
 	 * Sets the header {@code C_Order.DatePromised} to the earliest of the lines' own delivery dates.
 	 * <p>
-	 * Each line already carries its own {@code DatePromised} from creation (see {@link #addOLCand0(OLCand)}). The
-	 * {@code MOrder.afterSave()} header-&gt;line broadcast does NOT overwrite those per-line dates: the lines are non-null
-	 * and this is not a UI action, so the {@code isUIAction || lineDateNotSet} guard in {@code MOrder.afterSave()} skips
-	 * them. So the header can be set to the earliest date without clobbering the per-line dates - and no stale header
-	 * value is ever stamped onto a line (which previously left a stale cached line instance for a later re-save - e.g. the
-	 * material-dispo ATP reset on completion - to write back, silently reverting the per-line date).
-	 * <p>
-	 * When no line carried a {@code DatePromised}, the header keeps its fallback and nothing is changed here.
+	 * Each line already carries its own {@code DatePromised} from creation (see {@link #addOLCand0(OLCand)}); this method
+	 * only sets the header, leaving the per-line dates intact. When no line carried a {@code DatePromised}, the header
+	 * keeps its fallback and nothing is changed here.
 	 */
 	private void applyEarliestHeaderDatePromised(@NonNull final I_C_Order order)
 	{
@@ -564,11 +559,9 @@ class OLCandOrderFactory
 			isNewOrderLine = true;
 
 			// Carry this candidate's own delivery date onto the new line from creation, so the line owns its
-			// per-line DatePromised. MOrder.afterSave()'s header->line broadcast will not overwrite it (the line
-			// is non-null and processing is not a UI action -> the guard there skips it), and it is never
-			// transiently replaced by the header's earliest value. When several candidates aggregate into one
-			// line, the line keeps the creating candidate's date. The header is set to the earliest such date in
-			// completeOrDelete() via applyEarliestHeaderDatePromised().
+			// per-line DatePromised. When several candidates aggregate into one line, the line keeps the creating
+			// candidate's date. The header is set to the earliest such date in completeOrDelete() via
+			// applyEarliestHeaderDatePromised().
 			final Timestamp lineDatePromised = TimeUtil.asTimestamp(candidate.getDatePromised());
 			if (lineDatePromised != null)
 			{

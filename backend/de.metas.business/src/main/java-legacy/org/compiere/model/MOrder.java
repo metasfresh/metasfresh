@@ -1075,8 +1075,8 @@ public class MOrder extends X_C_Order implements IDocument
 				}
 				// Propagate the header DatePromised to the line only on a UI action (a user editing the header
 				// expects all lines to follow) or when the line has no own date yet. A line that already carries
-				// its own DatePromised - e.g. a per-line delivery date set programmatically by OLCandOrderFactory,
-				// or a cloned line - keeps it, so the header value cannot clobber an intentional per-line date.
+				// its own DatePromised - e.g. a per-line delivery date set programmatically, or a cloned line -
+				// keeps it, so the header value cannot clobber an intentional per-line date.
 				if (is_ValueChanged(MOrder.COLUMNNAME_DatePromised)
 						&& (InterfaceWrapperHelper.isUIAction(this) || line.getDatePromised() == null))
 				{
