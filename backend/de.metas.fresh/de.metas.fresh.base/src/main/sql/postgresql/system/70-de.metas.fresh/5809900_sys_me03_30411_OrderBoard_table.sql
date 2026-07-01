@@ -5,7 +5,7 @@
 -- IDs allocated from idserver.metas.de on 2026-06-28:
 --   AD_Table      542622  (M_Picking_OrderBoard_v)
 --   AD_Element    585064  (M_Picking_OrderBoard_v_ID - Auftrags-Board key)
---   AD_Element    585057  (ProductValue - Produktnummer)
+--   AD_Element    1675    (ProductValue - reuses existing standard element, no new INSERT)
 --   AD_Element    585058  (ProductName - Produktname)
 --   AD_Element    585059  (OrderBoardStatus - Auftrags-Board-Status)
 --   AD_Element    585060  (CountryName - Landname)
@@ -120,29 +120,6 @@ UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.U
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585064,'de_DE')
 ;
 /* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585064,'de_CH')
-;
-
--- Element: ProductValue
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,585057/*From ID Server*/,0,'ProductValue',TO_TIMESTAMP('2026-06-28 11:02:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','Produktnummer','Produktnummer',TO_TIMESTAMP('2026-06-28 11:02:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
-;
-
-INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585057 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
-;
-
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product Number', PrintName='Product Number',Updated=TO_TIMESTAMP('2026-06-28 11:02:15.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585057 AND AD_Language='en_US'
-;
-
-UPDATE AD_Element_Trl SET IsTranslated='N', Updated=TO_TIMESTAMP('2026-06-28 11:02:30.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585057 AND AD_Language IN ('de_DE','de_CH')
-;
-
-UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
-;
-
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585057,'en_US')
-;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585057,'de_DE')
-;
-/* DDL */ select update_TRL_Tables_On_AD_Element_TRL_Update(585057,'de_CH')
 ;
 
 -- Element: ProductName
@@ -281,13 +258,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- Column: M_Picking_OrderBoard_v.ProductValue
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,592898/*From ID Server*/,585057/*From ID Server*/,0,10,542622/*From ID Server*/,'ProductValue',TO_TIMESTAMP('2026-06-28 11:10:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',40,'Y','Y','N','N','N','N','N','N','N','N','N','Produktnummer','NP',TO_TIMESTAMP('2026-06-28 11:10:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,592898/*From ID Server*/,1675/*existing standard element*/,0,10,542622/*From ID Server*/,'ProductValue',TO_TIMESTAMP('2026-06-28 11:10:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',40,'Y','Y','N','N','N','N','N','N','N','N','N','Produktnummer','NP',TO_TIMESTAMP('2026-06-28 11:10:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592898 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
-/* DDL */ select update_Column_Translation_From_AD_Element(585057)
+/* DDL */ select update_Column_Translation_From_AD_Element(1675)
 ;
 
 -- Column: M_Picking_OrderBoard_v.ProductName
