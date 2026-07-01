@@ -61,6 +61,13 @@ async function openSingleRecord(page, windowId) {
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
   const rows = page.locator('.table-flex-wrapper tbody tr');
+  // The list wrapper paints before its data rows, so counting immediately races
+  // to 0 and would wrongly take the "empty list -> Alt+N create" path. Wait for
+  // the first row to actually render (bounded); a genuinely empty list stays at 0.
+  await rows
+    .first()
+    .waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT })
+    .catch(() => {});
   const rowCount = await rows.count();
 
   if (rowCount === 0) {

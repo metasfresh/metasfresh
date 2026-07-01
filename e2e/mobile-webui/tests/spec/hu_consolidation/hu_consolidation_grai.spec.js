@@ -169,7 +169,12 @@ const pickGraiTUsToPickingSlot = async ({ masterdata }) => await test.step('Pick
         },
     });
 
-    // --- Job 2: product P2 (qtyToDeliver=5; the completed P1 launcher may still linger) ---
+    // --- Job 2: product P2 (qtyToDeliver=5) ---
+    // Job 1's completed launcher lingers briefly on the list while the websocket-driven launchers
+    // re-fetch/re-render; tapping in that window races the re-render and the tap can be dropped
+    // (the picking screen never opens). Wait for the list to settle to exactly the P2 launcher
+    // (P1 gone) before starting Job 2.
+    await PickingJobsListScreen.expectJobButtons([{ qtyToDeliver: 5 }]);
     const { pickingJobId: pickingJobId2 } = await PickingJobsListScreen.startJob({ index: 1, qtyToDeliver: 5 });
     await pickOneGraiLine({
         slotQrCode: masterdata.pickingSlots.slot1.qrCode,
