@@ -210,8 +210,19 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 WORKSPACE_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 
-# Setup workspace-specific Maven local repository
-LOCAL_REPO="$WORKSPACE_ROOT/.m2-local"
+# Setup workspace-specific Maven local repository.
+# Resolve the MAIN worktree root so builds run from a git worktree share the one
+# populated .m2-local in the main checkout, instead of the worktree's own empty
+# .m2-local (which would force slow full re-downloads on every worktree build).
+GIT_COMMON_DIR="$(git -C "$WORKSPACE_ROOT" rev-parse --git-common-dir 2>/dev/null)"
+if [ -n "$GIT_COMMON_DIR" ]; then
+    # git-common-dir may be relative to WORKSPACE_ROOT; make it absolute
+    case "$GIT_COMMON_DIR" in /*) ;; *) GIT_COMMON_DIR="$WORKSPACE_ROOT/$GIT_COMMON_DIR" ;; esac
+    MAIN_ROOT="$(cd "$GIT_COMMON_DIR/.." && pwd)"     # common dir is <main-root>/.git
+else
+    MAIN_ROOT="$WORKSPACE_ROOT"                        # not a git repo -> keep old behaviour
+fi
+LOCAL_REPO="$MAIN_ROOT/.m2-local"
 mkdir -p "$LOCAL_REPO"
 
 # Maven local repo parameter
