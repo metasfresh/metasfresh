@@ -344,7 +344,7 @@ test.describe('Picking Job Completion', () => {
             // The partially-picked LU still carries the consignee stamped at pick time (BP1 has no
             // explicit location → single default ship-to via the _singleBPLocationI fallback).
             hus: {
-                lu1: { huStatus: 'S', bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                lu1: { huStatus: 'S', storages: { P1: '8 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
