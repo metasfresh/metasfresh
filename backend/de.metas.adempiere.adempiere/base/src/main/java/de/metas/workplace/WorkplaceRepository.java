@@ -112,7 +112,6 @@ public class WorkplaceRepository
 		record.setPickFrom_Locator_ID(LocatorId.toRepoId(request.getPickFromLocatorId()));
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
-		// IsWarnShelfLifeUndercut lives on MobileUI_UserProfile_Picking, not on the workplace
 
 		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
@@ -302,7 +301,6 @@ public class WorkplaceRepository
 				.priorityRule(PriorityRule.ofNullableCode(record.getPriorityRule()))
 				.orderPickingType(OrderPickingType.ofNullableCode(record.getOrderPickingType()))
 				.maxPickingJobs(record.getMaxPickingJobs())
-				// IsWarnShelfLifeUndercut lives on MobileUI_UserProfile_Picking, not on the workplace
 				// Add child collections
 				.productIds(ImmutableSet.copyOf(productsByWorkplace.get(workplaceId)))
 				.productCategoryIds(ImmutableSet.copyOf(categoriesByWorkplace.get(workplaceId)))
