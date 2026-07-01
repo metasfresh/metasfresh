@@ -262,20 +262,22 @@ class OrderBLTest
 		}
 
 		/**
-		 * Purchase order: bp with null PO_InvoiceRule, BP group has InvoiceRule=AfterDelivery.
-		 * After setBPartner the order must carry the group's InvoiceRule.
+		 * Purchase order: bp with null PO_InvoiceRule.
+		 * BPartnerEffectiveBL.poInvoiceRule resolution has no group-chain (PO path reads only
+		 * I_C_BPartner.PO_InvoiceRule, then falls back to the sysconfig default = AfterDelivery).
+		 * The BP group's SO-side InvoiceRule field is intentionally irrelevant on the PO path.
 		 * IsAutoInvoice must be false on the PO path (BPartnerEffective.isAutoInvoice(PURCHASE) always returns false).
 		 */
 		@Test
-		void purchaseOrder_bpHasNullPoInvoiceRule_getsDefaultFromBpGroup()
+		void purchaseOrder_bpHasNullPoInvoiceRule_getsSystemDefault()
 		{
-			// setup BP group with InvoiceRule=AfterDelivery
+			// BP group SO-side InvoiceRule=AfterDelivery — must have NO effect on the PO path
 			final I_C_BP_Group bpGroup = InterfaceWrapperHelper.newInstance(I_C_BP_Group.class);
 			bpGroup.setInvoiceRule(InvoiceRule.AfterDelivery.getCode());
-			bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true)); // group has Y, but PO path should ignore it
+			bpGroup.setIsAutoInvoice(StringUtils.ofBoolean(true)); // group has Y, but PO path must ignore it
 			saveRecord(bpGroup);
 
-			// bp has no own InvoiceRule
+			// bp has no own PO_InvoiceRule
 			final I_C_BPartner bp = InterfaceWrapperHelper.newInstance(I_C_BPartner.class);
 			bp.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 			saveRecord(bp);
@@ -286,7 +288,7 @@ class OrderBLTest
 			orderBL.setBPartner(order, bp);
 
 			assertThat(order.getInvoiceRule())
-					.as("purchase order InvoiceRule must be AfterDelivery (from BP group)")
+					.as("purchase order InvoiceRule must be AfterDelivery (sysconfig default, not from BP group SO field)")
 					.isEqualTo(InvoiceRule.AfterDelivery.getCode());
 			assertThat(order.isAutoInvoice())
 					.as("purchase order IsAutoInvoice must be false (PO path always false)")
