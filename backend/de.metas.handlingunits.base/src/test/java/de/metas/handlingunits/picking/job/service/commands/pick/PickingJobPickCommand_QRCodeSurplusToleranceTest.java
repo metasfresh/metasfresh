@@ -49,52 +49,17 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Proves the me03 #30767 fix: mobile picking TOLERATES an aggregate HU that carries MORE active QR-code
- * assignments than its current TU count (a "surplus").
+ * Proves the mobile-picking QR-code surplus tolerance in the shared guard
+ * {@link PickingJobPickCommand#assertEnoughQRCodes(java.util.List, int)} (changed from {@code size() != required}
+ * to {@code size() < required}): a pick must tolerate an aggregate that carries MORE active QR-code assignments
+ * than its current TU count and consume only the first N. The test builds that surplus faithfully (generate codes
+ * at the TU count, split a TU out so codes outnumber TUs) and calls the real guard — see the inline steps below.
  * <p>
- * The fix lives in {@link PickingJobPickCommand#assertEnoughQRCodes(java.util.List, int)}, the guard shared by
- * both {@code toPickingJobStepPickedToHU} overloads: it changed from {@code huQRCodes.size() != requiredCount}
- * to {@code huQRCodes.size() < requiredCount} — i.e. error only on a <b>deficit</b>, tolerate a <b>surplus</b>,
- * and consume only the first {@code requiredCount} codes.
- *
- * <h3>Faithful surplus setup (the real mechanism — not a fabricated state)</h3>
- * <ol>
- *   <li>Build an aggregate HU representing {@code N=3} TUs (24 CU / 8 CU-per-TU) via
- *       {@code HUTransformTestsBase.getData().mkAggregateHUWithTotalQtyCUandCustomQtyCUsPerTU(...)}.</li>
- *   <li>Generate QR codes at the initial TU count via {@link HUQRCodesService#generateForExistingHU(HuId)}
- *       — one active {@code M_HU_QRCode_Assignment} per TU (N=3).</li>
- *   <li>Split one TU out via {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} — the aggregate's TU count
- *       drops to {@code N-1=2}, while the QR-code assignments stay at {@code N=3}. That is the SURPLUS
- *       (QR codes are generated one-per-TU and never trimmed on split/pick-out).</li>
- * </ol>
- *
- * <h3>What this test asserts</h3>
- * <ol>
- *   <li><b>The surplus precondition holds</b> — active {@code M_HU_QRCode_Assignment} count for the aggregate
- *       ({@code 3}) is strictly greater than {@link IHandlingUnitsBL#getTUsCount(I_M_HU)} ({@code 2}).</li>
- *   <li><b>The pick tolerates the surplus</b> — it calls the <b>real production guard</b>
- *       {@link PickingJobPickCommand#assertEnoughQRCodes(java.util.List, int)} with the surplus data read via
- *       the same collaborator the pick uses ({@link HUQRCodesService#getOrCreateQRCodesByHuId(HuId)}, which for a
- *       surplus aggregate returns all {@code N=3} active codes without trimming) and asserts it does NOT throw
- *       {@code INVALID_NUMBER_QR_CODES_ERROR_MSG}. Reverting the operator inside {@code assertEnoughQRCodes}
- *       (back to {@code !=}) makes this test RED — it exercises production code, not a hand-copied predicate.</li>
- * </ol>
- *
- * <h3>RED / GREEN</h3>
- * With the pre-fix operator ({@code huQRCodes.size() != requiredCount}) the surplus (3 != 2) makes
- * {@code assertEnoughQRCodes} throw {@code INVALID_NUMBER_QR_CODES_ERROR_MSG} ("Erwartet {0} QR-Codes, aber nur
- * {1} erhalten"); with the fixed {@code <} it does not. The assertion below calls that exact method, so it flips
- * red/green with the operator.
- *
- * <h3>Scope (why the full {@code processStepEvent} pick is covered by Playwright, not here)</h3>
- * The qtyTU&gt;1 branch of {@code PickingJobPickCommand.toPickingJobStepPickedToHU} that carries this guard is
- * NOT reachable through {@code PickingJobService.processStepEvent} in the in-memory harness: an aggregate HU is
- * virtual ({@code IHandlingUnitsBL.isVirtual} is true for the aggregate's virtual PI version), so
- * {@code PickingJobPickCommand.splitOutPickToHUs} routes a pick-from-aggregate to {@code pickCUsAndPackTo} (the
- * VHU branch) rather than {@code pickWholeTUs}. This test therefore drives the <b>exact production guard against
- * the real surplus data and the real {@link HUQRCodesService#getOrCreateQRCodesByHuId(HuId)} collaborator</b>;
- * the full browser-driven pick of a surplus aggregate on the running stack is covered by the #30767 Playwright
- * spec ({@code e2e/mobile-webui/tests/spec/picking/picking_qrCodeSurplus.spec.js}).
+ * It drives the guard directly rather than through {@code PickingJobService.processStepEvent} because the
+ * qtyTU&gt;1 branch that carries the guard is not reachable in the in-memory harness: an aggregate HU is virtual,
+ * so {@code splitOutPickToHUs} routes a pick-from-aggregate to the VHU branch, not {@code pickWholeTUs}. The full
+ * browser-driven pick of a surplus aggregate is covered by the Playwright spec
+ * {@code e2e/mobile-webui/tests/spec/picking/picking_qrCodeSurplus.spec.js}.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 public class PickingJobPickCommand_QRCodeSurplusToleranceTest

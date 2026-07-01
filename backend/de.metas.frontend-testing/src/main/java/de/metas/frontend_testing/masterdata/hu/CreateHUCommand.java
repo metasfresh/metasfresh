@@ -154,11 +154,9 @@ public class CreateHUCommand
 	}
 
 	/**
-	 * Split {@code count} whole TUs out of the aggregate reachable from the given HU — a NON-picking repack that
-	 * lowers the aggregate's TU count WITHOUT trimming its QR-code assignments (the QR-code surplus mechanism).
-	 * Routes through {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} (the same qty-decrease-without-QR-cleanup
-	 * path a real repack uses), so the source aggregate is left Active and re-pickable with more active
-	 * {@code M_HU_QRCode_Assignment} rows than its now-reduced TU count.
+	 * Split {@code count} whole TUs out of the aggregate reachable from the given HU via
+	 * {@link HUTransformService#tuToNewTUs(I_M_HU, QtyTU)} — the non-picking-repack half of the surplus setup (see
+	 * {@link #generateQRCodesForAllTUs}): it lowers the TU count without trimming the QR-code assignments.
 	 */
 	private void splitOutTUsLeavingQRCodesBehind(@NonNull final HuId huId, final int count)
 	{

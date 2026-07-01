@@ -907,8 +907,7 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		// An aggregate can hold more active QR codes than its current TU count (codes are generated one-per-TU
-		// and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus; error only on a deficit.
+		// Consumes only the first qtyTU codes; assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, tu.getQtyTU().toInt());
 
 		final List<Quantity> qtyPickedPerTU = qtyPicked.spreadEqually(tu.getQtyTU().toInt());
@@ -939,8 +938,7 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
-		// so a surplus is fine; error only when there are zero codes.
+		// Consumes only the first code (get(0) below); assertEnoughQRCodes tolerates a surplus (rationale in its Javadoc).
 		assertEnoughQRCodes(huQRCodes, 1);
 		final HUQRCode huQRCode = huQRCodes.get(0);
 
