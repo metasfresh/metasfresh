@@ -1,15 +1,11 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import de.metas.util.Services;
@@ -44,9 +40,7 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
 public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 {
 	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
-	private final PickingJobHUService pickingJobHUService = SpringContextHolder.instance.getBean(PickingJobHUService.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -86,6 +80,8 @@ public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 
 	protected void printPickingLabel(@NonNull final HuId huId)
 	{
+		// AC8 (me03 #30763): stamp the consignee (only-if-unset) so a partner-less picking HU matches the correct
+		// per-BPartner M_HU_Label_Config instead of throwing here (failOnMissingLabelConfig=true).
 		stampConsigneeIfNotSet(huId);
 
 		huLabelService.print(HULabelPrintRequest.builder()
@@ -94,24 +90,5 @@ public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 				.onlyIfAutoPrint(false)
 				.failOnMissingLabelConfig(true)
 				.build());
-	}
-
-	/**
-	 * Desktop-picking parity with the mobile close-LU fix (me03 #30763, AC8): a picking HU materialised without a
-	 * {@code C_BPartner_ID} would miss the per-BPartner {@code M_HU_Label_Config} and — because this process prints
-	 * with {@code failOnMissingLabelConfig=true} — throw instead of printing the consignee's label. Resolve the
-	 * consignee from the current shipment schedule and stamp it (only-if-unset) so the unchanged label-matching path
-	 * selects the correct per-BPartner config. Reuses the same guarded stamp method as the mobile fix.
-	 */
-	private void stampConsigneeIfNotSet(@NonNull final HuId huId)
-	{
-		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
-		final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
-		if (bpLocationId == null)
-		{
-			return;
-		}
-
-		pickingJobHUService.setBPartnerAndLocationIfNotSet(huId, bpLocationId);
 	}
 }
