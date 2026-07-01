@@ -191,12 +191,12 @@ test('Leich+Mehl', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
-            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
-            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
-            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
-            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
-            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
+            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 
@@ -297,10 +297,10 @@ test('GS1', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '7.52 kg' });
 
-    // while open, the picked TU already carries the consignee (stamped at pick time)
+    // while open, the picked TU is partner-less before close (consignee stamped at close)
     await Backend.expect({
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 
@@ -354,10 +354,10 @@ test('EAN13 with prefix 28', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '261 g' });
 
-    // while open, the picked TU already carries the consignee (stamped at pick time)
+    // while open, the picked TU is partner-less before close (consignee stamped at close)
     await Backend.expect({
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 
@@ -442,10 +442,10 @@ test('EAN13 with prefix 29', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '574 g' });
 
-    // while open, the picked TU already carries the consignee (stamped at pick time)
+    // while open, the picked TU is partner-less before close (consignee stamped at close)
     await Backend.expect({
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 
@@ -547,10 +547,10 @@ test('Custom QR code format', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '9.999 kg' });
 
-    // while open, the picked TU already carries the consignee (stamped at pick time)
+    // while open, the picked TU is partner-less before close (consignee stamped at close)
     await Backend.expect({
         hus: {
-            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 

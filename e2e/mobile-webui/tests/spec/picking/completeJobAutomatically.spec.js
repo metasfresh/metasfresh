@@ -86,10 +86,10 @@ test('Happy case', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
     });
 
-    // while open, the picked CU already carries the consignee (stamped at pick time)
+    // while open, the picked CU is partner-less before close (consignee stamped at close)
     await Backend.expect({
         hus: {
-            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
     });
 
