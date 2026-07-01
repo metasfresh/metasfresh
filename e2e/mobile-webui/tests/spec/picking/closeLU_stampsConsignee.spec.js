@@ -5,6 +5,7 @@ import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsLi
 import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
+import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 
 /**
  * me03 #30763 — at mobile picking "close LU" the just-closed LU must carry the consignee's
@@ -160,7 +161,12 @@ test('Close-LU stamps consignee — line-level (PRODUCT aggregation)', async ({ 
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.P1_20x4.luName });
 
     await test.step('Pick the line entirely', async () => {
-        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.P1_HU.qrCode, expectQtyEntered: 5 /*TU*/ });
+        // PRODUCT (line-level) has no header "Scan HU" button — the pick-from HU was scanned above,
+        // and the qty is entered per-line via the line button (see productBasedPicking/standard.spec.js).
+        await PickingJobScreen.clickLineButton({ index: 1 });
+        await GetQuantityDialog.waitForDialog();
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: 5 /*TU*/ });
+        await PickingJobScreen.waitForScreen();
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '5 TU', qtyPicked: '5 TU' });
     });
 

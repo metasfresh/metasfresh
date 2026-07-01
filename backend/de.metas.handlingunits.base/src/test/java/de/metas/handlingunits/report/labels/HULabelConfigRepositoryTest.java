@@ -8,6 +8,7 @@ import de.metas.process.AdProcessId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -71,36 +72,40 @@ class HULabelConfigRepositoryTest
 				.build();
 	}
 
-	@Test
-	void getFirstMatching_selectsPerBPartnerConfig_whenQueryBPartnerIsConsignee()
+	@Nested
+	class GetFirstMatching
 	{
-		// AC5 config ordering: per-BPartner config at a LOWER SeqNo, catch-all as a high-SeqNo true fallback.
-		createConfig(100, CONSIGNEE, CONSIGNEE_PROCESS, true, 2);
-		createConfig(9999, null, CATCHALL_PROCESS, true, 1);
+		@Test
+		void selectsPerBPartnerConfig_whenQueryBPartnerIsConsignee()
+		{
+			// AC5 config ordering: per-BPartner config at a LOWER SeqNo, catch-all as a high-SeqNo true fallback.
+			createConfig(100, CONSIGNEE, CONSIGNEE_PROCESS, true, 2);
+			createConfig(9999, null, CATCHALL_PROCESS, true, 1);
 
-		final ExplainedOptional<HULabelConfig> result = repository.getFirstMatching(pickingLuQueryFor(CONSIGNEE));
+			final ExplainedOptional<HULabelConfig> result = repository.getFirstMatching(pickingLuQueryFor(CONSIGNEE));
 
-		assertThat(result.isPresent()).as("a matching config must be found for the consignee").isTrue();
-		assertThat(result.get().getPrintFormatProcessId())
-				.as("the consignee's per-BPartner config must be selected, not the catch-all")
-				.isEqualTo(CONSIGNEE_PROCESS);
-		assertThat(result.get().getAutoPrintCopies().toInt())
-				.as("the consignee config's copy count must be used")
-				.isEqualTo(2);
-	}
+			assertThat(result.isPresent()).as("a matching config must be found for the consignee").isTrue();
+			assertThat(result.get().getPrintFormatProcessId())
+					.as("the consignee's per-BPartner config must be selected, not the catch-all")
+					.isEqualTo(CONSIGNEE_PROCESS);
+			assertThat(result.get().getAutoPrintCopies().toInt())
+					.as("the consignee config's copy count must be used")
+					.isEqualTo(2);
+		}
 
-	@Test
-	void getFirstMatching_fallsThroughToCatchAll_whenNoPerBPartnerConfig()
-	{
-		// A consignee (OTHER_CONSIGNEE) with NO specific config must fall through to the catch-all fallback.
-		createConfig(100, CONSIGNEE, CONSIGNEE_PROCESS, true, 2);
-		createConfig(9999, null, CATCHALL_PROCESS, true, 1);
+		@Test
+		void fallsThroughToCatchAll_whenNoPerBPartnerConfig()
+		{
+			// A consignee (OTHER_CONSIGNEE) with NO specific config must fall through to the catch-all fallback.
+			createConfig(100, CONSIGNEE, CONSIGNEE_PROCESS, true, 2);
+			createConfig(9999, null, CATCHALL_PROCESS, true, 1);
 
-		final ExplainedOptional<HULabelConfig> result = repository.getFirstMatching(pickingLuQueryFor(OTHER_CONSIGNEE));
+			final ExplainedOptional<HULabelConfig> result = repository.getFirstMatching(pickingLuQueryFor(OTHER_CONSIGNEE));
 
-		assertThat(result.isPresent()).as("the catch-all must match a consignee without a specific config").isTrue();
-		assertThat(result.get().getPrintFormatProcessId())
-				.as("a consignee without a per-BPartner config falls through to the catch-all fallback")
-				.isEqualTo(CATCHALL_PROCESS);
+			assertThat(result.isPresent()).as("the catch-all must match a consignee without a specific config").isTrue();
+			assertThat(result.get().getPrintFormatProcessId())
+					.as("a consignee without a per-BPartner config falls through to the catch-all fallback")
+					.isEqualTo(CATCHALL_PROCESS);
+		}
 	}
 }
