@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUPIItemProductBL;
@@ -11,6 +12,7 @@ import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.handlingunits.report.labels.HULabelPrintRequest;
 import de.metas.handlingunits.report.labels.HULabelService;
@@ -82,6 +84,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
+	private final PickingJobHUService pickingJobHUService = SpringContextHolder.instance.getBean(PickingJobHUService.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	protected static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -171,12 +175,34 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	protected final void printPickingLabelIfAutoPrint(@NonNull final HuId huId)
 	{
+		stampConsigneeIfNotSet(huId);
+
 		huLabelService.print(HULabelPrintRequest.builder()
 									 .sourceDocType(HULabelSourceDocType.Picking)
 									 .hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
 									 .onlyIfAutoPrint(true)
 									 .failOnMissingLabelConfig(false)
 									 .build());
+	}
+
+	/**
+	 * Desktop-picking parity with the mobile close-LU fix (me03 #30763, AC8): {@link #createTU(I_M_HU_PI_Item_Product, LocatorId)}
+	 * materialises the pack-to HU with no {@code C_BPartner_ID}, so the per-BPartner {@code M_HU_Label_Config} never
+	 * matches and the SSCC auto-print is silently skipped. Resolve the consignee from the current shipment schedule and
+	 * stamp it (only-if-unset) so the unchanged label-matching path selects the correct per-BPartner config. Reuses the
+	 * same guarded stamp method as the mobile fix; the {@code M_HU} {@code updateChildren} interceptor cascades it to
+	 * child TUs/CUs.
+	 */
+	private void stampConsigneeIfNotSet(@NonNull final HuId huId)
+	{
+		final I_M_ShipmentSchedule shipmentSchedule = getCurrentShipmentSchedule();
+		final BPartnerLocationId bpLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
+		if (bpLocationId == null)
+		{
+			return;
+		}
+
+		pickingJobHUService.setBPartnerAndLocationIfNotSet(huId, bpLocationId);
 	}
 
 	@NonNull
