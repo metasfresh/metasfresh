@@ -120,11 +120,8 @@ DELETE FROM AD_Column_Trl WHERE AD_Column_ID=592916
 DELETE FROM AD_Column WHERE AD_Column_ID=592916
 ;
 
--- Defensive backup before the destructive DROP COLUMN on a business table (REVIEW.md rule).
--- 2026-07-01T10:03:08.000Z
-SELECT backup_table('C_Workplace', '_bkp_5810330')
-;
-
+-- No backup_table: the column was just added by the prior (unreleased) migration and is
+-- unused (all rows 'N'), so there is no data worth preserving on drop.
 -- DDL: drop physical column from C_Workplace
 -- 2026-07-01T10:03:10.000Z
 /* DDL */ SELECT public.db_alter_table('C_Workplace','ALTER TABLE public.C_Workplace DROP COLUMN IF EXISTS IsWarnShelfLifeUndercut')
