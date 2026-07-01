@@ -116,6 +116,11 @@ test('Manual', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '93  PCE' }, attributes: { 'WeightNet': '9.211', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            // Observed ground truth (running soft_panda_hotfix backend): this single manual-qty pick
+            // into the target LU (one qtyPicked record, vhu:'-') already carries the consignee on the
+            // target LU while the job is open. Contrast with 'Leich+Mehl' below, where the pick creates
+            // several catch-weight CUs (cu2..cu5) and the intermediate LU is still partner-less ('-');
+            // the values here and there are set to what each flow was observed to produce, not assumed.
             lu1: { huStatus: 'S', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
@@ -191,6 +196,12 @@ test('Leich+Mehl', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            // Observed ground truth (running soft_panda_hotfix backend): this multi-scan catch-weight
+            // pick (5 CUs cu2..cu5 aggregated) leaves the whole tree — LU, TU and CUs — partner-less
+            // ('-') while the job is open; the consignee is stamped only on complete/ship (see the 'E'
+            // block below, all 'BP1'). Differs from the single manual-qty 'Manual' test above, whose
+            // target LU is already 'BP1' at the intermediate state. Values are what each flow was
+            // observed to produce, not assumed.
             lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
             tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
             cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: '-', bpartnerLocation: '-' },
