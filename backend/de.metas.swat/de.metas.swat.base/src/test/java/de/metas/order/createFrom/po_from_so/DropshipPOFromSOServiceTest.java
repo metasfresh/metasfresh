@@ -250,7 +250,7 @@ class DropshipPOFromSOServiceTest
 	}
 
 	/**
-	 * AC1: when isCompleteDropshipPO() returns false, the created dropship PO is left in
+	 * When isCompleteDropshipPO() returns false, the created dropship PO is left in
 	 * DocStatus=DR — processEx must NOT be called.
 	 */
 	@Test
