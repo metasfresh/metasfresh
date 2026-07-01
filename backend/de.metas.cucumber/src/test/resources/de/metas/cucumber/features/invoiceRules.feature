@@ -390,6 +390,8 @@ Feature: invoice rules
       | invoiceCandidate                  | D           | true          |
 
   @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00703_Invoice_Rule
   @Id:S30448_TC2
   @ghActions:run_on_executor5
   Scenario: OLCand explicit invoiceRule and isAutoInvoice win over BP-group defaults
