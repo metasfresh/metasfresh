@@ -654,7 +654,7 @@ public class OrderBL implements IOrderBL
 			order.setDeliveryViaRule(deliveryViaRule);
 		}
 
-		//
+		// Default InvoiceRule and IsAutoInvoice from the effective bill-partner
 		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(
 				Check.assumeNotNull(getEffectiveBillPartnerId(order), "billBPartnerId not null for order {}", order));
 		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
