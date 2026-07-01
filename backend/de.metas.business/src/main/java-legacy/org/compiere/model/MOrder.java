@@ -137,6 +137,7 @@ public class MOrder extends X_C_Order implements IDocument
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -456,13 +457,10 @@ public class MOrder extends X_C_Order implements IDocument
 		}
 		// Default Invoice/Payment Rule
 		// Use effective bill partner so group-chain InvoiceRule / IsAutoInvoice are resolved — mirrors OrderBL.setBPartner.
+		// setC_BPartner_ID is called above, so getEffectiveBillPartnerId coalesces correctly.
 		{
-			final I_C_BPartner billPartner = getBill_BPartner_ID() > 0
-					? bPartnerDAO.getById(BPartnerId.ofRepoId(getBill_BPartner_ID()))
-					: bp;
-			final BPartnerEffective bpEffective =
-					SpringContextHolder.instance.getBean(BPartnerEffectiveBL.class)
-							.getByRecord(billPartner);
+			final BPartnerId billBPartnerId = orderBL.getEffectiveBillPartnerId(this);
+			final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(billBPartnerId);
 			final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx());
 			setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 			setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
