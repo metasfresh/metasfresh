@@ -86,6 +86,13 @@ test('Happy case', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
     });
 
+    // while open, the picked CU already carries the consignee (stamped at pick time)
+    await Backend.expect({
+        hus: {
+            vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await test.step("Pick line 2", async () => {
         await PickingJobScreen.pickHU({
             isScanDirectly: true,
@@ -126,9 +133,9 @@ test('Happy case', async ({ page }) => {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' } },
-            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' } },
-            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '11 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu2: { huStatus: 'E', storages: { P2: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            vhu3: { huStatus: 'E', storages: { P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

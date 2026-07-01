@@ -116,7 +116,7 @@ test('Manual', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '93  PCE' }, attributes: { 'WeightNet': '9.211', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            lu1: { huStatus: 'S', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            lu1: { huStatus: 'S', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -135,7 +135,7 @@ test('Manual', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '93  PCE' }, attributes: { 'WeightNet': '9.211', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            lu1: { huStatus: 'E', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            lu1: { huStatus: 'E', storages: { P1: '7 PCE' }, attributes: { 'WeightNet': '0.789', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -191,12 +191,12 @@ test('Leich+Mehl', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            lu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'S', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu2: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu3: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu4: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu5: { huStatus: 'S', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -219,12 +219,12 @@ test('Leich+Mehl', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '95  PCE' }, attributes: { 'WeightNet': '9.495', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            lu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            tu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu2: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu3: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu4: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
-            cu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' } },
+            lu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu1: { huStatus: 'E', storages: { P1: '5 PCE' }, attributes: { 'WeightNet': '0.505', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu2: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu3: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu4: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            cu5: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.101', 'Lot-Nummer': '500', 'HU_BestBeforeDate': '2025-11-08' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -297,6 +297,13 @@ test('GS1', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '7.52 kg' });
 
+    // while open, the picked TU already carries the consignee (stamped at pick time)
+    await Backend.expect({
+        hus: {
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await PickingJobScreen.complete();
     await Backend.expect({
         pickings: {
@@ -312,7 +319,7 @@ test('GS1', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '99  PCE' }, attributes: { 'WeightNet': '2.480', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '7.520', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2027-08-09' } },
+            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '7.520', 'Lot-Nummer': '501', 'HU_BestBeforeDate': '2027-08-09' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -347,6 +354,13 @@ test('EAN13 with prefix 28', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '261 g' });
 
+    // while open, the picked TU already carries the consignee (stamped at pick time)
+    await Backend.expect({
+        hus: {
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await PickingJobScreen.complete();
     await Backend.expect({
         pickings: {
@@ -362,7 +376,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '99  PCE' }, attributes: { 'WeightNet': '9.739', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.261', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.261', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -428,6 +442,13 @@ test('EAN13 with prefix 29', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '574 g' });
 
+    // while open, the picked TU already carries the consignee (stamped at pick time)
+    await Backend.expect({
+        hus: {
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await PickingJobScreen.complete();
     await Backend.expect({
         pickings: {
@@ -443,7 +464,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '99  PCE' }, attributes: { 'WeightNet': '9.426', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.574', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
+            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '0.574', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -526,6 +547,13 @@ test('Custom QR code format', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '9.999 kg' });
 
+    // while open, the picked TU already carries the consignee (stamped at pick time)
+    await Backend.expect({
+        hus: {
+            tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     await PickingJobScreen.complete();
     await Backend.expect({
         pickings: {
@@ -541,7 +569,7 @@ test('Custom QR code format', async ({ page }) => {
         },
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '99  PCE' }, attributes: { 'WeightNet': '0.001', 'Lot-Nummer': 'lot1', 'HU_BestBeforeDate': '2031-11-23' } },
-            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '9.999', 'Lot-Nummer': '123', 'HU_BestBeforeDate': '2026-04-10' } },
+            tu1: { huStatus: 'E', storages: { P1: '1 PCE' }, attributes: { 'WeightNet': '9.999', 'Lot-Nummer': '123', 'HU_BestBeforeDate': '2026-04-10' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
