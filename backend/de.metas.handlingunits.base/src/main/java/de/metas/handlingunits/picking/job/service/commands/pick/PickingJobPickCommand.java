@@ -906,11 +906,8 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		// An aggregate HU can accumulate MORE active QR-code assignments than its current TU count:
-		// QR codes are generated one-per-TU and never trimmed when TUs are split/picked out of the aggregate.
-		// Picking only needs one code per current TU, so tolerate a surplus and use the first N (the loop below
-		// consumes only huQRCodes.get(i) for i in 0..qtyTU-1). Only a DEFICIT of codes is a real error.
-		// The stale extra assignments are reconciled by a separate data cleanup.
+		// An aggregate can hold more active QR codes than its current TU count (codes are generated one-per-TU
+		// and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus; error only on a deficit.
 		if (huQRCodes.size() < tu.getQtyTU().toInt())
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
@@ -944,11 +941,8 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		// An aggregate HU can accumulate MORE active QR-code assignments than its current TU count:
-		// QR codes are generated one-per-TU and never trimmed when TUs are split/picked out of the aggregate.
-		// This CU-in-TU path needs exactly one code and uses the first one (huQRCodes.get(0)), so tolerate a
-		// surplus and only error on a DEFICIT (zero codes). The stale extra assignments are reconciled by a
-		// separate data cleanup.
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// so a surplus is fine; error only when there are zero codes.
 		if (huQRCodes.size() < 1)
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
