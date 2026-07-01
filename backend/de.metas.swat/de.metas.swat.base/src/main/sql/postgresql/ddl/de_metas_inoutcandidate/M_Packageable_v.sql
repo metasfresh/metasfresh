@@ -162,7 +162,13 @@ FROM (SELECT
           (SELECT l.LockedBy_User_ID
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
-          o.datepromised,
+          -- Per-line promised date = the same override-inclusive value as the DeliveryDate column above
+          -- (COALESCE(DeliveryDate_Override, DeliveryDate)). M_ShipmentSchedule has no DatePromised column of its own;
+          -- "DatePromised" is the order/flag terminology for the same business date the schedule stores as DeliveryDate.
+          -- Exposing it per-line here is what makes the ship-after gate (header flag IsFixedDatePromised, applies to
+          -- ALL lines) hold each line until its OWN date. This is the single place the order(DatePromised)-vs-schedule
+          -- (DeliveryDate) naming is bridged.
+          COALESCE(s.DeliveryDate_Override, s.DeliveryDate)                        AS datepromised,
           o.IsFixedDatePromised,
           o.IsFixedPreparationDate,
           s.carrier_advising_status,
