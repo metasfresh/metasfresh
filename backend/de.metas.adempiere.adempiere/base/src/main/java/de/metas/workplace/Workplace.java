@@ -51,7 +51,6 @@ public class Workplace
 	@Nullable PriorityRule priorityRule;
 	@Nullable OrderPickingType orderPickingType;
 	int maxPickingJobs;
-	boolean warnShelfLifeUndercut;
 
 	@NonNull ImmutableSet<ProductId> productIds;
 	@NonNull ImmutableSet<ProductCategoryId> productCategoryIds;
@@ -69,7 +68,6 @@ public class Workplace
 			@Nullable final PriorityRule priorityRule,
 			@Nullable final OrderPickingType orderPickingType,
 			final int maxPickingJobs,
-			final boolean warnShelfLifeUndercut,
 			@Nullable final ImmutableSet<ProductId> productIds,
 			@Nullable final ImmutableSet<ProductCategoryId> productCategoryIds,
 			@Nullable final ImmutableSet<CarrierProductId> carrierProductIds,
@@ -89,7 +87,6 @@ public class Workplace
 		this.priorityRule = priorityRule;
 		this.orderPickingType = orderPickingType;
 		this.maxPickingJobs = maxPickingJobs;
-		this.warnShelfLifeUndercut = warnShelfLifeUndercut;
 
 		this.productIds = productIds != null ? productIds : ImmutableSet.of();
 		this.productCategoryIds = productCategoryIds != null ? productCategoryIds : ImmutableSet.of();

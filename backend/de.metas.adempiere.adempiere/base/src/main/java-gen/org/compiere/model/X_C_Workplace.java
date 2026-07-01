@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplace, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1714170020L;
+	private static final long serialVersionUID = -991045398L;
 
     /** Standard Constructor */
     public X_C_Workplace (final Properties ctx, final int C_Workplace_ID, @Nullable final String trxName)
@@ -59,18 +59,6 @@ public class X_C_Workplace extends org.compiere.model.PO implements I_C_Workplac
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
-	}
-
-	@Override
-	public void setIsWarnShelfLifeUndercut (final boolean IsWarnShelfLifeUndercut)
-	{
-		set_Value (COLUMNNAME_IsWarnShelfLifeUndercut, IsWarnShelfLifeUndercut);
-	}
-
-	@Override
-	public boolean isWarnShelfLifeUndercut() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsWarnShelfLifeUndercut);
 	}
 
 	@Override

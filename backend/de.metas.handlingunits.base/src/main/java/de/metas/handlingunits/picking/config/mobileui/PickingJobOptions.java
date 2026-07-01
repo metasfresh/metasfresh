@@ -28,6 +28,8 @@ public class PickingJobOptions
 	boolean isAllowCompletingPartialPickingJob;
 	boolean isShowLastPickedBestBeforeDateForLines;
 	boolean isAnonymousPickHUsOnTheFly;
+	/** When {@code true}, the picker is warned before confirming a pick whose HU best-before date undercuts the delivery date threshold. */
+	boolean isWarnShelfLifeUndercut;
 	@NonNull OptionalBoolean displayPickingSlotSuggestions;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@NonNull OptionalBoolean completeJobAutomatically;
@@ -49,6 +51,7 @@ public class PickingJobOptions
 			final boolean isAllowCompletingPartialPickingJob,
 			final boolean isShowLastPickedBestBeforeDateForLines,
 			final boolean isAnonymousPickHUsOnTheFly,
+			final boolean isWarnShelfLifeUndercut,
 			@Nullable final OptionalBoolean displayPickingSlotSuggestions,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final OptionalBoolean completeJobAutomatically,
@@ -68,6 +71,7 @@ public class PickingJobOptions
 		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
 		this.isShowLastPickedBestBeforeDateForLines = isShowLastPickedBestBeforeDateForLines;
 		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
+		this.isWarnShelfLifeUndercut = isWarnShelfLifeUndercut;
 		this.displayPickingSlotSuggestions = displayPickingSlotSuggestions != null ? displayPickingSlotSuggestions : OptionalBoolean.FALSE;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;

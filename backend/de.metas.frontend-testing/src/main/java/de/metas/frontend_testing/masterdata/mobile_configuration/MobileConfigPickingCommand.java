@@ -149,6 +149,11 @@ class MobileConfigPickingCommand
 
 		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
 
+		if (from.getWarnShelfLifeUndercut() != null)
+		{
+			builder.isWarnShelfLifeUndercut(from.getWarnShelfLifeUndercut());
+		}
+
 		return builder.build();
 	}
 
