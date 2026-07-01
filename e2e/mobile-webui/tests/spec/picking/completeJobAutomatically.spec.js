@@ -86,8 +86,23 @@ test('Happy case', async ({ page }) => {
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '11 Stk', qtyPicked: '11 Stk', qtyPickedCatchWeight: '' });
     });
 
-    // while open, the picked CU is partner-less before close (consignee stamped at close)
+    // While the job is still open, the picked CU is partner-less — the consignee is stamped on
+    // close/ship, not at pick time. The pickings block binds the vhu1 alias (via VHU_ID) AND gates
+    // on the P1 shipment schedule becoming valid, so the hus read below is not a pre-commit race.
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    // All three schedules must be listed (the picking assert requires every schedule of
+                    // the job to be covered); only P1 is picked so far, P2/P3 have no qtyPicked records.
+                    P1: {
+                        qtyPicked: [{ qtyPicked: "11 PCE", qtyTUs: 0, qtyLUs: 0, vhu: 'vhu1', tu: '-', lu: '-', processed: false, shipmentLineId: '-' }]
+                    },
+                    P2: { qtyPicked: [] },
+                    P3: { qtyPicked: [] },
+                }
+            }
+        },
         hus: {
             vhu1: { huStatus: 'S', storages: { P1: '11 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }

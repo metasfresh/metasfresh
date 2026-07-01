@@ -297,8 +297,21 @@ test('GS1', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '7.52 kg' });
 
-    // while open, the picked TU is partner-less before close (consignee stamped at close)
+    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
+    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "7.520 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
         hus: {
             tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
@@ -354,8 +367,21 @@ test('EAN13 with prefix 28', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '261 g' });
 
-    // while open, the picked TU is partner-less before close (consignee stamped at close)
+    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
+    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "0.261 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
         hus: {
             tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
@@ -442,8 +468,21 @@ test('EAN13 with prefix 29', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '574 g' });
 
-    // while open, the picked TU is partner-less before close (consignee stamped at close)
+    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
+    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "0.574 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
         hus: {
             tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }
@@ -547,8 +586,21 @@ test('Custom QR code format', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '12 Stk', qtyPicked: '1 Stk', qtyPickedCatchWeight: '9.999 kg' });
 
-    // while open, the picked TU is partner-less before close (consignee stamped at close)
+    // While the job is still open, the picked TU is partner-less — the consignee is stamped on
+    // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
+    // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
     await Backend.expect({
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [
+                            { qtyPicked: "1 PCE", catchWeight: "9.999 KGM", qtyTUs: 1, qtyLUs: 1, vhu: '-', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' },
+                        ]
+                    }
+                }
+            }
+        },
         hus: {
             tu1: { huStatus: 'S', storages: { P1: '1 PCE' }, bpartner: '-', bpartnerLocation: '-' },
         }

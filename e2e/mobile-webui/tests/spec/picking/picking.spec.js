@@ -1035,12 +1035,25 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
-    // While still open (before close), the picked LU is partner-less — the consignee is stamped at
-    // close, not mid-flow.
+    // While the job is still open, the picked target LU already carries the consignee (bpartner +
+    // delivery location), stamped on the shipping target at pick time. BP1 is declared without an
+    // explicit location, so bpartnerLocation resolves to its single default ship-to via the
+    // _singleBPLocationI fallback (same identifier as the bpartner). The pickings block binds the
+    // lu1 alias (via M_LU_HU_ID) AND gates on the shipment schedule becoming valid, so the hus read
+    // below is not a pre-commit race.
     await Backend.expect({
-        title: 'DHL picking: picked LU is partner-less before close (consignee stamped at close)',
+        title: 'DHL picking: picked target LU carries consignee before close',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        },
         hus: {
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: '-', bpartnerLocation: '-' },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
