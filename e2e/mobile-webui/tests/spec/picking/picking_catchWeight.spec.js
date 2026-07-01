@@ -311,6 +311,7 @@ test('GS1', async ({ page }) => {
     // While the job is still open, the picked TU is partner-less — the consignee is stamped on
     // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
+    // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -381,6 +382,7 @@ test('EAN13 with prefix 28', async ({ page }) => {
     // While the job is still open, the picked TU is partner-less — the consignee is stamped on
     // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
+    // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -482,6 +484,7 @@ test('EAN13 with prefix 29', async ({ page }) => {
     // While the job is still open, the picked TU is partner-less — the consignee is stamped on
     // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
+    // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
         pickings: {
             [pickingJobId]: {
@@ -600,6 +603,7 @@ test('Custom QR code format', async ({ page }) => {
     // While the job is still open, the picked TU is partner-less — the consignee is stamped on
     // close/ship, not at pick time. The pickings block binds the tu1 alias (via M_TU_HU_ID) AND
     // gates on the shipment schedules becoming valid, so the hus read below is not a pre-commit race.
+    // (lu1 is bound only as the fence anchor; only the picked TU's consignee state is asserted here.)
     await Backend.expect({
         pickings: {
             [pickingJobId]: {

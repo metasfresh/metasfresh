@@ -19,16 +19,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * RED tests for me03 #30763 — persisting the picking consignee on the close-LU so the per-BPartner
+ * Tests persisting the picking consignee on the close-LU so the per-BPartner
  * {@code M_HU_Label_Config} matches and the SSCC label auto-prints.
  *
- * <p>Exercises the (not-yet-existing) facade method
+ * <p>Exercises the facade method
  * {@link PickingJobHUService#setBPartnerAndLocationIfNotSet(HuId, BPartnerLocationId)}:
  * <ul>
  *   <li>(a) a partner-less LU closed for a consignee gets that consignee's BPartner + delivery location stamped;</li>
  *   <li>(b) an LU that already carries a bpartner is left UNCHANGED (stamp-only-if-unset guard).</li>
  * </ul>
- * These FAIL to compile until Task 2 adds the facade method — that is the intended RED.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobLabelConsigneeTest
