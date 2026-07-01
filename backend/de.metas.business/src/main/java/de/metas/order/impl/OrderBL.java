@@ -655,10 +655,8 @@ public class OrderBL implements IOrderBL
 		}
 
 		//
-		final BPartnerId billBPartnerId = order.getBill_BPartner_ID() > 0
-				? BPartnerId.ofRepoId(order.getBill_BPartner_ID())
-				: BPartnerId.ofRepoId(bp.getC_BPartner_ID());
-		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(billBPartnerId);
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(
+				Check.assumeNotNull(getEffectiveBillPartnerId(order), "billBPartnerId not null for order {}", order));
 		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
 		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
 		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
