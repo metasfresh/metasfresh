@@ -40,7 +40,7 @@ Feature: EDI_cctop_invoic_v export format
   # Test Kunde 1
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.Name2 | OPT.VATaxID     | OPT.DeliveryRule |
-      | 2156425                  | name2     | bPartnerVaTaxID | F                |
+      | 2156425                  | name2     | DE136695976     | F                |
     And metasfresh contains C_BPartner_EDI_Setting:
       | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | IsEdiInvoicRecipient | EdiInvoicRecipientGLN      | Identifier             |
       | 2156425       | true                 | bPartnerDesadvRecipientGLN | true                 | bPartnerInvoicRecipientGLN | edi_setting_export_sc1 |
@@ -48,7 +48,7 @@ Feature: EDI_cctop_invoic_v export format
   # metasfresh AG
     And the following c_bpartner is changed
       | C_BPartner_ID.Identifier | OPT.VATaxID     |
-      | 2155894                  | bPartnerVaTaxID |
+      | 2155894                  | DE136695976     |
 
     And metasfresh contains M_Product_ASI_Data:
       | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN          | EAN_CU        |

@@ -39,6 +39,7 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
@@ -244,7 +245,8 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
-				new PickingJobGraiTargetService(huService)
+				new PickingJobGraiTargetService(huService),
+				new PickingJobUnpickProductResolver(huService, productService)
 		);
 
 		huTracer = new HUTracerInstance()

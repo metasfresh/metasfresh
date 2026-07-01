@@ -54,6 +54,15 @@ export const BUSINESS_PARTNER_WINDOW_ID = 123;
  */
 export const PRODUCT_WINDOW_ID = 140;
 
+/**
+ * Resource window (Ressource)
+ * Table: S_Resource
+ * Window ID: 236 (main tab AD_Tab_ID=414 "Ressource")
+ * Description: Manufacturing resources/work centers. Carries the optional
+ * LotNumberCode field that selects a per-resource lot-number sequence.
+ */
+export const RESOURCE_WINDOW_ID = 236;
+
 // ============================================================================
 // SALES SIDE WINDOWS
 // ============================================================================

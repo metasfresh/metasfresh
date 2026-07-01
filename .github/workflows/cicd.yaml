@@ -393,6 +393,8 @@ jobs:
 
   frontend:
     runs-on: ${{ vars.RUNNER_HEAVY }}
+    permissions:
+      packages: write
     needs: init
     steps:
       - uses: actions/checkout@v6
@@ -433,10 +435,10 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.mobile.test \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
-          --cache-from metasfresh/metas-mobile-test:${{ needs.init.outputs.base-tag-floating }} \
-          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
+          --cache-from ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.base-tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: build-frontend-test
         run: |
@@ -444,10 +446,10 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.frontend.test \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
-          --cache-from metasfresh/metas-frontend-test:${{ needs.init.outputs.base-tag-floating }} \
-          --tag metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
+          --cache-from ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.base-tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: push-image metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
@@ -481,45 +483,45 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: docker push metasfresh/metas-mobile:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
+          command: docker push ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
-      - name: push-image metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
+          command: docker push ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-floating }}
+      - name: push-image ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
-      - name: push-image metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
+          command: docker push ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}
+      - name: push-image ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
         if: env.ACT != 'true'
         uses: nick-fields/retry@v4
         with:
           max_attempts: ${{ vars.RETRY_ATTEMPTS }}
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
-          command: docker push metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
+          command: docker push ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-floating }}
       - name: produce-summary
         run: |
           echo '#### images' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
           echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
-          echo '* metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* ghcr.io/metasfresh/metas-mobile-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* ghcr.io/metasfresh/metas-frontend-test:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
 
   test-frontend:
     name: test (frontend)
@@ -1313,6 +1315,8 @@ jobs:
   junit:
     name: test (java)
     runs-on: ${{ vars.RUNNER_TEST }}
+    permissions:
+      packages: write
     needs: [ init, java ]
     steps:
       - uses: actions/checkout@v6
@@ -1345,13 +1349,13 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.junit \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }} \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
           --build-arg SKIP_MIGRATION_SCRIPTS_TEST=true \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }} \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }} \
           .
       - name: cleanup-after-j8
         run: |
@@ -1369,12 +1373,12 @@ jobs:
           --progress=auto \
           --file docker-builds/Dockerfile.camel.junit \
           --cache-to type=inline \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
-          --cache-from metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }}-j14 \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --cache-from ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.base-tag-floating }}-j14 \
           --secret id=mvn-settings,src=docker-builds/mvn/local-settings.xml \
           --build-arg REFNAME=${{ needs.init.outputs.tag-fixed }} \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
-          --tag metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14 \
+          --tag ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14 \
           .
       - name: push-result-image
         if: env.ACT != 'true'
@@ -1384,12 +1388,12 @@ jobs:
           retry_wait_seconds: ${{ vars.RETRY_DELAY }}
           timeout_minutes: ${{ vars.RETRY_TIMEOUT }}
           command: |
-            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
-            docker push metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
+            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
+            docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
       - name: extract-results
         run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
       - name: push-results to testspace
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         continue-on-error: true  # Testspace may not have a space for this branch

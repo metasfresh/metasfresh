@@ -23,8 +23,10 @@ import java.nio.charset.StandardCharsets;
 /**
  * C_Invoice model interceptor for e-invoicing.
  *
- * <p>After completion ({@link ModelValidator#TIMING_AFTER_COMPLETE}), and only when the buyer
- * BPartner is configured as an XRechnung recipient, this interceptor:
+ * <p>After completion ({@link ModelValidator#TIMING_AFTER_COMPLETE}), two independent gates fire:
+ *
+ * <h3>XRechnung gate ({@link #onComplete_generateXRechnung})</h3>
+ * <p>Only when the buyer BPartner is configured as an XRechnung recipient:
  * <ol>
  *   <li>Generates and validates the CII XML via {@link EInvoiceCiiService#generateAndValidate(InvoiceId)}.</li>
  *   <li>If the result is invalid, throws a user-validation-error {@link AdempiereException} that
@@ -34,7 +36,20 @@ import java.nio.charset.StandardCharsets;
  *       so the mailer can pick it up.</li>
  * </ol>
  *
- * <p><b>Idempotency</b>: on re-complete (after reactivate) the interceptor checks whether an
+ * <h3>ZUGFeRD completion gate ({@link #onComplete_validateAndAttachZugferd})</h3>
+ * <p>Only when the buyer BPartner is configured as a ZUGFeRD recipient:
+ * <ol>
+ *   <li>Generates and validates the CII XML against EN16931 rules via
+ *       {@link EInvoiceCiiService#generateAndValidate(InvoiceId)}.</li>
+ *   <li>If the result is invalid, throws a user-validation-error {@link AdempiereException} that
+ *       names the failing EN16931 rule ids — this rolls back the completion.</li>
+ *   <li>If valid, creates an attachment named {@code <DocumentNo>_zugferd.xml} on the invoice
+ *       (NOT tagged for email — ZUGFeRD CII is an internal PDF-embedding artifact, not a
+ *       standalone email deliverable). The attachment is consumed at archive time by
+ *       {@code ZugferdArchiveReportBytesTransformer} to embed the CII into the PDF/A-3.</li>
+ * </ol>
+ *
+ * <p><b>Idempotency</b>: on re-complete (after reactivate) both gates check whether an
  * attachment with the expected filename already exists via
  * {@link AttachmentEntryService#getByFilenameOrNull(Object, String)}. If one is found it is
  * unattached first (via {@link AttachmentEntryService#unattach(Object, AttachmentEntry)}),
@@ -50,6 +65,9 @@ public class C_Invoice
 {
 	/** User-facing, localized error (AD_Message) shown when the XRechnung is invalid; {0} = failed rule ids. */
 	private static final AdMessageKey MSG_XRechnungInvalid = AdMessageKey.of("EInvoice_XRechnungInvalid");
+
+	/** User-facing, localized error (AD_Message) shown when the ZUGFeRD CII is invalid; {0} = failed rule ids. */
+	private static final AdMessageKey MSG_ZUGFeRDInvalid = AdMessageKey.of("EInvoice_ZUGFeRDInvalid");
 
 	@NonNull private final EInvoiceConfigService configService;
 	@NonNull private final EInvoiceCiiService eInvoiceCiiService;
@@ -69,6 +87,50 @@ public class C_Invoice
 			return;
 		}
 
+		final String filename = invoice.getDocumentNo() + "_xrechnung.xml";
+		generateValidateAndAttach(invoice, MSG_XRechnungInvalid, filename, /* tagSendViaEmail */ true);
+	}
+
+	/**
+	 * After invoice completion: generate and validate the ZUGFeRD CII XML, then block or attach.
+	 *
+	 * <p>Returns immediately if the buyer is not configured as a ZUGFeRD recipient.
+	 *
+	 * <p>The attached {@code <DocumentNo>_zugferd.xml} is consumed at archive time by the
+	 * archive seam ({@code ZugferdArchiveReportBytesTransformer}) — no CII regeneration at archive time.
+	 * The attachment is intentionally NOT tagged for email: ZUGFeRD CII is embedded into the PDF,
+	 * not sent as a standalone email deliverable.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void onComplete_validateAndAttachZugferd(@NonNull final I_C_Invoice invoice)
+	{
+		final EInvoiceRecipientConfig cfg = configService.resolveForInvoice(invoice).orElse(null);
+		if (cfg == null || !cfg.getFormat().isZUGFeRD())
+		{
+			return;
+		}
+
+		final String filename = invoice.getDocumentNo() + "_zugferd.xml";
+		generateValidateAndAttach(invoice, MSG_ZUGFeRDInvalid, filename, /* tagSendViaEmail */ false);
+	}
+
+	/**
+	 * Shared logic for both gates: generate CII XML, validate, block on invalid, or
+	 * create/replace the attachment with {@code filename} on success.
+	 *
+	 * @param invoice        the invoice being completed
+	 * @param invalidMsgKey  AD_Message key for the user-validation-error when CII is invalid
+	 * @param filename       attachment filename, e.g. {@code RE-001_xrechnung.xml}
+	 * @param tagSendViaEmail when {@code true}, the attachment is tagged
+	 *                       {@link AttachmentTags#TAGNAME_SEND_VIA_EMAIL} = {@code "true"};
+	 *                       when {@code false}, no email tag is added (ZUGFeRD internal artifact)
+	 */
+	private void generateValidateAndAttach(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final AdMessageKey invalidMsgKey,
+			@NonNull final String filename,
+			final boolean tagSendViaEmail)
+	{
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final GenerateAndValidateResult result = eInvoiceCiiService.generateAndValidate(invoiceId)
 				.orElseThrow(() -> new AdempiereException(
@@ -78,11 +140,10 @@ public class C_Invoice
 
 		if (!result.isValid())
 		{
-			throw new AdempiereException(MSG_XRechnungInvalid, result.getFatalAndErrorRuleIds())
+			throw new AdempiereException(invalidMsgKey, result.getFatalAndErrorRuleIds())
 					.markAsUserValidationError();
 		}
 
-		final String filename = invoice.getDocumentNo() + "_xrechnung.xml";
 		final byte[] xmlBytes = result.getCiiXml().getBytes(StandardCharsets.UTF_8);
 
 		// Idempotency: if an attachment with this filename already exists (re-complete after reactivate),
@@ -97,7 +158,10 @@ public class C_Invoice
 		}
 
 		final AttachmentEntry newEntry = attachmentEntryService.createNewAttachment(invoice, filename, xmlBytes);
-		attachmentEntryService.save(newEntry.withAdditionalTag(
-				AttachmentTags.TAGNAME_SEND_VIA_EMAIL, "true"));
+		if (tagSendViaEmail)
+		{
+			attachmentEntryService.save(newEntry.withAdditionalTag(
+					AttachmentTags.TAGNAME_SEND_VIA_EMAIL, "true"));
+		}
 	}
 }

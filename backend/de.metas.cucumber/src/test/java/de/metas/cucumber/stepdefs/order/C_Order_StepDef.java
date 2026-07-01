@@ -228,10 +228,14 @@ public class C_Order_StepDef
 	/**
 	 * Creates {@code C_Order} records.
 	 * <p>
-	 * gh#28565: Added support for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 *   <li>{@code IsFixedDatePromised} (optional) — when {@code true}, holds each order line until its own
+	 *       delivery date (per-line {@code M_Packageable_V.DeliveryDate}) is reached before it may be shipped</li>
+	 *   <li>{@code IsFixedPreparationDate} (optional) — when {@code true}, holds each order line until its own
+	 *       preparation date (per-line {@code M_Packageable_V.PreparationDate}) is reached before it may be picked</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -240,51 +244,6 @@ public class C_Order_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_C_Order_ID)
 				.forEach(this::createOrder);
-	}
-
-	/**
-	 * Creates a single C_Order (same columns as {@code metasfresh contains C_Orders:}) and asserts that
-	 * the creation is rejected with an {@link AdempiereException}. Use this to verify a save-time
-	 * interceptor (e.g. the dummy-GRAI PO-reference validation) blocks the order.
-	 * <p>
-	 * Single row only. Columns: every column of {@code metasfresh contains C_Orders:} plus
-	 * <ul>
-	 *     <li><b>ErrorCode</b> (optional): when given, the thrown exception's {@code ErrorCode} must equal it.</li>
-	 * </ul>
-	 * <pre>
-	 * And metasfresh contains C_Orders expecting error:
-	 *   | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_Warehouse_ID.Identifier | POReference    | ErrorCode                 |
-	 *   | true    | dummyGRAICustomer        | 2026-06-24  | 540008                        | TOOLONG-PO-REF | GRAI_POREFERENCE_TOO_LONG |
-	 * </pre>
-	 */
-	@Given("metasfresh contains C_Orders expecting error:")
-	public void metasfresh_contains_c_orders_expecting_error(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		if (tableRows.size() > 1)
-		{
-			throw new IllegalArgumentException("Multiple rows are not supported!");
-		}
-
-		AdempiereException caughtException = null;
-		try
-		{
-			metasfresh_contains_c_orders(dataTable);
-		}
-		catch (final AdempiereException e)
-		{
-			caughtException = e;
-		}
-
-		assertThat(caughtException)
-				.as("An AdempiereException should have been thrown while creating the C_Order")
-				.isNotNull();
-
-		final String expectedErrorCode = DataTableUtil.extractStringOrNullForColumnName(tableRows.get(0), "ErrorCode");
-		if (expectedErrorCode != null)
-		{
-			assertThat(caughtException.getErrorCode()).isEqualTo(expectedErrorCode);
-		}
 	}
 
 	public I_C_Order createOrder(final DataTableRow tableRow)
@@ -406,6 +365,12 @@ public class C_Order_StepDef
 		{
 			order.setDatePromised(Timestamp.from(datePromisedToBeSet));
 		}
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedDatePromised)
+				.ifPresent(order::setIsFixedDatePromised);
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedPreparationDate)
+				.ifPresent(order::setIsFixedPreparationDate);
 
 		if (EmptyUtil.isNotBlank(poReference))
 		{
@@ -573,6 +538,41 @@ public class C_Order_StepDef
 		logger.info("Order {} was completed", order);
 	}
 
+	/**
+	 * Completes the order identified by {@code orderIdentifier} and asserts the completion is rejected with
+	 * an {@link AdempiereException} carrying the given error code. Verifies a completion-time interceptor
+	 * (e.g. the dummy-GRAI PO-reference validation) blocks the order at completion.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: C_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then completing the order identified by order is rejected with error code GRAI_POREFERENCE_TOO_LONG
+	 * </pre>
+	 */
+	@Then("^completing the order identified by (.*) is rejected with error code (.*)$")
+	public void completing_order_is_rejected_with_error_code(
+			@NonNull final String orderIdentifier,
+			@NonNull final String expectedErrorCode)
+	{
+		final I_C_Order order = orderTable.get(orderIdentifier);
+
+		AdempiereException caughtException = null;
+		try
+		{
+			completeOrder(order);
+		}
+		catch (final AdempiereException e)
+		{
+			caughtException = e;
+		}
+
+		assertThat(caughtException)
+				.as("An AdempiereException should have been thrown while completing the C_Order %s", orderIdentifier)
+				.isNotNull();
+		assertThat(caughtException.getErrorCode()).isEqualTo(expectedErrorCode);
+	}
+
 	@Given("generate PO from SO is invoked with parameters:")
 	public void generate_PO_from_SO_invoked(@NonNull final DataTable dataTable)
 	{
@@ -730,13 +730,16 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Validates {@code C_Order} records against expected values.
+	 * Validates {@code C_Order} records by identifier. Every column is an optional assertion - a column is only
+	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
+	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
 	 * <p>
 	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
 	 *   <li>{@code Description} (optional) — expected order description text</li>
+	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -826,6 +829,12 @@ public class C_Order_StepDef
 				.ifPresent(dateOrdered -> {
 					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
 					softly.assertThat(TimeUtil.asLocalDate(order.getDateOrdered(), zoneId)).as("DateOrdered for Identifier=%s", identifierStr).isEqualTo(dateOrdered);
+				});
+
+		row.getAsOptionalLocalDate(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getDatePromised(), zoneId)).as("DatePromised for Identifier=%s", identifierStr).isEqualTo(datePromised);
 				});
 
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)
