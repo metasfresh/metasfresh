@@ -113,6 +113,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -179,7 +180,7 @@ class OLCandOrderFactory
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
 	// The earliest of the per-line DatePromised values; the header C_Order.DatePromised is set to it in completeOrDelete().
-	private Timestamp earliestLineDatePromised = null;
+	private ZonedDateTime earliestLineDatePromised = null;
 	private final List<OLCand> candidates = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
@@ -421,9 +422,10 @@ class OLCandOrderFactory
 			return;
 		}
 
-		if (!Objects.equals(earliestLineDatePromised, order.getDatePromised()))
+		// compare by instant (the header stores the same moment), so the guard skips a no-op save
+		if (!Objects.equals(earliestLineDatePromised.toInstant(), TimeUtil.asInstant(order.getDatePromised())))
 		{
-			order.setDatePromised(earliestLineDatePromised);
+			order.setDatePromised(TimeUtil.asTimestamp(earliestLineDatePromised));
 			orderDAO.save(order);
 		}
 	}
@@ -562,11 +564,11 @@ class OLCandOrderFactory
 			// per-line DatePromised. When several candidates aggregate into one line, the line keeps the creating
 			// candidate's date. The header is set to the earliest such date in completeOrDelete() via
 			// applyEarliestHeaderDatePromised().
-			final Timestamp lineDatePromised = TimeUtil.asTimestamp(candidate.getDatePromised());
+			final ZonedDateTime lineDatePromised = candidate.getDatePromised();
 			if (lineDatePromised != null)
 			{
-				currentOrderLine.setDatePromised(lineDatePromised);
-				if (earliestLineDatePromised == null || lineDatePromised.before(earliestLineDatePromised))
+				currentOrderLine.setDatePromised(TimeUtil.asTimestamp(lineDatePromised));
+				if (earliestLineDatePromised == null || lineDatePromised.isBefore(earliestLineDatePromised))
 				{
 					earliestLineDatePromised = lineDatePromised;
 				}
