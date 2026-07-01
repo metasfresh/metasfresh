@@ -9,6 +9,7 @@
 --   AD_Element    2659    (ProductName - reuses existing standard element, no new INSERT)
 --   AD_Element    585059  (OrderBoardStatus - Auftrags-Board-Status)
 --   AD_Element    2585    (CountryName - reuses existing standard element, no new INSERT)
+--   AD_Element    192     (C_Country_ID - reuses existing metasfresh element, no new INSERT; element 212 is legacy Adempiere, not present in CI DB)
 --   AD_Element    585061  (QtyTotal - Menge gesamt)
 --   AD_Element    585062  (OrderLineCount - Auftragszeilen)
 --   AD_Column     592915  (M_Picking_OrderBoard_v_ID - synthetic key)
@@ -252,13 +253,13 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- Column: M_Picking_OrderBoard_v.C_Country_ID
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,592903/*From ID Server*/,212,0,30,542622/*From ID Server*/,'C_Country_ID',TO_TIMESTAMP('2026-06-28 11:15:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',10,'Y','Y','N','N','N','N','N','N','N','N','N','Land','NP',TO_TIMESTAMP('2026-06-28 11:15:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,EntityType,FieldLength,IsActive,IsAllowLogging,IsAlwaysUpdateable,IsEncrypted,IsIdentifier,IsKey,IsMandatory,IsParent,IsSelectionColumn,IsTranslated,IsUpdateable,Name,PersonalDataCategory,Updated,UpdatedBy,Version) VALUES (0,592903/*From ID Server*/,192/*existing metasfresh element*/,0,30,542622/*From ID Server*/,'C_Country_ID',TO_TIMESTAMP('2026-06-28 11:15:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'D',10,'Y','Y','N','N','N','N','N','N','N','N','N','Land','NP',TO_TIMESTAMP('2026-06-28 11:15:00.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,0)
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=592903 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
-/* DDL */ select update_Column_Translation_From_AD_Element(212)
+/* DDL */ select update_Column_Translation_From_AD_Element(192)
 ;
 
 -- Column: M_Picking_OrderBoard_v.CountryName (display name of country, distinct from C_Country_ID lookup)
