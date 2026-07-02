@@ -1,4 +1,10 @@
-CREATE OR REPLACE VIEW M_Picking_OrderBoard_v AS
+-- Fix M_Picking_OrderBoard_v: synthetic PK could produce negative values.
+-- ('x'||substr(md5(...),'1,8))::bit(32)::int is a signed 32-bit cast — can be negative.
+-- Mask the sign bit with & x'7fffffff'::bit(32) to ensure the result is always >= 0,
+-- satisfying TableRecordReference.of's assumption (recordId >= 0).
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;
+
+CREATE OR REPLACE VIEW M_Picking_OrderBoard_v$new AS
 SELECT
     (('x' || substr(md5(
         b.m_product_id::text || '_' ||
@@ -51,5 +57,13 @@ GROUP BY
     loc.c_country_id,
     ctry.name,
     b.ad_client_id,
-    b.ad_org_id
-;
+    b.ad_org_id;
+
+SELECT db_alter_view(
+    'M_Picking_OrderBoard_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('M_Picking_OrderBoard_v$new'))
+);
+
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;

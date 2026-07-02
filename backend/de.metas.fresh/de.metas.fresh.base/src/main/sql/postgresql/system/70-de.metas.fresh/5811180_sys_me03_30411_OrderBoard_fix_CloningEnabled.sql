@@ -5,5 +5,5 @@ UPDATE AD_Table
 SET    CloningEnabled = 'D',
        Updated        = TO_TIMESTAMP('2026-07-02 08:00:00', 'YYYY-MM-DD HH24:MI:SS'),
        UpdatedBy      = 100
-WHERE  AD_Table_ID = 542622/*From ID Server = M_Picking_OrderBoard_v*/
+WHERE  AD_Table_ID = 542622 /*M_Picking_OrderBoard_v, from migration 5809900*/
   AND  CloningEnabled = 'N';

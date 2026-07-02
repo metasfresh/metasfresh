@@ -1,4 +1,4 @@
-﻿-- Window: Auftrags-Board / Order Board
+-- Window: Auftrags-Board / Order Board
 -- Creates the WebUI window over M_Picking_OrderBoard_v (defined in 5809900/5809895)
 -- Three tabs filtered by OrderBoardStatus: Wartend(W), In Kommissionierung(K), Packen(P)
 -- Menu placement: under "Picking" (541856), SeqNo=3, next to Traffic Manager (542241 at SeqNo=2)
