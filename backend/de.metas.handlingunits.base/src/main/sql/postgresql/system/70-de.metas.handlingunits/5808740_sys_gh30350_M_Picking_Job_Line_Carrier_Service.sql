@@ -1,4 +1,4 @@
--- me03 #30350 (STEP3) — model the picking-job LINE carrier services as a junction table (NOT a String column).
+-- gh30350 (STEP3) — model the picking-job LINE carrier services as a junction table (NOT a String column).
 -- Mirrors the existing M_ShipmentSchedule_Carrier_Service junction (AD_Table 542544, created in 5773340):
 --   PK M_Picking_Job_Line_Carrier_Service_ID, FK M_Picking_Job_Line_ID, FK Carrier_Service_ID.
 -- Mobile-only: NO AD_Window/AD_Tab/AD_Field (exactly like the schedule junction, which has none either).

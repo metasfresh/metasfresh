@@ -1,4 +1,4 @@
--- me03 #30350 (STEP3 T1) — make the picking-job LINE the carrier-advise source of truth (additive, behaviour-neutral).
+-- gh30350 (STEP3 T1) — make the picking-job LINE the carrier-advise source of truth (additive, behaviour-neutral).
 -- Adds two columns to M_Picking_Job_Line (mobile-only; NO desktop AD_Field/AD_UI_Element, exactly like Phase-0's Carrier_Product_ID):
 --   1) IsCarrierAdviseManual   — mandatory YesNo, default 'N' (per-line manual override; readOnly/anyManual derives from it)
 --   2) Carrier_Goods_Type_ID   — nullable FK to Carrier_Goods_Type (TableDir, reuses existing AD_Element 584112)

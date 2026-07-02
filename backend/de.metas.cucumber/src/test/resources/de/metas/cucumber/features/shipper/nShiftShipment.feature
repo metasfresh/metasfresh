@@ -1083,7 +1083,7 @@ Feature: nShift Shipment
 
   @Id:S0355_DeliveryOrder_150
   Scenario: nShift Partial Shipment — the picking-job line's carrier freezes on the first shipment; the re-advised remainder ships on a second carrier
-    # dt204 always mobile-picks, so the carrier is sourced from the picking-job LINE (not the schedule).
+    # Mobile-only picking: the carrier is sourced from the picking-job LINE (not the schedule).
     # Pick 6 of 10 in a first job → its Carrier_ShipmentOrder freezes with the line carrier cp1. Re-advise
     # (cp2) then applies to the remainder; the remaining 4 are picked in a SECOND job → a second
     # Carrier_ShipmentOrder on cp2. The first (frozen) Carrier_ShipmentOrder must still carry cp1.

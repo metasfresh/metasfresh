@@ -76,7 +76,7 @@ public class ShipmentScheduleKeyValueHandler implements IAggregationKeyValueHand
 			// Keep splitting shipments (M_InOut) by carrier *company*.
 			// Carrier product and carrier goods-type intentionally do NOT contribute to the
 			// shipment aggregation key anymore: that split now happens at the delivery-order
-			// (Carrier_ShipmentOrder) level, sourced from the picking-job line (me03 #30350).
+			// (Carrier_ShipmentOrder) level, sourced from the picking-job line (gh30350).
 			values.add(sched.getM_Shipper_ID());
 		}
 

@@ -1,4 +1,4 @@
--- me03 #30350 — backing data for the mobile picking carrier-advise REST flow.
+-- gh30350 — backing data for the mobile picking carrier-advise REST flow.
 -- Adds two columns to M_Picking_Job_Line (NOT user-facing in the desktop AD_Window; AD_Column only, no AD_Field/AD_UI_Element):
 --   1) Carrier_Product_ID        — nullable FK to Carrier_Product (TableDir, reuses existing AD_Element 584116 'Lieferweg-Produkt')
 --   2) IsCarrierAdviseReadOnly   — mandatory YesNo, default 'N' (existing rows backfilled to 'N')
