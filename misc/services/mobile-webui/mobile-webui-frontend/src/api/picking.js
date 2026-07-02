@@ -92,6 +92,7 @@ export const postStepPicked = ({
   setSerialNos,
   serialNos,
   isCloseTarget = false,
+  isShelfLifeConfirmed = false,
 }) => {
   const realRejectedQtyReason =
     qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
@@ -119,6 +120,7 @@ export const postStepPicked = ({
     setSerialNos,
     serialNos,
     isCloseTarget,
+    isShelfLifeConfirmed,
   });
 };
 

@@ -8,9 +8,9 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 85 | 89 | 96% |
-| Distribution | 38 | 41 | 93% |
-| Manufacturing | 25 | 31 | 81% |
+| Picking | 86 | 90 | 96% |
+| Distribution | 41 | 41 | 93% |
+| Manufacturing | 26 | 32 | 81% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
@@ -100,10 +100,9 @@
 | Close LU (line-level, PRODUCT aggregation) → closed LU and its cascaded TU/CU carry the picking consignee (BPartner + location) | `picking/closeLU_stampsConsignee.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
-| Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows exactly 3 fields: document number, delivery location and delivery date | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**17/18 — 94%**
+**18/19 — 95%**
 
 ### Order-based picking — filtering and facets
 
@@ -111,20 +110,20 @@
 |---|---|
 | Facet filter shows only jobs scheduled for current workplace | `picking/facets.spec.js` |
 | Filter by qty available at locator → only jobs with sufficient stock shown | `picking/filterByQtyAvailableAtLocator.spec.js` |
-| Profile configured with HandoverLocation filter → filter screen offers a delivery-location (Lieferort) facet | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Multiple jobs for same customer → aggregation count correct | — |
 
-**3/4 — 75%**
+**2/3 — 67%**
 
 ### Order-based picking — pick-all and attributes
 
 | Scenario | Test |
 |---|---|
 | Pick All button picks all remaining HUs in one action | `picking/pickAllButton.spec.js` |
+| Pick All completes a job that already has a fully-picked line (no abort on the zero-remaining line) | `picking/pickAllButton.spec.js` |
 | Pick All button hidden when feature disabled in mobile config | `picking/pickAllButton.spec.js` |
 | Only one matching HU → picking proceeds without qty dialog | `picking/pickAttributes.spec.js` |
 
-**3/3 — 100%**
+**4/4 — 100%**
 
 ### Order-based picking — serial-no scan
 

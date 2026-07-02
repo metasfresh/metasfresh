@@ -126,6 +126,7 @@ public class WorkplaceRepository
 		record.setM_PickingSlot_ID(PickingSlotId.toRepoId(request.getPickingSlotId()));
 		record.setMaxPickingJobs(request.getMaxPickingJobs());
 		record.setIsPackingPlace(request.isPackingPlace());
+		record.setIsWarnShelfLifeUndercut(request.isWarnShelfLifeUndercut());
 
 		final SeqNo seqNo = request.getSeqNo() != null ? request.getSeqNo() : getMap().getNextSeqNo();
 		record.setSeqNo(seqNo.toInt());
@@ -378,6 +379,7 @@ public class WorkplaceRepository
 				.orderPickingType(OrderPickingType.ofNullableCode(record.getOrderPickingType()))
 				.maxPickingJobs(record.getMaxPickingJobs())
 				.isPackingPlace(record.isPackingPlace())
+				.warnShelfLifeUndercut(record.isWarnShelfLifeUndercut())
 				// Add child collections
 				.productIds(ImmutableSet.copyOf(productsByWorkplace.get(workplaceId)))
 				.productCategoryIds(ImmutableSet.copyOf(categoriesByWorkplace.get(workplaceId)))

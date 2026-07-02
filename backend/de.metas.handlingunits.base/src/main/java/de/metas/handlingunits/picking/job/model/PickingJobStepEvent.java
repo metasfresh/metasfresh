@@ -56,6 +56,11 @@ public class PickingJobStepEvent
 	@Nullable GRAISet graiCodes;
 
 	//
+	// Shelf-life acknowledgement (PICK only)
+	/** When {@code true} the picker has acknowledged the shelf-life warning and the guard is skipped. */
+	boolean isShelfLifeConfirmed;
+
+	//
 	// Event Type: UNPICK
 	@Nullable HUQRCode unpickToTargetQRCode;
 

@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-06-23
+**Last Updated**: 2026-06-30
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1084,7 +1084,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 1. Navigate to HU Label Configuration window (541647) → new record
 2. Set the label report process (the only mandatory field without a default)
 3. Leave IsAutoPrint at its `N` default (so the AutoPrintCopies field stays hidden)
-4. Verify the record becomes valid, persists, and AutoPrintCopies defaulted to `1`
+4. Verify the record becomes valid and persists while `IsAutoPrint` stays `N`
 
 **Key Validations**:
 - New record creation in a grid window
@@ -1096,7 +1096,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 **Components Tested**:
 - HU Label Configuration window (541647) / M_HU_Label_Config
-- AutoPrintCopies default
+- AutoPrintCopies backend default while the field stays hidden
 ### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
 
 ### 43. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
@@ -1164,6 +1164,41 @@ in both en_US and de_DE proves the full page-object flow is language-independent
 **Features Tested**:
 - F32070: Price List Copy using Price List Schema
 
+### 44. Product Purchase/Sales Gate (`product-purchase-sales-gate.spec.js`)
+**Status**: ✅ Passing (English, German)
+**Duration**: ~30 seconds per language
+
+**Features Tested**:
+- F00315: Purchase Gate (Produktfreigabe für Einkauf)
+- F00320: Sales Gate (Produktfreigabe für Verkauf)
+
+**Epic**: E0380: Masterdata Products
+
+**Workflow** (en_US **and** de_DE):
+1. Create test customer and vendor via `Backend.createMasterdata()`
+2. Create product with IsSold=N (not for sale) via `Backend.createMasterdata()`
+3. Create second product with IsSold=Y (control, selectable)
+4. Create sales order with customer, open batch entry → verify product picker HIDES IsSold=N product → control product remains selectable
+5. Complete sales order
+6. Create purchase order with vendor, open batch entry → verify product picker HIDES IsPurchased=N product → control product remains selectable
+7. Validate both workflows in both languages (language-independent selectors only)
+
+**Key Validations**:
+- SysConfig-gated product visibility in order mass-entry (Schnellerfassung)
+- IsSold=N product hidden from sales order batch entry
+- IsPurchased=N product hidden from purchase order batch entry
+- Control products (flags Y) remain selectable in both cases
+- Batch entry filter behavior is language-independent (`data-testid`, `data-cy` selectors)
+
+**Components Tested**:
+- Sales Order window (143) - Order Lines tab batch entry
+- Purchase Order window (181) - Order Lines tab batch entry
+- Product lookup widget filtering logic
+- SysConfig-gated visibility enforcement
+
+---
+
+
 **Epic**: E0260: Pricing
 
 **Window**: Price List (540321), included tab Price List Version (`AD_Tab-540777`), table `M_PriceList_Version`
@@ -1223,6 +1258,31 @@ the eviction fix guarantees.
 **Prerequisite data**: standard demo seed (price list 2008396 + its 2015-01-01 PLV); no DB access
 
 ---
+### 5. Workplace — shelf-life-warning field
+**File**: `tests/spec/workplace-shelflife-field.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~2 seconds per language
+
+**Workflow**:
+1. Create a warehouse + workplace (IsWarnShelfLifeUndercut=false) via masterdata API
+2. Log in, navigate directly to the workplace detail view
+3. Assert `IsWarnShelfLifeUndercut` checkbox is visible and unchecked
+4. Click the checkbox label (`.input-checkbox`), await the PATCH response
+5. Reload the page, assert the checkbox is now checked (end-state persistence)
+
+**Key Validations**:
+- Field renders in the AD layout (AD_Window_ID 541744)
+- YesNo checkbox is interactive via the `.input-checkbox` label
+- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541744/<id>`
+- Value persists after a full page reload (DB-level persistence)
+
+**Components Tested**:
+- Workplace window (AD_Window_ID 541744)
+- C_Workplace.IsWarnShelfLifeUndercut YesNo field
+- Workplace masterdata provisioning (`workplaces` + `warehouses` keys)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -1296,7 +1356,7 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 59 files
+- **Total test specs**: 60 files
 - **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
