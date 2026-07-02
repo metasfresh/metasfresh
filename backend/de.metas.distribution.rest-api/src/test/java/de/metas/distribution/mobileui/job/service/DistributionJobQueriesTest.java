@@ -17,8 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests {@link DistributionJobQueries#toActiveNotAssignedDDOrderQuery(DDOrderReferenceQuery)}:
  * <ul>
- *   <li>Y case — packing-place workplace (IsPackingPlace=Y): locatorToId present, excludeLocatorToIds absent → locatorToIds predicate matches exactly that locator, excludeLocatorToIds null</li>
- *   <li>N case — replenishment workplace (IsPackingPlace=N): locatorToId absent, excludeLocatorToIds populated → locatorToIds is any-match, excludeLocatorToIds propagated</li>
+ *   <li>Y case — packing-place workplace (IsPackingPlace=Y): pick-from locator present, excludeLocatorToIds absent → workplacePickFromLocatorId set, excludeLocatorToIds null</li>
+ *   <li>N case — replenishment workplace (IsPackingPlace=N): pick-from locator absent, excludeLocatorToIds populated → workplacePickFromLocatorId null, excludeLocatorToIds propagated</li>
  * </ul>
  */
 class DistributionJobQueriesTest
@@ -30,7 +30,7 @@ class DistributionJobQueriesTest
 	@Test
 	void toActiveNotAssignedDDOrderQuery_regularWorkplace_locatorToIdSet()
 	{
-		// Given: regular (non-packing) workplace — locatorToId set, excludeLocatorToIds absent
+		// Given: regular (non-packing) workplace — pick-from locator set, excludeLocatorToIds absent
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
 				.workplaceWarehouseId(W1)
@@ -41,12 +41,9 @@ class DistributionJobQueriesTest
 		// When
 		final DDOrderQuery result = DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query);
 
-		// Then: locatorToIds matches exactly L1; excludeLocatorToIds is null/empty
-		final InSetPredicate<LocatorId> locatorToIds = result.getLocatorToIds();
-		assertThat(locatorToIds).isNotNull();
-		assertThat(locatorToIds.isAny()).isFalse();
-		assertThat(locatorToIds.test(L1)).isTrue();
-		assertThat(locatorToIds.test(L2)).isFalse();
+		// Then: the pick-from locator flows through to workplacePickFromLocatorId; excludeLocatorToIds is null/empty
+		assertThat(result.getWorkplaceWarehouseId()).isEqualTo(W1);
+		assertThat(result.getWorkplacePickFromLocatorId()).isEqualTo(L1);
 
 		@Nullable final Set<LocatorId> excludeLocatorToIds = result.getExcludeLocatorToIds();
 		assertThat(excludeLocatorToIds).isNullOrEmpty();
@@ -55,7 +52,7 @@ class DistributionJobQueriesTest
 	@Test
 	void toActiveNotAssignedDDOrderQuery_replenishmentWorkplace_excludeLocatorToIdsSet()
 	{
-		// Given: replenishment (non-packing, IsPackingPlace=N) workplace — locatorToId absent, excludeLocatorToIds populated
+		// Given: replenishment (non-packing, IsPackingPlace=N) workplace — pick-from locator absent, excludeLocatorToIds populated
 		final ImmutableSet<LocatorId> packingLocators = ImmutableSet.of(L1, L2);
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
@@ -67,10 +64,9 @@ class DistributionJobQueriesTest
 		// When
 		final DDOrderQuery result = DistributionJobQueries.toActiveNotAssignedDDOrderQuery(query);
 
-		// Then: locatorToIds is any-match (null or isAny()); excludeLocatorToIds == {L1, L2}
-		final InSetPredicate<LocatorId> locatorToIds = result.getLocatorToIds();
-		// locatorToId was null → InSetPredicate.onlyOrAny(null) → isAny()
-		assertThat(locatorToIds == null || locatorToIds.isAny()).isTrue();
+		// Then: no specific pick-from locator; excludeLocatorToIds == {L1, L2}
+		assertThat(result.getWorkplaceWarehouseId()).isEqualTo(W1);
+		assertThat(result.getWorkplacePickFromLocatorId()).isNull();
 
 		final Set<LocatorId> excludeLocatorToIds = result.getExcludeLocatorToIds();
 		assertThat(excludeLocatorToIds).containsExactlyInAnyOrderElementsOf(packingLocators);
