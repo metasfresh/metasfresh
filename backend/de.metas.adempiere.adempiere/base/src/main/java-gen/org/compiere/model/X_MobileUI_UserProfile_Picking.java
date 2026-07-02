@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for MobileUI_UserProfile_Picking
  *  @author metasfresh (generated) 
@@ -347,6 +347,17 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 		return get_ValueAsBoolean(COLUMNNAME_IsShowLastPickedBestBeforeDateForLines);
 	}
 
+	@Override
+	public void setIsWarnShelfLifeUndercut (final boolean IsWarnShelfLifeUndercut)
+	{
+		set_Value (COLUMNNAME_IsWarnShelfLifeUndercut, IsWarnShelfLifeUndercut);
+	}
+
+	@Override
+	public boolean isWarnShelfLifeUndercut() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWarnShelfLifeUndercut);
+	}
 	@Override
 	public void setLotNumber (final boolean LotNumber)
 	{
