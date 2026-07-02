@@ -40,16 +40,16 @@ VALUES (12,'N','N','N','N',0,'Y',100,
         '(coalesce((select sum(-oc.cumulatedqty * (coalesce(oc.currentcostprice,0) + coalesce(oc.currentcostpricell,0)))
    from pp_order_cost oc
    join c_acctschema acs on acs.c_acctschema_id = oc.c_acctschema_id
-    and acs.c_acctschema_id = (select ci.c_acctschema1_id from ad_clientinfo ci where ci.ad_client_id = @JoinTableNameOrAliasIncludingDot@AD_Client_ID)
+    and acs.c_acctschema_id = (select ci.c_acctschema1_id from ad_clientinfo ci where ci.ad_client_id = PP_Order.AD_Client_ID)
    join m_costelement ce on ce.m_costelement_id = oc.m_costelement_id and ce.costingmethod = acs.costingmethod
-   where oc.pp_order_id = @JoinTableNameOrAliasIncludingDot@PP_Order_ID and oc.pp_order_cost_trxtype = ''MI''), 0)
+   where oc.pp_order_id = PP_Order.PP_Order_ID and oc.pp_order_cost_trxtype = ''MI''), 0)
  -
  coalesce((select sum(oc.postcalculationamt)
    from pp_order_cost oc
    join c_acctschema acs on acs.c_acctschema_id = oc.c_acctschema_id
-    and acs.c_acctschema_id = (select ci.c_acctschema1_id from ad_clientinfo ci where ci.ad_client_id = @JoinTableNameOrAliasIncludingDot@AD_Client_ID)
+    and acs.c_acctschema_id = (select ci.c_acctschema1_id from ad_clientinfo ci where ci.ad_client_id = PP_Order.AD_Client_ID)
    join m_costelement ce on ce.m_costelement_id = oc.m_costelement_id and ce.costingmethod = acs.costingmethod
-   where oc.pp_order_id = @JoinTableNameOrAliasIncludingDot@PP_Order_ID and oc.pp_order_cost_trxtype in (''MR'',''CO'',''BY'')), 0)
+   where oc.pp_order_id = PP_Order.PP_Order_ID and oc.pp_order_cost_trxtype in (''MR'',''CO'',''BY'')), 0)
 )','Kostendifferenz',592918 /*From ID Server*/,'N',0,100,
         'Kostendifferenz','D',14,0,0,'NP','Y',
         TO_TIMESTAMP('2026-07-02 10:01:00','YYYY-MM-DD HH24:MI:SS'),
