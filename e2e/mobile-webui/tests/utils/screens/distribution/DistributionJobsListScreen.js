@@ -48,13 +48,7 @@ export const DistributionJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be visible`, async () => {
-            for (const expectation of expectationsArray) {
-                // 'visible' (not merely 'attached'): assert the worker actually SEES the offered job,
-                // i.e. the launcher list has finished loading (spinner gone) and the button is painted.
-                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-            }
-        });
+        await waitForExpectedButtonsVisible(expectationsArray);
 
         //
         // Check it again to make sure all expected buttons are still there and there is one of each
@@ -81,13 +75,16 @@ export const DistributionJobsListScreen = {
     // testId present exactly once, per-button props match) and exact count (no extras) — only
     // the slot order is relaxed. Every expectation must carry a testId to be locatable.
     expectJobButtonsInAnyOrder: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons (any order)`, async () => {
-        await test.step(`Wait for all expected buttons to be visible`, async () => {
-            for (const expectation of expectationsArray) {
-                // 'visible' (not merely 'attached'): assert the worker actually SEES the offered job,
-                // i.e. the launcher list has finished loading (spinner gone) and the button is painted.
-                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        // Order-independent matching locates each button by its testId, so every expectation
+        // must carry one — otherwise locateJobButtons() would fall back to matching ALL buttons
+        // and silently skip the identity check. Fail fast rather than degrade to "match anything".
+        for (const expectation of expectationsArray) {
+            if (expectation.testId == null) {
+                throw new Error('expectJobButtonsInAnyOrder: every expectation must carry a testId');
             }
-        });
+        }
+
+        await waitForExpectedButtonsVisible(expectationsArray);
 
         //
         // Each expected button exists exactly once and matches its per-button expectations.
@@ -171,6 +168,15 @@ export const DistributionJobsListScreen = {
 //--------------------------------------------------------------------------
 //
 //
+
+// Wait until every expected launcher button is VISIBLE (painted, spinner gone) — not merely
+// attached — so the worker actually SEES the offered job. Shared by expectJobButtons and
+// expectJobButtonsInAnyOrder; order-independent (each expectation located on its own).
+const waitForExpectedButtonsVisible = async (expectationsArray) => await test.step(`Wait for all expected buttons to be visible`, async () => {
+    for (const expectation of expectationsArray) {
+        await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }
+});
 
 const locateJobButtons = ({ index, testId } = {}) => {
     let selector = '.wflauncher-button';
