@@ -258,7 +258,9 @@ public class DistributionJob
 				.distinct()
 				.collect(MixedQuantity.collectAndSum());
 
-		return qty.toNoneOrSingleValue().orElse(null);
+		// A distribution job whose lines span multiple UOMs has no single caption quantity;
+		// resolve to null (rendered as blank) instead of throwing, so the launcher still loads.
+		return qty.toSingleValueOrNull();
 	}
 
 	public Optional<DistributionJobLineId> getNextEligiblePickFromLineId(@NonNull final ProductId productId)
