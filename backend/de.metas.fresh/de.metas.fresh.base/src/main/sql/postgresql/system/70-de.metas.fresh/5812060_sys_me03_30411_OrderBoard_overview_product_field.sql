@@ -47,13 +47,64 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID = 781321;
 -- ============================================================
 -- 3. Add AD_UI_Element for M_Product_ID
 -- ============================================================
-INSERT INTO AD_UI_Element
-    (AD_UI_Element_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy,
-     AD_UI_ElementGroup_ID, AD_Field_ID, IsDisplayed, SeqNo, IsDisplayedGrid, SeqNoGrid,
-     IsDisplayed_SideList, SeqNo_SideList, EntityType)
-VALUES (652429/*From ID Server*/, 0, 0, 'Y',
-    TO_TIMESTAMP('2026-07-02 23:00:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    TO_TIMESTAMP('2026-07-02 23:00:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
-    581185/*AD_UI_ElementGroup for overview tab*/, 781321/*AD_Field M_Product_ID*/,
-    'Y', 10, 'Y', 10, 'N', 0, 'D')
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Produkt
+-- Column: M_Picking_OrderBoard_Overview_v.M_Product_ID
+-- 2026-07-02T20:46:37.525Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781321,0,581171,581185,652430,'F',TO_TIMESTAMP('2026-07-02 20:46:37.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Produkt, Leistung, Artikel','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','N','Y','N','N','N',0,'Produkt',10,0,0,TO_TIMESTAMP('2026-07-02 20:46:37.021000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Produkt
+-- Column: M_Picking_OrderBoard_Overview_v.M_Product_ID
+-- 2026-07-02T20:47:38.820Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2026-07-02 20:47:38.819000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=652430
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Land
+-- Column: M_Picking_OrderBoard_Overview_v.C_Country_ID
+-- 2026-07-02T20:47:39.664Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2026-07-02 20:47:39.664000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581191
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Lieferdatum
+-- Column: M_Picking_OrderBoard_Overview_v.DeliveryDate
+-- 2026-07-02T20:47:40.158Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2026-07-02 20:47:40.158000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581189
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Menge wartend
+-- Column: M_Picking_OrderBoard_Overview_v.QtyWaiting
+-- 2026-07-02T20:47:40.659Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2026-07-02 20:47:40.659000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581192
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Menge in Kommissionierung
+-- Column: M_Picking_OrderBoard_Overview_v.QtyPicking
+-- 2026-07-02T20:47:41.160Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2026-07-02 20:47:41.160000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581193
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Menge packen
+-- Column: M_Picking_OrderBoard_Overview_v.QtyPacking
+-- 2026-07-02T20:47:41.657Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2026-07-02 20:47:41.657000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581194
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Menge gesamt
+-- Column: M_Picking_OrderBoard_Overview_v.QtyTotal
+-- 2026-07-02T20:47:42.150Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2026-07-02 20:47:42.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581195
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Maßeinheit
+-- Column: M_Picking_OrderBoard_Overview_v.C_UOM_ID
+-- 2026-07-02T20:47:42.651Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2026-07-02 20:47:42.651000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581188
+;
+
+-- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Auftragszeilen
+-- Column: M_Picking_OrderBoard_Overview_v.OrderLineCount
+-- 2026-07-02T20:47:43.150Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2026-07-02 20:47:43.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581196
+;
+
