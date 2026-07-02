@@ -17,7 +17,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- Process: M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference(de.metas.inoutcandidate.process.M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference)
 -- ParameterName: IsConfirmedBySupplier
 -- 2026-07-02T14:07:32.298Z
-UPDATE AD_Process_Para SET AD_Reference_ID=17, AD_Reference_Value_ID=540528,Updated=TO_TIMESTAMP('2026-07-02 14:07:32.298000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543260
+UPDATE AD_Process_Para SET AD_Reference_ID=17, AD_Reference_Value_ID=540528, DefaultValue='',Updated=TO_TIMESTAMP('2026-07-02 14:07:32.298000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543260
 ;
 
 -- Column: M_ReceiptSchedule.IsConfirmedBySupplier
