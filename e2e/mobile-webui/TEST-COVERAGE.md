@@ -5,15 +5,15 @@
 ## Summary
 
 | Module | Covered | Total | % |
-|---|---|---|---|
-| Login / Home | 8 | 11 | 73% |
-| Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 83 | 87 | 95% |
-| Distribution | 38 | 41 | 93% |
-| Manufacturing | 25 | 31 | 81% |
-| HU Manager | 14 | 16 | 88% |
-| HU Consolidation | 8 | 9 | 89% |
-| Inventory | 1 | 3 | 33% |
+|---|---------|-------|---|
+| Login / Home | 8       | 11    | 73% |
+| Barcode Scanner Modes | 7       | 12    | 58% |
+| Picking | 84      | 88    | 95% |
+| Distribution | 41      | 41    | 93% |
+| Manufacturing | 26      | 32    | 81% |
+| HU Manager | 14      | 16    | 88% |
+| HU Consolidation | 8       | 9     | 89% |
+| Inventory | 1       | 3     | 33% |
 
 ---
 
@@ -117,10 +117,11 @@
 | Scenario | Test |
 |---|---|
 | Pick All button picks all remaining HUs in one action | `picking/pickAllButton.spec.js` |
+| Pick All completes a job that already has a fully-picked line (no abort on the zero-remaining line) | `picking/pickAllButton.spec.js` |
 | Pick All button hidden when feature disabled in mobile config | `picking/pickAllButton.spec.js` |
 | Only one matching HU → picking proceeds without qty dialog | `picking/pickAttributes.spec.js` |
 
-**3/3 — 100%**
+**4/4 — 100%**
 
 ### Order-based picking — serial-no scan
 
