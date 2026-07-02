@@ -128,28 +128,30 @@ npm run test:report
 
 ---
 
-### 5. Workplace — shelf-life-warning field
-**File**: `tests/spec/workplace-shelflife-field.spec.js`
+### 5. Picking profile — shelf-life-warning field
+**File**: `tests/spec/picking-profile-shelflife-field.spec.js`
 **Status**: ✅ Passing (English, German)
-**Duration**: ~2 seconds per language
+**Duration**: ~20 seconds per language
 
 **Workflow**:
-1. Create a warehouse + workplace (IsWarnShelfLifeUndercut=false) via masterdata API
-2. Log in, navigate directly to the workplace detail view
-3. Assert `IsWarnShelfLifeUndercut` checkbox is visible and unchecked
-4. Click the checkbox label (`.input-checkbox`), await the PATCH response
-5. Reload the page, assert the checkbox is now checked (end-state persistence)
+1. Provision a login user (+ picking profile with a pick-to structure) via masterdata API
+2. Log in, open the Mobile UI Kommissionierprofil window and its singleton record
+3. Assert `IsWarnShelfLifeUndercut` checkbox renders; capture its current value
+4. Click the checkbox label (`.input-checkbox`), await the PATCH; assert the value flipped
+5. Reload the page, assert the flipped value persisted (end-state persistence)
 
 **Key Validations**:
-- Field renders in the AD layout (AD_Window_ID 541744)
+- Field renders in the AD layout (AD_Window_ID 541743, picking-profile window)
 - YesNo checkbox is interactive via the `.input-checkbox` label
-- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541744/<id>`
+- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541743/<id>`
 - Value persists after a full page reload (DB-level persistence)
+- State-agnostic: the profile is a per-client singleton shared across scenarios, so the test
+  reads-then-flips rather than assuming an initial value
 
 **Components Tested**:
-- Workplace window (AD_Window_ID 541744)
-- C_Workplace.IsWarnShelfLifeUndercut YesNo field
-- Workplace masterdata provisioning (`workplaces` + `warehouses` keys)
+- Mobile UI Kommissionierprofil window (AD_Window_ID 541743)
+- MobileUI_UserProfile_Picking.IsWarnShelfLifeUndercut YesNo field
+- Picking-profile masterdata provisioning (`mobileConfig.picking` key)
 
 ---
 

@@ -539,17 +539,24 @@ public class PickingJobTestHelper
 	}
 
 	/**
-	 * Creates a new workplace with the given {@code warnShelfLifeUndercut} flag and assigns the given user to it.
-	 * Used by shelf-life guard integration tests.
+	 * Sets the {@code isWarnShelfLifeUndercut} flag on the picking profile and creates a workplace assigned to the given user.
+	 * The guard is now driven by the picking profile ({@link de.metas.handlingunits.picking.config.mobileui.PickingJobOptions#isWarnShelfLifeUndercut()});
+	 * the workplace itself no longer carries this flag.
 	 */
 	public Workplace createWorkplaceWithShelfLifeFlag(
 			final boolean warnShelfLifeUndercut,
 			@NonNull final UserId userId)
 	{
+		// Set the flag on the picking profile so the guard reads it from there.
+		configService.update(profile -> profile.toBuilder()
+				.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+						.isWarnShelfLifeUndercut(warnShelfLifeUndercut)
+						.build())
+				.build());
+
 		final Workplace wp = workplaceService.create(WorkplaceCreateRequest.builder()
 				.name("workplace-shelflife-" + warnShelfLifeUndercut)
 				.warehouseId(shipFromLocatorId.getWarehouseId())
-				.warnShelfLifeUndercut(warnShelfLifeUndercut)
 				.build());
 		workplaceService.assignWorkplace(userId, wp.getId());
 		return wp;
