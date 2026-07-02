@@ -13,3 +13,14 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 -- 2026-07-02T08:50:30.046Z
 /* DDL */  select update_Process_Para_Translation_From_AD_Element(584306)
 ;
+
+-- Process: M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference(de.metas.inoutcandidate.process.M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference)
+-- ParameterName: IsConfirmedBySupplier
+-- 2026-07-02T12:31:06.396Z
+UPDATE AD_Process_Para SET DefaultValue='',Updated=TO_TIMESTAMP('2026-07-02 12:31:06.396000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Process_Para_ID=543260
+;
+
+-- Column: M_ReceiptSchedule.IsConfirmedBySupplier
+-- 2026-07-02T08:51:49.330Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2026-07-02 08:51:49.330000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=591673
+;

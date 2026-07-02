@@ -868,7 +868,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	}
 
 	@Override
-	public int updateDatePromisedOverrideAndPOReference(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDateTime datePromisedOverride, @Nullable final String poReference, @Nullable Boolean isConfirmedBySupplier)
+	public int updateDatePromisedOverridePOReferenceAndConfirmedBySupplier(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDateTime datePromisedOverride, @Nullable final String poReference, @Nullable Boolean isConfirmedBySupplier)
 	{
 		if (datePromisedOverride == null && Check.isBlank(poReference))
 		{
@@ -889,7 +889,10 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_POReference, poReference);
 		}
 
-		updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_IsConfirmedBySupplier, isConfirmedBySupplier);
+		if (isConfirmedBySupplier != null)
+		{
+			updater.addSetColumnValue(I_M_ReceiptSchedule.COLUMNNAME_IsConfirmedBySupplier, isConfirmedBySupplier);
+		}
 
 		return queryBL.createQueryBuilder(I_M_ReceiptSchedule.class)
 				.setOnlySelection(pinstanceId)

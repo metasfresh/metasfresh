@@ -84,7 +84,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
 					.markAsUserValidationError();
 		}
-		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference, isConfirmedBySupplier);
+		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverridePOReferenceAndConfirmedBySupplier(getPinstanceId(), datePromisedOverride, poReference, isConfirmedBySupplier);
 		addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 
 		return MSG_OK;
