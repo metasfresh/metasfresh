@@ -153,4 +153,18 @@ class DistributionJobTest
 		assertThat(result.toBigDecimal()).isEqualByComparingTo("8");
 		assertThat(result.getUomId()).isEqualTo(UomId.ofRepoId(stk.getC_UOM_ID()));
 	}
+
+	@Test
+	void getSingleUnitQuantityOrNull_sumsAllLines_evenWhenTwoLinesCarryTheSameQtyAndUOM()
+	{
+		final I_C_UOM stk = BusinessTestHelper.createUOM("Stk", 0, 0);
+
+		// Two lines each moving 5 Stk must total 10 — they must NOT be collapsed to a single 5 (the .distinct() trap).
+		final DistributionJob job = jobWithLines(ImmutableList.of(line(1, stk, "5"), line(2, stk, "5")));
+
+		final Quantity result = job.getSingleUnitQuantityOrNull();
+		assertThat(result).isNotNull();
+		assertThat(result.toBigDecimal()).isEqualByComparingTo("10");
+		assertThat(result.getUomId()).isEqualTo(UomId.ofRepoId(stk.getC_UOM_ID()));
+	}
 }

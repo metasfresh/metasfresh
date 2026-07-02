@@ -253,9 +253,10 @@ public class DistributionJob
 	@Nullable
 	public Quantity getSingleUnitQuantityOrNull()
 	{
+		// Sum every line's qty (no .distinct(): two lines with an equal qty+UOM must both count,
+		// otherwise the caption under-reports the total).
 		final MixedQuantity qty = lines.stream()
 				.map(DistributionJobLine::getQtyToMove)
-				.distinct()
 				.collect(MixedQuantity.collectAndSum());
 
 		// A distribution job whose lines span multiple UOMs has no single caption quantity;
