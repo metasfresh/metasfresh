@@ -153,7 +153,7 @@ class PickingJobPickShelfLifeGuard_Test
 		@Test
 		void shelfLifeTooShortException_is_thrown_and_nothing_is_picked()
 		{
-			// Workplace with warnShelfLifeUndercut=true, assigned to PICKER_ID
+			// Picking profile with warnShelfLifeUndercut=true; picker assigned to a workplace
 			helper.createWorkplaceWithShelfLifeFlag(true, PICKER_ID);
 
 			final PickingJob pickingJob = buildPickingJob(BEST_BEFORE_UNDERCUT);
@@ -237,7 +237,7 @@ class PickingJobPickShelfLifeGuard_Test
 		@Test
 		void pick_succeeds_without_shelf_life_check_when_flag_is_off()
 		{
-			// Workplace with warnShelfLifeUndercut=false (flag OFF), assigned to PICKER_ID
+			// Picking profile with warnShelfLifeUndercut=false (flag OFF); picker assigned to a workplace
 			helper.createWorkplaceWithShelfLifeFlag(false, PICKER_ID);
 
 			// HU best-before clearly undercutting — but guard must NOT fire because flag is off

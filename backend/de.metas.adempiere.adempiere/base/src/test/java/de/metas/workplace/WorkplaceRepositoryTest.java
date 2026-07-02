@@ -140,4 +140,5 @@ public class WorkplaceRepositoryTest
 				.build());
 		assertFalse(withFlagFalse.isWarnShelfLifeUndercut(), "Workplace created with warnShelfLifeUndercut=false must load back as false");
 	}
+
 }
