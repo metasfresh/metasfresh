@@ -100,7 +100,6 @@ import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.common.collect.ImmutableList;
-import org.compiere.SpringContextHolder;
 
 public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
@@ -870,7 +869,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public int updateDatePromisedOverridePOReferenceAndConfirmedBySupplier(@NonNull final PInstanceId pinstanceId, @Nullable final LocalDateTime datePromisedOverride, @Nullable final String poReference, @Nullable Boolean isConfirmedBySupplier)
 	{
-		if (datePromisedOverride == null && Check.isBlank(poReference))
+		if (datePromisedOverride == null && Check.isBlank(poReference) && isConfirmedBySupplier == null)
 		{
 			throw new AdempiereException(MSG_DATEPROMISEDOVERRIDE_POREFERENCE_VALIDATION_ERROR)
 					.markAsUserValidationError();
