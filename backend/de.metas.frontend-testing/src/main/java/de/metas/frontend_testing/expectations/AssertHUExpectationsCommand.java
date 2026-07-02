@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.expectations;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.frontend_testing.expectations.request.JsonHUExpectation;
 import de.metas.frontend_testing.expectations.request.QtyAndUOMString;
@@ -90,6 +92,28 @@ class AssertHUExpectationsCommand
 				final LocatorId expectedLocatorId = context.getId(expectation.getLocator(), LocatorId.class);
 				assertThat(actualLocatorId).as("Locator").isEqualTo(expectedLocatorId);
 			}
+		}
+
+		if (expectation.getBpartner() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerId expectedBPartnerId = expectation.getBpartner().isNullPlaceholder()
+					? null
+					: context.getId(expectation.getBpartner(), BPartnerId.class);
+			assertThat(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID()))
+					.as("C_BPartner_ID")
+					.isEqualTo(expectedBPartnerId);
+		}
+
+		if (expectation.getBpartnerLocation() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerLocationId expectedBPLocationId = expectation.getBpartnerLocation().isNullPlaceholder()
+					? null
+					: context.getBPartnerLocationId(expectation.getBpartnerLocation());
+			assertThat(BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID()))
+					.as("C_BPartner_Location_ID")
+					.isEqualTo(expectedBPLocationId);
 		}
 
 		if (expectation.getHuStatus() != null)

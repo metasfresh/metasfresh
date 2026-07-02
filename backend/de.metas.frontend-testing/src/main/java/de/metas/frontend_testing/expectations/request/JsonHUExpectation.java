@@ -17,6 +17,8 @@ public class JsonHUExpectation
 {
 	@Nullable Identifier warehouse;
 	@Nullable Identifier locator;
+	@Nullable Identifier bpartner;
+	@Nullable Identifier bpartnerLocation;
 	@Nullable String huStatus;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
