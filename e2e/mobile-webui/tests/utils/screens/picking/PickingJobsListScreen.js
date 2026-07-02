@@ -92,30 +92,7 @@ export const PickingJobsListScreen = {
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                // The launcher list is websocket-driven: it re-renders — and may reorder — on every
-                // push, and tapping a launcher fires an async start request whose navigation only
-                // happens in the response callback. Tapping before the list has settled, or while a
-                // push is reordering it, can misdirect the tap to a neighbouring launcher and overrun
-                // the downstream screen wait. So settle the list first, then tap the launcher
-                // re-resolved from its stable identity rather than from its (reorder-prone) position.
-
-                // Settle: the addressed launcher must be painted and the loading spinner cleared.
-                // This is only a readiness gate, so it can use the full (index + attributes) locator;
-                // it need not be the same query as the final pin below.
-                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-                await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
-
-                // Pin by identity attributes when the caller gave one (qtyToDeliver / customerLocationId):
-                // an attribute locator resolves the same launcher no matter how a push reorders the
-                // list, and asserting exactly one match rules out an ambiguous selection. Fall back to
-                // the positional index only when no identifying attribute was provided — that fallback
-                // is reorder-safe only when the list is already narrowed to a single candidate (e.g. a
-                // prior filterByDocumentNo, or single-order masterdata); against a genuinely
-                // multi-launcher unfiltered list, pass qtyToDeliver / customerLocationId instead.
-                const target = (qtyToDeliver != null || customerLocationId != null)
-                    ? locateJobButtons({ qtyToDeliver, customerLocationId })
-                    : locateJobButtons({ index });
-                await expect(target).toHaveCount(1);
+                const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId });
                 await target.tap();
 
                 await PickingJobScreen.waitForScreen();
@@ -158,6 +135,36 @@ export const PickingJobsListScreen = {
         await ApplicationsListScreen.waitForScreen();
     }),
 
+};
+
+/**
+ * Settle the websocket-driven launcher list, then pin the tap target by stable identity so a push
+ * reordering the list can't misdirect the tap: a launcher that exposes a stable data-testid (e.g.
+ * distribution) is tapped by it (unique, reorder-immune); one that exposes none (picking launchers
+ * currently do) degrades to its identifying attribute/index locator. Presence of a testId is read at
+ * runtime, never assumed.
+ * @returns {Promise<import('@playwright/test').Locator>} the locator to tap
+ */
+const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationId }) => {
+    // Settle: the addressed launcher must be painted and the loading spinner cleared before we tap.
+    await locateJobButtons({ index, qtyToDeliver, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+
+    let identified;
+    if (qtyToDeliver != null || customerLocationId != null) {
+        // Attribute locator re-resolves the same launcher regardless of push-reordering; exactly one must match.
+        identified = locateJobButtons({ qtyToDeliver, customerLocationId });
+        await expect(identified).toHaveCount(1);
+    } else {
+        // Bare index is reorder-safe only against a single-candidate list (a prior filterByDocumentNo,
+        // or single-order masterdata); assert the unfiltered launcher set is that single candidate, so
+        // a future caller passing an index against a multi-launcher list fails loud instead of racing.
+        await expect(locateJobButtons()).toHaveCount(1);
+        identified = locateJobButtons({ index });
+    }
+
+    const testId = await identified.getAttribute('data-testid');
+    return (testId != null && testId.length > 0) ? page.getByTestId(testId) : identified;
 };
 
 const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
