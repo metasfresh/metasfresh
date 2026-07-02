@@ -151,6 +151,13 @@ public final class PPOrderCosts
 		changeExistingCost(costSegmentAndElement, cost -> cost.subtractingAccumulatedAmountAndQty(amt, qty, uomConverter));
 	}
 
+	public void updatePriceForCostSegmentAndElement(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CostPrice newPrice)
+	{
+		changeExistingCost(costSegmentAndElement, cost -> cost.withPrice(newPrice));
+	}
+
 	private void changeExistingCost(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final UnaryOperator<PPOrderCost> mapper)

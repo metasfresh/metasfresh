@@ -205,12 +205,11 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 		final CostDetailCreateRequest requestEffective;
 		if (!request.isReversal())
 		{
-			final CostPrice price = orderCosts.getPriceByCostSegmentAndElement(costSegmentAndElement)
-					.orElseThrow(() -> new AdempiereException("No cost price found for " + costSegmentAndElement + " in " + orderCosts));
-
+			final CostPrice price = currentCost.getCostPrice();
 			final Quantity qty = utils.convertToUOM(request.getQty(), price.getUomId(), costSegmentAndElement.getProductId());
 			final CostAmount amt = price.multiply(qty).roundToPrecisionIfNeeded(currentCost.getPrecision());
 			requestEffective = request.withAmountAndQty(amt, qty);
+			orderCosts.updatePriceForCostSegmentAndElement(costSegmentAndElement, price);
 		}
 		else
 		{
