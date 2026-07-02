@@ -101,13 +101,18 @@ export const PickingJobsListScreen = {
                 // re-resolved from its stable identity rather than from its (reorder-prone) position.
 
                 // Settle: the addressed launcher must be painted and the loading spinner cleared.
+                // This is only a readiness gate, so it can use the full (index + attributes) locator;
+                // it need not be the same query as the final pin below.
                 await locateJobButtons({ index, qtyToDeliver, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
                 await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
 
                 // Pin by identity attributes when the caller gave one (qtyToDeliver / customerLocationId):
                 // an attribute locator resolves the same launcher no matter how a push reorders the
                 // list, and asserting exactly one match rules out an ambiguous selection. Fall back to
-                // the positional index only when no identifying attribute was provided.
+                // the positional index only when no identifying attribute was provided — that fallback
+                // is reorder-safe only when the list is already narrowed to a single candidate (e.g. a
+                // prior filterByDocumentNo, or single-order masterdata); against a genuinely
+                // multi-launcher unfiltered list, pass qtyToDeliver / customerLocationId instead.
                 const target = (qtyToDeliver != null || customerLocationId != null)
                     ? locateJobButtons({ qtyToDeliver, customerLocationId })
                     : locateJobButtons({ index });
