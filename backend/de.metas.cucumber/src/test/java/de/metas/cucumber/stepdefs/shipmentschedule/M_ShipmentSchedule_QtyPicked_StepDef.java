@@ -189,18 +189,18 @@ public class M_ShipmentSchedule_QtyPicked_StepDef
 			@NonNull final DataTableRow expected,
 			@NonNull final I_M_ShipmentSchedule_QtyPicked actual)
 	{
-		final Optional<BigDecimal> qtyPicked = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked);
-		if (qtyPicked.isPresent() && actual.getQtyPicked().compareTo(qtyPicked.get()) != 0)
+		final BigDecimal qtyPicked = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyPicked).orElse(null);
+		if (qtyPicked != null && actual.getQtyPicked().compareTo(qtyPicked) != 0)
 		{
 			return false;
 		}
-		final Optional<BigDecimal> qtyTU = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyTU);
-		if (qtyTU.isPresent() && actual.getQtyTU().compareTo(qtyTU.get()) != 0)
+		final BigDecimal qtyTU = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyTU).orElse(null);
+		if (qtyTU != null && actual.getQtyTU().compareTo(qtyTU) != 0)
 		{
 			return false;
 		}
-		final Optional<BigDecimal> qtyLU = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyLU);
-		if (qtyLU.isPresent() && actual.getQtyLU().compareTo(qtyLU.get()) != 0)
+		final BigDecimal qtyLU = expected.getAsOptionalBigDecimal(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_QtyLU).orElse(null);
+		if (qtyLU != null && actual.getQtyLU().compareTo(qtyLU) != 0)
 		{
 			return false;
 		}
