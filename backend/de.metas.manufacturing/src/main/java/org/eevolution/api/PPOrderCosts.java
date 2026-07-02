@@ -151,6 +151,11 @@ public final class PPOrderCosts
 		changeExistingCost(costSegmentAndElement, cost -> cost.subtractingAccumulatedAmountAndQty(amt, qty, uomConverter));
 	}
 
+	/**
+	 * Sets the current-cost price snapshot on the existing cost row for the given segment.
+	 * {@code newPrice} and the existing row share the same {@link CostSegmentAndElement}, so their UOM is
+	 * consistent (the underlying {@code withPrice} rebuild validates UOM match and would throw on mismatch).
+	 */
 	public void updatePriceForCostSegmentAndElement(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final CostPrice newPrice)
