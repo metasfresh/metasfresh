@@ -12,7 +12,7 @@ import { BarcodeScannerComponent } from '../../utils/components/BarcodeScannerCo
 /**
  * Tests for the shelf-life (MHD / RLZ) warning dialog in mobile UI picking.
  *
- * When C_Workplace.IsWarnShelfLifeUndercut=Y and the picked HU's HU_BestBeforeDate
+ * When the mobile picking profile's IsWarnShelfLifeUndercut=Y and the picked HU's HU_BestBeforeDate
  * would undercut the customer's guaranteed shelf life, the backend throws RLZ_TooShort.
  * The mobile frontend shows a Yes/No confirmation dialog with the server message.
  * - Yes: confirms the pick, pick completes.
@@ -44,8 +44,7 @@ const ORDER_QTY = 10;
 //
 // ----- Masterdata builder -----
 // One LU containing ORDER_QTY CUs of P1 (LU/CU pick via the quantity dialog).
-// warnShelfLifeUndercut controls the workplace flag; the logged-in user is assigned to WP1
-// (the guard reads the picker's own workplace, not the order's).
+// warnShelfLifeUndercut controls the mobile picking-profile flag; the logged-in user is assigned to WP1.
 // bestBeforeDate sets HU_BestBeforeDate on the HU.
 //
 const createMasterdata = async ({ warnShelfLifeUndercut, bestBeforeDate }) => {
@@ -62,11 +61,12 @@ const createMasterdata = async ({ warnShelfLifeUndercut, bestBeforeDate }) => {
                     pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
                     shipOnCloseLU: false,
                     allowCompletingPartialPickingJob: true,
+                    warnShelfLifeUndercut,
                 },
             },
             bpartners: { BP1: {} },
             warehouses: { wh: {} },
-            workplaces: { WP1: { warehouse: 'wh', warnShelfLifeUndercut } },
+            workplaces: { WP1: { warehouse: 'wh' } },
             pickingSlots: { slot1: {} },
             products: {
                 P1: {
@@ -132,7 +132,7 @@ test('RLZ warning: flag ON, short shelf life → confirm Yes → pick completes'
         // underneath while the RLZ confirmation dialog appears on top.
         await GetQuantityDialog.clickDoneExpectingFollowupDialog();
 
-        // Backend threw RLZ_TooShort → frontend shows the "RLZ zu kurz!" confirmation dialog
+        // Backend threw RLZ_TooShort → frontend shows the "Restlaufzeit unterschreitet …" confirmation dialog
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
 
@@ -176,7 +176,7 @@ test('RLZ warning: flag ON, short shelf life → decline No → pick aborted', a
         await GetQuantityDialog.expectQtyEntered(ORDER_QTY);
         await GetQuantityDialog.clickDoneExpectingFollowupDialog();
 
-        // Backend threw RLZ_TooShort → frontend shows the "RLZ zu kurz!" confirmation dialog
+        // Backend threw RLZ_TooShort → frontend shows the "Restlaufzeit unterschreitet …" confirmation dialog
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickNoButton();
 
