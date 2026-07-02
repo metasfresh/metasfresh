@@ -1,10 +1,12 @@
 -- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_OrderBoard_v.sql
--- Fixes ordering: view DDL must precede 5809900_sys_me03_30411_OrderBoard_table.sql (AD_Table/AD_Column registration)
--- Run mode: SWING_CLIENT
+-- Initial creation of M_Picking_OrderBoard_v via db_alter_view (handles both create-new and replace).
+-- PK uses sign-bit mask (& x'7fffffff') to guarantee value >= 0 for TableRecordReference.of().
 
-CREATE OR REPLACE VIEW M_Picking_OrderBoard_v AS
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;
+
+CREATE OR REPLACE VIEW M_Picking_OrderBoard_v$new AS
 SELECT
-    ('x' || substr(md5(
+    (('x' || substr(md5(
         b.m_product_id::text || '_' ||
         b.c_uom_id::text || '_' ||
         COALESCE(b.isassigned, '') || '_' ||
@@ -13,7 +15,7 @@ SELECT
         loc.c_country_id::text || '_' ||
         b.ad_client_id::text || '_' ||
         b.ad_org_id::text
-    ), 1, 8))::bit(32)::int                        AS M_Picking_OrderBoard_v_ID,
+    ), 1, 8))::bit(32) & x'7fffffff'::bit(32))::int AS M_Picking_OrderBoard_v_ID,
     b.m_product_id,
     prod.value                                      AS ProductValue,
     prod.name                                       AS ProductName,
@@ -55,5 +57,13 @@ GROUP BY
     loc.c_country_id,
     ctry.name,
     b.ad_client_id,
-    b.ad_org_id
-;
+    b.ad_org_id;
+
+SELECT db_alter_view(
+    'M_Picking_OrderBoard_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('M_Picking_OrderBoard_v$new'))
+);
+
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;

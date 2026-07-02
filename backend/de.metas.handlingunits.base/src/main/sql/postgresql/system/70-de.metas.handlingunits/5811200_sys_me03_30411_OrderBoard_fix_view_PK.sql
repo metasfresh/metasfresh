@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_OrderBoard_v.sql
 -- Fix M_Picking_OrderBoard_v: synthetic PK could produce negative values.
 -- ('x'||substr(md5(...),'1,8))::bit(32)::int is a signed 32-bit cast — can be negative.
 -- Mask the sign bit with & x'7fffffff'::bit(32) to ensure the result is always >= 0,
