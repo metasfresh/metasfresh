@@ -138,6 +138,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsToClear;
@@ -510,6 +511,36 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	/**
+	 * Validates fields on existing {@link I_C_Invoice_Candidate} records.
+	 *
+	 * <p>DataTable columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} (required) — identifier registered via "after not more than Xs, C_Invoice_Candidate are found:" or similar</li>
+	 *   <li>{@code QtyToInvoice} (optional)</li>
+	 *   <li>{@code QtyOrdered} (optional)</li>
+	 *   <li>{@code QtyDelivered} (optional)</li>
+	 *   <li>{@code QtyEntered} (optional)</li>
+	 *   <li>{@code QtyInvoiced} (optional)</li>
+	 *   <li>{@code NetAmtToInvoice} (optional)</li>
+	 *   <li>{@code C_Order_ID} (optional)</li>
+	 *   <li>{@code C_OrderLine_ID} (optional)</li>
+	 *   <li>{@code PaymentRule} (optional)</li>
+	 *   <li>{@code M_Product_ID} (optional)</li>
+	 *   <li>{@code Processed} (optional)</li>
+	 *   <li>{@code IsWithoutCharge} (optional)</li>
+	 *   <li>{@code Reason} (optional)</li>
+	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
+	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * And validate C_Invoice_Candidate:
+	 *   | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+	 *   | invoiceCandidate                  | D           | true          |
+	 * }</pre>
+	 */
 	@And("validate C_Invoice_Candidate:")
 	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -630,6 +661,12 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Reason)
 								.ifPresent(reason -> softly.assertThat(finalInvoiceCandidate.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice)
+								.ifPresent(isAutoInvoice -> softly.assertThat(finalInvoiceCandidate.isAutoInvoice()).as("IsAutoInvoice").isEqualTo(isAutoInvoice));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
+								.ifPresent(invoiceRule -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule()).as("InvoiceRule").isEqualTo(invoiceRule));
 
 						softly.assertAll();
 					}

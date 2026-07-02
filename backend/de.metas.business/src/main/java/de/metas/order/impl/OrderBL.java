@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.effective.BPartnerEffective;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -653,16 +654,12 @@ public class OrderBL implements IOrderBL
 			order.setDeliveryViaRule(deliveryViaRule);
 		}
 
-		//
-		// Default Invoice/Payment Rule
-		final InvoiceRule invoiceRule = isSOTrx ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
-		{
-			order.setInvoiceRule(invoiceRule.getCode());
-		}
+		// Default InvoiceRule and IsAutoInvoice from the effective bill-partner
+		final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(
+				Check.assumeNotNull(getEffectiveBillPartnerId(order), "billBPartnerId not null for order {}", order));
+		final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx);
+		order.setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+		order.setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
 
 		final String paymentRule = bp.getPaymentRule();
 		if (paymentRule != null)
