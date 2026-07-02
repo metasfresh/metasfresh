@@ -68,15 +68,16 @@ public class PickingJobBPartnerService
 
 	/**
 	 * @return C_BPartner_Product.ShelfLifeMinDays for the given (bpartner, product) pair,
-	 *         or 0 if no association exists.
+	 *         or 0 if no association exists. The org-specific row for {@code orgId} is preferred,
+	 *         with {@code OrgId.ANY} as fallback (handled by the DAO query).
 	 */
-	public int getBPartnerProductShelfLifeMinDays(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId)
+	public int getBPartnerProductShelfLifeMinDays(@NonNull final BPartnerId bpartnerId, @NonNull final ProductId productId, @NonNull final OrgId orgId)
 	{
 		final I_C_BPartner_Product bpProduct = bpartnerProductDAO.retrieveBPartnerProductAssociation(
 				Env.getCtx(),
 				bpartnerId,
 				productId,
-				OrgId.ANY);
+				orgId);
 		if (bpProduct == null)
 		{
 			return 0;
