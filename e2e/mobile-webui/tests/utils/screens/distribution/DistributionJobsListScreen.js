@@ -73,6 +73,39 @@ export const DistributionJobsListScreen = {
         await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
     }),
 
+    // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which
+    // launchers are offered), NOT ordering assertions. Each expectation is located by its
+    // testId rather than by slot, so a non-deterministic launcher render order cannot flake
+    // the check (see me03 #30784: the rendered launcher order has no id tiebreaker and can
+    // swap two launchers that are both present). Still asserts exact membership (each expected
+    // testId present exactly once, per-button props match) and exact count (no extras) — only
+    // the slot order is relaxed. Every expectation must carry a testId to be locatable.
+    expectJobButtonsInAnyOrder: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons (any order)`, async () => {
+        await test.step(`Wait for all expected buttons to be visible`, async () => {
+            for (const expectation of expectationsArray) {
+                // 'visible' (not merely 'attached'): assert the worker actually SEES the offered job,
+                // i.e. the launcher list has finished loading (spinner gone) and the button is painted.
+                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+            }
+        });
+
+        //
+        // Each expected button exists exactly once and matches its per-button expectations.
+        // Located by testId (order-independent), so slot order is irrelevant.
+        for (const expectation of expectationsArray) {
+            await expectJobButton({
+                name: `${expectation.testId}`,
+                button: locateJobButtons({ testId: expectation.testId }),
+                expectation
+            });
+        }
+
+        //
+        // Make sure we have the expected number of buttons (no unexpected extras).
+        // NOTE: we do this at the end because expect does not wait for the elements to stabilize
+        await expect(locateJobButtons()).toHaveCount(expectationsArray.length);
+    }),
+
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
         const row = await page.locator(
             `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
