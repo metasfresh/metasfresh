@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service.shelflife;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,12 +35,15 @@ public class PickingShelfLifeCheck
 	 *
 	 * @param productId      the product being picked
 	 * @param bpartnerId     the customer business partner
+	 * @param orgId          the org of the shipment schedule (used to resolve the org-specific
+	 *                       {@code C_BPartner_Product} row, falling back to {@code OrgId.ANY})
 	 * @param bestBeforeDate the best-before / MHD date of the HU (may be {@code null} — treated as "no undercut")
 	 * @param deliveryDate   the planned delivery date
 	 */
 	public boolean isRemainingShelfLifeTooShort(
 			@NonNull final ProductId productId,
 			@NonNull final BPartnerId bpartnerId,
+			@NonNull final OrgId orgId,
 			@Nullable final LocalDate bestBeforeDate,
 			@NonNull final LocalDate deliveryDate)
 	{
@@ -48,7 +52,7 @@ public class PickingShelfLifeCheck
 			return false;
 		}
 
-		final int guaranteedDays = resolveGuaranteedDays(productId, bpartnerId);
+		final int guaranteedDays = resolveGuaranteedDays(productId, bpartnerId, orgId);
 		if (guaranteedDays <= 0)
 		{
 			return false;
@@ -66,9 +70,9 @@ public class PickingShelfLifeCheck
 	 *   <li>{@code M_Product.GuaranteeDaysMin} (with fallback to product category)</li>
 	 * </ol>
 	 */
-	private int resolveGuaranteedDays(@NonNull final ProductId productId, @NonNull final BPartnerId bpartnerId)
+	private int resolveGuaranteedDays(@NonNull final ProductId productId, @NonNull final BPartnerId bpartnerId, @NonNull final OrgId orgId)
 	{
-		final int bpShelfLifeMinDays = bpartnerService.getBPartnerProductShelfLifeMinDays(bpartnerId, productId);
+		final int bpShelfLifeMinDays = bpartnerService.getBPartnerProductShelfLifeMinDays(bpartnerId, productId, orgId);
 		if (bpShelfLifeMinDays > 0)
 		{
 			return bpShelfLifeMinDays;
