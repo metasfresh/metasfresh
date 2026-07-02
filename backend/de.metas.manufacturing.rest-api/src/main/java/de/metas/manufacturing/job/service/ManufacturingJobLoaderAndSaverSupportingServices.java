@@ -33,6 +33,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -69,6 +70,7 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	@NonNull private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	@NonNull private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	@NonNull private final IPPOrderRoutingRepository ppOrderRoutingRepository = Services.get(IPPOrderRoutingRepository.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -97,6 +99,8 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 
 	@NonNull
 	public String getProductValue(@NonNull final ProductId productId) {return productBL.getProductValue(productId);}
+
+	public IUOMConversionBL getUOMConversionBL() {return uomConversionBL;}
 
 	public I_PP_Order getPPOrderRecordById(@NonNull final PPOrderId ppOrderId) {return ppOrderBL.getById(ppOrderId);}
 

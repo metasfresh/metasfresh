@@ -9,10 +9,14 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import lombok.ToString;
 import lombok.Value;
 import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
@@ -35,6 +39,11 @@ public class RawMaterialsIssueLine
 	@Nullable IssuingToleranceSpec issuingToleranceSpec;
 	@NonNull ImmutableList<RawMaterialsIssueStep> steps;
 
+	// Provided by the caller so qtyIssued can be expressed in the BOM line's UOM (see computeQtyIssued).
+	// Not part of the line's identity, hence excluded from equals/hashCode/toString.
+	@EqualsAndHashCode.Exclude @ToString.Exclude
+	@NonNull IUOMConversionBL uomConversionBL;
+
 	@NonNull Quantity qtyIssued; // computed
 	@NonNull WFActivityStatus status;
 	int seqNo;
@@ -50,6 +59,7 @@ public class RawMaterialsIssueLine
 			@NonNull final Quantity qtyToIssue,
 			@Nullable final IssuingToleranceSpec issuingToleranceSpec,
 			@NonNull final ImmutableList<RawMaterialsIssueStep> steps,
+			@NonNull final IUOMConversionBL uomConversionBL,
 			final int seqNo)
 	{
 		this.orderBOMLineId = orderBOMLineId;
@@ -61,18 +71,31 @@ public class RawMaterialsIssueLine
 		this.qtyToIssue = qtyToIssue;
 		this.issuingToleranceSpec = issuingToleranceSpec;
 		this.steps = steps;
+		this.uomConversionBL = uomConversionBL;
 
-		this.qtyIssued = computeQtyIssued(this.steps).orElseGet(qtyToIssue::toZero);
+		this.qtyIssued = computeQtyIssued(this.steps, this.productId, this.qtyToIssue.getUomId(), this.uomConversionBL)
+				.orElseGet(qtyToIssue::toZero);
 		this.seqNo = seqNo;
 		this.status = computeStatus(this.qtyToIssue, this.qtyIssued, this.steps);
 	}
 
-	private static Optional<Quantity> computeQtyIssued(final @NonNull ImmutableList<RawMaterialsIssueStep> steps)
+	/**
+	 * Sums the steps' issued quantities, expressed in {@code targetUomId} (the BOM line's UOM). A step's
+	 * issued qty comes back in the picked HU's UOM (e.g. Stk for a kg BOM line), so each is converted to
+	 * {@code targetUomId} via the product's UOM conversion before summing — keeping {@code qtyIssued}
+	 * comparable to {@code qtyToIssue}.
+	 */
+	private static Optional<Quantity> computeQtyIssued(
+			final @NonNull ImmutableList<RawMaterialsIssueStep> steps,
+			final @NonNull ProductId productId,
+			final @NonNull UomId targetUomId,
+			final @NonNull IUOMConversionBL uomConversionBL)
 	{
 		return steps.stream()
 				.map(RawMaterialsIssueStep::getIssued)
 				.filter(Objects::nonNull)
 				.map(PPOrderIssueSchedule.Issued::getQtyIssued)
+				.map(qtyIssued -> uomConversionBL.convertQuantityTo(qtyIssued, productId, targetUomId))
 				.reduce(Quantity::add);
 	}
 

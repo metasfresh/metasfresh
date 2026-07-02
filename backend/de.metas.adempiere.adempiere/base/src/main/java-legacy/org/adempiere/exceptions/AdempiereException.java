@@ -363,6 +363,20 @@ public class AdempiereException extends RuntimeException
 		this(Env.getAD_Language(), adMessage, params);
 	}
 
+	/** Like {@link #AdempiereException(AdMessageKey, Object...)} but also keeps the underlying {@code cause}. */
+	public AdempiereException(@Nullable final Throwable cause, @NonNull final AdMessageKey adMessage, final Object... params)
+	{
+		super(cause);
+		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
+		this.messageTrl = TranslatableStrings.adMessage(adMessage, params);
+		this.userValidationError = true;
+		this.mdcContextMap = captureMDCContextMap();
+		this.errorCode = coalesce(msgBL.getErrorCode(adMessage), adMessage.toAD_Message());
+
+		setParameter("AD_Language", this.adLanguage);
+		setParameter("AD_Message", adMessage);
+	}
+
 	public AdempiereException(@Nullable final Throwable cause)
 	{
 		super(cause);

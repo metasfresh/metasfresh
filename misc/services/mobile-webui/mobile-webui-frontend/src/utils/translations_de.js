@@ -196,6 +196,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

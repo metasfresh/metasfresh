@@ -1258,6 +1258,31 @@ the eviction fix guarantees.
 **Prerequisite data**: standard demo seed (price list 2008396 + its 2015-01-01 PLV); no DB access
 
 ---
+### 5. Workplace — shelf-life-warning field
+**File**: `tests/spec/workplace-shelflife-field.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~2 seconds per language
+
+**Workflow**:
+1. Create a warehouse + workplace (IsWarnShelfLifeUndercut=false) via masterdata API
+2. Log in, navigate directly to the workplace detail view
+3. Assert `IsWarnShelfLifeUndercut` checkbox is visible and unchecked
+4. Click the checkbox label (`.input-checkbox`), await the PATCH response
+5. Reload the page, assert the checkbox is now checked (end-state persistence)
+
+**Key Validations**:
+- Field renders in the AD layout (AD_Window_ID 541744)
+- YesNo checkbox is interactive via the `.input-checkbox` label
+- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541744/<id>`
+- Value persists after a full page reload (DB-level persistence)
+
+**Components Tested**:
+- Workplace window (AD_Window_ID 541744)
+- C_Workplace.IsWarnShelfLifeUndercut YesNo field
+- Workplace masterdata provisioning (`workplaces` + `warehouses` keys)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -1332,7 +1357,7 @@ Areas **NOT yet covered** by E2E tests:
 ## Test Quality Metrics
 
 - **Total test specs**: 60 files
-- **Total test cases**: 50+ (37 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages; product-purchase-sales-gate has 1 test × 2 languages)
+- **Total test cases**: 49+ (36 specs, many with en_US + de_DE; quick-input has 5 tests × 2 languages; zugferd-invoice has 1 test × 2 languages)
 - **Language coverage**: en_US, de_DE
 - **Success rate**: 100% passing
 - **Average execution time**: ~20 seconds per test

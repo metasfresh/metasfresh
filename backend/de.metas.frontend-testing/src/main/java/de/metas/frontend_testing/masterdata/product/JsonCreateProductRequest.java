@@ -81,6 +81,9 @@ public class JsonCreateProductRequest
 
 	@Nullable List<BPartner> bpartners;
 
+	/** M_Product.GuaranteeDaysMin — minimum guaranteed shelf-life days for this product */
+	@Nullable Integer guaranteeDaysMin;
+
 	@Nullable BOM bom;
 
 	/**
@@ -141,6 +144,8 @@ public class JsonCreateProductRequest
 	{
 		@NonNull Identifier bpartner;
 		@Nullable EAN13 ean13;
+		/** C_BPartner_Product.ShelfLifeMinDays — guaranteed shelf-life days required by this customer for this product */
+		@Nullable Integer shelfLifeMinDays;
 	}
 
 	@Value
