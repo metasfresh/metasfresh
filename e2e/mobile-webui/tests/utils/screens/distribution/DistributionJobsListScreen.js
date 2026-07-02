@@ -70,8 +70,8 @@ export const DistributionJobsListScreen = {
     // Order-INDEPENDENT variant of expectJobButtons: use for *filtering* assertions (which
     // launchers are offered), NOT ordering assertions. Each expectation is located by its
     // testId rather than by slot, so a non-deterministic launcher render order cannot flake
-    // the check (see me03 #30784: the rendered launcher order has no id tiebreaker and can
-    // swap two launchers that are both present). Still asserts exact membership (each expected
+    // the check (the rendered launcher order has no id tiebreaker and can swap two launchers
+    // that are both present). Still asserts exact membership (each expected
     // testId present exactly once, per-button props match) and exact count (no extras) — only
     // the slot order is relaxed. Every expectation must carry a testId to be locatable.
     expectJobButtonsInAnyOrder: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons (any order)`, async () => {
