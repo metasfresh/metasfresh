@@ -35,6 +35,9 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_Group;
 
+import static org.compiere.model.I_C_BP_Group.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_BP_Group.COLUMNNAME_IsAutoInvoice;
+
 /**
  * Responsible for creating {@code C_BP_Group} (business-partner group) records.
  */
@@ -53,6 +56,8 @@ public class C_BP_Group_StepDef
 	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
 	 *   <b>Name</b> — (optional) group name; auto-generated when omitted<br>
 	 *   <b>Parent_BP_Group_ID</b> — (optional, identifier-ref) parent business-partner group<br>
+	 *   <b>OPT.InvoiceRule</b> — (optional) SO invoice rule code, e.g. {@code D} (AfterDelivery), {@code I} (Immediate)<br>
+	 *   <b>OPT.IsAutoInvoice</b> — (optional) auto-invoice flag; {@code Y}/{@code N}/{@code null/empty} = not set<br>
 	 *   <b>IsDeviatingBillBPartner</b> — (optional, default false) redirects the order's bill-partner to this group's Bill_BPartner<br>
 	 *   <b>Bill_BPartner_ID</b> — (optional, identifier-ref) deviating bill-to partner for the group<br>
 	 *   <b>Bill_Location_ID</b> — (optional, identifier-ref) deviating bill-to location for the group<br>
@@ -60,8 +65,8 @@ public class C_BP_Group_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_BP_Groups:
-	 *   | Identifier       | IsDeviatingBillBPartner | Bill_BPartner_ID  |
-	 *   | deviatingBillGrp | Y                       | centralBillingBP  |
+	 *   | Identifier | OPT.InvoiceRule | OPT.IsAutoInvoice |
+	 *   | group1     | D               | Y                 |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_BP_Groups:")
@@ -80,6 +85,12 @@ public class C_BP_Group_StepDef
 					row.getAsOptionalIdentifier(I_C_BP_Group.COLUMNNAME_Parent_BP_Group_ID)
 							.map(bpGroupTable::getId)
 							.ifPresent(parentId -> bpGroupRecord.setParent_BP_Group_ID(parentId.getRepoId()));
+
+					row.getAsOptionalString(COLUMNNAME_InvoiceRule)
+							.ifPresent(bpGroupRecord::setInvoiceRule);
+
+					row.getAsOptionalString(COLUMNNAME_IsAutoInvoice)
+							.ifPresent(bpGroupRecord::setIsAutoInvoice);
 
 					row.getAsOptionalBoolean(I_C_BP_Group.COLUMNNAME_IsDeviatingBillBPartner)
 							.ifPresent(bpGroupRecord::setIsDeviatingBillBPartner);

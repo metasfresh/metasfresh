@@ -28,6 +28,8 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.exceptions.BPartnerNoShipToAddressException;
+import de.metas.bpartner.effective.BPartnerEffective;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
@@ -135,6 +137,7 @@ public class MOrder extends X_C_Order implements IDocument
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final SpringContextHolder.Lazy<BPartnerEffectiveBL> bpartnerEffectiveBL = SpringContextHolder.lazyBean(BPartnerEffectiveBL.class);
 
 	/**************************************************************************
 	 * Default Constructor
@@ -453,14 +456,16 @@ public class MOrder extends X_C_Order implements IDocument
 			setDeliveryViaRule(ss);
 		}
 		// Default Invoice/Payment Rule
-
-		final InvoiceRule invoiceRule = isSOTrx() ?
-				InvoiceRule.ofNullableCode(bp.getInvoiceRule()) :
-				InvoiceRule.ofNullableCode(bp.getPO_InvoiceRule());
-
-		if (invoiceRule != null)
+		// Use effective bill partner so group-chain InvoiceRule / IsAutoInvoice are resolved — mirrors OrderBL.setBPartner.
+		// setC_BPartner_ID is called above, so getEffectiveBillPartnerId coalesces correctly.
 		{
-			setInvoiceRule(invoiceRule.getCode());
+			final BPartnerId billBPartnerId = Check.assumeNotNull(
+					orderBL.getEffectiveBillPartnerId(this),
+					"billBPartnerId not null; setC_BPartner_ID must be called before this block");
+			final BPartnerEffective bpEffective = bpartnerEffectiveBL.get().getById(billBPartnerId);
+			final SOTrx soTrx = SOTrx.ofBoolean(isSOTrx());
+			setInvoiceRule(bpEffective.getInvoiceRule(soTrx).getCode());
+			setIsAutoInvoice(bpEffective.isAutoInvoice(soTrx));
 		}
 
 		if (isSOTrx() && Check.isNotBlank(bp.getPaymentRule()))
