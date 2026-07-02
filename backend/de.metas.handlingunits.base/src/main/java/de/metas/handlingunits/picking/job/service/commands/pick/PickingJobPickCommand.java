@@ -1035,7 +1035,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), bestBefore, deliveryDate))
+		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), ssi.getClientAndOrgId().getOrgId(), bestBefore, deliveryDate))
 		{
 			throw new ShelfLifeTooShortException();
 		}
