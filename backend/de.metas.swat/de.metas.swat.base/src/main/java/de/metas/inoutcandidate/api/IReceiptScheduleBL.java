@@ -239,7 +239,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
-	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDateTime datePromisedOverride, @Nullable String poReference);
+	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDateTime datePromisedOverride, @Nullable String poReference, @Nullable Boolean isConfirmedBySupplier);
 
 	/**
 	 * Reopen all closed receipt schedules belonging to the given order's lines,

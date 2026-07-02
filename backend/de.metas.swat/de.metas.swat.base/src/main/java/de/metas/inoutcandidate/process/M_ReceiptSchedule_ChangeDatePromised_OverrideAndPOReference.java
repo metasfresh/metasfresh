@@ -50,6 +50,9 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_POReference)
 	private String poReference;
 
+	@Param(parameterName = I_M_ReceiptSchedule.COLUMNNAME_IsConfirmedBySupplier)
+	private Boolean isConfirmedBySupplier;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -81,7 +84,7 @@ public class M_ReceiptSchedule_ChangeDatePromised_OverrideAndPOReference extends
 			throw new AdempiereException(MSG_NO_UNPROCESSED_LINES)
 					.markAsUserValidationError();
 		}
-		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference);
+		final int updatedCnt = receiptScheduleBL.updateDatePromisedOverrideAndPOReference(getPinstanceId(), datePromisedOverride, poReference, isConfirmedBySupplier);
 		addLog("Updated {} M_ReceiptSchedules", updatedCnt);
 
 		return MSG_OK;
