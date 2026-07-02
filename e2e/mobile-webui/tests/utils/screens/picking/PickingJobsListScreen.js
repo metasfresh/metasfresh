@@ -92,7 +92,27 @@ export const PickingJobsListScreen = {
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).tap()
+                // The launcher list is websocket-driven: it re-renders — and may reorder — on every
+                // push, and tapping a launcher fires an async start request whose navigation only
+                // happens in the response callback. Tapping before the list has settled, or while a
+                // push is reordering it, can misdirect the tap to a neighbouring launcher and overrun
+                // the downstream screen wait. So settle the list first, then tap the launcher
+                // re-resolved from its stable identity rather than from its (reorder-prone) position.
+
+                // Settle: the addressed launcher must be painted and the loading spinner cleared.
+                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+                await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+
+                // Pin by identity attributes when the caller gave one (qtyToDeliver / customerLocationId):
+                // an attribute locator resolves the same launcher no matter how a push reorders the
+                // list, and asserting exactly one match rules out an ambiguous selection. Fall back to
+                // the positional index only when no identifying attribute was provided.
+                const target = (qtyToDeliver != null || customerLocationId != null)
+                    ? locateJobButtons({ qtyToDeliver, customerLocationId })
+                    : locateJobButtons({ index });
+                await expect(target).toHaveCount(1);
+                await target.tap();
+
                 await PickingJobScreen.waitForScreen();
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
