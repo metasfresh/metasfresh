@@ -157,7 +157,7 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '993 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '989 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '983 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -238,8 +238,8 @@ test('Pick one sales order to different workplaces', async ({ page }) => {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '990 PCE' } },
                 [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '980 PCE' } },
                 [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '970 PCE' } },
-                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' } },
-                lu2: { huStatus: 'E', storages: { P1: '3 PCE', P2: '9 PCE', P3: '13 PCE' } },
+                lu1: { huStatus: 'E', storages: { P1: '7 PCE', P2: '11 PCE', P3: '17 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+                lu2: { huStatus: 'E', storages: { P1: '3 PCE', P2: '9 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
