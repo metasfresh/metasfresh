@@ -148,6 +148,8 @@ public class PickingJobPickCommand
 	private final boolean isPickingSlotRequired;
 	/** When {@code true} the picker has acknowledged the shelf-life warning; the guard is skipped. */
 	private final boolean isShelfLifeConfirmed;
+	/** When {@code true} the picking profile requires a shelf-life undercut warning before the pick can be confirmed. */
+	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
 	private final boolean serialNoPickingEnabled;
 
@@ -299,6 +301,7 @@ public class PickingJobPickCommand
 		this.graiCodes = graiCodes;
 		this.isPickingSlotRequired = pickingJobOptions.isPickingSlotRequired();
 		this.isShelfLifeConfirmed = isShelfLifeConfirmed;
+		this.isWarnShelfLifeUndercut = pickingJobOptions.isWarnShelfLifeUndercut();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -1117,7 +1120,7 @@ public class PickingJobPickCommand
 	 * Throws {@link ShelfLifeTooShortException} if:
 	 * <ol>
 	 *   <li>the picker has NOT yet confirmed the shelf-life warning ({@code isShelfLifeConfirmed == false}), AND</li>
-	 *   <li>the picker's workplace has the "warn on shelf-life undercut" flag set, AND</li>
+	 *   <li>the picking profile has the "warn on shelf-life undercut" flag set ({@link PickingJobOptions#isWarnShelfLifeUndercut()}), AND</li>
 	 *   <li>the shelf-life check determines the picked HU's best-before date is too short for the delivery date.</li>
 	 * </ol>
 	 * The exception rolls back the transaction; no stock or schedule records are changed.
@@ -1129,14 +1132,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		final UserId pickerId = _pickingJob.getLockedBy();
-		if (pickerId == null)
-		{
-			return;
-		}
-
-		final Workplace workplace = warehouseService.getWorkplaceByUserId(pickerId).orElse(null);
-		if (workplace == null || !workplace.isWarnShelfLifeUndercut())
+		if (!isWarnShelfLifeUndercut)
 		{
 			return;
 		}
@@ -1154,7 +1150,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), bestBefore, deliveryDate))
+		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), ssi.getClientAndOrgId().getOrgId(), bestBefore, deliveryDate))
 		{
 			throw new ShelfLifeTooShortException();
 		}

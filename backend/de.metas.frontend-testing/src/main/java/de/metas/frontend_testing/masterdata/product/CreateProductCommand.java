@@ -172,6 +172,10 @@ public class CreateProductCommand
 			logger.info("Set M_AttributeSet_ID={} (name={}) for product {}", attributeSet.getM_AttributeSet_ID(), attributeSetName, productRecord.getValue());
 		}
 
+		if (request.getGuaranteeDaysMin() != null)
+		{
+			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
+		}
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
 		final ProductId productId = ProductId.ofRepoId(productRecord.getM_Product_ID());

@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.service.shelflife;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -28,6 +29,7 @@ class PickingShelfLifeCheckTest
 {
 	private static final ProductId PRODUCT_ID = ProductId.ofRepoId(1);
 	private static final BPartnerId BPARTNER_ID = BPartnerId.ofRepoId(2);
+	private static final OrgId ORG_ID = OrgId.ofRepoId(3);
 
 	private PickingJobProductService productService;
 	private PickingJobBPartnerService bpartnerService;
@@ -44,7 +46,7 @@ class PickingShelfLifeCheckTest
 	/** Sets up mock guaranteed days for the given product and bpartner. */
 	private void givenGuaranteedDays(final int bpProductShelfLifeMinDays, final int productGuaranteeDaysMin)
 	{
-		when(bpartnerService.getBPartnerProductShelfLifeMinDays(BPARTNER_ID, PRODUCT_ID))
+		when(bpartnerService.getBPartnerProductShelfLifeMinDays(BPARTNER_ID, PRODUCT_ID, ORG_ID))
 				.thenReturn(bpProductShelfLifeMinDays);
 		when(productService.getGuaranteeDaysMin(PRODUCT_ID))
 				.thenReturn(productGuaranteeDaysMin);
@@ -52,7 +54,7 @@ class PickingShelfLifeCheckTest
 
 	private boolean check(@Nullable final LocalDate bestBeforeDate, final LocalDate deliveryDate)
 	{
-		return pickingShelfLifeCheck.isRemainingShelfLifeTooShort(PRODUCT_ID, BPARTNER_ID, bestBeforeDate, deliveryDate);
+		return pickingShelfLifeCheck.isRemainingShelfLifeTooShort(PRODUCT_ID, BPARTNER_ID, ORG_ID, bestBeforeDate, deliveryDate);
 	}
 
 	@Nested
