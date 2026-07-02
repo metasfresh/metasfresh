@@ -919,6 +919,12 @@ Feature: nShift Shipment
       | M_InOut_ID    | M_Product_ID | MovementQty | M_AttributeSetInstance_ID |
       | inout_coo_130 | product      | 6           | asi_IT_130                |
       | inout_coo_130 | product      | 9           | asi_DE_130                |
+    # Every shipment line the attribute-mixed TU is split into carries its own M_ShipmentSchedule_QtyPicked row —
+    # the whole-TU pick is split into one allocation per attribute group. Matched in any order (the rows are a set).
+    And validate M_ShipmentSchedule_QtyPicked records in any order for M_ShipmentSchedule identified by ss_coo_130
+      | QtyPicked | M_TU_HU_ID   |
+      | 6         | tu_mixed_130 |
+      | 9         | tu_mixed_130 |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID    | M_ShipperTransportation_ID |
       | inout_coo_130 | transpOrder_coo_130        |
@@ -1076,14 +1082,22 @@ Feature: nShift Shipment
       | nShift Product 2 | IT              | 6               | 5         | 30         | 7.2             | 12345678      |
 
   @Id:S0355_DeliveryOrder_150
-  Scenario: nShift Partial Shipment — Carrier_ShipmentOrder product is frozen at creation, remainder re-advise does not overwrite it
-    # A partial shipment (6 of 10 PCE) creates a Carrier_ShipmentOrder with the carrier product that was
-    # active at delivery-order-creation time (cp1). The remainder schedule (4 PCE still open) is then
-    # re-advised by the automatic advise process, which returns a different product (cp2). The already-
-    # created Carrier_ShipmentOrder must still carry cp1 — the re-advise must not mutate it.
+  Scenario: nShift Partial Shipment — the picking-job line's carrier freezes on the first shipment; the re-advised remainder ships on a second carrier
+    # dt204 always mobile-picks, so the carrier is sourced from the picking-job LINE (not the schedule).
+    # Pick 6 of 10 in a first job → its Carrier_ShipmentOrder freezes with the line carrier cp1. Re-advise
+    # (cp2) then applies to the remainder; the remaining 4 are picked in a SECOND job → a second
+    # Carrier_ShipmentOrder on cp2. The first (frozen) Carrier_ShipmentOrder must still carry cp1.
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
-    # Stub advisor to return cp1 — this is what the schedule receives at order-completion time.
+    # CREATE_AND_COMPLETE (not …_CLOSE): the partial shipment is created+completed (freezing its
+    # Carrier_ShipmentOrder) but the schedule stays OPEN so the 4-CU remainder can be picked in a second job.
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_AND_COMPLETE  | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot_ps    | slot_ps_v   | Y         |
+    # Stub advisor to return cp1 — the carrier the first pick's line receives.
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp1                | cgt1                  | cs1, cs2           |
@@ -1091,44 +1105,59 @@ Feature: nShift Shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_ps      | true    | customer      | 2025-04-01  | wh             | nShift       |
+    # No M_HU_PI_Item_Product_ID: pick loose CU so QtyPicked is in product units (6 of 10), not TUs.
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | so_ps_l1   | so_ps      | product      | 10         |
     When the order identified by so_ps is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | ss_ps      | so_ps_l1       | N             | cp1                | cgt1                  |
-    # Constrain delivery to 6 PCE so that 4 PCE remain open on the schedule after shipment.
-    And update shipment schedules
-      | Identifier | QtyToDeliver_Override |
-      | ss_ps      | 6                     |
-    # Generate partial shipment for 6 PCE — delivery order is created with cp1 inside the same transaction.
-    And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID    |
-      | ss_ps                 | inout_partial |
-    And after not more than 60s, Transportation Order is found for Shipment:
-      | M_InOut_ID    | M_ShipperTransportation_ID |
-      | inout_partial | transpOrder_ps             |
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_ps      | so_ps_l1       | N             |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_ps                 |
+    # First advise landed on the schedule = cp1.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_ps      | so_ps_l1       | cp1                |
+    # First job: pick only 6 of 10 and complete (partial). The line carrier advise resolves to cp1.
+    When start picking job for sales order identified by so_ps
+    And scan picking slot identified by slot_ps
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 6         |
+    When complete picking job
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    | DocStatus |
+      | ss_ps                 | inout_partial | CO        |
     And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier  | M_InOut_ID    |
-      | cso_partial | inout_partial |
-    # The shipment request captured at delivery-order-creation time must carry cp1.
-    And validate the captured nShift shipment request:
-      | Carrier_Product_ID | Carrier_Goods_Type_ID |
-      | cp1                | cgt1                  |
-    # Re-stub the advisor to return cp2 — simulates a different recommendation for the remainder.
+      | Identifier  | M_InOut_ID    | Carrier_Product_ID |
+      | cso_partial | inout_partial | cp1                |
+    # Re-stub to cp2 AFTER the first advise landed + froze on cso_partial.
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp2                | cgt2                  | cs3, cs4           |
-    # Re-advise the remainder schedule: the advisor now returns cp2, so the schedule's product changes.
+    # Job 1 shipped 6 of 10 ⇒ the remainder settles to QtyToDeliver=4. (In production a qty change auto-re-advises;
+    # under SKIP_WP_PROCESSOR_FOR_AUTOMATION the async workpackage doesn't run, so trigger the re-advise explicitly.)
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver |
+      | ss_ps      | so_ps_l1       | 4            |
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
       | ss_ps                 | true                         |
+    # Remainder re-advised to cp2 on the schedule, so the SECOND job's line inherits cp2 at job creation.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_ps      | so_ps_l1       | N             | cp2                |
-    # The already-created Carrier_ShipmentOrder for the partial shipment must still carry cp1.
-    # This step freshly reads the DB record to verify the re-advise did not mutate it.
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_ps      | so_ps_l1       | cp2                |
+    # Second job: pick the remaining 4 → its line inherits cp2 from the schedule → a second Carrier_ShipmentOrder on cp2.
+    When start picking job for sales order identified by so_ps
+    And scan picking slot identified by slot_ps
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 4         |
+    When complete picking job
+    # The remainder was re-advised to cp2 (asserted above) and now shipped in this second job.
+    # The FIRST (frozen) Carrier_ShipmentOrder must still carry cp1 — the remainder's cp2 must not mutate it.
     Then validate Carrier_ShipmentOrder product for shipment:
       | M_InOut_ID    | Carrier_Product_ID |
       | inout_partial | cp1                |
@@ -1782,6 +1811,10 @@ Feature: nShift Shipment
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     And the nShift shipment service is stubbed to return a successful shipment creation response
+    # Stub the advisor so order-completion auto-advise resolves deterministically to cp1/cgt1 on BOTH lines.
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
     And metasfresh contains AD_Users:
       | Identifier      | Name                    | C_BPartner_ID | EMail                       | Phone            |
       | customerContact | nShift Customer Contact | customer      | contact@nshift-test.example | +41 79 123 45 67 |
@@ -1793,10 +1826,12 @@ Feature: nShift Shipment
       | so_split_l1 | so_split   | product      | 10         | product_TU_10CU         |
       | so_split_l2 | so_split   | product_2    | 10         | product_2_TU_10CU       |
     When the order identified by so_split is completed
+    # Wait for the auto-advise to COMPLETE (both schedules resolve to the stubbed cp1/cgt1) BEFORE the manual
+    # overrides — otherwise the async auto-advise races and overwrites the manual cp1/cp2 assigned below.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | ss_split_l1  | so_split_l1    | N             |
-      | ss_split_l2  | so_split_l2    | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_split_l1  | so_split_l1    | N             | cp1                | cgt1                  |
+      | ss_split_l2  | so_split_l2    | N             | cp1                | cgt1                  |
     # Each line advised to its own carrier product of the same shipper.
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |

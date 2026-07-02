@@ -41,6 +41,7 @@ import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -71,7 +72,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -496,13 +497,16 @@ public class ShipmentScheduleRepository
 
 	public List<ShipmentSchedule> loadByPackageId(final @NonNull PackageId packageId)
 	{
-		//TODO Adrian verify if there's a cleaner way to get the associated shipment schedule.
-		return queryBL.createQueryBuilder(I_M_Package.class)
-				.addEqualsFilter(I_M_Package.COLUMNNAME_M_Package_ID, packageId)
-				.andCollect(I_M_Package.COLUMN_M_InOut_ID)
-				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID)
-				.andCollectChildren(I_M_ShipmentSchedule.COLUMN_C_OrderLine_ID)
+		// The package's shipment schedules are those of the lines it actually holds:
+		// M_PackageLine -> M_InOutLine -> M_ShipmentSchedule_QtyPicked -> M_ShipmentSchedule. The pick row is the
+		// authoritative shipped-line -> schedule link (source-agnostic, unlike navigating via C_OrderLine, which
+		// only works for order-line-based schedules). M_PackageLine is written per shipped line by
+		// HUPackageBL.createPackageLines, so a multi-line package (e.g. a mixed LU) yields exactly its lines.
+		return queryBL.createQueryBuilder(I_M_PackageLine.class)
+				.addEqualsFilter(I_M_PackageLine.COLUMNNAME_M_Package_ID, packageId)
+				.andCollect(I_M_PackageLine.COLUMNNAME_M_InOutLine_ID, I_M_InOutLine.class)
+				.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
+				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID)
 				.create()
 				.stream()
 				.map(this::ofRecord)
