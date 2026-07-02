@@ -1,4 +1,3 @@
--- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_OrderBoard_v.sql
 -- Fix M_Picking_OrderBoard_v: synthetic PK was cast to signed int32, yielding negative values.
 -- ('x'||substr(md5(...),1,8))::bit(32)::int can be negative (MSB set → signed negative).
 -- TableRecordReference.of() asserts recordId >= 0 → 500 error when opening the window.
