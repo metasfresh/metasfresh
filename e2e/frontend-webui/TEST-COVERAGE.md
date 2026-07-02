@@ -1084,7 +1084,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 1. Navigate to HU Label Configuration window (541647) → new record
 2. Set the label report process (the only mandatory field without a default)
 3. Leave IsAutoPrint at its `N` default (so the AutoPrintCopies field stays hidden)
-4. Verify the record becomes valid, persists, and AutoPrintCopies defaulted to `1`
+4. Verify the record becomes valid and persists while `IsAutoPrint` stays `N`
 
 **Key Validations**:
 - New record creation in a grid window
@@ -1096,7 +1096,7 @@ This suite specifically guards the `Lookup.js` / `RawLookup.js` focus management
 
 **Components Tested**:
 - HU Label Configuration window (541647) / M_HU_Label_Config
-- AutoPrintCopies default
+- AutoPrintCopies backend default while the field stays hidden
 ### 42. E-Invoicing — Seller Tax Fields in Org-Master window layout (`einvoice-seller-tax-fields.spec.js`)
 
 ### 43. Organisation Stammdaten window (540676) — displayed fields (`organisation-stammdaten-window.spec.js`)
