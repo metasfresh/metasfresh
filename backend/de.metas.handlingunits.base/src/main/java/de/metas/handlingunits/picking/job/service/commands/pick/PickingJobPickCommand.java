@@ -70,11 +70,9 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
-import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
@@ -142,6 +140,8 @@ public class PickingJobPickCommand
 	private final boolean isCloseTarget;
 	/** When {@code true} the picker has acknowledged the shelf-life warning; the guard is skipped. */
 	private final boolean isShelfLifeConfirmed;
+	/** When {@code true} the picking profile requires a shelf-life undercut warning before the pick can be confirmed. */
+	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
 
 	//
@@ -213,6 +213,8 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
+
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
@@ -227,7 +229,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -280,6 +281,7 @@ public class PickingJobPickCommand
 
 		this.isCloseTarget = isCloseTarget;
 		this.isShelfLifeConfirmed = isShelfLifeConfirmed;
+		this.isWarnShelfLifeUndercut = pickingJobOptions.isWarnShelfLifeUndercut();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -1003,7 +1005,7 @@ public class PickingJobPickCommand
 	 * Throws {@link ShelfLifeTooShortException} if:
 	 * <ol>
 	 *   <li>the picker has NOT yet confirmed the shelf-life warning ({@code isShelfLifeConfirmed == false}), AND</li>
-	 *   <li>the picker's workplace has the "warn on shelf-life undercut" flag set, AND</li>
+	 *   <li>the picking profile has the "warn on shelf-life undercut" flag set ({@link PickingJobOptions#isWarnShelfLifeUndercut()}), AND</li>
 	 *   <li>the shelf-life check determines the picked HU's best-before date is too short for the delivery date.</li>
 	 * </ol>
 	 * The exception rolls back the transaction; no stock or schedule records are changed.
@@ -1015,14 +1017,7 @@ public class PickingJobPickCommand
 			return;
 		}
 
-		final UserId pickerId = _pickingJob.getLockedBy();
-		if (pickerId == null)
-		{
-			return;
-		}
-
-		final Workplace workplace = warehouseService.getWorkplaceByUserId(pickerId).orElse(null);
-		if (workplace == null || !workplace.isWarnShelfLifeUndercut())
+		if (!isWarnShelfLifeUndercut)
 		{
 			return;
 		}
