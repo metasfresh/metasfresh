@@ -28,9 +28,9 @@ class DistributionJobQueriesTest
 	private static final LocatorId L2 = LocatorId.ofRepoId(1, 102);
 
 	@Test
-	void toActiveNotAssignedDDOrderQuery_regularWorkplace_locatorToIdSet()
+	void toActiveNotAssignedDDOrderQuery_packingPlaceWorkplace_pickFromLocatorIdSet()
 	{
-		// Given: regular (non-packing) workplace — pick-from locator set, excludeLocatorToIds absent
+		// Given: packing-place workplace (IsPackingPlace=Y) — pick-from locator set, excludeLocatorToIds absent
 		final DDOrderReferenceQuery query = DDOrderReferenceQuery.builder()
 				.responsibleId(UserId.ofRepoId(999))
 				.workplaceWarehouseId(W1)
