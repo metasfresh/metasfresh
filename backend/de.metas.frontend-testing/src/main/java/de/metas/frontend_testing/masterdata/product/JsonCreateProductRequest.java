@@ -43,6 +43,18 @@ public class JsonCreateProductRequest
 	@Nullable Boolean isStocked;
 
 	/**
+	 * Explicit {@code M_Product.IsSold} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not offered for sale.
+	 */
+	@Nullable Boolean isSold;
+
+	/**
+	 * Explicit {@code M_Product.IsPurchased} override. When {@code null} the column defaults to
+	 * {@code true}. Set to {@code false} to create a product that is not procured via purchase.
+	 */
+	@Nullable Boolean isPurchased;
+
+	/**
 	 * Explicit {@code M_Product.IsSelfPacked} override. When {@code null} the column keeps its
 	 * default ({@code false}). Set to {@code true} to mark the product as self-packed — required by
 	 * the mobileUI mass-printing flow, which only packs self-packed products and skips the rest.

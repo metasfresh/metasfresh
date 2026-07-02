@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2026-06-29
+**Last Updated**: 2026-06-30
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -1159,6 +1159,73 @@ in both en_US and de_DE proves the full page-object flow is language-independent
 
 ---
 
+### 39. Price List Version — Colliding ValidFrom (`pricelist-version-colliding-date.spec.js`)
+
+**Features Tested**:
+- F32070: Price List Copy using Price List Schema
+
+### 44. Product Purchase/Sales Gate (`product-purchase-sales-gate.spec.js`)
+**Status**: ✅ Passing (English, German)
+**Duration**: ~30 seconds per language
+
+**Features Tested**:
+- F00315: Purchase Gate (Produktfreigabe für Einkauf)
+- F00320: Sales Gate (Produktfreigabe für Verkauf)
+
+**Epic**: E0380: Masterdata Products
+
+**Workflow** (en_US **and** de_DE):
+1. Create test customer and vendor via `Backend.createMasterdata()`
+2. Create product with IsSold=N (not for sale) via `Backend.createMasterdata()`
+3. Create second product with IsSold=Y (control, selectable)
+4. Create sales order with customer, open batch entry → verify product picker HIDES IsSold=N product → control product remains selectable
+5. Complete sales order
+6. Create purchase order with vendor, open batch entry → verify product picker HIDES IsPurchased=N product → control product remains selectable
+7. Validate both workflows in both languages (language-independent selectors only)
+
+**Key Validations**:
+- SysConfig-gated product visibility in order mass-entry (Schnellerfassung)
+- IsSold=N product hidden from sales order batch entry
+- IsPurchased=N product hidden from purchase order batch entry
+- Control products (flags Y) remain selectable in both cases
+- Batch entry filter behavior is language-independent (`data-testid`, `data-cy` selectors)
+
+**Components Tested**:
+- Sales Order window (143) - Order Lines tab batch entry
+- Purchase Order window (181) - Order Lines tab batch entry
+- Product lookup widget filtering logic
+- SysConfig-gated visibility enforcement
+
+---
+
+
+**Epic**: E0260: Pricing
+
+**Window**: Price List (540321), included tab Price List Version (`AD_Tab-540777`), table `M_PriceList_Version`
+
+**Workflow**:
+1. Login, open price list 2008396 (seed data: already has a PLV dated 2015-01-01)
+2. Add a new Price List Version via the included tab's "Add new" button
+3. Set `ValidFrom` to the same date (2015-01-01) → the save fails on the unique index
+   `validfromuniqueindexonpricelist`
+4. Open the `M_DiscountSchema_ID` (Price List Schema) dropdown
+
+**Key Validations**:
+- The colliding save fails server-side with the friendly duplicate-date message
+  (asserted from the PLV PATCH `saveStatus.error`)
+- The document is NOT evicted from the WebUI cache: no HTTP 404 on the PLV document path
+  (regression guard — this was the bug)
+- The Price List Schema dropdown still resolves after the failed save
+
+**Known gap (tracked separately)**: the WebUI "Add new" overlay does not currently surface the
+duplicate-date message on screen (silent failure) — the test documents this and asserts only what
+the eviction fix guarantees.
+
+**Components Tested**: DateWidget, LoginHelper, network-response assertions (404 + saveStatus)
+
+**Prerequisite data**: standard demo seed (price list 2008396 + its 2015-01-01 PLV); no DB access
+
+---
 ### 44. Price List Version — Colliding ValidFrom (`pricelist-version-colliding-date.spec.js`)
 
 **Features Tested**:
