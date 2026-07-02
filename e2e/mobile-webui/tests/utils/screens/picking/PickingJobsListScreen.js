@@ -94,7 +94,6 @@ export const PickingJobsListScreen = {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
                 const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId });
                 await target.tap();
-
                 await PickingJobScreen.waitForScreen();
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
@@ -138,30 +137,23 @@ export const PickingJobsListScreen = {
 };
 
 /**
- * Settle the websocket-driven launcher list, then pin the tap target by stable identity so a push
- * reordering the list can't misdirect the tap: a launcher that exposes a stable data-testid (e.g.
- * distribution) is tapped by it (unique, reorder-immune); one that exposes none (picking launchers
- * currently do) degrades to its identifying attribute/index locator. Presence of a testId is read at
- * runtime, never assumed.
+ * Settle the launcher list, then pin the tap target by stable identity — its data-testid when the
+ * launcher exposes one (unique, reorder-immune), else its attribute/index locator — read at runtime.
  * @returns {Promise<import('@playwright/test').Locator>} the locator to tap
  */
 const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationId }) => {
-    // Settle: the addressed launcher must be painted and the loading spinner cleared before we tap.
-    await locateJobButtons({ index, qtyToDeliver, customerLocationId }).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
     await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
 
-    let identified;
-    if (qtyToDeliver != null || customerLocationId != null) {
-        // Attribute locator re-resolves the same launcher regardless of push-reordering; exactly one must match.
-        identified = locateJobButtons({ qtyToDeliver, customerLocationId });
-        await expect(identified).toHaveCount(1);
-    } else {
-        // Bare index is reorder-safe only against a single-candidate list (a prior filterByDocumentNo,
-        // or single-order masterdata); assert the unfiltered launcher set is that single candidate, so
-        // a future caller passing an index against a multi-launcher list fails loud instead of racing.
-        await expect(locateJobButtons()).toHaveCount(1);
-        identified = locateJobButtons({ index });
-    }
+    const byAttribute = qtyToDeliver != null || customerLocationId != null;
+    const identified = byAttribute
+        ? locateJobButtons({ qtyToDeliver, customerLocationId })
+        : locateJobButtons({ index });
+    await identified.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+    // Exactly one launcher must be addressed. A bare index (.nth is always ≤1) is reorder-safe only
+    // against a single-candidate list (a prior filterByDocumentNo / single-order masterdata), so the
+    // real guard there is the unfiltered set — a bare index against a multi-launcher list fails loud.
+    await expect(byAttribute ? identified : locateJobButtons()).toHaveCount(1);
 
     const testId = await identified.getAttribute('data-testid');
     return (testId != null && testId.length > 0) ? page.getByTestId(testId) : identified;
