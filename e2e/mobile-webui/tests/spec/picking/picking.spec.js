@@ -128,7 +128,10 @@ test('Simple picking test', async ({ page }) => {
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            // The picked LU carries the consignee (bpartner + delivery location) stamped at pick time.
+            // BP1 is declared without an explicit location, so bpartnerLocation resolves to its single
+            // default ship-to via the _singleBPLocationI fallback (same identifier as the bpartner).
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -145,7 +148,7 @@ test('Simple picking test', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -337,6 +340,11 @@ test.describe('Picking Job Completion', () => {
                         }
                     }
                 }
+            },
+            // The partially-picked LU still carries the consignee stamped at pick time (BP1 has no
+            // explicit location → single default ship-to via the _singleBPLocationI fallback).
+            hus: {
+                lu1: { huStatus: 'S', storages: { P1: '8 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -476,7 +484,9 @@ test('Ship on close LU', async ({ page }) => {
             pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because the current target LU is not yet closed
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+                // The picked LU carries the consignee stamped at pick time (BP1 has no explicit
+                // location → single default ship-to via the _singleBPLocationI fallback).
+                lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -496,7 +506,7 @@ test('Ship on close LU', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped after LU target was closed
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -1090,6 +1100,28 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
+    // While the job is still open, the picked target LU already carries the consignee (bpartner +
+    // delivery location), stamped on the shipping target at pick time. BP1 is declared without an
+    // explicit location, so bpartnerLocation resolves to its single default ship-to via the
+    // _singleBPLocationI fallback (same identifier as the bpartner). The pickings block binds the
+    // lu1 alias (via M_LU_HU_ID) AND gates on the shipment schedule becoming valid, so the hus read
+    // below is not a pre-commit race.
+    await Backend.expect({
+        title: 'DHL picking: picked target LU carries consignee before close',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     // Close LU — this triggers DHL label generation via WireMock
     await PickingJobScreen.closeTargetLU();
 
@@ -1109,7 +1141,7 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
             }
         },
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

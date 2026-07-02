@@ -949,7 +949,9 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		if (huQRCodes.size() != tu.getQtyTU().toInt())
+		// An aggregate can hold more active QR codes than its current TU count (codes are generated one-per-TU
+		// and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus; error only on a deficit.
+		if (huQRCodes.size() < tu.getQtyTU().toInt())
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
 		}
@@ -982,7 +984,9 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		if (huQRCodes.size() != 1)
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// so a surplus is fine; error only when there are zero codes.
+		if (huQRCodes.size() < 1)
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
 		}
