@@ -154,8 +154,9 @@ public final class PPOrderCosts
 	/**
 	 * Sets the current-cost price snapshot on the existing cost row for the given segment.
 	 * Callers must ensure {@code newPrice}'s UOM matches the existing row's {@code accumulatedQty} UOM; this
-	 * is currently true because both derive from the product's stocking UOM at every current call site
-	 * ({@code ManufacturingAveragePOCostingMethodHandler} and {@code ManufacturingMovingAverageInvoiceCostingMethodHandler}),
+	 * is currently true because they derive from the product's stocking UOM at every current call site
+	 * ({@code ManufacturingAveragePOCostingMethodHandler}, {@code ManufacturingMovingAverageInvoiceCostingMethodHandler}
+	 * and {@code ManufacturingLastPOCostingMethodHandler}),
 	 * but it is NOT structurally enforced by
 	 * {@link CostSegmentAndElement}. The underlying {@code withPrice} rebuild throws {@code AdempiereException}
 	 * if {@code newPrice}'s UOM diverges from the row's {@code accumulatedQty} UOM.
