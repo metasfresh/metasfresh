@@ -18,7 +18,8 @@ VALUES (540865 /*From ID Server*/, 0, 0, 'Y',
         175, 'D', 'Y', 'c_uom_conversion_product_uom_uq',
         'isactive=''Y'' AND m_product_id IS NOT NULL',
         'Für dieses Produkt und diese Mengeneinheiten-Kombination existiert bereits eine Umrechnung.',
-        'Unique active product-specific UOM conversion per (product, from-UOM, to-UOM).');
+        'Unique active product-specific UOM conversion per (product, from-UOM, to-UOM).')
+ON CONFLICT (ad_index_table_id) DO NOTHING;
 
 INSERT INTO ad_index_table_trl (ad_index_table_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, errormsg, istranslated)
 SELECT 540865, l.ad_language, 0, 0, 'Y',
@@ -37,7 +38,8 @@ WHERE ad_index_table_id=540865 AND ad_language IN ('de_DE','de_CH');
 INSERT INTO ad_index_column (ad_index_column_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_index_table_id, ad_column_id, seqno, entitytype) VALUES
  (541529 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:00:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:00:10','YYYY-MM-DD HH24:MI:SS'), 100, 540865, 12866, 10, 'D'),
  (541530 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:00:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:00:11','YYYY-MM-DD HH24:MI:SS'), 100, 540865, 1010, 20, 'D'),
- (541531 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:00:12','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:00:12','YYYY-MM-DD HH24:MI:SS'), 100, 540865, 1011, 30, 'D');
+ (541531 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:00:12','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:00:12','YYYY-MM-DD HH24:MI:SS'), 100, 540865, 1011, 30, 'D')
+ON CONFLICT (ad_index_column_id) DO NOTHING;
 
 -- ============ Generic-scope index ============
 INSERT INTO ad_index_table (ad_index_table_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -47,7 +49,8 @@ VALUES (540866 /*From ID Server*/, 0, 0, 'Y',
         175, 'D', 'Y', 'c_uom_conversion_generic_uq',
         'isactive=''Y'' AND m_product_id IS NULL',
         'Für diese Mengeneinheiten-Kombination existiert bereits eine generische Umrechnung.',
-        'Unique active generic UOM conversion per (from-UOM, to-UOM) where no product is set.');
+        'Unique active generic UOM conversion per (from-UOM, to-UOM) where no product is set.')
+ON CONFLICT (ad_index_table_id) DO NOTHING;
 
 INSERT INTO ad_index_table_trl (ad_index_table_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, errormsg, istranslated)
 SELECT 540866, l.ad_language, 0, 0, 'Y',
@@ -65,4 +68,5 @@ WHERE ad_index_table_id=540866 AND ad_language IN ('de_DE','de_CH');
 
 INSERT INTO ad_index_column (ad_index_column_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, ad_index_table_id, ad_column_id, seqno, entitytype) VALUES
  (541532 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:01:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:01:10','YYYY-MM-DD HH24:MI:SS'), 100, 540866, 1010, 10, 'D'),
- (541533 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:01:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:01:11','YYYY-MM-DD HH24:MI:SS'), 100, 540866, 1011, 20, 'D');
+ (541533 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-02 15:01:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-02 15:01:11','YYYY-MM-DD HH24:MI:SS'), 100, 540866, 1011, 20, 'D')
+ON CONFLICT (ad_index_column_id) DO NOTHING;
