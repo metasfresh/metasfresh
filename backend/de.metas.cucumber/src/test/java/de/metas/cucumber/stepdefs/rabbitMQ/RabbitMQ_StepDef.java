@@ -33,7 +33,6 @@ import de.metas.event.IEventBus;
 import de.metas.event.Topic;
 import de.metas.event.impl.EventBusFactory;
 import de.metas.event.remote.rabbitmq.RabbitMQDestinationResolver;
-import de.metas.event.remote.rabbitmq.queues.async_batch.AsyncBatchQueueConfiguration;
 import de.metas.event.remote.rabbitmq.queues.material_dispo.MaterialEventsQueueConfiguration;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -97,51 +96,10 @@ public class RabbitMQ_StepDef
 		connectionFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
-	/**
-	 * Drains the material-events queue ({@link MaterialEventsQueueConfiguration}) only, waiting up to 5 minutes.
-	 * <p>
-	 * Use this when a scenario needs to assert the state produced by material events alone, <b>before</b> the
-	 * downstream async workpackages run. When the full material→async chain must settle, prefer
-	 * {@link #wait_empty_all_queues()}.
-	 */
 	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_material_queue() throws InterruptedException
 	{
-		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
-	}
-
-	/**
-	 * Drains the async-batch queue ({@link AsyncBatchQueueConfiguration}) only, waiting up to 5 minutes.
-	 * <p>
-	 * Draining async alone can race with material events still in flight (async may be empty only because the
-	 * upstream material side hasn't been processed yet). Use this only when the material side is already known to
-	 * be settled; otherwise prefer {@link #wait_empty_all_queues()}, which drains material then async in order.
-	 */
-	@And("wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes")
-	public void wait_empty_async_queue() throws InterruptedException
-	{
-		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
-	}
-
-	/**
-	 * Drains the material event queue first, then the async batch queue.
-	 *
-	 * <p>The ordering is intentional: a test action (e.g. order completion) publishes
-	 * {@link MaterialEventsQueueConfiguration} events first, whose listeners enqueue async
-	 * workpackages on {@link AsyncBatchQueueConfiguration}. Draining async alone would race
-	 * with material events still in flight — async could be empty simply because the
-	 * upstream material side hasn't been processed yet. Draining material then async
-	 * guarantees the chain has fully settled before the next assertion.
-	 *
-	 * <p>This is the preferred drain step for new scenarios. Prefer it over the individual
-	 * {@code wait until de.metas.material …} and {@code wait until de.metas.async …}
-	 * steps unless a scenario specifically needs to assert state between the two stages.
-	 */
-	@And("wait until all rabbitMQ queues are empty or throw exception after 5 minutes")
-	public void wait_empty_all_queues() throws InterruptedException
-	{
-		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
-		waitEmptyQueueByTopic(AsyncBatchQueueConfiguration.EVENTBUS_TOPIC.getName());
+		waitEmptyMaterialQueue();
 	}
 
 	@Given("rabbitMQ queue is created")
@@ -377,12 +335,12 @@ public class RabbitMQ_StepDef
 									  .build());
 	}
 
-	private void waitEmptyQueueByTopic(@NonNull final String topicName) throws InterruptedException
+	private void waitEmptyMaterialQueue() throws InterruptedException
 	{
 		final long nowMillis = System.currentTimeMillis();
 		final long deadLineMillis = nowMillis + (300 * 1000L);    // dev-note: await maximum 5 minutes
 
-		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(topicName);
+		final String queueName = rabbitMQDestinationSolver.getAMQPQueueNameByTopicName(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 		final RabbitAdmin rabbitAdmin = new RabbitAdmin(((RabbitTemplate)amqpTemplate));
 
 		long messageCount;
