@@ -116,9 +116,13 @@ public class C_OrderLine
 			return;
 		}
 		// Derive CU from TU, mirroring the proven updateQtyCU callout
-		// (de.metas.handlingunits.callout.C_OrderLine#updateQtyCU):
+		// (de.metas.handlingunits.callout.C_OrderLine#updateQtyCU) — read the TU qty
+		// through the packingAware, exactly as the callout does.
+		// Note: assertChangeAllowed() also fires for this save (QtyEnteredTU is not in its
+		// ignoreColumnsChanged list). For purchase lines with QtyDelivered > 0 it will validate
+		// the new QtyEntered we set here against QtyDelivered — which is the intended guard.
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		packingAwareBL.setQtyCUFromQtyTU(packingAware, orderLine.getQtyEnteredTU().intValue());
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU().intValue());
 		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
 	}
