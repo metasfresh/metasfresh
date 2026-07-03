@@ -87,4 +87,9 @@ public class JsonPickingStepEvent
 	 */
 	@Nullable String unpickProductId;
 	@Nullable BigDecimal unpickQty;
+
+	//
+	// Shelf-life acknowledgement (PICK only)
+	/** When {@code true} the picker has acknowledged the shelf-life warning and the guard is skipped. */
+	boolean isShelfLifeConfirmed;
 }

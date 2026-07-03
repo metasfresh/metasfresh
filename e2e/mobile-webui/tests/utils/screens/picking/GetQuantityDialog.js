@@ -191,6 +191,13 @@ export const GetQuantityDialog = {
         );
     }),
 
+    // Taps OK/Done but does NOT wait for the dialog to close. Used when pressing Done is
+    // expected to surface a follow-up dialog on top (e.g. the shelf-life RLZ confirmation),
+    // which keeps this qty dialog open until that follow-up is resolved.
+    clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
+        await page.getByTestId('done-button').tap();
+    }),
+
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
         await page.getByTestId('cancel-button').tap();
         await GetQuantityDialog.expectComponentsDisabled();

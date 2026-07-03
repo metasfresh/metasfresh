@@ -12,6 +12,7 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.allocation.IHUProducerAllocationDestination;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
@@ -46,6 +47,7 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesRequest;
@@ -65,7 +67,6 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -109,8 +110,11 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import de.metas.inout.ShipmentScheduleId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.mockito.Mockito;
 
 import javax.annotation.Nullable;
@@ -246,7 +250,8 @@ public class PickingJobTestHelper
 				pickingJobScheduleService,
 				huService,
 				new PickingJobGraiTargetService(huService),
-				new PickingJobUnpickProductResolver(huService, productService)
+				new PickingJobUnpickProductResolver(huService, productService),
+				new PickingShelfLifeCheck(productService, bpartnerService)
 		);
 
 		huTracer = new HUTracerInstance()
@@ -541,5 +546,56 @@ public class PickingJobTestHelper
 	public void assignCurrentUserToWorkplace()
 	{
 		workplaceService.assignWorkplace(Env.getLoggedUserId(), workplace.getId());
+	}
+
+	/**
+	 * Sets the {@code isWarnShelfLifeUndercut} flag on the picking profile and creates a workplace assigned to the given user.
+	 * The guard is now driven by the picking profile ({@link de.metas.handlingunits.picking.config.mobileui.PickingJobOptions#isWarnShelfLifeUndercut()});
+	 * the workplace itself no longer carries this flag.
+	 */
+	public Workplace createWorkplaceWithShelfLifeFlag(
+			final boolean warnShelfLifeUndercut,
+			@NonNull final UserId userId)
+	{
+		// Set the flag on the picking profile so the guard reads it from there.
+		configService.update(profile -> profile.toBuilder()
+				.defaultPickingJobOptions(profile.getDefaultPickingJobOptions().toBuilder()
+						.isWarnShelfLifeUndercut(warnShelfLifeUndercut)
+						.build())
+				.build());
+
+		final Workplace wp = workplaceService.create(WorkplaceCreateRequest.builder()
+				.name("workplace-shelflife-" + warnShelfLifeUndercut)
+				.warehouseId(shipFromLocatorId.getWarehouseId())
+				.build());
+		workplaceService.assignWorkplace(userId, wp.getId());
+		return wp;
+	}
+
+	/**
+	 * Sets the virtual {@code DeliveryDate_Effective} column on the given shipment schedule record.
+	 * In the in-memory test environment this column is not computed by SQL, so we set it directly.
+	 */
+	public void setShipmentScheduleDeliveryDateEffective(
+			@NonNull final ShipmentScheduleId scheduleId,
+			@NonNull final LocalDate deliveryDate)
+	{
+		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.load(scheduleId, I_M_ShipmentSchedule.class);
+		InterfaceWrapperHelper.setValue(sched, I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Effective, TimeUtil.asTimestamp(deliveryDate));
+		save(sched);
+	}
+
+	/**
+	 * Sets the HU_BestBeforeDate attribute on the given HU.
+	 * Uses the in-memory attribute storage (same mechanism as {@link de.metas.handlingunits.qrcodes.service.HUQRCodesServiceTest}).
+	 */
+	public void setHUBestBeforeDate(@NonNull final HuId huId, @NonNull final LocalDate bestBeforeDate)
+	{
+		final I_M_HU hu = huTestHelper.handlingUnitsBL().getById(huId);
+		final IAttributeStorage attributeStorage = huTestHelper.createMutableHUContext()
+				.getHUAttributeStorageFactory()
+				.getAttributeStorage(hu);
+		attributeStorage.setSaveOnChange(true);
+		attributeStorage.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 	}
 }

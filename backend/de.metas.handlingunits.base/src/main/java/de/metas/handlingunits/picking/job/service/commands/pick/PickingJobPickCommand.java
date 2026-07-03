@@ -52,6 +52,8 @@ import de.metas.handlingunits.picking.job.service.external.product.PickingJobPro
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.ShipmentScheduleInfo;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
+import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
+import de.metas.handlingunits.picking.job.service.shelflife.ShelfLifeTooShortException;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetRequest;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -71,19 +73,23 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
+import de.metas.workplace.Workplace;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -119,6 +125,7 @@ public class PickingJobPickCommand
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
 	//
 	@NonNull private final PackToHUsProducer packToHUsProducer;
 	@NonNull private final PickedHUAttributesUpdater pickedHUAttributesUpdater;
@@ -139,6 +146,10 @@ public class PickingJobPickCommand
 	private final boolean isSetGrais;
 	@Nullable private final GRAISet graiCodes;
 	private final boolean isPickingSlotRequired;
+	/** When {@code true} the picker has acknowledged the shelf-life warning; the guard is skipped. */
+	private final boolean isShelfLifeConfirmed;
+	/** When {@code true} the picking profile requires a shelf-life undercut warning before the pick can be confirmed. */
+	private final boolean isWarnShelfLifeUndercut;
 	@NonNull private final PickAttributes _manualPickAttributes;
 	private final boolean serialNoPickingEnabled;
 
@@ -161,6 +172,7 @@ public class PickingJobPickCommand
 			final @NonNull PickingJobRepository pickingJobRepository,
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUService huService,
+			final @NonNull PickingShelfLifeCheck shelfLifeCheck,
 			//
 			final @NonNull PickingJob pickingJob,
 			//
@@ -183,7 +195,8 @@ public class PickingJobPickCommand
 			final @Nullable GRAISet graiCodes,
 			final boolean isSetSerialNos,
 			final @Nullable SerialNoSet serialNos,
-			final boolean isCloseTarget)
+			final boolean isCloseTarget,
+			final boolean isShelfLifeConfirmed)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
@@ -194,6 +207,7 @@ public class PickingJobPickCommand
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingSlotService = pickingSlotService;
 		this.huService = huService;
+		this.shelfLifeCheck = shelfLifeCheck;
 		this.packToHUsProducer = huService.newPackToHUsProducer(pickingJob.getId());
 		this.pickedHUAttributesUpdater = PickedHUAttributesUpdater.builder()
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
@@ -286,6 +300,8 @@ public class PickingJobPickCommand
 		this.isSetGrais = isSetGrais;
 		this.graiCodes = graiCodes;
 		this.isPickingSlotRequired = pickingJobOptions.isPickingSlotRequired();
+		this.isShelfLifeConfirmed = isShelfLifeConfirmed;
+		this.isWarnShelfLifeUndercut = pickingJobOptions.isWarnShelfLifeUndercut();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -346,6 +362,8 @@ public class PickingJobPickCommand
 		checkOrAllocatePickingSlot();
 
 		validatePickFromHU();
+
+		checkShelfLifeIfNeeded();
 
 		final List<PickingJobStepPickedToHU> pickedHUs;
 		try (final IAutoCloseable ignored = huService.temporarySetNewHContextForProcessing())
@@ -934,7 +952,9 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu.getId());
-		if (huQRCodes.size() != tu.getQtyTU().toInt())
+		// An aggregate can hold more active QR codes than its current TU count (codes are generated one-per-TU
+		// and not trimmed on split/pick-out). Only the first N are used below, so tolerate a surplus; error only on a deficit.
+		if (huQRCodes.size() < tu.getQtyTU().toInt())
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, tu.getQtyTU(), huQRCodes.size());
 		}
@@ -967,7 +987,9 @@ public class PickingJobPickCommand
 	{
 
 		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
-		if (huQRCodes.size() != 1)
+		// Same surplus tolerance as the aggregate-TU path: this path uses only the first code (get(0) below),
+		// so a surplus is fine; error only when there are zero codes.
+		if (huQRCodes.size() < 1)
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
 		}
@@ -1092,6 +1114,46 @@ public class PickingJobPickCommand
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
 						.build()
 		);
+	}
+
+	/**
+	 * Throws {@link ShelfLifeTooShortException} if:
+	 * <ol>
+	 *   <li>the picker has NOT yet confirmed the shelf-life warning ({@code isShelfLifeConfirmed == false}), AND</li>
+	 *   <li>the picking profile has the "warn on shelf-life undercut" flag set ({@link PickingJobOptions#isWarnShelfLifeUndercut()}), AND</li>
+	 *   <li>the shelf-life check determines the picked HU's best-before date is too short for the delivery date.</li>
+	 * </ol>
+	 * The exception rolls back the transaction; no stock or schedule records are changed.
+	 */
+	private void checkShelfLifeIfNeeded()
+	{
+		if (isShelfLifeConfirmed)
+		{
+			return;
+		}
+
+		if (!isWarnShelfLifeUndercut)
+		{
+			return;
+		}
+
+		final ShipmentScheduleInfo ssi = getShipmentScheduleInfo();
+
+		final I_M_HU pickFromHU = huService.getById(getPickFromHUIdAndQRCode().getId());
+		final LocalDate bestBefore = huService.getAttributeValueIfExists(pickFromHU, AttributeConstants.ATTR_BestBeforeDate)
+				.map(attrValue -> TimeUtil.asLocalDate(attrValue.getValueAsDate()))
+				.orElse(null);
+
+		final LocalDate deliveryDate = TimeUtil.asLocalDate(ssi.getRecord().getDeliveryDate_Effective());
+		if (deliveryDate == null)
+		{
+			return;
+		}
+
+		if (shelfLifeCheck.isRemainingShelfLifeTooShort(ssi.getProductId(), ssi.getBpartnerId(), ssi.getClientAndOrgId().getOrgId(), bestBefore, deliveryDate))
+		{
+			throw new ShelfLifeTooShortException();
+		}
 	}
 
 	private void validatePickFromHU()

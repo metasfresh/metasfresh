@@ -128,7 +128,10 @@ test('Simple picking test', async ({ page }) => {
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            // The picked LU carries the consignee (bpartner + delivery location) stamped at pick time.
+            // BP1 is declared without an explicit location, so bpartnerLocation resolves to its single
+            // default ship-to via the _singleBPLocationI fallback (same identifier as the bpartner).
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -145,7 +148,7 @@ test('Simple picking test', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -337,6 +340,11 @@ test.describe('Picking Job Completion', () => {
                         }
                     }
                 }
+            },
+            // The partially-picked LU still carries the consignee stamped at pick time (BP1 has no
+            // explicit location → single default ship-to via the _singleBPLocationI fallback).
+            hus: {
+                lu1: { huStatus: 'S', storages: { P1: '8 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -476,7 +484,9 @@ test('Ship on close LU', async ({ page }) => {
             pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because the current target LU is not yet closed
             hus: {
                 [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-                lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+                // The picked LU carries the consignee stamped at pick time (BP1 has no explicit
+                // location → single default ship-to via the _singleBPLocationI fallback).
+                lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             }
         });
 
@@ -496,7 +506,7 @@ test('Ship on close LU', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU was shipped after LU target was closed
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
@@ -688,6 +698,71 @@ test('Scan invalid HU QR code and recover', async ({ page }, testInfo) => {
 
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
     await PickingJobScreen.complete();
+});
+
+// A long HU QR code can be split mid-stream by a slow scanner device: it arrives as TWO bad scans —
+// the head fragment (keeps the valid "HU#<version>#" prefix but carries truncated, unparseable JSON) and
+// the tail fragment (the prefix-less remainder). Each fragment, scanned on its own exactly as the device
+// delivers it, must surface the friendly QR_NOT_RECOGNIZED message — never a silent failure or the raw
+// "Failed converting payload" developer error.
+//
+// The two fragments are verified in SEPARATE tests, each starting from a clean toast state. The app shows
+// exactly one error toast per scan by design (a fixed toastId — see mobile-webui CLAUDE.md "the user must
+// see exactly ONE error"), so two back-to-back scans within one test would race that de-duplication and
+// leave the second fragment's toast suppressed. Asserting a single shared toast instead would also fail to
+// catch a tail-specific regression — a raw tail error would be hidden under the head's friendly toast. One
+// scan per scenario keeps each fragment's handling independently observable.
+const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ which }) => {
+    const masterdata = await createMasterdata();
+
+    const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
+    const splitAt = Math.floor(fullHuQRCode.length / 2);
+    const truncatedHead = fullHuQRCode.substring(0, splitAt);
+    const truncatedTail = fullHuQRCode.substring(splitAt);
+    expect(truncatedHead).toMatch(/^HU#/);     // head keeps the HU# prefix, payload is cut off
+    expect(truncatedTail).not.toMatch(/^HU#/); // tail is the prefix-less remainder
+    const fragment = which === 'head' ? truncatedHead : truncatedTail;
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await expectErrorToast(`Scan the truncated HU QR ${which} during picking`, async () => {
+        await PickingJobScreen.pickHU({
+            qrCode: fragment,
+            isScanDirectly: true,
+            expectedPickDirectly: true,
+        });
+    }, ({ textContent }) => {
+        expect(textContent).toContain('QR_NOT_RECOGNIZED');
+    });
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR HEAD during picking → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking({ which: 'head' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR TAIL during picking → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking({ which: 'tail' });
 });
 
 //
@@ -1025,6 +1100,28 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
     });
     await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
 
+    // While the job is still open, the picked target LU already carries the consignee (bpartner +
+    // delivery location), stamped on the shipping target at pick time. BP1 is declared without an
+    // explicit location, so bpartnerLocation resolves to its single default ship-to via the
+    // _singleBPLocationI fallback (same identifier as the bpartner). The pickings block binds the
+    // lu1 alias (via M_LU_HU_ID) AND gates on the shipment schedule becoming valid, so the hus read
+    // below is not a pre-commit race.
+    await Backend.expect({
+        title: 'DHL picking: picked target LU carries consignee before close',
+        pickings: {
+            [pickingJobId]: {
+                shipmentSchedules: {
+                    P1: {
+                        qtyPicked: [{ qtyPicked: '12 PCE', qtyTUs: 3, qtyLUs: 1, vhu: 'vhu1', tu: 'tu1', lu: 'lu1', processed: false, shipmentLineId: '-' }]
+                    }
+                }
+            }
+        },
+        hus: {
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+        }
+    });
+
     // Close LU — this triggers DHL label generation via WireMock
     await PickingJobScreen.closeTargetLU();
 
@@ -1044,7 +1141,7 @@ test('Pick and ship with DHL label (via mock)', async ({ page }) => {
             }
         },
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

@@ -8,9 +8,9 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 83 | 87 | 95% |
-| Distribution | 38 | 41 | 93% |
-| Manufacturing | 25 | 31 | 81% |
+| Picking | 86 | 90 | 96% |
+| Distribution | 41 | 41 | 93% |
+| Manufacturing | 26 | 32 | 81% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
@@ -96,11 +96,13 @@
 | Partial pick, allowCompletingPartialPickingJob = Y → complete succeeds | `picking/picking.spec.js` |
 | Close LU during picking → shipment created automatically | `picking/picking.spec.js` |
 | Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
+| Close LU (header-level, DELIVERY_LOCATION aggregation) → closed LU and its cascaded TU/CU carry the picking consignee (BPartner + location) | `picking/closeLU_stampsConsignee.spec.js` |
+| Close LU (line-level, PRODUCT aggregation) → closed LU and its cascaded TU/CU carry the picking consignee (BPartner + location) | `picking/closeLU_stampsConsignee.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**16/17 — 94%**
+**18/19 — 95%**
 
 ### Order-based picking — filtering and facets
 
@@ -117,10 +119,11 @@
 | Scenario | Test |
 |---|---|
 | Pick All button picks all remaining HUs in one action | `picking/pickAllButton.spec.js` |
+| Pick All completes a job that already has a fully-picked line (no abort on the zero-remaining line) | `picking/pickAllButton.spec.js` |
 | Pick All button hidden when feature disabled in mobile config | `picking/pickAllButton.spec.js` |
 | Only one matching HU → picking proceeds without qty dialog | `picking/pickAttributes.spec.js` |
 
-**3/3 — 100%**
+**4/4 — 100%**
 
 ### Order-based picking — serial-no scan
 

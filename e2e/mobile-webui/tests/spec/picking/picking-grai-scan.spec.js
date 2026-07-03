@@ -479,7 +479,8 @@ test('Order-based, job-level GRAI scan → top-level TU with GRAI on shipped HU'
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
             // GRAI was scanned at job level (header/job-level persistence path) and stamped on the TU.
             // Confirmed against live run on the fixed stack (build .36739 dev-mode, 2026-06-07).
-            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped } },
+            // Picked-target TU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -508,9 +509,10 @@ test('Order-based, job-level GRAI scan → top-level TU with GRAI on shipped HU'
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // Picked-target LU carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             // GRAI attribute must survive completion — the header-stamp roundtrip is the fix under test.
-            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped } },
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, attributes: { GRAI: graiMapped }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 });
@@ -577,8 +579,11 @@ test('Scan one GRAI → TU created with GRAI attribute', async ({ page }) => {
             },
         },
         hus: {
+            // Picked-target TU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
             tu1: {
                 attributes: { GRAI: graiMapped },
+                bpartner: 'BP1',
+                bpartnerLocation: 'BP1',
             },
         },
     });
@@ -926,7 +931,8 @@ test('Scan one GRAI into top-level TU (no LU) → TU created with GRAI attribute
         },
         hus: {
             // GRAI landed on the top-level TU at pick time (branch (a) flush worked).
-            tu1: { huStatus: 'S', storages: { P1: '4 PCE' }, attributes: { GRAI: graiMapped } },
+            // Picked-target TU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            tu1: { huStatus: 'S', storages: { P1: '4 PCE' }, attributes: { GRAI: graiMapped }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -949,8 +955,11 @@ test('Scan one GRAI into top-level TU (no LU) → TU created with GRAI attribute
             },
         },
         hus: {
+            // Picked-target TU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
             tu1: {
                 attributes: { GRAI: graiMapped },
+                bpartner: 'BP1',
+                bpartnerLocation: 'BP1',
             },
         },
     });
@@ -1060,11 +1069,13 @@ test('Order-based, one LU + ≥2 GRAI-scanned TUs, each carrying its own distinc
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // Picked-target LU carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            lu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             // Each TU carries its own distinct GRAI — the central claim of this test.
             // Storages confirmed against live run on the fixed stack (build .36739 dev-mode, 2026-06-07).
-            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 } },
-            tu2: { huStatus: 'S', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 } },
+            // Picked-target TUs also carry the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            tu1: { huStatus: 'S', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu2: { huStatus: 'S', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -1091,10 +1102,12 @@ test('Order-based, one LU + ≥2 GRAI-scanned TUs, each carrying its own distinc
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '989 PCE' } },
             [masterdata.handlingUnits.HU2.qrCode]: { huStatus: 'A', storages: { P2: '988 PCE' } },
             [masterdata.handlingUnits.HU3.qrCode]: { huStatus: 'A', storages: { P3: '987 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' } },
+            // Picked-target LU carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            lu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE', P3: '13 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
             // Distinct GRAIs survive completion — header-stamp roundtrip persisted for each TU.
-            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 } },
-            tu2: { huStatus: 'E', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 } },
+            // Picked-target TUs also carry the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            tu1: { huStatus: 'E', storages: { P1: '11 PCE', P2: '12 PCE' }, attributes: { GRAI: grai1 }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            tu2: { huStatus: 'E', storages: { P3: '13 PCE' }, attributes: { GRAI: grai2 }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 });

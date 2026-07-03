@@ -48,8 +48,6 @@ import org.compiere.model.I_M_Warehouse;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -239,7 +237,7 @@ public interface IReceiptScheduleBL extends ISingletonService
 
 	List<ReceiptScheduleId> retainLUQtySchedules(List<ReceiptScheduleId> receiptSchedules);
 
-	int updateDatePromisedOverrideAndPOReference(@NonNull PInstanceId pinstanceId, @Nullable LocalDateTime datePromisedOverride, @Nullable String poReference);
+	int updateReceiptScheduleOverrides(@NonNull UpdateReceiptScheduleOverridesRequest request);
 
 	/**
 	 * Reopen all closed receipt schedules belonging to the given order's lines,
