@@ -56,8 +56,8 @@ class RawMaterialsIssueLineTest
 		uomStk = BusinessTestHelper.createUOM("Stk", 0); // pieces are whole units (precision 0)
 		uomKgId = UomId.ofRepoId(uomKg.getC_UOM_ID());
 
-		// Product stocked in pieces (a 35kg cheese wheel = 1 Stk)
-		final I_M_Product product = BusinessTestHelper.createProduct("CheeseWheel35kg", uomStk);
+		// Product stocked in pieces (1 Stk = 35 kg)
+		final I_M_Product product = BusinessTestHelper.createProduct("PieceStocked35kg", uomStk);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// 1 Stk = 35 kg
@@ -76,7 +76,7 @@ class RawMaterialsIssueLineTest
 				.id(id)
 				.isAlternativeIssue(false)
 				.productId(productId)
-				.productName(TranslatableStrings.anyLanguage("CheeseWheel35kg"))
+				.productName(TranslatableStrings.anyLanguage("PieceStocked35kg"))
 				.qtyToIssue(Quantity.of(qtyToIssueKg, uomKg))
 				.issueFromLocator(LocatorInfo.builder()
 						.id(locatorId)
@@ -97,8 +97,8 @@ class RawMaterialsIssueLineTest
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(1))
 				.productId(productId)
-				.productName(TranslatableStrings.anyLanguage("CheeseWheel35kg"))
-				.productValue("CheeseWheel35kg")
+				.productName(TranslatableStrings.anyLanguage("PieceStocked35kg"))
+				.productValue("PieceStocked35kg")
 				.isWeightable(false)
 				.qtyToIssue(Quantity.of(qtyToIssueKg, uomKg))
 				.steps(steps)

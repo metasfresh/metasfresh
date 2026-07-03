@@ -179,7 +179,7 @@ public class RawMaterialsIssueLine
 	 * and rounded UP to that UOM's precision. Used to cap the mobile "Qty to issue" input, which the operator
 	 * enters in the picked HU's stocking UOM (e.g. Stk), against the BOM line's remaining demand (e.g. kg):
 	 * for a 35 kg/Stk product with 34.5 kg still to issue, this yields 1 Stk (0.986 rounded UP) — so the operator
-	 * cannot enter more than one whole wheel toward that demand. Without the conversion the frontend would compare
+	 * cannot enter more than one whole piece toward that demand. Without the conversion the frontend would compare
 	 * the entered Stk value against a kg ceiling and silently accept a massive over-issue.
 	 */
 	@NonNull
