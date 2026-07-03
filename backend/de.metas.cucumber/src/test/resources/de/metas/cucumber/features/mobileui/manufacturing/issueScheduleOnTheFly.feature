@@ -306,3 +306,66 @@ Feature: Manufacturing Mobile UI - On-the-fly issue schedule creation
     Then verify PP_Order_IssueSchedule:
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_HU_ID.Identifier | QtyToIssue |
       | ppOrder7               | comp3Prod               | huComp3            | 2 PCE      |
+
+  @from:cucumber
+  Scenario: TC-D7 — Sub-0.5 fractional demand still rounds UP to a whole stocking unit (locks round-UP, not HALF_UP)
+    And set MobileUI_MFG_Config IsAllowIssuingAnyHU to 'Y'
+
+    # comp4Prod is stocked in PCE; 1 PCE = 10 kg.
+    # BOM demands 12 kg of comp4Prod for a 1-unit order -> 12 / 10 = 1.2 PCE.
+    # 1.2 is BELOW the 0.5 rounding boundary, so HALF_UP would give 1 PCE — only round-UP gives 2 PCE.
+    # This scenario therefore passes ONLY with round-UP, locking the behaviour against a future HALF_UP change.
+    # The scanned HU holds 3 whole PCE (= 30 kg available), well over the 2 PCE needed, so the cap is not hit.
+    And metasfresh contains M_Products:
+      | Identifier  | X12DE355 |
+      | comp4Prod   | PCE      |
+      | finProdKg2  | PCE      |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | comp4Prod               | PCE                    | KGM                  | 10           |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bomKg2     | finProdKg2   | bomVersionKg2             |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | C_UOM_ID.X12DE355 | ValidFrom  | QtyBatch |
+      | bomLineKg2 | bomKg2                       | comp4Prod               | KGM               | 2021-01-02 | 12       |
+    And the PP_Product_BOM identified by bomKg2 is completed
+
+    And metasfresh contains PP_Product_Plannings
+      | Identifier  | OPT.AD_Workflow_ID.Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | prodPlanKg2 | mobileWorkflow                | finProdKg2              | bomVersionKg2                            | false        |
+
+    # Stock comp4Prod as an HU holding 3 whole PCE (= 30 kg available, over the 20 kg / 2 PCE needed)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | invRoundUp     | 2026-03-20   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | invRoundUp     | invLineRoundUp     | comp4Prod               | 0       | 3        | PCE          |
+    And complete inventory with inventoryIdentifier 'invRoundUp'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | invLineRoundUp     | huComp4 |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder8               | MOP         | finProdKg2              | 1          | testResource             | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | 2026-03-20T23:59:00.00Z | Y                | prodPlanKg2                           |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder8               |
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder8               |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Scan the HU holding 3 PCE of comp4Prod
+    And create JsonCreateIssueScheduleOnTheFlyRequest and store it in context:
+      | WorkflowProcess.Identifier | M_HU_ID.Identifier |
+      | from_last_response         | huComp4            |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/issueSchedule/createOnTheFly' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # 12 kg demand / 10 kg per PCE = 1.2 PCE -> round UP -> 2 whole PCE, in the STOCKING UOM (PCE).
+    # HALF_UP would round 1.2 down to 1 PCE — so a green result here is only possible with RoundingMode.UP.
+    Then verify PP_Order_IssueSchedule:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_HU_ID.Identifier | QtyToIssue |
+      | ppOrder8               | comp4Prod               | huComp4            | 2 PCE      |
