@@ -109,22 +109,23 @@ public class C_OrderLine
 			ifColumnsChanged = { de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU })
 	public void updateQtyCUFromQtyTU(final I_C_OrderLine orderLine)
 	{
-		// Guard: if QtyEntered is ALSO changing in this save, QtyEntered is the driver;
-		// the existing add_M_HU_PI_Item_Product handles CU→TU. Avoids double-derivation/oscillation.
 		if (InterfaceWrapperHelper.isValueChanged(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered))
 		{
-			return;
+			return; // QtyEntered is the driver; add_M_HU_PI_Item_Product handles CU→TU
 		}
-		// Derive CU from TU, mirroring the proven updateQtyCU callout
-		// (de.metas.handlingunits.callout.C_OrderLine#updateQtyCU) — read the TU qty
-		// through the packingAware, exactly as the callout does.
-		// Note: assertChangeAllowed() also fires for this save (QtyEnteredTU is not in its
-		// ignoreColumnsChanged list). For purchase lines with QtyDelivered > 0 it will validate
-		// the new QtyEntered we set here against QtyDelivered — which is the intended guard.
 		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
-		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU().intValue());
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, packingAware.getQtyTU().intValue()); // mirrors callout; intValue() matches callout truncation
 		packingAwareBL.setQtyLUFromQtyTU(packingAware);
 		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+
+		// QtyEnteredTU is in assertChangeAllowed's ignoreColumnsChanged, so a TU-only edit does not
+		// pass through that receipt-exists guard. Enforce the same QtyEntered >= QtyDelivered
+		// invariant here for received purchase lines, against the QtyEntered we just recomputed.
+		if (orderLine.getQtyDelivered().signum() > 0
+				&& !orderBL.isSalesOrder(OrderId.ofRepoId(orderLine.getC_Order_ID())))
+		{
+			validateQtyEntered(orderLine);
+		}
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
@@ -144,7 +145,8 @@ public class C_OrderLine
 					I_C_OrderLine.COLUMNNAME_DateInvoiced,
 					I_C_OrderLine.COLUMNNAME_QtyEnteredInPriceUOM,
 					I_C_OrderLine.COLUMNNAME_IsDeliveryClosed,
-					I_C_OrderLine.COLUMNNAME_PackDescription })
+					I_C_OrderLine.COLUMNNAME_PackDescription,
+					de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU })
 	public void assertChangeAllowed(@NonNull final I_C_OrderLine orderLine)
 	{
 		// dev-note: do not impact the performance, check only lines with some quantity delivered

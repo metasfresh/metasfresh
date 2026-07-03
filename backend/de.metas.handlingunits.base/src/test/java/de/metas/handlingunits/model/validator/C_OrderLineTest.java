@@ -26,15 +26,17 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 import java.math.BigDecimal;
 
 import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 
 import de.metas.adempiere.model.I_M_Product;
@@ -44,8 +46,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.order.IOrderLineBL;
+import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.impl.OrderLineBL;
+import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 
 /**
@@ -77,8 +81,8 @@ public class C_OrderLineTest
 		// Register a mock IOrderLineBL that skips the pricing logic,
 		// mirroring OrderPackingMaterialDocumentLinesBuilderTest
 		final OrderLineBL orderLineBL = Mockito.spy(new OrderLineBL());
-		Mockito.doNothing().when(orderLineBL).updatePrices(Matchers.any(OrderLinePriceUpdateRequest.class));
-		Mockito.doNothing().when(orderLineBL).updateLineNetAmtFromQtyEntered(Matchers.any());
+		Mockito.doNothing().when(orderLineBL).updatePrices(any(OrderLinePriceUpdateRequest.class));
+		Mockito.doNothing().when(orderLineBL).updateLineNetAmtFromQtyEntered(any());
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 
 		// UOM: piece (helper.uomEach is the standard "Each" in HUTestHelper)
@@ -116,10 +120,10 @@ public class C_OrderLineTest
 		order.setIsSOTrx(false);
 		saveRecord(order);
 
-		// Create the order line BEFORE registering the validator
-		// so the initial BEFORE_NEW interceptor path is NOT exercised
-		// (it would call IHUOrderBL / pricing / IHUDocumentHandlerFactory which
-		//  need additional services that are not relevant to the TU-edit fix)
+		// Create the order line BEFORE registering the validator so the initial save avoids
+		// the pre-existing add_M_HU_PI_Item_Product BEFORE_NEW path (IHUOrderBL / doc-handler /
+		// pricing services unrelated to the TU fix). The new updateQtyCUFromQtyTU fires only on
+		// BEFORE_CHANGE, so registering the validator afterwards is sufficient.
 		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
 		orderLine.setC_Order(order);
 		orderLine.setM_Product_ID(product.getM_Product_ID());
@@ -183,5 +187,94 @@ public class C_OrderLineTest
 		assertThat(reloaded.getQtyEntered())
 				.as("QtyEntered must NOT change when there is no finite packing instruction")
 				.isEqualByComparingTo("480");
+	}
+
+	/**
+	 * AC6 accept — partially-received line where the recomputed QtyEntered is above QtyDelivered.
+	 *
+	 * <p>QtyDelivered = 40, PIP capacity 8. Edit QtyEnteredTU = 6 → recomputed QtyEntered = 48 ≥ 40 → save succeeds.
+	 */
+	@Test
+	public void qtyEnteredTU_edit_recomputes_on_partially_received_line_when_above_delivered()
+	{
+		// Arrange: purchase order
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(false);
+		saveRecord(order);
+
+		// Order line with QtyDelivered = 40 (partially received)
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order(order);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product(pip);
+		orderLine.setQtyEntered(new BigDecimal("480"));
+		orderLine.setQtyEnteredTU(new BigDecimal("60"));
+		orderLine.setQtyDelivered(new BigDecimal("40"));
+		saveRecord(orderLine); // BEFORE registering the validator
+
+		// Stub the spied OrderLineBL methods used by validateQtyEntered:
+		// convertQtyEnteredToStockUOM returns the orderLine's QtyEntered in the piece UOM (identity)
+		// getQtyDelivered returns 40 in the piece UOM
+		final OrderLineBL orderLineBL = (OrderLineBL)Services.get(IOrderLineBL.class);
+		Mockito.doAnswer(inv -> Quantity.of(inv.<org.compiere.model.I_C_OrderLine>getArgument(0).getQtyEntered(), uom))
+				.when(orderLineBL).convertQtyEnteredToStockUOM(any());
+		Mockito.doReturn(Quantity.of(new BigDecimal("40"), uom))
+				.when(orderLineBL).getQtyDelivered(any(OrderAndLineId.class));
+
+		// Register the interceptor
+		POJOLookupMap.get().addModelValidator(new C_OrderLine());
+
+		// Act: change TU qty to 6 → recomputed QtyEntered = 6 × 8 = 48 ≥ 40 → must succeed
+		orderLine.setQtyEnteredTU(new BigDecimal("6"));
+		saveRecord(orderLine);
+
+		// Assert: QtyEntered recomputed to 48
+		final I_C_OrderLine reloaded = load(orderLine.getC_OrderLine_ID(), I_C_OrderLine.class);
+		assertThat(reloaded.getQtyEntered())
+				.as("QtyEntered should be recomputed to 6 TU × 8 CU/TU = 48 CU (≥ QtyDelivered 40 → save succeeds)")
+				.isEqualByComparingTo("48");
+	}
+
+	/**
+	 * AC6 reject — partially-received line where the recomputed QtyEntered falls below QtyDelivered.
+	 *
+	 * <p>QtyDelivered = 40, PIP capacity 8. Edit QtyEnteredTU = 4 → recomputed QtyEntered = 32 < 40 → must throw.
+	 */
+	@Test
+	public void qtyEnteredTU_edit_rejected_on_partially_received_line_when_below_delivered()
+	{
+		// Arrange: purchase order
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(false);
+		saveRecord(order);
+
+		// Order line with QtyDelivered = 40 (partially received)
+		final I_C_OrderLine orderLine = newInstance(I_C_OrderLine.class);
+		orderLine.setC_Order(order);
+		orderLine.setM_Product_ID(product.getM_Product_ID());
+		orderLine.setC_UOM_ID(uom.getC_UOM_ID());
+		orderLine.setM_HU_PI_Item_Product(pip);
+		orderLine.setQtyEntered(new BigDecimal("480"));
+		orderLine.setQtyEnteredTU(new BigDecimal("60"));
+		orderLine.setQtyDelivered(new BigDecimal("40"));
+		saveRecord(orderLine); // BEFORE registering the validator
+
+		// Stub the spied OrderLineBL methods used by validateQtyEntered
+		final OrderLineBL orderLineBL = (OrderLineBL)Services.get(IOrderLineBL.class);
+		Mockito.doAnswer(inv -> Quantity.of(inv.<org.compiere.model.I_C_OrderLine>getArgument(0).getQtyEntered(), uom))
+				.when(orderLineBL).convertQtyEnteredToStockUOM(any());
+		Mockito.doReturn(Quantity.of(new BigDecimal("40"), uom))
+				.when(orderLineBL).getQtyDelivered(any(OrderAndLineId.class));
+
+		// Register the interceptor
+		POJOLookupMap.get().addModelValidator(new C_OrderLine());
+
+		// Act + Assert: QtyEnteredTU = 4 → recomputed QtyEntered = 32 < 40 → must throw
+		orderLine.setQtyEnteredTU(new BigDecimal("4"));
+		assertThatThrownBy(() -> saveRecord(orderLine))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("QtyEntered")
+				.hasMessageContaining("QtyDelivered");
 	}
 }
