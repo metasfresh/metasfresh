@@ -449,7 +449,7 @@ test.describe('Modes', () => {
 
         // Boots in hardware mode: off-screen scan input present, device camera absent.
         await BarcodeScannerComponent.expectAttached({});
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
 
         // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
         // (camera toggle needs BOTH hardware and camera enabled).
