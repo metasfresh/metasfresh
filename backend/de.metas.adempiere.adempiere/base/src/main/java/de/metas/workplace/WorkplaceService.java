@@ -94,9 +94,9 @@ public class WorkplaceService
 		return workplaceRepository.isAnyWorkplaceActive();
 	}
 
-	public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+	public ImmutableSet<LocatorId> getAllPackingPlacePickFromLocatorIds()
 	{
-		return workplaceRepository.getPackingPlacePickFromLocatorIds(warehouseId);
+		return workplaceRepository.getAllPackingPlacePickFromLocatorIds();
 	}
 
 	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)

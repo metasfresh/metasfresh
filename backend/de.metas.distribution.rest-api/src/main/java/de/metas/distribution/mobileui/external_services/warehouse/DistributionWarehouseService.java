@@ -45,9 +45,9 @@ public class DistributionWarehouseService
 	}
 
 	@NonNull
-	public Set<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+	public Set<LocatorId> getAllPackingPlacePickFromLocatorIds()
 	{
-		return workplaceService.getPackingPlacePickFromLocatorIds(warehouseId);
+		return workplaceService.getAllPackingPlacePickFromLocatorIds();
 	}
 
 	public WarehouseInfo getWarehouseInfoByRepoId(final int warehouseRepoId)
