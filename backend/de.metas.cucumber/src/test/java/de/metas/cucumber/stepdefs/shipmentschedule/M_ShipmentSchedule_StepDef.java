@@ -205,7 +205,8 @@ public class M_ShipmentSchedule_StepDef
 	public void loadShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		// Drain the material→async rabbitMQ queues so the async shipment-schedule recompute chain has settled before
-		// we poll the committed IsToRecompute state, keeping the drain out of the feature file (module CLAUDE.md rule 7).
+		// we poll the committed IsToRecompute state — per the module convention of draining inside the consuming
+		// step def rather than as a bare step in the .feature file.
 		// The subsequent poll re-checks committed state, so front-loading the drain cannot collapse any asserted value.
 		rabbitMQStepDef.wait_empty_all_queues();
 
