@@ -390,14 +390,10 @@ test.describe('Modes', () => {
         await BarcodeScannerComponent.expectManualEntryInputPresent();
         // The manual-entry input must NOT be readOnly — the user must be able to type.
         await BarcodeScannerComponent.expectManualEntryInputNotReadOnly();
-<<<<<<< HEAD
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
         // Hardware scanner is enabled → manual mode offers the "Use hardware scanner" button
         // (testId barcode-scanner-back-to-scanner) so the operator can return to the scanner.
         await BarcodeScannerComponent.expectFooterButtonPresent('barcode-scanner-back-to-scanner');
-=======
-        await BarcodeScannerComponent.expectCameraModeInactive();
->>>>>>> d5a4b01da6 (MobileUI E2E: assert camera-mode-active via panel wrapper, not transient <video> (#24693))
     });
 
     // camera toggle: hardware + camera both enabled →
@@ -458,9 +454,9 @@ test.describe('Modes', () => {
         await ApplicationsListScreen.startApplication('huManager');
         await HUManagerScreen.waitForScreen();
 
-        // Boots in hardware mode: off-screen scan input present, device camera absent.
+        // Boots in hardware mode: off-screen scan input present, camera mode not active.
         await BarcodeScannerComponent.expectAttached({});
-        await BarcodeScannerComponent.expectCameraVideoAbsent();
+        await BarcodeScannerComponent.expectCameraModeInactive();
 
         // Footer contract for this deployment: manual-entry fallback shown, camera toggle hidden
         // (camera toggle needs BOTH hardware and camera enabled).
