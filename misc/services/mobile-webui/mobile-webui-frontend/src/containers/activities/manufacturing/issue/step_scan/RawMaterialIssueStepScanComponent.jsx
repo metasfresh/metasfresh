@@ -91,6 +91,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
 
     const {
       uom,
+      lineUom,
       qtyToIssueTarget,
       qtyToIssueMax,
       lineQtyToIssue,
@@ -114,7 +115,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       //
       // Props needed for ScanHUAndGetQtyComponent:
       userInfo: computeStepScanUserInfoQtys({
-        uom,
+        lineUom,
         lineQtyToIssue,
         lineQtyToIssueTolerance,
         lineQtyToIssueRemaining,
