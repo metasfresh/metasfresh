@@ -28,6 +28,9 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
     lineCarrierAdviseAvailable,
     lineCarrierAdviseReadOnly,
     lineCarrierProductCaption,
+    jobCarrierAdviseAvailable,
+    jobCarrierAdviseReadOnly,
+    jobCarrierProductCaption,
     allowedPickToStructures,
     isAllowReopeningLU,
   } = useCurrentPickingTargetInfo({ wfProcessId, activityId, lineId });
@@ -62,17 +65,20 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       .finally(() => setIsAdvising(false));
   };
 
-  // Carrier-advise lives on the LU/TU target when one is set, else on the line (CU-direct).
+  // Carrier-advise source, in precedence: the LU/TU pick target → the line (line-level pick) →
+  // the job (header-level CU-direct: no target and no line in scope).
   const carrierAdviseTarget = luPickingTarget ?? tuPickingTarget;
   const isCarrierAdviseAvailable = carrierAdviseTarget
     ? carrierAdviseTarget.carrierAdviseAvailable === true
-    : lineCarrierAdviseAvailable === true;
+    : lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
   const isCarrierAdviseReadOnly = carrierAdviseTarget
     ? carrierAdviseTarget.carrierAdviseReadOnly === true
-    : lineCarrierAdviseReadOnly === true;
+    : lineCarrierAdviseAvailable
+    ? lineCarrierAdviseReadOnly === true
+    : jobCarrierAdviseReadOnly === true;
   const carrierProductCaption = carrierAdviseTarget
     ? carrierAdviseTarget.carrierProductCaption
-    : lineCarrierProductCaption;
+    : lineCarrierProductCaption ?? jobCarrierProductCaption;
 
   return (
     <>
@@ -108,21 +114,21 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           onClick={onSelectTUPickingTargetClick}
         />
       )}
-      {isCarrierAdviseAvailable && !isCarrierAdviseReadOnly && (
+      {isCarrierAdviseAvailable && (
         <ButtonWithIndicator
           testId="advise-carrier-button"
           captionKey="activities.picking.adviseCarrier"
-          disabled={!isUserEditable || isAdvising}
+          disabled={!isUserEditable || isAdvising || isCarrierAdviseReadOnly}
           onClick={onAdviseCarrierClick}
-        />
-      )}
-      {isCarrierAdviseAvailable && carrierProductCaption && (
-        <ButtonWithIndicator
-          testId="carrier-product-readonly"
-          caption={trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
-          disabled={true}
-          onClick={() => {}}
-        />
+        >
+          {carrierProductCaption && (
+            <div className="row">
+              <span data-testid="carrier-product-caption">
+                {trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
+              </span>
+            </div>
+          )}
+        </ButtonWithIndicator>
       )}
     </>
   );

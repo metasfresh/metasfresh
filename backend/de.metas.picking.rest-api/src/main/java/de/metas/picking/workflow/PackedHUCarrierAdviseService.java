@@ -150,6 +150,35 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
+	 * Builds the display info from a job-scoped carrier product — the picking-job line's (or header's)
+	 * persisted {@code Carrier_Product_ID}, which is the job-scoped source of truth. Unlike
+	 * {@link #resolveTargetInfo(I_M_HU)} (per-HU via the shipment schedule, which is NOT scoped to the
+	 * picking job), this is what the mobile picking-job JSON converter should show for the current carrier.
+	 */
+	@NonNull
+	public CarrierAdviseTargetInfo resolveTargetInfoFromCarrierProduct(
+			@Nullable final CarrierProductId carrierProductId,
+			final boolean readOnly)
+	{
+		if (carrierProductId == null)
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		if (carrierProduct == null)
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+
+		return CarrierAdviseTargetInfo.builder()
+				.available(true)
+				.readOnly(readOnly)
+				.productCaption(carrierProduct.getName())
+				.build();
+	}
+
+	/**
 	 * Re-advises all packed top-level HUs for the given picking job / line, then persists the advised
 	 * carrier product (and the read-only flag) onto the picking job header + its non-Manual lines, so the
 	 * mobile preview and the {@link CarrierAdviseConsistencyService} checks read the same persisted state.

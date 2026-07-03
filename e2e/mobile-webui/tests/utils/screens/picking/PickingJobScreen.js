@@ -152,9 +152,10 @@ export const PickingJobScreen = {
     }),
 
     expectCarrierProductCaption: async ({ caption }) => await step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
-        const button = page.getByTestId('carrier-product-readonly');
-        await button.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-        await expect(button).toContainText(caption);
+        // The current carrier product now renders as a detail line inside the advise-carrier button.
+        const detail = page.getByTestId('carrier-product-caption');
+        await detail.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(detail).toContainText(caption);
     }),
 
     pickHU: async ({

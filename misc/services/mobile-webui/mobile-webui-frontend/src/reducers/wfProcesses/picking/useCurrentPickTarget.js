@@ -83,5 +83,9 @@ export const getCurrentPickingTargetInfoFromActivity = ({ activity, lineId, fall
     lineCarrierAdviseAvailable: line?.carrierAdviseAvailable ?? false,
     lineCarrierAdviseReadOnly: line?.carrierAdviseReadOnly ?? false,
     lineCarrierProductCaption: line?.carrierProductCaption ?? null,
+    // Job-level fallback (header-level CU-direct: no LU/TU target and no line in scope).
+    jobCarrierAdviseAvailable: activity?.dataStored?.carrierAdviseAvailable ?? false,
+    jobCarrierAdviseReadOnly: activity?.dataStored?.carrierAdviseReadOnly ?? false,
+    jobCarrierProductCaption: activity?.dataStored?.carrierProductCaption ?? null,
   };
 };

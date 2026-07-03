@@ -97,7 +97,7 @@ test('Carrier advise — pick into LU', async ({ page }) => {
 
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: 100 });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 TU', qtyPicked: '1 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
     await PickingJobScreen.expectAdviseCarrierButtonVisible();
@@ -119,7 +119,7 @@ test('Carrier advise — pick into TU', async ({ page }) => {
 
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: 100 });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '1 TU', qtyPicked: '1 TU', qtyPickedCatchWeight: '' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', qtyPickedCatchWeight: '' });
 
     await PickingJobScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
     await PickingJobScreen.expectAdviseCarrierButtonVisible();
