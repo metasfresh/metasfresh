@@ -149,7 +149,7 @@ public class JsonPickingJobConverterCommand
 		{
 			return packedHUCarrierAdviseService.resolveTargetInfoFromCarrierProduct(
 					line.getCarrierProductId(),
-					line.isCarrierAdviseReadOnly());
+					isLineCarrierAdviseReadOnly(line));
 		}
 
 		final ImmutableSet<CarrierProductId> distinctProductIds = pickingJob.getLines().stream()
@@ -164,8 +164,19 @@ public class JsonPickingJobConverterCommand
 		final CarrierProductId sharedProductId = distinctProductIds.iterator().next();
 		final boolean readOnly = pickingJob.getLines().stream()
 				.filter(l -> sharedProductId.equals(l.getCarrierProductId()))
-				.allMatch(PickingJobLine::isCarrierAdviseReadOnly);
+				.allMatch(this::isLineCarrierAdviseReadOnly);
 		return packedHUCarrierAdviseService.resolveTargetInfoFromCarrierProduct(sharedProductId, readOnly);
+	}
+
+	/**
+	 * The carrier advise is read-only for the DISPLAY when the schedule was advised manually
+	 * ({@link PickingJobLine#isManual()} — set at line creation, not offered for re-advise) OR the line was
+	 * already locked by a mobile advise action ({@link PickingJobLine#isCarrierAdviseReadOnly()}). The two are
+	 * distinct persisted facts (IsCarrierAdviseManual vs IsCarrierAdviseReadOnly); the display unions them.
+	 */
+	private boolean isLineCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
+	{
+		return line.isManual() || line.isCarrierAdviseReadOnly();
 	}
 
 	@NonNull
