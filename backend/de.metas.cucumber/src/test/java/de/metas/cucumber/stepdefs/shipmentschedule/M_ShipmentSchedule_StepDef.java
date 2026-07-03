@@ -54,7 +54,6 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
-import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
@@ -182,7 +181,6 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
 	@NonNull private final C_Project_StepDefData projectTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
-	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	private final TestContext testContext;
 
@@ -217,12 +215,6 @@ public class M_ShipmentSchedule_StepDef
 	@Then("^after not more than (.*)s, M_ShipmentSchedules are found:$")
 	public void loadShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		// Drain the material→async rabbitMQ queues so the async shipment-schedule recompute chain has settled before
-		// we poll the committed IsToRecompute state — per the module convention of draining inside the consuming
-		// step def rather than as a bare step in the .feature file.
-		// The subsequent poll re-checks committed state, so front-loading the drain cannot collapse any asserted value.
-		rabbitMQStepDef.wait_empty_all_queues();
-
 		final DataTableRows rows = DataTableRows.of(dataTable);
 
 		loadShipmentSchedules(timeoutSec, rows);
