@@ -1,4 +1,11 @@
-CREATE OR REPLACE VIEW M_Picking_OrderBoard_v AS
+-- Source DDL: backend/de.metas.handlingunits.base/src/main/sql/postgresql/ddl/views/M_Picking_OrderBoard_v.sql
+-- Fix: 5811420 registered AD_Column 581169 (M_Picking_OrderBoard_Overview_v_ID) but the
+-- db_alter_view call may not have updated the live DB view. Re-apply to ensure the FK column
+-- exists in the actual PostgreSQL view.
+
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;
+
+CREATE OR REPLACE VIEW M_Picking_OrderBoard_v$new AS
 SELECT
     (('x' || substr(md5(
         b.m_product_id::text || '_' ||
@@ -59,5 +66,13 @@ GROUP BY
     loc.c_country_id,
     ctry.name,
     b.ad_client_id,
-    b.ad_org_id
-;
+    b.ad_org_id;
+
+SELECT db_alter_view(
+    'M_Picking_OrderBoard_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(table_name) = lower('M_Picking_OrderBoard_v$new'))
+);
+
+DROP VIEW IF EXISTS M_Picking_OrderBoard_v$new;
