@@ -130,3 +130,4 @@ UPDATE AD_Tab SET AD_Column_ID=581169,Updated=TO_TIMESTAMP('2026-07-03 05:17:23.
 -- UI Element: Auftrags-Board(581036,D) -> Übersicht(581171,D) -> main -> 10 -> default.Landname
 UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2026-07-03 10:14:35.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581190
 ;
+
