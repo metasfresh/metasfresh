@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 62 | 65 | 95% |
+| Picking | 65 | 68 | 96% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -90,12 +90,14 @@
 | Partial pick, allowCompletingPartialPickingJob = Y → complete succeeds | `picking/picking.spec.js` |
 | Close LU during picking → shipment created automatically | `picking/picking.spec.js` |
 | Close LU then reopen → state transitions verified | `picking/picking.spec.js` |
+| Close LU (header-level, DELIVERY_LOCATION aggregation) → closed LU and its cascaded TU/CU carry the picking consignee (BPartner + location) | `picking/closeLU_stampsConsignee.spec.js` |
+| Close LU (line-level, PRODUCT aggregation) → closed LU and its cascaded TU/CU carry the picking consignee (BPartner + location) | `picking/closeLU_stampsConsignee.spec.js` |
 | Job already started → "already started" indicator shown in jobs list | `picking/picking.spec.js` |
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows exactly 3 fields: document number, delivery location and delivery date | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**11/12 — 92%**
+**13/14 — 93%**
 
 ### Order-based picking — filtering and facets
 
@@ -169,8 +171,9 @@
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
+| Aggregate LU carries more active QR codes than its current TU count (surplus) → picking tolerates the surplus and completes | `picking/picking_qrCodeSurplus.spec.js` |
 
-**5/5 — 100%**
+**6/6 — 100%**
 
 ### Product-based picking
 
