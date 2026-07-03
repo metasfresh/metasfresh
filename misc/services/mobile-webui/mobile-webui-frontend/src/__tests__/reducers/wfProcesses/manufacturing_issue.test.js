@@ -2,6 +2,7 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import {
   computeLineQtyIssuedFromSteps,
   computeStepStatus,
+  normalizeLines,
   updateActivityBottomUp,
 } from '../../../reducers/wfProcesses/manufacturing_issue';
 
@@ -178,4 +179,43 @@ describe('reducers: manufacturing issue tests', () => {
       ).toEqual(14);
     });
   }); // computeLineQtyIssuedFromSteps
+
+  // Regression: when the picked HU is stocked in a different uom than the BOM line demands
+  // (e.g. 1 Stk = 35 kg, BOM line in kg), the backend aggregates line.qtyIssued in the LINE uom
+  // (RawMaterialsIssueLine.computeQtyIssued converts each step's issued qty). The frontend must
+  // NOT re-derive it by summing step qtys (which are in the step/stocking uom, un-convertible here).
+  describe('line qtyIssued uom (Stk-stocked HU issued against a kg BOM line)', () => {
+    it('normalizeLines carries the backend line.qtyIssued', () => {
+      const [line] = normalizeLines([
+        {
+          uom: 'kg',
+          qtyToIssue: 34.5,
+          qtyIssued: 35, // backend value, in the LINE uom (kg)
+          steps: [{ id: 'S1', qtyIssued: 1 /* Stk */ }],
+        },
+      ]);
+      expect(line.qtyIssued).toEqual(35);
+    });
+
+    it('updateActivityBottomUp keeps the backend line.qtyIssued instead of summing step (Stk) qtys', () => {
+      const draftActivityDataStored = {
+        lines: [
+          {
+            uom: 'kg',
+            qtyToIssue: 34.5,
+            qtyIssued: 35, // backend value, in the LINE uom (kg)
+            steps: {
+              S1: { qtyToIssue: 1, qtyIssued: 1 /* Stk */, qtyRejectedReasonCode: null },
+            },
+          },
+        ],
+      };
+      updateActivityBottomUp({ draftActivityDataStored });
+
+      const line = draftActivityDataStored.lines[0];
+      expect(line.qtyIssued).toEqual(35); // NOT 1
+      expect(line.qtyToIssueRemaining).toEqual(0); // 35 kg covers the 34.5 kg demand
+      expect(line.completeStatus).toEqual(CompleteStatus.COMPLETED);
+    });
+  });
 });

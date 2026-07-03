@@ -29,7 +29,6 @@ const call = ({ line, step }) => {
   });
 
   return computeStepScanUserInfoQtys({
-    uom: props.uom,
     lineUom: props.lineUom,
     lineQtyToIssue: props.lineQtyToIssue,
     lineQtyToIssueTolerance: props.lineQtyToIssueTolerance,
