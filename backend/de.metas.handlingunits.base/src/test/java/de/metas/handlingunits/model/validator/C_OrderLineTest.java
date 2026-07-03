@@ -55,12 +55,11 @@ import de.metas.util.Services;
 /**
  * Tests for the C_OrderLine model interceptor regarding TU quantity editing.
  *
- * <p>AC1 (RED): editing QtyEnteredTU on a purchase order line with a finite-capacity
- * packing instruction must recompute QtyEntered (CU qty). Current code does NOT do this
- * because the {@code add_M_HU_PI_Item_Product} interceptor watches only
- * {@code {C_BPartner_ID, M_Product_ID, QtyEntered, M_HU_PI_Item_Product_ID}} — not QtyEnteredTU.
+ * <p>Editing {@code QtyEnteredTU} recomputes {@code QtyEntered} (CU qty) when a finite-capacity
+ * packing instruction is set, and is a no-op otherwise.
  *
- * <p>AC4 (GREEN): editing QtyEnteredTU with no finite packing instruction must NOT change QtyEntered.
+ * <p>On received purchase lines ({@code QtyDelivered > 0}) the recomputed {@code QtyEntered} must
+ * stay ≥ {@code QtyDelivered}; a reduction below what was received is rejected.
  */
 public class C_OrderLineTest
 {
@@ -104,13 +103,8 @@ public class C_OrderLineTest
 	}
 
 	/**
-	 * AC1 — RED test.
-	 *
-	 * <p>Editing QtyEnteredTU (to 6) on a purchase order line that has a finite-capacity PIP
+	 * Editing QtyEnteredTU (to 6) on a purchase order line that has a finite-capacity PIP
 	 * (8 CU/TU) must recompute QtyEntered to 6 × 8 = 48.
-	 *
-	 * <p>On current code this FAILS: QtyEntered remains 480 because the interceptor
-	 * {@code add_M_HU_PI_Item_Product} does not watch the QtyEnteredTU column.
 	 */
 	@Test
 	public void qtyEnteredTU_edit_recomputes_qtyEntered()
@@ -144,16 +138,14 @@ public class C_OrderLineTest
 		// Reload to get the persisted value
 		final I_C_OrderLine reloaded = load(orderLine.getC_OrderLine_ID(), I_C_OrderLine.class);
 
-		// Assert: QtyEntered must be 6 × 8 = 48  (FAILS on current code — stays 480)
+		// Assert: QtyEntered recomputed to 6 × 8 = 48
 		assertThat(reloaded.getQtyEntered())
 				.as("QtyEntered should be recomputed to 6 TU × 8 CU/TU = 48 CU")
 				.isEqualByComparingTo("48");
 	}
 
 	/**
-	 * AC4 — GREEN test, must keep passing after the fix.
-	 *
-	 * <p>When there is NO finite packing instruction on the order line,
+	 * When there is NO finite packing instruction on the order line,
 	 * editing QtyEnteredTU must NOT change QtyEntered.
 	 */
 	@Test
@@ -190,7 +182,7 @@ public class C_OrderLineTest
 	}
 
 	/**
-	 * AC6 accept — partially-received line where the recomputed QtyEntered is above QtyDelivered.
+	 * Partially-received line where the recomputed QtyEntered stays above QtyDelivered.
 	 *
 	 * <p>QtyDelivered = 40, PIP capacity 8. Edit QtyEnteredTU = 6 → recomputed QtyEntered = 48 ≥ 40 → save succeeds.
 	 */
@@ -237,7 +229,7 @@ public class C_OrderLineTest
 	}
 
 	/**
-	 * AC6 reject — partially-received line where the recomputed QtyEntered falls below QtyDelivered.
+	 * Partially-received line where the recomputed QtyEntered would fall below QtyDelivered.
 	 *
 	 * <p>QtyDelivered = 40, PIP capacity 8. Edit QtyEnteredTU = 4 → recomputed QtyEntered = 32 < 40 → must throw.
 	 */
