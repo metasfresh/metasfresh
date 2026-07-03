@@ -127,3 +127,4 @@ UPDATE AD_Tab SET AD_Column_ID=581169,Updated=TO_TIMESTAMP('2026-07-03 05:17:23.
 ;
 
 
+update AD_UI_Element set seqnogrid=0 , isdisplayedgrid='N' where AD_UI_Element_id=581190;
