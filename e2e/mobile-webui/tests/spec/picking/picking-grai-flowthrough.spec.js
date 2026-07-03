@@ -207,7 +207,8 @@ test('Flow Through: capture one GRAI per picked crate (manual + scanned) then co
             },
         },
         hus: {
-            vhu1: { attributes: { GRAI: grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhu1: { attributes: { GRAI: grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -289,7 +290,8 @@ test('Flow Through: "OK und LU schließen" still demands one GRAI per picked cra
             },
         },
         hus: {
-            vhu1: { attributes: { GRAI: grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhu1: { attributes: { GRAI: grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
