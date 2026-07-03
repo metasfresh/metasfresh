@@ -43,7 +43,7 @@
 --   - Flat CTEs only (no nested LATERALs)
 --   - m_hu ha_vtu join computed once in ha_items_with_vtu, reused for attrs + items
 --   - m_hu_attribute scanned once via hu_attrs pivot (vs 6 separate joins previously)
---   - c_bpartner_product scanned once via bp_prod_lookup (vs N LATERAL calls)
+--   - cuGTIN resolved ASI-aware from m_product_asi_data via LEFT JOIN LATERAL (buyer-or-wildcard + IsASIAttributesKeySubset, lowest SeqNo)
 --   - Scalar variables for buyer_bpartner_id and poreference (vs scalar subqueries per row)
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
@@ -420,7 +420,8 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = it.tu_pi_item_product_id
-                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match) — parity with DESADV get_desadv_packs_json_fn
+                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                          -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
                       LEFT JOIN LATERAL (
                           SELECT gtin, ean_cu, ean13_productcode
                           FROM m_product_asi_data
@@ -483,7 +484,8 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = atb.vtu_pi_item_product_id
-                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match) — parity with DESADV get_desadv_packs_json_fn
+                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                          -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
                       LEFT JOIN LATERAL (
                           SELECT gtin, ean_cu, ean13_productcode
                           FROM m_product_asi_data
