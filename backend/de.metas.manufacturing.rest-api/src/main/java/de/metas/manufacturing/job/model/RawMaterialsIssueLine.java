@@ -174,6 +174,22 @@ public class RawMaterialsIssueLine
 		return qtyToIssue.subtract(qtyIssued);
 	}
 
+	/**
+	 * The quantity still allowed to be issued (including the issuing tolerance), converted to {@code targetUomId}
+	 * and rounded UP to that UOM's precision. Used to cap the mobile "Qty to issue" input, which the operator
+	 * enters in the picked HU's stocking UOM (e.g. Stk), against the BOM line's remaining demand (e.g. kg):
+	 * for a 35 kg/Stk product with 34.5 kg still to issue, this yields 1 Stk (0.986 rounded UP) — so the operator
+	 * cannot enter more than one whole wheel toward that demand. Without the conversion the frontend would compare
+	 * the entered Stk value against a kg ceiling and silently accept a massive over-issue.
+	 */
+	@NonNull
+	public Quantity getRemainingQtyToIssueMaxInUOM(@NonNull final UomId targetUomId)
+	{
+		final Quantity maxToIssue = getQtyToIssueMax().orElse(qtyToIssue); // BOM line UOM, incl. issuing tolerance
+		final Quantity remaining = maxToIssue.subtract(qtyIssued).toZeroIfNegative();
+		return uomConversionBL.convertQuantityTo(remaining, productId, targetUomId);
+	}
+
 	public boolean isAllowManualIssue()
 	{
 		return !issueMethod.isIssueOnlyForReceived();
