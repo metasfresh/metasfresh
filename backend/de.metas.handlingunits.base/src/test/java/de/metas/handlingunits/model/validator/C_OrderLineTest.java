@@ -78,6 +78,7 @@ public class C_OrderLineTest
 		// mirroring OrderPackingMaterialDocumentLinesBuilderTest
 		final OrderLineBL orderLineBL = Mockito.spy(new OrderLineBL());
 		Mockito.doNothing().when(orderLineBL).updatePrices(Matchers.any(OrderLinePriceUpdateRequest.class));
+		Mockito.doNothing().when(orderLineBL).updateLineNetAmtFromQtyEntered(Matchers.any());
 		Services.registerService(IOrderLineBL.class, orderLineBL);
 
 		// UOM: piece (helper.uomEach is the standard "Each" in HUTestHelper)

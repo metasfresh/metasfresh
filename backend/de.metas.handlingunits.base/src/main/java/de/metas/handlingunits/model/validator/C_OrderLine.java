@@ -104,6 +104,25 @@ public class C_OrderLine
 		}
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU })
+	public void updateQtyCUFromQtyTU(final I_C_OrderLine orderLine)
+	{
+		// Guard: if QtyEntered is ALSO changing in this save, QtyEntered is the driver;
+		// the existing add_M_HU_PI_Item_Product handles CU→TU. Avoids double-derivation/oscillation.
+		if (InterfaceWrapperHelper.isValueChanged(orderLine, I_C_OrderLine.COLUMNNAME_QtyEntered))
+		{
+			return;
+		}
+		// Derive CU from TU, mirroring the proven updateQtyCU callout
+		// (de.metas.handlingunits.callout.C_OrderLine#updateQtyCU):
+		final IHUPackingAware packingAware = new OrderLineHUPackingAware(orderLine);
+		packingAwareBL.setQtyCUFromQtyTU(packingAware, orderLine.getQtyEnteredTU().intValue());
+		packingAwareBL.setQtyLUFromQtyTU(packingAware);
+		orderLineBL.updateLineNetAmtFromQtyEntered(orderLine);
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
 			ignoreColumnsChanged = {
 					I_C_OrderLine.COLUMNNAME_Updated,
