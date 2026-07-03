@@ -152,8 +152,8 @@ public class EDI_DesadvLine_StepDef
 	 * </ul>
 	 * At least one optional field column must be present:
 	 * <ul>
-	 *   <li>{@code OPT.IsActive} – new IsActive flag (Y/N)</li>
-	 *   <li>{@code OPT.QtyDeliveredInUOM} – new delivered quantity in the line's UOM</li>
+	 *   <li>{@code IsActive} – new IsActive flag (Y/N)</li>
+	 *   <li>{@code QtyDeliveredInUOM} – new delivered quantity in the line's UOM</li>
 	 * </ul>
 	 *
 	 * <p>Example:

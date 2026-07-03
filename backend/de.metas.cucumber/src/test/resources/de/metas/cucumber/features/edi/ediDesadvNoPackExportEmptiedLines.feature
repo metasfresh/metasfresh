@@ -24,8 +24,8 @@ Feature: EDI DESADV no-pack export must include emptied DESADV lines
       | M_Warehouse_ID | Value        |
       | warehouseStd   | StdWarehouse |
     And metasfresh contains M_Products:
-      | Identifier   |
-      | product_main |
+      | Identifier |
+      | product    |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps         |
@@ -37,7 +37,7 @@ Feature: EDI DESADV no-pack export must include emptied DESADV lines
       | plv        | pl             |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
-      | pp         | plv                    | product_main | 10.0     | PCE      | Normal           |
+      | pp         | plv                    | product      | 10.0     | PCE      | Normal           |
     # new_dawn_uat keys the EDI recipient config on C_BPartner_EDI_Setting; an EDI_Setting with no
     # C_BPartner_Location_ID applies to all of the partner's locations.
     And metasfresh contains C_BPartners:
@@ -48,17 +48,17 @@ Feature: EDI DESADV no-pack export must include emptied DESADV lines
       | endcustomer   | true                 | bPartnerDesadvRecipientGLN | ediSetting |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
-      | endcustomer              | product_main            |
+      | endcustomer              | product                 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference   |
-      | order_main | true    | endcustomer   | 2024-06-10  | po_ref_@Date@ |
+      | order      | true    | endcustomer   | 2024-06-10  | po_ref_@Date@ |
     And metasfresh contains C_OrderLines:
-      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
-      | orderLine_main | order_main | product_main | 10         |
-    When the order identified by order_main is completed
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | orderLine  | order      | product      | 10         |
+    When the order identified by order is completed
     And after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipSched  | orderLine_main            | N             |
+      | shipSched  | orderLine                 | N             |
     And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipSched                        | D            | true                | false       |
@@ -67,13 +67,13 @@ Feature: EDI DESADV no-pack export must include emptied DESADV lines
       | shipSched                        | shipment              |
     And validate the created shipment lines
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
-      | shipmentLine              | shipment              | product_main            | 10          | true      | orderLine_main                |
+      | shipmentLine              | shipment              | product                 | 10          | true      | orderLine                     |
     And after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_ID.Identifier | OPT.GTIN_PackingMaterial | OPT.SeqNo |
       | packMain                      | true                | null                   | null                                 | null                     | 1         |
     Then EDI_Desadv is found:
       | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_Desadv_ID.Identifier |
-      | endcustomer              | order_main            | desadv                   |
+      | endcustomer              | order                 | desadv                   |
     # This DESADV has exactly one line (single order line); capture it for the emptying mutations below.
     Then EDI_DesadvLine records are found:
       | EDI_DesadvLine_ID | EDI_Desadv_ID |
