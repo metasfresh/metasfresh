@@ -46,3 +46,14 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781324
 -- 2026-07-03T14:35:11.624Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,781324,0,549163,555150,652436,'F',TO_TIMESTAMP('2026-07-03 14:35:11.270000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100,'Merkmals Ausprägungen zum Produkt','The values of the actual Product Attribute Instances.  The product level attributes are defined on Product level.','Y','N','N','Y','Y','N','N','Merkmale',12,10,0,TO_TIMESTAMP('2026-07-03 14:35:11.270000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',100)
 ;
+
+
+-- Column: M_Product_Labelcost.M_AttributeSetInstance_ID
+-- 2026-07-03T15:23:43.374Z
+UPDATE AD_Column SET IsAlwaysUpdateable='Y',Updated=TO_TIMESTAMP('2026-07-03 15:23:43.374000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Column_ID=592919
+;
+
+-- 2026-07-03T15:24:01.584Z
+INSERT INTO t_alter_column values('m_product_labelcost','M_AttributeSetInstance_ID','NUMERIC(10)',null,null)
+;
+
