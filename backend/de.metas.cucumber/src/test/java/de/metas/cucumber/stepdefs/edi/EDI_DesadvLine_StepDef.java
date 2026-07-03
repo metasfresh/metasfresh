@@ -55,6 +55,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @RequiredArgsConstructor
@@ -136,6 +137,47 @@ public class EDI_DesadvLine_StepDef
 
 		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
 		desadvLineTable.putOrReplace(lineIdentifier, desadvLine);
+	}
+
+	/**
+	 * Updates fields of an EDI_DesadvLine previously registered under an identifier.
+	 *
+	 * <p>Real-world trigger: a user edits the DESADV line in the WebUI (window 540256) after the
+	 * delivery was "emptied" — e.g. zeroing the delivered quantity or deactivating the line. Such a
+	 * line drops out of the pack export and must still surface in the no-pack export section.
+	 *
+	 * <p>Required column:
+	 * <ul>
+	 *   <li>{@code EDI_DesadvLine_ID} – identifier of the line to update</li>
+	 * </ul>
+	 * At least one optional field column must be present:
+	 * <ul>
+	 *   <li>{@code OPT.IsActive} – new IsActive flag (Y/N)</li>
+	 *   <li>{@code OPT.QtyDeliveredInUOM} – new delivered quantity in the line's UOM</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then EDI_DesadvLine records are updated:
+	 *   | EDI_DesadvLine_ID | QtyDeliveredInUOM |
+	 *   | desadvLine        | 0                 |
+	 * </pre>
+	 */
+	@Then("EDI_DesadvLine records are updated:")
+	public void edi_desadv_line_records_are_updated(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::updateDesadvLine);
+	}
+
+	private void updateDesadvLine(@NonNull final DataTableRow row)
+	{
+		final I_EDI_DesadvLine desadvLine = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID)
+				.lookupNotNullIn(desadvLineTable);
+
+		row.getAsOptionalBoolean(I_EDI_DesadvLine.COLUMNNAME_IsActive).ifPresent(desadvLine::setIsActive);
+		row.getAsOptionalBigDecimal(I_EDI_DesadvLine.COLUMNNAME_QtyDeliveredInUOM).ifPresent(desadvLine::setQtyDeliveredInUOM);
+
+		saveRecord(desadvLine);
 	}
 
 	/**
