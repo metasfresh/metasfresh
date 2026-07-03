@@ -788,7 +788,7 @@ public class ManufacturingJobService
 
 		// Determine how much to issue: whole stocking units, rounded up to cover the BOM line's remaining
 		// demand, capped at what the scanned HU actually holds. This avoids both mislabeling the UOM and
-		// over-issuing the HU's full qty when the product is stocked in whole units (e.g. cheese wheels)
+		// over-issuing the HU's full qty when the product is stocked in whole units (e.g. pieces)
 		// but the BOM demands a fractional-unit UOM (e.g. kg).
 		final UomId stockingUomId = productBL.getStockUOMId(matchingProductId);
 		final Quantity remainingDemand = ppOrderBOMBL.getQuantities(matchingBomLine).getRemainingQtyToIssue();
