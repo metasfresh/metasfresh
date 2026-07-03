@@ -73,7 +73,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
     : lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
   const isCarrierAdviseReadOnly = carrierAdviseTarget
     ? carrierAdviseTarget.carrierAdviseReadOnly === true
-    : lineCarrierAdviseAvailable
+    : lineCarrierAdviseAvailable === true
     ? lineCarrierAdviseReadOnly === true
     : jobCarrierAdviseReadOnly === true;
   const carrierProductCaption = carrierAdviseTarget
