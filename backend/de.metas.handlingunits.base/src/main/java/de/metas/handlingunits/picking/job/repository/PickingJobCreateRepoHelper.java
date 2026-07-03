@@ -121,6 +121,10 @@ class PickingJobCreateRepoHelper
 		record.setCarrier_Product_ID(CarrierProductId.toRepoId(line.getCarrierProductId()));
 		record.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(line.getCarrierGoodsTypeId()));
 		record.setIsCarrierAdviseManual(line.isManual());
+		// A manually-advised schedule's carrier is read-only from creation (the mobile advise button is not
+		// offered for it); an auto/API-advised line stays editable. Without this seed the persisted
+		// IsCarrierAdviseReadOnly stays false and the job/line-scoped carrier-advise resolves editable.
+		record.setIsCarrierAdviseReadOnly(line.isManual());
 		record.setCatch_UOM_ID(UomId.toRepoId(line.getCatchWeightUomId()));
 		record.setPP_Order_ID(PPOrderId.toRepoId(line.getPickFromManufacturingOrderId()));
 		InterfaceWrapperHelper.save(record);
