@@ -101,9 +101,9 @@ test('Pick using Pick All button', async ({ page }) => {
             HU1: { huStatus: 'A', storages: { P1: '990 PCE' } },
             HU2: { huStatus: 'A', storages: { P2: '990 PCE' } },
             HU3: { huStatus: 'A', storages: { P3: '990 PCE' } },
-            vhu1: { huStatus: 'E', storages: { P1: '10 PCE' } },
-            vhu2: { huStatus: 'E', storages: { P2: '10 PCE' } },
-            vhu3: { huStatus: 'E', storages: { P3: '10 PCE' } },
+            vhu1: { huStatus: 'E', storages: { P1: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+            vhu2: { huStatus: 'E', storages: { P2: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
+            vhu3: { huStatus: 'E', storages: { P3: '10 PCE' }, bpartner: 'customer1', bpartnerLocation: 'customer1' },
         }
     });
 
