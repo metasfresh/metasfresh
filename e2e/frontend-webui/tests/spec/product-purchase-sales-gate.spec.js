@@ -269,7 +269,7 @@ async function expectProductInPicker(page, productCode) {
  * @param {string} productCode
  */
 async function expectProductAbsentFromPicker(page, productCode) {
-  const matchingOptions = page.locator('.input-dropdown-list-option').getByText(productCode);
+  const matchingOptions = page.locator('.input-dropdown-list-option:visible').getByText(productCode);
   await expect(matchingOptions).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
   console.log(`[PASS] Blocked product "${productCode}" is absent from picker`);
 }
