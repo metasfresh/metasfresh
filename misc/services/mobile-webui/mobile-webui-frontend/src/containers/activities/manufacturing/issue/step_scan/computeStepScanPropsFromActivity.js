@@ -9,6 +9,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   const line = getLineByIdFromActivity(activity, lineId);
   const step = getStepByIdFromLine(line, stepId);
 
+  const lineUom = line.uom;
   const lineQtyToIssue = line.qtyToIssue;
   const lineQtyToIssueMax = Math.max(line.qtyToIssueMax, lineQtyToIssue);
   const lineQtyIssued = line.qtyIssued;
@@ -52,6 +53,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId, isP
   return {
     huQRCode: step.huQRCode,
     uom,
+    lineUom,
     qtyToIssueTarget,
     qtyToIssueMax,
     qtyHUCapacity,
