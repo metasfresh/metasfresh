@@ -108,3 +108,22 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2026-07-02 20:47:43.150000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_UI_Element_ID=581196
 ;
 
+-- Tab: Auftrags-Board(581036,D) -> Wartend
+-- Table: M_Picking_OrderBoard_v
+-- 2026-07-03T05:16:39.145Z
+UPDATE AD_Tab SET AD_Column_ID=581169,Updated=TO_TIMESTAMP('2026-07-03 05:16:39.145000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=581037
+;
+
+-- Tab: Auftrags-Board(581036,D) -> In Kommissionierung
+-- Table: M_Picking_OrderBoard_v
+-- 2026-07-03T05:17:14.136Z
+UPDATE AD_Tab SET AD_Column_ID=581169,Updated=TO_TIMESTAMP('2026-07-03 05:17:14.136000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=581038
+;
+
+-- Tab: Auftrags-Board(581036,D) -> Packen
+-- Table: M_Picking_OrderBoard_v
+-- 2026-07-03T05:17:23.418Z
+UPDATE AD_Tab SET AD_Column_ID=581169,Updated=TO_TIMESTAMP('2026-07-03 05:17:23.418000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Tab_ID=581039
+;
+
+
