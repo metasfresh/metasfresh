@@ -109,7 +109,7 @@ public class WorkplaceRepository
 
 	public List<Workplace> getAllActive() {return getMap().getAllActive();}
 
-	public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId) {return getMap().getPackingPlacePickFromLocatorIds(warehouseId);}
+	public ImmutableSet<LocatorId> getAllPackingPlacePickFromLocatorIds() {return getMap().getAllPackingPlacePickFromLocatorIds();}
 
 	public Workplace create(@NonNull final WorkplaceCreateRequest request)
 	{
@@ -441,11 +441,10 @@ public class WorkplaceRepository
 			return workplace != null ? workplace.getSeqNo().next() : SeqNo.ofInt(10);
 		}
 
-		public ImmutableSet<LocatorId> getPackingPlacePickFromLocatorIds(@NonNull final WarehouseId warehouseId)
+		public ImmutableSet<LocatorId> getAllPackingPlacePickFromLocatorIds()
 		{
 			return allActive.stream()
 					.filter(Workplace::isPackingPlace)
-					.filter(workplace -> WarehouseId.equals(workplace.getWarehouseId(), warehouseId))
 					.map(Workplace::getPickFromLocatorId)
 					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
