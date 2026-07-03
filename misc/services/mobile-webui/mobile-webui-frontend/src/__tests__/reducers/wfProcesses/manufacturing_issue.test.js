@@ -72,6 +72,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssue: 4, // line demand, met by the 4 issued across the steps
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 4, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 0, qtyRejectedReasonCode: null }, // alternative step
@@ -87,6 +88,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssue: 4, // line demand, met by the 4 issued on the alternative step
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 0, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
@@ -102,6 +104,7 @@ describe('reducers: manufacturing issue tests', () => {
         const draftActivityDataStored = {
           lines: [
             {
+              qtyToIssue: 7, // line demand, met by the 3 + 4 issued across the steps
               steps: {
                 1: { qtyToIssue: 8, qtyIssued: 3, qtyRejectedReasonCode: null },
                 2: { qtyToIssue: 0, qtyIssued: 4, qtyRejectedReasonCode: null }, // alternative step
