@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -735,7 +736,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
 
-				final BigDecimal qtyDeliveredPersisted = schedule.getQtyDelivered() != null ? schedule.getQtyDelivered() : BigDecimal.ZERO;
+				final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
 				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
 				final BigDecimal qtyDeliveredTotal = qtyDeliveredPersisted.add(qtyDeliveredThisShipment);
 
