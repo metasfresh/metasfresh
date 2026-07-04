@@ -87,10 +87,14 @@ export const isBarcodeProductNoMatching = ({
 // Partial-scan (streamed QR code) completeness classification.
 //
 
-// ScanCompleteness is defined in ./scanCompleteness (a leaf module, so ./common and ./hu don't
-// import each other — avoids a fragile circular dependency). Imported above for internal use and
-// re-exported here so existing importers of './common' keep working unchanged. See
-// ./scanCompleteness for the full contract, incl. the TERMINAL INVARIANT that gates COMPLETE_SCAN.
+// ScanCompleteness is defined in ./scanCompleteness (a leaf module both ./common and ./hu import
+// from), so the ENUM itself is not part of any cycle. NOTE: ./common and ./hu DO still import each
+// other — common.js → checkPartialHUScannedCode, hu.js → the ATTR_*/QRCODE_* constants — a real
+// circular dependency. It stays safe ONLY because every cross-module symbol is read inside a
+// FUNCTION BODY (this file's lazy PARTIAL_SCAN_CHECKS list; hu.js's in-function "HU#" prefix), never
+// at module top level, so neither module reads a half-initialised sibling during load. Imported
+// above for internal use and re-exported here so existing importers of './common' keep working.
+// See ./scanCompleteness for the full contract, incl. the TERMINAL INVARIANT that gates COMPLETE_SCAN.
 export { ScanCompleteness };
 
 // Classify how complete an in-progress scanned code is (see ScanCompleteness).

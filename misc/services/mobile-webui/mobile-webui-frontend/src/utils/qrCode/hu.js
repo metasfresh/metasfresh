@@ -362,8 +362,6 @@ export const isKnownQRCodeFormat = (qrCodeString) => {
   return !!parseQRCodeString(qrCodeString, returnFalseOnError);
 };
 
-const HU_QRCODE_PREFIX = QRCODE_TYPE_HU + QRCODE_SEPARATOR; // "HU#"
-
 // "TYPE#VERSION#<json>" => the <json> payload, or null while both separators haven't arrived yet.
 const extractGlobalQRCodeJsonPayload = (scannedCode) => {
   const firstSeparatorIdx = scannedCode.indexOf(QRCODE_SEPARATOR);
@@ -399,8 +397,13 @@ export const checkPartialHUScannedCode = (scannedCode) => {
       return ScanCompleteness.NOT_APPLICABLE;
     }
     // Applicable if it already looks like an HU QR code (HU#...) OR is still receiving the leading
-    // "HU#" prefix itself (e.g. a chunk gap landed at 'H' / 'HU').
-    if (!isHUQRCode(scannedCode) && !HU_QRCODE_PREFIX.startsWith(scannedCode)) {
+    // "HU#" prefix itself (e.g. a chunk gap landed at 'H' / 'HU'). Compute the "HU#" prefix HERE,
+    // inside the function — NOT at module top level: common.js and hu.js import each other (a real
+    // cycle), so reading the imported QRCODE_SEPARATOR at hu.js *load* time can observe an undefined
+    // value from a partially-initialised common.js, depending on which module loads first. By the
+    // time this function runs, common.js is fully initialised, so the read is always correct.
+    const huQrCodePrefix = QRCODE_TYPE_HU + QRCODE_SEPARATOR; // "HU#"
+    if (!isHUQRCode(scannedCode) && !huQrCodePrefix.startsWith(scannedCode)) {
       return ScanCompleteness.NOT_APPLICABLE;
     }
     const jsonPayload = extractGlobalQRCodeJsonPayload(scannedCode);

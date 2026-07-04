@@ -11,9 +11,9 @@
 // m_hu_id where both "123" and "1234" parse) must NEVER return COMPLETE_SCAN — it uses
 // PARTIAL_SCAN / NOT_APPLICABLE and relies on the Enter terminator / idle-flush instead.
 //
-// This enum lives in its own leaf module (imported by both ./common and ./hu) so the two do not
-// import each other — avoids a circular dependency whose only-works-by-load-order fragility could,
-// after a future reorder, silently degrade every completeness check to NOT_APPLICABLE.
+// This enum lives in its own leaf module (imported by both ./common and ./hu) so the ENUM is not
+// part of any import cycle. (./common and ./hu themselves DO still import each other; that cycle is
+// kept safe by reading cross-module symbols only inside function bodies — see the note in ./common.)
 export const ScanCompleteness = Object.freeze({
   NOT_APPLICABLE: 'NOT_APPLICABLE', // not a recognised streamed QR code => keep default behaviour
   PARTIAL_SCAN: 'PARTIAL_SCAN', //     a recognised QR code that is still arriving => keep waiting
