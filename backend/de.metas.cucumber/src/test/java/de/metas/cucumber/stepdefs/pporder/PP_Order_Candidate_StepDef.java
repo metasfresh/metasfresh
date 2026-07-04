@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -152,13 +153,31 @@ public class PP_Order_Candidate_StepDef
 	private final M_HU_StepDefData huTable;
 	@NonNull
 	private final S_Resource_StepDefData resourceTable;
+	@NonNull
+	private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
+	/**
+	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order_Candidate} records matching the DataTable.
+	 * <p>
+	 * The rabbitMQ queues are drained first via {@link RabbitMQ_StepDef#wait_empty_all_queues()} (material-events
+	 * then async-batch) so the async material-dispo chain that creates / updates the candidates has fully settled
+	 * before the poll asserts. This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7
+	 * ("drain inside the consuming step def, as late as possible, never as a bare step in the .feature file").
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * Then after not more than 60s, PP_Order_Candidates are found
+	 *   | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised | DateStartSchedule | OPT.IsClosed | OPT.Processed |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
-	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
+	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
