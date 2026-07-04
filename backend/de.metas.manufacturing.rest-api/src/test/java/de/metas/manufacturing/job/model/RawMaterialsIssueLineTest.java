@@ -53,11 +53,11 @@ class RawMaterialsIssueLineTest
 		AdempiereTestHelper.get().init();
 
 		uomKg = BusinessTestHelper.createUOM("Kg", 3);
-		uomStk = BusinessTestHelper.createUOM("Stk", 4);
+		uomStk = BusinessTestHelper.createUOM("Stk", 0); // pieces are whole units (precision 0)
 		uomKgId = UomId.ofRepoId(uomKg.getC_UOM_ID());
 
-		// Product stocked in pieces (a 35kg cheese wheel = 1 Stk)
-		final I_M_Product product = BusinessTestHelper.createProduct("CheeseWheel35kg", uomStk);
+		// Product stocked in pieces (1 Stk = 35 kg)
+		final I_M_Product product = BusinessTestHelper.createProduct("PieceStocked35kg", uomStk);
 		productId = ProductId.ofRepoId(product.getM_Product_ID());
 
 		// 1 Stk = 35 kg
@@ -76,7 +76,7 @@ class RawMaterialsIssueLineTest
 				.id(id)
 				.isAlternativeIssue(false)
 				.productId(productId)
-				.productName(TranslatableStrings.anyLanguage("CheeseWheel35kg"))
+				.productName(TranslatableStrings.anyLanguage("PieceStocked35kg"))
 				.qtyToIssue(Quantity.of(qtyToIssueKg, uomKg))
 				.issueFromLocator(LocatorInfo.builder()
 						.id(locatorId)
@@ -97,8 +97,8 @@ class RawMaterialsIssueLineTest
 				.uomConversionBL(Services.get(IUOMConversionBL.class))
 				.orderBOMLineId(PPOrderBOMLineId.ofRepoId(1))
 				.productId(productId)
-				.productName(TranslatableStrings.anyLanguage("CheeseWheel35kg"))
-				.productValue("CheeseWheel35kg")
+				.productName(TranslatableStrings.anyLanguage("PieceStocked35kg"))
+				.productValue("PieceStocked35kg")
 				.isWeightable(false)
 				.qtyToIssue(Quantity.of(qtyToIssueKg, uomKg))
 				.steps(steps)
@@ -130,6 +130,33 @@ class RawMaterialsIssueLineTest
 		assertThat(issued.getQtyLeftToIssue().getUomId()).isEqualTo(uomKgId);
 		assertThat(issued.getQtyLeftToIssue().toBigDecimal()).isEqualByComparingTo("0");
 		assertThat(issued.getStatus()).isEqualTo(WFActivityStatus.COMPLETED);
+	}
+
+	@Test
+	void remainingQtyToIssueMaxInUOM_convertsKgDemandToWholeStk_roundedUp()
+	{
+		final UomId uomStkId = UomId.ofRepoId(uomStk.getC_UOM_ID());
+
+		// 34.5 kg still to issue against a 35 kg/Stk product => 0.986 Stk => rounded UP to 1 Stk.
+		final RawMaterialsIssueLine line = newLine("34.5", ImmutableList.of(newStep(SCHEDULE_ID, "34.5")));
+
+		final Quantity max = line.getRemainingQtyToIssueMaxInUOM(uomStkId);
+		assertThat(max.getUomId()).isEqualTo(uomStkId);
+		assertThat(max.toBigDecimal()).isEqualByComparingTo("1");
+	}
+
+	@Test
+	void remainingQtyToIssueMaxInUOM_afterPartialIssue_convertsTheRemainderInStk()
+	{
+		final UomId uomStkId = UomId.ofRepoId(uomStk.getC_UOM_ID());
+
+		// 70 kg demand, one 35 kg (=1 Stk) already issued => 35 kg left => exactly 1 Stk.
+		RawMaterialsIssueLine line = newLine("70", ImmutableList.of(newStep(SCHEDULE_ID, "70")));
+		line = line.withChangedRawMaterialsIssueStep(SCHEDULE_ID, step -> issueStk(step, "1", uomStk));
+
+		final Quantity max = line.getRemainingQtyToIssueMaxInUOM(uomStkId);
+		assertThat(max.getUomId()).isEqualTo(uomStkId);
+		assertThat(max.toBigDecimal()).isEqualByComparingTo("1");
 	}
 
 	@Test
