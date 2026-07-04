@@ -113,7 +113,11 @@ export const useKeyboardBarcodeReader = ({
         const gapMs = now - lastKeyTimeRef.current;
         const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
         if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {
-          completeScan({ shouldEnforceMinLength: true });
+          // A normal back-to-back scan (non-partial) is length-gated exactly as before; a partial we
+          // abandon here is surfaced unconditionally (shouldEnforceMinLength:false) — matching the
+          // interval-based abandon path below — so a genuinely-stuck code reaches the app as its
+          // "QR not recognised" error instead of being silently dropped.
+          completeScan({ shouldEnforceMinLength: !isPartial });
         }
 
         bufferRef.current += event.key;
