@@ -36,9 +36,9 @@ import {
   BARCODE_TYPE_LMQ,
   parseQRCodeType,
   QRCODE_SEPARATOR,
-  ScanCompleteness,
   toLocalDateString,
 } from './common';
+import { ScanCompleteness } from './scanCompleteness';
 import { trl } from '../translations';
 import { HU_ATTRIBUTE_BestBeforeDate, HU_ATTRIBUTE_LotNo, HU_ATTRIBUTE_WeightNet } from '../../constants/HUAttributes';
 import { parseGS1CodeString } from './gs1';

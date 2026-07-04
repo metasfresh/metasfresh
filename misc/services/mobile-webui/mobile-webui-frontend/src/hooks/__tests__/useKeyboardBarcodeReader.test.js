@@ -141,6 +141,28 @@ describe('useKeyboardBarcodeReader', () => {
     expect(onReadDone).toHaveBeenNthCalledWith(2, NEXT_CODE);
   });
 
+  it('separates two back-to-back plain codes split by a real gap shorter than one interval tick (must NOT merge)', () => {
+    const { onReadDone } = mountReader();
+
+    // Two independent non-QR scans. The gap between them (typeString default = rateMs+100) is
+    // >= rateMs (a NEW scan is starting) but < 2*rateMs (before the idle interval would tick) — the
+    // exact window in which a wholesale unconditional-append reader merges them into one garbage
+    // string. The gap-flush must separate them because the first buffer is NOT_APPLICABLE (not a
+    // still-arriving PARTIAL_SCAN).
+    const CODE1 = '1111111111';
+    const CODE2 = '2222222222';
+    typeString(CODE1 + CODE2, { gapAtIndex: CODE1.length });
+
+    // The gap flushed CODE1 as its own completed scan (not merged with CODE2).
+    expect(onReadDone).toHaveBeenCalledTimes(1);
+    expect(onReadDone).toHaveBeenCalledWith(CODE1);
+
+    // CODE2 then completes on its own via the idle fallback — two distinct scans, never merged.
+    goIdleAndTick();
+    expect(onReadDone).toHaveBeenCalledTimes(2);
+    expect(onReadDone).toHaveBeenNthCalledWith(2, CODE2);
+  });
+
   it('completes on an Enter keydown with the full buffer (reacts to the device terminator)', () => {
     const { onReadDone } = mountReader();
 

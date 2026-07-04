@@ -90,10 +90,23 @@ export const useKeyboardBarcodeReader = ({
       // Printable characters
       else {
         const now = Date.now();
-        // Always append, regardless of the inter-keystroke gap. A long QR code reaches the browser
-        // spread over several seconds in chunks; a gap-based flush would split it into unparseable
-        // fragments. Completion is decided by content (a complete TERMINAL code) / terminator /
-        // idle-fallback, not by delivery speed.
+
+        // A real gap since the last keystroke means a NEW scan is starting: flush the current buffer
+        // FIRST so two back-to-back codes are separated, not merged into one garbage string. EXCEPT
+        // when the buffer is a still-arriving recognised format (PARTIAL_SCAN) — a long QR reaches
+        // the browser in chunks over several seconds, and a mid-stream gap must NOT split it. Gating
+        // on !PARTIAL_SCAN is exactly what keeps chunked-QR assembly working while preserving the
+        // deterministic back-to-back separation that the plain time-gap flush used to provide (a
+        // NOT_APPLICABLE / already-COMPLETE buffer + a real gap == the previous scan is finished).
+        const gapMs = now - lastKeyTimeRef.current;
+        if (
+          bufferRef.current &&
+          gapMs >= rateMs &&
+          checkPartialScannedCode(bufferRef.current) !== ScanCompleteness.PARTIAL_SCAN
+        ) {
+          completeScan({ shouldEnforceMinLength: true });
+        }
+
         bufferRef.current += event.key;
         onReadInProgress?.(bufferRef.current);
         // Prevent the browser from also inserting the character into a focused input.
@@ -104,13 +117,15 @@ export const useKeyboardBarcodeReader = ({
         lastKeyTimeRef.current = now;
 
         // Content-based completion: force-complete immediately (no idle wait) once the buffer is a
-        // COMPLETE, TERMINAL recognised code. This is safe ONLY because COMPLETE_SCAN is invariant-
-        // bound to terminal codes (no continuation could yield a different valid code — see the
-        // checkPartialScannedCode contract), and it correctly separates back-to-back scans (a QR
-        // immediately followed by another code) instead of merging them. A PARTIAL_SCAN holds the
-        // idle flush back; a NOT_APPLICABLE (plain) code completes via Enter/Tab or the idle-flush.
+        // COMPLETE, TERMINAL recognised code. Safe ONLY because COMPLETE_SCAN is invariant-bound to
+        // terminal codes (no continuation could yield a different valid code — see the
+        // checkPartialScannedCode contract), and it correctly separates back-to-back scans instead
+        // of merging them. shouldEnforceMinLength:false — a content-verified terminal code has
+        // proven itself by content, so length is irrelevant (and the buffer is already cleared, so a
+        // minLength drop would be silently unrecoverable). PARTIAL_SCAN holds the idle flush back; a
+        // NOT_APPLICABLE (plain) code completes via the gap-flush above, Enter/Tab, or the idle-flush.
         if (checkPartialScannedCode(bufferRef.current) === ScanCompleteness.COMPLETE_SCAN) {
-          completeScan({ shouldEnforceMinLength: true });
+          completeScan({ shouldEnforceMinLength: false });
         }
       }
     };
