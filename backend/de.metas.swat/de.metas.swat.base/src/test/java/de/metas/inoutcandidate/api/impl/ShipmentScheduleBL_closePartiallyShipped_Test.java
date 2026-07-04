@@ -146,4 +146,136 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 				.as("S_partial is not fully delivered and M_ShipmentSchedule_Close_PartiallyShipped=Y => must be closed")
 				.isTrue();
 	}
+
+	@Test
+	public void closePartiallyShipped_ShipmentSchedules_closesCompletelyUnshippedSchedule()
+	{
+		final OrgId orgId = OrgId.ANY;
+
+		// enable "close partially shipped schedules" for this org
+		Services.get(ISysConfigBL.class).setValue(
+				"M_ShipmentSchedule_Close_PartiallyShipped",
+				true,
+				ClientId.METASFRESH,
+				orgId);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		save(order);
+
+		final int orderLineTableId = InterfaceWrapperHelper.getTableId(I_C_OrderLine.class);
+
+		// S_unshipped: zero delivery anywhere (not persisted, not on ANY M_InOut line, not even the current one)
+		final I_C_OrderLine orderLineUnshipped = newInstance(I_C_OrderLine.class);
+		orderLineUnshipped.setC_Order(order);
+		save(orderLineUnshipped);
+
+		final I_M_ShipmentSchedule scheduleUnshipped = newInstance(I_M_ShipmentSchedule.class);
+		scheduleUnshipped.setAD_Org_ID(orgId.getRepoId());
+		scheduleUnshipped.setC_Order_ID(order.getC_Order_ID());
+		scheduleUnshipped.setC_OrderLine_ID(orderLineUnshipped.getC_OrderLine_ID());
+		scheduleUnshipped.setAD_Table_ID(orderLineTableId);
+		scheduleUnshipped.setRecord_ID(orderLineUnshipped.getC_OrderLine_ID());
+		scheduleUnshipped.setQtyOrdered(new BigDecimal("12"));
+		scheduleUnshipped.setQtyOrdered_Calculated(new BigDecimal("12")); // effective QtyOrdered (no override)
+		scheduleUnshipped.setQtyDelivered(BigDecimal.ZERO); // never delivered
+		scheduleUnshipped.setIsClosed(false);
+		save(scheduleUnshipped);
+
+		// S_shipped: another schedule of the SAME order, fully shipped by the CURRENT InOut - only needed so
+		// the order gets picked up by closePartiallyShipped_ShipmentSchedules (which derives the order(s) to
+		// process from the current InOut's lines).
+		final I_C_OrderLine orderLineShipped = newInstance(I_C_OrderLine.class);
+		orderLineShipped.setC_Order(order);
+		save(orderLineShipped);
+
+		final I_M_ShipmentSchedule scheduleShipped = newInstance(I_M_ShipmentSchedule.class);
+		scheduleShipped.setAD_Org_ID(orgId.getRepoId());
+		scheduleShipped.setC_Order_ID(order.getC_Order_ID());
+		scheduleShipped.setC_OrderLine_ID(orderLineShipped.getC_OrderLine_ID());
+		scheduleShipped.setAD_Table_ID(orderLineTableId);
+		scheduleShipped.setRecord_ID(orderLineShipped.getC_OrderLine_ID());
+		scheduleShipped.setQtyOrdered(new BigDecimal("12"));
+		scheduleShipped.setQtyOrdered_Calculated(new BigDecimal("12")); // effective QtyOrdered (no override)
+		scheduleShipped.setQtyDelivered(BigDecimal.ZERO); // not yet updated for THIS InOut at close-time
+		scheduleShipped.setIsClosed(false);
+		save(scheduleShipped);
+
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		inout.setAD_Org_ID(orgId.getRepoId());
+		inout.setIsSOTrx(true);
+		save(inout);
+
+		final I_M_InOutLine inoutLineShipped = newInstance(I_M_InOutLine.class);
+		inoutLineShipped.setM_InOut(inout);
+		inoutLineShipped.setC_OrderLine_ID(orderLineShipped.getC_OrderLine_ID());
+		inoutLineShipped.setMovementQty(new BigDecimal("12"));
+		save(inoutLineShipped);
+
+		shipmentScheduleBL.closePartiallyShipped_ShipmentSchedules(inout);
+
+		refresh(scheduleUnshipped);
+
+		assertThat(scheduleUnshipped.isClosed())
+				.as("S_unshipped has zero delivery anywhere (persisted and current shipment) and M_ShipmentSchedule_Close_PartiallyShipped=Y => must be closed")
+				.isTrue();
+	}
+
+	@Test
+	public void closePartiallyShipped_ShipmentSchedules_doesNotCloseScheduleFullyDeliveredSolelyByCurrentInOut()
+	{
+		final OrgId orgId = OrgId.ANY;
+
+		// enable "close partially shipped schedules" for this org
+		Services.get(ISysConfigBL.class).setValue(
+				"M_ShipmentSchedule_Close_PartiallyShipped",
+				true,
+				ClientId.METASFRESH,
+				orgId);
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(true);
+		save(order);
+
+		final int orderLineTableId = InterfaceWrapperHelper.getTableId(I_C_OrderLine.class);
+
+		// S_currentFull: fully delivered SOLELY by the CURRENT InOut's line (MovementQty=12 == QtyOrdered=12).
+		// Persisted QtyDelivered is still 0 at TIMING_AFTER_COMPLETE (see timing note in the sibling test
+		// above) - this exercises the "add this shipment's MovementQty on top of persisted QtyDelivered" path
+		// for the CURRENT (non-split) InOut.
+		final I_C_OrderLine orderLineCurrentFull = newInstance(I_C_OrderLine.class);
+		orderLineCurrentFull.setC_Order(order);
+		save(orderLineCurrentFull);
+
+		final I_M_ShipmentSchedule scheduleCurrentFull = newInstance(I_M_ShipmentSchedule.class);
+		scheduleCurrentFull.setAD_Org_ID(orgId.getRepoId());
+		scheduleCurrentFull.setC_Order_ID(order.getC_Order_ID());
+		scheduleCurrentFull.setC_OrderLine_ID(orderLineCurrentFull.getC_OrderLine_ID());
+		scheduleCurrentFull.setAD_Table_ID(orderLineTableId);
+		scheduleCurrentFull.setRecord_ID(orderLineCurrentFull.getC_OrderLine_ID());
+		scheduleCurrentFull.setQtyOrdered(new BigDecimal("12"));
+		scheduleCurrentFull.setQtyOrdered_Calculated(new BigDecimal("12")); // effective QtyOrdered (no override)
+		scheduleCurrentFull.setQtyDelivered(BigDecimal.ZERO); // not yet updated for THIS InOut at close-time
+		scheduleCurrentFull.setIsClosed(false);
+		save(scheduleCurrentFull);
+
+		final I_M_InOut inout = newInstance(I_M_InOut.class);
+		inout.setAD_Org_ID(orgId.getRepoId());
+		inout.setIsSOTrx(true);
+		save(inout);
+
+		final I_M_InOutLine inoutLineCurrentFull = newInstance(I_M_InOutLine.class);
+		inoutLineCurrentFull.setM_InOut(inout);
+		inoutLineCurrentFull.setC_OrderLine_ID(orderLineCurrentFull.getC_OrderLine_ID());
+		inoutLineCurrentFull.setMovementQty(new BigDecimal("12"));
+		save(inoutLineCurrentFull);
+
+		shipmentScheduleBL.closePartiallyShipped_ShipmentSchedules(inout);
+
+		refresh(scheduleCurrentFull);
+
+		assertThat(scheduleCurrentFull.isClosed())
+				.as("S_currentFull is fully delivered once THIS shipment's MovementQty (12) is added on top of persisted QtyDelivered (0) => must stay open")
+				.isFalse();
+	}
 }
