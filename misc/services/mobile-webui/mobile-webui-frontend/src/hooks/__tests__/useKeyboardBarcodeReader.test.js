@@ -239,6 +239,25 @@ describe('useKeyboardBarcodeReader', () => {
     expect(emittedCodes.every((code) => code.length <= HU_QR_RESCAN.length)).toBe(true);
   });
 
+  it('surfaces a SHORT (< minLength) stuck partial HU QR abandoned on a new-scan gap, instead of silently dropping it', () => {
+    const { onReadDone } = mountReader();
+
+    // A truncated partial shorter than minLength that still classifies as PARTIAL_SCAN. If the
+    // new-scan-gap abandon enforced minLength (the pre-fix behaviour) this would be silently
+    // dropped; it must instead be surfaced (matching the interval-based abandon path) so the app
+    // shows its "QR not recognised" error rather than swallowing the code.
+    const SHORT_PARTIAL = 'HU#1#{'; // PARTIAL_SCAN, length 6 < MIN_LENGTH (10)
+    typeString(SHORT_PARTIAL);
+    expect(onReadDone).not.toHaveBeenCalled();
+
+    // Operator gives up and re-scans after longer than any legit inter-chunk gap: the new-scan gap
+    // (NOT the interval poll — no timer advance here) abandons the short partial, surfacing it.
+    now += IDLE_ABANDON_MS + RATE_MS;
+    pressKey('X');
+
+    expect(onReadDone).toHaveBeenCalledWith(SHORT_PARTIAL);
+  });
+
   it('eventually ABANDONS and flushes a genuinely stuck / truncated HU QR after the long idle deadline (surfaces the app error instead of hanging)', () => {
     const { onReadDone } = mountReader();
 
