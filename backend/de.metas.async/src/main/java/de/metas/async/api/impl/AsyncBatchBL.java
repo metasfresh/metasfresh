@@ -168,6 +168,14 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
+		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		final Optional<AsyncBatchType> asyncBatchType = getAsyncBatchType(asyncBatchRecord);
+		if (asyncBatchType.isPresent() && !asyncBatchType.get().isCheckProcessedNeeded())
+		{
+			// the batch's type has no consumer of the Processed flag (no IsCheckProcessed and no boilerplate) -> skip enqueuing the CheckProcessed WP
+			return;
+		}
+
 		final Properties ctx = Env.getCtx();
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, CheckProcessedAsynBatchWorkpackageProcessor.class);
 
@@ -468,6 +476,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 				.keepAlive(extractKeepAlive(record))
 				.skipTimeout(extractSkipTimeout(record))
 				.adBoilderPlateId(record.getAD_BoilerPlate_ID())
+				.checkProcessed(record.isCheckProcessed())
 				.build();
 	}
 
