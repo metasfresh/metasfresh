@@ -688,7 +688,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
-		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
@@ -798,8 +798,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private void appendFilterByOrderType(
 			@NonNull final StringBuilder sqlWhereClause,
-			@NonNull final SqlParamsCollector sqlWhereClauseParams,
-			@NonNull final LookupDataSourceContext evalCtx)
+			@NonNull final SqlParamsCollector sqlWhereClauseParams)
 	{
 		if (restrictByOrderType == null)
 		{
