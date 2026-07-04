@@ -15,11 +15,13 @@ import org.assertj.core.api.Assertions;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.Properties;
+import java.util.UUID;
 
 public class AsyncBatchBLTest
 {
@@ -72,64 +74,68 @@ public class AsyncBatchBLTest
 		return InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
 	}
 
-	@Test
-	public void givenNonConsumerAsyncBatchType_whenEnqueueAsyncBatch_thenNoCheckProcessedWorkPackageIsCreated()
+	@Nested
+	class EnqueueAsyncBatch
 	{
-		// given: a C_Async_Batch_Type that nobody consumes (IsCheckProcessed='N', no boilerplate)
-		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
-		asyncBatchType.setIsCheckProcessed(false);
-		asyncBatchType.setAD_BoilerPlate_ID(0);
-		InterfaceWrapperHelper.save(asyncBatchType);
+		@Test
+		public void nonConsumerType_skipsCheckProcessedWorkPackage()
+		{
+			// given: a C_Async_Batch_Type that nobody consumes (IsCheckProcessed='N', no boilerplate)
+			final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+			asyncBatchType.setIsCheckProcessed(false);
+			asyncBatchType.setAD_BoilerPlate_ID(0);
+			InterfaceWrapperHelper.save(asyncBatchType);
 
-		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+			final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
 
-		// when
-		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+			// when
+			asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
 
-		// then: AC1 - the gate must SKIP creating the CheckProcessedAsynBatch work-package
-		Assertions.assertThat(countCheckProcessedWorkPackages()).isZero();
-	}
+			// then: AC1 - the gate must SKIP creating the CheckProcessedAsynBatch work-package
+			Assertions.assertThat(countCheckProcessedWorkPackages()).isZero();
+		}
 
-	@Test
-	public void givenConsumerAsyncBatchType_whenEnqueueAsyncBatch_thenCheckProcessedWorkPackageIsCreated()
-	{
-		// given: a C_Async_Batch_Type that IS a consumer of the Processed flag (IsCheckProcessed='Y')
-		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
-		asyncBatchType.setIsCheckProcessed(true);
-		asyncBatchType.setAD_BoilerPlate_ID(0);
-		InterfaceWrapperHelper.save(asyncBatchType);
+		@Test
+		public void consumerType_createsCheckProcessedWorkPackage()
+		{
+			// given: a C_Async_Batch_Type that IS a consumer of the Processed flag (IsCheckProcessed='Y')
+			final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+			asyncBatchType.setIsCheckProcessed(true);
+			asyncBatchType.setAD_BoilerPlate_ID(0);
+			InterfaceWrapperHelper.save(asyncBatchType);
 
-		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+			final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
 
-		// when
-		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+			// when
+			asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
 
-		// then: AC2 - the gate must CREATE exactly one CheckProcessedAsynBatch work-package
-		Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
-	}
+			// then: AC2 - the gate must CREATE exactly one CheckProcessedAsynBatch work-package
+			Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+		}
 
-	@Test
-	public void givenBoilerplateAsyncBatchType_whenEnqueueAsyncBatch_thenCheckProcessedWorkPackageIsCreated()
-	{
-		// given: IsCheckProcessed='N' but AD_BoilerPlate_ID>0 -> boilerplate is also a consumer of the Processed flag
-		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
-		asyncBatchType.setIsCheckProcessed(false);
-		asyncBatchType.setAD_BoilerPlate_ID(1_000_000);
-		InterfaceWrapperHelper.save(asyncBatchType);
+		@Test
+		public void boilerplateType_createsCheckProcessedWorkPackage()
+		{
+			// given: IsCheckProcessed='N' but AD_BoilerPlate_ID>0 -> boilerplate is also a consumer of the Processed flag
+			final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+			asyncBatchType.setIsCheckProcessed(false);
+			asyncBatchType.setAD_BoilerPlate_ID(1_000_000);
+			InterfaceWrapperHelper.save(asyncBatchType);
 
-		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+			final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
 
-		// when
-		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+			// when
+			asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
 
-		// then
-		Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+			// then
+			Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+		}
 	}
 
 	private I_C_Async_Batch_Type newAsyncBatchType()
 	{
 		final I_C_Async_Batch_Type asyncBatchType = InterfaceWrapperHelper.create(ctx, I_C_Async_Batch_Type.class, ITrx.TRXNAME_None);
-		asyncBatchType.setInternalName(getClass().getSimpleName() + "_" + java.util.UUID.randomUUID());
+		asyncBatchType.setInternalName(getClass().getSimpleName() + "_" + UUID.randomUUID());
 		return asyncBatchType;
 	}
 
