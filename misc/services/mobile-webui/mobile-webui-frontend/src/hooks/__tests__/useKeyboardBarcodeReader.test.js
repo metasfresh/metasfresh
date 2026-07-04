@@ -12,8 +12,9 @@ import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 // Prod SysConfig debounceMillis sits in the 300-1000 ms range; use the low end.
 const RATE_MS = 300;
 const MIN_LENGTH = 10;
-// Mirrors the hook's derived long-idle "abandon" deadline: Math.max(3000, rateMs * 10).
-const IDLE_ABANDON_MS = Math.max(3000, RATE_MS * 10);
+// Mirrors the hook's fixed long-idle "abandon"/"stuck partial" deadline (decoupled from rateMs so a
+// small debounce can't shrink it into the real 3-8 s inter-chunk gap range).
+const IDLE_ABANDON_MS = 15000;
 
 // A real, complete HU global QR code (with nested JSON objects) — parses successfully.
 const HU_QR =
@@ -212,6 +213,30 @@ describe('useKeyboardBarcodeReader', () => {
     goIdleAndTick();
 
     expect(onReadDone).not.toHaveBeenCalled();
+  });
+
+  it('does NOT merge a genuinely-stuck partial HU QR with a later re-scan: the stuck partial is abandoned on the new-scan gap and the new code completes on its own', () => {
+    const { onReadDone } = mountReader();
+
+    // A truncated HU QR whose JSON never closes: it stays PARTIAL_SCAN and, with no further
+    // keystrokes and no idle tick here, sits buffered.
+    typeString(PARTIAL_HU_QR);
+    expect(onReadDone).not.toHaveBeenCalled();
+
+    // The operator waits longer than any legit inter-chunk gap, then re-scans a fresh, DISTINCT
+    // (different id), complete HU QR. The stuck partial must be flushed (abandoned) on this new-scan
+    // gap — NOT merged with the re-scan — so the new code assembles and completes cleanly on its own.
+    const HU_QR_RESCAN =
+      'HU#1#{"id":"11111111111111111111111111111-99999","packingInfo":{"huUnitType":"TU"},"product":{"id":2000002,"code":"9999","name":"Re-scan"},"attributes":[]}';
+    now += IDLE_ABANDON_MS + RATE_MS;
+    typeString(HU_QR_RESCAN);
+
+    // The new scan completed as itself; nothing was emitted as "stuck-partial + new" merged garbage.
+    expect(onReadDone).toHaveBeenCalledWith(HU_QR_RESCAN);
+    const emittedCodes = onReadDone.mock.calls.map((call) => call[0]);
+    expect(emittedCodes).not.toContain(PARTIAL_HU_QR + HU_QR_RESCAN);
+    // No emitted code is longer than the re-scan (a merge would carry the stuck partial's chars too).
+    expect(emittedCodes.every((code) => code.length <= HU_QR_RESCAN.length)).toBe(true);
   });
 
   it('eventually ABANDONS and flushes a genuinely stuck / truncated HU QR after the long idle deadline (surfaces the app error instead of hanging)', () => {

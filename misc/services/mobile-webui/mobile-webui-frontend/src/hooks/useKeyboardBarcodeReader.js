@@ -16,10 +16,16 @@ export const useKeyboardBarcodeReader = ({
     // A recognised-but-incomplete streamed QR code (e.g. a long HU QR arriving in chunks over
     // several seconds) is kept buffered across inter-keystroke gaps instead of being flushed as a
     // fragment. If it never completes (genuinely truncated: device disconnect / out-of-range) we
-    // still abandon and flush it after this long idle, so the app surfaces its "QR not recognised"
-    // error instead of hanging forever. Well above any plausible inter-chunk gap; scales with the
-    // configured debounce.
-    const idleAbandonMs = Math.max(3000, rateMs * 10);
+    // abandon and flush it once this window elapses — either while idle (below) or when a brand-new
+    // scan arrives after this long a gap (the pre-append flush below). Surfacing the app's "QR not
+    // recognised" error and, crucially, preventing a stuck partial from swallowing the next scan.
+    //
+    // FIXED, and deliberately DECOUPLED from rateMs: it must sit safely ABOVE the largest legit
+    // inter-chunk gap (observed 3-8 s) so a slow-but-completing chunked scan is never re-split, yet
+    // it must NOT scale with the debounce — with the old Math.max(3000, rateMs * 10) a debounce of
+    // 300 ms shrank this to 3 s, i.e. INTO the real inter-chunk range, which would abandon a genuine
+    // chunked scan mid-stream. 15 s clears the max real gap with margin and is independent of debounce.
+    const idleAbandonMs = 15000;
 
     const resetBuffer = () => {
       bufferRef.current = '';
@@ -92,18 +98,21 @@ export const useKeyboardBarcodeReader = ({
         const now = Date.now();
 
         // A real gap since the last keystroke means a NEW scan is starting: flush the current buffer
-        // FIRST so two back-to-back codes are separated, not merged into one garbage string. EXCEPT
-        // when the buffer is a still-arriving recognised format (PARTIAL_SCAN) — a long QR reaches
-        // the browser in chunks over several seconds, and a mid-stream gap must NOT split it. Gating
-        // on !PARTIAL_SCAN is exactly what keeps chunked-QR assembly working while preserving the
-        // deterministic back-to-back separation that the plain time-gap flush used to provide (a
-        // NOT_APPLICABLE / already-COMPLETE buffer + a real gap == the previous scan is finished).
+        // FIRST so two back-to-back codes are separated, not merged into one garbage string. A
+        // still-arriving recognised format (PARTIAL_SCAN) is normally EXEMPT from this flush — a long
+        // QR reaches the browser in chunks over several seconds and a mid-stream gap must NOT split
+        // it — which keeps chunked-QR assembly working while preserving the deterministic back-to-back
+        // separation for NOT_APPLICABLE / already-COMPLETE buffers.
+        //
+        // BUT a genuinely-stuck PARTIAL (truncated scan whose JSON never closes) must not swallow the
+        // NEXT scan forever: once the gap exceeds idleAbandonMs — well beyond the largest legit
+        // inter-chunk gap — the partial is abandoned here too, so the incoming keystroke starts a
+        // clean new scan instead of merging into the stuck buffer. (A prompt re-scan within that
+        // window is still caught by the idle-abandon fallback below; the point here is that a
+        // deliberate re-scan after the operator has clearly given up is never merged.)
         const gapMs = now - lastKeyTimeRef.current;
-        if (
-          bufferRef.current &&
-          gapMs >= rateMs &&
-          checkPartialScannedCode(bufferRef.current) !== ScanCompleteness.PARTIAL_SCAN
-        ) {
+        const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
+        if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {
           completeScan({ shouldEnforceMinLength: true });
         }
 
