@@ -79,12 +79,12 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Column_ID=592920
 INSERT INTO AD_Field (
     AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, Created, CreatedBy, DisplayLength,
     EntityType, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly,
-    IsSameLine, Name, SeqNo, Updated, UpdatedBy
+    IsSameLine, Name, SeqNo, SeqNoGrid, Updated, UpdatedBy
 ) VALUES (
     0, 592920, 781326 /*From ID Server*/, 0, 540640,
     TO_TIMESTAMP('2026-07-04 10:02:00','YYYY-MM-DD HH24:MI:SS'), 100, 1,
-    'de.metas.async', 'Y', 'Y', 'N', 'N', 'N', 'N', 'N',
-    'N', 'Verarbeitung prüfen', 65, TO_TIMESTAMP('2026-07-04 10:02:00','YYYY-MM-DD HH24:MI:SS'), 100
+    'de.metas.async', 'Y', 'Y', 'Y', 'N', 'N', 'N', 'N',
+    'N', 'Verarbeitung prüfen', 65, 60, TO_TIMESTAMP('2026-07-04 10:02:00','YYYY-MM-DD HH24:MI:SS'), 100
 )
 ;
 
@@ -112,7 +112,7 @@ INSERT INTO AD_UI_Element (
     IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy
 ) VALUES (
     0, 781326, 0, 540640, 541060, 652438 /*From ID Server*/, 'F',
-    TO_TIMESTAMP('2026-07-04 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'N', 'Y', 'N',
-    'N', 'N', 0, 'Verarbeitung prüfen', 20, 0, 0, TO_TIMESTAMP('2026-07-04 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100
+    TO_TIMESTAMP('2026-07-04 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'N', 'Y', 'Y',
+    'N', 'N', 0, 'Verarbeitung prüfen', 20, 60, 0, TO_TIMESTAMP('2026-07-04 10:02:30','YYYY-MM-DD HH24:MI:SS'), 100
 )
 ;
