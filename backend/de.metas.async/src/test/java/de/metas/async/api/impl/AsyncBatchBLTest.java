@@ -1,7 +1,13 @@
 package de.metas.async.api.impl;
 
+import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Type;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.impl.CheckProcessedAsynBatchWorkpackageProcessor;
 import de.metas.common.util.time.SystemTime;
+import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -64,5 +70,90 @@ public class AsyncBatchBLTest
 	private I_C_Async_Batch newAsyncBatch()
 	{
 		return InterfaceWrapperHelper.create(ctx, I_C_Async_Batch.class, ITrx.TRXNAME_None);
+	}
+
+	@Test
+	public void givenNonConsumerAsyncBatchType_whenEnqueueAsyncBatch_thenNoCheckProcessedWorkPackageIsCreated()
+	{
+		// given: a C_Async_Batch_Type that nobody consumes (IsCheckProcessed='N', no boilerplate)
+		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+		asyncBatchType.setIsCheckProcessed(false);
+		asyncBatchType.setAD_BoilerPlate_ID(0);
+		InterfaceWrapperHelper.save(asyncBatchType);
+
+		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+
+		// when
+		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+
+		// then: AC1 - the gate must SKIP creating the CheckProcessedAsynBatch work-package
+		Assertions.assertThat(countCheckProcessedWorkPackages()).isZero();
+	}
+
+	@Test
+	public void givenConsumerAsyncBatchType_whenEnqueueAsyncBatch_thenCheckProcessedWorkPackageIsCreated()
+	{
+		// given: a C_Async_Batch_Type that IS a consumer of the Processed flag (IsCheckProcessed='Y')
+		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+		asyncBatchType.setIsCheckProcessed(true);
+		asyncBatchType.setAD_BoilerPlate_ID(0);
+		InterfaceWrapperHelper.save(asyncBatchType);
+
+		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+
+		// when
+		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+
+		// then: AC2 - the gate must CREATE exactly one CheckProcessedAsynBatch work-package
+		Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+	}
+
+	@Test
+	public void givenBoilerplateAsyncBatchType_whenEnqueueAsyncBatch_thenCheckProcessedWorkPackageIsCreated()
+	{
+		// given: IsCheckProcessed='N' but AD_BoilerPlate_ID>0 -> boilerplate is also a consumer of the Processed flag
+		final I_C_Async_Batch_Type asyncBatchType = newAsyncBatchType();
+		asyncBatchType.setIsCheckProcessed(false);
+		asyncBatchType.setAD_BoilerPlate_ID(1_000_000);
+		InterfaceWrapperHelper.save(asyncBatchType);
+
+		final AsyncBatchId asyncBatchId = createAsyncBatchOfType(asyncBatchType);
+
+		// when
+		asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
+
+		// then
+		Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+	}
+
+	private I_C_Async_Batch_Type newAsyncBatchType()
+	{
+		final I_C_Async_Batch_Type asyncBatchType = InterfaceWrapperHelper.create(ctx, I_C_Async_Batch_Type.class, ITrx.TRXNAME_None);
+		asyncBatchType.setInternalName(getClass().getSimpleName() + "_" + java.util.UUID.randomUUID());
+		return asyncBatchType;
+	}
+
+	private AsyncBatchId createAsyncBatchOfType(final I_C_Async_Batch_Type asyncBatchType)
+	{
+		final I_C_Async_Batch asyncBatch = newAsyncBatch();
+		asyncBatch.setC_Async_Batch_Type_ID(asyncBatchType.getC_Async_Batch_Type_ID());
+		InterfaceWrapperHelper.save(asyncBatch);
+
+		return AsyncBatchId.ofRepoId(asyncBatch.getC_Async_Batch_ID());
+	}
+
+	/**
+	 * Counts the real {@link I_C_Queue_WorkPackage} rows enqueued for {@link CheckProcessedAsynBatchWorkpackageProcessor} -
+	 * i.e. the actual side effect that {@link AsyncBatchBL#enqueueAsyncBatch(AsyncBatchId)} is supposed to gate.
+	 */
+	private long countCheckProcessedWorkPackages()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.create()
+				.stream()
+				.filter(workPackage -> workPackage.getC_Queue_PackageProcessor() != null
+						&& CheckProcessedAsynBatchWorkpackageProcessor.class.getCanonicalName().equals(workPackage.getC_Queue_PackageProcessor().getClassname()))
+				.count();
 	}
 }
