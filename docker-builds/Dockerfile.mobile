@@ -19,10 +19,27 @@ RUN yarn install
 
 COPY misc/services/mobile-webui/mobile-webui-frontend/ .
 RUN yarn lint
-# currently not terminating: RUN yarn test --ci --runInBand
 
 ENV PUBLIC_URL=/
 RUN yarn build
+
+
+# Unit-test stage: run the mobile-webui Jest suite once and capture its log + exit code for the CI
+# `test-mobile` job to assert on. Kept out of the default (runtime) target so `build-mobile` stays
+# fast and unaffected. Replaces the previously-disabled `RUN yarn test` ("currently not
+# terminating"): CI=true forces react-scripts to run once (not watch) and --forceExit guarantees
+# the process exits even if a handle leaks. The `| tee ... && echo $?` keeps the RUN itself green
+# so a red test does not fail the image build — the CI job decides based on jest.exit-code.
+FROM build AS test
+
+SHELL ["/bin/bash", "-c"]
+
+RUN CI=true yarn test --ci --runInBand --bail=0 --detectOpenHandles --forceExit 2>&1 | tee jest.log && echo "${PIPESTATUS[0]}" > jest.exit-code
+
+VOLUME /reports
+WORKDIR /reports/mobile
+
+CMD cp /app/jest.* .
 
 
 FROM nginx:1.21.6 AS runtime

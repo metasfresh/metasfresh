@@ -527,6 +527,41 @@ jobs:
           name: jest-logs
           path: jest/**/jest.log
 
+  test-mobile:
+    name: test (mobile)
+    runs-on: ${{ vars.RUNNER_TEST }}
+    needs: [ init, frontend ]
+    # NON-BLOCKING for now: the mobile-webui Jest suite has pre-existing failures unrelated to this
+    # change (parseCustomQRCode decimal-point logic, manufacturing_issue reducer completeStatus,
+    # PickLineScanScreen convertScannedBarcodeToResolvedResult). This job RUNS the suite on every
+    # build so failures are visible (they previously ran nowhere in CI). To make it BLOCK the build,
+    # fix those pre-existing failures then delete the `continue-on-error: true` line below.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v6
+      - name: run-tests
+        run: |
+          docker buildx build \
+          --progress=plain \
+          --file docker-builds/Dockerfile.mobile \
+          --target test \
+          --tag metas-mobile:test \
+          .
+      - name: extract results
+        run: |
+          docker run --rm --volume "$(pwd)/jest:/reports" metas-mobile:test                                        # extract jest.log + jest.exit-code from image to jest/mobile
+      - name: upload jest log
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: jest-logs-mobile
+          path: jest/mobile/jest.log
+          retention-days: 1
+          if-no-files-found: warn
+      - name: assert success
+        run: |
+          if [ $(cat jest/mobile/jest.exit-code) != 0 ]; then tail -1000 jest/mobile/jest.log && exit 1; fi        # fail (surfaced, non-blocking via continue-on-error) if the mobile jest suite is red
+
   backend:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: [ init, java ]
