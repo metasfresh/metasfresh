@@ -27,15 +27,34 @@ export const BarcodeScannerComponent = {
         }
         await expect(page.locator(selector)).not.toBeAttached({ timeout });
     }),
+    // Simulates a hardware/wedge keyboard scan by dispatching keydown/keyup for each character.
+    //
+    // Optional mid-scan gap (object form only): { scannedCode, testId, gapAtIndex, gapMs }
+    //   gapAtIndex - split the code before this character index and insert ONE real wall-clock pause
+    //   gapMs      - duration of that pause, in milliseconds
+    // The pause is a genuine page.waitForTimeout() (NOT a simulated timestamp): the useKeyboardBarcodeReader
+    // hook measures inter-keystroke gaps with Date.now() and runs a setInterval flush timer in the browser,
+    // and a single page.evaluate loop dispatches all keystrokes synchronously (zero wall-clock gap) so it
+    // CANNOT reproduce a real gap. Splitting the dispatch across two evaluate() calls with an awaited pause
+    // between them reproduces the production symptom: a long HU global QR code (HU#<v>#{…json…}) that arrives
+    // at the browser in chunks spread over several seconds. Set gapMs >= the scanner debounce
+    // (barcodeScanner.inputText.debounceMillis, default 300ms) to exercise the gap path, and keep it well
+    // below the hook's abandon deadline (max(3000, rateMs*10) ms) so an in-flight partial QR is not abandoned.
+    // Default (no gapAtIndex/gapMs): unchanged single synchronous zero-delay dispatch — existing callers are
+    // not affected.
     type: async (params) => await test.step(`${NAME} - Type scanned code`, async () => {
         let scannedCode;
         let testId;
+        let gapAtIndex;
+        let gapMs;
         if (typeof params === 'string') {
             scannedCode = params;
             testId = undefined;
         } else if (params && typeof params === 'object') {
             scannedCode = params.scannedCode;
             testId = params.testId;
+            gapAtIndex = params.gapAtIndex;
+            gapMs = params.gapMs;
         } else {
             throw new Error("Invalid argument provided to the 'type' function. Must be a string or an object with { scannedCode }.");
         }
@@ -48,15 +67,27 @@ export const BarcodeScannerComponent = {
 
         await BarcodeScannerComponent.waitToAttach({ testId });
 
-        // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly, 
+        // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly,
         // Now a QR code is typed in 30ms instead of 5 seconds.
         // await page.keyboard.type(`${scannedCode}`, { delay: delay != null ? delay : TYPE_DELAY_MILLIS });
-        await page.evaluate((code) => {
-            for (const char of code) {
-                document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
-                document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
-            }
-        }, scannedCode);
+        const dispatchChunk = async (chunk) => {
+            await page.evaluate((code) => {
+                for (const char of code) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                }
+            }, chunk);
+        };
+
+        const hasMidScanGap =
+            Number.isInteger(gapAtIndex) && gapAtIndex > 0 && gapAtIndex < scannedCode.length && gapMs > 0;
+        if (!hasMidScanGap) {
+            await dispatchChunk(scannedCode);
+        } else {
+            await dispatchChunk(scannedCode.substring(0, gapAtIndex));
+            await page.waitForTimeout(gapMs);
+            await dispatchChunk(scannedCode.substring(gapAtIndex));
+        }
     }),
 
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {

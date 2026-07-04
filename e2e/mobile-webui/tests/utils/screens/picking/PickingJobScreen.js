@@ -123,12 +123,13 @@ export const PickingJobScreen = {
     pickHU: async ({
                        qrCode,
                        isScanDirectly,
+                       gapAtIndex, gapMs, // optional: inject ONE real mid-scan inter-keystroke gap (chunked QR arrival); only used when isScanDirectly
                        expectedPickDirectly,
                        expectNextScreen,
                        switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
                    }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
-            await BarcodeScannerComponent.type(qrCode);
+            await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs });
         } else {
             await page.locator('#scanQRCode-button').tap(); // click the Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
