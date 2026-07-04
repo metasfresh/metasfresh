@@ -1,6 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
+// Abandon window for a stuck/truncated streamed QR partial (see the note in the effect below).
+// FIXED, and deliberately DECOUPLED from rateMs: it must sit safely ABOVE the largest legit
+// inter-chunk gap (observed 3-8 s) so a slow-but-completing chunked scan is never re-split, yet
+// it must NOT scale with the debounce — with the old Math.max(3000, rateMs * 10) a debounce of
+// 300 ms shrank this to 3 s, i.e. INTO the real inter-chunk range, which would abandon a genuine
+// chunked scan mid-stream. 15 s clears the max real gap with margin and is independent of debounce.
+// Exported so the test asserts against the real value instead of mirroring a magic number.
+export const IDLE_ABANDON_MS = 15000;
+
 export const useKeyboardBarcodeReader = ({
   onReadDone,
   onReadInProgress,
@@ -19,13 +28,9 @@ export const useKeyboardBarcodeReader = ({
     // abandon and flush it once this window elapses — either while idle (below) or when a brand-new
     // scan arrives after this long a gap (the pre-append flush below). Surfacing the app's "QR not
     // recognised" error and, crucially, preventing a stuck partial from swallowing the next scan.
-    //
-    // FIXED, and deliberately DECOUPLED from rateMs: it must sit safely ABOVE the largest legit
-    // inter-chunk gap (observed 3-8 s) so a slow-but-completing chunked scan is never re-split, yet
-    // it must NOT scale with the debounce — with the old Math.max(3000, rateMs * 10) a debounce of
-    // 300 ms shrank this to 3 s, i.e. INTO the real inter-chunk range, which would abandon a genuine
-    // chunked scan mid-stream. 15 s clears the max real gap with margin and is independent of debounce.
-    const idleAbandonMs = 15000;
+    // The window itself (IDLE_ABANDON_MS, fixed and decoupled from rateMs) is defined and explained
+    // at module scope above.
+    const idleAbandonMs = IDLE_ABANDON_MS;
 
     const resetBuffer = () => {
       bufferRef.current = '';
@@ -107,9 +112,12 @@ export const useKeyboardBarcodeReader = ({
         // BUT a genuinely-stuck PARTIAL (truncated scan whose JSON never closes) must not swallow the
         // NEXT scan forever: once the gap exceeds idleAbandonMs — well beyond the largest legit
         // inter-chunk gap — the partial is abandoned here too, so the incoming keystroke starts a
-        // clean new scan instead of merging into the stuck buffer. (A prompt re-scan within that
-        // window is still caught by the idle-abandon fallback below; the point here is that a
-        // deliberate re-scan after the operator has clearly given up is never merged.)
+        // clean new scan instead of merging into the stuck buffer. (A re-scan WITHIN that window is
+        // NOT isolated immediately: its keystrokes still append to the stuck partial and merely
+        // restart the abandon window from the re-scan's last keystroke, so the combined buffer is
+        // flushed by the idle-abandon fallback below rather than here. The guarantee here is only
+        // that a deliberate re-scan after the gap has exceeded idleAbandonMs — the operator has
+        // clearly given up — is never merged.)
         const gapMs = now - lastKeyTimeRef.current;
         const isPartial = checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN;
         if (bufferRef.current && gapMs >= rateMs && (!isPartial || gapMs >= idleAbandonMs)) {

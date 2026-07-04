@@ -1,7 +1,7 @@
 import React from 'react';
 import { render } from '@testing-library/react';
 import { act } from 'react-dom/test-utils';
-import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
+import { useKeyboardBarcodeReader, IDLE_ABANDON_MS } from '../useKeyboardBarcodeReader';
 
 // These tests cover the HOOK MECHANIC (gap-independence, content-complete flush, Enter/Tab
 // terminator, idle fallback, abandon-on-stuck). The classification of a code as
@@ -12,9 +12,8 @@ import { useKeyboardBarcodeReader } from '../useKeyboardBarcodeReader';
 // Prod SysConfig debounceMillis sits in the 300-1000 ms range; use the low end.
 const RATE_MS = 300;
 const MIN_LENGTH = 10;
-// Mirrors the hook's fixed long-idle "abandon"/"stuck partial" deadline (decoupled from rateMs so a
-// small debounce can't shrink it into the real 3-8 s inter-chunk gap range).
-const IDLE_ABANDON_MS = 15000;
+// IDLE_ABANDON_MS (the hook's fixed long-idle "abandon"/"stuck partial" deadline, decoupled from
+// rateMs) is imported from the hook so a rename/retune can't silently desync this test.
 
 // A real, complete HU global QR code (with nested JSON objects) — parses successfully.
 const HU_QR =
