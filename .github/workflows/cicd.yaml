@@ -531,12 +531,10 @@ jobs:
     name: test (mobile)
     runs-on: ${{ vars.RUNNER_TEST }}
     needs: [ init, frontend ]
-    # NON-BLOCKING for now: the mobile-webui Jest suite has pre-existing failures unrelated to this
-    # change (parseCustomQRCode decimal-point logic, manufacturing_issue reducer completeStatus,
-    # PickLineScanScreen convertScannedBarcodeToResolvedResult). This job RUNS the suite on every
-    # build so failures are visible (they previously ran nowhere in CI). To make it BLOCK the build,
-    # fix those pre-existing failures then delete the `continue-on-error: true` line below.
-    continue-on-error: true
+    # Blocking gate (like test-frontend): fails the build if the mobile-webui Jest suite is red.
+    # The suite previously ran nowhere in CI; the stale-test failures it surfaced (parseCustomQRCode
+    # decimalPointPosition, hu.test.js huUnitType, PickLineScanScreen async/shape) were fixed, so the
+    # full suite is green and this now enforces it on every build.
     steps:
       - uses: actions/checkout@v6
       - name: run-tests
