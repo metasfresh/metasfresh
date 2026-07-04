@@ -169,8 +169,8 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-		final Optional<AsyncBatchType> asyncBatchType = getAsyncBatchType(asyncBatchRecord);
-		if (asyncBatchType.isPresent() && !asyncBatchType.get().isCheckProcessedNeeded())
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchRecord).orElse(null);
+		if (asyncBatchType != null && !asyncBatchType.isCheckProcessedNeeded())
 		{
 			// the batch's type has no consumer of the Processed flag (no IsCheckProcessed and no boilerplate) -> skip enqueuing the CheckProcessed WP
 			return;
