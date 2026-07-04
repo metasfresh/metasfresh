@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -12,15 +13,31 @@ export const useKeyboardBarcodeReader = ({
   const lastKeyTimeRef = useRef(0);
 
   useEffect(() => {
-    const handleKeyDown = async (event) => {
-      // console.log('[scanner] keydown', {
-      //   key: event.key,
-      //   alt: event.altKey,
-      //   ctrl: event.ctrlKey,
-      //   meta: event.metaKey,
-      //   len: event.key?.length,
-      // });
+    // A recognised-but-incomplete streamed QR code (e.g. a long HU QR arriving in chunks over
+    // several seconds) is kept buffered across inter-keystroke gaps instead of being flushed as a
+    // fragment. If it never completes (genuinely truncated: device disconnect / out-of-range) we
+    // still abandon and flush it after this long idle, so the app surfaces its "QR not recognised"
+    // error instead of hanging forever. Well above any plausible inter-chunk gap; scales with the
+    // configured debounce.
+    const idleAbandonMs = Math.max(3000, rateMs * 10);
 
+    const resetBuffer = () => {
+      bufferRef.current = '';
+      lastKeyTimeRef.current = 0;
+    };
+
+    // Emit the assembled buffer as a completed scan and reset for the next one.
+    // Capture-then-reset before firing onReadDone: the callback may re-render / unmount this
+    // component, so the refs must already be in their next-scan state.
+    const completeScan = ({ shouldEnforceMinLength }) => {
+      const code = bufferRef.current;
+      resetBuffer();
+      if (code && (!shouldEnforceMinLength || !minLength || code.length >= minLength)) {
+        onReadDone(code);
+      }
+    };
+
+    const handleKeyDown = async (event) => {
       if (event.key === 'Unidentified') {
         return;
       }
@@ -36,8 +53,7 @@ export const useKeyboardBarcodeReader = ({
 
           event.preventDefault(); // Prevent default paste behavior
           onReadDone(clipboardText);
-          bufferRef.current = '';
-          lastKeyTimeRef.current = 0;
+          resetBuffer();
           return;
         } catch (error) {
           console.error('Failed to read clipboard:', error);
@@ -61,11 +77,12 @@ export const useKeyboardBarcodeReader = ({
       //
       // Non-printable characters
       if (event.key.length !== 1) {
-        // Optional: if your barcode uses Enter/Tab to finish, handle here
+        // Enter/Tab terminator: a device configured to send Enter/Tab as a KeyEvent finishes the
+        // current scan immediately. Kept as a belt-and-suspenders path — production Zebra devices
+        // currently send NO terminator, but one may be enabled later. An explicit terminator is an
+        // end-of-scan signal, so do not gate on minLength; fires regardless of the timing.
         if ((event.key === 'Enter' || event.key === 'Tab') && bufferRef.current) {
-          onReadDone(bufferRef.current);
-          bufferRef.current = '';
-          lastKeyTimeRef.current = 0;
+          completeScan({ shouldEnforceMinLength: false });
           event.preventDefault();
         }
       }
@@ -73,46 +90,57 @@ export const useKeyboardBarcodeReader = ({
       // Printable characters
       else {
         const now = Date.now();
-        //
-        // If the type rate is kept, collect the character
-        if (now - lastKeyTimeRef.current < rateMs) {
-          bufferRef.current += event.key;
-          onReadInProgress?.(bufferRef.current);
-          // Prevent the browser from also inserting the character into a focused input.
-          // The hook handles value updates via onReadInProgress. Without this, the character
-          // would be inserted twice: once by onReadInProgress and once by the browser's default action.
-          // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
-          event.preventDefault();
-        }
-        //
-        // Type rate dropped => send the collected string if any
-        else {
-          if (bufferRef.current && (!minLength || bufferRef.current.length >= minLength)) {
-            onReadDone(bufferRef.current);
-          }
-          bufferRef.current = event.key;
-        }
+        // Always append, regardless of the inter-keystroke gap. A long QR code reaches the browser
+        // spread over several seconds in chunks; a gap-based flush would split it into unparseable
+        // fragments. Completion is decided by content (a complete TERMINAL code) / terminator /
+        // idle-fallback, not by delivery speed.
+        bufferRef.current += event.key;
+        onReadInProgress?.(bufferRef.current);
+        // Prevent the browser from also inserting the character into a focused input.
+        // The hook handles value updates via onReadInProgress. Without this, the character
+        // would be inserted twice: once by onReadInProgress and once by the browser's default action.
+        // (Before the readOnly→inputMode="none" change, readOnly prevented browser insertion.)
+        event.preventDefault();
         lastKeyTimeRef.current = now;
+
+        // Content-based completion: force-complete immediately (no idle wait) once the buffer is a
+        // COMPLETE, TERMINAL recognised code. This is safe ONLY because COMPLETE_SCAN is invariant-
+        // bound to terminal codes (no continuation could yield a different valid code — see the
+        // checkPartialScannedCode contract), and it correctly separates back-to-back scans (a QR
+        // immediately followed by another code) instead of merging them. A PARTIAL_SCAN holds the
+        // idle flush back; a NOT_APPLICABLE (plain) code completes via Enter/Tab or the idle-flush.
+        if (checkPartialScannedCode(bufferRef.current) === ScanCompleteness.COMPLETE_SCAN) {
+          completeScan({ shouldEnforceMinLength: true });
+        }
       }
     };
 
-    // console.log('Enabling keyboard barcode reader', { disabled });
     let intervalId;
     if (!disabled) {
-      // Flush leftovers if needed, using interval
+      // Idle-timer fallback for codes without a content-completion signal (plain brace-less
+      // barcodes: EAN / weight labels) and for genuinely stuck scans.
       intervalId = setInterval(() => {
-        if (bufferRef.current && Date.now() - lastKeyTimeRef.current > rateMs) {
-          onReadDone(bufferRef.current);
-          bufferRef.current = '';
-          lastKeyTimeRef.current = 0;
+        if (!bufferRef.current) {
+          return;
+        }
+        const idleMs = Date.now() - lastKeyTimeRef.current;
+        if (checkPartialScannedCode(bufferRef.current) === ScanCompleteness.PARTIAL_SCAN) {
+          // A recognised QR code that is still incomplete: protect it from the normal idle flush so
+          // a chunked scan is never truncated. Only the long abandon deadline flushes it, so a
+          // genuinely truncated scan still reaches the app (as an error) instead of hanging.
+          if (idleMs > idleAbandonMs) {
+            completeScan({ shouldEnforceMinLength: false });
+          }
+        } else if (idleMs > rateMs) {
+          // NOT_APPLICABLE (plain barcode) or COMPLETE_SCAN: normal debounce flush.
+          completeScan({ shouldEnforceMinLength: false });
         }
       }, rateMs * 2);
 
       window.addEventListener('keydown', handleKeyDown);
       console.log('Enabled keyboard barcode reader', { rateMs, minLength });
     } else {
-      bufferRef.current = '';
-      lastKeyTimeRef.current = 0;
+      resetBuffer();
     }
 
     // Clean up on unmount

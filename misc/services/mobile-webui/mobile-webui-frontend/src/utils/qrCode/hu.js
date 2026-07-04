@@ -36,6 +36,7 @@ import {
   BARCODE_TYPE_LMQ,
   parseQRCodeType,
   QRCODE_SEPARATOR,
+  ScanCompleteness,
   toLocalDateString,
 } from './common';
 import { trl } from '../translations';
@@ -359,4 +360,58 @@ const parseLMQBestBeforeDate = (string) => {
 export const isKnownQRCodeFormat = (qrCodeString) => {
   const returnFalseOnError = true;
   return !!parseQRCodeString(qrCodeString, returnFalseOnError);
+};
+
+const HU_QRCODE_PREFIX = QRCODE_TYPE_HU + QRCODE_SEPARATOR; // "HU#"
+
+// "TYPE#VERSION#<json>" => the <json> payload, or null while both separators haven't arrived yet.
+const extractGlobalQRCodeJsonPayload = (scannedCode) => {
+  const firstSeparatorIdx = scannedCode.indexOf(QRCODE_SEPARATOR);
+  if (firstSeparatorIdx <= 0) {
+    return null;
+  }
+  const secondSeparatorIdx = scannedCode.indexOf(QRCODE_SEPARATOR, firstSeparatorIdx + 1);
+  if (secondSeparatorIdx < 0) {
+    return null;
+  }
+  return scannedCode.substring(secondSeparatorIdx + 1);
+};
+
+// Classify an in-progress scanned code w.r.t. the HU global QR code format (see ScanCompleteness):
+//   NOT_APPLICABLE - it is not (nor becoming) an HU global QR code
+//   PARTIAL_SCAN   - it looks like an HU QR code but the JSON payload has not fully arrived yet
+//   COMPLETE_SCAN  - it is an HU QR code whose JSON payload is complete (closed) AND terminal
+// Completeness is decided by JSON.parse of the payload after "HU#<version>#": the real JSON parser
+// handles nesting, escaping and literal braces inside string values, and throws while the payload
+// is still arriving. MUST NOT throw (hard requirement) — any error stays PARTIAL_SCAN for an
+// identified HU code (the reader keeps waiting, bounded by its abandon timer).
+//
+// TERMINAL INVARIANT (see ScanCompleteness in ./common): a complete HU#<v>#{json} IS terminal —
+// appending any character makes it invalid JSON, so returning COMPLETE_SCAN (force-complete) is
+// safe here and correctly SEPARATES back-to-back scans (e.g. the "...}]}LMQ#1#..." merges seen in
+// prod when a second code is delivered right after the HU QR) instead of merging them.
+// NOTE for future per-format checks: return COMPLETE_SCAN ONLY for a TERMINAL code. A non-terminal
+// format (e.g. a bare numeric m_hu_id where both "123" and "1234" are valid) must NEVER return
+// COMPLETE_SCAN — use PARTIAL_SCAN / NOT_APPLICABLE and rely on the Enter terminator / idle-flush.
+export const checkPartialHUScannedCode = (scannedCode) => {
+  try {
+    if (!scannedCode || typeof scannedCode !== 'string') {
+      return ScanCompleteness.NOT_APPLICABLE;
+    }
+    // Applicable if it already looks like an HU QR code (HU#...) OR is still receiving the leading
+    // "HU#" prefix itself (e.g. a chunk gap landed at 'H' / 'HU').
+    if (!isHUQRCode(scannedCode) && !HU_QRCODE_PREFIX.startsWith(scannedCode)) {
+      return ScanCompleteness.NOT_APPLICABLE;
+    }
+    const jsonPayload = extractGlobalQRCodeJsonPayload(scannedCode);
+    if (jsonPayload) {
+      JSON.parse(jsonPayload); // throws while still arriving => caught below => PARTIAL_SCAN
+      return ScanCompleteness.COMPLETE_SCAN;
+    }
+    return ScanCompleteness.PARTIAL_SCAN;
+  } catch (error) {
+    // The normal "payload still arriving" case (JSON.parse throws) plus any unexpected error:
+    // both are safe as PARTIAL_SCAN for an identified HU code.
+    return ScanCompleteness.PARTIAL_SCAN;
+  }
 };
