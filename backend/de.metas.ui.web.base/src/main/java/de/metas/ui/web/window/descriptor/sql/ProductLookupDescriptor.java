@@ -804,10 +804,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return;
 		}
-		// Resolve the enforcement gate at the session client/org (Env), not the lookup evalCtx.
-		// The evalCtx AD_Client_ID/AD_Org_ID resolve to system/0, which only matches the seed
-		// SysConfig row and silently disables the IsSold/IsPurchased filter (product-picker leak).
-		// This mirrors the sibling gate in ProductsProposalRowsLoader.
+		// The evalCtx does not carry the logged-in client/org, so resolve the enforcement gate from the session Env.
 		final ClientId clientId = Env.getClientId();
 		final OrgId orgId = Env.getOrgId();
 		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
