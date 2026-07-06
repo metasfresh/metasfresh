@@ -923,7 +923,12 @@ public class PickingJobPickCommand
 			@NonNull final PickingJobStepPickFrom pickFrom)
 	{
 
-		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(tu1.getId());
+		// Record the CU's OWN QR code (not the container TU's): the recorded HU here IS the leaf CU, so a
+		// later unpick extracts THIS CU to top-level (extractToTopLevel asserts the QR is on the extracted
+		// HU) and, on a move-to-target, re-derives the QR from the extracted CU. Recording the container
+		// TU's QR left the CU un-QR'd → the unpick's extract asserted the wrong HU and the CU was stranded
+		// Picked inside the TU.
+		final List<HUQRCode> huQRCodes = huService.getOrCreateQRCodesByHuId(cu.getId());
 		if (huQRCodes.size() != 1)
 		{
 			throw new AdempiereException(INVALID_NUMBER_QR_CODES_ERROR_MSG, 1, huQRCodes.size());
