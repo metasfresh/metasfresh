@@ -276,8 +276,11 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
 		final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
 
-		final I_M_Package huPackage = huPackageDAO.retrievePackage(hu);
-		if (huPackage == null)
+		// A loose CU (a virtual HU) may have N M_Packages (one per unit — see HUPackageBL#createM_Packages), so
+		// collect the shipping packages of ALL of the HU's packages, not just a single one (retrievePackage —
+		// singular — errors when more than one exists).
+		final List<I_M_Package> huPackages = huPackageDAO.retrievePackages(hu, ITrx.TRXNAME_ThreadInherited);
+		if (huPackages.isEmpty())
 		{
 			//
 			// No packages were made
@@ -287,34 +290,37 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 		int generalShippertTransportationId = -1;
 		final List<I_M_ShippingPackage> shippingPackagesMatchingHU = new ArrayList<>();
 
-		final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(huPackage);
-		for (final I_M_ShippingPackage shippingPackage : shippingPackages)
+		for (final I_M_Package huPackage : huPackages)
 		{
-			if (shippingPackage.isProcessed() || !shippingPackage.isActive())
+			final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(huPackage);
+			for (final I_M_ShippingPackage shippingPackage : shippingPackages)
 			{
-				//
-				// Only active, not processed packages
-				continue;
-			}
+				if (shippingPackage.isProcessed() || !shippingPackage.isActive())
+				{
+					//
+					// Only active, not processed packages
+					continue;
+				}
 
-			final int packagePartnerId = shippingPackage.getC_BPartner_ID();
-			final int packageLocationId = shippingPackage.getC_BPartner_Location_ID();
-			if (hu.getC_BPartner_ID() != packagePartnerId
-					|| hu.getC_BPartner_Location_ID() != packageLocationId)
-			{
-				//
-				// Shipper package must match the HU's partner and location
-				continue;
-			}
+				final int packagePartnerId = shippingPackage.getC_BPartner_ID();
+				final int packageLocationId = shippingPackage.getC_BPartner_Location_ID();
+				if (hu.getC_BPartner_ID() != packagePartnerId
+						|| hu.getC_BPartner_Location_ID() != packageLocationId)
+				{
+					//
+					// Shipper package must match the HU's partner and location
+					continue;
+				}
 
-			final int shipperTransportationId = shippingPackage.getM_ShipperTransportation_ID();
-			if (generalShippertTransportationId < 0)
-			{
-				generalShippertTransportationId = shipperTransportationId;
-			}
-			Check.assume(generalShippertTransportationId == shipperTransportationId, "shipper transportations shall all match for any given HU");
+				final int shipperTransportationId = shippingPackage.getM_ShipperTransportation_ID();
+				if (generalShippertTransportationId < 0)
+				{
+					generalShippertTransportationId = shipperTransportationId;
+				}
+				Check.assume(generalShippertTransportationId == shipperTransportationId, "shipper transportations shall all match for any given HU");
 
-			shippingPackagesMatchingHU.add(shippingPackage);
+				shippingPackagesMatchingHU.add(shippingPackage);
+			}
 		}
 		return shippingPackagesMatchingHU;
 	}

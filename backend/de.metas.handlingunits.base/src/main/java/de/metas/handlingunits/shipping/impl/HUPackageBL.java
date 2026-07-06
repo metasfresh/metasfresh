@@ -215,9 +215,21 @@ public class HUPackageBL implements IHUPackageBL
 
 		final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		final Product product = productRepository.getById(productStorage.getProductId());
-		final PackageDimensions singleUnitDimensions = product.isSelfPacked() && !product.getPackageDimensions().isUnspecified()
-				? PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), qty.toOne())
-				: PackageDimensions.UNSPECIFIED;
+		// Single-unit dimensions — mirrors getPackageDimensions' self-packed branch at qty 1 (incl. the
+		// self-packed-but-no-dimensions error), so a split parcel and a non-split package stay consistent.
+		final PackageDimensions singleUnitDimensions;
+		if (!product.isSelfPacked())
+		{
+			singleUnitDimensions = PackageDimensions.UNSPECIFIED;
+		}
+		else if (product.getPackageDimensions().isUnspecified())
+		{
+			throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
+		}
+		else
+		{
+			singleUnitDimensions = PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), qty.toOne());
+		}
 
 		final CreatePackageForHURequest perUnitRequest = request
 				.withWeightInKg(perUnitWeightInKg)
