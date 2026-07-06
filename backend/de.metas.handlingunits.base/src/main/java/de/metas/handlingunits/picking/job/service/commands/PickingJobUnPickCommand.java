@@ -177,12 +177,28 @@ public class PickingJobUnPickCommand
 		shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, step.getScheduleId().getShipmentScheduleId());
 		changeHUStatusFromPickedToActive(topLevelHUs);
 
-		moveToTargetHUIfNeeded(huIdAndQRCodeList);
+		// extractToTopLevel above may have relocated/regenerated the QR codes (and the picked HU can carry
+		// surplus QR rows), so the pre-extraction snapshot no longer matches a live M_HU_QRCode. Re-resolve
+		// each extracted top-level HU's current QR by its id before moving it to the scanned target.
+		moveToTargetHUIfNeeded(toCurrentHuIdAndQRCodes(topLevelHUs));
 
 		return step.reduceWithUnpickEvent(
 				pickFromKey,
 				PickingJobStepUnpickInfo.ofUnpickedHUs(pickedToHUs)
 		);
+	}
+
+	private ImmutableSet<HUIdAndQRCode> toCurrentHuIdAndQRCodes(@NonNull final Collection<I_M_HU> hus)
+	{
+		return hus.stream()
+				.map(hu -> {
+					final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
+					return HUIdAndQRCode.builder()
+							.huId(huId)
+							.huQRCode(huService.getQRCodeByHuId(huId))
+							.build();
+				})
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private void moveToTargetHUIfNeeded(final ImmutableSet<HUIdAndQRCode> huIdAndQRCodeList)
