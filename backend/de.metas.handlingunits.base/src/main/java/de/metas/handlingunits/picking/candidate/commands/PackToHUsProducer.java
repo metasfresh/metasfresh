@@ -211,6 +211,9 @@ public class PackToHUsProducer
 			}
 			weightUpdater.updatePackToHU(pickFromHU);
 
+			// Intentionally independent of request.isRecordLeafCUsAsTUParts(): here the source HU already IS a
+			// TU at the exact qty + packing instructions, so no CU is split out and packed INTO a container —
+			// there is no distinct leaf CU to record, and a later unpick has nothing nested to strand.
 			return LUTUResult.ofSingleTopLevelTU(pickFromHU);
 		}
 		//
@@ -331,17 +334,18 @@ public class PackToHUsProducer
 	 * no-op and the CU is left Picked inside the TU. LU-nested results are left untouched (the CUs there
 	 * already sit under the LU's TUs).
 	 * <p>
-	 * PRECONDITION: {@code getVHUs(tuRecord)} returns exactly this call's packed CU(s). This holds only when
-	 * {@code packToHU()} is invoked <b>at most once per {@link PackToInfo}</b> through this producer — true
-	 * for {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}, which uses
-	 * a per-command producer and, after the first pick, materializes the target to an existing TU that then
-	 * routes through the {@code isExistingTU()} branch (recorded via the known {@code cuRecord}) instead of
-	 * here. It is NOT true for {@code ProcessPickingCandidatesCommand}'s shared-TU mode, where one cached
-	 * {@code LUTUProducerDestination} is reused across multiple candidates sharing a {@link PackToInfo}
-	 * ({@code PackToInfo} does not even key on {@code productId}): a later call would walk the whole current
-	 * tree and over-include prior candidates' VHUs here. That is currently harmless ONLY because that caller
-	 * reads the TU records via {@code getAllTURecords()} and discards the CU-parts list this method
-	 * populates — do NOT rely on the CU-parts being correct for that shared-TU reuse pattern.
+	 * REACHABILITY: this method runs ONLY for a CU-into-TU pick — i.e. only when the caller sets
+	 * {@link PackToHURequest#isRecordLeafCUsAsTUParts()} (gated in {@code packToHU()} above). The sole such caller is
+	 * {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}, which uses a
+	 * per-command producer and invokes {@code packToHU()} at most once per {@link PackToInfo} (after the first
+	 * pick the target is an existing TU, routed through the {@code isExistingTU()} branch via the known
+	 * {@code cuRecord}, not here). So the PRECONDITION — {@code getVHUs(tuRecord)} returns exactly this call's
+	 * packed CU(s) — holds.
+	 * <p>
+	 * {@code ProcessPickingCandidatesCommand}'s shared-TU mode (one cached {@code LUTUProducerDestination}
+	 * reused across candidates that share a {@link PackToInfo}) does <b>not</b> set the flag, so it never
+	 * reaches this method — the earlier over-inclusion concern for that shared-producer path no longer applies
+	 * here (it reads TU records via {@code getAllTURecords()} and never the CU-parts list this populates).
 	 */
 	private LUTUResult recordPackedCUsAsParts(@NonNull final LUTUResult result)
 	{
