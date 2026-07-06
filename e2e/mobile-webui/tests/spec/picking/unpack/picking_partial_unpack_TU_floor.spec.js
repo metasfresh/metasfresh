@@ -1,10 +1,10 @@
-import { test } from "../../../playwright.config";
+import { test } from "../../../../playwright.config";
 import { allure } from 'allure-playwright';
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
-import { Backend } from "../../utils/screens/Backend";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../../utils/screens/Backend";
+import { LoginScreen } from "../../../utils/screens/LoginScreen";
 
 // A valid, unique 14-digit GS1 GTIN per run (strict GTIN->product resolve, AD_Client_ID=METASFRESH).
 // (Same rationale as picking_partial_unpack.spec.js: high-order per-call counter so back-to-back GTINs
@@ -99,6 +99,16 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
         await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4' });
         await Backend.expect({
             title: 'after pick: 4 PCE of P1 packed into the pick-to TU (tu1)',
+            // Bind the synthetic identifiers: the pick records the leaf CU (cu1) INTO the materialised TU (tu1)
+            // on M_ShipmentSchedule_QtyPicked. This binding is what makes `tu1`/`cu1` resolvable in `hus:` below
+            // (an HU identifier with no masterdata entry only resolves once bound here).
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: 'cu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
+            },
             hus: {
                 // The materialised pick-to TU carries the picked CU content and is in Picked state.
                 tu1: { huStatus: 'S', storages: { P1: '4 PCE' } },
