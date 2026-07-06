@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.nshift.client;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
@@ -147,12 +148,12 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 
 	private List<ShipmentSchedule> loadSchedules(@NonNull final DeliveryOrder deliveryOrder)
 	{
-		return deliveryOrder.getDeliveryOrderParcels()
+		// batch-load the schedules for all parcel packages once, rather than per package
+		final ImmutableSet<PackageId> packageIds = deliveryOrder.getDeliveryOrderParcels()
 				.stream()
 				.map(DeliveryOrderParcel::getPackageId)
-				.distinct()
-				.flatMap(packageId -> shipmentScheduleRepository.loadByPackageId(packageId).stream())
-				.collect(Collectors.toList());
+				.collect(ImmutableSet.toImmutableSet());
+		return ImmutableList.copyOf(shipmentScheduleRepository.loadByPackageIds(packageIds).values());
 	}
 
 	/**
@@ -189,8 +190,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	/**
-	 * Shipping rules are active (so nShift re-resolves the carrier at ship time) when the shipper is configured
-	 * for API carrier advising and not all schedules are Manual.
+	 * Whether nShift re-resolves the carrier at ship time via its own selection rules. Config-first:
+	 * <ol>
+	 * <li>the shipper must use API carrier advising (feature gate);</li>
+	 * <li>{@code Carrier_Config.IsSelectionRules} must be ON — if OFF, nShift never resolves, the explicit
+	 *     carrier is always authoritative;</li>
+	 * <li>with selection rules ON, resolution is allowed only when <b>no</b> manual advise is involved — any
+	 *     manual carrier must be respected (sent explicitly, rules OFF), never overwritten by nShift's rules.</li>
+	 * </ol>
 	 */
 	private boolean areShippingRulesActive(
 			@NonNull final DeliveryOrder deliveryOrder,
@@ -204,9 +211,15 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		{
 			return false;
 		}
-		final boolean allManual = schedules.stream()
-				.allMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
-		return !allManual;
+		// config first: selection rules OFF ⇒ nShift never resolves; the explicit carrier is authoritative.
+		if (!shipperConfig.isSelectionRules())
+		{
+			return false;
+		}
+		// selection rules ON ⇒ resolve only when NO manual is involved; any manual carrier is respected.
+		final boolean anyManual = schedules.stream()
+				.anyMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
+		return !anyManual;
 	}
 
 	/**

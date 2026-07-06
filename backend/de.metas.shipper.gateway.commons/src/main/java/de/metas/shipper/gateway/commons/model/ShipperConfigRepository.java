@@ -103,12 +103,8 @@ public class ShipperConfigRepository
 	public boolean isSelectionRules(@NonNull final ShipperId shipperId)
 	{
 		final ShipperConfig config = getMap().get(shipperId);
-		if (config == null)
-		{
-			// no config row → column default 'Y' (rules ON)
-			return true;
-		}
-		return StringUtils.toBoolean(config.getAdditionalProperties().get(I_Carrier_Config.COLUMNNAME_IsSelectionRules), true);
+		// no config row → column default 'Y' (rules ON)
+		return config == null || config.isSelectionRules();
 	}
 
 	@NonNull

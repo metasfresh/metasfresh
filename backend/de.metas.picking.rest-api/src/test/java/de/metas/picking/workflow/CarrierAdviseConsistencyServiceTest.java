@@ -1,25 +1,24 @@
 package de.metas.picking.workflow;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.util.Services;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
-import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.Shipper;
-import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperRepository;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,11 +40,17 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+/**
+ * The consistency check is SCHEDULE-SOURCED: the carrier (product/goods-type/services) and the manual flag are
+ * resolved per shipment schedule via {@link DeliveryOrderCarrierResolver#resolveBySchedules} (mocked here) and
+ * reduced via the central {@link ResolvedCarrier#distinctManualCarriers}. Per package/HU:
+ * ≥2 distinct manual → reject; exactly 1 manual → manual wins (OK); no manual + divergent product/goods-type →
+ * reject ONLY when selection rules are OFF.
+ */
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CarrierAdviseConsistencyServiceTest
 {
-	// IDs used across all tests
 	private static final HuId HU_ID_1 = HuId.ofRepoId(101);
 	private static final ShipmentScheduleId SCHED_ID_1 = ShipmentScheduleId.ofRepoId(201);
 	private static final ShipmentScheduleId SCHED_ID_2 = ShipmentScheduleId.ofRepoId(202);
@@ -57,10 +62,14 @@ class CarrierAdviseConsistencyServiceTest
 	private static final CarrierServiceId SERVICE_1 = CarrierServiceId.ofRepoId(601);
 	private static final CarrierServiceId SERVICE_2 = CarrierServiceId.ofRepoId(602);
 
+	private static final AdMessageKey MSG_ManualInconsistentOnHU = AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU");
+	private static final AdMessageKey MSG_NonManualDivergentOnHU = AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU");
+
 	@Mock private HUShipmentScheduleResolver resolver;
 	@Mock private IHandlingUnitsBL handlingUnitsBL;
 	@Mock private ShipperRepository shipperRepository;
 	@Mock private ShipperConfigRepository shipperConfigRepository;
+	@Mock private DeliveryOrderCarrierResolver deliveryOrderCarrierResolver;
 
 	private CarrierAdviseConsistencyService service;
 
@@ -73,16 +82,16 @@ class CarrierAdviseConsistencyServiceTest
 		AdempiereTestHelper.get().init();
 		Services.registerService(IHandlingUnitsBL.class, handlingUnitsBL);
 
-		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(resolver, shipperRepository, shipperConfigRepository);
+		service = CarrierAdviseConsistencyService.newInstanceForUnitTesting(
+				resolver, shipperRepository, shipperConfigRepository, deliveryOrderCarrierResolver);
 
-		// Default: selection rules OFF (Carrier_Config.IsSelectionRules='N') → the E2 divergence check is active.
-		// The new IsSelectionRules='Y' (rules ON → skip E2) case overrides this per-test via stubSelectionRules(...).
+		// Default: selection rules OFF (Carrier_Config.IsSelectionRules='N') → the non-manual divergence check is active.
+		// The rules-ON case (skip divergence) overrides this per-test via stubSelectionRules(...).
 		when(shipperConfigRepository.isSelectionRules(any())).thenReturn(false);
 
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
 
-		// by default: getTopLevelHUsByHuIds([HU_ID_1]) → {HU_ID_1: topLevelHU} (top-level parent = itself)
 		when(handlingUnitsBL.getTopLevelHUsByHuIds(ImmutableSet.of(HU_ID_1)))
 				.thenReturn(ImmutableMap.of(HU_ID_1, topLevelHU));
 	}
@@ -91,20 +100,15 @@ class CarrierAdviseConsistencyServiceTest
 	// helpers
 	// --------------------------------------------------
 
-	/**
-	 * Builds a picking job that has picked {@code HU_ID_1} and whose lines are the given ones.
-	 * The consistency service reads the carrier VALUES + manual flag from these lines (matched to a
-	 * schedule by {@link ShipmentScheduleId}); the advise-enabled gate stays schedule/shipper-based.
-	 */
-	private PickingJob jobWithPickedHU(final PickingJobLine... lines)
+	/** A picking job that has picked {@code HU_ID_1}. */
+	private PickingJob jobWithPickedHU()
 	{
 		final PickingJob job = mock(PickingJob.class);
 		when(job.getAllPickedHuIds()).thenReturn(ImmutableSet.of(HU_ID_1));
-		when(job.streamLines()).thenAnswer(inv -> ImmutableList.copyOf(lines).stream());
 		return job;
 	}
 
-	/** Stub a shipper that has isApiCarrierAdvise()==true for the given ShipperId. */
+	/** Stub a shipper with isApiCarrierAdvise()==true for the given ShipperId. */
 	private void stubShipper(final ShipperId shipperId)
 	{
 		final Shipper shipper = Shipper.builder()
@@ -123,58 +127,49 @@ class CarrierAdviseConsistencyServiceTest
 		});
 	}
 
-	/** Stub the shipper's Carrier_Config.IsSelectionRules value (true = rules ON → E2 skipped). */
+	/** Stub the shipper's Carrier_Config.IsSelectionRules value (true = rules ON → divergence check skipped). */
 	private void stubSelectionRules(final ShipperId shipperId, final boolean selectionRules)
 	{
 		when(shipperConfigRepository.isSelectionRules(shipperId)).thenReturn(selectionRules);
 	}
 
-	/**
-	 * Mocks a shipment schedule. The schedule is only the advise-enabled GATE: the service reads
-	 * its {@code shipperId} (to resolve the shipper's {@code isApiCarrierAdvise()}) and its id (to match the
-	 * picking-job line). The carrier VALUES + manual flag are read from the line, NOT from the schedule.
-	 */
-	private ShipmentSchedule mockSchedule(
-			final ShipmentScheduleId id,
-			final ShipperId shipperId)
+	/** Mocks a shipment schedule — the advise-enabled gate (shipperId) + its id. Carrier values come from the resolver. */
+	private ShipmentSchedule mockSchedule(final ShipmentScheduleId id, final ShipperId shipperId)
 	{
-		final ShipmentSchedule s = mock(ShipmentSchedule.class);
-		when(s.getId()).thenReturn(id);
-		when(s.getShipperId()).thenReturn(shipperId);
-		return s;
-	}
-
-	/**
-	 * Mocks a picking-job line carrying the carrier VALUES + manual flag for the given shipment schedule.
-	 * This is now the source of truth the consistency service reads.
-	 */
-	private PickingJobLine mockLine(
-			final ShipmentScheduleId scheduleId,
-			final boolean isManual,
-			@Nullable final CarrierProductId carrierProductId,
-			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			final ImmutableSet<CarrierServiceId> carrierServices)
-	{
-		final ShipmentScheduleAndJobScheduleId scheduleAndJobScheduleId =
-				ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(scheduleId);
-
-		final PickingJobLine line = mock(PickingJobLine.class);
-		when(line.getScheduleId()).thenReturn(scheduleAndJobScheduleId);
-		when(line.isManual()).thenReturn(isManual);
-		when(line.getCarrierProductId()).thenReturn(carrierProductId);
-		when(line.getCarrierGoodsTypeId()).thenReturn(carrierGoodsTypeId);
-		when(line.getCarrierServices()).thenReturn(carrierServices);
-		return line;
+		final ShipmentSchedule schedule = mock(ShipmentSchedule.class);
+		when(schedule.getId()).thenReturn(id);
+		when(schedule.getShipperId()).thenReturn(shipperId);
+		return schedule;
 	}
 
 	private void stubResolver(final ShipmentSchedule... schedules)
 	{
 		final ImmutableMap.Builder<ShipmentScheduleId, ShipmentSchedule> map = ImmutableMap.builder();
-		for (final ShipmentSchedule s : schedules)
+		for (final ShipmentSchedule schedule : schedules)
 		{
-			map.put(s.getId(), s);
+			map.put(schedule.getId(), schedule);
 		}
 		when(resolver.resolveSchedulesByIdForHU(topLevelHU)).thenReturn(map.build());
+	}
+
+	/** Mocks {@link DeliveryOrderCarrierResolver#resolveBySchedules} to return the given per-schedule carriers. */
+	private void stubCarriers(final Map<ShipmentScheduleId, ResolvedCarrier> carriersByScheduleId)
+	{
+		when(deliveryOrderCarrierResolver.resolveBySchedules(any())).thenReturn(ImmutableMap.copyOf(carriersByScheduleId));
+	}
+
+	private static ResolvedCarrier carrier(
+			final boolean manual,
+			@Nullable final CarrierProductId carrierProductId,
+			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
+			final ImmutableSet<CarrierServiceId> carrierServices)
+	{
+		return ResolvedCarrier.builder()
+				.manual(manual)
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(carrierGoodsTypeId)
+				.carrierServices(carrierServices)
+				.build();
 	}
 
 	private static void assertThrowsWithKey(
@@ -193,337 +188,182 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	// --------------------------------------------------
-	// Line-centric (not schedule-centric): schedules AGREE on product, lines DIVERGE → E2
-	//
-	// This is the central proof that the consistency check now reads the LINE, not the schedule.
-	// The two non-manual schedules carry no carrier values at all (they are only the advise-enabled
-	// gate); the divergence lives exclusively on the lines. Schedule-reading code sees no divergence
-	// and would NOT throw; line-reading code throws NonManualDivergentOnHU.
+	// Manual wins: 1 manual + 1 automatic on one HU → completes (relaxed from the former mixed-manual reject).
 	// --------------------------------------------------
 
 	@Test
-	void e2_linesDivergeOnProduct_schedulesAgree_throwsNonManualDivergent()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		// lines diverge on carrier product
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
-	}
-
-	// --------------------------------------------------
-	// ONE advise-enabled schedule backs TWO picking-job lines that DIVERGE on carrier product.
-	//
-	// A single shipment schedule can back N picking-job lines (N picking-job-schedules), each independently
-	// re-advised at packing → they can carry divergent carriers. A first-wins map would keep only ONE line
-	// per schedule, silently dropping the divergent sibling → no divergence detected → NO throw. Line-centric
-	// code (ListMultimap) keeps BOTH lines → distinct products > 1 → throws NonManualDivergentOnHU.
-	// IsSelectionRules='N' (rules OFF, the default stub) so E2 is active.
-	// --------------------------------------------------
-
-	@Test
-	void e2_oneSchedule_twoLinesDivergeOnProduct_throwsNonManualDivergent()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		stubResolver(s1);
-		stubShipper(SHIPPER_1);
-
-		// TWO lines for the SAME schedule (SCHED_ID_1), diverging on carrier product
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
-	}
-
-	// --------------------------------------------------
-	// The "multiple advise-enabled shippers on one HU" check (MSG_MultipleShippersOnHU) was removed:
-	// the shipper is legitimately header-level and multiple advise-enabled shippers on a single picked
-	// HU is not a real case to guard against. There is intentionally NO replacement assertion for it.
-	// --------------------------------------------------
-
-	// --------------------------------------------------
-	// (E1) manual + non-manual mix
-	// --------------------------------------------------
-
-	@Test
-	void e1_mixedManualNonManual_throwsManualInconsistent()
+	void manualPlusNonManual_manualWins_doesNotThrow()
 	{
 		final ShipmentSchedule manual = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule nonManual = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(manual, nonManual);
 		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_2, GOODS_TYPE_2, ImmutableSet.of())));
 
-		final PickingJobLine lineManual = mockLine(SCHED_ID_1, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-		final PickingJobLine lineNonManual = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(lineManual, lineNonManual)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"));
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
+				.doesNotThrowAnyException();
 	}
 
 	// --------------------------------------------------
-	// (E1) all manual — divergent CarrierProductId
+	// ≥2 distinct manual carriers on one HU → reject (E1). Product / goods-type / services each make them distinct.
 	// --------------------------------------------------
 
 	@Test
-	void e1_allManual_differentProduct_throwsManualInconsistent()
+	void twoDistinctManual_differentProduct_throwsManualInconsistent()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+				SCHED_ID_2, carrier(true, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1))));
 
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, true, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"));
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_ManualInconsistentOnHU);
 	}
 
-	// --------------------------------------------------
-	// (E1) all manual — divergent CarrierGoodsTypeId
-	// --------------------------------------------------
-
 	@Test
-	void e1_allManual_differentGoodsType_throwsManualInconsistent()
+	void twoDistinctManual_differentGoodsType_throwsManualInconsistent()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+				SCHED_ID_2, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of(SERVICE_1))));
 
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, true, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of(SERVICE_1));
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"));
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_ManualInconsistentOnHU);
 	}
 
-	// --------------------------------------------------
-	// (E1) all manual — divergent CarrierServiceId set
-	// --------------------------------------------------
-
 	@Test
-	void e1_allManual_differentServiceIds_throwsManualInconsistent()
+	void twoDistinctManual_differentServices_throwsManualInconsistent()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+				SCHED_ID_2, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_2))));
 
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_2));
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"));
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_ManualInconsistentOnHU);
 	}
 
 	// --------------------------------------------------
-	// (E2) all non-manual — divergent CarrierProductId
+	// No manual, divergent non-manual carrier → reject ONLY when selection rules are OFF.
 	// --------------------------------------------------
 
 	@Test
-	void e2_nonManual_divergentProduct_throwsNonManualDivergent()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
-	}
-
-	// --------------------------------------------------
-	// (E2 gate) divergent non-manual products + IsSelectionRules='N' (rules OFF) → still throws
-	//
-	// The explicit carrier product is authoritative when selection rules are off, so divergence on one HU
-	// is a real completion blocker. Same divergence as e2_nonManual_divergentProduct_throwsNonManualDivergent,
-	// pinned explicitly to rules='N'.
-	// --------------------------------------------------
-
-	@Test
-	void e2_divergentProduct_selectionRulesOff_throwsNonManualDivergent()
+	void nonManual_divergentProduct_selectionRulesOff_throwsNonManualDivergent()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
 		stubSelectionRules(SHIPPER_1, false);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of())));
 
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_NonManualDivergentOnHU);
 	}
 
-	// --------------------------------------------------
-	// (E2 gate — RED) divergent non-manual products + IsSelectionRules='Y' (rules ON) → does NOT throw
-	//
-	// With selection rules ON (the column default; also the no-config case), nShift resolves the carrier via its
-	// rules and a re-advise harmonises it, so divergent carrier products on one HU are NOT a completion blocker —
-	// the job completes silently. Without the IsSelectionRules gate, divergent non-manual products would throw
-	// unconditionally regardless of the flag.
-	// --------------------------------------------------
-
 	@Test
-	void e2_divergentProduct_selectionRulesOn_doesNotThrow()
+	void nonManual_divergentProduct_selectionRulesOn_doesNotThrow()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
 		stubSelectionRules(SHIPPER_1, true);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of())));
 
-		// divergent non-manual carrier products on one HU — would throw E2 if rules were OFF
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
 				.doesNotThrowAnyException();
 	}
 
-	// --------------------------------------------------
-	// (E2 gate) divergent non-manual goods-types + IsSelectionRules='Y' (rules ON) → does NOT throw
-	//
-	// The gate covers goods-type divergence the same way as product divergence.
-	// --------------------------------------------------
-
 	@Test
-	void e2_divergentGoodsType_selectionRulesOn_doesNotThrow()
+	void nonManual_divergentGoodsType_selectionRulesOn_doesNotThrow()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
 		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
 		stubResolver(s1, s2);
 		stubShipper(SHIPPER_1);
 		stubSelectionRules(SHIPPER_1, true);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of())));
 
-		// same product, divergent goods-type — would throw E2 if rules were OFF
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of());
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
+				.doesNotThrowAnyException();
+	}
 
-		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
+	@Test
+	void nonManual_nullVsSetProduct_selectionRulesOff_throwsNonManualDivergent()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		// a failed-advise carrier (null product) vs a set product → distinct count (incl. null) > 1 → reject
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, null, null, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of())));
+
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_NonManualDivergentOnHU);
+	}
+
+	// --------------------------------------------------
+	// OK cases
+	// --------------------------------------------------
+
+	@Test
+	void ok_allNonManual_consistent_doesNotThrow()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of())));
+
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
+				.doesNotThrowAnyException();
+	}
+
+	@Test
+	void ok_allManual_identical_doesNotThrow()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+				SCHED_ID_2, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1))));
+
+		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
 				.doesNotThrowAnyException();
 	}
 
 	// --------------------------------------------------
-	// (E2) all non-manual — failed-advise (null product) vs successfully-advised product
+	// OK — no advise-enabled schedule (shipper not API-carrier-advise) → early return, no resolve, no throw.
 	// --------------------------------------------------
 
 	@Test
-	void e2_nonManual_nullVsSetProduct_throwsNonManualDivergent()
+	void noAdviseEnabledSchedule_doesNotThrow()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
+		stubResolver(s1);
+		// shipperRepository returns no api-carrier-advise shipper → isAdviseEnabled == false for all
+		when(shipperRepository.getByIds(any())).thenReturn(ImmutableMap.of());
 
-		// adviseFailed line: null carrier product; advised line: set product → distinct count (incl null) > 1 → E2
-		final PickingJobLine adviseFailed = mockLine(SCHED_ID_1, false, null, null, ImmutableSet.of());
-		final PickingJobLine advised = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThrowsWithKey(
-				() -> service.assertConsistentForJob(jobWithPickedHU(adviseFailed, advised)),
-				AdMessageKey.of("de.metas.picking.CarrierAdvise_NonManualDivergentOnHU"));
-	}
-
-	// --------------------------------------------------
-	// OK — all non-manual, consistent product+goodsType
-	// --------------------------------------------------
-
-	@Test
-	void ok_allNonManual_consistent()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
-				.doesNotThrowAnyException();
-	}
-
-	// --------------------------------------------------
-	// OK — all manual, identical tuple
-	// --------------------------------------------------
-
-	@Test
-	void ok_allManual_identical()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-		final PickingJobLine line2 = mockLine(SCHED_ID_2, true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1));
-
-		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1, line2)))
-				.doesNotThrowAnyException();
-	}
-
-	// --------------------------------------------------
-	// OK — advise-enabled schedule with NO line in the job is safely skipped (filter(Objects::nonNull))
-	//
-	// Two advise-enabled non-manual schedules (same shipper) resolve for the HU, but only the FIRST has a
-	// corresponding picking-job line; the second has none. The line-less schedule is not part of this job's
-	// picked state, so it is skipped — leaving a single line, which is trivially consistent → no throw.
-	// Characterization of the existing guard; no behavior change.
-	// --------------------------------------------------
-
-	@Test
-	void scheduleWithNoLine_isSkipped_noThrow()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		// only SCHED_ID_1 has a line in this job; SCHED_ID_2 has none → it is skipped
-		final PickingJobLine line1 = mockLine(SCHED_ID_1, false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of());
-
-		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU(line1)))
-				.doesNotThrowAnyException();
-	}
-
-	// --------------------------------------------------
-	// OK — advise-enabled schedules exist but NONE has a line → adviseEnabledLines empty → early return
-	//
-	// Distinct from the skip-one case above: here NO advise-enabled schedule has a corresponding line, so the
-	// set of advised lines is totally empty and the method returns before any inconsistency check.
-	// Characterization of the existing guard; no behavior change.
-	// --------------------------------------------------
-
-	@Test
-	void allAdviseEnabledSchedules_haveNoLine_noThrow()
-	{
-		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
-		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
-		stubResolver(s1, s2);
-		stubShipper(SHIPPER_1);
-
-		// the job has NO lines at all → no advise-enabled schedule resolves to a line
 		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
 				.doesNotThrowAnyException();
 	}

@@ -67,13 +67,14 @@ public class DeliveryOrderCarrierResolver
 			return ImmutableMap.of();
 		}
 
-		// the shipment schedules covered by these packages (the universe of schedules to resolve a carrier for)
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = packageIds.stream()
-				.flatMap(packageId -> shipmentScheduleRepository.loadByPackageId(packageId).stream())
-				.collect(ImmutableMap.toImmutableMap(
-						ShipmentSchedule::getId,
-						schedule -> schedule,
-						(existing, ignored) -> existing));
+		// the shipment schedules covered by these packages (the universe of schedules to resolve a carrier for);
+		// batched — one load for all packages rather than re-loading per package
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
+				shipmentScheduleRepository.loadByPackageIds(ImmutableSet.copyOf(packageIds)).values().stream()
+						.collect(ImmutableMap.toImmutableMap(
+								ShipmentSchedule::getId,
+								schedule -> schedule,
+								(existing, ignored) -> existing));
 		if (schedulesById.isEmpty())
 		{
 			return ImmutableMap.of();
@@ -92,6 +93,22 @@ public class DeliveryOrderCarrierResolver
 		return result.build();
 	}
 
+	/**
+	 * Resolves the carrier (incl. the {@code manual} flag) for each of the given shipment schedules — same
+	 * SCHEDULE-SOURCED resolution as {@link #resolveByPackageIds}, but for a set of schedules already in hand
+	 * (e.g. the schedules of a picked HU in the picking carrier-advise consistency check).
+	 */
+	@NonNull
+	public ImmutableMap<ShipmentScheduleId, ResolvedCarrier> resolveBySchedules(@NonNull final Collection<ShipmentSchedule> schedules)
+	{
+		final ImmutableMap.Builder<ShipmentScheduleId, ResolvedCarrier> result = ImmutableMap.builder();
+		schedules.stream()
+				.collect(ImmutableMap.toImmutableMap(ShipmentSchedule::getId, schedule -> schedule, (existing, ignored) -> existing))
+				.values()
+				.forEach(schedule -> result.put(schedule.getId(), resolveFromSchedule(schedule)));
+		return result.build();
+	}
+
 	@NonNull
 	private ResolvedCarrier resolveFromSchedule(@NonNull final ShipmentSchedule schedule)
 	{
@@ -101,6 +118,7 @@ public class DeliveryOrderCarrierResolver
 				.carrierProductId(schedule.getCarrierProductId())
 				.carrierGoodsTypeId(schedule.getCarrierGoodsTypeId())
 				.carrierServices(services)
+				.manual(schedule.getCarrierAdvisingStatus().isManual())
 				.build();
 	}
 }

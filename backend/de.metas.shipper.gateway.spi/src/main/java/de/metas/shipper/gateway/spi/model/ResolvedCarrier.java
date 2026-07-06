@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.spi.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
@@ -31,16 +32,20 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Set;
 
 /**
  * The carrier (product + goods-type + services) resolved for a single shipment schedule, ready to be packed
  * into a {@code DeliveryOrderKey}.
  * <p>
- * This is a plain data carrier so the carrier can be RESOLVED in {@code de.metas.handlingunits.base} (which can
- * see the picking-job line) and passed into {@code de.metas.shipper.gateway.commons} on the
+ * This is a plain data carrier so the carrier can be RESOLVED from the shipment schedule in
+ * {@code de.metas.handlingunits.base} and passed into {@code de.metas.shipper.gateway.commons} on the
  * {@link DeliveryOrderCreateRequest} — the commons module must not depend on the handlingunits module
  * (that would create a dependency cycle).
+ * <p>
+ * {@code manual} carries whether the schedule was manually advised ({@code CarrierAdvisingStatus.Manual}): a
+ * manual carrier is a human override and must win over an automatic one when a package's schedules diverge.
  */
 @Value
 public class ResolvedCarrier
@@ -48,15 +53,43 @@ public class ResolvedCarrier
 	@Nullable CarrierProductId carrierProductId;
 	@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
 	@NonNull ImmutableSet<CarrierServiceId> carrierServices;
+	boolean manual;
 
 	@Builder
 	private ResolvedCarrier(
 			@Nullable final CarrierProductId carrierProductId,
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@Nullable final Set<CarrierServiceId> carrierServices)
+			@Nullable final Set<CarrierServiceId> carrierServices,
+			final boolean manual)
 	{
 		this.carrierProductId = carrierProductId;
 		this.carrierGoodsTypeId = carrierGoodsTypeId;
 		this.carrierServices = carrierServices != null ? ImmutableSet.copyOf(carrierServices) : ImmutableSet.of();
+		this.manual = manual;
+	}
+
+	/**
+	 * The DISTINCT manual carriers among the given ones (by product + goods-type + services). A package must not
+	 * carry more than one — {@code > 1} is the "mixed manual" reject condition (enforced by callers with their own
+	 * exception type). Central so the delivery-order carrier reducer and the picking consistency check agree.
+	 */
+	@NonNull
+	public static ImmutableSet<ResolvedCarrier> distinctManualCarriers(@NonNull final List<ResolvedCarrier> carriers)
+	{
+		return carriers.stream()
+				.filter(ResolvedCarrier::isManual)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Manual-wins: if any carrier is manual, only the (distinct) manual carriers are authoritative and override the
+	 * non-manual ones; otherwise all the given carriers apply. Callers reject when {@link #distinctManualCarriers}
+	 * yields more than one. Central so the delivery-order carrier reducer and the picking consistency check agree.
+	 */
+	@NonNull
+	public static ImmutableList<ResolvedCarrier> manualWinningCarriers(@NonNull final List<ResolvedCarrier> carriers)
+	{
+		final ImmutableSet<ResolvedCarrier> distinctManual = distinctManualCarriers(carriers);
+		return distinctManual.isEmpty() ? ImmutableList.copyOf(carriers) : distinctManual.asList();
 	}
 }

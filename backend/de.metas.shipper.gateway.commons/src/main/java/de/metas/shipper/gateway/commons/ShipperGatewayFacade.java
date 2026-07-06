@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.commons;
 
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.inout.ShipmentScheduleId;
@@ -94,6 +95,11 @@ public class ShipperGatewayFacade
 
 		final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = request.getCarrierByScheduleId();
 
+		// batch-load every package's shipment schedules once (avoids re-loading them per package below)
+		final ImmutableListMultimap<PackageId, ShipmentSchedule> schedulesByPackageId =
+				shipmentScheduleRepository.loadByPackageIds(
+						request.getPackageIds().stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
+
 		retrievePackagesByIds(request.getPackageIds())
 				.stream()
 				.collect(GuavaCollectors.toImmutableListMultimap(mpackage -> createDeliveryOrderKey(
@@ -103,7 +109,8 @@ public class ShipperGatewayFacade
 						timeFrom,
 						timeTo,
 						asyncBatchId,
-						carrierByScheduleId)))
+						carrierByScheduleId,
+						schedulesByPackageId)))
 				.asMap()
 				.forEach(this::createAndSendDeliveryOrder);
 	}
@@ -125,9 +132,10 @@ public class ShipperGatewayFacade
 			@NonNull final LocalTime timeFrom,
 			@NonNull final LocalTime timeTo,
 			@Nullable final AsyncBatchId asyncBatchId,
-			@NonNull final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId)
+			@NonNull final Map<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId,
+			@NonNull final ImmutableListMultimap<PackageId, ShipmentSchedule> schedulesByPackageId)
 	{
-		final List<ShipmentSchedule> shipmentSchedules = retrieveShipmentSchedulesByPackageId(PackageId.ofRepoId(mpackage.getM_Package_ID()));
+		final List<ShipmentSchedule> shipmentSchedules = schedulesByPackageId.get(PackageId.ofRepoId(mpackage.getM_Package_ID()));
 		if (shipmentSchedules.isEmpty())
 		{
 			throw new ShipperGatewayException("No shipment schedules found for package " + mpackage);
@@ -142,6 +150,10 @@ public class ShipperGatewayFacade
 				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
+		// Manual wins: if any schedule on this package was manually advised, the (single distinct) manual carrier
+		// is authoritative and overrides the non-manual ones. Otherwise all non-manual carriers are considered.
+		final List<ResolvedCarrier> effectiveCarriers = reduceToManualWinningCarriers(resolvedCarriers);
+
 		return DeliveryOrderKey.builder()
 				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
 				.shipperTransportationId(shipperTransportationId)
@@ -152,39 +164,52 @@ public class ShipperGatewayFacade
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
-				.carrierProductId(getCommonCarrierProductIdOrNull(resolvedCarriers))
-				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(resolvedCarriers))
-				.carrierServices(getCarrierServices(resolvedCarriers))
+				.carrierProductId(getCommonCarrierProductIdOrNull(effectiveCarriers))
+				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(effectiveCarriers))
+				.carrierServices(getCarrierServices(effectiveCarriers))
 				.asyncBatchId(asyncBatchId)
 				.build();
 	}
 
+	/**
+	 * Manual-wins reduction: a manual carrier is a human override and must not be overwritten by an automatic one.
+	 * If any of the package's resolved carriers is manual, only the manual carrier(s) are authoritative — and a
+	 * package cannot legitimately carry more than one distinct manual carrier (guarded by
+	 * {@code CarrierAdviseConsistencyService}), so a divergence here is a hard error. With no manual carrier, all
+	 * (non-manual) carriers are returned and reduced normally (uniform → that carrier; divergent → null product,
+	 * i.e. nShift resolves via its selection rules).
+	 */
+	private List<ResolvedCarrier> reduceToManualWinningCarriers(final List<ResolvedCarrier> resolvedCarriers)
+	{
+		// central manual-wins logic (shared with the picking CarrierAdviseConsistencyService via ResolvedCarrier)
+		final Set<ResolvedCarrier> distinctManualCarriers = ResolvedCarrier.distinctManualCarriers(resolvedCarriers);
+		if (distinctManualCarriers.size() > 1)
+		{
+			throw new ShipperGatewayException("A package must not carry more than one distinct manual carrier: " + distinctManualCarriers);
+		}
+		return ResolvedCarrier.manualWinningCarriers(resolvedCarriers);
+	}
+
+	// divergent non-manual product/goods-type reduce to null → nShift resolves via its selection rules (see the
+	// manual-wins reduction + areShippingRulesActive). The divergent + rules-OFF reject is CarrierAdviseConsistencyService's job.
 	@Nullable
 	private CarrierGoodsTypeId getCommonCarrierGoodsTypeIdOrNull(final List<ResolvedCarrier> resolvedCarriers)
 	{
-		final Set<CarrierGoodsTypeId> goodsTypeIds = resolvedCarriers.stream()
+		final Set<CarrierGoodsTypeId> distinctGoodsTypeIds = resolvedCarriers.stream()
 				.map(ResolvedCarrier::getCarrierGoodsTypeId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		if (goodsTypeIds.size() > 1)
-		{
-			throw new ShipperGatewayException("No common CarrierGoodsTypeId found for resolved carriers: " + resolvedCarriers);
-		}
-		return goodsTypeIds.stream().findFirst().orElse(null);
+		return distinctGoodsTypeIds.size() == 1 ? distinctGoodsTypeIds.iterator().next() : null;
 	}
 
 	@Nullable
 	private CarrierProductId getCommonCarrierProductIdOrNull(final List<ResolvedCarrier> resolvedCarriers)
 	{
-		final Set<CarrierProductId> carrierProductIds = resolvedCarriers.stream()
+		final Set<CarrierProductId> distinctCarrierProductIds = resolvedCarriers.stream()
 				.map(ResolvedCarrier::getCarrierProductId)
 				.filter(Objects::nonNull)
 				.collect(Collectors.toSet());
-		if (carrierProductIds.size() > 1)
-		{
-			throw new ShipperGatewayException("No common CarrierProductId found for resolved carriers: " + resolvedCarriers);
-		}
-		return carrierProductIds.stream().findFirst().orElse(null);
+		return distinctCarrierProductIds.size() == 1 ? distinctCarrierProductIds.iterator().next() : null;
 	}
 
 	private Set<CarrierServiceId> getCarrierServices(final List<ResolvedCarrier> resolvedCarriers)
@@ -194,10 +219,6 @@ public class ShipperGatewayFacade
 				.collect(Collectors.toCollection(LinkedHashSet::new));
 	}
 
-	private List<ShipmentSchedule> retrieveShipmentSchedulesByPackageId(@NonNull final PackageId packageId)
-	{
-		return shipmentScheduleRepository.loadByPackageId(packageId);
-	}
 
 	private Optional<BigDecimal> extractWeightInKg(@NonNull final I_M_Package mpackage)
 	{

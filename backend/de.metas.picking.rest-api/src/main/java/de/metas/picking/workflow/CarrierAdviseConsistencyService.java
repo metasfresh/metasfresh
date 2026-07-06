@@ -1,43 +1,46 @@
 package de.metas.picking.workflow;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
-import de.metas.shipping.CarrierProductId;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.Shipper;
-import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
+import de.metas.shipping.ShipperRepository;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
 
 /**
- * Validates that the carrier-advise attributes are consistent across all shipment schedules
- * linked to each packed top-level HU in a picking job.
+ * Validates that the carrier-advise is consistent across all shipment schedules linked to each packed top-level
+ * HU (parcel) in a picking job, at job completion.
  *
- * <p>Raises a user-visible {@link AdempiereException} when an inconsistency is detected
- * (e.g. mixed manual/non-manual, or divergent carrier product or goods-type across lines on the same HU).
+ * <p>SCHEDULE-SOURCED: the carrier (product + goods-type + services) and the manual flag are read from the
+ * shipment schedules — resolved with the same {@link DeliveryOrderCarrierResolver} the delivery order uses — and
+ * reduced via the central {@link ResolvedCarrier#distinctManualCarriers} helper, so this check and the
+ * delivery-order carrier resolution apply one shared rule set. Per package/HU:
+ * <ul>
+ *   <li><b>&ge;2 distinct manual carriers</b> → ambiguous human override → reject;</li>
+ *   <li><b>exactly one manual carrier</b> → manual wins, consistent (a co-packed non-manual is overridden);</li>
+ *   <li><b>no manual, divergent non-manual carriers</b> → reject <b>only</b> when the shipper has selection rules
+ *       OFF (rules ON ⇒ nShift resolves at ship + a re-advise harmonises ⇒ not a completion blocker).</li>
+ * </ul>
  */
 @Service
 @RequiredArgsConstructor
@@ -51,21 +54,22 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipperConfigRepository shipperConfigRepository;
+	@NonNull private final DeliveryOrderCarrierResolver deliveryOrderCarrierResolver;
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@VisibleForTesting
 	public static CarrierAdviseConsistencyService newInstanceForUnitTesting(
 			@NonNull final HUShipmentScheduleResolver huShipmentScheduleResolver,
 			@NonNull final ShipperRepository shipperRepository,
-			@NonNull final ShipperConfigRepository shipperConfigRepository)
+			@NonNull final ShipperConfigRepository shipperConfigRepository,
+			@NonNull final DeliveryOrderCarrierResolver deliveryOrderCarrierResolver)
 	{
 		Adempiere.assertUnitTestMode();
-		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository, shipperConfigRepository);
+		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository, shipperConfigRepository, deliveryOrderCarrierResolver);
 	}
 
 	/**
-	 * Checks every distinct top-level HU that has been picked on the given job.
-	 * Throws on the first inconsistency detected.
+	 * Checks every distinct top-level HU that has been picked on the given job. Throws on the first inconsistency.
 	 */
 	public void assertConsistentForJob(@NonNull final PickingJob pickingJob)
 	{
@@ -75,28 +79,16 @@ public class CarrierAdviseConsistencyService
 			return;
 		}
 
-		// The picking-job LINE is the carrier-advise source of truth: the carrier VALUES + manual flag
-		// are read from the line (matched to a schedule by ShipmentScheduleId), not from the schedule.
-		// Line-centric: a single shipment schedule can back N picking-job lines (N picking-job-
-		// schedules), each independently re-advised at packing — so they CAN diverge. We keep ALL lines per
-		// schedule (ListMultimap, not a first-wins map) so the consistency check sees every line on the HU.
-		final ImmutableListMultimap<ShipmentScheduleId, PickingJobLine> linesByScheduleId = pickingJob.streamLines()
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						line -> line.getScheduleId().getShipmentScheduleId(),
-						Function.identity()));
-
 		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
 		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
 
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{
-			assertConsistentForHU(topLevelHU, linesByScheduleId);
+			assertConsistentForHU(topLevelHU);
 		}
 	}
 
-	private void assertConsistentForHU(
-			@NonNull final I_M_HU topLevelHU,
-			@NonNull final ImmutableListMultimap<ShipmentScheduleId, PickingJobLine> linesByScheduleId)
+	private void assertConsistentForHU(@NonNull final I_M_HU topLevelHU)
 	{
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
 				huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
@@ -105,97 +97,65 @@ public class CarrierAdviseConsistencyService
 			return;
 		}
 
-		// The advise-enabled GATE stays schedule/shipper-based: the shipper is legitimately header-level.
-		// collect shipper IDs from all schedules (null shipper IDs filtered out)
+		// The advise-enabled gate stays schedule/shipper-based: the shipper is legitimately header-level.
 		final ImmutableSet<ShipperId> allShipperIds = schedulesById.values().stream()
 				.map(ShipmentSchedule::getShipperId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
-
 		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(allShipperIds);
 
-		// restrict to advise-enabled schedules that have a corresponding line in this job; read each
-		// schedule's carrier VALUES + manual flag from its picking-job LINE. A schedule with no line in
-		// this job is not part of this job's picked state, so it is skipped.
-		final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
-				.filter(s -> isAdviseEnabled(s, shippersById))
-				.filter(s -> !linesByScheduleId.get(s.getId()).isEmpty())
-				.collect(ImmutableSet.toImmutableSet());
-
-		// Line-centric: ALL picking-job lines of the advise-enabled schedules on this HU (not one-per-schedule).
-		final ImmutableSet<PickingJobLine> adviseEnabledLines = adviseEnabledSchedules.stream()
-				.flatMap(s -> linesByScheduleId.get(s.getId()).stream())
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (adviseEnabledLines.isEmpty())
+		final ImmutableList<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
+				.filter(schedule -> isAdviseEnabled(schedule, shippersById))
+				.collect(ImmutableList.toImmutableList());
+		if (adviseEnabledSchedules.isEmpty())
 		{
 			return;
 		}
 
 		final HuId huId = HuId.ofRepoId(topLevelHU.getM_HU_ID());
 
-		final boolean anyManual = adviseEnabledLines.stream()
-				.anyMatch(PickingJobLine::isManual);
-		final boolean anyNonManual = adviseEnabledLines.stream()
-				.anyMatch(line -> !line.isManual());
+		// Carrier + manual flag come from the shipment SCHEDULES, resolved with the same SCHEDULE-SOURCED logic used
+		// for the delivery order, then reduced via the central ResolvedCarrier helper (shared with ShipperGatewayFacade).
+		final ImmutableList<ResolvedCarrier> resolvedCarriers =
+				ImmutableList.copyOf(deliveryOrderCarrierResolver.resolveBySchedules(adviseEnabledSchedules).values());
 
-		// (E1) mix of manual + non-manual
-		if (anyManual && anyNonManual)
+		final ImmutableSet<ResolvedCarrier> distinctManualCarriers = ResolvedCarrier.distinctManualCarriers(resolvedCarriers);
+
+		// ≥2 distinct manual carriers on one HU → ambiguous human override → reject.
+		if (distinctManualCarriers.size() > 1)
 		{
 			throw new AdempiereException(MSG_ManualInconsistentOnHU, huId.getRepoId())
 					.markAsUserValidationError();
 		}
 
-		if (anyManual)
+		// exactly one manual → manual wins (a co-packed non-manual is overridden), consistent → done.
+		if (!distinctManualCarriers.isEmpty())
 		{
-			// (E1) all manual: all must share identical (CarrierProductId, CarrierGoodsTypeId, CarrierServiceIds)
-			final ImmutableSet<ManualAdviseKey> manualKeys = adviseEnabledLines.stream()
-					.map(CarrierAdviseConsistencyService::toManualAdviseKey)
-					.collect(ImmutableSet.toImmutableSet());
-			if (manualKeys.size() > 1)
-			{
-				throw new AdempiereException(MSG_ManualInconsistentOnHU, huId.getRepoId())
-						.markAsUserValidationError();
-			}
+			return;
 		}
-		else
+
+		// no manual: divergence check applies ONLY when the HU's shipper has selection rules OFF — then the explicit
+		// carrier is authoritative and divergence is a real problem the picker must fix. With selection rules ON,
+		// nShift resolves the carrier at ship and a re-advise harmonises it, so divergence is not a completion blocker.
+		if (anyShipperHasSelectionRulesOn(adviseEnabledSchedules))
 		{
-			// (E2) all non-manual: the divergence check applies ONLY when the HU's shipper has selection rules
-			// OFF (Carrier_Config.IsSelectionRules='N') — then the explicit carrier product is authoritative and
-			// divergence is a real problem the picker must fix. When selection rules are ON (the column default
-			// 'Y', incl. no config row), nShift resolves the carrier via its rules and a re-advise harmonises it,
-			// so divergence is not a completion blocker → skip E2 (the job completes silently). E1 (manual) is
-			// unaffected — manual overrides are authoritative regardless of selection rules.
-			if (anyShipperHasSelectionRulesOn(adviseEnabledSchedules))
-			{
-				return;
-			}
+			return;
+		}
 
-			// (E2) all non-manual: check for divergent CarrierProductId or CarrierGoodsTypeId.
-			// A carrier product/goods-type is set whenever advise succeeded; it is null when advise failed
-			// (the QtyToDeliver=0 case never reaches here — it has no picked records).
-			// Counting distinct values including null routes a failed-advise line (null vs a set
-			// product on the same HU) to E2, which the picker resolves with re-advise.
-			// Stream.distinct() tolerates null, unlike ImmutableSet.toImmutableSet().
-			final long distinctProductIds = adviseEnabledLines.stream()
-					.map(PickingJobLine::getCarrierProductId)
-					.distinct()
-					.count();
-			if (distinctProductIds > 1)
-			{
-				throw new AdempiereException(MSG_NonManualDivergentOnHU, huId.getRepoId())
-						.markAsUserValidationError();
-			}
-
-			final long distinctGoodsTypeIds = adviseEnabledLines.stream()
-					.map(PickingJobLine::getCarrierGoodsTypeId)
-					.distinct()
-					.count();
-			if (distinctGoodsTypeIds > 1)
-			{
-				throw new AdempiereException(MSG_NonManualDivergentOnHU, huId.getRepoId())
-						.markAsUserValidationError();
-			}
+		// Counting distinct values including null routes a failed-advise carrier (null vs a set product on the same
+		// HU) to a reject, which the picker resolves with re-advise. Stream.distinct() tolerates null.
+		final long distinctProductIds = resolvedCarriers.stream()
+				.map(ResolvedCarrier::getCarrierProductId)
+				.distinct()
+				.count();
+		final long distinctGoodsTypeIds = resolvedCarriers.stream()
+				.map(ResolvedCarrier::getCarrierGoodsTypeId)
+				.distinct()
+				.count();
+		if (distinctProductIds > 1 || distinctGoodsTypeIds > 1)
+		{
+			throw new AdempiereException(MSG_NonManualDivergentOnHU, huId.getRepoId())
+					.markAsUserValidationError();
 		}
 	}
 
@@ -214,41 +174,20 @@ public class CarrierAdviseConsistencyService
 
 	/**
 	 * True if at least one of the given advise-enabled schedules has a shipper with selection rules ON
-	 * ({@code Carrier_Config.IsSelectionRules='Y'} / no config row → default 'Y'). With selection rules ON
-	 * nShift auto-resolves the carrier, so the E2 divergence check is skipped.
+	 * ({@code Carrier_Config.IsSelectionRules='Y'} / no config row → default 'Y'). With selection rules ON nShift
+	 * auto-resolves the carrier, so the non-manual divergence check is skipped.
 	 * <p>
-	 * One shipper per HU is the norm: the shipper is header-level, so all schedules of one order share it,
-	 * and that is the only path that packs schedules onto a shared HU today. The {@code anyMatch} (rather than
-	 * {@code allMatch}) semantics are deliberate, not incidental: a HU carrying schedules of two shippers — one
-	 * rules-OFF, one rules-ON — is intentionally allowed to complete silently (the multi-shipper-on-HU block,
-	 * "E3", was removed by explicit product decision, on the rationale that nShift's selection rules plus the
-	 * packing re-advise resolve the carrier). "Any shipper resolves via rules ⇒ let the HU complete" is exactly
-	 * that decision; do not tighten to {@code allMatch} without revisiting it. Schedules carry a non-null shipper
-	 * id here (they passed {@link #isAdviseEnabled}).
+	 * The {@code anyMatch} (rather than {@code allMatch}) semantics are deliberate: a HU carrying schedules of two
+	 * shippers — one rules-OFF, one rules-ON — is intentionally allowed to complete (the multi-shipper-on-HU block
+	 * "E3" was removed by explicit product decision, on the rationale that nShift's selection rules plus the packing
+	 * re-advise resolve the carrier). Do not tighten to {@code allMatch} without revisiting it. Schedules carry a
+	 * non-null shipper id here (they passed {@link #isAdviseEnabled}).
 	 */
-	private boolean anyShipperHasSelectionRulesOn(@NonNull final ImmutableSet<ShipmentSchedule> adviseEnabledSchedules)
+	private boolean anyShipperHasSelectionRulesOn(@NonNull final ImmutableList<ShipmentSchedule> adviseEnabledSchedules)
 	{
 		return adviseEnabledSchedules.stream()
 				.map(ShipmentSchedule::getShipperId)
 				.filter(Objects::nonNull)
 				.anyMatch(shipperConfigRepository::isSelectionRules);
-	}
-
-	@NonNull
-	private static ManualAdviseKey toManualAdviseKey(@NonNull final PickingJobLine line)
-	{
-		return new ManualAdviseKey(
-				line.getCarrierProductId(),
-				line.getCarrierGoodsTypeId(),
-				ImmutableSet.copyOf(line.getCarrierServices())
-		);
-	}
-
-	@Value
-	private static class ManualAdviseKey
-	{
-		@Nullable CarrierProductId carrierProductId;
-		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
-		@NonNull ImmutableSet<CarrierServiceId> carrierServiceIds;
 	}
 }
