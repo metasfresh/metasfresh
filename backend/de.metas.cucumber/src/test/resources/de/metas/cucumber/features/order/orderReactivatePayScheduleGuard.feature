@@ -3,17 +3,11 @@
 @allure.label.feature:F00994_Multiple_Levels_of_Payment
 @ghActions:run_on_executor1
 Feature: PO reactivation guard — downstream-activity check
-  # Domain: the reactivation guard on a purchase order with a complex payment term.
-  # The guard must block reactivation ONLY when the pay schedule reflects committed
-  # downstream state (goods receipt, matched invoice, or proforma allocation).
-  # A line that is Awaiting_Pay purely because its break's reference date (e.g. OrderDate)
-  # was known at completion — with no downstream documents — must NOT block reactivation.
-  #
-  # Payment term setup:
-  #   pt_od: LC 30% + OD 70%  — OrderDate break always resolves at completion → OD row WP
-  #   pt_bl: LC 30% + BL 70%  — BillOfLadingDate break resolves only on goods receipt
-  #
-  # PO numbers: 700 PCE × 100 EUR = 70,000 EUR (IsTaxIncluded=Y → GrandTotal = 70,000)
+  # Guard blocks reactivation only when the pay schedule carries committed downstream
+  # state: a goods-receipt link (M_InOut_ID), a matched-invoice link (C_Invoice_ID),
+  # or a proforma allocation. An Awaiting_Pay line with no downstream must NOT block.
+  # pt_od = LC 30% + OD 70% (OD resolves at completion); pt_bl = LC 30% + BL 70%.
+  # PO: 700 PCE × 100 EUR = 70,000 EUR (IsTaxIncluded=Y → GrandTotal = 70,000).
 
   Background:
     Given infrastructure and metasfresh are running
