@@ -268,6 +268,45 @@ public class PackedHUCarrierAdviseServiceTest
 	}
 
 	/**
+	 * A single-product LOOSE CU (topLevelType CU, no carton = no packing item) is 1 parcel per unit, so
+	 * the advise must be sent for 1 CU: item {@code numberOfItems=1} + single-unit weight, and the PARCEL
+	 * envelope (gross weight + dimensions) = the product's single unit — NOT the packed qty-N HU aggregate.
+	 */
+	@Test
+	public void buildRequestParcel_singleProductLooseCU_advisesForOneCU()
+	{
+		// self-packed product with per-unit package dimensions (L=10, W=20, H=30 cm); 0.5 kg per unit
+		data.helper.pSalad.setIsSelfPacked(true);
+		data.helper.pSalad.setLengthInCm(10);
+		data.helper.pSalad.setWidthInCm(20);
+		data.helper.pSalad.setHeightInCm(30);
+		save(data.helper.pSalad);
+
+		// one loose CU HU holding qty 2 of the single product (no carton → top-level VHU / topLevelType CU)
+		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+		producer.setLocatorId(data.defaultLocatorId);
+		data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("2"), data.helper.uomEach);
+		final I_M_HU hu = producer.getCreatedHUs().get(0);
+
+		final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+		final JsonDeliveryAdvisorRequestParcel parcel = service.buildRequestParcel(
+				hu, ImmutableMap.of(SCHED_SALAD, saladSched));
+
+		assertThat(parcel.getTopLevelType()).isEqualTo("CU");
+		assertThat(parcel.getItems()).hasSize(1);
+		final JsonDeliveryAdvisorRequestItem item = parcel.getItems().get(0);
+		// advise for 1 CU — regardless of the packed qty (2)
+		assertThat(item.getNumberOfItems()).isEqualTo(1);
+		assertThat(item.getTotalWeightInKg()).isEqualByComparingTo("0.5"); // 1 unit × 0.5 kg
+		// parcel envelope = product single-unit, NOT the qty-2 HU aggregate (which would be 1.0 kg + scaled dims)
+		assertThat(parcel.getGrossWeightKg()).isEqualByComparingTo("0.5");
+		// ofProductDimensionsAndQty sorts [10,20,30] and scales the smallest by qty(=1): length=10, height=20, width=30
+		assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(10);
+		assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(20);
+		assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(30);
+	}
+
+	/**
 	 * When there is a current LU/TU pick target (the parcel being packed), advise must scope to THAT
 	 * target parcel only — it must NOT fan out over all picked HUs (which would re-advise already-finished
 	 * parcels and can collapse divergent per-parcel carriers). Asserted by: advise never consults

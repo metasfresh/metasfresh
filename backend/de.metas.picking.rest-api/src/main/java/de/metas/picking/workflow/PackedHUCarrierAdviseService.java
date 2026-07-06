@@ -400,16 +400,41 @@ public class PackedHUCarrierAdviseService
 						s -> s,
 						(existing, ignored) -> existing));
 
-		final PackageDimensions dimensions = shippingInfo.getDimensions();
-		final BigDecimal grossWeightKgBD = shippingInfo.getWeightInKg() != null
-				? shippingInfo.getWeightInKg().toBigDecimal()
-				: BigDecimal.ZERO;
+		// A single-product LOOSE CU (top-level VHU, no carton = no packing item) is 1 parcel per unit, so
+		// the advise is sent for 1 CU: item numberOfItems=1 + single-unit weight, and the parcel envelope
+		// (gross weight + dimensions) = the product's single unit — NOT the packed qty-N HU aggregate — so
+		// the carrier is chosen from the real per-parcel weight/dims.
+		final boolean oneCuBaseline = shippingInfo.getTopLevelType() == HuUnitType.VHU && productItems.size() == 1;
 
 		final ImmutableList<JsonDeliveryAdvisorRequestItem> items = productItems.stream()
 				.map(productItem -> buildRequestItem(
 						productItem,
-						scheduleByProductId.get(productItem.getProductId())))
+						scheduleByProductId.get(productItem.getProductId()),
+						oneCuBaseline))
 				.collect(ImmutableList.toImmutableList());
+
+		final PackageDimensions dimensions;
+		final BigDecimal grossWeightKgBD;
+		if (oneCuBaseline)
+		{
+			final PackedHUProductItem soleItem = productItems.get(0);
+			final Product product = productRepository.getById(soleItem.getProductId());
+			final Quantity oneCu = soleItem.getQty().toOne();
+			grossWeightKgBD = productBL.computeGrossWeight(product.getId(), oneCu)
+					.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
+					.map(Quantity::getAsBigDecimal)
+					.orElse(BigDecimal.ZERO);
+			dimensions = product.isSelfPacked()
+					? PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), oneCu)
+					: PackageDimensions.UNSPECIFIED;
+		}
+		else
+		{
+			dimensions = shippingInfo.getDimensions();
+			grossWeightKgBD = shippingInfo.getWeightInKg() != null
+					? shippingInfo.getWeightInKg().toBigDecimal()
+					: BigDecimal.ZERO;
+		}
 
 		return JsonDeliveryAdvisorRequestParcel.builder()
 				.grossWeightKg(grossWeightKgBD)
@@ -429,13 +454,15 @@ public class PackedHUCarrierAdviseService
 	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	// numberOfItems is intentionally path-specific (NOT part of the consistency contract):
-	// HU-advise = the product's packed qty; schedule-advise = 1 (no packed HU, a single CU baseline).
+	// HU-advise = the product's packed qty, EXCEPT a single-product loose CU (oneCuBaseline) which advises
+	// for 1 CU (1 parcel per unit); schedule-advise = 1 (no packed HU, a single CU baseline).
 	private JsonDeliveryAdvisorRequestItem buildRequestItem(
 			@NonNull final PackedHUProductItem productItem,
-			@Nullable final ShipmentSchedule schedule)
+			@Nullable final ShipmentSchedule schedule,
+			final boolean oneCuBaseline)
 	{
 		final Product product = productRepository.getById(productItem.getProductId());
-		final Quantity qty = productItem.getQty();
+		final Quantity qty = oneCuBaseline ? productItem.getQty().toOne() : productItem.getQty();
 		final int numberOfItems = qty.intValueExact();
 
 		// Customs tariff — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
