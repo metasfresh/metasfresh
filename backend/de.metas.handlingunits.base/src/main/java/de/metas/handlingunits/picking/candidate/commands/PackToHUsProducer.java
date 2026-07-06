@@ -310,9 +310,20 @@ public class PackToHUsProducer
 	 * ({@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}) would then
 	 * record the container TU instead of the leaf CU that was packed into it. Recording the container
 	 * strands the picked CU on a later unpick — the TU is already top-level, so extract-to-top-level is a
-	 * no-op and the CU is left Picked inside the TU. These TUs are always created by this
-	 * pack, so their VHU children are exactly the CU(s) we just packed. LU-nested results are left
-	 * untouched (the CUs there already sit under the LU's TUs).
+	 * no-op and the CU is left Picked inside the TU. LU-nested results are left untouched (the CUs there
+	 * already sit under the LU's TUs).
+	 * <p>
+	 * PRECONDITION: {@code getVHUs(tuRecord)} returns exactly this call's packed CU(s). This holds only when
+	 * {@code packToHU()} is invoked <b>at most once per {@link PackToInfo}</b> through this producer — true
+	 * for {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}, which uses
+	 * a per-command producer and, after the first pick, materializes the target to an existing TU that then
+	 * routes through the {@code isExistingTU()} branch (recorded via the known {@code cuRecord}) instead of
+	 * here. It is NOT true for {@code ProcessPickingCandidatesCommand}'s shared-TU mode, where one cached
+	 * {@code LUTUProducerDestination} is reused across multiple candidates sharing a {@link PackToInfo}
+	 * ({@code PackToInfo} does not even key on {@code productId}): a later call would walk the whole current
+	 * tree and over-include prior candidates' VHUs here. That is currently harmless ONLY because that caller
+	 * reads the TU records via {@code getAllTURecords()} and discards the CU-parts list this method
+	 * populates — do NOT rely on the CU-parts being correct for that shared-TU reuse pattern.
 	 */
 	private LUTUResult recordPackedCUsAsParts(@NonNull final LUTUResult result)
 	{

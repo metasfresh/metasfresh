@@ -52,6 +52,16 @@ import static org.assertj.core.api.Assertions.assertThat;
  * removed CU from the pick-to TU and re-activate it as a standalone floor HU (AC3/AC4/AC4a). The picking is
  * a <b>pick-to-CU into a TU</b> (the CU is packed as a child of a TU picking target) — the structure that
  * surfaced the bug: a customer packed CUs into a reusable transport crate (TU) and unpicked to the floor.
+ * <p>
+ * Scope of this backend test: it proves the physical HU side effect the mobile UI cannot observe (the
+ * unpicked CU ends HUStatus=Active + detached, and the pick-to TU retains no Picked orphan) for a single
+ * skip-to-floor unpick. The repeatable unpick&harr;<b>re-pick</b> loop and multi-round no-accumulation
+ * (AC4) are covered by the mobile Playwright E2E
+ * {@code e2e/mobile-webui/tests/spec/picking/picking_partial_unpack_TU_floor.spec.js}: the in-memory HU
+ * harness cannot drive the re-pick step ({@code PickingJobPickCommand#validatePickFromHU} rejects the floor
+ * CU with {@code HU_CANNOT_BE_PICKED_ERROR_MSG} because the running-stack pick-plan / pick-from eligibility
+ * is not reproducible in-memory — see {@code de.metas.handlingunits.base/CLAUDE.md} § "In-memory JUnit does
+ * NOT prove HU flush / materialization").
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class PickingJobUnpickToFloorTest
@@ -166,102 +176,5 @@ class PickingJobUnpickToFloorTest
 		assertThat(childrenAfter)
 				.as("the pick-to TU must hold NO orphan CU after skip-to-floor unpick")
 				.isEmpty();
-	}
-
-	/**
-	 * AC4 (no accumulation, single-round physical proof): two CUs of the product are picked into the SAME
-	 * pick-to TU (the reusable-crate structure that accumulated one Picked CU per round), then BOTH are
-	 * unpicked to the floor in one product-qty unpick. Every picked CU must end Active + detached and the TU
-	 * must retain ZERO Picked orphans — i.e. the reverse leaves no residue no matter how many CUs are packed.
-	 * <p>
-	 * NOTE: the full unpick↔<b>re-pick</b> loop (AC4/AC7) is proven by the mandatory mobile Playwright E2E
-	 * ({@code e2e/mobile-webui/tests/spec/picking/picking_partial_unpack.spec.js}). The in-memory HU harness
-	 * cannot drive the re-pick step: {@code PickingJobPickCommand#validatePickFromHU} rejects the floor CU
-	 * with {@code HU_CANNOT_BE_PICKED_ERROR_MSG} because the running-stack pick-plan / pick-from eligibility
-	 * is not reproducible in-memory (see {@code de.metas.handlingunits.base/CLAUDE.md} § "In-memory JUnit does
-	 * NOT prove HU flush / materialization"). So this backend test proves the physical side effect the UI
-	 * cannot observe (detach + Active + no orphan) for the multi-CU case; the loop is the Playwright gate.
-	 */
-	@Test
-	void unpickToFloor_twoCUsInSameTU_bothDetachedAndActivated_noOrphan()
-	{
-		final ProductId productId = BusinessTestHelper.createProductId("P-UNPICK-2", helper.uomEach);
-		final I_M_Product product = InterfaceWrapperHelper.load(productId, I_M_Product.class);
-		product.setM_Product_Category_ID(BusinessTestHelper.createProductCategory("P-UNPICK-2-Cat", null).getRepoId());
-		InterfaceWrapperHelper.save(product);
-
-		final HuPackingInstructionsId tuPIId = createTuPI(product, 100);
-		final HUInfo pickFromVHU = helper.createVHUInfo(productId, "10", "QR-VHU-UNPICK-2");
-
-		final OrderAndLineId orderAndLineId = helper.createOrderAndLineId("salesOrderUnpick2");
-		helper.packageable()
-				.orderAndLineId(orderAndLineId)
-				.productId(productId)
-				.qtyToDeliver("10")
-				.build();
-
-		PickingJob pickingJob = helper.pickingJobService.createPickingJob(
-						PickingJobCreateRequest.builder()
-								.aggregationType(PickingJobAggregationType.SALES_ORDER)
-								.pickerId(UserId.ofRepoId(1234))
-								.salesOrderId(orderAndLineId.getOrderId())
-								.deliveryBPLocationId(helper.shipToBPLocationId)
-								.isAllowPickingAnyHU(false)
-								.build())
-				.withPickingSlot(PickingSlotIdAndCaption.of(helper.pickingSlotId, "TEST"));
-
-		final PickingJobLine line = CollectionUtils.singleElement(pickingJob.getLines());
-
-		pickingJob = helper.pickingJobService.setTUPickingTarget(pickingJob, /*lineId*/ null,
-				TUPickingTarget.ofPackingInstructions(tuPIId, "UNPICK-TU-PI-2"));
-
-		// Pick 2 CUs (qty 1 each) into the SAME TU target — two separate pick events, so the TU accumulates
-		// two child CUs (the reusable-crate structure). The step is generated on the fly for MAIN.
-		final PickingJobStepId stepId = CollectionUtils.singleElement(
-				pickingJob.streamSteps().map(PickingJobStep::getId).collect(ImmutableSet.toImmutableSet()));
-		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
-				.pickingStepId(stepId)
-				.pickFromKey(PickingJobStepPickFromKey.MAIN)
-				.eventType(PickingJobStepEventType.PICK)
-				.qrCode(pickFromVHU.getQrCode().toScannedCode())
-				.qtyPicked(new BigDecimal("2"))
-				.qtyRejectedReasonCode(null)
-				.build());
-
-		final TUPickingTarget tuTarget = pickingJob.getTuPickingTargetEffective(line.getId()).orElse(null);
-		assertThat(tuTarget).as("TU target after pick").isNotNull();
-		assertThat(tuTarget.isExistingTU()).as("TU target materialised").isTrue();
-		final HuId tuId = tuTarget.getTuIdNotNull();
-
-		final List<I_M_HU> children = handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(tuId));
-		assertThat(children).as("the TU holds the picked CU content").isNotEmpty();
-		final List<HuId> childCuIds = children.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(java.util.stream.Collectors.toList());
-
-		// Unpick the whole packed qty of the product to the floor (skip the target scan).
-		pickingJob = helper.pickingJobService.processStepEvent(pickingJob, PickingJobStepEvent.builder()
-				.pickingLineId(line.getId())
-				.eventType(PickingJobStepEventType.UNPICK)
-				.qrCode(pickFromVHU.getQrCode().toScannedCode())
-				.unpickProductId(productId)
-				.qtyToUnpick(new BigDecimal("2"))
-				.unpickToTargetQRCode(null) // floor
-				.build());
-
-		// Every packed CU must end Active + detached; the pick-to TU must retain no Picked orphan.
-		for (final HuId cuId : childCuIds)
-		{
-			final I_M_HU cuAfter = handlingUnitsBL.getById(cuId);
-			assertThat(cuAfter.getHUStatus()).as("unpicked CU %s must be Active", cuId).isEqualTo(X_M_HU.HUSTATUS_Active);
-			assertThat(cuAfter.getM_HU_Item_Parent_ID()).as("unpicked CU %s must be detached from the TU", cuId).isLessThanOrEqualTo(0);
-		}
-
-		final List<I_M_HU> childrenAfter = handlingUnitsDAO.retrieveIncludedHUs(handlingUnitsBL.getById(tuId));
-		final long pickedOrphans = childrenAfter.stream()
-				.filter(hu -> X_M_HU.HUSTATUS_Picked.equals(hu.getHUStatus()))
-				.count();
-		assertThat(pickedOrphans)
-				.as("the pick-to TU must retain NO Picked orphan CU after skip-to-floor unpick (no accumulation)")
-				.isZero();
 	}
 }

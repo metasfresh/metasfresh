@@ -821,7 +821,7 @@ public class PickingJobPickCommand
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
 						addShipmentScheduleQtyPicked(cu, qtyPicked);
 
-						result.addAll(toPickingJobStepPickedToHU(tu, cu, qtyPicked, catchWeightPerCU, pickFrom));
+						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
 					}
 				}
 			}
@@ -916,7 +916,6 @@ public class PickingJobPickCommand
 	}
 
 	private List<PickingJobStepPickedToHU> toPickingJobStepPickedToHU(
-			@NonNull final TU tu1,
 			@NonNull final TUPart cu,
 			@NonNull final Quantity qtyPicked,
 			@Nullable final Quantity catchWeight,
