@@ -42,11 +42,19 @@ export const BarcodeScannerComponent = {
     // below the hook's abandon deadline (max(3000, rateMs*10) ms) so an in-flight partial QR is not abandoned.
     // Default (no gapAtIndex/gapMs): unchanged single synchronous zero-delay dispatch — existing callers are
     // not affected.
+    //
+    // Optional terminator (object form only): { scannedCode, testId, terminator }
+    //   terminator - a non-printable end-of-scan key ('Enter' / 'Tab') dispatched once AFTER the code, to
+    //   simulate a hardware scanner configured with an Enter/Tab suffix (e.g. Zebra DataWedge "Enter as
+    //   string"). The useKeyboardBarcodeReader hook treats Enter/Tab as an explicit end-of-scan signal and
+    //   force-completes the current buffer immediately — so a truncated / unparseable scan surfaces its error
+    //   right away instead of waiting out the content-completion idle-abandon window.
     type: async (params) => await test.step(`${NAME} - Type scanned code`, async () => {
         let scannedCode;
         let testId;
         let gapAtIndex;
         let gapMs;
+        let terminator;
         if (typeof params === 'string') {
             scannedCode = params;
             testId = undefined;
@@ -55,6 +63,7 @@ export const BarcodeScannerComponent = {
             testId = params.testId;
             gapAtIndex = params.gapAtIndex;
             gapMs = params.gapMs;
+            terminator = params.terminator;
         } else {
             throw new Error("Invalid argument provided to the 'type' function. Must be a string or an object with { scannedCode }.");
         }
@@ -87,6 +96,15 @@ export const BarcodeScannerComponent = {
             await dispatchChunk(scannedCode.substring(0, gapAtIndex));
             await page.waitForTimeout(gapMs);
             await dispatchChunk(scannedCode.substring(gapAtIndex));
+        }
+
+        // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
+        // hook recognises as "scan finished", force-completing the buffer immediately.
+        if (terminator) {
+            await page.evaluate((key) => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+            }, terminator);
         }
     }),
 

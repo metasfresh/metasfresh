@@ -612,6 +612,12 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 // delivers it, must surface the friendly QR_NOT_RECOGNIZED message — never a silent failure or the raw
 // "Failed converting payload" developer error.
 //
+// NOTE on the Enter terminator: the head is a recognised-but-incomplete HU code, which content-based scan
+// completion deliberately holds back — at that instant it is indistinguishable from a still-arriving
+// chunked scan — until an explicit end-of-scan signal or the long idle-abandon window. Production scanners
+// are configured with an Enter/Tab suffix (Zebra DataWedge), which supplies that signal, so each fragment
+// is scanned WITH a trailing Enter here to mirror the real device and assert the error surfaces at once.
+//
 // The two fragments are verified in SEPARATE tests, each starting from a clean toast state. The app shows
 // exactly one error toast per scan by design (a fixed toastId — see mobile-webui CLAUDE.md "the user must
 // see exactly ONE error"), so two back-to-back scans within one test would race that de-duplication and
@@ -642,6 +648,12 @@ const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ whic
         await PickingJobScreen.pickHU({
             qrCode: fragment,
             isScanDirectly: true,
+            // Device Enter suffix: the truncated head is a recognised-but-incomplete HU code, which
+            // content-based completion holds back (indistinguishable from a still-arriving chunked scan)
+            // until an explicit end-of-scan. A real scanner configured with an Enter/Tab suffix supplies
+            // that signal, force-completing the fragment so its error surfaces immediately. Without it the
+            // head would only error after the long idle-abandon window.
+            terminator: 'Enter',
             expectedPickDirectly: true,
         });
     }, ({ textContent }) => {

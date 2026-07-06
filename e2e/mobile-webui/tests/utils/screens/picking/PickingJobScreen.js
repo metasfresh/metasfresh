@@ -124,12 +124,13 @@ export const PickingJobScreen = {
                        qrCode,
                        isScanDirectly,
                        gapAtIndex, gapMs, // optional: inject ONE real mid-scan inter-keystroke gap (chunked QR arrival); only used when isScanDirectly
+                       terminator, // optional: end-of-scan key ('Enter'/'Tab') appended after the code (device suffix); only used when isScanDirectly
                        expectedPickDirectly,
                        expectNextScreen,
                        switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason
                    }) => await step(`${NAME} - Scan HU and Pick`, async () => {
         if (isScanDirectly) {
-            await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs });
+            await BarcodeScannerComponent.type({ scannedCode: qrCode, gapAtIndex, gapMs, terminator });
         } else {
             await page.locator('#scanQRCode-button').tap(); // click the Scan QR Code button
             await PickingJobScanHUScreen.waitForScreen();
