@@ -253,11 +253,11 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 	}
 
 	/**
-	 * me03 #30813: a DESADV line delivered in TU must carry a TU-level product identifier.
+	 * A DESADV line delivered in TU must carry a TU-level product identifier.
 	 * When the {@code M_HU_PI_Item_Product} has a GTIN but no explicit {@code EAN_TU}, the created
 	 * desadv line must fall back to that GTIN for {@code EAN_TU} — otherwise the line ships with no
-	 * TU identifier and the downstream EANCOM mapping (ecosio) emits only the buyer number
-	 * ({@code PIA+1+..:IN}), which the Migros guideline rejects.
+	 * TU identifier and the downstream EANCOM mapping emits only the buyer number
+	 * ({@code PIA+1+..:IN}), which the recipient's guideline rejects.
 	 */
 	@Test
 	void createdDesadvLine_EAN_TU_fallsBackToGTIN_whenNoExplicitEanTu()

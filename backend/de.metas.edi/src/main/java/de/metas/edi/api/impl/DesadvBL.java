@@ -279,7 +279,7 @@ public class DesadvBL
 		newDesadvLine.setUPC_TU(materialItemProduct.getUPC());
 		// mirror the EAN_CU handling above: fall back to the TU-level GTIN when no explicit EAN_TU
 		// is maintained, so a TU-delivered line always carries a TU product identifier
-		// (else the EANCOM/ecosio mapping emits only the buyer number PIA+1+..:IN, which Migros rejects)
+		// (else the EANCOM mapping emits only the buyer number PIA+1+..:IN, which the recipient's guideline rejects)
 		newDesadvLine.setEAN_TU(CoalesceUtil.firstNotBlank(
 				materialItemProduct.getEAN_TU(),
 				materialItemProduct.getGTIN()));
