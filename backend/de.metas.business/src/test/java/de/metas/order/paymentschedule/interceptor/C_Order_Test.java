@@ -102,10 +102,10 @@ class C_Order_Test
 	}
 
 	/**
-	 * Reconciled from the pre-existing rejectReactivate_whenAnyScheduleAwaitingPay, which asserted that
-	 * bare Awaiting_Pay status blocks. Under the new semantics bare status no longer blocks — the block
-	 * requires a downstream link. This test drives the block via an inoutId on an Awaiting_Pay line,
-	 * also demonstrating the guard is status-agnostic (blocks on the link, regardless of status).
+	 * Status Awaiting_Pay without a downstream link must NOT block reactivation — the block requires
+	 * an actual inoutId/invoiceId/proforma. This test drives the block via an inoutId on an
+	 * Awaiting_Pay line, demonstrating the guard is status-agnostic (blocks on the link, regardless
+	 * of status).
 	 */
 	@Test
 	void rejectReactivate_whenAwaitingPayLineHasInoutLink()
@@ -122,10 +122,9 @@ class C_Order_Test
 	}
 
 	/**
-	 * Reconciled from the pre-existing rejectReactivate_whenAnyScheduleStatusPaid, which asserted that
-	 * bare Paid status blocks. Under the new semantics bare status no longer blocks — the block requires
-	 * a downstream link. A Paid line always implies a matched-invoice link, so this test drives the block
-	 * via an invoiceId on a Paid line.
+	 * A Paid line always implies a matched-invoice link; bare Paid status alone does not block —
+	 * the block requires the actual downstream link. This test drives the block via an invoiceId on
+	 * a Paid line.
 	 */
 	@Test
 	void rejectReactivate_whenPaidLineHasInvoiceLink()
@@ -146,6 +145,8 @@ class C_Order_Test
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.empty());
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))

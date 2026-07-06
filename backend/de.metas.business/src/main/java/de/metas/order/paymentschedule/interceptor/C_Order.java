@@ -69,6 +69,11 @@ public class C_Order
 	{
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
+		// The proforma check inside reflectsDownstreamActivity is reached only when a pay-schedule
+		// exists. That is safe because an allocated LC/proforma always creates at least one
+		// pay-schedule line (OrderPayScheduleLCStepService), so "a proforma exists but there is no
+		// pay-schedule" is not a producible state — an order with no pay-schedule at all has nothing
+		// downstream to protect and is always reactivatable.
 		orderPayScheduleService.getByOrderId(orderId)
 				.filter(schedule -> reflectsDownstreamActivity(orderId, schedule))
 				.ifPresent(schedule -> {
