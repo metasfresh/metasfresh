@@ -23,6 +23,8 @@
 package de.metas.order.paymentschedule.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -31,6 +33,8 @@ import de.metas.order.paymentschedule.core.OrderPayScheduleId;
 import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
+import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.ProformaInvoice;
 import de.metas.payment.paymentterm.PaymentTermBreakId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.util.lang.Percent;
@@ -53,6 +57,7 @@ class C_Order_Test
 	private static final OrderId ORDER_ID = OrderId.ofRepoId(9001);
 
 	private OrderPayScheduleService orderPayScheduleService;
+	private OrderPayScheduleProformaService proformaService;
 	private C_Order guard;
 
 	@BeforeEach
@@ -61,7 +66,8 @@ class C_Order_Test
 		AdempiereTestHelper.get().init();
 
 		this.orderPayScheduleService = Mockito.mock(OrderPayScheduleService.class);
-		this.guard = new C_Order(orderPayScheduleService);
+		this.proformaService = Mockito.mock(OrderPayScheduleProformaService.class);
+		this.guard = new C_Order(orderPayScheduleService, proformaService);
 	}
 
 	@Test
@@ -70,29 +76,63 @@ class C_Order_Test
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Pending, OrderPayScheduleStatus.Pending)));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.doesNotThrowAnyException();
 	}
 
+	/**
+	 * A line with status Awaiting_Pay but no downstream link (no inoutId, no invoiceId, no proforma)
+	 * must NOT block reactivation under the new semantics.
+	 */
 	@Test
-	void rejectReactivate_whenAnyScheduleAwaitingPay()
+	void allowReactivate_whenNonPendingLineHasNoDownstreamActivity()
+	{
+		final I_C_Order order = newOrder();
+		// schedule has one Awaiting_Pay and one Pending line — but NO downstream links
+		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
+
+		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
+				.doesNotThrowAnyException();
+	}
+
+	/**
+	 * Previously: rejectReactivate_whenAnyScheduleAwaitingPay asserted that bare Awaiting_Pay status blocks.
+	 * Under new semantics bare status no longer blocks — block requires a downstream link.
+	 * This test drives the block via an inoutId on the Awaiting_Pay line.
+	 */
+	@Test
+	void rejectReactivate_whenAwaitingPayLineHasInoutLink()
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Pending, OrderPayScheduleStatus.Awaiting_Pay)));
+				.thenReturn(Optional.of(scheduleWithInoutLink()));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
+	/**
+	 * Previously: rejectReactivate_whenAnyScheduleStatusPaid asserted that bare Paid status blocks.
+	 * Under new semantics bare status no longer blocks — block requires a downstream link.
+	 * This test drives the block via an invoiceId on the Paid line.
+	 */
 	@Test
-	void rejectReactivate_whenAnyScheduleStatusPaid()
+	void rejectReactivate_whenPaidLineHasInvoiceLink()
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Paid, OrderPayScheduleStatus.Pending)));
+				.thenReturn(Optional.of(scheduleWithInvoiceLink()));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
 
 		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.isInstanceOf(AdempiereException.class)
@@ -108,6 +148,37 @@ class C_Order_Test
 
 		assertThatCode(() -> guard.blockReactivateWhenScheduleNotPending(order))
 				.doesNotThrowAnyException();
+	}
+
+	/** NEW: proforma allocation alone (no per-line link) must block reactivation. */
+	@Test
+	void rejectReactivate_whenProformaAllocationExists()
+	{
+		final I_C_Order order = newOrder();
+		// schedule has non-pending lines but no per-line downstream link
+		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(stubProformaInvoice()));
+
+		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
+	}
+
+	/** NEW: a line carrying an inoutId (goods-receipt link) must block reactivation. */
+	@Test
+	void rejectReactivate_whenAnyLineHasInoutLink()
+	{
+		final I_C_Order order = newOrder();
+		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.of(scheduleWithInoutLink()));
+		Mockito.when(proformaService.getByOrderId(ORDER_ID))
+				.thenReturn(Optional.empty());
+
+		assertThatThrownBy(() -> guard.blockReactivateWhenScheduleNotPending(order))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
 	// -------------------------------------------------------------------------
@@ -132,7 +203,41 @@ class C_Order_Test
 		return OrderPaySchedule.ofList(ORDER_ID, lines.build());
 	}
 
+	/** Schedule with one Pending line carrying a goods-receipt link (inoutId). */
+	private OrderPaySchedule scheduleWithInoutLink()
+	{
+		final OrderPayScheduleLine line = scheduleLineBuilder(1, OrderPayScheduleStatus.Pending)
+				.inoutId(InOutId.ofRepoId(500))
+				.build();
+		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(line));
+	}
+
+	/** Schedule with one Pending line carrying a matched-invoice link (invoiceId). */
+	private OrderPaySchedule scheduleWithInvoiceLink()
+	{
+		final OrderPayScheduleLine line = scheduleLineBuilder(1, OrderPayScheduleStatus.Pending)
+				.invoiceId(InvoiceId.ofRepoId(600))
+				.build();
+		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(line));
+	}
+
+	/** Minimal real ProformaInvoice instance (ProformaInvoice is @Value/final — cannot be mocked). */
+	private ProformaInvoice stubProformaInvoice()
+	{
+		return ProformaInvoice.builder()
+				.id(InvoiceId.ofRepoId(700))
+				.grandTotal(de.metas.money.Money.of(1000, CurrencyId.EUR))
+				.dateInvoiced(LocalDate.of(2026, 1, 1))
+				.dueDate(LocalDate.of(2026, 2, 1))
+				.build();
+	}
+
 	private OrderPayScheduleLine scheduleLine(final int seq, final OrderPayScheduleStatus status)
+	{
+		return scheduleLineBuilder(seq, status).build();
+	}
+
+	private OrderPayScheduleLine.OrderPayScheduleLineBuilder scheduleLineBuilder(final int seq, final OrderPayScheduleStatus status)
 	{
 		// PaymentTermBreakId must be unique within the schedule (used as a key in some lookups).
 		// PaymentTermBreakId.ofRepoId requires both the parent PaymentTermId and the break id.
@@ -148,7 +253,6 @@ class C_Order_Test
 				.offsetDays(0)
 				.status(status)
 				.dueDate(LocalDate.of(2026, 1, 1))
-				.dueAmount(Money.of(1000, CurrencyId.EUR))
-				.build();
+				.dueAmount(Money.of(1000, CurrencyId.EUR));
 	}
 }

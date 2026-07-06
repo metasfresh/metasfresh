@@ -25,8 +25,9 @@ package de.metas.order.paymentschedule.interceptor;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderPaySchedule;
-import de.metas.order.paymentschedule.core.OrderPayScheduleStatus;
+import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
@@ -37,18 +38,21 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 /**
- * Blocks reactivation of a {@code C_Order} whose {@link OrderPaySchedule} has any line whose
- * {@link OrderPayScheduleStatus} is no longer {@code Pending}
- * (i.e. {@code Awaiting_Pay} or {@code Paid}).
+ * Blocks reactivation of a {@code C_Order} whose {@link OrderPaySchedule} reflects committed
+ * downstream activity — i.e. at least one of:
+ * <ul>
+ *   <li>any pay-schedule line has a goods-receipt link ({@code inoutId != null}), or</li>
+ *   <li>any pay-schedule line has a matched-invoice link ({@code invoiceId != null}), or</li>
+ *   <li>a proforma allocation exists for the order (detected via
+ *       {@link OrderPayScheduleProformaService#getByOrderId}; the LC/proforma row carries no
+ *       per-line link, so it must be detected through the proforma service).</li>
+ * </ul>
  *
- * <p>Rationale: the standard metasfresh re-activate flow drops {@code C_OrderPaySchedule} rows,
- * but those rows carry meaningful per-receipt state (Status, BaseAmt, {@code C_Invoice_ID} link,
- * allocations); a subsequent re-completion would recreate them from scratch and silently destroy
- * that state.
+ * <p>A {@code Paid} line always implies one of the above, so no separate status guard is needed.
  *
- * <p>Reactivation is allowed when ALL pay-schedule lines are still {@code Pending} (nothing has
- * happened yet — the standard drop-and-rebuild path is safe), or when the order has no
- * pay-schedule at all.
+ * <p>Reactivation is allowed when no pay-schedule line carries any downstream link AND no proforma
+ * allocation exists — meaning nothing has been committed yet and the standard drop-and-rebuild
+ * reactivation path is safe. Reactivation is also allowed when the order has no pay-schedule at all.
  */
 @Interceptor(I_C_Order.class)
 @Component
@@ -58,6 +62,7 @@ public class C_Order
 	private static final AdMessageKey MSG_OrderReactivateBlocked = AdMessageKey.of("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 
 	@NonNull private final OrderPayScheduleService orderPayScheduleService;
+	@NonNull private final OrderPayScheduleProformaService orderPayScheduleProformaService;
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)
 	public void blockReactivateWhenScheduleNotPending(@NonNull final I_C_Order order)
@@ -65,16 +70,16 @@ public class C_Order
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		orderPayScheduleService.getByOrderId(orderId)
-				.filter(this::hasAnyNonPendingLine)
+				.filter(schedule -> reflectsDownstreamActivity(orderId, schedule))
 				.ifPresent(schedule -> {
-					throw new AdempiereException(MSG_OrderReactivateBlocked)
-							.markAsUserValidationError();
+					throw new AdempiereException(MSG_OrderReactivateBlocked).markAsUserValidationError();
 				});
 	}
 
-	private boolean hasAnyNonPendingLine(@NonNull final OrderPaySchedule schedule)
+	private boolean reflectsDownstreamActivity(@NonNull final OrderId orderId, @NonNull final OrderPaySchedule schedule)
 	{
-		return schedule.streamLines()
-				.anyMatch(line -> !line.getStatus().isPending());
+		final boolean anyLineLinked = schedule.streamLines()
+				.anyMatch(line -> line.getInoutId() != null || line.getInvoiceId() != null);
+		return anyLineLinked || orderPayScheduleProformaService.getByOrderId(orderId).isPresent();
 	}
 }
