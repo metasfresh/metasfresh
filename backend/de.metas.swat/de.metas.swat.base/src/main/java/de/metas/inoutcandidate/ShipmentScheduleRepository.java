@@ -54,6 +54,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -71,7 +72,6 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.X_C_Order;
@@ -83,7 +83,6 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
@@ -497,30 +496,16 @@ public class ShipmentScheduleRepository
 		return shipmentScheduleStream;
 	}
 
-	public List<ShipmentSchedule> loadByPackageId(final @NonNull PackageId packageId)
-	{
-		// The package's shipment schedules are those of the lines it actually holds:
-		// M_PackageLine -> M_InOutLine -> M_ShipmentSchedule_QtyPicked -> M_ShipmentSchedule. The pick row is the
-		// authoritative shipped-line -> schedule link (source-agnostic, unlike navigating via C_OrderLine, which
-		// only works for order-line-based schedules). M_PackageLine is written per shipped line by
-		// HUPackageBL.createPackageLines, so a multi-line package (e.g. a mixed LU) yields exactly its lines.
-		return queryBL.createQueryBuilder(I_M_PackageLine.class)
-				.addEqualsFilter(I_M_PackageLine.COLUMNNAME_M_Package_ID, packageId)
-				.andCollect(I_M_PackageLine.COLUMNNAME_M_InOutLine_ID, I_M_InOutLine.class)
-				.andCollectChildren(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_InOutLine_ID, I_M_ShipmentSchedule_QtyPicked.class)
-				.andCollect(I_M_ShipmentSchedule_QtyPicked.COLUMN_M_ShipmentSchedule_ID)
-				.create()
-				.stream()
-				.map(this::ofRecord)
-				.collect(Collectors.toList());
-	}
-
 	/**
-	 * Batch variant of {@link #loadByPackageId(PackageId)}: resolves the shipment schedules for ALL the given
-	 * packages in a fixed number of queries (package-lines, then their picked-line→schedule links, then the
-	 * schedules), instead of one multi-hop query per package. Returns a package → its (distinct) schedules map;
-	 * a package with no shipped line is simply absent. Same authoritative link as the single variant
-	 * (M_PackageLine → M_InOutLine → M_ShipmentSchedule_QtyPicked → M_ShipmentSchedule).
+	 * Resolves the shipment schedules for ALL the given packages in a fixed number of queries (package-lines, then
+	 * their picked-line→schedule links, then the schedules), instead of one multi-hop query per package. Returns a
+	 * package → its (distinct) schedules map; a package with no shipped line is simply absent.
+	 * <p>
+	 * The package's shipment schedules are those of the lines it actually holds:
+	 * M_PackageLine → M_InOutLine → M_ShipmentSchedule_QtyPicked → M_ShipmentSchedule. The pick row is the
+	 * authoritative shipped-line → schedule link (source-agnostic, unlike navigating via C_OrderLine, which only
+	 * works for order-line-based schedules). M_PackageLine is written per shipped line by
+	 * HUPackageBL.createPackageLines, so a multi-line package (e.g. a mixed LU) yields exactly its lines.
 	 */
 	public ImmutableListMultimap<PackageId, ShipmentSchedule> loadByPackageIds(@NonNull final Set<PackageId> packageIds)
 	{
@@ -561,15 +546,15 @@ public class ShipmentScheduleRepository
 				getByIds(ImmutableSet.copyOf(scheduleIdsByInOutLineId.values()));
 
 		final ImmutableListMultimap.Builder<PackageId, ShipmentSchedule> result = ImmutableListMultimap.builder();
-		final Set<String> seenPackageSchedule = new HashSet<>();
+		final Set<PackageScheduleKey> seenPackageSchedule = new HashSet<>();
 		for (final I_M_PackageLine packageLine : packageLines)
 		{
 			final PackageId packageId = PackageId.ofRepoId(packageLine.getM_Package_ID());
 			for (final ShipmentScheduleId scheduleId : scheduleIdsByInOutLineId.get(packageLine.getM_InOutLine_ID()))
 			{
 				final ShipmentSchedule schedule = schedulesById.get(scheduleId);
-				// dedup per package (two lines of one package can hit the same schedule), matching loadByPackageId
-				if (schedule != null && seenPackageSchedule.add(packageId.getRepoId() + "#" + scheduleId.getRepoId()))
+				// dedup per package: two lines of one package can hit the same schedule
+				if (schedule != null && seenPackageSchedule.add(new PackageScheduleKey(packageId, scheduleId)))
 				{
 					result.put(packageId, schedule);
 				}
@@ -581,5 +566,13 @@ public class ShipmentScheduleRepository
 	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
 		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
+	}
+
+	/** Dedup key for {@link #loadByPackageIds} — a (package, schedule) pair with value equality (avoids a string key). */
+	@Value
+	private static class PackageScheduleKey
+	{
+		@NonNull PackageId packageId;
+		@NonNull ShipmentScheduleId shipmentScheduleId;
 	}
 }
