@@ -25,7 +25,6 @@ package de.metas.order.paymentschedule.interceptor;
 import de.metas.i18n.AdMessageKey;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.core.OrderPaySchedule;
-import de.metas.order.paymentschedule.core.OrderPayScheduleLine;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.order.paymentschedule.referenced_docs.proforma_invoice.OrderPayScheduleProformaService;
 import lombok.NonNull;
@@ -75,16 +74,19 @@ public class C_Order
 		// pay-schedule" is not a producible state — an order with no pay-schedule at all has nothing
 		// downstream to protect and is always reactivatable.
 		orderPayScheduleService.getByOrderId(orderId)
-				.filter(schedule -> reflectsDownstreamActivity(orderId, schedule))
+				.filter(schedule -> isBlockedByDownstreamActivity(orderId, schedule))
 				.ifPresent(schedule -> {
 					throw new AdempiereException(MSG_OrderReactivateBlocked).markAsUserValidationError();
 				});
 	}
 
-	private boolean reflectsDownstreamActivity(@NonNull final OrderId orderId, @NonNull final OrderPaySchedule schedule)
+	/**
+	 * True if the schedule carries committed downstream state that a drop-and-rebuild re-completion would
+	 * orphan: a line linked to a goods receipt or matched invoice, or a proforma allocation on the order.
+	 */
+	private boolean isBlockedByDownstreamActivity(@NonNull final OrderId orderId, @NonNull final OrderPaySchedule schedule)
 	{
-		final boolean anyLineLinked = schedule.streamLines()
-				.anyMatch(line -> line.getInoutId() != null || line.getInvoiceId() != null);
-		return anyLineLinked || orderPayScheduleProformaService.getByOrderId(orderId).isPresent();
+		return schedule.hasLineLinkedToDownstreamDocument()
+				|| orderPayScheduleProformaService.getByOrderId(orderId).isPresent();
 	}
 }
