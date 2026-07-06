@@ -326,26 +326,11 @@ public class PackToHUsProducer
 	}
 
 	/**
-	 * Re-wraps freshly-created top-level TUs so each carries its packed CU(s) as CU parts. The LU/TU
-	 * producer returns a newly-created TU as a "full" TU (empty CU-parts list); downstream
-	 * ({@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}) would then
-	 * record the container TU instead of the leaf CU that was packed into it. Recording the container
-	 * strands the picked CU on a later unpick — the TU is already top-level, so extract-to-top-level is a
-	 * no-op and the CU is left Picked inside the TU. LU-nested results are left untouched (the CUs there
-	 * already sit under the LU's TUs).
-	 * <p>
-	 * REACHABILITY: this method runs ONLY for a CU-into-TU pick — i.e. only when the caller sets
-	 * {@link PackToHURequest#isRecordLeafCUsAsTUParts()} (gated in {@code packToHU()} above). The sole such caller is
-	 * {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand}, which uses a
-	 * per-command producer and invokes {@code packToHU()} at most once per {@link PackToInfo} (after the first
-	 * pick the target is an existing TU, routed through the {@code isExistingTU()} branch via the known
-	 * {@code cuRecord}, not here). So the PRECONDITION — {@code getVHUs(tuRecord)} returns exactly this call's
-	 * packed CU(s) — holds.
-	 * <p>
-	 * {@code ProcessPickingCandidatesCommand}'s shared-TU mode (one cached {@code LUTUProducerDestination}
-	 * reused across candidates that share a {@link PackToInfo}) does <b>not</b> set the flag, so it never
-	 * reaches this method — the earlier over-inclusion concern for that shared-producer path no longer applies
-	 * here (it reads TU records via {@code getAllTURecords()} and never the CU-parts list this populates).
+	 * For a CU-into-TU pick, re-wraps each fresh top-level TU to carry its packed CU(s) as CU parts, so
+	 * downstream records the leaf CU (not the container TU) and a later unpick can extract it instead of
+	 * leaving it Picked inside the TU. Reached only via {@link PackToHURequest#isRecordLeafCUsAsTUParts()}
+	 * (set solely by {@code PickingJobPickCommand}, one pack per {@code PackToInfo}), so {@code getVHUs(tuRecord)}
+	 * returns exactly this pick's CU(s).
 	 */
 	private LUTUResult recordPackedCUsAsParts(@NonNull final LUTUResult result)
 	{
@@ -372,6 +357,8 @@ public class PackToHUsProducer
 			}
 			else
 			{
+				// Record ALL of this TU's VHUs as its CU parts (a pick may split into >1 CU) — not just one;
+				// the loop likewise enriches every top-level TU. "ofSingleTU" means a non-aggregate TU, not one CU.
 				tus.add(LUTUResult.TU.ofSingleTU(tuRecord, vhus.toArray(new I_M_HU[0])));
 			}
 		}
