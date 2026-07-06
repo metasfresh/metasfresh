@@ -18,8 +18,8 @@
  *   A code trace shows the in-picking Flow-Through path *cannot* silently
  *   double — `computeDelta` distributes from a single shared pool, so re-using `G` for Product2 should
  *   leave `G` on Product1 and under-fill Product2 → `GRAI_COUNT_MISMATCH` at completion, NOT a double.
- *   But the issue title is "GRAIs can be used more than once" and Teo places the observed bug on the
- *   in-picking path. This spec drives that exact path to completion so the RED reveals which symptom
+ *   But the reported symptom ("a GRAI ends up used more than once") points to the in-picking capture
+ *   path rather than the LU-union path. This spec drives that exact path to completion so the RED reveals which symptom
  *   current code actually produces (double-assign vs count-mismatch vs other) — the observation that
  *   pins the fix location. It is expected RED on current code; the finalized GREEN interaction (a
  *   "N skipped" non-blocking notice + a replacement scan for the dropped `G`, per REQUIREMENTS AC6/AC7)
@@ -95,10 +95,10 @@ const buildDistinctGrais = (baseGrai, count) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('TC20: a GRAI reused across two products on one LU must land on at most one crate', async ({ page }) => {
+test('a GRAI reused across two products on one LU must land on at most one crate', async ({ page }) => {
     await allure.epic('E0105: Picking');
     await allure.feature('F5230: GRAI on Returnable Assets');
-    await allure.story('GRAI single-use within a loading unit (TC20 — cross-product reuse)');
+    await allure.story('GRAI single-use within a loading unit — cross-product reuse');
     await allure.severity('critical');
 
     const masterdata = await createMasterdata();
