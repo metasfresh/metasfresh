@@ -82,7 +82,7 @@ public class WorkplaceRepositoryTest
 	}
 
 	@Test
-	public void getPackingPlacePickFromLocatorIds_returnsOnlyPackingPlacesWithLocator()
+	public void getAllPackingPlacePickFromLocatorIds_returnsAllPackingPlacesWithLocator()
 	{
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(1);
 		final WarehouseId otherWarehouseId = WarehouseId.ofRepoId(2);
@@ -99,12 +99,13 @@ public class WorkplaceRepositoryTest
 		saveWorkplace("WP-C", warehouseId, false, L3.getRepoId());
 		// WP-D: isPackingPlace=Y but NO locator — contributes nothing
 		saveWorkplace("WP-D", warehouseId, true, 0);
-		// WP-E: isPackingPlace=Y, locator L4 but in ANOTHER warehouse — must NOT appear when querying warehouseId
+		// WP-E: isPackingPlace=Y, locator L4 in ANOTHER warehouse — MUST appear (the set is warehouse-agnostic,
+		// so a non-packing workplace excludes bring-to-packing orders regardless of which warehouse hosts the packing place)
 		saveWorkplace("WP-E", otherWarehouseId, true, L4.getRepoId());
 
-		final ImmutableSet<LocatorId> result = WorkplaceRepository.newInstanceForUnitTesting().getPackingPlacePickFromLocatorIds(warehouseId);
+		final ImmutableSet<LocatorId> result = WorkplaceRepository.newInstanceForUnitTesting().getAllPackingPlacePickFromLocatorIds();
 
-		assertThat(result).containsExactlyInAnyOrder(L1, L2);
+		assertThat(result).containsExactlyInAnyOrder(L1, L2, L4);
 	}
 
 	private static void saveWorkplace(

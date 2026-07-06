@@ -146,8 +146,8 @@ public class CreateProductCommand
 			productRecord.setIsSerialNoPicked(isSerialNoPicked);
 		}
 		productRecord.setM_Product_Category_ID(productCategoryId.getRepoId());
-		productRecord.setIsSold(true);
-		productRecord.setIsPurchased(true);
+		productRecord.setIsSold(CoalesceUtil.coalesceNotNull(request.getIsSold(), true));
+		productRecord.setIsPurchased(CoalesceUtil.coalesceNotNull(request.getIsPurchased(), true));
 		if (request.getGuaranteeDaysMin() != null)
 		{
 			productRecord.setGuaranteeDaysMin(request.getGuaranteeDaysMin());
