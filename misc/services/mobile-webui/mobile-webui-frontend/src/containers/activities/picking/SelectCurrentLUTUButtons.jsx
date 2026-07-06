@@ -122,10 +122,8 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           onClick={onAdviseCarrierClick}
         >
           {carrierProductCaption && (
-            <div className="row">
-              <span data-testid="carrier-product-caption">
-                {trl('activities.picking.carrierProduct') + ': ' + carrierProductCaption}
-              </span>
+            <div className="row is-full is-size-7">
+              <span data-testid="carrier-product-caption">{carrierProductCaption}</span>
             </div>
           )}
         </ButtonWithIndicator>

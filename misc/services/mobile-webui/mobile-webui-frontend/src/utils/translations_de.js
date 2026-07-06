@@ -188,7 +188,6 @@ const translations = {
         skippedProducts: 'Übersprungene Produkte',
       },
       adviseCarrier: 'Lieferweg-Abfrage',
-      carrierProduct: 'Lieferweg-Produkt',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
