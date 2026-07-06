@@ -151,6 +151,11 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+			if (asyncBatch == null)
+			{
+				// record no longer exists out-of-trx -> nothing to increment
+				return;
+			}
 			final Timestamp processed = SystemTime.asTimestamp();
 			asyncBatch.setLastProcessed(processed);
 			asyncBatch.setLastProcessed_WorkPackage_ID(workPackage.getC_Queue_WorkPackage_ID());
@@ -199,6 +204,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean updateProcessedOutOfTrx(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatchRecord == null)
+		{
+			// record no longer exists out-of-trx -> nothing left to wait for; treat as processed so the
+			// CheckProcessed work-package completes instead of re-checking a vanished batch forever.
+			return true;
+		}
 		if (asyncBatchRecord.isProcessed())
 		{
 			return true;

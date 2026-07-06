@@ -156,7 +156,23 @@ public class AsyncBatchBLTest
 			Assertions.assertThatCode(() -> blWithNullReturningDao.enqueueAsyncBatch(asyncBatchId))
 					.doesNotThrowAnyException();
 			Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+
+			// ...and the CheckProcessed processWorkPackage chain (updateProcessedOutOfTrx -> keepAliveTimeExpired)
+			// must not NPE either. updateProcessedOutOfTrx runs FIRST, so it must handle the null record:
+			// a vanished batch -> "processed" so the checker WP completes rather than looping forever.
+			Assertions.assertThat(blWithNullReturningDao.updateProcessedOutOfTrx(asyncBatchId)).isTrue();
+			Assertions.assertThat(blWithNullReturningDao.keepAliveTimeExpired(asyncBatchId)).isFalse();
+			Assertions.assertThatCode(() -> blWithNullReturningDao.increaseProcessed(newAsyncBatchWorkPackage(asyncBatchId)))
+					.doesNotThrowAnyException();
 		}
+	}
+
+	private I_C_Queue_WorkPackage newAsyncBatchWorkPackage(final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Queue_WorkPackage workPackage = InterfaceWrapperHelper.create(ctx, I_C_Queue_WorkPackage.class, ITrx.TRXNAME_None);
+		workPackage.setC_Async_Batch_ID(asyncBatchId.getRepoId());
+		InterfaceWrapperHelper.save(workPackage);
+		return workPackage;
 	}
 
 	private I_C_Async_Batch_Type newAsyncBatchType()
