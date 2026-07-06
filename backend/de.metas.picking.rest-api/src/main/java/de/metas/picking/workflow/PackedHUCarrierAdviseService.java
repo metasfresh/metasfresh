@@ -18,8 +18,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
@@ -194,18 +196,44 @@ public class PackedHUCarrierAdviseService
 	 *
 	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
+	/**
+	 * The HUs to (re-)advise. When the job/line has a current LU/TU pick target (the parcel being packed
+	 * now), advise ONLY that target parcel — never the already-finished parcels: each top-level HU is its
+	 * own Carrier_ShipmentOrder with its own carrier, so a finished parcel keeps its carrier and must not
+	 * be re-touched (nor collapse divergent per-parcel carriers into the single header product). When there
+	 * is NO LU/TU pick target (CU-direct), there is no single "current target" parcel — fall back to all
+	 * picked HUs of the scope (unchanged behaviour; CU-direct scoping is a separate open decision, me03 #30552).
+	 */
+	private ImmutableSet<HuId> resolveAdviseTargetHuIds(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLineId lineId)
+	{
+		final HuId currentTargetHuId = pickingJob.getLuPickingTargetEffective(lineId)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuId)
+				.orElseGet(() -> pickingJob.getTuPickingTargetEffective(lineId)
+						.filter(TUPickingTarget::isExistingTU)
+						.map(TUPickingTarget::getTuId)
+						.orElse(null));
+		if (currentTargetHuId != null)
+		{
+			return ImmutableSet.of(currentTargetHuId);
+		}
+		return pickingJob.getPickedHuIds(lineId);
+	}
+
 	public PickingJob advise(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
 	{
-		final ImmutableSet<HuId> pickedHuIds = pickingJob.getPickedHuIds(lineId);
-		if (pickedHuIds.isEmpty())
+		final ImmutableSet<HuId> adviseHuIds = resolveAdviseTargetHuIds(pickingJob, lineId);
+		if (adviseHuIds.isEmpty())
 		{
 			return pickingJob;
 		}
 
-		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
+		// (a picked HU can yield distinct I_M_HU instances; also normalises a CU-direct leaf to its top level)
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(adviseHuIds);
 
 		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
 		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();

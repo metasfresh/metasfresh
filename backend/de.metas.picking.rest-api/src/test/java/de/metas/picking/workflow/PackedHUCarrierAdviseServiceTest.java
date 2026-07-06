@@ -10,8 +10,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
 import de.metas.inout.ShipmentScheduleId;
@@ -35,11 +37,13 @@ import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -191,6 +195,9 @@ public class PackedHUCarrierAdviseServiceTest
 		when(saladLine.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_SALAD));
 
 		final PickingJob pickingJob = mock(PickingJob.class);
+		// no LU/TU pick target in these scenarios → advise falls through to all picked HUs
+		when(pickingJob.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
+		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
 		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
 
 		// withChangedLines(mapper): apply the mapper to the two lines so we can assert per-line behaviour
@@ -241,6 +248,9 @@ public class PackedHUCarrierAdviseServiceTest
 				SCHED_SALAD, saladSched));
 
 		final PickingJob pickingJob = mock(PickingJob.class);
+		// no LU/TU pick target in these scenarios → advise falls through to all picked HUs
+		when(pickingJob.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
+		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
 		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
 		final PickingJob jobReadOnly = mock(PickingJob.class);
 		when(pickingJob.withCarrierAdviseReadOnly(true)).thenReturn(jobReadOnly);
@@ -255,6 +265,63 @@ public class PackedHUCarrierAdviseServiceTest
 		verify(pickingJob).withCarrierAdviseReadOnly(true);
 		verify(pickingJobRepository).save(jobReadOnly);
 		assertThat(result).isSameAs(jobReadOnly);
+	}
+
+	/**
+	 * When there is a current LU/TU pick target (the parcel being packed), advise must scope to THAT
+	 * target parcel only — it must NOT fan out over all picked HUs (which would re-advise already-finished
+	 * parcels and can collapse divergent per-parcel carriers). Asserted by: advise never consults
+	 * {@code getPickedHuIds} when a current target exists, and advises only the target HU's schedule.
+	 */
+	@Test
+	public void advise_withCurrentTuTarget_scopesToTargetParcel_notAllPickedHUs()
+	{
+		final I_M_HU targetTU = createTwoProductHU();
+		final HuId targetHuId = HuId.ofRepoId(targetTU.getM_HU_ID());
+
+		// current pick target = an existing (materialized) TU — the parcel being packed now
+		final TUPickingTarget tuTarget = mock(TUPickingTarget.class);
+		when(tuTarget.isExistingTU()).thenReturn(true);
+		when(tuTarget.getTuId()).thenReturn(targetHuId);
+
+		final PickingJob pickingJob = mock(PickingJob.class);
+		when(pickingJob.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
+		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.of(tuTarget));
+		// stubbed so the OLD (all-picked) code path can still run to completion — the assertion is that
+		// the NEW code never calls it (scoped to the target instead).
+		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(targetHuId));
+
+		// the target HU resolves to a single non-Manual schedule
+		final ShipmentSchedule tomatoSched = mockSchedule(SCHED_TOMATO, data.helper.pTomatoProductId);
+		when(tomatoSched.getCarrierAdvisingStatus()).thenReturn(CarrierAdviseStatus.Completed);
+		when(huShipmentScheduleResolver.resolveSchedulesByIdForHU(any()))
+				.thenReturn(ImmutableMap.of(SCHED_TOMATO, tomatoSched));
+		doNothing().when(service).adviseSchedule(any(), any());
+
+		final ShipmentSchedule advised = mock(ShipmentSchedule.class);
+		when(advised.getId()).thenReturn(SCHED_TOMATO);
+		when(advised.getCarrierProductId()).thenReturn(CarrierProductId.ofRepoId(777));
+		when(advised.getCarrierGoodsTypeId()).thenReturn(CarrierGoodsTypeId.ofRepoId(888));
+		when(advised.getCarrierServicesIfLoaded()).thenReturn(ImmutableSet.of());
+		when(shipmentScheduleService.getByIds(ImmutableSet.of(SCHED_TOMATO)))
+				.thenReturn(ImmutableList.of(advised));
+
+		// line plumbing so persistAdvisedProductOnJob completes without NPE
+		final PickingJobLine line = mock(PickingJobLine.class);
+		when(line.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_TOMATO));
+		when(line.withCarrierAdvise(any(), any(), any(), anyBooleanEq())).thenReturn(line);
+		final PickingJob jobAfterLines = mock(PickingJob.class);
+		when(pickingJob.withChangedLines(any())).thenReturn(jobAfterLines);
+		final PickingJob jobAfterProduct = mock(PickingJob.class);
+		when(jobAfterLines.withCarrierProductId(any())).thenReturn(jobAfterProduct);
+		when(jobAfterProduct.withCarrierAdviseReadOnly(anyBooleanEq())).thenReturn(jobAfterProduct);
+
+		// --- act ---
+		service.advise(pickingJob, null);
+
+		// --- assert: scoped to the current target parcel, never fanned out over all picked HUs ---
+		verify(pickingJob, never()).getPickedHuIds(any());
+		verify(service).adviseSchedule(eq(SCHED_TOMATO), any());
 	}
 
 	private I_M_HU createTwoProductHU()
