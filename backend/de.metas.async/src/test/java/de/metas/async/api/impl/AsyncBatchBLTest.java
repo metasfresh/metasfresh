@@ -164,6 +164,13 @@ public class AsyncBatchBLTest
 			Assertions.assertThat(blWithNullReturningDao.keepAliveTimeExpired(asyncBatchId)).isFalse();
 			Assertions.assertThatCode(() -> blWithNullReturningDao.increaseProcessed(newAsyncBatchWorkPackage(asyncBatchId)))
 					.doesNotThrowAnyException();
+
+			// ...and the enqueued-count updaters (increaseEnqueued/decreaseEnqueued -> setAsyncBatchCountEnqueued)
+			// must not NPE on the null out-of-trx record path either.
+			Assertions.assertThatCode(() -> blWithNullReturningDao.increaseEnqueued(newAsyncBatchWorkPackage(asyncBatchId)))
+					.doesNotThrowAnyException();
+			Assertions.assertThatCode(() -> blWithNullReturningDao.decreaseEnqueued(newAsyncBatchWorkPackage(asyncBatchId)))
+					.doesNotThrowAnyException();
 		}
 	}
 

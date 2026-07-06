@@ -575,6 +575,12 @@ public class AsyncBatchBL implements IAsyncBatchBL
 		try
 		{
 			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+			if (asyncBatch == null)
+			{
+				// record no longer exists out-of-trx -> nothing to count
+				return 0;
+			}
+
 			final Timestamp enqueued = SystemTime.asTimestamp();
 			if (asyncBatch.getFirstEnqueued() == null)
 			{
