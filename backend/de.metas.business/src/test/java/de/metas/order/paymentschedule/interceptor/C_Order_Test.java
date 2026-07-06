@@ -102,16 +102,17 @@ class C_Order_Test
 	}
 
 	/**
-	 * Previously: rejectReactivate_whenAnyScheduleAwaitingPay asserted that bare Awaiting_Pay status blocks.
-	 * Under new semantics bare status no longer blocks — block requires a downstream link.
-	 * This test drives the block via an inoutId on the Awaiting_Pay line.
+	 * Reconciled from the pre-existing rejectReactivate_whenAnyScheduleAwaitingPay, which asserted that
+	 * bare Awaiting_Pay status blocks. Under the new semantics bare status no longer blocks — the block
+	 * requires a downstream link. This test drives the block via an inoutId on an Awaiting_Pay line,
+	 * also demonstrating the guard is status-agnostic (blocks on the link, regardless of status).
 	 */
 	@Test
 	void rejectReactivate_whenAwaitingPayLineHasInoutLink()
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithInoutLink()));
+				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Awaiting_Pay)));
 		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.empty());
 
@@ -121,16 +122,17 @@ class C_Order_Test
 	}
 
 	/**
-	 * Previously: rejectReactivate_whenAnyScheduleStatusPaid asserted that bare Paid status blocks.
-	 * Under new semantics bare status no longer blocks — block requires a downstream link.
-	 * This test drives the block via an invoiceId on the Paid line.
+	 * Reconciled from the pre-existing rejectReactivate_whenAnyScheduleStatusPaid, which asserted that
+	 * bare Paid status blocks. Under the new semantics bare status no longer blocks — the block requires
+	 * a downstream link. A Paid line always implies a matched-invoice link, so this test drives the block
+	 * via an invoiceId on a Paid line.
 	 */
 	@Test
 	void rejectReactivate_whenPaidLineHasInvoiceLink()
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithInvoiceLink()));
+				.thenReturn(Optional.of(scheduleWithInvoiceLink(OrderPayScheduleStatus.Paid)));
 		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.empty());
 
@@ -155,9 +157,9 @@ class C_Order_Test
 	void rejectReactivate_whenProformaAllocationExists()
 	{
 		final I_C_Order order = newOrder();
-		// schedule has non-pending lines but no per-line downstream link
+		// schedule lines carry NO per-line downstream link — the block must come from the proforma alone
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Awaiting_Pay, OrderPayScheduleStatus.Pending)));
+				.thenReturn(Optional.of(scheduleWithStatuses(OrderPayScheduleStatus.Pending, OrderPayScheduleStatus.Pending)));
 		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.of(stubProformaInvoice()));
 
@@ -166,13 +168,13 @@ class C_Order_Test
 				.hasMessageContaining("Order_Reactivate_Blocked_By_PaySchedule_Activity");
 	}
 
-	/** NEW: a line carrying an inoutId (goods-receipt link) must block reactivation. */
+	/** NEW: even a Pending line carrying an inoutId (goods-receipt link) must block reactivation. */
 	@Test
 	void rejectReactivate_whenAnyLineHasInoutLink()
 	{
 		final I_C_Order order = newOrder();
 		Mockito.when(orderPayScheduleService.getByOrderId(ORDER_ID))
-				.thenReturn(Optional.of(scheduleWithInoutLink()));
+				.thenReturn(Optional.of(scheduleWithInoutLink(OrderPayScheduleStatus.Pending)));
 		Mockito.when(proformaService.getByOrderId(ORDER_ID))
 				.thenReturn(Optional.empty());
 
@@ -203,19 +205,19 @@ class C_Order_Test
 		return OrderPaySchedule.ofList(ORDER_ID, lines.build());
 	}
 
-	/** Schedule with one Pending line carrying a goods-receipt link (inoutId). */
-	private OrderPaySchedule scheduleWithInoutLink()
+	/** Schedule with one line (given status) carrying a goods-receipt link (inoutId). */
+	private OrderPaySchedule scheduleWithInoutLink(final OrderPayScheduleStatus status)
 	{
-		final OrderPayScheduleLine line = scheduleLineBuilder(1, OrderPayScheduleStatus.Pending)
+		final OrderPayScheduleLine line = scheduleLineBuilder(1, status)
 				.inoutId(InOutId.ofRepoId(500))
 				.build();
 		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(line));
 	}
 
-	/** Schedule with one Pending line carrying a matched-invoice link (invoiceId). */
-	private OrderPaySchedule scheduleWithInvoiceLink()
+	/** Schedule with one line (given status) carrying a matched-invoice link (invoiceId). */
+	private OrderPaySchedule scheduleWithInvoiceLink(final OrderPayScheduleStatus status)
 	{
-		final OrderPayScheduleLine line = scheduleLineBuilder(1, OrderPayScheduleStatus.Pending)
+		final OrderPayScheduleLine line = scheduleLineBuilder(1, status)
 				.invoiceId(InvoiceId.ofRepoId(600))
 				.build();
 		return OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(line));
