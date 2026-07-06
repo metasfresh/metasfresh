@@ -121,8 +121,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 			return;
 		}
 
-		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatch).orElse(null);
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchId).orElse(null);
 		if (asyncBatchType != null && X_C_Async_Batch_Type.NOTIFICATIONTYPE_WorkpackageProcessed.equals(asyncBatchType.getNotificationType()))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workPackage);
@@ -168,8 +167,7 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	@Override
 	public void enqueueAsyncBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
-		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchRecord).orElse(null);
+		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchId).orElse(null);
 		if (asyncBatchType != null && !asyncBatchType.isCheckProcessedNeeded())
 		{
 			// the batch's type has no consumer of the Processed flag (no IsCheckProcessed and no boilerplate) -> skip enqueuing the CheckProcessed WP
@@ -286,6 +284,10 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	public boolean keepAliveTimeExpired(@NonNull final AsyncBatchId asyncBatchId)
 	{
 		final I_C_Async_Batch asyncBatchRecord = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatchRecord == null)
+		{
+			return false;
+		}
 
 		final AsyncBatchType asyncBatchType = getAsyncBatchType(asyncBatchRecord).orElse(null);
 		if (asyncBatchType == null)
@@ -458,6 +460,17 @@ public class AsyncBatchBL implements IAsyncBatchBL
 	{
 		return AsyncBatchTypeId.optionalOfRepoId(asyncBatch.getC_Async_Batch_Type_ID())
 				.map(this::getAsyncBatchTypeById);
+	}
+
+	@Override
+	public Optional<AsyncBatchType> getAsyncBatchType(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
+		if (asyncBatch == null)
+		{
+			return Optional.empty();
+		}
+		return getAsyncBatchType(asyncBatch);
 	}
 
 	@Override

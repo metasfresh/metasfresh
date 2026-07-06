@@ -1,6 +1,7 @@
 package de.metas.async.api.impl;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -128,6 +129,32 @@ public class AsyncBatchBLTest
 			asyncBatchBL.enqueueAsyncBatch(asyncBatchId);
 
 			// then
+			Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
+		}
+
+		@Test
+		public void nullBatchRecord_doesNotThrowNPE_andEnqueues()
+		{
+			// given: the DAO returns null for the id (the production "record not found out-of-trx" path;
+			// the in-memory POJOLookupMap would instead throw, so we register a DAO that returns null).
+			final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(999_999);
+			Services.registerService(IAsyncBatchDAO.class, new AsyncBatchDAO()
+			{
+				@Override
+				public I_C_Async_Batch retrieveAsyncBatchRecordOutOfTrx(final AsyncBatchId id)
+				{
+					return null;
+				}
+			});
+			final AsyncBatchBL blWithNullReturningDao = new AsyncBatchBL();
+			blWithNullReturningDao.setUseMetasfreshSystemTime(true);
+
+			// then: the null-safe overload yields empty rather than NPE...
+			Assertions.assertThat(blWithNullReturningDao.getAsyncBatchType(asyncBatchId)).isEmpty();
+
+			// ...and the enqueue gate must not NPE (defaults to enqueuing the CheckProcessed WP)
+			Assertions.assertThatCode(() -> blWithNullReturningDao.enqueueAsyncBatch(asyncBatchId))
+					.doesNotThrowAnyException();
 			Assertions.assertThat(countCheckProcessedWorkPackages()).isEqualTo(1);
 		}
 	}
