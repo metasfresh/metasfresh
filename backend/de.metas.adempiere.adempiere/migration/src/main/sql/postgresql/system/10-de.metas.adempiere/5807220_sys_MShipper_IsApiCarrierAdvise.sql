@@ -101,7 +101,7 @@ VALUES
 -- =============================================================================
 ALTER TABLE M_Shipper ADD COLUMN IF NOT EXISTS IsApiCarrierAdvise CHAR(1) DEFAULT 'N';
 ALTER TABLE M_Shipper ALTER COLUMN IsApiCarrierAdvise SET NOT NULL;
-ALTER TABLE M_Shipper ADD CONSTRAINT IsApiCarrierAdvise_Check CHECK (IsApiCarrierAdvise IN ('Y','N'));
+SELECT public.db_alter_table('M_Shipper', 'ALTER TABLE public.M_Shipper ADD CONSTRAINT IsApiCarrierAdvise_Check CHECK (IsApiCarrierAdvise IN (''Y'',''N''))');
 
 -- =============================================================================
 -- 8. AD_Column_Trl — seed skeleton rows

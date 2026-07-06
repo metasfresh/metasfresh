@@ -128,7 +128,7 @@ WHERE AD_Language='de_CH' AND AD_Element_ID=584987
 ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS AdviseType CHAR(1) DEFAULT 'O';
 UPDATE carrier_config SET AdviseType='O' WHERE AdviseType IS NULL;
 ALTER TABLE carrier_config ALTER COLUMN AdviseType SET NOT NULL;
-ALTER TABLE carrier_config ADD CONSTRAINT AdviseType_Check CHECK (AdviseType IN ('S','O'));
+SELECT public.db_alter_table('carrier_config', 'ALTER TABLE public.carrier_config ADD CONSTRAINT AdviseType_Check CHECK (AdviseType IN (''S'',''O''))');
 
 -- AD_Column: AdviseType (List reference 17, AD_Reference_Value_ID = new reference 542106)
 INSERT INTO AD_Column (AD_Client_ID,AD_Org_ID,AD_Column_ID,AD_Element_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,
@@ -206,7 +206,7 @@ WHERE AD_Language='de_CH' AND AD_Element_ID=584988
 ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS IsSelectionRules CHAR(1) DEFAULT 'Y';
 UPDATE carrier_config SET IsSelectionRules='Y' WHERE IsSelectionRules IS NULL;
 ALTER TABLE carrier_config ALTER COLUMN IsSelectionRules SET NOT NULL;
-ALTER TABLE carrier_config ADD CONSTRAINT IsSelectionRules_Check CHECK (IsSelectionRules IN ('Y','N'));
+SELECT public.db_alter_table('carrier_config', 'ALTER TABLE public.carrier_config ADD CONSTRAINT IsSelectionRules_Check CHECK (IsSelectionRules IN (''Y'',''N''))');
 
 -- AD_Column: IsSelectionRules (YesNo reference 20)
 INSERT INTO AD_Column (AD_Client_ID,AD_Org_ID,AD_Column_ID,AD_Element_ID,AD_Reference_ID,AD_Table_ID,

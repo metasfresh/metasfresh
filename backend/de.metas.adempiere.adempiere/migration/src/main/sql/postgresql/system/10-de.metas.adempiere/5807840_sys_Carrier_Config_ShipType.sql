@@ -70,7 +70,7 @@ WHERE AD_Language='de_CH' AND AD_Element_ID=584992
 ALTER TABLE carrier_config ADD COLUMN IF NOT EXISTS ShipType CHAR(1) DEFAULT 'O';
 UPDATE carrier_config SET ShipType='O' WHERE ShipType IS NULL;
 ALTER TABLE carrier_config ALTER COLUMN ShipType SET NOT NULL;
-ALTER TABLE carrier_config ADD CONSTRAINT ShipType_Check CHECK (ShipType IN ('S','O'));
+SELECT public.db_alter_table('carrier_config', 'ALTER TABLE public.carrier_config ADD CONSTRAINT ShipType_Check CHECK (ShipType IN (''S'',''O''))');
 
 -- AD_Column: ShipType (List ref 17, AD_Reference_Value_ID = 542106, same as AdviseType)
 INSERT INTO AD_Column (AD_Client_ID,AD_Org_ID,AD_Column_ID,AD_Element_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,
