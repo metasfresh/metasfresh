@@ -272,6 +272,22 @@ class CarrierAdviseConsistencyServiceTest
 	}
 
 	@Test
+	void nonManual_divergentGoodsType_selectionRulesOff_throwsNonManualDivergent()
+	{
+		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+		final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+		stubResolver(s1, s2);
+		stubShipper(SHIPPER_1);
+		stubSelectionRules(SHIPPER_1, false);
+		// same product, divergent goods-type, rules OFF → the goods-type arm of the reject condition
+		stubCarriers(ImmutableMap.of(
+				SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+				SCHED_ID_2, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_2, ImmutableSet.of())));
+
+		assertThrowsWithKey(() -> service.assertConsistentForJob(jobWithPickedHU()), MSG_NonManualDivergentOnHU);
+	}
+
+	@Test
 	void nonManual_divergentProduct_selectionRulesOn_doesNotThrow()
 	{
 		final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);

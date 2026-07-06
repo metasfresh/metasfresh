@@ -837,7 +837,6 @@ Feature: nShift Shipment
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
-    # Reuse nShift_coo_test shipper and carrier products from scenario 120
     And contains M_Shippers
       | Identifier      | Value           | Name            | OPT.ShipperGateway |
       | nShift_coo_test | nshift_coo_test | nShift COO Test | nshift             |
@@ -1189,11 +1188,11 @@ Feature: nShift Shipment
   @from:cucumber
   @Id:S0355_DeliveryOrder_200
   Scenario: Carrier-advise guard — picking job completion rejected when one package/pallet carries two different manual carriers (E1)
-    # Two order lines (product + product_2) on one nShift order produce two schedules, each MANUALLY advised
-    # with a DIFFERENT carrier (product→cp2, product_2→cp1). Picked into ONE LU (one package/pallet) → two
-    # distinct manual carriers on a single HU → the E1 guard rejects completion: a manual carrier is a human
-    # override and two conflicting overrides on one package cannot be auto-resolved.
-    # (One manual + one automatic on the same package would instead COMPLETE — the manual carrier wins.)
+    # Two order lines (product + product_2) on one nShift order → two schedules. Both are auto-advised to cp1
+    # on order completion, then MANUALLY overridden with DIFFERENT carriers (product_2→cp1, product→cp2).
+    # Picked into ONE LU (one package/pallet) → two distinct manual carriers on a single HU → the E1 guard
+    # rejects completion: a manual carrier is a human override and two conflicting overrides on one package
+    # cannot be auto-resolved. (One manual + one automatic on the same package would instead COMPLETE — manual wins.)
     Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
@@ -1216,19 +1215,22 @@ Feature: nShift Shipment
       | Identifier | C_OrderLine_ID | IsToRecompute |
       | ss_e1_1    | so_e1_l1       | N             |
       | ss_e1_2    | so_e1_l2       | N             |
-    # Manually advise schedule 2 → Manual status with cp1
+    # The auto-advise workpackage runs on order completion; a manual advise is only eligible once a schedule has
+    # reached Completed (isEligibleForManualEnqueue excludes Requested). So WAIT for the auto-advise to land the
+    # carrier (cp1) on BOTH schedules before overriding them manually — otherwise a manual advise on a
+    # still-Requested schedule is silently skipped (it stays Requested and later auto-advises, losing the Manual).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | Carrier_Product_ID |
+      | ss_e1_1    | so_e1_l1       | cp1                |
+      | ss_e1_2    | so_e1_l2       | cp1                |
+    # Manually override BOTH schedules with DIFFERENT carriers (product_2→cp1, product→cp2) → two distinct manual carriers
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_e1_2               | cp1                | cgt1                  | cs1                |
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_e1_2    | so_e1_l2       | N             | cp1                |
-    # Manually advise schedule 1 → Manual status with a DIFFERENT carrier cp2/cgt2
-    And Process M_ShipmentSchedule_Advise_Manual is run
-      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_e1_1               | cp2                | cgt2                  | cs2                |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_e1_2    | so_e1_l2       | N             | cp1                |
       | ss_e1_1    | so_e1_l1       | N             | cp2                |
     # Pick both schedules into the same LU (one package/pallet) → two distinct manual carriers on one HU
     When start picking job for sales order identified by so_e1
