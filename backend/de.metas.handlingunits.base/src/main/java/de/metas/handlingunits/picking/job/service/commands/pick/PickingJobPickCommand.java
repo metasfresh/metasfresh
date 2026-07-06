@@ -743,7 +743,8 @@ public class PickingJobPickCommand
 			final I_M_HU pickFromHURecord = huService.getById(pickFromHU.getId());
 			if (huService.isVirtual(pickFromHURecord))
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// Whole-TU pick (picked unit is the TU): pack CUs into full TUs and record the TUs, not leaf CUs.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/false);
 			}
 			else
 			{
@@ -761,7 +762,9 @@ public class PickingJobPickCommand
 			}
 			else
 			{
-				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo);
+				// CU pick into a TU pick target (picked unit is the CU): record the leaf CU as a CU part so a
+				// later unpick-to-floor can extract & re-activate it.
+				packedHUs = pickCUsAndPackTo(productId, pickFromHU.getId(), packToInfo, /*recordLeafCUsAsTUParts*/true);
 			}
 		}
 
@@ -1037,7 +1040,8 @@ public class PickingJobPickCommand
 	private LUTUResult pickCUsAndPackTo(
 			@NonNull final ProductId productId,
 			@NonNull final HuId pickFromVHUId,
-			@NonNull final PackToHUsProducer.PackToInfo packToInfo)
+			@NonNull final PackToHUsProducer.PackToInfo packToInfo,
+			final boolean recordLeafCUsAsTUParts)
 	{
 		return packToHUsProducer.packToHU(
 				PackToHUsProducer.PackToHURequest.builder()
@@ -1051,6 +1055,7 @@ public class PickingJobPickCommand
 						.checkIfAlreadyPacked(checkIfAlreadyPacked)
 						.createInventoryForMissingQty(createInventoryForMissingQty)
 						.allowedReservedVhuIds(getAllowedReservedVhuIds())
+						.recordLeafCUsAsTUParts(recordLeafCUsAsTUParts)
 						.build()
 		);
 	}

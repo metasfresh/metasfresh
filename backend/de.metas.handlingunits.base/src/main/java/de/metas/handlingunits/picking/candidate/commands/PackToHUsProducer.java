@@ -113,6 +113,15 @@ public class PackToHUsProducer
 		boolean checkIfAlreadyPacked;
 		boolean createInventoryForMissingQty;
 		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
+
+		/**
+		 * When {@code true}, the packed CU(s) are recorded as CU parts of their (top-level, no-LU) TU so
+		 * downstream records the leaf CU instead of the container TU — required only when the picked unit is a
+		 * CU packed into a TU pick target (so a later unpick-to-floor can extract that CU). Leave {@code false}
+		 * for a whole-TU pick, where the TU itself is the picked unit and must be recorded as a full TU
+		 * (otherwise a spurious VHU is materialized on the shipment-schedule QtyPicked).
+		 */
+		boolean recordLeafCUsAsTUParts;
 	}
 
 	public LUTUResult packToHU(@NonNull final PackToHURequest request)
@@ -230,10 +239,14 @@ public class PackToHUsProducer
 			final I_M_HU luRecord = handlingUnitsBL.getLoadingUnitHU(tuRecord);
 			if (luRecord == null)
 			{
-				// Record the just-packed CU as a CU part of the (top-level) TU — NOT the bare container TU.
-				// Recording only the container makes a later unpick's extract-to-top-level a no-op (the TU is
-				// already top-level) and strands the picked CU (Picked, still nested) inside the TU.
-				return LUTUResult.ofTopLevelTUs(LUTUResult.TUsList.of(LUTUResult.TU.ofSingleTU(tuRecord, cuRecord)));
+				// A CU-into-TU pick (picked unit is the CU): record the just-packed CU as a CU part of the
+				// (top-level) TU — NOT the bare container TU. Recording only the container makes a later
+				// unpick's extract-to-top-level a no-op (the TU is already top-level) and strands the picked CU
+				// (Picked, still nested) inside the TU.
+				// A whole-TU pick (picked unit is the TU) records the full TU as before (no spurious leaf VHU).
+				return request.isRecordLeafCUsAsTUParts()
+						? LUTUResult.ofTopLevelTUs(LUTUResult.TUsList.of(LUTUResult.TU.ofSingleTU(tuRecord, cuRecord)))
+						: LUTUResult.ofSingleTopLevelTU(tuRecord);
 			}
 			else if(handlingUnitsBL.isAggregateHU(tuRecord))
 			{
@@ -268,10 +281,15 @@ public class PackToHUsProducer
 			final LUTUResult result;
 			if (packToDestination instanceof ILUTUProducerAllocationDestination)
 			{
-				// The LU/TU producer returns freshly-created top-level TUs as "full" TUs (no CU parts tracked);
-				// record the packed CU(s) as CU parts so downstream records the leaf CU, not the container TU
-				// (otherwise a later unpick strands the picked CU inside the TU).
-				result = recordPackedCUsAsParts(((ILUTUProducerAllocationDestination)packToDestination).getResult());
+				final LUTUResult producerResult = ((ILUTUProducerAllocationDestination)packToDestination).getResult();
+				// For a CU-into-TU pick (picked unit is the CU) the LU/TU producer returns freshly-created
+				// top-level TUs as "full" TUs (no CU parts tracked); record the packed CU(s) as CU parts so
+				// downstream records the leaf CU, not the container TU (otherwise a later unpick strands the
+				// picked CU inside the TU). For a whole-TU pick (picked unit is the TU) the full TUs are kept
+				// as-is, so downstream records the TU and no spurious leaf VHU is materialized.
+				result = request.isRecordLeafCUsAsTUParts()
+						? recordPackedCUsAsParts(producerResult)
+						: producerResult;
 			}
 			else if (packToDestination instanceof IHUProducerAllocationDestination)
 			{
