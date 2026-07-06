@@ -181,28 +181,12 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Re-advises all packed top-level HUs for the given picking job / line, then persists the advised
-	 * carrier product (and the read-only flag) onto the picking job header + its non-Manual lines, so the
-	 * mobile preview and the {@link CarrierAdviseConsistencyService} checks read the same persisted state.
-	 * Covers LU, standalone-TU, and CU self-packed picks — any HU that was picked
-	 * on the job (or on the specific line when {@code lineId} is non-null) is resolved
-	 * to its top-level HU and re-advised.
-	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
-	 * must never be overwritten, neither on the schedule nor on the picking job line).
-	 * <p>
-	 * Top-level resolution and deduplication by HuId is shared with
-	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob} via
-	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuIds(java.util.Collection)}.
-	 *
-	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
-	 */
-	/**
 	 * The HUs to (re-)advise. When the job/line has a current LU/TU pick target (the parcel being packed
 	 * now), advise ONLY that target parcel — never the already-finished parcels: each top-level HU is its
 	 * own Carrier_ShipmentOrder with its own carrier, so a finished parcel keeps its carrier and must not
 	 * be re-touched (nor collapse divergent per-parcel carriers into the single header product). When there
 	 * is NO LU/TU pick target (CU-direct), there is no single "current target" parcel — fall back to all
-	 * picked HUs of the scope (unchanged behaviour; CU-direct scoping is a separate open decision, me03 #30552).
+	 * picked HUs of the scope (unchanged behaviour; CU-direct scoping is a separately-tracked open decision).
 	 */
 	private ImmutableSet<HuId> resolveAdviseTargetHuIds(
 			@NonNull final PickingJob pickingJob,
@@ -222,6 +206,20 @@ public class PackedHUCarrierAdviseService
 		return pickingJob.getPickedHuIds(lineId);
 	}
 
+	/**
+	 * Re-advises the current pick-target parcel (or, CU-direct, all packed top-level HUs — see
+	 * {@link #resolveAdviseTargetHuIds}), then persists the advised carrier product (and the read-only
+	 * flag) onto the picking job header + its non-Manual lines, so the mobile preview and the
+	 * {@link CarrierAdviseConsistencyService} checks read the same persisted state.
+	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
+	 * must never be overwritten, neither on the schedule nor on the picking job line).
+	 * <p>
+	 * Top-level resolution and deduplication by HuId is shared with
+	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob} via
+	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuIds(java.util.Collection)}.
+	 *
+	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
+	 */
 	public PickingJob advise(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)
