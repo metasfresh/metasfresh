@@ -1082,11 +1082,11 @@ Feature: nShift Shipment
       | nShift Product 2 | IT              | 6               | 5         | 30         | 7.2             | 12345678      |
 
   @Id:S0355_DeliveryOrder_150
-  Scenario: nShift Partial Shipment — the picking-job line's carrier freezes on the first shipment; the re-advised remainder ships on a second carrier
-    # Mobile-only picking: the carrier is sourced from the picking-job LINE (not the schedule).
-    # Pick 6 of 10 in a first job → its Carrier_ShipmentOrder freezes with the line carrier cp1. Re-advise
-    # (cp2) then applies to the remainder; the remaining 4 are picked in a SECOND job → a second
-    # Carrier_ShipmentOrder on cp2. The first (frozen) Carrier_ShipmentOrder must still carry cp1.
+  Scenario: nShift Partial Shipment — the schedule's carrier freezes into the first shipment's order; the re-advised remainder ships on a second carrier
+    # The carrier is sourced from the shipment SCHEDULE at send time (not from the picking-job line).
+    # Pick 6 of 10 in a first job → the schedule's carrier (cp1) is frozen into the first Carrier_ShipmentOrder.
+    # After re-advise to cp2 the remaining 4 are picked in a SECOND job → a second Carrier_ShipmentOrder on
+    # cp2. The first (frozen) Carrier_ShipmentOrder must still carry cp1.
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
     And set sys config boolean value false for sys config de.metas.shipper.gateway.printLabels.enabled
     # CREATE_AND_COMPLETE (not …_CLOSE): the partial shipment is created+completed (freezing its
@@ -1133,6 +1133,15 @@ Feature: nShift Shipment
     And after not more than 60s, Carrier_ShipmentOrder is found:
       | Identifier  | M_InOut_ID    | Carrier_Product_ID |
       | cso_partial | inout_partial | cp1                |
+    # Loose-CU split: 6 CU picked with no packing item ⇒ 6 M_Package (one label/parcel per CU).
+    And validate M_Packages for shipment inout_partial
+      | M_Package_ID |
+      | pkg_p1       |
+      | pkg_p2       |
+      | pkg_p3       |
+      | pkg_p4       |
+      | pkg_p5       |
+      | pkg_p6       |
     # Re-stub to cp2 AFTER the first advise landed + froze on cso_partial.
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
@@ -1156,6 +1165,21 @@ Feature: nShift Shipment
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 4         |
     When complete picking job
+    # The 4-CU remainder ships in a SECOND shipment; capture it (ignoring the first shipment's lines).
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID      | DocStatus | OPT.IgnoreCreated.M_InOut_ID.Identifier |
+      | ss_ps                 | inout_remainder | CO        | inout_partial                           |
+    # Remainder ships on cp2 → a SECOND Carrier_ShipmentOrder (its parcels/packages are created with it).
+    And after not more than 60s, Carrier_ShipmentOrder is found:
+      | Identifier    | M_InOut_ID      | Carrier_Product_ID |
+      | cso_remainder | inout_remainder | cp2                |
+    # Loose-CU split: the re-advised remainder of 4 CU ⇒ 4 M_Package (one label/parcel per CU).
+    And validate M_Packages for shipment inout_remainder
+      | M_Package_ID |
+      | pkg_r1       |
+      | pkg_r2       |
+      | pkg_r3       |
+      | pkg_r4       |
     # The remainder was re-advised to cp2 (asserted above) and now shipped in this second job.
     # The FIRST (frozen) Carrier_ShipmentOrder must still carry cp1 — the remainder's cp2 must not mutate it.
     Then validate Carrier_ShipmentOrder product for shipment:

@@ -24,7 +24,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
@@ -37,22 +36,21 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Resolves, per shipment schedule, the carrier (product + goods-type + services) used when creating the
  * Shipper-Gateway delivery order at SEND time.
  * <p>
- * <b>Module direction:</b> the carrier source of truth is the picking-job <b>line</b>, which is only visible
- * here in {@code de.metas.handlingunits.base} — {@code de.metas.shipper.gateway.commons} must not depend on
- * the handlingunits module (that would create a dependency cycle). So the carrier is resolved here and passed
- * into commons as plain {@link ResolvedCarrier} data on the {@code DeliveryOrderCreateRequest}.
+ * <b>Module direction:</b> resolved here in {@code de.metas.handlingunits.base} and passed into
+ * {@code de.metas.shipper.gateway.commons} as plain {@link ResolvedCarrier} data on the
+ * {@code DeliveryOrderCreateRequest} — commons must not depend on the handlingunits module (dependency cycle).
  * <p>
- * <b>LINE-FIRST, SCHEDULE-FALLBACK:</b> for each shipment schedule covered by the given packages, the carrier
- * from the picking-job line wins; a schedule with no line falls back to the schedule's own carrier
- * (product/goods-type on the schedule, services from {@link ShipmentScheduleCarrierServiceRepository}) —
- * exactly the source {@code ShipperGatewayFacade.createDeliveryOrderKey} read before this change.
+ * <b>SCHEDULE-SOURCED:</b> the carrier (product/goods-type on the schedule, services from
+ * {@link ShipmentScheduleCarrierServiceRepository}) comes from the shipment schedule, which is the source of
+ * truth. The delivery order is created per shipment at send time and freezes the then-current schedule carrier;
+ * a schedule re-advised between partial shipments therefore yields the correct (different) carrier per shipment.
+ * We deliberately do NOT source from the picking-job line: a schedule shipped in several partial shipments
+ * legitimately carries different carriers across its lines, which cannot be reduced to a single send-time carrier.
  */
 @Service
 @RequiredArgsConstructor
@@ -60,7 +58,6 @@ public class DeliveryOrderCarrierResolver
 {
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository shipmentScheduleCarrierServiceRepository;
-	@NonNull private final PickingJobRepository pickingJobRepository;
 
 	@NonNull
 	public ImmutableMap<ShipmentScheduleId, ResolvedCarrier> resolveByPackageIds(@NonNull final Collection<PackageId> packageIds)
@@ -82,26 +79,21 @@ public class DeliveryOrderCarrierResolver
 			return ImmutableMap.of();
 		}
 
-		final Set<ShipmentScheduleId> scheduleIds = schedulesById.keySet();
-
-		// LINE: the picking-job line carrier per schedule (source of truth). Absent => no line => fall back.
-		final Map<ShipmentScheduleId, ResolvedCarrier> lineCarrierByScheduleId =
-				pickingJobRepository.getCarrierByScheduleIds(scheduleIds);
-
+		// The delivery order is created per shipment at SEND time; the shipment schedule is the carrier source of
+		// truth (it is re-advised between partial shipments, so each shipment's order freezes the then-current
+		// carrier). We deliberately do NOT source from the picking-job line: a schedule shipped in several partial
+		// shipments legitimately carries different (re-advised) carriers across its lines, which cannot be reduced
+		// to one — and the line has no per-shipment scope to disambiguate them.
 		final ImmutableMap.Builder<ShipmentScheduleId, ResolvedCarrier> result = ImmutableMap.builder();
-		for (final ShipmentScheduleId scheduleId : scheduleIds)
+		for (final ShipmentSchedule schedule : schedulesById.values())
 		{
-			final ResolvedCarrier lineCarrier = lineCarrierByScheduleId.get(scheduleId);
-			result.put(scheduleId,
-					lineCarrier != null
-							? lineCarrier
-							: fallbackToSchedule(schedulesById.get(scheduleId)));
+			result.put(schedule.getId(), resolveFromSchedule(schedule));
 		}
 		return result.build();
 	}
 
 	@NonNull
-	private ResolvedCarrier fallbackToSchedule(@NonNull final ShipmentSchedule schedule)
+	private ResolvedCarrier resolveFromSchedule(@NonNull final ShipmentSchedule schedule)
 	{
 		final ImmutableSet<CarrierServiceId> services =
 				shipmentScheduleCarrierServiceRepository.getAssignedServiceIdsByShipmentScheduleId(schedule.getId());

@@ -11,7 +11,6 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.model.I_M_Picking_Job_Line;
-import de.metas.handlingunits.model.I_M_Picking_Job_Line_Carrier_Service;
 import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -31,13 +30,11 @@ import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
-import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.CarrierProductId;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJONextIdSuppliers;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -47,9 +44,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -222,103 +217,6 @@ class PickingJobRepositoryTest
 		InterfaceWrapperHelper.saveRecord(line);
 
 		return job.getM_Picking_Job_ID();
-	}
-
-	@SuppressWarnings("UnusedReturnValue")
-	private I_M_Picking_Job_Line createCompletedJobLineWithCarrier(
-			@NonNull final ShipmentScheduleId scheduleId,
-			@Nullable final CarrierProductId carrierProductId,
-			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@NonNull final Set<CarrierServiceId> carrierServices)
-	{
-		final I_M_Picking_Job job = InterfaceWrapperHelper.newInstance(I_M_Picking_Job.class);
-		job.setAD_Org_ID(orgId.getRepoId());
-		// at SEND time the job is already Completed; the resolver must find the line regardless of doc status
-		job.setDocStatus(PickingJobDocStatus.Completed.getCode());
-		job.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(job);
-
-		final I_M_Picking_Job_Line line = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line.class);
-		line.setAD_Org_ID(orgId.getRepoId());
-		line.setM_Picking_Job_ID(job.getM_Picking_Job_ID());
-		line.setM_ShipmentSchedule_ID(scheduleId.getRepoId());
-		line.setCarrier_Product_ID(CarrierProductId.toRepoId(carrierProductId));
-		line.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(carrierGoodsTypeId));
-		line.setIsActive(true);
-		InterfaceWrapperHelper.saveRecord(line);
-
-		for (final CarrierServiceId serviceId : carrierServices)
-		{
-			final I_M_Picking_Job_Line_Carrier_Service assignment = InterfaceWrapperHelper.newInstance(I_M_Picking_Job_Line_Carrier_Service.class);
-			assignment.setAD_Org_ID(orgId.getRepoId());
-			assignment.setM_Picking_Job_Line_ID(line.getM_Picking_Job_Line_ID());
-			assignment.setCarrier_Service_ID(serviceId.getRepoId());
-			assignment.setIsActive(true);
-			InterfaceWrapperHelper.saveRecord(assignment);
-		}
-
-		return line;
-	}
-
-	@Test
-	void getCarrierByScheduleIds_lineWins_andNoLineScheduleAbsent()
-	{
-		// schedule X: a Completed picking-job line carries carrier product 5001 (the LINE value).
-		// the shipment-schedule's own carrier (e.g. 9001) differs — the resolver must return the LINE value.
-		final ShipmentScheduleId scheduleWithLine = ShipmentScheduleId.ofRepoId(201);
-		final CarrierProductId lineProductId = CarrierProductId.ofRepoId(5001);
-		final CarrierGoodsTypeId lineGoodsTypeId = CarrierGoodsTypeId.ofRepoId(6001);
-		final ImmutableSet<CarrierServiceId> lineServices = ImmutableSet.of(CarrierServiceId.ofRepoId(7001), CarrierServiceId.ofRepoId(7002));
-		createCompletedJobLineWithCarrier(scheduleWithLine, lineProductId, lineGoodsTypeId, lineServices);
-
-		// schedule Y: no picking-job line at all → must be absent from the result map (caller falls back to schedule)
-		final ShipmentScheduleId scheduleWithoutLine = ShipmentScheduleId.ofRepoId(202);
-
-		final Map<ShipmentScheduleId, ResolvedCarrier> result =
-				pickingJobRepository.getCarrierByScheduleIds(ImmutableSet.of(scheduleWithLine, scheduleWithoutLine));
-
-		Assertions.assertThat(result).containsKey(scheduleWithLine);
-		final ResolvedCarrier resolved = result.get(scheduleWithLine);
-		Assertions.assertThat(resolved.getCarrierProductId()).as("line carrier product wins").isEqualTo(lineProductId);
-		Assertions.assertThat(resolved.getCarrierGoodsTypeId()).as("line goods type").isEqualTo(lineGoodsTypeId);
-		Assertions.assertThat(resolved.getCarrierServices()).as("line services").isEqualTo(lineServices);
-
-		Assertions.assertThat(result).as("a schedule with no picking-job line is absent (caller falls back)").doesNotContainKey(scheduleWithoutLine);
-	}
-
-	@Test
-	void getCarrierByScheduleIds_twoLinesSameCarrier_converge()
-	{
-		// the common production case: a schedule has two picking-job lines carrying the SAME carrier →
-		// they reduce to that one carrier (no abort).
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(204);
-		final CarrierProductId productId = CarrierProductId.ofRepoId(5003);
-		final CarrierGoodsTypeId goodsTypeId = CarrierGoodsTypeId.ofRepoId(6003);
-		final ImmutableSet<CarrierServiceId> services = ImmutableSet.of(CarrierServiceId.ofRepoId(7003));
-		createCompletedJobLineWithCarrier(scheduleId, productId, goodsTypeId, services);
-		createCompletedJobLineWithCarrier(scheduleId, productId, goodsTypeId, services);
-
-		final Map<ShipmentScheduleId, ResolvedCarrier> result =
-				pickingJobRepository.getCarrierByScheduleIds(ImmutableSet.of(scheduleId));
-
-		Assertions.assertThat(result).containsKey(scheduleId);
-		final ResolvedCarrier resolved = result.get(scheduleId);
-		Assertions.assertThat(resolved.getCarrierProductId()).isEqualTo(productId);
-		Assertions.assertThat(resolved.getCarrierGoodsTypeId()).isEqualTo(goodsTypeId);
-		Assertions.assertThat(resolved.getCarrierServices()).isEqualTo(services);
-	}
-
-	@Test
-	void getCarrierByScheduleIds_divergentLines_abort()
-	{
-		// one schedule with two lines carrying DIFFERENT carrier products → no single send-time carrier → abort
-		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(203);
-		createCompletedJobLineWithCarrier(scheduleId, CarrierProductId.ofRepoId(5001), null, ImmutableSet.of());
-		createCompletedJobLineWithCarrier(scheduleId, CarrierProductId.ofRepoId(5002), null, ImmutableSet.of());
-
-		Assertions.assertThatThrownBy(() -> pickingJobRepository.getCarrierByScheduleIds(ImmutableSet.of(scheduleId)))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("divergent");
 	}
 
 	@Test

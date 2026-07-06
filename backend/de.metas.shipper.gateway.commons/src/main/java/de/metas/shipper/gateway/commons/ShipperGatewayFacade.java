@@ -133,9 +133,9 @@ public class ShipperGatewayFacade
 			throw new ShipperGatewayException("No shipment schedules found for package " + mpackage);
 		}
 
-		// Carrier values come from the request, where they were resolved LINE-FIRST / SCHEDULE-FALLBACK in
-		// de.metas.handlingunits.base. This module no longer reads the carrier from the shipment schedule
-		// (commons must not depend on the picking-job line, which lives in handlingunits.base).
+		// Carrier values come from the request, where they were resolved from the shipment schedule
+		// (SCHEDULE-SOURCED) in de.metas.handlingunits.base. Commons must not depend on the handlingunits
+		// module (dependency cycle).
 		final List<ResolvedCarrier> resolvedCarriers = shipmentSchedules.stream()
 				.map(ShipmentSchedule::getId)
 				.map(carrierByScheduleId::get)

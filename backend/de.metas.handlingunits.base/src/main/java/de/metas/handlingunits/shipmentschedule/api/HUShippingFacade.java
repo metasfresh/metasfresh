@@ -299,8 +299,8 @@ public class HUShippingFacade
 		Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
 		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
 
-		// Resolve the carrier LINE-FIRST (picking-job line wins), SCHEDULE-FALLBACK; pass it to commons as data
-		// (commons must not depend on the picking-job line — see DeliveryOrderCarrierResolver).
+		// Resolve the carrier from the shipment schedule (SCHEDULE-SOURCED); pass it to commons as data
+		// (commons must not depend on the handlingunits module — see DeliveryOrderCarrierResolver).
 		final ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = deliveryOrderCarrierResolverHolder.get()
 				.resolveByPackageIds(mPackageIds.stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
 

@@ -54,10 +54,10 @@ public class DeliveryOrderCreateRequest
 	AsyncBatchId asyncBatchId;
 
 	/**
-	 * Per-shipment-schedule carrier (product + goods-type + services), resolved LINE-FIRST with a
-	 * SCHEDULE fallback by the caller in {@code de.metas.handlingunits.base} (which can see the picking-job
-	 * line). {@code ShipperGatewayFacade.createDeliveryOrderKey} reads the carrier from here instead of from
-	 * the shipment schedule. A schedule absent from this map carries no resolved carrier.
+	 * Per-shipment-schedule carrier (product + goods-type + services), resolved from the shipment schedule
+	 * (SCHEDULE-SOURCED) by the caller in {@code de.metas.handlingunits.base}.
+	 * {@code ShipperGatewayFacade.createDeliveryOrderKey} reads the carrier from here; commons must not depend
+	 * on the handlingunits module (dependency cycle). A schedule absent from this map carries no resolved carrier.
 	 */
 	@NonNull ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId;
 
