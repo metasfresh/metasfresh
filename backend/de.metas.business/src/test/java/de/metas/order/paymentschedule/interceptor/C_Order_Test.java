@@ -229,7 +229,7 @@ class C_Order_Test
 	{
 		return ProformaInvoice.builder()
 				.id(InvoiceId.ofRepoId(700))
-				.grandTotal(de.metas.money.Money.of(1000, CurrencyId.EUR))
+				.grandTotal(Money.of(1000, CurrencyId.EUR))
 				.dateInvoiced(LocalDate.of(2026, 1, 1))
 				.dueDate(LocalDate.of(2026, 2, 1))
 				.build();

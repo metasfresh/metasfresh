@@ -152,7 +152,9 @@ Feature: PO reactivation guard — downstream-activity check
       | QtyEntered | M_InOutLine_ID | M_InOut_ID | DocStatus | C_OrderLine_ID |
       | 700        | r1_line1       | r1         | CO        | poL1           |
 
-    # BL sub-row now exists with M_InOut_ID=r1; matched financial invoice sets C_Invoice_ID on it
+    # BL sub-row now has M_InOut_ID=r1. The matched financial invoice does NOT set C_Invoice_ID on the
+    # pay-schedule line: C_Invoice.onComplete returns early when the order has no proforma allocation, so
+    # split-payment delivery-step tracking is dormant and the invoice does not project onto the sub-row.
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID |
       | inv1       | vendor        | Eingangsrechnung        | 2026-04-24   | false   | EUR           |
@@ -161,10 +163,11 @@ Feature: PO reactivation guard — downstream-activity check
       | inv1L1     | inv1         | product      | 700 PCE     | 100.00 | poL1           | r1_line1       |
     And the invoice identified by inv1 is completed
 
-    # BL sub-row carries the receipt link (M_InOut_ID=r1) — committed downstream state
+    # BL sub-row carries the receipt link (M_InOut_ID=r1) — committed downstream state — while
+    # C_Invoice_ID stays null (invoice does not project onto the sub-row without a proforma).
     Then the order identified by po has following pay schedule lines by ReferenceDateType
-      | ReferenceDateType | M_InOut_ID | DueAmt   |
-      | BL                | r1         | 49000.00 |
+      | ReferenceDateType | M_InOut_ID | C_Invoice_ID | DueAmt   |
+      | BL                | r1         | null         | 49000.00 |
 
     # Guard blocks — pay-schedule line carries a downstream goods-receipt link
     And the order identified by po cannot be reactivated
