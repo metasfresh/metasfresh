@@ -31,6 +31,13 @@ public interface IHUPackageBL extends ISingletonService
 	 */
 	I_M_Package createM_Package(CreatePackageForHURequest request);
 
+	/**
+	 * Like {@link #createM_Package(CreatePackageForHURequest)} but yields ONE M_Package per unit for a loose CU
+	 * (a top-level HU with no packing item, single product, integer quantity) — 1 label per CU. All other HUs
+	 * (cartons, multi-product, non-integer qty) yield a single-element list, identical to {@link #createM_Package}.
+	 */
+	List<I_M_Package> createM_Packages(CreatePackageForHURequest request);
+
 	void assignPackageToHuId(@NonNull Package aPackage, @NonNull HuId huId);
 
 	/**

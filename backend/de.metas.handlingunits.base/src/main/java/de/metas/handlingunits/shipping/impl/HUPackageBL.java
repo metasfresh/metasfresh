@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutId;
@@ -43,6 +44,7 @@ import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -147,7 +149,9 @@ public class HUPackageBL implements IHUPackageBL
 			mpackage.setPackageWeight(request.getWeightInKg());
 		}
 
-		final PackageDimensions packageDimensions = getPackageDimensions(hu);
+		final PackageDimensions packageDimensions = request.getPackageDimensions() != null
+				? request.getPackageDimensions()
+				: getPackageDimensions(hu);
 		mpackage.setLengthInCm(packageDimensions.getLengthInCM());
 		mpackage.setWidthInCm(packageDimensions.getWidthInCM());
 		mpackage.setHeightInCm(packageDimensions.getHeightInCM());
@@ -165,6 +169,66 @@ public class HUPackageBL implements IHUPackageBL
 		shipmentForHU.ifPresent(inOut -> createPackageLines(mpackage, inOut));
 
 		return mpackage;
+	}
+
+	@Override
+	public List<I_M_Package> createM_Packages(@NonNull final CreatePackageForHURequest request)
+	{
+		final I_M_HU hu = request.getHu();
+
+		// A loose CU (a top-level VIRTUAL HU) ships 1 label per unit: split a single-product, integer-quantity
+		// loose HU into N single-unit M_Packages (each linked to the same HU via M_Package_HU). Everything else
+		// — a carton (LU/TU), an aggregate HU, multi-product, or a non-integer quantity — yields exactly ONE
+		// M_Package (unchanged behaviour). NOTE: gate on isVirtual, NOT on "no packing material": a top-level LU
+		// can also have no packing-material row, and must stay one package.
+		if (!handlingUnitsBL.isVirtual(hu))
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
+		if (productStorages.size() != 1)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		final IHUProductStorage productStorage = productStorages.get(0);
+		final Quantity qty = productStorage.getQtyInStockingUOM();
+		final int parcelCount;
+		try
+		{
+			parcelCount = qty.toBigDecimal().intValueExact();
+		}
+		catch (final ArithmeticException nonIntegerLooseQty)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		if (parcelCount <= 1)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+
+		// One parcel per unit: split the HU weight evenly across the N identical units, and use the product's
+		// SINGLE-unit dimensions (self-packed → product dims at qty 1; else UNSPECIFIED — mirrors getPackageDimensions).
+		final BigDecimal huWeightInKg = request.getWeightInKg();
+		final BigDecimal perUnitWeightInKg = huWeightInKg != null
+				? huWeightInKg.divide(BigDecimal.valueOf(parcelCount), 3, RoundingMode.HALF_UP)
+				: null;
+
+		final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+		final Product product = productRepository.getById(productStorage.getProductId());
+		final PackageDimensions singleUnitDimensions = product.isSelfPacked() && !product.getPackageDimensions().isUnspecified()
+				? PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), qty.toOne())
+				: PackageDimensions.UNSPECIFIED;
+
+		final CreatePackageForHURequest perUnitRequest = request
+				.withWeightInKg(perUnitWeightInKg)
+				.withPackageDimensions(singleUnitDimensions);
+
+		final ImmutableList.Builder<I_M_Package> packages = ImmutableList.builder();
+		for (int i = 0; i < parcelCount; i++)
+		{
+			packages.add(createM_Package(perUnitRequest));
+		}
+		return packages.build();
 	}
 
 	@Override

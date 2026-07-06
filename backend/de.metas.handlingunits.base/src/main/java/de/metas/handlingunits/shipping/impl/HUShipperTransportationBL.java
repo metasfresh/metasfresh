@@ -158,13 +158,16 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			}
 
 			//
-			// Create M_Package
-			final I_M_Package mpackage = huPackageBL.createM_Package(packageRequest);
-			result.add(mpackage);
+			// Create M_Package(s) — a loose CU (no packing item) yields one M_Package per unit (1 label per CU)
+			final List<I_M_Package> mpackages = huPackageBL.createM_Packages(packageRequest);
+			result.addAll(mpackages);
 
 			//
-			// Add M_Package to Shipper Transportation document
-			shipperTransportationBL.createShippingPackage(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), mpackage);
+			// Add each M_Package to Shipper Transportation document
+			for (final I_M_Package mpackage : mpackages)
+			{
+				shipperTransportationBL.createShippingPackage(ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID()), mpackage);
+			}
 
 			//
 			// Update HU related things
