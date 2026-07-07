@@ -147,7 +147,7 @@ FROM (SELECT union_lookup.*
                             NULL::TEXT           AS GLN_Override,
                             i.CreatedBy
             FROM C_Invoice i
-                     INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID AND il.ispackagingmaterial = 'N' /* exclude package-lines that have no c_orderline_id, to avoid two 'ship' rows in conjunction with the "Fallback if the C_Invoice has no C_Order "*/
+                     INNER JOIN C_Invoiceline il ON il.C_Invoice_ID = i.C_Invoice_ID AND il.ispackagingmaterial = 'N' /* exclude package-lines that have no c_orderline_id, to avoid two 'snum' rows in conjunction with the "Fallback if the C_Invoice has no C_Order "*/
                      LEFT JOIN C_OrderLine ol ON ol.C_OrderLine_ID = il.C_OrderLine_ID
                      LEFT JOIN C_Order o ON o.C_Order_ID = ol.C_Order_ID
                      LEFT JOIN M_InOutline sl ON ( -- try to join directly from C_InvoiceLine

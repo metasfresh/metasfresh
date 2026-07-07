@@ -517,3 +517,72 @@ Feature: EDI INVOIC export via postgREST
   ]
 }
     """
+
+  @from:cucumber
+@allure.label.epic:E0292_EDI
+@allure.label.feature:F00350_EDI
+@F00350
+  Scenario: packaging-material invoice lines are excluded from the INVOIC export
+    # A packaging-material line (deposit / Leergut) carries no C_OrderLine_ID.
+    # It must NOT be exported as an INVOIC line item; only the normal product line is exported.
+    Given metasfresh contains C_BPartners without locations:
+      | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
+      | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
+      | bpartner_location_1 | customer1     | Y               | Y               |
+    And metasfresh contains M_Products:
+      | Identifier       | Value              | Name              | Description              |
+      | productNormal    | normalProductValue | normalProductName | normalProductDescription |
+      | productPackaging | pkgProductValue    | pkgProductName    | pkgProductDescription    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID |
+      | salesPLV               | productNormal    | 5.00     | PCE      |
+      | salesPLV               | productPackaging | 3.00     | PCE      |
+    And metasfresh contains C_Invoice:
+      | Identifier | REST.Context  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo    | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | pkgInvoice | pkgInvoice_ID | customer1     | Ausgangsrechnung        | invoicePkg010 | 2025-05-01   | Spot                     | true    | EUR                 |
+    And metasfresh contains C_InvoiceLines
+      | C_Invoice_ID | M_Product_ID     | QtyInvoiced | IsPackagingMaterial |
+      | pkgInvoice   | productNormal    | 1 PCE       | N                   |
+      | pkgInvoice   | productPackaging | 1 PCE       | Y                   |
+    And the invoice identified by pkgInvoice is completed
+
+    And the following API_Audit_Config records are created:
+      | Identifier | SeqNo | OPT.Method | OPT.PathPrefix   | IsForceProcessedAsync | IsSynchronousAuditLoggingEnabled | IsWrapApiResponse |
+      | c_1        | 10    | GET        | api/v2/processes | N                     | Y                                | N                 |
+    And add HTTP headers
+      | Key          | Value                          |
+      | Content-Type | application/json;charset=UTF-8 |
+      | accept       | application/json;charset=UTF-8 |
+
+    When a 'POST' request with the below payload and headers from context is sent to the metasfresh REST-API 'api/v2/processes/C_Invoice_EDI_Export_JSON/invoke' and fulfills with '200' status code
+    """
+{
+  "processParameters": [
+    {
+      "name": "C_Invoice_ID",
+      "value": "@pkgInvoice_ID@"
+    }
+  ]
+}
+    """
+
+    Then the metasfresh REST-API responds with
+    """
+{
+  "metasfresh_INVOIC": [
+    {
+      "Invoice_ID": @pkgInvoice_ID@,
+      "Invoice_DocumentNo": "invoicePkg010",
+      "Lines": [
+        {
+          "Invoice_Line": 10,
+          "Product_Name": "normalProductName",
+          "Product_Supplier_ProductNo": "normalProductValue"
+        }
+      ]
+    }
+  ]
+}
+    """

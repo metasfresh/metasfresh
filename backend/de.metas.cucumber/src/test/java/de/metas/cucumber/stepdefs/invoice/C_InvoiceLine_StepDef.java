@@ -415,6 +415,12 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setC_Tax_ID(taxId.getRepoId());
 				});
 
+		final Boolean isPackagingMaterial = row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsPackagingMaterial).toBooleanOrNull();
+		if (isPackagingMaterial != null)
+		{
+			invoiceLine.setIsPackagingMaterial(isPackagingMaterial);
+		}
+
 		invoiceLineBL.updatePrices(invoiceLine);
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());
 
