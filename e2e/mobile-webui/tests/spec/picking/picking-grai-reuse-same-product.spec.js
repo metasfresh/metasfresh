@@ -39,9 +39,10 @@ import { QTY_NOT_FOUND_REASON_NOT_FOUND } from '../../utils/screens/picking/GetQ
  * ample stock (800 units) backs it, so the operator's FIRST pick is a deliberate manual partial
  * pick (10 of the suggested 20 crates, justified with a "not found" reason) — the same mechanism
  * the standard partial-pick scenarios use (`picking.spec.js` "Partial pick blocked, recover by
- * picking remaining"). The SECOND pick of the same HU then picks the remaining 10 crates, which
- * the dialog suggests by default (no override needed). Product2's line (10 crates) is fulfilled by
- * a single ordinary pick.
+ * picking remaining"). The first pick accounts for all 20 suggested crates (10 picked + 10 marked
+ * not-found), so the SECOND pick of the same HU prefills 0 and explicitly overrides qtyEntered to
+ * recover the remaining 10 crates (same recovery pattern as that precedent). Product2's line (10
+ * crates) is fulfilled by a single ordinary pick.
  */
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -158,11 +159,15 @@ test('a GRAI reused on a later pick of the same product on one LU must land on a
     });
 
     // --- Second (remaining) batch of product 1: re-scanning the shared G (its own earlier crate)
-    // is skipped. The dialog now suggests exactly the 10 remaining crates by default (no override). --
+    // is skipped. After the first pick accounted for all 20 suggested crates (10 picked + 10 marked
+    // not-found), the dialog now prefills 0, so we explicitly override qtyEntered to recover the last
+    // 10 crates — the same recovery pattern as picking.spec.js "Partial pick blocked, recover by
+    // picking remaining". --
     await test.step('Pick the remaining batch of product 1 onto the same LU; re-scanning the shared G is skipped, not counted', async () => {
         await PickingJobScreen.pickHU({
             qrCode: masterdata.handlingUnits.HU_SOURCE_P1.qrCode,
-            expectQtyEntered: '10',
+            expectQtyEntered: '0',
+            qtyEntered: '10',
             expectNextScreen: 'PickGraiScreen',
         });
         await PickGraiScreen.expectCount({ scanned: 0, total: 10 });
