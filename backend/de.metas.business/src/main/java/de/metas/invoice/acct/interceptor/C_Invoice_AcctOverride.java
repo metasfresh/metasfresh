@@ -53,8 +53,8 @@ public class C_Invoice_AcctOverride
 
 	@NonNull private final InvoiceAcctRepository invoiceAcctRepository;
 
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void materializeAcctOverrides(@NonNull final I_C_Invoice invoice)

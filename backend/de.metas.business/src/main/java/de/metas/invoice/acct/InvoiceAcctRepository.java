@@ -147,7 +147,7 @@ public class InvoiceAcctRepository
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_Invoice_ID, invoiceId)
-				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID, invoiceAndLineId.getRepoId())
+				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_C_InvoiceLine_ID, invoiceAndLineId)
 				.addEqualsFilter(I_C_Invoice_Acct.COLUMNNAME_AccountName, accountConceptualName.getAsString())
 				.create()
 				.list();

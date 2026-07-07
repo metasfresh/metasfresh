@@ -3,6 +3,7 @@ package de.metas.cucumber.stepdefs.accounting;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
+import lombok.NonNull;
 import org.compiere.model.I_C_ElementValue;
 
 /**
@@ -18,7 +19,7 @@ public class C_ElementValue_StepDefData extends StepDefData<I_C_ElementValue>
 	}
 
 	@Override
-	public ElementValueId extractIdFromRecord(final I_C_ElementValue record)
+	public ElementValueId extractIdFromRecord(@NonNull final I_C_ElementValue record)
 	{
 		return ElementValueId.ofRepoId(record.getC_ElementValue_ID());
 	}
