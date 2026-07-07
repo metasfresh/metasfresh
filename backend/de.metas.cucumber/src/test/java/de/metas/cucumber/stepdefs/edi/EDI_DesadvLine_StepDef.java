@@ -207,59 +207,6 @@ public class EDI_DesadvLine_StepDef
 	}
 
 	/**
-	 * Finds EDI_DesadvLine records by EDI_Desadv_ID and registers each under the given identifier.
-	 * Useful when a test needs to reference an auto-created DESADV line by identifier (e.g. to mutate it).
-	 *
-	 * <p>Required columns:
-	 * <ul>
-	 *   <li>{@code EDI_DesadvLine_ID} – identifier under which the found record is registered</li>
-	 *   <li>{@code EDI_Desadv_ID} – identifier of the parent DESADV (registered in {@link EDI_Desadv_StepDefData})</li>
-	 * </ul>
-	 * Optional disambiguator columns (use when the DESADV has more than one line):
-	 * <ul>
-	 *   <li>{@code M_Product_ID} – narrows the match to the line with this product</li>
-	 *   <li>{@code Line} – narrows the match to the line with this line number</li>
-	 * </ul>
-	 * When no disambiguator is provided the query must return exactly one result.
-	 *
-	 * <p>Example:
-	 * <pre>
-	 * Then EDI_DesadvLine records are found:
-	 *   | EDI_DesadvLine_ID | EDI_Desadv_ID |
-	 *   | desadvLine        | myDesadv      |
-	 * </pre>
-	 */
-	@Then("EDI_DesadvLine records are found:")
-	public void edi_desadv_line_records_are_found(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(this::findAndRegisterDesadvLine);
-	}
-
-	private void findAndRegisterDesadvLine(@NonNull final DataTableRow row)
-	{
-		final StepDefDataIdentifier desadvIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID);
-		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
-
-		final IQueryBuilder<I_EDI_DesadvLine> queryBuilder = queryBL.createQueryBuilder(I_EDI_DesadvLine.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_EDI_Desadv_ID, desadvRecord.getEDI_Desadv_ID());
-
-		row.getAsOptionalIdentifier(I_EDI_DesadvLine.COLUMNNAME_M_Product_ID)
-				.ifPresent(productIdentifier -> {
-					final I_M_Product productRecord = productTable.get(productIdentifier);
-					queryBuilder.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID());
-				});
-
-		row.getAsOptionalInt(I_EDI_DesadvLine.COLUMNNAME_Line)
-				.ifPresent(line -> queryBuilder.addEqualsFilter(I_EDI_DesadvLine.COLUMNNAME_Line, line));
-
-		final I_EDI_DesadvLine desadvLine = queryBuilder.create().firstOnlyNotNull(I_EDI_DesadvLine.class);
-
-		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_EDI_DesadvLine.COLUMNNAME_EDI_DesadvLine_ID);
-		desadvLineTable.putOrReplace(lineIdentifier, desadvLine);
-	}
-
-	/**
 	 * Updates fields of an EDI_DesadvLine previously registered under an identifier.
 	 *
 	 * <p>Real-world trigger: a user edits the DESADV line in the WebUI (window 540256) after the
