@@ -191,6 +191,34 @@ class PickingJobGraiTargetServiceTest
 	}
 
 	@Test
+	void migrosGrai_maxLengthPoReference_10chars_isValidAndPassesGate()
+	{
+		// Boundary: a 10-char PO reference is the max valid dummy-GRAI serial prefix — it must be treated as valid
+		// (isValidSerialPrefix == true) and, when it matches, pass the gate rather than be rejected as over-length.
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("1234567890").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null, /* poReference */ "1234567890"))
+				.as("a 10-char matching PO reference is valid and passes the gate (failure comes later, from TU-type resolution)")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(NO_TU_TYPE_MSG_KEY)
+				.hasMessageNotContaining(MIGROS_MSG_KEY);
+	}
+
+	@Test
+	void migrosGrai_overBoundaryPoReference_11chars_throwsPOReferenceMismatch()
+	{
+		// Boundary: 11 chars is one past the valid serial-prefix length — it can never have produced this GRAI's
+		// serial, so it is a mismatch, NOT the dummy-GRAI "prefix too long" prerequisite.
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("12345").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null, /* poReference */ "12345678901"))
+				.as("an 11-char PO reference (one past the boundary) must be a mismatch, not a prefix-too-long error")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MIGROS_MSG_KEY)
+				.hasMessageNotContaining(PREFIX_TOO_LONG_MSG_KEY);
+	}
+
+	@Test
 	void nonMigrosGrai_neverSubjectToPoReferenceCheck()
 	{
 		// company-prefix 9999999 is not the Migros structure → the ownership gate is skipped entirely, even with a
