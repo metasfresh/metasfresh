@@ -63,7 +63,7 @@ import java.util.Optional;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RabbitMQ_StepDef
 {
@@ -97,12 +97,26 @@ public class RabbitMQ_StepDef
 		connectionFactory.setPassword(commandLineOptions.getRabbitPassword());
 	}
 
+	/**
+	 * Drains the material-events queue ({@link MaterialEventsQueueConfiguration}) only, waiting up to 5 minutes.
+	 * <p>
+	 * Use this when a scenario needs to assert the state produced by material events alone, <b>before</b> the
+	 * downstream async workpackages run. When the full material→async chain must settle, prefer
+	 * {@link #wait_empty_all_queues()}.
+	 */
 	@And("wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_material_queue() throws InterruptedException
 	{
 		waitEmptyQueueByTopic(MaterialEventsQueueConfiguration.EVENTBUS_TOPIC.getName());
 	}
 
+	/**
+	 * Drains the async-batch queue ({@link AsyncBatchQueueConfiguration}) only, waiting up to 5 minutes.
+	 * <p>
+	 * Draining async alone can race with material events still in flight (async may be empty only because the
+	 * upstream material side hasn't been processed yet). Use this only when the material side is already known to
+	 * be settled; otherwise prefer {@link #wait_empty_all_queues()}, which drains material then async in order.
+	 */
 	@And("wait until de.metas.async rabbitMQ queue is empty or throw exception after 5 minutes")
 	public void wait_empty_async_queue() throws InterruptedException
 	{
