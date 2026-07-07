@@ -198,16 +198,20 @@ Feature: nShift Shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
       | so_do      | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
+    # Order line carries the 10-CU-per-TU packing (product_TU_10CU) so the on-the-fly pick packs the 10 CUs
+    # into ONE real TU (not a loose VHU) — a TU ships as 1 parcel (loose CUs would split 1-label-per-CU).
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_do_l1   | so_do      | product      | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_do_l1   | so_do      | product      | 10         | product_TU_10CU         |
     When the order identified by so_do is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss_do      | so_do_l1       | N             | cp1                | cgt1                  |
+    # IsOnTheFlyPickToPackingInstructions=true: pack the on-the-fly-picked CUs into a TU per the order line's
+    # packing (mirrors the real shipper-transportation flow) → 1 TU → 1 parcel, not 10 loose-CU parcels.
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_do                 | inout_do   |
+      | M_ShipmentSchedule_ID | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+      | ss_do                 | inout_do   | true                                |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID | M_ShipperTransportation_ID |
       | inout_do   | transpOrder_do             |
@@ -363,16 +367,18 @@ Feature: nShift Shipment
     And metasfresh contains C_Orders:
       | Identifier | REST.Context | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
       | so_exp     | order_exp_ID | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
+    # 10-CU-per-TU packing → on-the-fly pick builds ONE TU → 1 parcel (not 10 loose-CU parcels).
     And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_exp_l1  | so_exp     | product      | 10         |
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_exp_l1  | so_exp     | product      | 10         | product_TU_10CU         |
     When the order identified by so_exp is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
       | ss_exp     | so_exp_l1      | N             | cp1                | cgt1                  |
+    # pack the on-the-fly-picked CUs into a TU per the order-line packing (real shipper-transportation flow) → 1 parcel.
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID |
-      | ss_exp                | inout_exp  |
+      | M_ShipmentSchedule_ID | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+      | ss_exp                | inout_exp  | true                                |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID | M_ShipperTransportation_ID |
       | inout_exp  | transpOrder_exp            |
@@ -1871,9 +1877,10 @@ Feature: nShift Shipment
       | ss_split_l1 | so_split_l1    | N             | cp1                | cgt1                  |
       | ss_split_l2 | so_split_l2    | N             | cp2                | cgt2                  |
     # Both schedules generate into ONE shipment (one order, one shipper).
+    # pack each line's CUs into its own TU per the order-line packing (real shipper-transportation flow) → 1 parcel/carrier.
     And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID    | M_InOut_ID  |
-      | ss_split_l1, ss_split_l2 | inout_split |
+      | M_ShipmentSchedule_ID    | M_InOut_ID  | IsOnTheFlyPickToPackingInstructions |
+      | ss_split_l1, ss_split_l2 | inout_split | true                                |
     And after not more than 60s, Transportation Order is found for Shipment:
       | M_InOut_ID  | M_ShipperTransportation_ID |
       | inout_split | transpOrder_split          |

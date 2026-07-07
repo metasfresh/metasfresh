@@ -694,9 +694,14 @@ public class M_ShipmentSchedule_StepDef
 				.map(identifier -> identifier.lookupNotNullIdIn(pickingJobScheduleTable))
 				.orElse(null);
 
+		// OPT IsOnTheFlyPickToPackingInstructions: mirror the real shipper-transportation flow, where shipment
+		// generation packs the on-the-fly-picked CUs into TUs per the order line's M_HU_PI_Item_Product
+		// (ShipmentService#generateShipmentOlCands sets it true — "we might need to create a shipper transportation,
+		// so we need TUs"). Default false keeps the plain qty-to-deliver generation used by other features.
 		final GenerateShipmentsForSchedulesRequest.GenerateShipmentsForSchedulesRequestBuilder requestBuilder = GenerateShipmentsForSchedulesRequest.builder()
 				.quantityTypeToUse(qtyTypeToUse)
-				.isCompleteShipment(isCompleteShipment);
+				.isCompleteShipment(isCompleteShipment)
+				.onTheFlyPickToPackingInstructions(row.getAsOptionalBoolean("IsOnTheFlyPickToPackingInstructions").orElse(false));
 
 		if (jobScheduleId != null)
 		{
