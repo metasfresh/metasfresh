@@ -207,7 +207,7 @@ public class HUPackageBL implements IHUPackageBL
 		}
 
 		// One parcel per unit: split the HU weight evenly across the N identical units, and use the product's
-		// SINGLE-unit dimensions (self-packed → product dims at qty 1; else UNSPECIFIED — mirrors getPackageDimensions).
+		// SINGLE-unit dimensions (self-packed → product's NAMED dims verbatim; else UNSPECIFIED).
 		final BigDecimal huWeightInKg = request.getWeightInKg();
 		final BigDecimal perUnitWeightInKg = huWeightInKg != null
 				? huWeightInKg.divide(BigDecimal.valueOf(parcelCount), 3, RoundingMode.HALF_UP)
