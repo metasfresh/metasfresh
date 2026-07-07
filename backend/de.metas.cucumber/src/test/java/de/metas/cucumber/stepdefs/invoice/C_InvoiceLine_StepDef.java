@@ -109,6 +109,26 @@ public class C_InvoiceLine_StepDef
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
 
+	/**
+	 * @cucumber.stepdef Creates C_InvoiceLine records on existing C_Invoices.
+	 * @cucumber.columns
+	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the invoice to add the line to<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the line's product<br>
+	 *   <b>QtyInvoiced</b> — (required) quantity; the UOM may be embedded (e.g. "1 PCE") or given via C_UOM_ID<br>
+	 *   <b>C_UOM_ID</b> — (optional) UOM x12de355 code, when not embedded in QtyInvoiced<br>
+	 *   <b>Price</b> — (optional) manual price; sets IsManualPrice + PriceEntered/PriceActual<br>
+	 *   <b>IsPackagingMaterial</b> — (optional) mark the line as packaging material; omit to keep the model default (N)<br>
+	 *   <b>C_Tax_ID$set</b> — (optional, identifier-ref) force this tax on the line<br>
+	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) store the resolved tax under this alias<br>
+	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains C_InvoiceLines
+	 *   | C_Invoice_ID | M_Product_ID | QtyInvoiced | IsPackagingMaterial |
+	 *   | invoice      | product      | 1 PCE       | Y                   |
+	 * </pre>
+	 */
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
 	{
