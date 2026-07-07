@@ -283,7 +283,6 @@ Feature: create distribution order based on aggregation sysconfig
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-  @Id:DDOrderAggregationByProductId_Off
   Scenario: Planning-less candidates for different products aggregate into one DD_Order when byProductId is off
     When set sys config boolean value false for sys config DDOrderAggregation.header.byProductId
     And metasfresh contains DD_Order_Candidates:
@@ -307,7 +306,6 @@ Feature: create distribution order based on aggregation sysconfig
   @from:cucumber
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
-  @Id:DDOrderAggregationByProductId_On
   Scenario: Planning-less candidates for different products split into separate DD_Orders when byProductId is on
     When set sys config boolean value true for sys config DDOrderAggregation.header.byProductId
     And metasfresh contains DD_Order_Candidates:

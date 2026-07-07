@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.ddordercandidate;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
@@ -19,6 +20,7 @@ import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAlloc;
 import de.metas.distribution.ddordercandidate.DDOrderCandidateAllocList;
@@ -39,7 +41,6 @@ import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
-import com.google.common.collect.ImmutableList;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -77,6 +78,7 @@ public class DD_Order_Candidate_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService = SpringContextHolder.instance.getBean(DDOrderCandidateService.class);
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository = SpringContextHolder.instance.getBean(DDOrderCandidateAllocRepository.class);
+	@NonNull private final DDOrderLowLevelDAO ddOrderLowLevelDAO = SpringContextHolder.instance.getBean(DDOrderLowLevelDAO.class);
 	@NonNull private final DD_Order_Candidate_StepDefData ddOrderCandidateTable;
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
@@ -592,19 +594,12 @@ public class DD_Order_Candidate_StepDef
 				.collect(Collectors.groupingBy(id -> id, Collectors.counting()));
 
 		candidatesPerDDOrder.forEach((ddOrderId, candidateCount) -> {
-			final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
-					.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderId)
-					.addOnlyActiveRecordsFilter()
-					.create()
-					.list(I_DD_OrderLine.class);
+			final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(ddOrderId);
+			final List<I_DD_OrderLine> lines = ddOrderLowLevelDAO.retrieveLines(ddOrder);
 			assertThat(lines)
 					.as("generated DD_Order %s must have one DD_OrderLine per aggregated candidate", ddOrderId)
 					.hasSize(candidateCount.intValue());
 
-			final I_DD_Order ddOrder = queryBL.createQueryBuilder(I_DD_Order.class)
-					.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId)
-					.create()
-					.firstOnlyNotNull(I_DD_Order.class);
 			assertThat(DocStatus.ofNullableCodeOrUnknown(ddOrder.getDocStatus()))
 					.as("generated DD_Order %s DocStatus", ddOrderId)
 					.isEqualTo(DocStatus.Completed);
