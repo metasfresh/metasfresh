@@ -6,6 +6,11 @@ import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
 import { toQRCodeString } from '../utils/qrCode/hu';
 
+// Stable empty-array reference: avoids handing callers a fresh [] literal every render (a caller may
+// use this as a useCallback dependency — e.g. ScanHUAndGetQtyComponent's handleAddGrais — where a
+// changing reference would defeat the stable-handler-identity guarantee needed for RFID burst safety).
+const EMPTY_LU_GRAIS = [];
+
 export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
   const isTU = type === PickingTargetType.TU;
   const { isPending: isTargetsLoading, data: responseData } = useQuery({
@@ -15,11 +20,17 @@ export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
 
   const targets = responseData ? (isTU ? responseData.tuTargets : responseData.targets) : undefined;
   const graiScanEnabled = isTU ? responseData?.graiScanEnabled ?? false : false;
+  // Canonical GRAI strings already assigned to the line's effective LU (from prior picks on this LU) —
+  // lets the mobile capture panel mirror the server-side LU-wide dedupe. Re-fetched (fresh useQuery
+  // call) on every pick-step entry because `lineId` is part of the query key, so it always reflects
+  // the LU state AFTER the prior pick's atomic Save committed.
+  const existingLuGrais = isTU ? responseData?.existingLuGrais ?? EMPTY_LU_GRAIS : EMPTY_LU_GRAIS;
 
   return {
     isTargetsLoading,
     targets,
     graiScanEnabled,
+    existingLuGrais,
     setPickingTarget: ({ target }) => {
       return isTU
         ? setTUPickingTarget({ wfProcessId, lineId, target })

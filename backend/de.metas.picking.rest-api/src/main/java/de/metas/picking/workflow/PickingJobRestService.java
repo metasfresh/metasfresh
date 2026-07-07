@@ -239,6 +239,12 @@ public class PickingJobRestService
 		return pickingJobService.isGraiScanEnabled(pickingJob.getCustomerId());
 	}
 
+	@NonNull
+	public List<String> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		return pickingJobService.getExistingLuGrais(pickingJob, lineId);
+	}
+
 	public PickingJob closeLUAndTUPickingTargets(
 			@NonNull final PickingJob pickingJob,
 			@Nullable final PickingJobLineId lineId)

@@ -83,6 +83,17 @@ export const PickGraiScreen = {
             { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    /**
+     * Assert the LU-wide-dedupe "N skipped" notice: the caption next to the count
+     * (`grai-count-skipped`, shown when one or more scans were dropped because that GRAI is already
+     * assigned to another crate of this loading unit) AND the accompanying non-blocking toast (a
+     * plain success notice — never the blocking red error toast).
+     */
+    expectSkippedNotice: async ({ count }) => await test.step(`${NAME} - Expect "${count} skipped" notice`, async () => {
+        await expect(page.getByTestId('grai-count-skipped')).toContainText(String(count), { timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('.Toastify__toast--success').first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
     /** Assert the save button is enabled (exactly N GRAIs captured). */
     expectSaveEnabled: async () => await test.step(`${NAME} - Expect save enabled`, async () => {
         await expect(page.getByTestId('grai-save-button')).toBeEnabled({ timeout: SLOW_ACTION_TIMEOUT });

@@ -16,6 +16,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -682,6 +683,29 @@ public class PickingJobService implements PickingSlotListener
 			return GRAIRequired.No;
 		}
 		return bpartnerService.getGRAIRequired(customerId);
+	}
+
+	/**
+	 * @return the canonical GRAI strings already assigned to the line's effective loading unit (from prior picks
+	 * on this LU), so the mobile capture panel can mirror the server-side LU-wide dedupe. Resolves the effective LU
+	 * the same way {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand#stampGraisIfRequired}
+	 * does. Empty when no LU is resolved yet for the line (nothing to stamp against yet).
+	 */
+	@NonNull
+	public List<String> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		final HuId pickedLuId = pickingJob.getLuPickingTargetEffective(lineId)
+				.filter(LUPickingTarget::isExistingLU)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		return existingGrais.toStringList();
 	}
 
 	/**

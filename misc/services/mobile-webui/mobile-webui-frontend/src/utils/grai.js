@@ -137,25 +137,42 @@ export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.sl
 /**
  * Merge newGrais into the existing list, deduplicating by value — both against the existing list
  * AND within newGrais itself. Preserves existing order; appends new items at the end.
- * Returns the same array reference if nothing was added (no unnecessary re-render).
+ * Returns the SAME array reference (as `merged`) if nothing was added (no unnecessary re-render).
  *
  * Within-batch dedup matters for RFID mass-scan: a single burst can re-read the same physical
  * crate's tag more than once, and a GRAI uniquely identifies one returnable asset — so a repeated
- * code in one batch is the same crate, not a second one, and must collapse to a single entry.
+ * code in one batch is the same crate, not a second one, and must collapse to a single entry. This
+ * same-buffer re-read case stays a SILENT no-op — it is never counted in `skipped`.
+ *
+ * `existingCodes` is a second exclusion set — GRAIs already assigned elsewhere (e.g. to another
+ * crate of the same loading unit, per the server-side LU-wide GRAI dedupe) that this batch must
+ * also drop, but — unlike a same-buffer re-read — the caller DOES want to know about it (to advance
+ * a "N skipped" notice), so those codes are reported back in `skipped`. A code repeated within the
+ * batch against `existingCodes` is only reported once (marked seen on first occurrence).
  *
  * @param {string[]} prev - existing GRAI list
  * @param {string[]} newGrais - GRAIs to add
- * @returns {string[]}
+ * @param {string[]} [existingCodes] - GRAIs to drop-and-report (already assigned elsewhere)
+ * @returns {{merged: string[], skipped: string[]}}
  */
-export const mergeGraiArrays = (prev, newGrais) => {
+export const mergeGraiArrays = (prev, newGrais, existingCodes = []) => {
   const seen = new Set(prev);
+  const existing = existingCodes.length ? new Set(existingCodes) : null;
   const toAdd = [];
+  const skipped = [];
   for (const g of newGrais) {
-    if (!seen.has(g)) {
-      seen.add(g);
-      toAdd.push(g);
+    if (seen.has(g)) {
+      // same-buffer / already-decided re-read: silent no-op (AC3) — never counted as "skipped"
+      continue;
     }
+    if (existing && existing.has(g)) {
+      seen.add(g); // avoid double-reporting a repeat of the same already-assigned code within this batch
+      skipped.push(g);
+      continue;
+    }
+    seen.add(g);
+    toAdd.push(g);
   }
-  if (toAdd.length === 0) return prev;
-  return [...prev, ...toAdd];
+  const merged = toAdd.length === 0 ? prev : [...prev, ...toAdd];
+  return { merged, skipped };
 };
