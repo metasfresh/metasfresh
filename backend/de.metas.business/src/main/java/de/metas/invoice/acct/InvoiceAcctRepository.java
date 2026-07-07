@@ -152,16 +152,28 @@ public class InvoiceAcctRepository
 				.create()
 				.list();
 
+		boolean exactMatchFound = false;
 		for (final I_C_Invoice_Acct row : existing)
 		{
 			if (row.getC_ElementValue_ID() == elementValueId.getRepoId())
 			{
-				// Exact match — nothing to do.
-				return;
+				// Exact match — keep it, but keep scanning so any contradicting row is still deactivated.
+				// (The tuple index is not UNIQUE and manual rows are possible, so more than one active
+				// row for the same tuple can exist; returning on the first match would leave a
+				// contradicting row active → an ambiguous per-line override.)
+				exactMatchFound = true;
 			}
-			// Different account → deactivate.
-			row.setIsActive(false);
-			InterfaceWrapperHelper.save(row);
+			else
+			{
+				// Different account → deactivate.
+				row.setIsActive(false);
+				InterfaceWrapperHelper.save(row);
+			}
+		}
+		if (exactMatchFound)
+		{
+			// A matching active row already exists (any contradictors deactivated above) — nothing to insert.
+			return;
 		}
 
 		// Insert new active row.

@@ -205,8 +205,49 @@ class InvoiceAcctRepository_SurgicalUpsertTest
 	}
 
 	// -----------------------------------------------------------------------
+	// Scenario 7: two active rows already exist for the SAME (schema, invoice, line, concept)
+	//             tuple — one matching the incoming account, one contradicting it. The matching
+	//             row must NOT short-circuit deactivation of the contradicting one. This
+	//             invariant-violating starting state can arise from a manually-inserted
+	//             C_Invoice_Acct override row (the feature supports manual rows) sitting next
+	//             to a materialized one; the index on the tuple is not UNIQUE, so nothing at
+	//             the DB level prevents it. A contradicting active row left behind would make
+	//             the per-line override ambiguous (two accounts for one concept).
+	// -----------------------------------------------------------------------
+	@Test
+	void contradicting_second_active_row_is_deactivated_even_when_first_matches()
+	{
+		// seed the MATCHING row first (lower PK → returned first by the tuple query),
+		// then the CONTRADICTING row — this is the order that triggers the early-return bug.
+		seedActiveRow(ELEMENT_A);
+		seedActiveRow(ELEMENT_B);
+		assertThat(allActiveRows()).hasSize(2);
+
+		// materialize the override with ELEMENT_A (matches the first seeded row)
+		repo.createOrUpdateLineOverride(LINE_ID, ORG_ID, SCHEMA_ID, CONCEPT_EXPENSE, ELEMENT_A);
+
+		// exactly one active row must remain, carrying ELEMENT_A; the contradicting ELEMENT_B row deactivated
+		final List<I_C_Invoice_Acct> active = allActiveRows();
+		assertThat(active).as("contradicting row must be deactivated even though a matching row was hit first").hasSize(1);
+		assertThat(active.get(0).getC_ElementValue_ID()).isEqualTo(ELEMENT_A.getRepoId());
+	}
+
+	// -----------------------------------------------------------------------
 	// helpers
 	// -----------------------------------------------------------------------
+	private void seedActiveRow(final ElementValueId elementValueId)
+	{
+		final I_C_Invoice_Acct row = InterfaceWrapperHelper.newInstance(I_C_Invoice_Acct.class);
+		row.setC_Invoice_ID(INVOICE_ID.getRepoId());
+		row.setC_InvoiceLine_ID(LINE_ID.getRepoId());
+		row.setAD_Org_ID(ORG_ID.getRepoId());
+		row.setC_AcctSchema_ID(SCHEMA_ID.getRepoId());
+		row.setAccountName(CONCEPT_EXPENSE.getAsString());
+		row.setC_ElementValue_ID(elementValueId.getRepoId());
+		row.setIsActive(true);
+		InterfaceWrapperHelper.save(row);
+	}
+
 	private List<I_C_Invoice_Acct> allActiveRows()
 	{
 		return queryBL
