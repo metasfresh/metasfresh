@@ -74,7 +74,9 @@ const loginAndStartJob = async ({ masterdata }) => {
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    // A CU line (no piItemProduct) auto-navigates into the single line's PickLineScanScreen after the
+    // slot scan; step back up to the job screen (same as pick_by_EAN13.spec.js's "LU/CU -> top level TU").
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
     // Set a bare TU pick target (no LU) — the CU picks are packed into THIS TU.
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.TU_PI.tuName });
     return { pickingJobId };
@@ -96,16 +98,18 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
     await test.step('Pick 4 PCE of P1 into the bare TU target', async () => {
         // CU pick: scan the source HU and enter the product qty; the picked CUs are packed into the TU.
         await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 4, expectQtyEntered: '4' });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4 Stk' });
         await Backend.expect({
             title: 'after pick: 4 PCE of P1 packed into the pick-to TU (tu1)',
-            // Bind the synthetic identifiers: the pick records the leaf CU (cu1) INTO the materialised TU (tu1)
-            // on M_ShipmentSchedule_QtyPicked. This binding is what makes `tu1`/`cu1` resolvable in `hus:` below
-            // (an HU identifier with no masterdata entry only resolves once bound here).
+            // A CU-into-bare-TU pick records the destination TU (not the leaf CU) on
+            // M_ShipmentSchedule_QtyPicked — VHU_ID stays NULL (the long-standing top-level-TU pick
+            // behavior; cf. pick_by_EAN13.spec.js "LU/CU -> top level TU" which also asserts vhu:'-').
+            // The leaf CU is recorded on the picking-job step (which drives unpick), not here. Binding
+            // `tu1` here is what makes it resolvable in `hus:` below.
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
-                        P1: { qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: 'cu1', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                        P1: { qtyPicked: [{ qtyPicked: '4 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
                     }
                 }
             },
@@ -122,7 +126,7 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
         await PickingJobScreen.unpickItemToFloor({ scannedCode: packedScan, expectDefaultQty: '4', qty: '1' });
 
         // Packed qty decremented (3 PCE stays in the TU) and the qty-to-pick reappears (re-pickable).
-        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '3 Stk' });
         await Backend.expect({
             title: 'round 1 after floor unpick: 3 PCE stays in the TU; unpicked 1 PCE dropped to the floor as an active standalone CU, no orphan left Picked in the TU',
             hus: {
@@ -132,7 +136,7 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
 
         // Re-pick the removed 1 PCE back into the package (the reversible cycle): the line returns to 4.
         await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 1, expectQtyEntered: '1' });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4 Stk' });
         await Backend.expect({
             title: 'round 1 after re-pick: back to 4 PCE packed in the TU',
             hus: {
@@ -146,7 +150,7 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
     await test.step('Round 2 — unpick 1 PCE to the floor, then re-pick', async () => {
         await PickingJobScreen.unpickItemToFloor({ scannedCode: packedScan, expectDefaultQty: '4', qty: '1' });
 
-        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '3' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '3 Stk' });
         await Backend.expect({
             title: 'round 2 after floor unpick: 3 PCE stays in the TU; no accumulating orphan Picked CU in the TU',
             hus: {
@@ -155,7 +159,7 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
         });
 
         await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: 1, expectQtyEntered: '1' });
-        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '4 Stk' });
         await Backend.expect({
             title: 'round 2 after re-pick: back to 4 PCE packed in the TU',
             hus: {
