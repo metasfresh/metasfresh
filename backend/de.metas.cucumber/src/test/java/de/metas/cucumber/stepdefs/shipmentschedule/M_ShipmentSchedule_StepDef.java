@@ -324,9 +324,9 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
 	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
 	 *   <b>IsOnTheFlyPickToPackingInstructions</b> — (optional) true/false; default: false; when true, the on-the-fly-picked
- *     CUs are packed into TUs per the order line's M_HU_PI_Item_Product, mirroring the real shipper-transportation flow
- *     ({@code ShipmentService#generateShipmentOlCands} sets it true); default false keeps loose-CU generation<br>
- * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
+	 *     CUs are packed into TUs per the order line's M_HU_PI_Item_Product, mirroring the real shipper-transportation flow
+	 *     ({@code ShipmentService#generateShipmentOlCands} sets it true); default false keeps loose-CU generation<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
