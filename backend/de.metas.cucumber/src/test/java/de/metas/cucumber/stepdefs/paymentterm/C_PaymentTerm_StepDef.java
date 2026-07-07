@@ -191,12 +191,15 @@ public class C_PaymentTerm_StepDef
 	{
 		final PaymentTermId paymentTermId = paymentTermTable.getId(identifier);
 
-		StepDefUtil.tryAndWait(
+		final boolean actualIsValid = StepDefUtil.tryAndWaitForItem(
 				VALIDATE_TIMEOUT_SECONDS,
 				VALIDATE_CHECK_INTERVAL_MS,
-				() -> paymentTermRepo.getById(paymentTermId).isValid() == expectedIsValid);
+				() -> {
+					final boolean isValid = paymentTermRepo.getById(paymentTermId).isValid();
+					return isValid == expectedIsValid ? Optional.of(isValid) : Optional.empty();
+				});
 
-		softly.assertThat(paymentTermRepo.getById(paymentTermId).isValid())
+		softly.assertThat(actualIsValid)
 				.as("IsValid (PaymentTermRepository-computed)")
 				.isEqualTo(expectedIsValid);
 	}
