@@ -41,6 +41,8 @@ const PickStepScanScreen = () => {
   const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
     wfProcessId,
     lineId,
+    stepId,
+    altStepId,
     type: PickingTargetType.TU,
   });
 

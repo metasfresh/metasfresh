@@ -150,19 +150,32 @@ export const getExtraGrais = (graiCodes, tuCount) => (tuCount > 0 ? graiCodes.sl
  * a "N skipped" notice), so those codes are reported back in `skipped`. A code repeated within the
  * batch against `existingCodes` is only reported once (marked seen on first occurrence).
  *
- * @param {string[]} prev - existing GRAI list
+ * `alreadySkipped` are codes a PRIOR call already reported in `skipped` and the caller is still
+ * showing. They are treated exactly like same-buffer re-reads (silent no-op, never re-reported), so a
+ * code that gets delivered more than once — e.g. the dual-reader race where `BarcodeScannerComponent`
+ * and `useKeyboardBarcodeReader` both emit the same physical scan — is counted at most once. (Merged
+ * codes need no such list because they already live in `prev`; a skipped code is dropped from `prev`,
+ * so it needs its own memory to stay idempotent across calls.)
+ *
+ * @param {string[]} prev - existing GRAI list (accumulated, deduped)
  * @param {string[]} newGrais - GRAIs to add
- * @param {string[]} [existingCodes] - GRAIs to drop-and-report (already assigned elsewhere)
- * @returns {{merged: string[], skipped: string[]}}
+ * @param {string[]} [existingCodes] - GRAIs to drop-and-report (already assigned elsewhere on the LU)
+ * @param {string[]} [alreadySkipped] - codes already reported in a prior call's `skipped` (silent on repeat)
+ * @returns {{merged: string[], skipped: string[]}} `merged` is the same ref as `prev` when nothing was
+ *   added; `skipped` lists only the NEWLY-skipped codes (excludes `alreadySkipped`)
  */
-export const mergeGraiArrays = (prev, newGrais, existingCodes = []) => {
+export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipped = []) => {
+  // `seen` = everything already decided: accumulated codes (prev) AND already-reported skips.
   const seen = new Set(prev);
+  for (const g of alreadySkipped) {
+    seen.add(g);
+  }
   const existing = existingCodes.length ? new Set(existingCodes) : null;
   const toAdd = [];
   const skipped = [];
   for (const g of newGrais) {
     if (seen.has(g)) {
-      // same-buffer / already-decided re-read: silent no-op (AC3) — never counted as "skipped"
+      // same-buffer re-read (AC3) OR an already-reported LU-skip redelivered: silent no-op, never (re)counted
       continue;
     }
     if (existing && existing.has(g)) {

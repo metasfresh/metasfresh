@@ -1,5 +1,6 @@
 package de.metas.picking.rest_api.json;
 
+import de.metas.handlingunits.grai.GRAI;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -20,9 +21,10 @@ public class JsonPickingJobAvailableTargets
 	boolean graiScanEnabled;
 
 	/**
-	 * Canonical GRAI strings already assigned to the line's effective loading unit (from prior picks on this LU).
-	 * Lets the mobile capture panel mirror the server-side LU-wide dedupe: a re-scanned GRAI already in this list
-	 * must not advance the scan count. Empty when no LU is resolved yet for the line.
+	 * GRAIs already assigned to the line's effective loading unit (from prior picks on this LU). Lets the mobile
+	 * capture panel mirror the server-side LU-wide dedupe: a re-scanned GRAI already in this list must not advance
+	 * the scan count. Serialized as the canonical GRAI strings (via {@link GRAI}'s {@code @JsonValue}). Empty when
+	 * no LU is resolved yet for the line.
 	 */
-	@NonNull @Singular("existingLuGrai") List<String> existingLuGrais;
+	@NonNull @Singular("existingLuGrai") List<GRAI> existingLuGrais;
 }

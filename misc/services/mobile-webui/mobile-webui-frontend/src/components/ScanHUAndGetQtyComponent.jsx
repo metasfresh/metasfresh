@@ -74,15 +74,17 @@ const ScanHUAndGetQtyComponent = ({
   // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
   // atomic onResult call.
   const [pendingGraiResult, setPendingGraiResult] = useState(null);
-  // `codes` + `skippedCount` are ONE state object (not two separate useState calls) so both derive
-  // from a SINGLE queued functional update per scan event. BarcodeScannerComponent and
-  // useKeyboardBarcodeReader can both deliver the same physical scan in the same event tick (see the
-  // handler-identity comment below); React folds queued updater calls in call order, so keeping the
-  // LU-dedupe skip count in the SAME state object as the codes list preserves that existing
-  // dual-reader dedupe guarantee for `skippedCount` too — two independent state updates could each
-  // read a stale "not yet skipped" snapshot and double-count/double-toast the same physical scan.
-  const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCount: 0 });
-  const { codes: graiCodes, skippedCount } = graiCapture;
+  // `codes` + `skippedCodes` are ONE state object (not two separate useState calls) so both derive
+  // from a SINGLE queued functional update per scan event, and — crucially — `skippedCodes` is the
+  // actual list of already-reported LU-skips, not just a count. A skipped code is NOT added to
+  // `codes` (it must never occupy a crate slot), so without its own memory a second delivery of the
+  // same physical scan would re-skip and re-count it. BarcodeScannerComponent and
+  // useKeyboardBarcodeReader can both deliver the same scan in one event tick (see the handler-identity
+  // comment below); feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
+  // silent no-op, so the count (and the toast) fire at most once per physical crate.
+  const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCodes: [] });
+  const { codes: graiCodes, skippedCodes } = graiCapture;
+  const skippedCount = skippedCodes.length;
   // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
   // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
   // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
@@ -92,11 +94,15 @@ const ScanHUAndGetQtyComponent = ({
   const handleAddGrais = useCallback(
     (newGrais) =>
       setGraiCapture((prev) => {
-        const { merged, skipped } = mergeGraiArrays(prev.codes, newGrais, existingLuGrais);
-        if (skipped.length === 0) {
-          return merged === prev.codes ? prev : { ...prev, codes: merged };
+        const { merged, skipped } = mergeGraiArrays(prev.codes, newGrais, existingLuGrais, prev.skippedCodes);
+        const codesChanged = merged !== prev.codes;
+        if (!codesChanged && skipped.length === 0) {
+          return prev;
         }
-        return { codes: merged, skippedCount: prev.skippedCount + skipped.length };
+        return {
+          codes: merged,
+          skippedCodes: skipped.length ? [...prev.skippedCodes, ...skipped] : prev.skippedCodes,
+        };
       }),
     [existingLuGrais]
   );
@@ -106,10 +112,10 @@ const ScanHUAndGetQtyComponent = ({
   );
   const handleClearAllGrais = useCallback(() => setGraiCapture((prev) => ({ ...prev, codes: [] })), []);
 
-  // AC6: non-blocking "N skipped" notice — fires exactly once per actual increment (the delta since
-  // the last commit), not once per raw onAddGrais call, so a dual-reader duplicate delivery that gets
-  // correctly folded into a single skippedCount bump (see handleAddGrais above) also yields a single
-  // toast.
+  // AC6: non-blocking "N skipped" notice — fires once per genuinely-new skip (the delta in
+  // skippedCodes.length since the last commit). Because a redelivered skip is already folded out by
+  // mergeGraiArrays (via prev.skippedCodes above), the delta is exactly the number of distinct new
+  // already-on-LU crates, so a dual-reader duplicate never produces a second (or inflated) toast.
   const prevSkippedCountRef = useRef(0);
   useEffect(() => {
     const delta = skippedCount - prevSkippedCountRef.current;
@@ -291,7 +297,7 @@ const ScanHUAndGetQtyComponent = ({
     // stamps the GRAIs and then closes the LU within the same atomic pick. Closing the LU must never
     // be a way to skip the GRAI scan for a GRAI-required partner.
     if (graiScanEnabled && qtyEnteredAndValidated > 0) {
-      setGraiCapture({ codes: [], skippedCount: 0 });
+      setGraiCapture({ codes: [], skippedCodes: [] });
       setPendingGraiResult(result);
       setProgressStatus(STATUS_READ_GRAI);
       return undefined;

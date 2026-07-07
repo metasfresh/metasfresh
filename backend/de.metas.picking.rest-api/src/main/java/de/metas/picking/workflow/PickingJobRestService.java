@@ -27,6 +27,7 @@ import de.metas.ad_reference.ADRefList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
@@ -240,7 +241,7 @@ public class PickingJobRestService
 	}
 
 	@NonNull
-	public List<String> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
 	{
 		return pickingJobService.getExistingLuGrais(pickingJob, lineId);
 	}

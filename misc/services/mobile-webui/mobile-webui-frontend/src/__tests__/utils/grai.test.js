@@ -89,6 +89,29 @@ describe('grai list helpers', () => {
         expect(skipped).toEqual([]);
       });
     });
+
+    describe('alreadySkipped (idempotent re-report — dual-reader race)', () => {
+      it('does NOT re-report a code that was already reported in a prior call', () => {
+        // Two readers deliver the same physical already-on-LU scan across two calls; the second must
+        // be a silent no-op so the "N skipped" count/toast fire at most once per crate.
+        const { merged, skipped } = mergeGraiArrays([], ['G'], ['G'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual([]);
+      });
+
+      it('still reports a genuinely-new skip while ignoring the already-reported one', () => {
+        const { merged, skipped } = mergeGraiArrays([], ['G', 'H'], ['G', 'H'], ['G']);
+        expect(merged).toEqual([]);
+        expect(skipped).toEqual(['H']);
+      });
+
+      it('a redelivered fresh code (already in prev) stays silent regardless of alreadySkipped', () => {
+        const prev = ['FRESH'];
+        const { merged, skipped } = mergeGraiArrays(prev, ['FRESH'], ['G'], ['G']);
+        expect(merged).toBe(prev);
+        expect(skipped).toEqual([]);
+      });
+    });
   });
 
   // ---------------------------------------------------------------------------

@@ -686,13 +686,13 @@ public class PickingJobService implements PickingSlotListener
 	}
 
 	/**
-	 * @return the canonical GRAI strings already assigned to the line's effective loading unit (from prior picks
-	 * on this LU), so the mobile capture panel can mirror the server-side LU-wide dedupe. Resolves the effective LU
-	 * the same way {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand#stampGraisIfRequired}
+	 * @return the GRAIs already assigned to the line's effective loading unit (from prior picks on this LU), so the
+	 * mobile capture panel can mirror the server-side LU-wide dedupe. Resolves the effective LU the same way
+	 * {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand#stampGraisIfRequired}
 	 * does. Empty when no LU is resolved yet for the line (nothing to stamp against yet).
 	 */
 	@NonNull
-	public List<String> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
 	{
 		final HuId pickedLuId = pickingJob.getLuPickingTargetEffective(lineId)
 				.filter(LUPickingTarget::isExistingLU)
@@ -705,7 +705,7 @@ public class PickingJobService implements PickingSlotListener
 		}
 
 		final GRAISet existingGrais = huService.getGrais(pickedLuId);
-		return existingGrais.toStringList();
+		return ImmutableList.copyOf(existingGrais);
 	}
 
 	/**
