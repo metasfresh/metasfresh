@@ -40,9 +40,9 @@ export const PickingGraiScanPanel = {
      * Scan a GRAI barcode (in canonical dot-separated or GS1 AI 8003 format).
      * Dispatches keyboard events via BarcodeScannerComponent targeting the GRAI scanner input.
      *
-     * Uses `BarcodeScannerComponent.type()` which dispatches at document level and appends Enter.
-     * The `useKeyboardBarcodeReader` hook calls `event.preventDefault()` on Enter, preventing
-     * the focused input's `handleInputTextKeyPress` from double-invoking validateScannedBarcodeAndForward.
+     * Uses `BarcodeScannerComponent.type()`, which dispatches keydown/keyup at document level with
+     * no terminator. A GRAI is a non-HU-prefix code (`NOT_APPLICABLE` completion state), so the
+     * `useKeyboardBarcodeReader` hook flushes the buffer via its debounce interval — no Enter needed.
      */
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
         await BarcodeScannerComponent.type({ scannedCode: graiString, testId: GRAI_SCAN_TESTID });

@@ -27,7 +27,8 @@ export const PickGraiScreen = {
 
     /**
      * Scan a GRAI barcode through the live scanner (the offscreen hardware-scan input).
-     * Dispatches keyboard events at document level, terminated with Enter (DataWedge behaviour).
+     * Dispatches keyboard events at document level with no terminator; a GRAI is a non-HU-prefix
+     * code (`NOT_APPLICABLE`), so the keyboard hook flushes the buffer via its debounce interval.
      */
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
         await BarcodeScannerComponent.type(graiString);
