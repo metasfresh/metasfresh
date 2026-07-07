@@ -141,8 +141,8 @@ Feature: Per-line GL account override on purchase invoices
     # (a) Materialized C_Invoice_Acct rows must exist for both expense concepts, scoped to the invoice line
     Then C_Invoice_Acct rows are found for invoice:
       | C_Invoice_ID  | C_InvoiceLine_ID  | AccountName              | C_ElementValue_ID |
-      | vendorInvoice | vendorInvoiceLine | P_Expense_Acct          | overrideAccount   |
-      | vendorInvoice | vendorInvoiceLine | P_InventoryClearing_Acct | overrideAccount  |
+      | vendorInvoice | vendorInvoiceLine | P_Expense_Acct           | overrideAccount   |
+      | vendorInvoice | vendorInvoiceLine | P_InventoryClearing_Acct | overrideAccount   |
 
     # (b) The receipt-matched inventory-clearing leg on the vendor invoice posts to overrideAccount,
     #     not the product-default P_InventoryClearing_Acct. The V_Liability leg is unaffected.
