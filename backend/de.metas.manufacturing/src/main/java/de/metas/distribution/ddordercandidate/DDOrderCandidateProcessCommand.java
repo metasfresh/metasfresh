@@ -326,6 +326,12 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateBySalesOrderId;
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
+		/**
+		 * If {@code true}, {@link DDOrderCandidate}s of different products are kept in separate {@link I_DD_Order}s
+		 * (productId becomes part of the {@link HeaderAggregationKey}). This yields one product — and therefore one
+		 * UOM — per DD_Order, i.e. single-line DD_Orders instead of one big multi-product order.
+		 */
+		boolean aggregateByProductId;
 	}
 	//
 	//
@@ -357,6 +363,8 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable String traceId;
 
+		@Nullable ProductId productId;
+
 		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
@@ -378,6 +386,10 @@ class DDOrderCandidateProcessCommand
 			if (aggregationConfig.isAggregateByPPOrderRef())
 			{
 				keyBuilder.forwardPPOrderRef(candidate.getForwardPPOrderRef());
+			}
+			if (aggregationConfig.isAggregateByProductId())
+			{
+				keyBuilder.productId(candidate.getProductId());
 			}
 			return keyBuilder.build();
 		}
