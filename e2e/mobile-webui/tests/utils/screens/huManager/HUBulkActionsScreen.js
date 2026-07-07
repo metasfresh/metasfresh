@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from '../../common';
+import { page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
@@ -45,6 +45,18 @@ export const HUBulkActionsScreen = {
             }
         }
 
-        await ApplicationsListScreen.waitForScreen();
+        // The bulk move commits via an async REST round-trip (api.moveBulkHUs -> POST /bulk/move);
+        // only once it resolves does the frontend navigate home (history.goHome()). The home screen
+        // appearing IS the commit-confirming, user-visible landing signal — but its single default
+        // SLOW_ACTION_TIMEOUT (20s) budget has to absorb that whole round-trip, so under CI load the
+        // commit can overshoot 20s and the wait times out (the flake). A transient success toast is
+        // NOT usable as an earlier signal here: ScreenToaster dismisses all toasts on the very
+        // navigation that follows it (useLocationChange -> toast.dismiss()), so it races the dismissal.
+        // Give the transition the VERY_SLOW_ACTION_TIMEOUT (40s) budget instead — the same budget idiom
+        // used for other heavy async-commit flows that return to a list/home screen (e.g.
+        // PickingJobScreen.complete, ManufacturingJobScreen, InventoryJobScreen; those return to a
+        // *jobs-list* screen, here we return to the *home* ApplicationsListScreen — same topology).
+        // No new signal is invented; the genuinely-slow commit is simply given room to land.
+        await ApplicationsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
