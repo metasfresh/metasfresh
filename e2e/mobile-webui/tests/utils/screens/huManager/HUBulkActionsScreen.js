@@ -31,10 +31,11 @@ export const HUBulkActionsScreen = {
         // commit can overshoot 20s and the wait times out (the flake). A transient success toast is
         // NOT usable as an earlier signal here: ScreenToaster dismisses all toasts on the very
         // navigation that follows it (useLocationChange -> toast.dismiss()), so it races the dismissal.
-        // Give the transition the VERY_SLOW_ACTION_TIMEOUT (40s) budget instead — the same idiom used
-        // for other heavy async-commit-then-return-to-list flows (e.g. PickingJobScreen.complete,
-        // ManufacturingJobScreen, InventoryJobScreen). No new signal is invented; the genuinely-slow
-        // commit is simply given room to land.
+        // Give the transition the VERY_SLOW_ACTION_TIMEOUT (40s) budget instead — the same budget idiom
+        // used for other heavy async-commit flows that return to a list/home screen (e.g.
+        // PickingJobScreen.complete, ManufacturingJobScreen, InventoryJobScreen; those return to a
+        // *jobs-list* screen, here we return to the *home* ApplicationsListScreen — same topology).
+        // No new signal is invented; the genuinely-slow commit is simply given room to land.
         await ApplicationsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
