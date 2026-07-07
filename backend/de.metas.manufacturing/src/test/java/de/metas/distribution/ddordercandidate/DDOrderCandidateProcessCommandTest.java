@@ -51,6 +51,10 @@ import static org.mockito.Mockito.when;
  * The header-record creation used to dereference {@code productPlanningDAO.getById(null)} unconditionally;
  * with no product planning this threw a {@link NullPointerException}. The fix guards the lookup and clears
  * {@code PP_Product_Planning_ID} / {@code AD_User_ID} / {@code SalesRep_ID} with the {@code -1} sentinel.
+ * <p>
+ * Also covers the optional {@code aggregateByProductId} header-aggregation dimension: with the flag off,
+ * candidates of different products share one DD_Order (one line each); with it on, each product gets its
+ * own DD_Order.
  */
 class DDOrderCandidateProcessCommandTest
 {

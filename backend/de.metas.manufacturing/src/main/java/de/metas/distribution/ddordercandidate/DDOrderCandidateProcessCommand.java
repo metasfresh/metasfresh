@@ -328,8 +328,10 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateBySalesOrderLineId;
 		/**
 		 * If {@code true}, {@link DDOrderCandidate}s of different products are kept in separate {@link I_DD_Order}s
-		 * (productId becomes part of the {@link HeaderAggregationKey}). This yields one product — and therefore one
-		 * UOM — per DD_Order, i.e. single-line DD_Orders instead of one big multi-product order.
+		 * (productId becomes part of the {@link HeaderAggregationKey}), instead of collapsing into one big
+		 * multi-product order. Lines are still aggregated independently by {@link LineAggregationKey} (ASI / UOM /
+		 * HU-PI / distribution-network / …), so a single product carrying several such variants can still produce
+		 * more than one line — this flag only bounds a header to one product, it does not force a single line.
 		 */
 		boolean aggregateByProductId;
 	}
