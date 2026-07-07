@@ -729,8 +729,12 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull
 	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
 	{
-		final HuId pickedLuId = pickingJob.getLuPickingTargetEffective(lineId)
-				.filter(LUPickingTarget::isExistingLU)
+		// Resolve the EXISTING LU across line-then-header scopes. For a header-level (SALES_ORDER) job the
+		// line carries its own not-yet-materialised LU target, which would shadow the shared, already-picked
+		// header LU if we used getLuPickingTargetEffective (first-present) + filter — so a later line's capture
+		// would see an empty existing-GRAI set and fail to mirror the LU-wide dedupe. getExistingLuPickingTargetEffective
+		// skips the non-existing scope and finds the shared LU (and, for PRODUCT aggregation, this line's own LU).
+		final HuId pickedLuId = pickingJob.getExistingLuPickingTargetEffective(lineId)
 				.map(LUPickingTarget::getLuIdNotNull)
 				.orElse(null);
 
