@@ -640,9 +640,19 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 // per scenario keeps each fragment's handling independently observable.
 
 // A short idle-abandon window (ms) for the no-terminator HEAD test — the head is held as PARTIAL_SCAN
-// until this window elapses, so a low value keeps the E2E fast while still exercising the real path.
-// Well above the largest legit inter-chunk gap the device produces, and far below the 15000 ms default.
-const FAST_ABANDON_MS = 1500;
+// until this window elapses, then flushed as the QR_NOT_RECOGNIZED error. A low value keeps the E2E fast
+// while still exercising the real held-then-abandoned path.
+//
+// It must be comfortably SHORT: expectErrorToast() gives the assertion only ~2 s of grace after pickHU()
+// returns (which, on the direct-scan HEAD path, is almost immediately — the scan dispatch is synchronous
+// and no qty dialog opens). The abandon flush → backend round-trip → error-toast render must all land
+// inside that budget under CI load, so the window is set well below it. The hook's idle interval ticks
+// every rateMs*2 (rateMs = the 300 ms debounce default here → 600 ms), so 500 ms fires reliably on the
+// first tick (~600 ms) with large margin, and still sits above rateMs so it never trips the normal
+// debounce flush. (The window is deliberately tiny for the test ONLY because this HEAD is dispatched as
+// ONE synchronous keystroke burst with zero inter-chunk gaps — there is no slow chunked scan here to
+// protect; production keeps the 15000 ms default that clears the real 3-8 s inter-chunk gaps.)
+const FAST_ABANDON_MS = 500;
 const FAST_ABANDON_SYSCONFIG = { 'mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis': String(FAST_ABANDON_MS) };
 
 const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ which, terminator }) => {
@@ -751,6 +761,18 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
     allure.severity('critical');
 
     // A single SO line big enough to receive both picks (3 TU + 3 TU = 6 TU = 24 PCE).
+    //
+    // Each source HU must hold EXACTLY the 3 TU we want each scan to contribute — NOT more. The qty
+    // dialog defaults to min(HU available, line remaining), so a full-line-sized HU (e.g. the 20-TU
+    // 'PItarget' below) would default the FIRST scan to the whole 6-TU remainder, fill the line, and
+    // leave nothing for the second scan. Sizing each source HU to 3 TU (via 'PIsrc', a 3-TU LU) makes
+    // each scan default to '3' and forces BOTH HUs to be consumed to reach 6 TU — which is exactly what
+    // proves the two no-terminator scans were separated into two distinct picks.
+    //
+    // Note masterdata sizes an HU from its packingInstructions' capacity (a `qty` field is rejected when
+    // packingInstructions is set — see CreateHUCommand.getTotalQtyCUs), so the per-HU cap is expressed
+    // as a dedicated small PI, not a qty. The 20-TU 'PItarget' PI stays only to provide a target LU big
+    // enough to receive all 6 picked TUs (setTargetLU below selects it by its LU name).
     const masterdata = await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -769,11 +791,14 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
             pickingSlots: { slot1: {} },
             products: { 'P1': { prices: [{ price: 1 }] } },
             packingInstructions: {
-                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+                // Target LU: large enough to hold both picks (6 TU). Used only as the pick target.
+                'PItarget': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+                // Source HUs: exactly 3 TU each, so each scan defaults to '3' and both are required.
+                'PIsrc': { lu: 'LUsrc', qtyTUsPerLU: 3, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
-                'HU2': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PIsrc' },
+                'HU2': { product: 'P1', warehouse: 'wh', packingInstructions: 'PIsrc' },
             },
             salesOrders: {
                 'SO1': {
@@ -793,7 +818,7 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PItarget.luName });
 
     // First scan (no terminator): HU1 → 3 TU picked. A merge regression would leave this pick unrecognised.
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, isScanDirectly: true, expectQtyEntered: '3' });
