@@ -252,6 +252,53 @@ class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 				);
 	}
 
+	/**
+	 * A DESADV line delivered in TU must carry a TU-level product identifier.
+	 * When the {@code M_HU_PI_Item_Product} has a GTIN but no explicit {@code EAN_TU}, the created
+	 * desadv line must fall back to that GTIN for {@code EAN_TU} — otherwise the line ships with no
+	 * TU identifier and the downstream EANCOM mapping emits only the buyer number
+	 * ({@code PIA+1+..:IN}), which the recipient's guideline rejects.
+	 */
+	@Test
+	void createdDesadvLine_EAN_TU_fallsBackToGTIN_whenNoExplicitEanTu()
+	{
+		// arrange: the HU PI Item Product has a TU-level GTIN but no explicit EAN_TU
+		huPIItemProductRecord.setGTIN("7624500074007");
+		huPIItemProductRecord.setEAN_TU(null);
+		saveRecord(huPIItemProductRecord);
+
+		// a DESADV that retrieveOrCreateDesadv will match by POReference (so no full header setup is needed)
+		final String poReference = "PO-30813-EANTU";
+		final I_EDI_Desadv desadvRecord = newInstance(I_EDI_Desadv.class);
+		desadvRecord.setPOReference(poReference);
+		desadvRecord.setC_BPartner_ID(recipientBPartnerId.getRepoId());
+		saveRecord(desadvRecord);
+
+		// an order whose line is NOT yet linked to a desadv line -> exercises the create path
+		final I_C_Order orderRecord = newInstance(I_C_Order.class);
+		orderRecord.setPOReference(poReference);
+		orderRecord.setC_BPartner_ID(recipientBPartnerId.getRepoId());
+		saveRecord(orderRecord);
+
+		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
+		orderLineRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+		orderLineRecord.setC_BPartner_ID(recipientBPartnerId.getRepoId());
+		orderLineRecord.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
+		orderLineRecord.setM_HU_PI_Item_Product_ID(huPIItemProductRecord.getM_HU_PI_Item_Product_ID());
+		orderLineRecord.setLine(10);
+		orderLineRecord.setInvoicableQtyBasedOn(InvoicableQtyBasedOn.NominalWeight.getCode());
+		saveRecord(orderLineRecord);
+
+		// invoke the method under test (the create path: retrieveOrCreateDesadvLine)
+		desadvBL.addToDesadvCreateForOrderIfNotExist(orderRecord);
+
+		InterfaceWrapperHelper.refresh(orderLineRecord);
+		final I_EDI_DesadvLine createdDesadvLine = orderLineRecord.getEDI_DesadvLine();
+		assertThat(createdDesadvLine).as("a desadv line must have been created for the order line").isNotNull();
+		assertThat(createdDesadvLine.getGTIN_TU()).as("guard: GTIN_TU is populated from the HU PI Item Product's GTIN").isEqualTo("7624500074007");
+		assertThat(createdDesadvLine.getEAN_TU()).as("EAN_TU must fall back to GTIN_TU when no explicit EAN_TU is maintained").isEqualTo("7624500074007");
+	}
+
 	@Test
 	void addToDesadvCreateForInOutIfNotExist_no_HU_catch_weight()
 	{

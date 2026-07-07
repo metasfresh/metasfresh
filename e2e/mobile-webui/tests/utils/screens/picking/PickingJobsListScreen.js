@@ -11,6 +11,19 @@ import { MassPrintingScanScreen } from './MassPrintingScanScreen';
 const NAME = 'PickingJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFLaunchersScreen');
+// The job (workflow-process) screen reached after starting a launcher. This id mirrors the private
+// containerElement in PickingJobScreen.js — keep the two in sync if the workflow-process screen id changes.
+/** @returns {import('@playwright/test').Locator} */
+const jobScreenElement = () => page.locator('#WFProcessScreen');
+
+// Bounded tap-and-recover for the launcher-start navigation (see tapLauncherUntilJobScreen).
+// Small attempt count with explicit per-step timeouts so the retry cost stays modest: only the first
+// attempt pays the full slow-action settle budget; retries re-settle an already-populated list on a
+// short budget, so a few attempts do not multiply the full 20s screen wait.
+const JOB_START_TAP_ATTEMPTS = 3;
+// Short per-attempt wait for the job screen to appear after a tap. On the happy path the first
+// attempt succeeds immediately; only a slow/lost workflow-start round-trip pays this.
+const JOB_START_ARRIVAL_TIMEOUT = 8000; // 8sec
 
 export const PickingJobsListScreen = {
     waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
@@ -93,8 +106,7 @@ export const PickingJobsListScreen = {
             });
         } else if (index != null) {
             return await test.step(`${NAME} - Start job by index ${index - 1}`, async () => {
-                await locateJobButtons({ index, qtyToDeliver, customerLocationId }).tap()
-                await PickingJobScreen.waitForScreen();
+                await tapLauncherUntilJobScreen({ index, qtyToDeliver, customerLocationId });
                 return {
                     pickingJobId: await PickingJobScreen.getPickingJobId(),
                 }
@@ -146,6 +158,75 @@ export const PickingJobsListScreen = {
         await ApplicationsListScreen.waitForScreen();
     }),
 
+};
+
+/**
+ * Settle the launcher list, then pin the tap target by stable identity — its data-testid when the
+ * launcher exposes one (unique, reorder-immune), else its attribute/index locator — read at runtime.
+ * @param settleTimeout - wait budget for the list to settle (spinner detached + launcher visible).
+ *        Defaults to the full slow-action budget for a first, freshly-navigated (websocket-populating)
+ *        list; a retry that is already back on a populated list can pass a shorter budget.
+ * @returns {Promise<import('@playwright/test').Locator>} the locator to tap
+ */
+const resolveLauncherTapTarget = async ({ index, qtyToDeliver, customerLocationId, settleTimeout = SLOW_ACTION_TIMEOUT }) => {
+    await page.locator('.loading').waitFor({ state: 'detached', timeout: settleTimeout });
+
+    const byAttribute = qtyToDeliver != null || customerLocationId != null;
+    const identified = byAttribute
+        ? locateJobButtons({ qtyToDeliver, customerLocationId })
+        : locateJobButtons({ index });
+    await identified.waitFor({ state: 'visible', timeout: settleTimeout });
+
+    // Exactly one launcher must be addressed. A bare index (.nth is always ≤1) is reorder-safe only
+    // against a single-candidate list (a prior filterByDocumentNo / single-order masterdata), so the
+    // real guard there is the unfiltered set — a bare index against a multi-launcher list fails loud.
+    await expect(byAttribute ? identified : locateJobButtons()).toHaveCount(1);
+
+    const testId = await identified.getAttribute('data-testid');
+    return (testId != null && testId.length > 0) ? page.getByTestId(testId) : identified;
+};
+
+/**
+ * Reach the picking job screen from a launcher tap, recovering like a real user from a slow or lost
+ * workflow-start round-trip: tap the launcher; if the job screen has not come up and we are still on
+ * the launcher list, re-resolve the launcher FRESH and tap again — bounded to a few attempts.
+ *
+ * This retries ONLY the setup navigation (reaching the job screen); it asserts nothing about the
+ * feature under test. Each wait is explicitly bounded (no unbounded/120s fallback). Idempotency guard:
+ * a re-tap fires only while we are demonstrably back on the (websocket-driven) launcher list — never
+ * mid-transition, so a start already in flight is not double-fired. If the job screen never arrives,
+ * the trailing full-settle waitForScreen throws and the test fails loud (a genuine broken start is
+ * never swallowed).
+ */
+const tapLauncherUntilJobScreen = async ({ index, qtyToDeliver, customerLocationId }) => {
+    for (let attempt = 1; attempt <= JOB_START_TAP_ATTEMPTS; attempt++) {
+        // First attempt settles the freshly-navigated (websocket-populating) list on the full budget;
+        // a retry is already back on a populated list, so it re-settles on a short budget.
+        const settleTimeout = attempt === 1 ? SLOW_ACTION_TIMEOUT : FAST_ACTION_TIMEOUT;
+        const target = await resolveLauncherTapTarget({ index, qtyToDeliver, customerLocationId, settleTimeout });
+        await target.tap();
+
+        const arrived = await jobScreenElement()
+            .waitFor({ state: 'attached', timeout: JOB_START_ARRIVAL_TIMEOUT })
+            .then(() => true, () => false);
+        if (arrived || attempt === JOB_START_TAP_ATTEMPTS) {
+            break;
+        }
+
+        // Not on the job screen yet, and attempts remain. Only loop to re-tap if we are back on the
+        // launcher list — the launcher and job screens are mutually-exclusive routes, so its presence
+        // (attached) means we truly returned, not a mid-transition overlap. Otherwise a navigation may
+        // still be in flight — give it a bounded moment to land rather than blindly re-tapping (which
+        // could double-start the workflow), then let the final settle below settle-or-fail.
+        const backOnLauncherList = await containerElement()
+            .waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT })
+            .then(() => true, () => false);
+        if (!backOnLauncherList) {
+            break;
+        }
+    }
+
+    await PickingJobScreen.waitForScreen();
 };
 
 const locateJobButtons = ({ documentNo, index, salesOrderId, customerId, qtyToDeliver, productId, customerLocationId, caption } = {}) => {
