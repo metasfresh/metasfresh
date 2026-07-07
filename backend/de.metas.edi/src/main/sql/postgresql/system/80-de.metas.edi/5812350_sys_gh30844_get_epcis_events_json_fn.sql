@@ -115,7 +115,7 @@ BEGIN
                 SELECT 1
                 FROM m_hu_assignment ha2
                          JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-                         JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id and io2.issotrx='Y' /*only a sales shipment counts as coverage - a re-receipt of the same TU from a vendor must not open the close-gate*/
+                         JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id and io2.issotrx='Y' /*only a sales shipment counts as coverage - a purchase-receipt of the same goods from a vendor must not open the close-gate*/
                 WHERE ha2.ad_table_id = v_m_inoutline_table_id
                   AND ha2.isactive = 'Y'
                   AND iol2.isactive = 'Y'
