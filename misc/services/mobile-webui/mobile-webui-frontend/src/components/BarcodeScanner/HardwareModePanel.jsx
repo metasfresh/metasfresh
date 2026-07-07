@@ -17,12 +17,18 @@ const useHardwareConfigParams = () => {
       0
     ),
     textChangedDebounceMillis: usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300),
+    idleAbandonMillis: usePositiveNumberSetting('barcodeScanner.inputText.idleAbandonMillis', 15000),
   };
 };
 
 const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disabled, onBarcodeScanned, testId }) => {
-  const { hardwareInputMode, isHardwareInputReadOnly, triggerOnChangeIfLengthGreaterThan, textChangedDebounceMillis } =
-    useHardwareConfigParams();
+  const {
+    hardwareInputMode,
+    isHardwareInputReadOnly,
+    triggerOnChangeIfLengthGreaterThan,
+    textChangedDebounceMillis,
+    idleAbandonMillis,
+  } = useHardwareConfigParams();
   const inputTextRef = useRef();
   // Tracks the LIVE `disabled` prop so the 2s blur-refocus setTimeout below can check the
   // current value at fire time, not the stale closure value at schedule time. Without this,
@@ -62,6 +68,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     isHardwareInputReadOnly,
     triggerOnChangeIfLengthGreaterThan,
     textChangedDebounceMillis,
+    idleAbandonMillis,
   };
 
   const handleInputTextChanged = (e) => {
@@ -106,6 +113,7 @@ const HardwareModePanel = ({ invisible, inputPlaceholderText, isProcessing, disa
     },
     rateMs: textChangedDebounceMillis,
     minLength: triggerOnChangeIfLengthGreaterThan,
+    idleAbandonMs: idleAbandonMillis,
     // Parent owns the disabled decision (see BarcodeScannerComponent — combines isProcessing
     // with `activeMode === MANUAL` so keystrokes flow to the visible manual input instead
     // of the offscreen hardware one).
