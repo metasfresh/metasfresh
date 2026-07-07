@@ -130,7 +130,7 @@ public class CreatePackingInstructionsCommand
 	 */
 	private GRAI createGRAIMapping(@NonNull final PIResult tu)
 	{
-		final GRAI grai = generateUniqueGRAI();
+		final GRAI grai = generateUniqueGRAI(request.getGraiCompanyPrefix(), request.getGraiAssetType());
 
 		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
 		record.setM_HU_PI_ID(tu.getPiId().getRepoId());
@@ -211,17 +211,22 @@ public class CreatePackingInstructionsCommand
 	}
 
 	/**
-	 * Generates a random canonical GRAI ({@code companyPrefix.assetType.serial}) whose (companyPrefix, assetType)
-	 * pair does not already exist in {@code M_HU_PI_GRAI} (the global unique index is on those two columns).
+	 * Generates a canonical GRAI ({@code companyPrefix.assetType.serial}) whose (companyPrefix, assetType) pair
+	 * does not already exist in {@code M_HU_PI_GRAI} (the global unique index is on those two columns).
+	 * <p>
+	 * When {@code companyPrefixOverride}/{@code assetTypeOverride} are given (e.g. the Migros returnable-asset
+	 * pair), they are used instead of a random pair — e.g. to build a scannable Migros GRAI in a test whose
+	 * {@code (companyPrefix, assetType)} must be known ahead of time. The collision-avoidance loop still applies:
+	 * if that fixed pair already has a mapping, generation fails after 100 attempts, same as the random case.
 	 */
-	private GRAI generateUniqueGRAI()
+	private GRAI generateUniqueGRAI(@Nullable final String companyPrefixOverride, @Nullable final String assetTypeOverride)
 	{
 		final ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int attempt = 0; attempt < 100; attempt++)
 		{
 			// 7-digit company prefix + 5-digit asset type + numeric serial → also valid as a GS1 AI 8003 barcode (12-digit base).
-			final String companyPrefix = String.format("%07d", random.nextInt(0, 10_000_000));
-			final String assetType = String.format("%05d", random.nextInt(0, 100_000));
+			final String companyPrefix = companyPrefixOverride != null ? companyPrefixOverride : String.format("%07d", random.nextInt(0, 10_000_000));
+			final String assetType = assetTypeOverride != null ? assetTypeOverride : String.format("%05d", random.nextInt(0, 100_000));
 			final String serial = String.format("%010d", random.nextLong(0, 10_000_000_000L));
 			final GRAI grai = GRAI.ofCanonicalString(companyPrefix + "." + assetType + "." + serial);
 
