@@ -306,9 +306,9 @@ public class EDIDocumentBL
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line);
 			}
 
-			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo)
+			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo && !il.isPackagingMaterial())
 			{
-				// task 09182: on line level, we need an order line reference,
+				// task 09182: on line-level for not-packaging-material-lines, we need an order line reference,
 				// only for docSubType='CS' an orderLine does not have to be linked to an invoiceLine for successful EDI export.
 				// note: if this changes in a new project, use AD_SysConfig
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID);
