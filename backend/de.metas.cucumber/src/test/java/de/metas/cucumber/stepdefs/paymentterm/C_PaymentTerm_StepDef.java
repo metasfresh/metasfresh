@@ -27,11 +27,13 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.payment.paymentterm.repository.PaymentTermQuery;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Optionals;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -59,6 +61,10 @@ public class C_PaymentTerm_StepDef
 
 	@NonNull private final C_PaymentTerm_StepDefData paymentTermTable;
 	@NonNull private final C_PaymentTerm_Break_StepDefData paymentTermBreakTable;
+
+	/** Wait budget for the PaymentTermRepository cache-reset to land after the C_PaymentTerm_Break rows were committed. */
+	private static final int VALIDATE_TIMEOUT_SECONDS = 30;
+	private static final int VALIDATE_CHECK_INTERVAL_MS = 200;
 
 	@And("metasfresh contains C_PaymentTerm")
 	public void createPaymentTerms(@NonNull final DataTable dataTable)
@@ -146,7 +152,8 @@ public class C_PaymentTerm_StepDef
 				.forEach(row -> {
 					final SoftAssertions softly = new SoftAssertions();
 
-					final I_C_PaymentTerm paymentTerm = row.getAsIdentifier().lookupNotNullIn(paymentTermTable);
+					final StepDefDataIdentifier identifier = row.getAsIdentifier();
+					final I_C_PaymentTerm paymentTerm = identifier.lookupNotNullIn(paymentTermTable);
 
 					row.getAsOptionalString("Value")
 							.ifPresent(value -> softly.assertThat(paymentTerm.getValue()).as("Value").isEqualTo(value));
@@ -154,11 +161,44 @@ public class C_PaymentTerm_StepDef
 							.ifPresent(name -> softly.assertThat(paymentTerm.getName()).as("Name").isEqualTo(name));
 					row.getAsOptionalBoolean("IsComplex")
 							.ifPresent(isComplex -> softly.assertThat(paymentTerm.isComplex()).as("IsComplex").isEqualTo(isComplex));
-					row.getAsOptionalBoolean("IsValid")
-							.ifPresent(isValid -> softly.assertThat(paymentTerm.isValid()).as("IsValid").isEqualTo(isValid));
+
+					final OptionalBoolean expectedIsValid = row.getAsOptionalBoolean("IsValid");
+					if (expectedIsValid.isPresent())
+					{
+						assertPaymentTermRepoIsValid(identifier, expectedIsValid.isTrue(), softly);
+					}
 
 					softly.assertAll();
 				});
+	}
+
+	/**
+	 * Asserts the {@code IsValid} flag against the {@link IPaymentTermRepository}-computed validity, polling until it settles.
+	 * <p>
+	 * The repository caches all payment terms in one monolithic entry, whose per-term {@code valid} flag is derived at load
+	 * time from the {@code C_PaymentTerm_Break} rows visible then. The cache reset triggered by inserting the breaks is
+	 * delivered asynchronously and can lag under executor load. Reading the persisted {@code I_C_PaymentTerm.IsValid} column
+	 * would neither exercise nor wait on that cache, so a scenario could proceed to order completion while the repository
+	 * still served a stale partial term (e.g. only a 30% break -> "Total percent ... 30%"), and
+	 * {@code PaymentTerm.assertValid()} would then throw during {@code C_Order} completion. Polling the repository here
+	 * internalizes that wait: the step blocks until {@code getById()} reflects all committed breaks before the scenario
+	 * continues, going through the exact same load path that completion later uses.
+	 */
+	private void assertPaymentTermRepoIsValid(
+			@NonNull final StepDefDataIdentifier identifier,
+			final boolean expectedIsValid,
+			@NonNull final SoftAssertions softly) throws InterruptedException
+	{
+		final PaymentTermId paymentTermId = paymentTermTable.getId(identifier);
+
+		StepDefUtil.tryAndWait(
+				VALIDATE_TIMEOUT_SECONDS,
+				VALIDATE_CHECK_INTERVAL_MS,
+				() -> paymentTermRepo.getById(paymentTermId).isValid() == expectedIsValid);
+
+		softly.assertThat(paymentTermRepo.getById(paymentTermId).isValid())
+				.as("IsValid (PaymentTermRepository-computed)")
+				.isEqualTo(expectedIsValid);
 	}
 
 	public Optional<PaymentTermId> extractPaymentTermId(final @NonNull DataTableRow row)
