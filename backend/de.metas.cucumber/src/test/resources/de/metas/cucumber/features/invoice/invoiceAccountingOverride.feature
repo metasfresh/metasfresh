@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0340_Invoicing
 @allure.label.feature:F00700_Invoicing
+@allure.label.feature:F01010.4_Invoice_Accounting_Overrides
 @ghActions:run_on_executor5
 Feature: Per-line GL account override on purchase invoices
 # A per-line C_ElementValue_Override_ID on a purchase invoice line:
@@ -88,6 +89,7 @@ Feature: Per-line GL account override on purchase invoices
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
+  @allure.label.feature:F01010.4_Invoice_Accounting_Overrides
   Scenario: Purchase invoice from a receipt-matched candidate with a per-line GL override posts to the override account
     # Purchase order -> complete
     When metasfresh contains C_Orders:
@@ -159,6 +161,7 @@ Feature: Per-line GL account override on purchase invoices
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
+  @allure.label.feature:F01010.4_Invoice_Accounting_Overrides
   Scenario: Payment allocation for a per-line override invoice posts to V_Liability, not the override account
     And metasfresh contains C_Invoice:
       | Identifier | C_BPartner_ID | C_DocTypeTarget_ID.Name | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
