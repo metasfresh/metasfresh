@@ -70,11 +70,13 @@ public final class TableModelLoader
 	/**
 	 * Max number of record IDs to load per "IN (?,?,...)" query, to stay below the PostgreSQL/JDBC
 	 * 2-byte bind-parameter limit (max 32767 params per statement). Larger sets are loaded in chunks.
-	 * Kept conservative (plan-friendly); it only ever engages for loads that would otherwise fail.
+	 * Set well below that cap with headroom (not AT the limit, so an off-by-one or a future extra bind
+	 * param can't reintroduce the overflow), yet large enough to keep the chunk count low — an ~83k-id
+	 * load becomes 3 queries, not 84. It only ever engages for loads that would otherwise fail.
 	 * MUST stay &lt;= 32767 or the very bug this guards against returns (see {@code TableModelLoaderChunkingTest}).
 	 */
 	@VisibleForTesting
-	static final int MAX_IDS_PER_QUERY = 1000;
+	static final int MAX_IDS_PER_QUERY = 30000;
 
 	/**
 	 * @return {@code true} if {@code recordIdCount} record IDs can be loaded in one query (the fast path),
