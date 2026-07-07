@@ -11,9 +11,9 @@ const NAME = 'HOME';
 const containerElement = () => page.locator('#ApplicationsListScreen');
 
 export const ApplicationsListScreen = {
-    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect to be displayed`, async () => {
