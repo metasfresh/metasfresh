@@ -33,7 +33,7 @@ import java.util.List;
  * same source {@code ProductAcctType.P_Expense_Acct/P_InventoryClearing_Acct.getAccountConceptualName()}
  * uses) — rename-safe, and avoids a compile dependency on {@code de.metas.acct.base}.</p>
  *
- * <p>Purchase-only (me03 30443): the override field is exposed only on purchase candidates/lines;
+ * <p>Purchase-only: the override field is exposed only on purchase candidates/lines;
  * sales invoices are skipped via the {@code isSOTrx()} guard.</p>
  *
  * <p>Kept in its own class to separate this concern from the existing {@code C_Invoice} interceptor
@@ -59,7 +59,7 @@ public class C_Invoice_AcctOverride
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	public void materializeAcctOverrides(@NonNull final I_C_Invoice invoice)
 	{
-		// Purchase-only scope (me03 30443): the override field is exposed only on purchase candidates/lines.
+		// Purchase-only scope: the override field is exposed only on purchase candidates/lines.
 		if (invoice.isSOTrx())
 		{
 			return;
