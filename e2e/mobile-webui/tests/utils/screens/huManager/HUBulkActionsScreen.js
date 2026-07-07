@@ -1,9 +1,8 @@
 import { test } from '../../../../playwright.config';
-import { page, SLOW_ACTION_TIMEOUT } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
-import { NotificationToast } from '../../dialogs/NotificationToast';
 
 const NAME = 'HUBulkActionsScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -25,15 +24,17 @@ export const HUBulkActionsScreen = {
         await page.getByTestId('toggle-target-scanner-button').getByText('Close scanner').waitFor({ timeout: SLOW_ACTION_TIMEOUT });
         await BarcodeScannerComponent.type(targetLocator);
 
-        // The bulk move commits via an async REST round-trip (api.moveBulkHUs); only in its .then()
-        // does the frontend show the success toast and THEN navigate home (goHome()). Wait for that
-        // commit-confirming, user-visible toast FIRST — it gives the (CI-load-sensitive) round-trip its
-        // own timeout budget — before waiting for the home-screen transition, instead of cramming the
-        // slow commit + navigation + websocket refetch into ApplicationsListScreen.waitForScreen()'s
-        // single budget (which is what made it overshoot SLOW_ACTION_TIMEOUT and flake).
-        // See e2e/mobile-webui/CLAUDE.md § "async-commit race" / "Assert what the user SEES".
-        await NotificationToast.waitToPopup();
-
-        await ApplicationsListScreen.waitForScreen();
+        // The bulk move commits via an async REST round-trip (api.moveBulkHUs -> POST /bulk/move);
+        // only once it resolves does the frontend navigate home (history.goHome()). The home screen
+        // appearing IS the commit-confirming, user-visible landing signal — but its single default
+        // SLOW_ACTION_TIMEOUT (20s) budget has to absorb that whole round-trip, so under CI load the
+        // commit can overshoot 20s and the wait times out (the flake). A transient success toast is
+        // NOT usable as an earlier signal here: ScreenToaster dismisses all toasts on the very
+        // navigation that follows it (useLocationChange -> toast.dismiss()), so it races the dismissal.
+        // Give the transition the VERY_SLOW_ACTION_TIMEOUT (40s) budget instead — the same idiom used
+        // for other heavy async-commit-then-return-to-list flows (e.g. PickingJobScreen.complete,
+        // ManufacturingJobScreen, InventoryJobScreen). No new signal is invented; the genuinely-slow
+        // commit is simply given room to land.
+        await ApplicationsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
 };
