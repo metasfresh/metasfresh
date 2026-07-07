@@ -312,8 +312,9 @@ Feature: Dhl Shipment
 
   @Id:S0335.1_300
   Scenario: DHL shipment with WeightSourceTypes=ProductWeight — TU pick isolates the product weight (excludes packing)
-    # A real TU pick (10-per-TU) yields ONE package; with WeightSourceTypes=ProductWeight the PackageWeight is
-    # product.GrossWeight × qty (2.5 kg), and the TU pick keeps the packing-material weight out of it.
+    # A real TU pick of qty 5 (= the packing instruction's per-TU capacity) yields ONE TU = ONE package. With
+    # WeightSourceTypes=ProductWeight the PackageWeight is product.GrossWeight × qty (0.250 × 5 = 1.25 kg), the
+    # TU pick keeping the packing-material (Karton) weight out of it; the package envelope is the Karton (30×20×10).
     Given set sys config String value ProductWeight for sys config de.metas.shipping.WeightSourceTypes
 
     When metasfresh contains External System
@@ -338,9 +339,8 @@ Feature: Dhl Shipment
       "orderDocType": "SalesOrder",
       "paymentTerm": "val-1000002",
       "productIdentifier": "val-test_product_dhl_01",
-      "qty": 10,
+      "qty": 5,
       "packingMaterialId": @dhl_huProductTU_X@,
-      "qtyItemCapacity": 10,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "ref_12389",
@@ -370,4 +370,4 @@ Feature: Dhl Shipment
       | shipment_1            | shipTransp_1                          |
     And validate M_Packages for shipment shipment_1
       | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
-      | shipper_DHL  | dhl_customer  | dhl_location           | 2.5           | package1     | 50         | 20        | 10         |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 1.25          | package1     | 30         | 20        | 10         |
