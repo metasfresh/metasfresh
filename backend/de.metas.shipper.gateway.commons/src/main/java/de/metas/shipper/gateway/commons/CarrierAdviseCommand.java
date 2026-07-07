@@ -169,6 +169,18 @@ public class CarrierAdviseCommand
 			logger.info("Skip adviseShipment for {} because it is not requested", shipmentSchedule.getId());
 			return;
 		}
+		// The advise is enqueued async, so the schedule can become processed/closed (shipped) between enqueue and
+		// now. Don't advise a closed schedule; resolve the dangling Requested status instead — Completed when a
+		// carrier product was already determined, otherwise NotRequested.
+		if (shipmentSchedule.isProcessed() || shipmentSchedule.isClosed())
+		{
+			final CarrierAdviseStatus resolvedStatus = shipmentSchedule.getCarrierProductId() != null
+					? CarrierAdviseStatus.Completed
+					: CarrierAdviseStatus.NotRequested;
+			logger.info("Skip adviseShipment for {} because it is processed/closed; resolving status to {}", shipmentSchedule.getId(), resolvedStatus);
+			updateAdviseStatusAndSave(shipmentSchedule, resolvedStatus);
+			return;
+		}
 		advise(shipmentSchedule);
 	}
 
