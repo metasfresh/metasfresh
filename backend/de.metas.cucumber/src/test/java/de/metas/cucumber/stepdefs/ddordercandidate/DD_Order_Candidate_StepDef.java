@@ -18,7 +18,6 @@ import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.distribution.ddorder.DDOrderAndLineId;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddordercandidate.DDOrderCandidate;
