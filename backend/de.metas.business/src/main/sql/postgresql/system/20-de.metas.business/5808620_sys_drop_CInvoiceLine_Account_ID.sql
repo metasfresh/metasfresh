@@ -5,7 +5,7 @@
 -- Dependent sweep: fact_acct_transactions_view and fresh_statistics_kg_week_view reference
 -- fact_acct.Account_ID (not c_invoiceline.Account_ID) — no action needed.
 -- No EXP_FormatLine, no ColumnSQL, no AD_Val_Rule references to this column.
--- me03: https://github.com/metasfresh/me03/issues/30443
+-- F01010.4 Invoice Accounting Overrides
 
 -- ============================================================
 -- 1. FK-chain cleanup for both AD_Fields (anchored by AD_Column_ID=590530)

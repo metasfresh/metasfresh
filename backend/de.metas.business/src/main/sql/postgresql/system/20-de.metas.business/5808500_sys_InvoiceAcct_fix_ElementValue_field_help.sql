@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — AC2: fix Help on field 710156
+-- F01010.4 Invoice Accounting Overrides — AC2: fix Help on field 710156
 --
 -- AD_Field 710156 (C_ElementValue_ID in window 541659) had a stale Help value carried over
 -- from element 198 ("Account Elements can be natural accounts or user defined values.").

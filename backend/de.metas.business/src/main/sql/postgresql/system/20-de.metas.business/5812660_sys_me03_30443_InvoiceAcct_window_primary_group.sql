@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides
+-- F01010.4 Invoice Accounting Overrides
 -- Mark the top-left element group of the "Invoice Accounting Overrides" window
 -- (AD_Window 541659, tab 546735) as the primary group. The window had no primary
 -- group at all; the layout convention requires exactly one primary group, placed

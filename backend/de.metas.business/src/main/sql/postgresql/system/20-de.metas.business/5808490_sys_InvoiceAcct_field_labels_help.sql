@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — AC2: correct field labels and German help
+-- F01010.4 Invoice Accounting Overrides — AC2: correct field labels and German help
 --
 -- Impact summary:
 --   AD_Element 577539 (AccountName): used ONLY by C_Invoice_Acct.AccountName → safe to rename

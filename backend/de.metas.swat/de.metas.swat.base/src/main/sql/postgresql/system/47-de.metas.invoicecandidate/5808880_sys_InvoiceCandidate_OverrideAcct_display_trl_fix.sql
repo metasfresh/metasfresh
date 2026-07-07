@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 — fix AD_Field_Trl propagation for the resolved-override-account
+-- F01010.4 — fix AD_Field_Trl propagation for the resolved-override-account
 -- display field 781219 (element 585025).
 --
 -- 5808720 seeded AD_Field_Trl (field 781219) with the SAME Updated timestamp as AD_Element_Trl

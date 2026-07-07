@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- Column: C_InvoiceLine.C_ElementValue_Override_ID
--- me03 #30443 — F01010.4 "Invoice Accounting Overrides"
+-- F01010.4 "Invoice Accounting Overrides"
 -- Adds a GL account override FK field to C_InvoiceLine so a user can set the
 -- override directly on a draft purchase invoice line.
 --

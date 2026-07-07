@@ -1,7 +1,7 @@
 -- Run mode: SWING_CLIENT
 
 -- Column: C_Invoice_Candidate.C_ElementValue_Override_ID
--- me03 #30443 — F01010.4 "Invoice Accounting Overrides"
+-- F01010.4 "Invoice Accounting Overrides"
 -- Adds a GL account override field to C_Invoice_Candidate so that the invoicing engine
 -- can post to a specific account instead of the product-derived one.
 --

@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — German window + menu name (AC3)
+-- F01010.4 Invoice Accounting Overrides — German window + menu name (AC3)
 --
 -- Window 541659, its menu node (AD_Menu 542034, under Finanzen), its tab (AD_Tab 546735) and the
 -- key column C_Invoice_Acct_ID (AD_Column 585476) are ALL backed by the same AD_Element 581915

@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — clarify the C_InvoiceLine_ID field help
+-- F01010.4 Invoice Accounting Overrides — clarify the C_InvoiceLine_ID field help
 --
 -- Window 541659 (Invoice Accounting Overrides), field 710153 (C_InvoiceLine_ID), backed by the
 -- dedicated element 585017 (C_InvoiceLine_ID_InvoiceAcct, created by 5808540). The existing help

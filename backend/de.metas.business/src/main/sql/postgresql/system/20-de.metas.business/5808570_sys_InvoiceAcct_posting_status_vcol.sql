@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 — show parent invoice posting state in the
+-- F01010.4 — show parent invoice posting state in the
 -- "Invoice Accounting Overrides" window so the user can see that a re-post
 -- is needed after editing an override on an already-posted invoice.
 --

@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — durable per-field help via dedicated AD_Elements
+-- F01010.4 Invoice Accounting Overrides — durable per-field help via dedicated AD_Elements
 --
 -- Supersedes the field-level help approach of 5808490 (STEP 4) + 5808530 (AD_Field_Trl timestamp-freeze).
 -- Per the metasfresh AD convention: a per-field Name/Help that differs from the shared element MUST be

@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides
+-- F01010.4 Invoice Accounting Overrides
 -- Task 2: Turn C_Invoice_Acct.AccountName (AD_Column 585480) into a List dropdown
 -- of the 6 account concepts an invoice can post to.
 -- The stored Value stays the technical concept string (P_Revenue_Acct, etc.) so

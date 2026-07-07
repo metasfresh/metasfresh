@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 — fix review findings on the resolved-override-account display column (592842):
+-- F01010.4 — fix review findings on the resolved-override-account display column (592842):
 --  (1) lowercase the ColumnSQL keywords + FROM-clause table name — the Oracle→PostgreSQL conversion
 --      layer (Convert_PostgreSQL) inspects SQL case-sensitively; uppercase keywords in a subquery can
 --      trigger top-level rewrites that corrupt generic PO loads across the WebUI. (5808720 shipped it

@@ -1,4 +1,4 @@
--- me03 #30443 — F01010.4 Invoice Accounting Overrides — fix: German help in AD_Field_Trl
+-- F01010.4 Invoice Accounting Overrides — fix: German help in AD_Field_Trl
 --
 -- Task 3's migration (5808490) set override-specific German Help in AD_Field.Help (base column)
 -- for fields 710152/710153/710154 (window 541659), but only seeded MISSING _Trl rows.
