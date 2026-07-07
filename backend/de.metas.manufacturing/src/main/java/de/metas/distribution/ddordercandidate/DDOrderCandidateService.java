@@ -126,8 +126,6 @@ public class DDOrderCandidateService
 				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
 				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
 				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
-				// Defaults to false: enabling it keeps different products in separate DD_Orders (adds M_Product_ID
-				// to the header key), changing today's aggregation, so it is opt-in per instance rather than on by default.
 				.aggregateByProductId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byProductId, false))
 				.build();
 	}
