@@ -95,8 +95,8 @@ const ScanHUAndGetQtyComponent = ({
     (newGrais) =>
       setGraiCapture((prev) => {
         const { merged, skipped } = mergeGraiArrays(prev.codes, newGrais, existingLuGrais, prev.skippedCodes);
-        const codesChanged = merged !== prev.codes;
-        if (!codesChanged && skipped.length === 0) {
+        const didCodesChange = merged !== prev.codes;
+        if (!didCodesChange && skipped.length === 0) {
           return prev;
         }
         return {
