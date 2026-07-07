@@ -20,10 +20,12 @@ const createMasterdata = async ({
                                     allowCompletingPartialPickingJob = false,
                                     shipOnCloseLU = false,
                                     salesOrdersQty = 12,
+                                    extraSysconfigs,
                                 } = {}) => {
     return await Backend.createMasterdata({
         language,
         request: {
+            ...(extraSysconfigs && { sysconfigs: extraSysconfigs }),
             login: { user: { language } },
             mobileConfig: {
                 picking: {
@@ -612,20 +614,45 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 // delivers it, must surface the friendly QR_NOT_RECOGNIZED message — never a silent failure or the raw
 // "Failed converting payload" developer error.
 //
-// NOTE on the Enter terminator: the head is a recognised-but-incomplete HU code, which content-based scan
-// completion deliberately holds back — at that instant it is indistinguishable from a still-arriving
-// chunked scan — until an explicit end-of-scan signal or the long idle-abandon window. Production scanners
-// are configured with an Enter/Tab suffix (Zebra DataWedge), which supplies that signal, so each fragment
-// is scanned WITH a trailing Enter here to mirror the real device and assert the error surfaces at once.
+// TWO delivery paths are covered per fragment:
 //
-// The two fragments are verified in SEPARATE tests, each starting from a clean toast state. The app shows
-// exactly one error toast per scan by design (a fixed toastId — see mobile-webui CLAUDE.md "the user must
-// see exactly ONE error"), so two back-to-back scans within one test would race that de-duplication and
-// leave the second fragment's toast suppressed. Asserting a single shared toast instead would also fail to
-// catch a tail-specific regression — a raw tail error would be hidden under the head's friendly toast. One
-// scan per scenario keeps each fragment's handling independently observable.
-const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ which }) => {
-    const masterdata = await createMasterdata();
+//  • NO TERMINATOR (the DEFAULT / main coverage — what THIS customer ships): the production Zebra device
+//    sends NO Enter/Tab suffix (the terminator broke login on this device, so it was removed). With no
+//    end-of-scan key the fragment must still surface QR_NOT_RECOGNIZED on its own:
+//      - TAIL is prefix-less (NOT_APPLICABLE) → it is NOT held back, so it flushes on the idle gap and
+//        errors fast; no special config needed.
+//      - HEAD keeps the "HU#" prefix with truncated JSON (PARTIAL_SCAN) → content-based completion holds
+//        it back (indistinguishable from a still-arriving chunked scan) until the long idle-abandon
+//        window. To keep the E2E fast we lower that window for the head test via the sysconfig
+//        barcodeScanner.inputText.idleAbandonMillis (the SAME mechanism barcode_scanner_modes.spec.js
+//        uses; see Backend.setSysconfigs / the `sysconfigs` masterdata key). This exercises the REAL
+//        no-Enter path we ship: the partial is held, then the abandon window surfaces the error.
+//
+//  • ENTER TERMINATOR (an additional VARIANT, kept for coverage): a device configured with an Enter/Tab
+//    suffix (e.g. Zebra DataWedge "Enter as string") supplies an explicit end-of-scan signal, so the
+//    fragment force-completes immediately and its error surfaces at once — no abandon-window wait.
+//
+// Each scenario is a SEPARATE test starting from a clean toast state. The app shows exactly one error
+// toast per scan by design (a fixed toastId — see mobile-webui CLAUDE.md "the user must see exactly ONE
+// error"), so two back-to-back scans within one test would race that de-duplication and leave the second
+// fragment's toast suppressed. Asserting a single shared toast instead would also fail to catch a
+// tail-specific regression — a raw tail error would be hidden under the head's friendly toast. One scan
+// per scenario keeps each fragment's handling independently observable.
+
+// A short idle-abandon window (ms) for the no-terminator HEAD test — the head is held as PARTIAL_SCAN
+// until this window elapses, so a low value keeps the E2E fast while still exercising the real path.
+// Well above the largest legit inter-chunk gap the device produces, and far below the 15000 ms default.
+const FAST_ABANDON_MS = 1500;
+const FAST_ABANDON_SYSCONFIG = { 'mobileui.frontend.barcodeScanner.inputText.idleAbandonMillis': String(FAST_ABANDON_MS) };
+
+const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ which, terminator }) => {
+    // For the no-terminator HEAD path, lower the idle-abandon window so the held partial surfaces fast.
+    // The TAIL is NOT_APPLICABLE (not held), and the Enter variants force-complete immediately, so
+    // neither needs the override.
+    const needsFastAbandon = !terminator && which === 'head';
+    const masterdata = await createMasterdata(
+        needsFastAbandon ? { extraSysconfigs: FAST_ABANDON_SYSCONFIG } : {}
+    );
 
     const fullHuQRCode = masterdata.handlingUnits.HU1.qrCode;
     const splitAt = Math.floor(fullHuQRCode.length / 2);
@@ -644,16 +671,14 @@ const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ whic
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
     await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
-    await expectErrorToast(`Scan the truncated HU QR ${which} during picking`, async () => {
+    const label = `Scan the truncated HU QR ${which} during picking${terminator ? ` (${terminator} terminator)` : ' (no terminator)'}`;
+    await expectErrorToast(label, async () => {
         await PickingJobScreen.pickHU({
             qrCode: fragment,
             isScanDirectly: true,
-            // Device Enter suffix: the truncated head is a recognised-but-incomplete HU code, which
-            // content-based completion holds back (indistinguishable from a still-arriving chunked scan)
-            // until an explicit end-of-scan. A real scanner configured with an Enter/Tab suffix supplies
-            // that signal, force-completing the fragment so its error surfaces immediately. Without it the
-            // head would only error after the long idle-abandon window.
-            terminator: 'Enter',
+            // terminator undefined → no end-of-scan key (the customer's real no-terminator device);
+            // 'Enter' → the additional device-suffix variant.
+            terminator,
             expectedPickDirectly: true,
         });
     }, ({ textContent }) => {
@@ -661,8 +686,10 @@ const expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking = async ({ whic
     });
 };
 
+// === DEFAULT / MAIN COVERAGE: NO terminator (the customer ships WITHOUT an Enter/Tab suffix). ===
+
 // noinspection JSUnusedLocalSymbols
-test('Scan a truncated (split) HU QR HEAD during picking → user-friendly error', async ({ page }) => {
+test('Scan a truncated (split) HU QR HEAD during picking, NO terminator → user-friendly error', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -673,7 +700,7 @@ test('Scan a truncated (split) HU QR HEAD during picking → user-friendly error
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Scan a truncated (split) HU QR TAIL during picking → user-friendly error', async ({ page }) => {
+test('Scan a truncated (split) HU QR TAIL during picking, NO terminator → user-friendly error', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -681,6 +708,102 @@ test('Scan a truncated (split) HU QR TAIL during picking → user-friendly error
     allure.severity('critical');
 
     await expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking({ which: 'tail' });
+});
+
+// === ADDITIONAL VARIANT: Enter terminator (device configured with an Enter/Tab suffix). ===
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR HEAD during picking, Enter terminator → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking({ which: 'head', terminator: 'Enter' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Scan a truncated (split) HU QR TAIL during picking, Enter terminator → user-friendly error', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Error handling - invalid HU QR code');
+    allure.severity('critical');
+
+    await expectTruncatedHuQRFragmentShowsFriendlyErrorDuringPicking({ which: 'tail', terminator: 'Enter' });
+});
+
+//
+// Two valid HU QR codes scanned back-to-back with NO terminator (the customer's real device) must be
+// recognised as TWO distinct scans, never merged into one unparseable "code1+code2" string. Each is a
+// complete HU QR whose closing JSON brace force-completes it on content (COMPLETE_SCAN), so the reader
+// separates them without an Enter/Tab suffix and without waiting on the idle timer. A merge regression
+// would fail the FIRST pick (the buffer would still be accumulating the second code) — this asserts both
+// picks land, proving separation on the shipped no-terminator path.
+//
+// noinspection JSUnusedLocalSymbols
+test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised as distinct picks (not merged)', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+    allure.tag('F00230');
+    allure.story('Scan HU barcodes');
+    allure.severity('critical');
+
+    // A single SO line big enough to receive both picks (3 TU + 3 TU = 6 TU = 24 PCE).
+    const masterdata = await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'CL',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                },
+            },
+            bpartners: { 'BP1': {} },
+            warehouses: { 'wh': {} },
+            pickingSlots: { slot1: {} },
+            products: { 'P1': { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+            },
+            handlingUnits: {
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+                'HU2': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                'SO1': {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 24, piItemProduct: 'TU' }],
+                },
+            },
+        },
+    });
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    // First scan (no terminator): HU1 → 3 TU picked. A merge regression would leave this pick unrecognised.
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, isScanDirectly: true, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
+
+    // Second scan (no terminator), immediately after: HU2 → another 3 TU. Distinct from the first, not merged.
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, isScanDirectly: true, expectQtyEntered: '3' });
+    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '6 TU', qtyPickedCatchWeight: '' });
+
+    await PickingJobScreen.complete();
 });
 
 //
