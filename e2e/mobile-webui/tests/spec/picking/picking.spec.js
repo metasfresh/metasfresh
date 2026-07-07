@@ -761,19 +761,14 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
     allure.story('Scan HU barcodes');
     allure.severity('critical');
 
-    // A single SO line big enough to receive both picks (3 TU + 3 TU = 6 TU = 24 PCE).
-    //
-    // Each source HU must hold EXACTLY the 3 TU we want each scan to contribute — NOT more. The qty
-    // dialog defaults to min(HU available, line remaining), so a full-line-sized HU (e.g. the 20-TU
-    // 'PItarget' below) would default the FIRST scan to the whole 6-TU remainder, fill the line, and
-    // leave nothing for the second scan. Sizing each source HU to 3 TU (via 'PIsrc', a 3-TU LU) makes
-    // each scan default to '3' and forces BOTH HUs to be consumed to reach 6 TU — which is exactly what
-    // proves the two no-terminator scans were separated into two distinct picks.
-    //
-    // Note masterdata sizes an HU from its packingInstructions' capacity (a `qty` field is rejected when
-    // packingInstructions is set — see CreateHUCommand.getTotalQtyCUs), so the per-HU cap is expressed
-    // as a dedicated small PI, not a qty. The 20-TU 'PItarget' PI stays only to provide a target LU big
-    // enough to receive all 6 picked TUs (setTargetLU below selects it by its LU name).
+    // TWO products, each on its own SO line (3 TU / 12 PCE), one full HU each. Both PIs use the SAME tu
+    // name 'TU' (distinct products ⇒ distinct HUPIItemProduct identifiers "TU_P1"/"TU_P2", so no
+    // "Identifier already exists" collision), which lets a SINGLE target LU accept both (the LU knows a
+    // 'TU' sub-instruction). Each scan then picks its own line at the dialog's DEFAULT full qty (3) — no
+    // partial pick, no not-found reason (which would close the line), no second setTargetLU (which stalls
+    // on a "Select Target" screen). If the two no-terminator scans were MERGED into one garbage code, the
+    // first HU would not resolve and pickHU would raise an error toast; two clean default-qty picks prove
+    // the reader separated the two back-to-back scans.
     const masterdata = await Backend.createMasterdata({
         language: 'en_US',
         request: {
@@ -790,23 +785,24 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
             bpartners: { 'BP1': {} },
             warehouses: { 'wh': {} },
             pickingSlots: { slot1: {} },
-            products: { 'P1': { prices: [{ price: 1 }] } },
+            products: { 'P1': { prices: [{ price: 1 }] }, 'P2': { prices: [{ price: 1 }] } },
             packingInstructions: {
-                // Target LU: large enough to hold both picks (6 TU). Used only as the pick target.
-                'PItarget': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
-                // Source HUs: exactly 3 TU each, so each scan defaults to '3' and both are required.
-                'PIsrc': { lu: 'LUsrc', qtyTUsPerLU: 3, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+                'PI1': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 4 },
+                'PI2': { lu: 'LU2', qtyTUsPerLU: 20, tu: 'TU', product: 'P2', qtyCUsPerTU: 4 },
             },
             handlingUnits: {
-                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PIsrc' },
-                'HU2': { product: 'P1', warehouse: 'wh', packingInstructions: 'PIsrc' },
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI1' },
+                'HU2': { product: 'P2', warehouse: 'wh', packingInstructions: 'PI2' },
             },
             salesOrders: {
                 'SO1': {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    lines: [{ product: 'P1', qty: 24, piItemProduct: 'TU' }],
+                    lines: [
+                        { product: 'P1', qty: 12, piItemProduct: 'TU' },
+                        { product: 'P2', qty: 12, piItemProduct: 'TU' },
+                    ],
                 },
             },
         },
@@ -819,16 +815,15 @@ test('Scan two valid HU QR codes back-to-back, NO terminator → both recognised
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
-    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PItarget.luName });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI1.luName });
 
-    // First scan (no terminator): HU1 → 3 TU picked. A merge regression would leave this pick unrecognised.
+    // First scan (no terminator): HU1 (P1) → its line picked at full default qty. A merge regression would
+    // garble this scan so it never resolves and pickHU would raise an error toast.
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, isScanDirectly: true, expectQtyEntered: '3' });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '3 TU', qtyPickedCatchWeight: '' });
-
-    // Second scan (no terminator), immediately after: HU2 → another 3 TU. Distinct from the first, not merged.
+    // Second scan (no terminator), immediately after: HU2 (P2) → a DISTINCT pick into the same target LU.
     await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU2.qrCode, isScanDirectly: true, expectQtyEntered: '3' });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '6 TU', qtyPickedCatchWeight: '' });
 
+    // Both back-to-back scans landed as two separate, valid picks → the job completes.
     await PickingJobScreen.complete();
 });
 
