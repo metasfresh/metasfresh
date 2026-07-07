@@ -1,5 +1,6 @@
--- AD_Message_ID 545772 (GRAI PO-reference-mismatch picking error message)
--- AD_MigrationScript 5812440
+-- IDs allocated from idserver.metas.de on 2026-07-07:
+--   AD_Message_ID     545772 (GRAI PO-reference-mismatch picking error message)
+--   AD_MigrationScript 5812440
 --
 -- Thrown when a scanned Migros returnable-asset GRAI (companyPrefix 7613204 / assetType 00307) does not match
 -- the current sales order's PO-reference-derived serial prefix during GRAI-scan picking. A non-Migros GRAI is

@@ -6,6 +6,8 @@ import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -19,7 +21,9 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.ProductId;
+import de.metas.scannable_code.ScannedCode;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,6 +34,7 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Unit tests for {@link PickingJobGraiTargetService} — only the paths NOT covered by the Playwright
@@ -133,6 +138,70 @@ class PickingJobGraiTargetServiceTest
 
 		// Assert: the default-for-product PIIP should be preferred
 		assertThat(result).isEqualTo(HUPIItemProductId.ofRepoId(defaultPiip.getM_HU_PI_Item_Product_ID()));
+	}
+
+	// =====================================================================
+	// Tests for the Migros GRAI PO-reference-ownership gate
+	// (assertBelongsToCurrentOrderIfMigros, reached before TU-type resolution)
+	// =====================================================================
+
+	private static final String MIGROS_MSG_KEY = "de.metas.handlingunits.picking.GRAIPOReferenceMismatch";
+	private static final String NO_TU_TYPE_MSG_KEY = "de.metas.handlingunits.picking.GRAINoMatchingTUType";
+	private static final String PREFIX_TOO_LONG_MSG_KEY = "de.metas.handlingunits.grai.DummyGRAISerialPrefixTooLong";
+
+	@Test
+	void migrosGrai_poReferenceMismatch_throwsPOReferenceMismatch()
+	{
+		// Migros GRAI whose serial derives from PO reference "12345"; the order carries a different PO reference.
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("12345").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null, /* poReference */ "99999"))
+				.as("a Migros GRAI that does not match the order's PO reference must be rejected")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MIGROS_MSG_KEY);
+	}
+
+	@Test
+	void migrosGrai_overLengthPoReference_throwsPOReferenceMismatchNotPrefixTooLong()
+	{
+		// Regression guard: an over-length (>10 char) PO reference can never have produced this GRAI's serial,
+		// so it must surface as a PO-reference MISMATCH — NOT the unrelated dummy-GRAI "prefix too long" prerequisite
+		// (which DummyGRAITemplate.migros(...) would otherwise throw for a non-dummy-GRAI customer's free-text PO ref).
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("12345").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null, /* poReference */ "ABCDEFGHIJKLMNOP"))
+				.as("an over-length PO reference on a Migros GRAI scan must be a mismatch, not a prefix-too-long error")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(MIGROS_MSG_KEY)
+				.hasMessageNotContaining(PREFIX_TOO_LONG_MSG_KEY);
+	}
+
+	@Test
+	void migrosGrai_poReferenceMatches_passesGateAndResolvesTuType()
+	{
+		// PO reference matches the GRAI's serial → the ownership gate passes; resolution then continues and fails
+		// on the (unrelated) TU-type lookup because this test's PIs are not GRAI-mapped to 7613204.00307.
+		final ScannedCode migrosGrai = DummyGRAITemplate.migros("12345").buildGRAI(1).toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(migrosGrai, null, null, /* poReference */ "12345"))
+				.as("a matching PO reference must pass the ownership gate (failure comes later, from TU-type resolution)")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(NO_TU_TYPE_MSG_KEY)
+				.hasMessageNotContaining(MIGROS_MSG_KEY);
+	}
+
+	@Test
+	void nonMigrosGrai_neverSubjectToPoReferenceCheck()
+	{
+		// company-prefix 9999999 is not the Migros structure → the ownership gate is skipped entirely, even with a
+		// non-matching PO reference; resolution proceeds and fails only on the TU-type lookup.
+		final ScannedCode nonMigrosGrai = GRAI.ofCanonicalString("9999999.00307.000001").toScannedCode();
+
+		assertThatThrownBy(() -> service.resolveTuTypeAndCapacity(nonMigrosGrai, null, null, /* poReference */ "99999"))
+				.as("a non-Migros GRAI is never subject to the PO-reference ownership check")
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining(NO_TU_TYPE_MSG_KEY)
+				.hasMessageNotContaining(MIGROS_MSG_KEY);
 	}
 
 }

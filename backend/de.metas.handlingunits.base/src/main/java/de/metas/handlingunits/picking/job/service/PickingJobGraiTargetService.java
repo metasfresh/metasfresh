@@ -108,7 +108,11 @@ public class PickingJobGraiTargetService
 			return;
 		}
 
-		if (!DummyGRAITemplate.migros(poReference).matches(grai))
+		// A PO reference too long to form a dummy-GRAI serial prefix can never have produced this GRAI's serial,
+		// so it is a mismatch — not the (unrelated) dummy-GRAI-generation "prefix too long" prerequisite, which
+		// DummyGRAITemplate.migros(...) would otherwise throw here for a non-dummy-GRAI customer's order.
+		if (!DummyGRAITemplate.isValidSerialPrefix(poReference)
+				|| !DummyGRAITemplate.migros(poReference).matches(grai))
 		{
 			throw new AdempiereException(MSG_GRAI_POREFERENCE_MISMATCH, grai.toCanonicalString(), poReference);
 		}
