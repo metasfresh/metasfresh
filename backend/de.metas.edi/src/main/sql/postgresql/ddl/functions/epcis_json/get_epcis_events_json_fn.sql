@@ -115,7 +115,7 @@ BEGIN
               SELECT 1
               FROM m_hu_assignment ha2
                        JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id
+                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id and io2.issotrx='Y' /*only a sales shipment counts as coverage - a re-receipt of the same TU from a vendor must not open the close-gate*/
               WHERE ha2.ad_table_id = v_m_inoutline_table_id
                 AND ha2.isactive = 'Y'
                 AND iol2.isactive = 'Y'
@@ -150,7 +150,7 @@ BEGIN
         SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id and io.issotrx='Y' /*sibling CO/CL shipments only - exclude purchase-receipts of the same goods from a vendor*/
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IN (SELECT lu_hu_id FROM this_inout_lu)
           AND ha.isactive = 'Y'
