@@ -39,7 +39,8 @@ export const BarcodeScannerComponent = {
     // between them reproduces the production symptom: a long HU global QR code (HU#<v>#{…json…}) that arrives
     // at the browser in chunks spread over several seconds. Set gapMs >= the scanner debounce
     // (barcodeScanner.inputText.debounceMillis, default 300ms) to exercise the gap path, and keep it well
-    // below the hook's abandon deadline (max(3000, rateMs*10) ms) so an in-flight partial QR is not abandoned.
+    // below the hook's idle-abandon deadline (idleAbandonMs, default 15000ms via
+    // barcodeScanner.inputText.idleAbandonMillis) so an in-flight partial QR is not abandoned.
     // Default (no gapAtIndex/gapMs): unchanged single synchronous zero-delay dispatch — existing callers are
     // not affected.
     //

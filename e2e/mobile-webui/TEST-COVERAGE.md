@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 65 | 69 | 94% |
+| Picking | 70 | 74 | 95% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -138,9 +138,14 @@
 | Pick HU by ExternalBarcode attribute | `picking/pick_by_ExternalBarcode.spec.js` |
 | Pick HU by M_HU_ID — LU/CU into LU/CU | `picking/pick_by_HUId.spec.js` |
 | Pick HU by long QR arriving in chunks (mid-scan inter-keystroke gap) | `picking/scan_HU_QR_chunked.spec.js` |
+| Two valid HU QRs back-to-back, no terminator → recognised as two distinct picks (not merged) | `picking/picking.spec.js` |
+| Truncated HU QR head, no terminator (customer default) → friendly QR_NOT_RECOGNIZED (held, then abandon-window surfaces error) | `picking/picking.spec.js` |
+| Truncated HU QR tail, no terminator (customer default) → friendly QR_NOT_RECOGNIZED | `picking/picking.spec.js` |
+| Truncated HU QR head, Enter terminator (variant) → friendly QR_NOT_RECOGNIZED | `picking/picking.spec.js` |
+| Truncated HU QR tail, Enter terminator (variant) → friendly QR_NOT_RECOGNIZED | `picking/picking.spec.js` |
 | ❌ Scan ambiguous code (resolves to more than one target) → routing handled | — |
 
-**8/9 — 89%**
+**13/14 — 93%**
 
 ### Order-based picking — LU picking
 

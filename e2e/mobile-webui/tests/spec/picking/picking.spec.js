@@ -624,9 +624,10 @@ test('Scan invalid HU QR code and recover', async ({ page }) => {
 //      - HEAD keeps the "HU#" prefix with truncated JSON (PARTIAL_SCAN) → content-based completion holds
 //        it back (indistinguishable from a still-arriving chunked scan) until the long idle-abandon
 //        window. To keep the E2E fast we lower that window for the head test via the sysconfig
-//        barcodeScanner.inputText.idleAbandonMillis (the SAME mechanism barcode_scanner_modes.spec.js
-//        uses; see Backend.setSysconfigs / the `sysconfigs` masterdata key). This exercises the REAL
-//        no-Enter path we ship: the partial is held, then the abandon window surfaces the error.
+//        barcodeScanner.inputText.idleAbandonMillis, applied through the `sysconfigs` masterdata key
+//        (the same sysconfig-override mechanism barcode_scanner_modes.spec.js uses for its scanner
+//        settings). This exercises the REAL no-Enter path we ship: the partial is held, then the
+//        abandon window surfaces the error.
 //
 //  • ENTER TERMINATOR (an additional VARIANT, kept for coverage): a device configured with an Enter/Tab
 //    suffix (e.g. Zebra DataWedge "Enter as string") supplies an explicit end-of-scan signal, so the
