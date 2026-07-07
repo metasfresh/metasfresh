@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -11,7 +11,15 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): attach/detach the window keydown listener SYNCHRONOUSLY with the
+  // mount/unmount commit. When a takeover panel (e.g. the unpick panel) replaces a screen that also
+  // mounts a scanner (e.g. the job screen's always-on `allowPickingAnyHU` header scanner), a deferred
+  // useEffect cleanup leaves the outgoing scanner's listener attached — and the incoming scanner's not
+  // yet attached — during the gap after React has already committed the DOM the operator sees. A scan
+  // fired in that gap is caught by the WRONG (outgoing) scanner. useLayoutEffect runs the outgoing
+  // cleanup and the incoming setup within the same commit (before paint), so exactly one scanner owns
+  // the listener by the time the new screen is observable. See me03 #30480.
+  useLayoutEffect(() => {
     const handleKeyDown = async (event) => {
       // console.log('[scanner] keydown', {
       //   key: event.key,
