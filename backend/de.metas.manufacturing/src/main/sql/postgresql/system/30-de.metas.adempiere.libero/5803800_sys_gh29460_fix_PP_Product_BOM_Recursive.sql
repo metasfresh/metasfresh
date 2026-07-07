@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.manufacturing/src/main/sql/postgresql/ddl/functions/PP_Product_BOM_Recursive.sql
 drop function if exists PP_Product_BOM_Recursive(numeric, varchar);
 create or replace function PP_Product_BOM_Recursive(p_PP_Product_BOM_ID numeric, p_ad_language varchar)
 returns table
