@@ -277,4 +277,24 @@ describe('useKeyboardBarcodeReader', () => {
     expect(onReadDone).toHaveBeenCalledTimes(1);
     expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR);
   });
+
+  it('honours an explicit idleAbandonMs param: a stuck partial is abandoned after the CONFIGURED window, not IDLE_ABANDON_MS', () => {
+    // Wire a SHORT configured window (as the sysconfig barcodeScanner.inputText.idleAbandonMillis
+    // would, via HardwareModePanel → useKeyboardBarcodeReader's idleAbandonMs param). The stuck
+    // partial must surface after THIS window, and it must NOT still be waiting on the 15000 ms default.
+    const CONFIGURED_ABANDON_MS = 1000;
+    expect(CONFIGURED_ABANDON_MS).toBeLessThan(IDLE_ABANDON_MS); // guard: the override is genuinely shorter
+    const { onReadDone } = mountReader({ idleAbandonMs: CONFIGURED_ABANDON_MS });
+
+    typeString(PARTIAL_HU_QR);
+
+    // Just past the CONFIGURED window (but far below the 15000 ms default) the partial is abandoned
+    // and flushed — proving the param, not the module default, drives the deadline.
+    now += CONFIGURED_ABANDON_MS + RATE_MS;
+    act(() => {
+      jest.advanceTimersByTime(RATE_MS * 2);
+    });
+    expect(onReadDone).toHaveBeenCalledTimes(1);
+    expect(onReadDone).toHaveBeenCalledWith(PARTIAL_HU_QR);
+  });
 });

@@ -15,6 +15,7 @@ export const useKeyboardBarcodeReader = ({
   onReadInProgress,
   rateMs = 50,
   minLength = 10,
+  idleAbandonMs = IDLE_ABANDON_MS,
   disabled = false,
 }) => {
   // Use refs so values persist across rerenders but don't trigger state updates
@@ -28,9 +29,10 @@ export const useKeyboardBarcodeReader = ({
     // abandon and flush it once this window elapses — either while idle (below) or when a brand-new
     // scan arrives after this long a gap (the pre-append flush below). Surfacing the app's "QR not
     // recognised" error and, crucially, preventing a stuck partial from swallowing the next scan.
-    // The window itself (IDLE_ABANDON_MS, fixed and decoupled from rateMs) is defined and explained
-    // at module scope above.
-    const idleAbandonMs = IDLE_ABANDON_MS;
+    // The window itself (idleAbandonMs, decoupled from rateMs) is a hook param defaulting to
+    // IDLE_ABANDON_MS (defined and explained at module scope above); a caller may override it via a
+    // sysconfig (barcodeScanner.inputText.idleAbandonMillis) the same way rateMs is wired from
+    // barcodeScanner.inputText.debounceMillis.
 
     const resetBuffer = () => {
       bufferRef.current = '';
@@ -185,5 +187,5 @@ export const useKeyboardBarcodeReader = ({
       clearInterval(intervalId);
       console.log('Disabled keyboard barcode reader');
     };
-  }, [onReadDone, onReadInProgress, rateMs, minLength, disabled]);
+  }, [onReadDone, onReadInProgress, rateMs, minLength, idleAbandonMs, disabled]);
 };
