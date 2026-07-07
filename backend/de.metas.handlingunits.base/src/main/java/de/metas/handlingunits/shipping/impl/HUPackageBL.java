@@ -215,8 +215,9 @@ public class HUPackageBL implements IHUPackageBL
 
 		final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		final Product product = productRepository.getById(productStorage.getProductId());
-		// Single-unit dimensions — mirrors getPackageDimensions' self-packed branch at qty 1 (incl. the
-		// self-packed-but-no-dimensions error), so a split parcel and a non-split package stay consistent.
+		// Single-unit dimensions: a self-packed CU is one label per unit, so each parcel carries the product's
+		// named dimensions verbatim (no qty-based sort/scale). Same self-packed / no-dimensions guards as
+		// getPackageDimensions.
 		final PackageDimensions singleUnitDimensions;
 		if (!product.isSelfPacked())
 		{
@@ -228,7 +229,7 @@ public class HUPackageBL implements IHUPackageBL
 		}
 		else
 		{
-			singleUnitDimensions = PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), qty.toOne());
+			singleUnitDimensions = product.getPackageDimensions();
 		}
 
 		final CreatePackageForHURequest perUnitRequest = request

@@ -298,12 +298,12 @@ public class PackedHUCarrierAdviseServiceTest
 		// advise for 1 CU — regardless of the packed qty (2)
 		assertThat(item.getNumberOfItems()).isEqualTo(1);
 		assertThat(item.getTotalWeightInKg()).isEqualByComparingTo("0.5"); // 1 unit × 0.5 kg
-		// parcel envelope = product single-unit, NOT the qty-2 HU aggregate (which would be 1.0 kg + scaled dims)
+		// parcel envelope = product single-unit, NOT the qty-2 HU aggregate (which would be 1.0 kg)
 		assertThat(parcel.getGrossWeightKg()).isEqualByComparingTo("0.5");
-		// ofProductDimensionsAndQty sorts [10,20,30] and scales the smallest by qty(=1): length=10, height=20, width=30
+		// a self-packed CU carries the product's NAMED dimensions verbatim (no sort/scale): L=10, W=20, H=30
 		assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(10);
-		assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(20);
-		assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(30);
+		assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(20);
+		assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(30);
 	}
 
 	/**

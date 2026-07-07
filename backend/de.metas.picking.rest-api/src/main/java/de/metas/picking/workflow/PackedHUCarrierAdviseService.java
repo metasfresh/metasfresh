@@ -474,7 +474,7 @@ public class PackedHUCarrierAdviseService
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
 			dimensions = product.isSelfPacked()
-					? PackageDimensions.ofProductDimensionsAndQty(product.getPackageDimensions(), oneCu)
+					? product.getPackageDimensions()
 					: PackageDimensions.UNSPECIFIED;
 		}
 		else
