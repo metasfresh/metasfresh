@@ -363,6 +363,68 @@ public class PackedHUCarrierAdviseServiceTest
 		verify(service).adviseSchedule(eq(SCHED_TOMATO), any());
 	}
 
+	/**
+	 * Job-level advise (no line context) with multiple lines of DIFFERENT products and no pick target: the
+	 * picker cannot tell which CU the advise would target, so the button must not be offered.
+	 */
+	@Test
+	public void resolveInfo_jobLevel_multipleLinesDifferentProducts_noTarget_notAvailable()
+	{
+		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
+		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(701));
+
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null).isAvailable())
+				.isFalse();
+	}
+
+	/**
+	 * Job-level advise with the SAME product on all lines (CU unambiguous) but DIVERGENT carrier products:
+	 * the button stays available with no current carrier (null caption) and editable, so the picker can re-advise.
+	 */
+	@Test
+	public void resolveInfo_jobLevel_sameProductDivergentCarriers_availableNoCaption()
+	{
+		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
+		final PickingJobLine line2 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(702));
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null);
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isFalse();
+		assertThat(info.getProductCaption()).isNull();
+	}
+
+	/**
+	 * Job-level advise where the CU is unambiguous (single line) but no line carries a carrier product — a
+	 * non-API-advise shipper. Advise is not eligible, so the button must not be offered (the invariant that a
+	 * carrier-product-less line filters to an empty set and returns NONE, driven end-to-end through resolveInfo).
+	 */
+	@Test
+	public void resolveInfo_jobLevel_singleProductNoCarrierProduct_notAvailable()
+	{
+		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, null);
+
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+				.isFalse();
+	}
+
+	private static PickingJobLine mockLine(final ProductId productId, final CarrierProductId carrierProductId)
+	{
+		final PickingJobLine line = mock(PickingJobLine.class);
+		when(line.getProductId()).thenReturn(productId);
+		when(line.getCarrierProductId()).thenReturn(carrierProductId);
+		return line;
+	}
+
+	private static PickingJob mockJobLevelJob(final ImmutableList<PickingJobLine> lines)
+	{
+		final PickingJob job = mock(PickingJob.class);
+		when(job.isLineLevelPickTarget()).thenReturn(false);
+		when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
+		when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
+		when(job.getLines()).thenReturn(lines);
+		return job;
+	}
+
 	private I_M_HU createTwoProductHU()
 	{
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();

@@ -20,6 +20,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -178,6 +179,54 @@ public class PackedHUCarrierAdviseService
 				.readOnly(readOnly)
 				.productCaption(carrierProduct.getName())
 				.build();
+	}
+
+	/**
+	 * Carrier-advise DISPLAY info, read from the job's persisted carrier product — NOT the picked HU's shipment
+	 * schedule, which is not scoped to this picking job. Pass the line for line-level (PRODUCT) aggregation; null
+	 * for the job level (header / CU-direct).
+	 */
+	@NonNull
+	public CarrierAdviseTargetInfo resolveInfo(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLine line)
+	{
+		if (pickingJob.isLineLevelPickTarget() && line != null)
+		{
+			return resolveTargetInfoFromCarrierProduct(line.getCarrierProductId(), isCarrierAdviseReadOnly(line));
+		}
+
+		// A job-level advise targets an unknown CU unless we can pin it down: a pick target, a single line, or one shared product.
+		final boolean cuUnambiguous = pickingJob.getLuPickingTarget(null).isPresent()
+				|| pickingJob.getTuPickingTarget(null).isPresent()
+				|| pickingJob.getLines().size() == 1
+				|| pickingJob.getLines().stream().map(PickingJobLine::getProductId).distinct().count() == 1;
+
+		final ImmutableSet<CarrierProductId> carrierProductIds = pickingJob.getLines().stream()
+				.map(PickingJobLine::getCarrierProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// No carrier product on any line => not advise-eligible (e.g. a non-API-advise shipper).
+		if (!cuUnambiguous || carrierProductIds.isEmpty())
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+
+		// Carriers diverge (same shipper): keep the button, but show no current carrier, so the picker can re-advise to converge.
+		if (carrierProductIds.size() != 1)
+		{
+			return CarrierAdviseTargetInfo.builder().available(true).readOnly(false).productCaption(null).build();
+		}
+
+		final CarrierProductId carrierProductId = carrierProductIds.iterator().next();
+		final boolean readOnly = pickingJob.getLines().stream()
+				.filter(l -> carrierProductId.equals(l.getCarrierProductId()))
+				.allMatch(this::isCarrierAdviseReadOnly);
+		return resolveTargetInfoFromCarrierProduct(carrierProductId, readOnly);
+	}
+
+	private boolean isCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
+	{
+		return line.isManual() || line.isCarrierAdviseReadOnly();
 	}
 
 	/**

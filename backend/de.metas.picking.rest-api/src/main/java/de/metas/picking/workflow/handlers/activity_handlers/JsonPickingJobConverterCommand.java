@@ -31,7 +31,6 @@ import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
 import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import de.metas.picking.workflow.PickingJobRestService;
-import de.metas.shipping.CarrierProductId;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonWFProcessHeaderProperties;
@@ -46,7 +45,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -108,10 +106,7 @@ public class JsonPickingJobConverterCommand
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue());
 
-		// Carrier-advise for the mobile display comes from the JOB-SCOPED persisted carrier product
-		// (the picking-job header / line Carrier_Product_ID) — NOT from the picked HU's shipment schedule
-		// (which is not scoped to this picking job). See resolveJobScopedCarrierAdvise.
-		final CarrierAdviseTargetInfo jobCarrierAdvise = resolveJobScopedCarrierAdvise(null);
+		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null);
 
 		pickingJob.getLuPickingTarget(null)
 				.ifPresent(target -> builder.luPickingTarget(JsonLUPickingTarget.of(target, jobCarrierAdvise)));
@@ -119,64 +114,12 @@ public class JsonPickingJobConverterCommand
 		pickingJob.getTuPickingTarget(null)
 				.ifPresent(target -> builder.tuPickingTarget(JsonTUPickingTarget.of(target, jobCarrierAdvise)));
 
-		// Job-level fallback so the mobile UI can show the carrier when there is no LU/TU target
-		// (header-level CU-direct picks).
+		// Job-level fields for the no-target (CU-direct) case; the LU/TU targets above carry it otherwise.
 		builder.carrierAdviseAvailable(jobCarrierAdvise.isAvailable())
 				.carrierAdviseReadOnly(jobCarrierAdvise.isReadOnly())
 				.carrierProductCaption(jobCarrierAdvise.getProductCaption());
 
 		return builder.build();
-	}
-
-	/**
-	 * Resolves the carrier-advise display info from the JOB-SCOPED persisted carrier product — the source
-	 * of truth for what mobile picking shows:
-	 * <ul>
-	 *     <li>line-level aggregation (PRODUCT) — the line's own persisted {@code Carrier_Product_ID}</li>
-	 *     <li>header-level aggregation (SALES_ORDER / DELIVERY_LOCATION) — one carrier for the whole job,
-	 *         shown only when every carrier-bearing line agrees on the same product; otherwise the carrier
-	 *         is genuinely per-line / per-top-level-HU (1 HU → 1 M_Package → 1 Carrier_ShipmentOrder) and no
-	 *         single header value applies.</li>
-	 * </ul>
-	 * This replaces the per-HU {@link PackedHUCarrierAdviseService#resolveTargetInfo(I_M_HU)} path for the
-	 * DISPLAY (that resolves via the shipment schedule, which is not scoped to this picking job). The advise
-	 * <i>action</i> and the consistency <i>check</i> keep their HU-based resolution.
-	 */
-	@NonNull
-	private CarrierAdviseTargetInfo resolveJobScopedCarrierAdvise(@Nullable final PickingJobLine line)
-	{
-		if (pickingJob.isLineLevelPickTarget() && line != null)
-		{
-			return packedHUCarrierAdviseService.resolveTargetInfoFromCarrierProduct(
-					line.getCarrierProductId(),
-					isLineCarrierAdviseReadOnly(line));
-		}
-
-		final ImmutableSet<CarrierProductId> distinctProductIds = pickingJob.getLines().stream()
-				.map(PickingJobLine::getCarrierProductId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		if (distinctProductIds.size() != 1)
-		{
-			return CarrierAdviseTargetInfo.NONE;
-		}
-
-		final CarrierProductId sharedProductId = distinctProductIds.iterator().next();
-		final boolean readOnly = pickingJob.getLines().stream()
-				.filter(l -> sharedProductId.equals(l.getCarrierProductId()))
-				.allMatch(this::isLineCarrierAdviseReadOnly);
-		return packedHUCarrierAdviseService.resolveTargetInfoFromCarrierProduct(sharedProductId, readOnly);
-	}
-
-	/**
-	 * The carrier advise is read-only for the DISPLAY when the schedule was advised manually
-	 * ({@link PickingJobLine#isManual()} — set at line creation, not offered for re-advise) OR the line was
-	 * already locked by a mobile advise action ({@link PickingJobLine#isCarrierAdviseReadOnly()}). The two are
-	 * distinct persisted facts (IsCarrierAdviseManual vs IsCarrierAdviseReadOnly); the display unions them.
-	 */
-	private boolean isLineCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
-	{
-		return line.isManual() || line.isCarrierAdviseReadOnly();
 	}
 
 	@NonNull
@@ -224,7 +167,7 @@ public class JsonPickingJobConverterCommand
 
 		// The carrier product is the line's own job-scoped persisted value (or the job's shared value for
 		// header-level aggregation); exposed below on whichever pick-to shape the line has.
-		final CarrierAdviseTargetInfo lineInfo = resolveJobScopedCarrierAdvise(line);
+		final CarrierAdviseTargetInfo lineInfo = packedHUCarrierAdviseService.resolveInfo(pickingJob, line);
 
 		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
 				.filter(LUPickingTarget::isExistingLU)
