@@ -296,18 +296,20 @@ Feature: Dhl Shipment
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package8     | 20         | 10        | 5          |
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package9     | 20         | 10        | 5          |
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package10    | 20         | 10        | 5          |
+    # The carrier draft takes the DEFAULT parcel weight (1 kg): the per-CU M_Package weight (0.25 kg
+    # above) is not carried into the DHL delivery order for HU-pipeline shipments, only the dimensions.
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | package1     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package2     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package3     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package4     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package5     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package6     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package7     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package8     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package9     | dhl_customer  | 20             | 10            | 5              | 0.25           |
-      | package10    | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package1     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package2     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package3     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package4     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package5     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package6     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package7     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package8     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package9     | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package10    | dhl_customer  | 20             | 10            | 5              | 1              |
 
 
   @Id:S0335.1_300
