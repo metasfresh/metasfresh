@@ -282,17 +282,38 @@ Feature: Dhl Shipment
     And validate M_ShipperTransportation:
       | M_ShipperTransportation_ID.Identifier | M_Shipper_ID.Identifier | Shipper_BPartner_ID.Identifier | Shipper_Location_ID.Identifier | OPT.DocStatus |
       | shipTransp_1                          | shipper_DHL             | orgBP                          | orgBPLocation                  | DR            |
+    # Self-packed product (IsSelfPacked=Y) ships as loose CUs: each of the 10 CUs is its own package
+    # (1 label per CU) with the product's single-unit dimensions (20x10x5) and per-unit gross weight (0.25 kg).
     And validate M_Packages for shipment shipment_1
       | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
-      | shipper_DHL  | dhl_customer  | dhl_location           | 2.5           | package1     | 50         | 20        | 10         |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package1     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package2     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package3     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package4     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package5     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package6     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package7     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package8     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package9     | 20         | 10        | 5          |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package10    | 20         | 10        | 5          |
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | package1     | dhl_customer  | 50             | 20            | 10             | 2.5            |
+      | package1     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package2     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package3     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package4     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package5     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package6     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package7     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package8     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package9     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package10    | dhl_customer  | 20             | 10            | 5              | 0.25           |
 
 
   @Id:S0335.1_300
-  Scenario: DHL shipment with default WeightSourceTypes=ProductWeight (no HU pipeline)
-    # M_Package.PackageWeight is read from product.GrossWeight × qty directly (no HU attribute path).
+  Scenario: DHL shipment with WeightSourceTypes=ProductWeight — TU pick isolates the product weight (excludes packing)
+    # A real TU pick (10-per-TU) yields ONE package; with WeightSourceTypes=ProductWeight the PackageWeight is
+    # product.GrossWeight × qty (2.5 kg), and the TU pick keeps the packing-material weight out of it.
     Given set sys config String value ProductWeight for sys config de.metas.shipping.WeightSourceTypes
 
     When metasfresh contains External System
@@ -318,6 +339,8 @@ Feature: Dhl Shipment
       "paymentTerm": "val-1000002",
       "productIdentifier": "val-test_product_dhl_01",
       "qty": 10,
+      "packingMaterialId": @dhl_huProductTU_X@,
+      "qtyItemCapacity": 10,
       "currencyCode": "EUR",
       "discount": 0,
       "poReference": "ref_12389",
