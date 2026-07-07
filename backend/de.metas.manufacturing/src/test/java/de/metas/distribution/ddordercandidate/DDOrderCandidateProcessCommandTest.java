@@ -28,10 +28,12 @@ import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_Order;
+import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -49,6 +51,10 @@ import static org.mockito.Mockito.when;
  * The header-record creation used to dereference {@code productPlanningDAO.getById(null)} unconditionally;
  * with no product planning this threw a {@link NullPointerException}. The fix guards the lookup and clears
  * {@code PP_Product_Planning_ID} / {@code AD_User_ID} / {@code SalesRep_ID} with the {@code -1} sentinel.
+ * <p>
+ * Also covers the optional {@code aggregateByProductId} header-aggregation dimension: with the flag off,
+ * candidates of different products share one DD_Order (one line each); with it on, each product gets its
+ * own DD_Order.
  */
 class DDOrderCandidateProcessCommandTest
 {
@@ -146,5 +152,76 @@ class DDOrderCandidateProcessCommandTest
 		assertThat(header.getAD_User_ID()).isEqualTo(-1);
 		assertThat(header.getSalesRep_ID()).isEqualTo(-1);
 		assertThat(header.getDocStatus()).isEqualTo(X_DD_Order.DOCSTATUS_Drafted);
+	}
+
+	/**
+	 * Control: with {@code aggregateByProductId=false} (today's behaviour), two candidates that differ only by
+	 * product collapse into ONE DD_Order carrying one line per product.
+	 */
+	@Test
+	void process_twoProducts_byProductIdDisabled_singleDDOrderWithTwoLines()
+	{
+		processTwoProductCandidates(false);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+		assertThat(queryLines(orders.get(0))).hasSize(2);
+	}
+
+	/**
+	 * Target: with {@code aggregateByProductId=true}, the same two candidates produce TWO DD_Orders, each with a
+	 * single line (one product — and therefore one UOM — per order).
+	 */
+	@Test
+	void process_twoProducts_byProductIdEnabled_twoSingleLineDDOrders()
+	{
+		processTwoProductCandidates(true);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(2);
+		assertThat(orders).allSatisfy(order -> assertThat(queryLines(order)).hasSize(1));
+	}
+
+	private void processTwoProductCandidates(final boolean aggregateByProductId)
+	{
+		final DDOrderCandidate product20 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.productId(ProductId.ofRepoId(20))
+				.build();
+		final DDOrderCandidate product21 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.productId(ProductId.ofRepoId(21))
+				.build();
+		ddOrderCandidateRepository.save(product20);
+		ddOrderCandidateRepository.save(product21);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.aggregateByProductId(aggregateByProductId)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(product20, product21))
+						.build())
+				.build()
+				.execute();
+	}
+
+	private static List<I_DD_Order> queryOrders()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_Order.class)
+				.create()
+				.list(I_DD_Order.class);
+	}
+
+	private static List<I_DD_OrderLine> queryLines(final I_DD_Order order)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, order.getDD_Order_ID())
+				.create()
+				.list(I_DD_OrderLine.class);
 	}
 }

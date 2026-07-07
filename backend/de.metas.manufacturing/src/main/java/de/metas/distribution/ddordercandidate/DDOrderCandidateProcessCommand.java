@@ -326,6 +326,7 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateBySalesOrderId;
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
+		boolean aggregateByProductId;
 	}
 	//
 	//
@@ -357,6 +358,8 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable String traceId;
 
+		@Nullable ProductId productId;
+
 		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
@@ -378,6 +381,10 @@ class DDOrderCandidateProcessCommand
 			if (aggregationConfig.isAggregateByPPOrderRef())
 			{
 				keyBuilder.forwardPPOrderRef(candidate.getForwardPPOrderRef());
+			}
+			if (aggregationConfig.isAggregateByProductId())
+			{
+				keyBuilder.productId(candidate.getProductId());
 			}
 			return keyBuilder.build();
 		}
