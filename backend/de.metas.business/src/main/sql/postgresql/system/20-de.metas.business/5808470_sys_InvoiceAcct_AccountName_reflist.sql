@@ -198,13 +198,13 @@ WHERE AD_Field_ID=710155;
 --    AccountName is optional — empty (NULL) means the override applies to every
 --    account concept of that invoice/line (AC1), so NULL must explicitly pass.
 -- ===========================================================================
-ALTER TABLE C_Invoice_Acct ADD CONSTRAINT AccountName_Check
+SELECT db_alter_table('C_Invoice_Acct', 'ALTER TABLE public.C_Invoice_Acct ADD CONSTRAINT AccountName_Check
     CHECK (AccountName IS NULL OR AccountName IN (
-        'P_Revenue_Acct',
-        'P_Expense_Acct',
-        'P_TradeDiscountGrant_Acct',
-        'P_TradeDiscountRec_Acct',
-        'P_InventoryClearing_Acct',
-        'P_InvoicePriceVariance_Acct'
-    ));
+        ''P_Revenue_Acct'',
+        ''P_Expense_Acct'',
+        ''P_TradeDiscountGrant_Acct'',
+        ''P_TradeDiscountRec_Acct'',
+        ''P_InventoryClearing_Acct'',
+        ''P_InvoicePriceVariance_Acct''
+    ))');
 

@@ -123,7 +123,7 @@ public class C_InvoiceLine_StepDef
 	 *   <b>C_Invoice_ID</b> — (required, identifier-ref) the parent invoice<br>
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the product<br>
 	 *   <b>QtyInvoiced</b> — (required) quantity with UOM (e.g. "1 PCE")<br>
-	 *   <b>C_UOM_ID</b> — (optional) UOM x12de355 code; defaults from QtyInvoiced<br>
+	 *   <b>C_UOM_ID</b> — (optional) UOM code; defaults from QtyInvoiced<br>
 	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) the tax to apply<br>
 	 *   <b>Price</b> — (optional) explicit price<br>
 	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) source order line<br>

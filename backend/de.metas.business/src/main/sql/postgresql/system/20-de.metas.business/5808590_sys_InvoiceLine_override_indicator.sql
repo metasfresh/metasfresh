@@ -1,4 +1,4 @@
--- Task 6 of me03 30443 (AC8) — Flag overridden GL account on invoice line
+-- me03 #30443 — F01010.4 — Flag overridden GL account on invoice line
 --
 -- An invoice line is "overridden" when a C_Invoice_Acct row matches it:
 --   - line-level:    c_invoiceline_id = this line's ID, or

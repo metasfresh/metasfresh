@@ -1,11 +1,11 @@
 -- Run mode: SWING_CLIENT
 
 -- Column: C_InvoiceLine.C_ElementValue_Override_ID
--- me03#30443 F01010.4 "Invoice Accounting Overrides" — NT2
+-- me03 #30443 — F01010.4 "Invoice Accounting Overrides"
 -- Adds a GL account override FK field to C_InvoiceLine so a user can set the
 -- override directly on a draft purchase invoice line.
 --
--- Mirrors NT1 (5808640 — C_Invoice_Candidate) exactly:
+-- Mirrors 5808640 (C_Invoice_Candidate) exactly:
 --   same column name, same reference (AD_Reference_ID=30 Search, AD_Reference_Value_ID=331),
 --   same AD_Element 585015 (C_ElementValue_Override_ID / "Konto (Überschreibung)").
 --

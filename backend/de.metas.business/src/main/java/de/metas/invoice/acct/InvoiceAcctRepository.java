@@ -155,7 +155,7 @@ public class InvoiceAcctRepository
 		boolean exactMatchFound = false;
 		for (final I_C_Invoice_Acct row : existing)
 		{
-			if (row.getC_ElementValue_ID() == elementValueId.getRepoId())
+			if (ElementValueId.equals(ElementValueId.ofRepoIdOrNull(row.getC_ElementValue_ID()), elementValueId))
 			{
 				// Exact match — keep it, but keep scanning so any contradicting row is still deactivated.
 				// (The tuple index is not UNIQUE and manual rows are possible, so more than one active

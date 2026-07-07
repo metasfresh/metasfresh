@@ -1,8 +1,8 @@
 -- Run mode: SWING_CLIENT
 
 -- Virtual ColumnSQL field on C_Invoice_Candidate that resolves the GL account override FK
--- (C_ElementValue_Override_ID, added in NT1) to "<Value> - <Name>" for display.
--- me03#30443 F01010.4 "Invoice Accounting Overrides" — NT5
+-- (C_ElementValue_Override_ID, added in 5808640) to "<Value> - <Name>" for display.
+-- me03 #30443 — F01010.4 "Invoice Accounting Overrides"
 --
 -- AD_Table_ID for C_Invoice_Candidate = 540270
 -- AD_Table_ID for C_ElementValue       = 188
