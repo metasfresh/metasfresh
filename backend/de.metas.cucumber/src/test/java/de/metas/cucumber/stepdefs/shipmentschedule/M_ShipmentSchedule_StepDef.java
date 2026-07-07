@@ -323,12 +323,15 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
 	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
 	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
-	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
+	 *   <b>IsOnTheFlyPickToPackingInstructions</b> — (optional) true/false; default: false; when true, the on-the-fly-picked
+ *     CUs are packed into TUs per the order line's M_HU_PI_Item_Product, mirroring the real shipper-transportation flow
+ *     ({@code ShipmentService#generateShipmentOlCands} sets it true); default false keeps loose-CU generation<br>
+ * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
-	 *   | ss_product, ss_product2 | shipment_1 |
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+	 *   | ss_product, ss_product2 | shipment_1 | true                                |
 	 * </pre>
 	 */
 	@And("shipment is generated for the following shipment schedule")
@@ -701,7 +704,7 @@ public class M_ShipmentSchedule_StepDef
 		final GenerateShipmentsForSchedulesRequest.GenerateShipmentsForSchedulesRequestBuilder requestBuilder = GenerateShipmentsForSchedulesRequest.builder()
 				.quantityTypeToUse(qtyTypeToUse)
 				.isCompleteShipment(isCompleteShipment)
-				.onTheFlyPickToPackingInstructions(row.getAsOptionalBoolean("IsOnTheFlyPickToPackingInstructions").orElse(false));
+				.onTheFlyPickToPackingInstructions(row.getAsOptionalBoolean("IsOnTheFlyPickToPackingInstructions").orElseFalse());
 
 		if (jobScheduleId != null)
 		{
