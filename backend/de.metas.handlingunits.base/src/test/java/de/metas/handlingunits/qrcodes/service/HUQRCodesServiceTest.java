@@ -31,10 +31,14 @@ import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.model.I_M_HU;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
@@ -377,6 +381,81 @@ class HUQRCodesServiceTest
 			assertThatThrownBy(() -> huQRCodesService.parse(junkCode))
 					.isInstanceOf(AdempiereException.class)
 					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+	}
+
+	@Nested
+	class assertQRCodeAssignedToHU
+	{
+		private I_M_HU_QRCode getQRCodeRecord(@NonNull final HUQRCode qrCode)
+		{
+			return Services.get(IQueryBL.class)
+					.createQueryBuilder(I_M_HU_QRCode.class)
+					.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, qrCode.getId().getAsString())
+					.create()
+					.firstOnlyNotNull(I_M_HU_QRCode.class);
+		}
+
+		@Test
+		void assignedToDifferentHU_messageDistinguishesTheCause()
+		{
+			final HuId assignedHuId = createTU();
+			final HuId otherHuId = createTU();
+
+			// generate + assign a QR code to assignedHuId
+			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(assignedHuId).getSingleQRCode(assignedHuId);
+
+			// Asserting it against a DIFFERENT HU must fail — and the message must distinguish the cause
+			// (the QR is active and assigned, just to another HU), not merely say "not assigned".
+			assertThatThrownBy(() -> huQRCodesService.assertQRCodeAssignedToHU(qrCode, otherHuId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("is not assigned to HU")
+					.hasMessageContaining("assigned to HU(s)")
+					.hasMessageContaining(String.valueOf(assignedHuId.getRepoId()));
+		}
+
+		@Test
+		void noActiveAssignment_messageDistinguishesTheCause()
+		{
+			final HuId huId = createTU();
+			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(huId).getSingleQRCode(huId);
+
+			// remove the assignment: the QR row stays active but no active assignment remains
+			huQRCodesService.removeAssignment(qrCode, ImmutableSet.of(huId));
+
+			assertThatThrownBy(() -> huQRCodesService.assertQRCodeAssignedToHU(qrCode, huId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("QR active but has no active assignment");
+		}
+
+		@Test
+		void inactiveQRCodeRow_messageDistinguishesTheCause()
+		{
+			final HuId huId = createTU();
+			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(huId).getSingleQRCode(huId);
+
+			// deactivate the M_HU_QRCode row itself
+			final I_M_HU_QRCode record = getQRCodeRecord(qrCode);
+			record.setIsActive(false);
+			InterfaceWrapperHelper.save(record);
+
+			assertThatThrownBy(() -> huQRCodesService.assertQRCodeAssignedToHU(qrCode, huId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("M_HU_QRCode row inactive");
+		}
+
+		@Test
+		void noQRCodeRow_messageDistinguishesTheCause()
+		{
+			final HuId huId = createTU();
+			final HUQRCode qrCode = huQRCodesService.generateForExistingHU(huId).getSingleQRCode(huId);
+
+			// delete the M_HU_QRCode row entirely
+			InterfaceWrapperHelper.delete(getQRCodeRecord(qrCode));
+
+			assertThatThrownBy(() -> huQRCodesService.assertQRCodeAssignedToHU(qrCode, huId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("no M_HU_QRCode row for UniqueId");
 		}
 	}
 }
