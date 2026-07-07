@@ -5,7 +5,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
-import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.distribution.event.DDOrderUserNotificationProducer;
@@ -78,7 +77,6 @@ class DDOrderCandidateProcessCommand
 	@NonNull final IOrderLineBL orderLineBL;
 	@NonNull final DDOrderUserNotificationProducer ddOrderUserNotificationProducer;
 
-
 	//
 	// Params
 	@NonNull private final DDOrderCandidateProcessRequest request;
@@ -141,7 +139,7 @@ class DDOrderCandidateProcessCommand
 	}
 
 	private void createDDOrder(@NonNull final HeaderAggregate headerAggregate,
-							   @NonNull final UserId userId)
+	                           @NonNull final UserId userId)
 	{
 		if (!headerAggregate.isEligibleToCreate())
 		{
@@ -179,7 +177,9 @@ class DDOrderCandidateProcessCommand
 			@NonNull final HeaderAggregationKey key,
 			@Nullable final OrderId salesOrderId)
 	{
-		final ProductPlanning productPlanning = productPlanningDAO.getById(key.getProductPlanningId());
+		final ProductPlanningId productPlanningId = key.getProductPlanningId();
+		final ProductPlanning productPlanning = productPlanningId != null ? productPlanningDAO.getById(productPlanningId) : null;
+		final UserId plannerId = productPlanning != null ? productPlanning.getPlannerId() : null;
 
 		final BPartnerLocationId orgBPartnerLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(key.getOrgId());
 
@@ -193,8 +193,8 @@ class DDOrderCandidateProcessCommand
 		record.setPP_Plant_ID(ResourceId.toRepoId(key.getTargetPlantId()));
 		record.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
 		record.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
-		record.setAD_User_ID(UserId.toRepoId(productPlanning.getPlannerId())); // FIXME: improve performances/cache and retrieve Primary BP's User
-		record.setSalesRep_ID(UserId.toRepoId(productPlanning.getPlannerId()));
+		record.setAD_User_ID(UserId.toRepoId(plannerId)); // FIXME: improve performances/cache and retrieve Primary BP's User
+		record.setSalesRep_ID(UserId.toRepoId(plannerId));
 
 		record.setC_DocType_ID(getDocTypeId(key.getOrgId()).getRepoId());
 
@@ -218,7 +218,7 @@ class DDOrderCandidateProcessCommand
 		record.setM_Warehouse_From_ID(key.getSourceWarehouseId().getRepoId());
 		record.setM_Warehouse_To_ID(key.getTargetWarehouseId().getRepoId());
 
-		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
+		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanningId));
 
 		final PPOrderRef forwardPPOrderRef = key.getForwardPPOrderRef();
 		if (forwardPPOrderRef != null)

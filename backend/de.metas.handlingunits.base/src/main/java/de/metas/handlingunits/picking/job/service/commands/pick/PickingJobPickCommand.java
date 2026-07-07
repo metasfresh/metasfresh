@@ -8,8 +8,6 @@ import de.metas.handlingunits.HUContextHolder;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
-import de.metas.handlingunits.grai.GRAI;
-import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
@@ -20,6 +18,8 @@ import de.metas.handlingunits.allocation.transfer.LUTUResult.TU;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUPart;
 import de.metas.handlingunits.allocation.transfer.LUTUResult.TUsList;
 import de.metas.handlingunits.exceptions.HUException;
+import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PackToSpec;
@@ -56,6 +56,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsGetR
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.shipmentschedule.api.AddQtyPickedRequest;
@@ -135,7 +136,9 @@ public class PickingJobPickCommand
 	private final boolean checkIfAlreadyPacked;
 	private final boolean createInventoryForMissingQty;
 	private final boolean isCloseTarget;
+	private final boolean isPickingSlotRequired;
 	@NonNull private final PickAttributes _manualPickAttributes;
+	private final boolean serialNoPickingEnabled;
 
 	//
 	// State
@@ -174,6 +177,8 @@ public class PickingJobPickCommand
 			final @Nullable LocalDate bestBeforeDate,
 			final boolean isSetLotNo,
 			final @Nullable String lotNo,
+			final boolean isSetSerialNos,
+			final @Nullable SerialNoSet serialNos,
 			final boolean isCloseTarget)
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
@@ -203,6 +208,8 @@ public class PickingJobPickCommand
 		this.checkIfAlreadyPacked = checkIfAlreadyPacked != null ? checkIfAlreadyPacked : true;
 		this.createInventoryForMissingQty = createInventoryForMissingQty;
 
+		final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
+
 		this.pickingUnit = line.getPickingUnit();
 		if (this.pickingUnit.isTU())
 		{
@@ -218,7 +225,6 @@ public class PickingJobPickCommand
 
 			this.qtyToPickTUs = QtyTU.ofBigDecimal(qtyToPickBD);
 
-			final PickingJobOptions pickingJobOptions = configService.getPickingJobOptions(line.getCustomerId());
 			this.qtyToPickCUs = computeQtyToPickCUs(pickingJobOptions, line, qtyToPickTUs);
 
 			if (qtyRejectedReasonCode != null)
@@ -267,9 +273,13 @@ public class PickingJobPickCommand
 						: null)
 				.isSetBestBeforeDate(isSetBestBeforeDate).bestBeforeDate(bestBeforeDate)
 				.isSetLotNo(isSetLotNo).lotNo(lotNo)
+				.isSetSerialNos(isSetSerialNos).serialNos(serialNos)
 				.build();
 
+		this.serialNoPickingEnabled = productService.isSerialNoPickingEnabled(line.getProductId());
+
 		this.isCloseTarget = isCloseTarget;
+		this.isPickingSlotRequired = pickingJobOptions.isPickingSlotRequired();
 	}
 
 	private static Quantity computeQtyRejectedCUs(
@@ -397,6 +407,11 @@ public class PickingJobPickCommand
 
 	private void checkOrAllocatePickingSlot()
 	{
+		if (!isPickingSlotRequired)
+		{
+			return;
+		}
+
 		if (isLineLevelPickTarget())
 		{
 			changeLine(line -> {
@@ -752,7 +767,20 @@ public class PickingJobPickCommand
 
 		updatePickingTarget(packedHUs);
 		addToPickingSlotQueue(packedHUs);
-		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId);
+
+		// Authoritative serial-no count check: one distinct serial per picked unit (N serials for N CUs).
+		// Only when the product opts into serial-no picking and the operator actually entered serials
+		// (a whole-TU pick enters none); the picked CU qty is the unit count.
+		if (serialNoPickingEnabled && getPickAttributes().isSetSerialNos())
+		{
+			final SerialNoSet serialNos = getPickAttributes().getSerialNos();
+			if (serialNos.size() != qtyToPickCUs.toBigDecimal().intValueExact())
+			{
+				throw new AdempiereException(PickAttributes.ERR_SerialNoRequired);
+			}
+		}
+
+		pickedHUAttributesUpdater.updateHUs(packedHUs, getPickAttributes(), productId, serialNoPickingEnabled);
 
 		//
 		// Add shipment schedule QtyPicked records

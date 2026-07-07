@@ -28,6 +28,31 @@ public class JsonCreateBPartnerRequest
 	@Nullable GRAIRequired graiRequired;
 
 	/**
+	 * Sets {@code C_BPartner.IsEInvoiceRecipeint}.
+	 * If null, the field is left unchanged (defaults to false for new records).
+	 */
+	@Nullable Boolean isEInvoiceRecipeint;
+
+	/**
+	 * Sets {@code C_BPartner.EInvoiceType} (e.g. {@code "Z"} for ZUGFeRD / Factur-X).
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String eInvoiceType;
+
+	/**
+	 * Sets {@code C_BPartner.EInvoice_BuyerReference} (BuyerReference / Leitweg-ID in EN16931 CII).
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String eInvoiceBuyerReference;
+
+	/**
+	 * Sets {@code C_BPartner.VATaxID} (VAT identification number, e.g. {@code "DE136695976"}).
+	 * Required by EN16931 for both seller (resolved via org-bpartner) and buyer.
+	 * If null, the field is left unchanged.
+	 */
+	@Nullable String vatTaxId;
+
+	/**
 	 * Contacts (AD_User records) to create for this business partner.
 	 * Each contact is linked to the business partner via C_BPartner_ID.
 	 */
@@ -53,12 +78,23 @@ public class JsonCreateBPartnerRequest
 	 */
 	@Builder.Default boolean isSoPriceList = true;
 
+	/**
+	 * Bank accounts to create for this business partner.
+	 * Used for EN16931 / ZUGFeRD CII CreditorFinancialAccount (seller IBAN).
+	 */
+	@Nullable Map<String, JsonBankAccountRequest> bankAccounts;
+
 	@Value
 	@Builder
 	@Jacksonized
 	public static class Location
 	{
 		@Nullable String gln;
+		@Nullable String city;
+		@Nullable String postal;
+		@Nullable String address1;
+		/** ISO 2-letter country code, e.g. {@code "DE"}. */
+		@Nullable String countryCode;
 	}
 
 	@Value
@@ -74,5 +110,10 @@ public class JsonCreateBPartnerRequest
 		 * Description or title for the contact.
 		 */
 		@Nullable String description;
+		/**
+		 * If true, sets {@code AD_User.IsDefaultContact=Y}.
+		 * The CII mapper reads the seller contact via {@code retrieveDefaultContact}.
+		 */
+		@Nullable Boolean isDefaultContact;
 	}
 }

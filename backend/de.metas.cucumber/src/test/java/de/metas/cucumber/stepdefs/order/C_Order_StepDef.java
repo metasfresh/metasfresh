@@ -136,6 +136,7 @@ import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_InputDataSource_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_SalesRep_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_BPartnerName;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -159,6 +160,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_Partner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_HandOver_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_InvoiceRule;
+import static org.compiere.model.I_C_Order.COLUMNNAME_IsAutoInvoice;
 import static org.compiere.model.I_C_Order.COLUMNNAME_IsDropShip;
 import static org.compiere.model.I_C_Order.COLUMNNAME_IsUseHandOver_Location;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
@@ -168,6 +170,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PreparationDate;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Description;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
 @RequiredArgsConstructor
@@ -226,10 +229,14 @@ public class C_Order_StepDef
 	/**
 	 * Creates {@code C_Order} records.
 	 * <p>
-	 * gh#28565: Added support for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 *   <li>{@code IsFixedDatePromised} (optional) — when {@code true}, holds each order line until its own
+	 *       delivery date (per-line {@code M_Packageable_V.DeliveryDate}) is reached before it may be shipped</li>
+	 *   <li>{@code IsFixedPreparationDate} (optional) — when {@code true}, holds each order line until its own
+	 *       preparation date (per-line {@code M_Packageable_V.PreparationDate}) is reached before it may be picked</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -359,6 +366,12 @@ public class C_Order_StepDef
 		{
 			order.setDatePromised(Timestamp.from(datePromisedToBeSet));
 		}
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedDatePromised)
+				.ifPresent(order::setIsFixedDatePromised);
+
+		tableRow.getAsOptionalBoolean(I_C_Order.COLUMNNAME_IsFixedPreparationDate)
+				.ifPresent(order::setIsFixedPreparationDate);
 
 		if (EmptyUtil.isNotBlank(poReference))
 		{
@@ -683,12 +696,18 @@ public class C_Order_StepDef
 	}
 
 	/**
-	 * Validates {@code C_Order} records against expected values.
+	 * Validates {@code C_Order} records by identifier. Every column is an optional assertion - a column is only
+	 * checked when present in the DataTable. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared
+	 * as {@code LocalDate} using the order org's time zone ({@code orgDAO.getTimeZone}).
 	 * <p>
-	 * gh#28565: Added validation for promotion code columns:
+	 * Supported optional columns include:
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing the expected {@code C_PromotionCode}</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing the expected second {@code C_PromotionCode}</li>
+	 *   <li>{@code Description} (optional) — expected order description text</li>
+	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
+	 *   <li>{@code DateOrdered} / {@code DatePromised} (optional) — compared as {@code LocalDate} in the order org's time zone</li>
 	 * </ul>
 	 */
 	@And("validate the created orders")
@@ -780,12 +799,21 @@ public class C_Order_StepDef
 					softly.assertThat(TimeUtil.asLocalDate(order.getDateOrdered(), zoneId)).as("DateOrdered for Identifier=%s", identifierStr).isEqualTo(dateOrdered);
 				});
 
+		row.getAsOptionalLocalDate(I_C_Order.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+					softly.assertThat(TimeUtil.asLocalDate(order.getDatePromised(), zoneId)).as("DatePromised for Identifier=%s", identifierStr).isEqualTo(datePromised);
+				});
+
 		row.getAsOptionalString(COLUMNNAME_DocBaseType)
 				.ifPresent(docBaseType -> {
 					final int docTypeRepoId = CoalesceUtil.firstGreaterThanZero(order.getC_DocType_ID(), order.getC_DocTypeTarget_ID());
 					final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(docTypeRepoId));
 					softly.assertThat(docType.getDocBaseType()).as("DocBaseType for Identifier=%s", identifierStr).isEqualTo(docBaseType);
 				});
+
+		row.getAsOptionalString(I_C_Order.COLUMNNAME_OrderType)
+				.ifPresent(orderType -> softly.assertThat(order.getOrderType()).as("OrderType for Identifier=%s", identifierStr).isEqualTo(orderType));
 
 		row.getAsOptionalCurrencyCode()
 				.ifPresent(currencyCode -> {
@@ -815,6 +843,10 @@ public class C_Order_StepDef
 				.map(userTable::get)
 				.ifPresent(user -> softly.assertThat(order.getAD_User_ID()).as("AD_User_ID for Identifier=%s", identifierStr).isEqualTo(user.getAD_User_ID()));
 
+		row.getAsOptionalIdentifier(COLUMNNAME_SalesRep_ID)
+				.map(userTable::get)
+				.ifPresent(salesRepUser -> softly.assertThat(order.getSalesRep_ID()).as("SalesRep_ID for Identifier=%s", identifierStr).isEqualTo(salesRepUser.getAD_User_ID()));
+
 		row.getAsOptionalIdentifier(COLUMNNAME_Bill_BPartner_ID)
 				.map(bpartnerTable::get)
 				.ifPresent(billBP -> softly.assertThat(order.getBill_BPartner_ID()).as("Bill_BPartner_ID for Identifier=%s", identifierStr).isEqualTo(billBP.getC_BPartner_ID()));
@@ -842,6 +874,9 @@ public class C_Order_StepDef
 
 		row.getAsOptionalString(COLUMNNAME_InvoiceRule)
 				.ifPresent(invoiceRule -> softly.assertThat(order.getInvoiceRule()).as("InvoiceRule for Identifier=%s", identifierStr).isEqualTo(invoiceRule));
+
+		row.getAsOptionalBoolean(COLUMNNAME_IsAutoInvoice)
+				.ifPresent(isAutoInvoice -> softly.assertThat(order.isAutoInvoice()).as("IsAutoInvoice for Identifier=%s", identifierStr).isEqualTo(isAutoInvoice));
 
 		paymentTermStepDef.extractPaymentTermId(row)
 				.ifPresent(paymentTermId -> softly.assertThat(PaymentTermId.ofRepoIdOrNull(order.getC_PaymentTerm_ID())).as("C_PaymentTerm_ID for Identifier=%s", identifierStr).isEqualTo(paymentTermId));
@@ -961,6 +996,11 @@ public class C_Order_StepDef
 							.as("PreparationDate for Identifier=%s", identifierStr)
 							.isEqualTo(preparationDate);
 				});
+
+		row.getAsOptionalString(COLUMNNAME_Description)
+				.ifPresent(description -> softly.assertThat(order.getDescription())
+						.as("Description for Identifier=%s", identifierStr)
+						.isEqualTo(description));
 
 		softly.assertAll();
 	}

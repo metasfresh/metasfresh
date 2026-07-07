@@ -8,8 +8,8 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 58 | 62 | 94% |
-| Distribution | 39 | 40 | 98% |
+| Picking | 71 | 75 | 95% |
+| Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 4 | 5 | 80% |
@@ -68,7 +68,7 @@
 | ❌ Mode B — Camera (ZXing/BrowserMultiFormatReader): getUserMedia() decode → barcode forwarded | — (not testable in CI, requires real camera) |
 | ❌ `scanDuplicatesIntervalMillis` — duplicate barcode within interval suppressed, outside interval forwarded | — |
 | ❌ `triggerOnChangeIfLengthGreaterThan` — onChange fires only once input length exceeds threshold | — |
-| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode and renders `<video>` (feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
+| Footer — hardware/camera toggle: renders only when both hw + camera enabled; clicking toggle switches to camera mode (camera panel shown; live `<video>` feed validation requires physical hardware) | `barcode_scanner_modes.spec.js` |
 | ❌ Footer — "Enter manually": shows only when manual mode enabled and activeMode ≠ MANUAL; clicking sets activeMode to MANUAL | — |
 | ❌ Footer — "Back to scanner": shows when activeMode=MANUAL and at least one of hw/camera enabled; clicking returns to HARDWARE (or CAMERA if only camera enabled) | — |
 
@@ -84,6 +84,12 @@
 |---|---|
 | Full pick, single HU, confirm, shipment schedule marked picked | `picking/picking.spec.js` |
 | Pick HU then unpick → HU returns to unallocated | `picking/picking.spec.js` |
+| Partial unpack: scan product GTIN → qty dialog → scan target HU → chosen qty removed into target, rest stays packed; re-pick loop repeatable | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: scan product not in the package → one error toast, nothing removed | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: partial-unpick then complete the job → shipment carries the net packed qty in exactly one line, no negative counter-row | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/picking_partial_unpack.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -94,7 +100,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**10/11 — 91%**
+**16/17 — 94%**
 
 ### Order-based picking — filtering and facets
 
@@ -111,8 +117,19 @@
 | Scenario | Test |
 |---|---|
 | Pick All button picks all remaining HUs in one action | `picking/pickAllButton.spec.js` |
+| Pick All completes a job that already has a fully-picked line (no abort on the zero-remaining line) | `picking/pickAllButton.spec.js` |
 | Pick All button hidden when feature disabled in mobile config | `picking/pickAllButton.spec.js` |
 | Only one matching HU → picking proceeds without qty dialog | `picking/pickAttributes.spec.js` |
+
+**4/4 — 100%**
+
+### Order-based picking — serial-no scan
+
+| Scenario | Test |
+|---|---|
+| Serial-no product → scan one serial per picked unit ("N of N"), confirm gated until N distinct serials, persisted comma-separated on the picked HU | `picking/picking_serialNo.spec.js` |
+| Duplicate serial scan is silently deduped (count unchanged; must scan N distinct serials) | `picking/picking_serialNo.spec.js` |
+| Misconfigured serial-no product (flag set, no serial-capable attribute set) → no prompt, picks directly | `picking/picking_serialNo.spec.js` |
 
 **3/3 — 100%**
 
@@ -186,11 +203,12 @@
 | Lines aggregated and grouped by delivery location | `picking/picking_deliveryLocationBasedAggregation.spec.js` |
 | No suggestions configured → no suggested picking slots shown | `picking/pickingSlotSuggestions.spec.js` |
 | Configured picking slot suggestions → shown and selectable | `picking/pickingSlotSuggestions.spec.js` |
+| Picking slot not required → slot-scan step absent, job pickable directly | `picking/pickingSlotRequired.spec.js` |
 | Single sales order split and picked to multiple workplaces | `picking/pick_what_was_scheduled_to_workplace.spec.js` |
 | DO_NOT_CREATE: fully-picked order on a draft shipment must NOT reappear in the picking launcher | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 | DO_NOT_CREATE: order with a PARTIAL draft shipment (qty still open) must STAY in the picking list | `picking/picking_DO_NOT_CREATE_shipment_reappearance.spec.js` |
 
-**7/7 — 100%**
+**8/8 — 100%**
 
 ### Product-based picking
 
@@ -202,6 +220,15 @@
 | Pick-from HU identified by ExternalBarcode attribute | `picking/productBasedPicking/pick_by_ExternalBarcode.spec.js` |
 
 **4/4 — 100%**
+
+### Navigation — device/browser Back
+
+| Scenario | Test |
+|---|---|
+| Device/browser Back is a pure no-op: pressing it does nothing (screen unchanged, operator never leaves the PWA); only the footer Back navigates | `picking/deviceBackIsNoOp.spec.js` |
+| Rapidly mashing device/browser Back many times stays put, never leaves the app, and the title bar does not revert to the app caption | `picking/deviceBackIsNoOp.spec.js` |
+
+**2/2 — 100%**
 
 ---
 
@@ -249,6 +276,7 @@
 | Pick multiple HUs by M_HU_ID; Drop All via locator code | `distribution/job_dropAllButton.spec.js` |
 | Pick from multiple jobs in launchers list; Drop All from jobs-list screen | `distribution/launchers_dropAllButton.spec.js` |
 | navigateToJobsListAfterPickFromComplete=true → last line pick navigates to next job | `distribution/navigateToJobsListAfterPickFromComplete.spec.js` |
+| Packing-table operator: orders offered sorted by priority then locator priority; pick + scan auto-advances order→order through the run | `distribution/packingTable_navigateToNextOrder.spec.js` |
 | "Lagerort leer" button advances the job's pick-from locator to the next active locator | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" successive presses cycle round-robin through all active locators | `distribution/switchPickFromLocator.spec.js` |
 | "Lagerort leer" button stays visible after picking has started (mid-job switch supported) | `distribution/switchPickFromLocator.spec.js` |
@@ -258,7 +286,7 @@
 | "Lagerort leer" — ground-locator mode: skips non-ground and no-stock locators, respects priorityNo order, cycles round-robin | `distribution/switchPickFromLocator_groundLocator.spec.js` |
 | "Lagerort leer" — ground-locator mode (AC6): no eligible ground alternative → no-alternative toast, pick-from unchanged | `distribution/switchPickFromLocator_groundLocator_noAlternative.spec.js` |
 
-**13/13 — 100%**
+**14/14 — 100%**
 
 ### Distribution — HU scanning
 

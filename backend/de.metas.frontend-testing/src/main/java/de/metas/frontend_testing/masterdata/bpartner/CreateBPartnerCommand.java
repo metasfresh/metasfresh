@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.RandomGLNGenerator;
+import de.metas.bpartner.service.IBPBankAccountDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyCode;
@@ -13,6 +14,8 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.handlingunits.grai.GRAIRequired;
 import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.location.ILocationDAO;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyId;
 import de.metas.order.DeliveryRule;
@@ -21,12 +24,14 @@ import de.metas.user.UserId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
@@ -122,6 +127,23 @@ public class CreateBPartnerCommand
 			bpartner.setGRAIRequired(graiRequired.getCode());
 		}
 
+		if (request.getIsEInvoiceRecipeint() != null)
+		{
+			bpartner.setIsEInvoiceRecipeint(request.getIsEInvoiceRecipeint());
+		}
+		if (request.getEInvoiceType() != null)
+		{
+			bpartner.setEInvoiceType(request.getEInvoiceType());
+		}
+		if (request.getEInvoiceBuyerReference() != null)
+		{
+			bpartner.setEInvoice_BuyerReference(request.getEInvoiceBuyerReference());
+		}
+		if (request.getVatTaxId() != null)
+		{
+			bpartner.setVATaxID(request.getVatTaxId());
+		}
+
 		// Set pricing system based on vendor/customer flags
 		if (request.isCustomer())
 		{
@@ -135,6 +157,14 @@ public class CreateBPartnerCommand
 		InterfaceWrapperHelper.saveRecord(bpartner);
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(bpartner.getC_BPartner_ID());
 		context.putIdentifier(bpIdentifier, bpartnerId);
+
+		if (request.getBankAccounts() != null)
+		{
+			for (final JsonBankAccountRequest bankAccountRequest : request.getBankAccounts().values())
+			{
+				createBankAccount(bankAccountRequest, bpartnerId);
+			}
+		}
 
 		final BPartnerLocationId singleBPLocationId;
 		final GLN singleGLN;
@@ -224,7 +254,7 @@ public class CreateBPartnerCommand
 			@NonNull final BPartnerId bpartnerId,
 			final boolean isDefault)
 	{
-		final LocationId locationId = createLocation();
+		final LocationId locationId = createLocation(request);
 
 		final GLN gln = toGLN(request.getGln());
 
@@ -283,6 +313,11 @@ public class CreateBPartnerCommand
 			contactRecord.setPhone(phone);
 		}
 
+		if (Boolean.TRUE.equals(request.getIsDefaultContact()))
+		{
+			contactRecord.setIsDefaultContact(true);
+		}
+
 		final String description = StringUtils.trimBlankToNull(request.getDescription());
 		if (description != null)
 		{
@@ -311,12 +346,53 @@ public class CreateBPartnerCommand
 		}
 	}
 
-	private LocationId createLocation()
+	private LocationId createLocation(@NonNull final JsonCreateBPartnerRequest.Location locationRequest)
 	{
+		CountryId resolvedCountryId = countryId;
+		if (locationRequest.getCountryCode() != null)
+		{
+			final CountryId lookedUp = Services.get(ICountryDAO.class)
+					.getCountryIdByCountryCodeOrNull(locationRequest.getCountryCode());
+			if (lookedUp != null)
+			{
+				resolvedCountryId = lookedUp;
+			}
+		}
+
 		final I_C_Location locationRecord = InterfaceWrapperHelper.newInstance(I_C_Location.class);
-		locationRecord.setC_Country_ID(countryId.getRepoId());
-		InterfaceWrapperHelper.saveRecord(locationRecord);
+		locationRecord.setC_Country_ID(resolvedCountryId.getRepoId());
+		if (locationRequest.getCity() != null)
+		{
+			locationRecord.setCity(locationRequest.getCity());
+		}
+		if (locationRequest.getPostal() != null)
+		{
+			locationRecord.setPostal(locationRequest.getPostal());
+		}
+		if (locationRequest.getAddress1() != null)
+		{
+			locationRecord.setAddress1(locationRequest.getAddress1());
+		}
+		Services.get(ILocationDAO.class).save(locationRecord);
 		return LocationId.ofRepoId(locationRecord.getC_Location_ID());
+	}
+
+	private void createBankAccount(
+			@NonNull final JsonBankAccountRequest req,
+			@NonNull final BPartnerId bpartnerId)
+	{
+		final CurrencyCode code = req.getCurrencyCode() != null
+				? CurrencyCode.ofThreeLetterCode(req.getCurrencyCode())
+				: CurrencyCode.EUR;
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(code);
+
+		final I_C_BP_BankAccount bankAccount = InterfaceWrapperHelper.newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
+		bankAccount.setAD_Org_ID(orgId.getRepoId());
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+		bankAccount.setIBAN(req.getIban());
+		bankAccount.setIsActive(true);
+		Services.get(IBPBankAccountDAO.class).save(bankAccount);
 	}
 
 	private PricingSystemId createPricingSystem()

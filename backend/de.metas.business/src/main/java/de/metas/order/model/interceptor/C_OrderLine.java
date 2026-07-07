@@ -35,6 +35,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PO_OrderLine_Alloc;
@@ -197,6 +198,39 @@ public class C_OrderLine
 		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 		bPartnerSupplierApprovalService.validateSupplierApproval(partnerId, TimeUtil.asLocalDate(order.getDatePromised(), timeZone), supplierApprovalNorms);
+	}
+
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_OrderLine.COLUMNNAME_M_Product_ID
+	})
+	public void validateProductIsPurchasedOrSold(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		final ClientId clientId = ClientId.ofRepoId(order.getAD_Client_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		if (order.isSOTrx())
+		{
+			productBL.assertSellable(productId);
+		}
+		else
+		{
+			productBL.assertPurchasable(productId);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
