@@ -63,16 +63,6 @@ public class PickingJobLineCarrierServiceRepository
 				PickingJobLineCarrierServiceRepository::new);
 	}
 
-	public ImmutableSet<CarrierServiceId> getAssignedServiceIdsByLineId(@NonNull final PickingJobLineId lineId)
-	{
-		return queryBL.createQueryBuilder(I_M_Picking_Job_Line_Carrier_Service.class)
-				.addEqualsFilter(I_M_Picking_Job_Line_Carrier_Service.COLUMNNAME_M_Picking_Job_Line_ID, lineId)
-				.create()
-				.stream()
-				.map(record -> CarrierServiceId.ofRepoId(record.getCarrier_Service_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
 	public ImmutableSetMultimap<PickingJobLineId, CarrierServiceId> getAssignedServiceIdsMapByLineIds(@NonNull final Collection<PickingJobLineId> lineIds)
 	{
 		if (lineIds.isEmpty())
