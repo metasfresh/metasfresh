@@ -67,17 +67,9 @@ AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Languag
 /* DDL */ select update_Column_Translation_From_AD_Element(585012)
 ;
 
--- Physical column (new mandatory YesNo column with default 'N'; backfill existing rows then NOT NULL)
+-- Physical column: new mandatory YesNo column, default 'N' (ADD COLUMN NOT NULL DEFAULT backfills existing rows)
 -- 2026-06-17T11:01:03.000Z
-ALTER TABLE public.M_Picking_Job ADD COLUMN IF NOT EXISTS IsCarrierAdviseReadOnly CHAR(1) DEFAULT 'N'
-;
-
--- 2026-06-17T11:01:04.000Z
-UPDATE public.M_Picking_Job SET IsCarrierAdviseReadOnly = 'N' WHERE IsCarrierAdviseReadOnly IS NULL
-;
-
--- 2026-06-17T11:01:05.000Z
-ALTER TABLE public.M_Picking_Job ALTER COLUMN IsCarrierAdviseReadOnly SET NOT NULL
+ALTER TABLE public.M_Picking_Job ADD COLUMN IF NOT EXISTS IsCarrierAdviseReadOnly CHAR(1) NOT NULL DEFAULT 'N'
 ;
 
 -- 2026-06-17T11:01:06.000Z
