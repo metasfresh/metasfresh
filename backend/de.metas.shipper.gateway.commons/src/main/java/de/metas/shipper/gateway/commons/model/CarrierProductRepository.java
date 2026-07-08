@@ -51,7 +51,7 @@ public class CarrierProductRepository
 	{
 		return CarrierProduct.builder()
 				.id(CarrierProductId.ofRepoId(product.getCarrier_Product_ID()))
-				.shipperId(ShipperId.ofRepoIdOrNull(product.getM_Shipper_ID()))
+				.shipperId(ShipperId.ofRepoId(product.getM_Shipper_ID()))
 				.code(product.getExternalId())
 				.name(product.getName())
 				.build();

@@ -98,7 +98,7 @@ public interface DraftDeliveryOrderCreator
 			@Nullable BigDecimal weightInKg;
 			@NonNull PackageDimensions packageDimension;
 
-			// Coalesce, never a floor: the real weight when present (extractWeightInKg already dropped 0/absent), the default ONLY when absent.
+			// Coalesce, never a floor: the real weight when present, the default ONLY when it is absent (0/absent weights are stripped upstream, so null here means genuinely no weight).
 			public BigDecimal getWeightInKgOr(final BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
 		}
 	}

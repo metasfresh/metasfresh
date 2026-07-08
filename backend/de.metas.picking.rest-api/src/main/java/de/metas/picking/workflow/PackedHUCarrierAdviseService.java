@@ -176,7 +176,6 @@ public class PackedHUCarrierAdviseService
 	private boolean isApiCarrierAdvise(@Nullable final CarrierProduct carrierProduct)
 	{
 		return carrierProduct != null
-				&& carrierProduct.getShipperId() != null
 				&& shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId());
 	}
 
