@@ -84,6 +84,7 @@
 |---|---|
 | Full pick, single HU, confirm, shipment schedule marked picked | `picking/picking.spec.js` |
 | Pick HU then unpick → HU returns to unallocated | `picking/picking.spec.js` |
+| Unpick a whole step and scan a target HU → picked goods move onto the scanned target HU | `picking/picking_unpick_scan_target.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -97,7 +98,7 @@
 | Profile configured with HandoverLocation + DateReady summary fields (Customer kept out of summary) → job-list caption shows exactly 3 fields: document number, delivery location and delivery date | `picking/orderBasedPicking/launcher_caption_handover_location_and_date.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**13/14 — 93%**
+**14/15 — 93%**
 
 ### Order-based picking — filtering and facets
 
