@@ -20,6 +20,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Shipper;
@@ -71,8 +72,8 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	}
 
 	private PickingJob createSalesOrderJobWithCarrier(
-			@org.jetbrains.annotations.NotNull final CarrierProduct carrierProduct,
-			@org.jetbrains.annotations.NotNull final CarrierAdviseStatus advisingStatus)
+			@NonNull final CarrierProduct carrierProduct,
+			@NonNull final CarrierAdviseStatus advisingStatus)
 	{
 		final ProductId productId = BusinessTestHelper.createProductId("P1", helper.uomEach);
 		helper.createVHUInfo(productId, "100", "QR-VHU1");
