@@ -1534,6 +1534,63 @@ Feature: nShift Shipment
       | LU     | false     | false    |
 
   @from:cucumber
+  @Id:S0355_PickingDisplay_330
+  Scenario: Carrier-advise picking display — two lines with divergent non-manual carriers on one LU show the button but no current carrier product
+    # Two order lines on one nShift order, both auto-advised to cp1 on completion, then line 2 is re-advised to
+    # cp2 (still un-picked) → divergent non-manual carriers. Picked into ONE LU → the job-level advise resolves
+    # to "available + editable, but no single carrier product" (the picker re-advises to converge). The advise
+    # flags are asserted on the JOB HEADER, since both lines share it. The POJO assertions first pin the
+    # ground-truth job state (LU target set, both carriers seeded) before the display flags are read.
+    Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot     | IsDynamic |
+      | slot_diverge | display_diverge | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_diverge | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_diverge_l1 | so_diverge | product      | 10         | product_TU_10CU         |
+      | so_diverge_l2 | so_diverge | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_diverge is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_diverge_1 | so_diverge_l1  | N             | cp1                | CO                      |
+      | ss_diverge_2 | so_diverge_l2  | N             | cp1                | CO                      |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp2                | cgt2                  | cs2                |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_diverge_2          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_diverge_2 | so_diverge_l2  | N             | cp2                |
+    When start picking job for sales order identified by so_diverge
+    And scan picking slot identified by slot_diverge
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 10        |
+      | product_2             | hu_product_2 | 10        |
+    Then expect current picking job:
+      | HasLuTarget | IsCarrierAdviseReadOnly |
+      | Y           | N                       |
+    And expect current picking job lines:
+      | M_Product_ID | Carrier_Product_ID | IsCarrierAdviseManual |
+      | product      | cp1                | N                     |
+      | product_2    | cp2                | N                     |
+    Then expect current picking job header carrier advise
+      | available | readOnly |
+      | true      | false    |
+
+  @from:cucumber
   @Id:S0355_PickingReadvise_390
   Scenario: nShift Carrier Re-advise — mobile packing re-advise overwrites an already-advised schedule's carrier product
     # The schedule is auto-advised to cp1 at order completion (advising status Completed). When the operator packs
