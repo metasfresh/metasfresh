@@ -205,6 +205,9 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>Warehouse_ID</b> — (optional, identifier-ref) filter by warehouse<br>
 	 *   <b>QtyToDeliver</b> — (optional) filter by qty to deliver<br>
 	 *   <b>IsToRecompute</b> — (optional) expected recompute flag<br>
+	 *   <b>Carrier_Product_ID</b> — (optional, identifier-ref) filter by the advised carrier product<br>
+	 *   <b>Carrier_Goods_Type_ID</b> — (optional, identifier-ref) filter by carrier goods type<br>
+	 *   <b>Carrier_Advising_Status</b> — (optional) filter by advising status code (e.g. CO=Completed, MAN=Manual)<br>
 	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_ShipmentSchedule_StepDefData, M_Warehouse_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -656,7 +659,7 @@ public class M_ShipmentSchedule_StepDef
 				);
 		row.getAsOptionalEnum(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, CarrierAdviseStatus.class)
 				.ifPresent(carrierAdvisingStatus ->
-						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus.getCode())
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus)
 				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
