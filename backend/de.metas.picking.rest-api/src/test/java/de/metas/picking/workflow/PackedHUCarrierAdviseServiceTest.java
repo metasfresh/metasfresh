@@ -202,11 +202,11 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJobLine saladLine = mock(PickingJobLine.class);
 		when(saladLine.getScheduleId()).thenReturn(ShipmentScheduleAndJobScheduleId.ofShipmentScheduleId(SCHED_SALAD));
 
+		final TUPickingTarget tuTarget = existingTuTarget(huId);
 		final PickingJob pickingJob = mock(PickingJob.class);
-		// no LU/TU pick target in these scenarios → advise falls through to all picked HUs
+		// current pick target = the packed HU (the parcel being packed); advise scopes to it
 		when(pickingJob.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
-		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
-		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
+		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.of(tuTarget));
 
 		// withChangedLines(mapper): apply the mapper to the two lines so we can assert per-line behaviour
 		final PickingJob jobAfterLines = mock(PickingJob.class);
@@ -255,11 +255,11 @@ public class PackedHUCarrierAdviseServiceTest
 				SCHED_TOMATO, tomatoSched,
 				SCHED_SALAD, saladSched));
 
+		final TUPickingTarget tuTarget = existingTuTarget(huId);
 		final PickingJob pickingJob = mock(PickingJob.class);
-		// no LU/TU pick target in these scenarios → advise falls through to all picked HUs
+		// current pick target = the packed HU (the parcel being packed); advise scopes to it
 		when(pickingJob.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
-		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
-		when(pickingJob.getPickedHuIds(null)).thenReturn(ImmutableSet.of(huId));
+		when(pickingJob.getTuPickingTargetEffective(null)).thenReturn(Optional.of(tuTarget));
 		final PickingJob jobReadOnly = mock(PickingJob.class);
 		when(pickingJob.withCarrierAdviseReadOnly(true)).thenReturn(jobReadOnly);
 
@@ -386,16 +386,17 @@ public class PackedHUCarrierAdviseServiceTest
 	}
 
 	/**
-	 * Job-level advise with the SAME product on all lines (CU unambiguous) but DIVERGENT carrier products:
-	 * the button stays available with no current carrier (null caption) and editable, so the picker can re-advise.
+	 * Job-level advise WITH a pick target but DIVERGENT carrier products: the button stays available with no
+	 * current carrier (null caption) and editable, so the picker can re-advise the target parcel to converge.
+	 * (Without a target, a divergent set is not shown at all — see the resolveInfo no-target cases.)
 	 */
 	@Test
-	public void resolveInfo_jobLevel_sameProductDivergentCarriers_availableNoCaption()
+	public void resolveInfo_jobLevel_withTarget_divergentCarriers_availableNoCaption()
 	{
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
 		final PickingJobLine line2 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(702));
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJobWithTarget(ImmutableList.of(line1, line2)), null);
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isFalse();
 		assertThat(info.getProductCaption()).isNull();
@@ -473,6 +474,15 @@ public class PackedHUCarrierAdviseServiceTest
 		return job;
 	}
 
+	private static PickingJob mockJobLevelJobWithTarget(final ImmutableList<PickingJobLine> lines)
+	{
+		final PickingJob job = mock(PickingJob.class);
+		when(job.isLineLevelPickTarget()).thenReturn(false);
+		when(job.getLuPickingTarget(null)).thenReturn(Optional.of(mock(LUPickingTarget.class)));
+		when(job.getLines()).thenReturn(lines);
+		return job;
+	}
+
 	private I_M_HU createTwoProductHU()
 	{
 		final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
@@ -484,6 +494,14 @@ public class PackedHUCarrierAdviseServiceTest
 		final List<I_M_HU> createdHUs = producer.getCreatedHUs();
 		assertThat(createdHUs).hasSize(1);
 		return createdHUs.get(0);
+	}
+
+	private static TUPickingTarget existingTuTarget(final HuId tuId)
+	{
+		final TUPickingTarget target = mock(TUPickingTarget.class);
+		when(target.isExistingTU()).thenReturn(true);
+		when(target.getTuId()).thenReturn(tuId);
+		return target;
 	}
 
 	private ShipmentSchedule mockSchedule(final ShipmentScheduleId id, final ProductId productId)

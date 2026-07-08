@@ -21,6 +21,8 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
+import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -28,8 +30,11 @@ import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Real-fixture tests for {@link PackedHUCarrierAdviseService#resolveInfo}: a real {@link PickingJob} built via
@@ -99,8 +104,10 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	}
 
 	@Test
-	void resolveInfo_apiAdviseShipper_nonManual_availableEditableWithCaption()
+	void resolveInfo_apiAdviseShipper_nonManual_noTarget_availableReadOnlyWithCaption()
 	{
+		// A SALES_ORDER job is NOT line-level, so it takes the job-level branch. With no pick target set, this
+		// is a read-only DISPLAY of the single (unambiguous) API-advise carrier — there is nothing to advise onto.
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
 		final PickingJob job = createSalesOrderJobWithCarrier(cp, CarrierAdviseStatus.Completed);
@@ -109,7 +116,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line);
 
 		assertThat(info.isAvailable()).isTrue();
-		assertThat(info.isReadOnly()).isFalse();
+		assertThat(info.isReadOnly()).isTrue();
 		assertThat(info.getProductCaption()).isEqualTo("Std Parcel");
 	}
 
@@ -140,5 +147,119 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line);
 
 		assertThat(info.isAvailable()).isFalse();
+	}
+
+	// ---------------------------------------------------------------------------------------------
+	// Job-level (line==null) no-/with-target display branch.
+	// Target presence and carrier divergence are controlled via a mocked PickingJob/PickingJobLine
+	// (as in the sibling PackedHUCarrierAdviseServiceTest job-level cases); the real
+	// CarrierProductRepository + ShipperRepository still decide API-advise eligibility + caption.
+	// ---------------------------------------------------------------------------------------------
+
+	private PickingJobLine mockApiAdviseLine(@NonNull final CarrierProduct cp, final boolean manual)
+	{
+		final PickingJobLine line = mock(PickingJobLine.class);
+		when(line.getCarrierProductId()).thenReturn(cp.getId());
+		when(line.isManual()).thenReturn(manual);
+		when(line.isCarrierAdviseReadOnly()).thenReturn(false);
+		return line;
+	}
+
+	private static PickingJob mockJobLevelJob(final boolean hasTarget, final ImmutableList<PickingJobLine> lines)
+	{
+		final PickingJob job = mock(PickingJob.class);
+		when(job.isLineLevelPickTarget()).thenReturn(false);
+		if (hasTarget)
+		{
+			when(job.getLuPickingTarget(null)).thenReturn(Optional.of(mock(LUPickingTarget.class)));
+		}
+		else
+		{
+			when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
+			when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
+		}
+		when(job.getLines()).thenReturn(lines);
+		return job;
+	}
+
+	@Test
+	void resolveInfo_withTarget_singleCarrier_availableEditableWithCaption()
+	{
+		final ShipperId shipperId = createShipper("nShift", true);
+		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
+		final PickingJob job = mockJobLevelJob(true, ImmutableList.of(mockApiAdviseLine(cp, false)));
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isFalse();
+		assertThat(info.getProductCaption()).isEqualTo("Std Parcel");
+	}
+
+	@Test
+	void resolveInfo_withTarget_divergentCarriers_availableEditableNoCaption()
+	{
+		final ShipperId shipperId = createShipper("nShift", true);
+		final CarrierProduct cp1 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "A");
+		final CarrierProduct cp2 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp2", "B");
+		final PickingJob job = mockJobLevelJob(true, ImmutableList.of(
+				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isFalse();
+		assertThat(info.getProductCaption()).isNull();
+	}
+
+	@Test
+	void resolveInfo_noTarget_singleCarrier_availableReadOnlyWithCaption()
+	{
+		final ShipperId shipperId = createShipper("nShift", true);
+		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
+		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(mockApiAdviseLine(cp, false)));
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isTrue();
+		assertThat(info.getProductCaption()).isEqualTo("Std Parcel");
+	}
+
+	@Test
+	void resolveInfo_noTarget_allLinesSameCarrier_availableReadOnlyWithCaption()
+	{
+		final ShipperId shipperId = createShipper("nShift", true);
+		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
+		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(
+				mockApiAdviseLine(cp, false), mockApiAdviseLine(cp, false)));
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isTrue();
+		assertThat(info.getProductCaption()).isEqualTo("Std Parcel");
+	}
+
+	@Test
+	void resolveInfo_noTarget_divergentCarriers_notAvailable()
+	{
+		final ShipperId shipperId = createShipper("nShift", true);
+		final CarrierProduct cp1 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "A");
+		final CarrierProduct cp2 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp2", "B");
+		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(
+				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
+
+		assertThat(service.resolveInfo(job, null).isAvailable()).isFalse();
+	}
+
+	@Test
+	void resolveInfo_noTarget_noApiAdviseCarrier_notAvailable()
+	{
+		final ShipperId shipperId = createShipper("noAdvise", false);
+		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Fallback");
+		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(mockApiAdviseLine(cp, false)));
+
+		assertThat(service.resolveInfo(job, null).isAvailable()).isFalse();
 	}
 }

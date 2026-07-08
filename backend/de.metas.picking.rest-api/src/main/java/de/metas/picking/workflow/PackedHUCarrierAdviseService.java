@@ -132,12 +132,10 @@ public class PackedHUCarrierAdviseService
 			return resolveTargetInfoFromCarrierProduct(line.getCarrierProductId(), isCarrierAdviseReadOnly(line));
 		}
 
-		// A job-level advise has no single thing to advise unless we can pin down the target scope: a pick
-		// target (LU/TU parcel), a single line, or one shared product across the lines.
-		final boolean hasUnambiguousAdviseTarget = pickingJob.getLuPickingTarget(null).isPresent()
-				|| pickingJob.getTuPickingTarget(null).isPresent()
-				|| pickingJob.getLines().size() == 1
-				|| pickingJob.getLines().stream().map(PickingJobLine::getProductId).distinct().count() == 1;
+		// A job-level advise needs a target parcel to advise onto. With a target the picker can (re-)advise;
+		// without one we only DISPLAY the current carrier, and only when it is unambiguous.
+		final boolean hasTarget = pickingJob.getLuPickingTarget(null).isPresent()
+				|| pickingJob.getTuPickingTarget(null).isPresent();
 
 		// Exclude non-API-advise shippers' fallback carrier products from the set — so a divergent mix that
 		// includes a non-API shipper is gated out too, not just the single-target case.
@@ -147,22 +145,34 @@ public class PackedHUCarrierAdviseService
 				.filter(this::isApiAdviseCarrierProduct)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (!hasUnambiguousAdviseTarget || carrierProductIds.isEmpty())
+		if (carrierProductIds.isEmpty())
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
 
-		// Carriers diverge (same shipper): keep the button, but show no current carrier, so the picker can re-advise to converge.
-		if (carrierProductIds.size() != 1)
+		if (hasTarget)
 		{
-			return CarrierAdviseTargetInfo.builder().available(true).readOnly(false).productCaption(null).build();
+			// Carriers diverge (same shipper): keep the button, but show no current carrier, so the picker can re-advise to converge.
+			if (carrierProductIds.size() != 1)
+			{
+				return CarrierAdviseTargetInfo.builder().available(true).readOnly(false).productCaption(null).build();
+			}
+
+			final CarrierProductId carrierProductId = carrierProductIds.iterator().next();
+			final boolean readOnly = pickingJob.getLines().stream()
+					.filter(l -> carrierProductId.equals(l.getCarrierProductId()))
+					.allMatch(this::isCarrierAdviseReadOnly);
+			return resolveTargetInfoFromCarrierProduct(carrierProductId, readOnly);
 		}
 
-		final CarrierProductId carrierProductId = carrierProductIds.iterator().next();
-		final boolean readOnly = pickingJob.getLines().stream()
-				.filter(l -> carrierProductId.equals(l.getCarrierProductId()))
-				.allMatch(this::isCarrierAdviseReadOnly);
-		return resolveTargetInfoFromCarrierProduct(carrierProductId, readOnly);
+		// No target: there is nothing to (re-)advise onto, so this is a read-only DISPLAY of the current
+		// carrier — and only when it is unambiguous (exactly one distinct API-advise carrier, whether a single
+		// line or all lines sharing the same carrier). A divergent set has no single current carrier to show.
+		if (carrierProductIds.size() != 1)
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+		return resolveTargetInfoFromCarrierProduct(carrierProductIds.iterator().next(), /*readOnly=*/true);
 	}
 
 	private boolean isCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
@@ -183,12 +193,12 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * The HUs to (re-)advise. When the job/line has a current LU/TU pick target (the parcel being packed
-	 * now), advise ONLY that target parcel — never the already-finished parcels: each top-level HU is its
-	 * own Carrier_ShipmentOrder with its own carrier, so a finished parcel keeps its carrier and must not
-	 * be re-touched (nor collapse divergent per-parcel carriers into the single header product). When there
-	 * is NO LU/TU pick target (CU-direct), there is no single "current target" parcel — fall back to all
-	 * picked HUs of the scope (unchanged behaviour; CU-direct scoping is a separately-tracked open decision).
+	 * The single effective pick-target parcel to (re-)advise. The pick target IS the top-level parcel
+	 * (LU checked before TU), so we advise ONLY that target parcel — never the already-finished parcels:
+	 * each top-level HU is its own Carrier_ShipmentOrder with its own carrier, so a finished parcel keeps
+	 * its carrier and must not be re-touched (nor collapse divergent per-parcel carriers into the single
+	 * header product). No advise without a target: when there is no existing LU/TU pick target, return the
+	 * EMPTY set.
 	 */
 	private ImmutableSet<HuId> resolveAdviseTargetHuIds(
 			@NonNull final PickingJob pickingJob,
@@ -201,24 +211,17 @@ public class PackedHUCarrierAdviseService
 						.filter(TUPickingTarget::isExistingTU)
 						.map(TUPickingTarget::getTuId)
 						.orElse(null));
-		if (currentTargetHuId != null)
-		{
-			return ImmutableSet.of(currentTargetHuId);
-		}
-		return pickingJob.getPickedHuIds(lineId);
+		return currentTargetHuId != null
+				? ImmutableSet.of(currentTargetHuId)
+				: ImmutableSet.of();
 	}
 
 	/**
-	 * Re-advises the current pick-target parcel (or, CU-direct, all packed top-level HUs — see
-	 * {@link #resolveAdviseTargetHuIds}), then persists the advised carrier product (and the read-only
-	 * flag) onto the picking job header + its non-Manual lines, so the mobile preview and the
-	 * {@link CarrierAdviseConsistencyService} checks read the same persisted state.
+	 * Re-advises the single current pick-target parcel (see {@link #resolveAdviseTargetHuIds}), then persists
+	 * the advised carrier product (and the read-only flag) onto the picking job header + its non-Manual lines,
+	 * so the mobile preview and the {@link CarrierAdviseConsistencyService} checks read the same persisted state.
 	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
 	 * must never be overwritten, neither on the schedule nor on the picking job line).
-	 * <p>
-	 * Top-level resolution and deduplication by HuId is shared with
-	 * {@link CarrierAdviseConsistencyService#assertConsistentForJob} via
-	 * {@link IHandlingUnitsBL#getTopLevelHUsByHuIds(java.util.Collection)}.
 	 *
 	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
@@ -232,8 +235,9 @@ public class PackedHUCarrierAdviseService
 			return pickingJob;
 		}
 
-		// (a picked HU can yield distinct I_M_HU instances; also normalises a CU-direct leaf to its top level)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(adviseHuIds);
+		// The pick target IS the top-level parcel (LU checked before TU in resolveAdviseTargetHuIds), so no
+		// top-level re-resolution is needed — load the (at most one) target HU directly.
+		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getByIdsReturningMap(adviseHuIds);
 
 		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
 		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();
