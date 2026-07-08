@@ -42,7 +42,7 @@ import javax.annotation.Nullable;
 public class CarrierProduct implements ShipperProduct
 {
 	@NonNull CarrierProductId id;
-	@NonNull ShipperId shipperId;
+	@Nullable ShipperId shipperId;
 	@NonNull String code;
 	@NonNull String name;
 }

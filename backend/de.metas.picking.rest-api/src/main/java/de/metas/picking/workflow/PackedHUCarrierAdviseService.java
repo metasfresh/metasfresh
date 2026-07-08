@@ -47,7 +47,6 @@ import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
-import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
@@ -88,75 +87,12 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
-	public CarrierAdviseTargetInfo resolveTargetInfo(@NonNull final I_M_HU topLevelHU)
-	{
-		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById = huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
-		if (schedulesById.isEmpty())
-		{
-			return CarrierAdviseTargetInfo.NONE;
-		}
-
-		final ImmutableSet<ShipperId> shipperIds = schedulesById.values().stream()
-				.map(ShipmentSchedule::getShipperId)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(shipperIds);
-
-		boolean anyAdviseEnabled = false;
-		boolean allManual = true;
-		final LinkedHashSet<String> productCaptionNames = new LinkedHashSet<>();
-
-		for (final ShipmentSchedule schedule : schedulesById.values())
-		{
-			final ShipperId shipperId = schedule.getShipperId();
-			if (shipperId == null)
-			{
-				continue;
-			}
-
-			final Shipper shipper = shippersById.get(shipperId);
-			if (shipper == null || !shipper.isApiCarrierAdvise())
-			{
-				continue;
-			}
-
-			anyAdviseEnabled = true;
-
-			if (!schedule.getCarrierAdvisingStatus().isManual())
-			{
-				allManual = false;
-			}
-
-			final CarrierProductId carrierProductId = schedule.getCarrierProductId();
-			if (carrierProductId != null)
-			{
-				final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
-				if (carrierProduct != null)
-				{
-					productCaptionNames.add(carrierProduct.getName());
-				}
-			}
-		}
-
-		if (!anyAdviseEnabled)
-		{
-			return CarrierAdviseTargetInfo.NONE;
-		}
-
-		final String productCaption = productCaptionNames.isEmpty() ? null : String.join(", ", productCaptionNames);
-
-		return CarrierAdviseTargetInfo.builder()
-				.available(true)
-				.readOnly(allManual)
-				.productCaption(productCaption)
-				.build();
-	}
-
 	/**
 	 * Builds the display info from a job-scoped carrier product — the picking-job line's (or header's)
-	 * persisted {@code Carrier_Product_ID}, which is the job-scoped source of truth. Unlike
-	 * {@link #resolveTargetInfo(I_M_HU)} (per-HU via the shipment schedule, which is NOT scoped to the
-	 * picking job), this is what the mobile picking-job JSON converter should show for the current carrier.
+	 * persisted {@code Carrier_Product_ID}, the job-scoped source of truth for what the mobile picking-job
+	 * JSON converter shows as the current carrier. A non-API-advise shipper still gets a fallback
+	 * {@code Carrier_Product} (for workplace assignment), so the button is gated on the shipper's
+	 * {@code IsApiCarrierAdvise}, not on carrier-product presence.
 	 */
 	@NonNull
 	public CarrierAdviseTargetInfo resolveTargetInfoFromCarrierProduct(
@@ -169,8 +105,7 @@ public class PackedHUCarrierAdviseService
 		}
 
 		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
-		// A non-API-advise shipper still has a fallback Carrier_Product, so gate the button on IsApiCarrierAdvise.
-		if (carrierProduct == null || !shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId()))
+		if (!isApiCarrierAdvise(carrierProduct))
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
@@ -201,7 +136,8 @@ public class PackedHUCarrierAdviseService
 				|| pickingJob.getLines().size() == 1
 				|| pickingJob.getLines().stream().map(PickingJobLine::getProductId).distinct().count() == 1;
 
-		// Gate the whole set on IsApiCarrierAdvise so a divergent mix with a non-API shipper is excluded too.
+		// Exclude non-API-advise shippers' fallback carrier products from the set — so a divergent mix that
+		// includes a non-API shipper is gated out too, not just the single-target case.
 		final ImmutableSet<CarrierProductId> carrierProductIds = pickingJob.getLines().stream()
 				.map(PickingJobLine::getCarrierProductId)
 				.filter(Objects::nonNull)
@@ -233,8 +169,15 @@ public class PackedHUCarrierAdviseService
 
 	private boolean isApiAdviseCarrierProduct(@NonNull final CarrierProductId carrierProductId)
 	{
-		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
-		return carrierProduct != null && shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId());
+		return isApiCarrierAdvise(carrierProductRepository.getCachedShipperProductById(carrierProductId));
+	}
+
+	/** A carrier product enables the advise button only when it resolves to a shipper with {@code IsApiCarrierAdvise=Y}. */
+	private boolean isApiCarrierAdvise(@Nullable final CarrierProduct carrierProduct)
+	{
+		return carrierProduct != null
+				&& carrierProduct.getShipperId() != null
+				&& shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId());
 	}
 
 	/**

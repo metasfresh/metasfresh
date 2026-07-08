@@ -377,7 +377,6 @@ public class PackedHUCarrierAdviseServiceTest
 	@Test
 	public void resolveInfo_jobLevel_multipleLinesDifferentProducts_noTarget_notAvailable()
 	{
-		// Different products => CU ambiguous => not offered, regardless of carrier (gated before the API-advise check)
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
 		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(702));
 
@@ -399,6 +398,22 @@ public class PackedHUCarrierAdviseServiceTest
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isFalse();
 		assertThat(info.getProductCaption()).isNull();
+	}
+
+	/**
+	 * Job-level advise with the SAME product (CU unambiguous) but a MIXED shipper set: one line's carrier is an
+	 * API-advise shipper, the other's is a non-API fallback carrier. The non-API carrier is filtered out, leaving
+	 * the single API carrier, so the button IS offered — for that API carrier.
+	 */
+	@Test
+	public void resolveInfo_jobLevel_sameProductMixedApiAndNonApiCarriers_availableForApiCarrier()
+	{
+		final PickingJobLine apiLine = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701), true);
+		final PickingJobLine nonApiLine = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(702), false);
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(apiLine, nonApiLine)), null);
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.getProductCaption()).isEqualTo("carrier");
 	}
 
 	/**
