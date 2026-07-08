@@ -194,7 +194,10 @@ public class MobileUI_Picking_StepDef
 	/**
 	 * Asserts the CURRENT picking job HEADER carrier-advise DISPLAY flags — the job-level flags the mobile UI
 	 * reads for the header-view advise button (populated from {@code PackedHUCarrierAdviseService.resolveInfo}).
-	 * Re-fetches the process freshly (as the mobile UI does).
+	 * Re-fetches the process freshly (as the mobile UI does) in a SINGLE shot — it does NOT poll. Assumes a
+	 * preceding {@code expect current picking job:} / {@code expect current picking job lines:} step has
+	 * already polled the async pick state to settle; do not use it as the first assertion after an async
+	 * mutation, or it may race.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -247,8 +250,12 @@ public class MobileUI_Picking_StepDef
 	public void expectCurrentPickingJob(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
-		StepDefUtil.tryAndWait(30, 500, () -> catchThrowable(() -> assertPickingJobHeader(loadCurrentPickingJob(), row)) == null);
-		assertPickingJobHeader(loadCurrentPickingJob(), row);
+		final PickingJob[] settled = new PickingJob[1];
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			settled[0] = loadCurrentPickingJob();
+			return catchThrowable(() -> assertPickingJobHeader(settled[0], row)) == null;
+		});
+		assertPickingJobHeader(settled[0], row);
 	}
 
 	private void assertPickingJobHeader(@NonNull final PickingJob pickingJob, @NonNull final DataTableRow row)
@@ -296,8 +303,12 @@ public class MobileUI_Picking_StepDef
 	public void expectCurrentPickingJobLines(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final DataTableRows rows = DataTableRows.of(dataTable);
-		StepDefUtil.tryAndWait(30, 500, () -> catchThrowable(() -> assertPickingJobLines(loadCurrentPickingJob(), rows)) == null);
-		assertPickingJobLines(loadCurrentPickingJob(), rows);
+		final PickingJob[] settled = new PickingJob[1];
+		StepDefUtil.tryAndWait(30, 500, () -> {
+			settled[0] = loadCurrentPickingJob();
+			return catchThrowable(() -> assertPickingJobLines(settled[0], rows)) == null;
+		});
+		assertPickingJobLines(settled[0], rows);
 	}
 
 	private void assertPickingJobLines(@NonNull final PickingJob pickingJob, @NonNull final DataTableRows rows)
