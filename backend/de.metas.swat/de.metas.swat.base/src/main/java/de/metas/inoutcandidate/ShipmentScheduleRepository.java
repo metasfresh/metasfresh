@@ -527,16 +527,22 @@ public class ShipmentScheduleRepository
 				.map(I_M_PackageLine::getM_InOutLine_ID)
 				.collect(ImmutableSet.toImmutableSet());
 
-		// M_ShipmentSchedule_ID is nullable on M_ShipmentSchedule_QtyPicked → use ofRepoIdOrNull + skip unset
-		final ImmutableListMultimap<Integer, ShipmentScheduleId> scheduleIdsByInOutLineId = queryBL
+		// M_ShipmentSchedule_ID is nullable on M_ShipmentSchedule_QtyPicked → resolve the id once, skip unset
+		final ImmutableListMultimap.Builder<Integer, ShipmentScheduleId> scheduleIdsByInOutLineIdBuilder = ImmutableListMultimap.builder();
+		queryBL
 				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
 				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
 				.create()
 				.stream()
-				.filter(qtyPickedRecord -> ShipmentScheduleId.ofRepoIdOrNull(qtyPickedRecord.getM_ShipmentSchedule_ID()) != null)
-				.collect(ImmutableListMultimap.toImmutableListMultimap(
-						I_M_ShipmentSchedule_QtyPicked::getM_InOutLine_ID,
-						qtyPickedRecord -> ShipmentScheduleId.ofRepoId(qtyPickedRecord.getM_ShipmentSchedule_ID())));
+				.forEach(qtyPickedRecord -> {
+					final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(qtyPickedRecord.getM_ShipmentSchedule_ID());
+					if (shipmentScheduleId == null)
+					{
+						return;
+					}
+					scheduleIdsByInOutLineIdBuilder.put(qtyPickedRecord.getM_InOutLine_ID(), shipmentScheduleId);
+				});
+		final ImmutableListMultimap<Integer, ShipmentScheduleId> scheduleIdsByInOutLineId = scheduleIdsByInOutLineIdBuilder.build();
 		if (scheduleIdsByInOutLineId.isEmpty())
 		{
 			return ImmutableListMultimap.of();

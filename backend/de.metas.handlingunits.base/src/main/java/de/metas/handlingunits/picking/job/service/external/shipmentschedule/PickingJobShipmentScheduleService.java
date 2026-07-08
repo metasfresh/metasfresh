@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.shipmentschedule;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HuId;
@@ -48,6 +49,7 @@ public class PickingJobShipmentScheduleService
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
 
+	@VisibleForTesting
 	public static PickingJobShipmentScheduleService newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();

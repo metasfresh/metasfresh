@@ -65,8 +65,9 @@ public class CarrierAdviseConsistencyService
 	}
 
 	/**
-	 * Asserts carrier-advise consistency for one closed top-level HU (parcel). Blocks with E1 (&ge;2 distinct
-	 * manual carriers) or E2 (divergent non-manual, selection rules OFF) per the class contract.
+	 * Asserts carrier-advise consistency for one closed top-level HU (parcel). Blocks when there are
+	 * &ge;2 distinct manual carriers, or when non-manual carriers diverge while the shipper has selection
+	 * rules OFF, per the class contract.
 	 */
 	public void assertConsistentForClosedHU(@NonNull final I_M_HU topLevelHU)
 	{
@@ -82,6 +83,10 @@ public class CarrierAdviseConsistencyService
 				.map(ShipmentSchedule::getShipperId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+		if (allShipperIds.isEmpty())
+		{
+			return;
+		}
 		final Map<ShipperId, Shipper> shippersById = shipperRepository.getByIds(allShipperIds);
 
 		final ImmutableList<ShipmentSchedule> adviseEnabledSchedules = schedulesById.values().stream()
@@ -102,10 +107,10 @@ public class CarrierAdviseConsistencyService
 		final ImmutableSet<ResolvedCarrier> distinctManualCarriers = ResolvedCarrier.distinctManualCarriers(resolvedCarriers);
 
 		// ≥2 distinct manual carriers on one HU → ambiguous human override → reject.
+		// (AdempiereException(AdMessageKey, ...) is already a user-validation error.)
 		if (distinctManualCarriers.size() > 1)
 		{
-			throw new AdempiereException(MSG_ManualInconsistentOnHU, huId.getRepoId())
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_ManualInconsistentOnHU, huId.getRepoId());
 		}
 
 		// exactly one manual → manual wins (a co-packed non-manual is overridden), consistent → done.
@@ -134,8 +139,7 @@ public class CarrierAdviseConsistencyService
 				.count();
 		if (distinctProductIds > 1 || distinctGoodsTypeIds > 1)
 		{
-			throw new AdempiereException(MSG_NonManualDivergentOnHU, huId.getRepoId())
-					.markAsUserValidationError();
+			throw new AdempiereException(MSG_NonManualDivergentOnHU, huId.getRepoId());
 		}
 	}
 

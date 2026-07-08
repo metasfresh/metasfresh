@@ -1,7 +1,6 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;

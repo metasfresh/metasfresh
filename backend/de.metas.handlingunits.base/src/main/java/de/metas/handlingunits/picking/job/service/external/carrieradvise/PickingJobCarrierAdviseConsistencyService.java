@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.service.external.carrieradvise;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
@@ -25,6 +26,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class PickingJobCarrierAdviseConsistencyService
 {
+	@NonNull private final CarrierAdviseConsistencyService carrierAdviseConsistencyService;
+	@NonNull private final PickingJobHUService huService;
+
+	@VisibleForTesting
 	public static PickingJobCarrierAdviseConsistencyService newInstanceForUnitTesting(
 			@NonNull final CarrierAdviseConsistencyService carrierAdviseConsistencyService)
 	{
@@ -36,9 +41,6 @@ public class PickingJobCarrierAdviseConsistencyService
 						carrierAdviseConsistencyService,
 						PickingJobHUService.newInstanceForUnitTesting()));
 	}
-
-	@NonNull private final CarrierAdviseConsistencyService carrierAdviseConsistencyService;
-	@NonNull private final PickingJobHUService huService;
 
 	/**
 	 * Asserts carrier-advise consistency for each of the given closed top-level HUs (parcels). Empty set → no-op.
