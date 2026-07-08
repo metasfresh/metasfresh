@@ -27,10 +27,15 @@ export const PickGraiScreen = {
 
     /**
      * Scan a GRAI barcode through the live scanner (the offscreen hardware-scan input).
-     * Dispatches keyboard events at document level, terminated with Enter (DataWedge behaviour).
+     * Appends an explicit Enter terminator. `BarcodeScannerComponent.type()` dispatches all keystrokes
+     * instantaneously (0ms wall-clock), so back-to-back scans would concatenate in the
+     * `useKeyboardBarcodeReader` buffer before the ~1500ms GRAI debounce could flush; the Enter
+     * force-completes each instantaneous test-harness scan immediately, so each code is a distinct
+     * barcode. In PRODUCTION a GRAI is a non-HU-prefix code (`NOT_APPLICABLE`) that completes via the
+     * debounce flush without any Enter — the Enter is purely a test-harness need.
      */
     scanGrai: async ({ graiString }) => await test.step(`${NAME} - Scan GRAI: ${graiString}`, async () => {
-        await BarcodeScannerComponent.type(graiString);
+        await BarcodeScannerComponent.type({ scannedCode: graiString, terminator: 'Enter' });
     }),
 
     /**
