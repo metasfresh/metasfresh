@@ -5,8 +5,6 @@ import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /*
  * #%L
  * metasfresh-material-cockpit
@@ -36,47 +34,36 @@ public class StockChangeSourceInfo
 	{
 		return new StockChangeSourceInfo(
 				resetStockAdPinstanceId,
-				-1,
-				null);
+				-1);
 	}
 
 	public static StockChangeSourceInfo ofTransactionId(final int transactionId)
 	{
 		return new StockChangeSourceInfo(
 				(ResetStockPInstanceId)null,
-				Check.assumeGreaterThanZero(transactionId, "transactionId"),
-				null);
+				Check.assumeGreaterThanZero(transactionId, "transactionId"));
 	}
 
 	/**
 	 * Source info for an MD_Stock qty re-key triggered by an HU attribute change.
 	 * transactionId is -1 (no M_Transaction involved), resetStockPInstanceId is null.
-	 * The huId is retained for provenance.
 	 */
-	public static StockChangeSourceInfo ofHuAttributeChange(final int huId)
+	public static StockChangeSourceInfo ofHuAttributeChange()
 	{
-		Check.assumeGreaterThanZero(huId, "huId");
 		return new StockChangeSourceInfo(
 				(ResetStockPInstanceId)null,
-				-1,
-				huId);
+				-1);
 	}
 
 	ResetStockPInstanceId resetStockAdPinstanceId;
 	int transactionId;
 
-	/** HU that triggered the attribute change; {@code null} if not applicable. */
-	@Nullable
-	Integer huId;
-
 	private StockChangeSourceInfo(
 			final ResetStockPInstanceId resetStockAdPinstanceId,
-			final int transactionId,
-			@Nullable final Integer huId)
+			final int transactionId)
 	{
 		this.resetStockAdPinstanceId = resetStockAdPinstanceId;
 		this.transactionId = transactionId;
-		this.huId = huId;
 	}
 
 }

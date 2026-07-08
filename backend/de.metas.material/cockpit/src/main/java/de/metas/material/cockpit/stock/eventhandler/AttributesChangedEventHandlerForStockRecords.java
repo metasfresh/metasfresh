@@ -76,6 +76,9 @@ public class AttributesChangedEventHandlerForStockRecords
 		// which leave the storage AttributesKey unchanged (old == new, often both NONE).
 		// Nothing moves between buckets, so skip — otherwise we'd issue two offsetting
 		// MD_Stock deltas and fire spurious StockChangedEvents on every attribute change.
+		// Note: the dispo-service sibling handler for this same event deliberately does NOT
+		// skip old==new (it always creates FROM/TO candidates); here skipping is safe because
+		// an old==new re-key nets to zero on a single MD_Stock row and only wastes two saves.
 		if (oldAttributesKey.equals(newAttributesKey))
 		{
 			return;
@@ -83,7 +86,7 @@ public class AttributesChangedEventHandlerForStockRecords
 
 		final ProductId productId = ProductId.ofRepoId(event.getProductId());
 		final BigDecimal qtyBD = event.getQty();
-		final StockChangeSourceInfo sourceInfo = StockChangeSourceInfo.ofHuAttributeChange(event.getHuId());
+		final StockChangeSourceInfo sourceInfo = StockChangeSourceInfo.ofHuAttributeChange();
 
 		// FROM leg: subtract qty from old bucket
 		final StockDataRecordIdentifier fromIdentifier = StockDataRecordIdentifier.builder()

@@ -68,31 +68,6 @@
 				 });
 	 }
 
-	 /**
-	  * Creates or updates M_Attribute records.
-	  *
-	  * <p>Required columns:
-	  * <ul>
-	  *   <li>{@code Identifier} — step-def identifier for subsequent references</li>
-	  *   <li>{@code Value} — attribute value/code (used as upsert key)</li>
-	  *   <li>{@code Name} — attribute display name</li>
-	  * </ul>
-	  * Optional columns:
-	  * <ul>
-	  *   <li>{@code OPT.AttributeValueType} — e.g. {@code L} for list, {@code N} for number</li>
-	  *   <li>{@code OPT.DefaultValueSQL} — SQL expression for the default value</li>
-	  *   <li>{@code OPT.IsStorageRelevant} — {@code Y}/{@code N}; when {@code Y}, this attribute
-	  *       participates in the {@link de.metas.material.event.commons.AttributesKey} used for
-	  *       {@code MD_Stock} segregation</li>
-	  * </ul>
-	  *
-	  * <p>Example:
-	  * <pre>
-	  * And metasfresh contains M_Attributes:
-	  *   | Identifier | Value           | Name            | OPT.AttributeValueType | OPT.IsStorageRelevant |
-	  *   | attr       | stock_attr_test | Stock Attr Test | L                      | Y                     |
-	  * </pre>
-	  */
 	 @And("metasfresh contains M_Attributes:")
 	 public void metasfresh_contains_M_Attributes(@NonNull final DataTable dataTable)
 	 {
@@ -118,9 +93,6 @@
 
 					 row.getAsOptionalString(I_M_Attribute.COLUMNNAME_DefaultValueSQL)
 							 .ifPresent(attributeRecord::setDefaultValueSQL);
-
-					 row.getAsOptionalBoolean(I_M_Attribute.COLUMNNAME_IsStorageRelevant)
-							 .ifPresent(attributeRecord::setIsStorageRelevant);
 
 					 InterfaceWrapperHelper.saveRecord(attributeRecord);
 					 final Attribute attribute = AttributeDAO.fromRecord(attributeRecord);

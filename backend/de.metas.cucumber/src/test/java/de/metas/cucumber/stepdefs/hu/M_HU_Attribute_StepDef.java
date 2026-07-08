@@ -252,16 +252,18 @@ public class M_HU_Attribute_StepDef
 		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
 				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		// OPT.Value: try numeric first (existing behaviour), fall back to string for list/string-type attributes
+		// OPT.Value: dispatch on the attribute's declared value type, not on whether the string
+		// parses as a number — otherwise a list attribute with a numeric-looking value code
+		// (e.g. "1") would be silently sent down the numeric path.
 		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value).ifPresent(valueStr -> {
-			try
+			final AttributeValueType attributeValueType = AttributeValueType.ofCode(attributeRecord.getAttributeValueType());
+			if (attributeValueType == AttributeValueType.NUMBER)
 			{
-				final BigDecimal numericValue = new BigDecimal(valueStr);
-				attributesStorage.setValue(attributeRecord, numericValue);
+				attributesStorage.setValue(attributeRecord, new BigDecimal(valueStr));
 			}
-			catch (final NumberFormatException ignored)
+			else
 			{
-				// Not a number — treat as a list/string attribute value code
+				// STRING / LIST / DATE: set as the string value (list = the attribute-value code)
 				attributesStorage.setValue(attributeRecord, valueStr);
 			}
 		});
