@@ -29,8 +29,6 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
-import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
@@ -80,6 +78,8 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Note;
 import org.compiere.model.I_AD_User;
@@ -112,6 +112,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
+	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -496,7 +497,7 @@ public class OLCandBL implements IOLCandBL
 
 		// 2. Buyer BP's customer picking warehouse
 		final BPartnerId buyerBPartnerId = effectiveValuesBL.getBuyerPartnerInfo(olCand).getBpartnerId();
-		final WarehouseId bpPickingWarehouseId = Services.get(IWarehouseAdvisor.class).evaluateCustomerPickingWarehouse(buyerBPartnerId);
+		final WarehouseId bpPickingWarehouseId = warehouseAdvisor.evaluateCustomerPickingWarehouse(buyerBPartnerId);
 		if (bpPickingWarehouseId != null)
 		{
 			return bpPickingWarehouseId;

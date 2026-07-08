@@ -27,7 +27,6 @@ import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
-import de.metas.incoterms.IncotermsId;
 import de.metas.order.BPartnerOrderParams;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;

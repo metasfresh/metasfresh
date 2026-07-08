@@ -39,6 +39,8 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.annotation.Nullable;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,8 +76,10 @@ class OLCandBLGetWarehouseIdTest
 	void getWarehouseId_olCandHasExplicitWarehouse_returnsIt()
 	{
 		final WarehouseId explicitWarehouseId = createWarehouse(false);
+		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
+		final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
 
-		final I_C_OLCand olCand = createOLCand(explicitWarehouseId, createCustomerBPWithPickingWarehouse());
+		final I_C_OLCand olCand = createOLCand(explicitWarehouseId, customerBPId);
 
 		final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
 				.warehouseId(createWarehouse(false))
@@ -91,9 +95,10 @@ class OLCandBLGetWarehouseIdTest
 	 * → the BP's picking warehouse is returned.
 	 */
 	@Test
-	void getWarehouseId_noBPPickingWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
+	void getWarehouseId_noOLCandWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
 	{
-		final BPartnerId customerBPId = createCustomerBPWithPickingWarehouse();
+		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
+		final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
 		final I_C_OLCand olCand = createOLCandNoBPLocation(customerBPId);
 
 		final WarehouseId processorDefault = createWarehouse(false);
@@ -103,9 +108,7 @@ class OLCandBLGetWarehouseIdTest
 
 		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
-		// Result must be the BP's picking warehouse, not the processor default
-		assertThat(result).isNotNull();
-		assertThat(result).isNotEqualTo(processorDefault);
+		assertThat(result).isEqualTo(bpPickingWarehouseId);
 	}
 
 	/**
@@ -115,7 +118,8 @@ class OLCandBLGetWarehouseIdTest
 	@Test
 	void getWarehouseId_bpWarehouseNotPicking_returnsProcessorDefault()
 	{
-		final BPartnerId customerBPId = createCustomerBPWithNonPickingWarehouse();
+		final WarehouseId nonPickingWarehouseId = createWarehouse(false);
+		final BPartnerId customerBPId = createCustomerBP(true, nonPickingWarehouseId);
 		final I_C_OLCand olCand = createOLCandNoBPLocation(customerBPId);
 
 		final WarehouseId processorDefault = createWarehouse(false);
@@ -134,7 +138,7 @@ class OLCandBLGetWarehouseIdTest
 	@Test
 	void getWarehouseId_bpNotCustomer_returnsProcessorDefault()
 	{
-		final BPartnerId nonCustomerBPId = createNonCustomerBP();
+		final BPartnerId nonCustomerBPId = createCustomerBP(false, null);
 		final I_C_OLCand olCand = createOLCandNoBPLocation(nonCustomerBPId);
 
 		final WarehouseId processorDefault = createWarehouse(false);
@@ -159,37 +163,16 @@ class OLCandBLGetWarehouseIdTest
 	}
 
 	/**
-	 * Creates a customer BP with a picking warehouse assigned directly on the BP record.
+	 * Creates a BP with the given customer flag and warehouse.
 	 */
-	private BPartnerId createCustomerBPWithPickingWarehouse()
-	{
-		final WarehouseId pickingWarehouseId = createWarehouse(true);
-
-		final I_C_BPartner bp = newInstanceOutOfTrx(I_C_BPartner.class);
-		bp.setIsCustomer(true);
-		bp.setM_Warehouse_ID(pickingWarehouseId.getRepoId());
-		saveRecord(bp);
-		return BPartnerId.ofRepoId(bp.getC_BPartner_ID());
-	}
-
-	/**
-	 * Creates a customer BP with a warehouse that is NOT a picking warehouse.
-	 */
-	private BPartnerId createCustomerBPWithNonPickingWarehouse()
-	{
-		final WarehouseId nonPickingWarehouseId = createWarehouse(false);
-
-		final I_C_BPartner bp = newInstanceOutOfTrx(I_C_BPartner.class);
-		bp.setIsCustomer(true);
-		bp.setM_Warehouse_ID(nonPickingWarehouseId.getRepoId());
-		saveRecord(bp);
-		return BPartnerId.ofRepoId(bp.getC_BPartner_ID());
-	}
-
-	private BPartnerId createNonCustomerBP()
+	private BPartnerId createCustomerBP(final boolean isCustomer, @Nullable final WarehouseId warehouseId)
 	{
 		final I_C_BPartner bp = newInstanceOutOfTrx(I_C_BPartner.class);
-		bp.setIsCustomer(false);
+		bp.setIsCustomer(isCustomer);
+		if (warehouseId != null)
+		{
+			bp.setM_Warehouse_ID(warehouseId.getRepoId());
+		}
 		saveRecord(bp);
 		return BPartnerId.ofRepoId(bp.getC_BPartner_ID());
 	}
