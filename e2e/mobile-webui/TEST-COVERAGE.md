@@ -164,7 +164,7 @@
 |---|---|
 | Pick into an LU with a no-gateway carrier-advise shipper → carrier product (= shipper name) shown and resolved on the schedule | `picking/carrierAdvise.spec.js` |
 | Pick into a top-level TU with a no-gateway carrier-advise shipper → carrier product resolved on the schedule | `picking/carrierAdvise.spec.js` |
-| Pick directly into CUs with a no-gateway carrier-advise shipper → carrier product resolved on the schedule | `picking/carrierAdvise.spec.js` |
+| Pick into a TU on a line (PRODUCT aggregation, line-level target) with a no-gateway carrier-advise shipper → carrier product resolved from the line view and on the schedule | `picking/carrierAdvise.spec.js` |
 | Carrier advise stays previewable on the remainder TU after the first TU was packed and shipped | `picking/carrierAdviseTuTargetRemainder.spec.js` |
 
 **4/4 — 100%**
