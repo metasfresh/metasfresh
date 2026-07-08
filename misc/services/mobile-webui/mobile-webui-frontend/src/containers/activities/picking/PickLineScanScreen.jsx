@@ -105,7 +105,7 @@ const PickLineScanScreen = () => {
   // auto-invokes the inline GRAI capture (handled by ScanHUAndGetQtyComponent) and the captured codes
   // are reported on the same onResult, so qty + GRAIs go out as ONE atomic pick. `existingLuGrais` are
   // the GRAIs already assigned to this line's effective LU by prior picks — the capture panel mirrors
-  // the server-side LU-wide dedupe against them (AC1/AC6), so re-scanning a GRAI already on the LU (a
+  // the server-side LU-wide dedupe against them, so re-scanning a GRAI already on the LU (a
   // different product picked onto the SAME LU) is skipped, not counted. The Flow-Through pick happens on
   // this line-scan screen (no per-step scan screen), so the wiring must live here too, not only in
   // PickStepScanScreen.

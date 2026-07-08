@@ -11,7 +11,7 @@ import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../common';
  * Scope to ERROR toasts only (`.Toastify__toast--error`) — this helper backs the global
  * unexpected-error watcher (common.js) and the expect-an-error helpers, so it must match errors
  * (`toastError` → `toast.error` → `--error`) and NOT non-blocking success/info notices
- * (`toastNotification` → `toast.success` → `--success`, e.g. the GRAI "N skipped" AC6 notice).
+ * (`toastNotification` → `toast.success` → `--success`, e.g. the GRAI "N skipped" notice).
  * react-toastify renders the type modifier on the toast container and `role="alert"` on the body;
  * without the `--error` ancestor constraint a lingering success toast was misdetected as an error.
  */
