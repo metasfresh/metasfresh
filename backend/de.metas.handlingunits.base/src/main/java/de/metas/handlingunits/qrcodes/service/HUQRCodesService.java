@@ -371,7 +371,8 @@ public class HUQRCodesService
 	{
 		if (!huQRCodesRepository.isQRCodeAssignedToHU(qrCode, huId))
 		{
-			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId);
+			throw new AdempiereException("QR Code " + qrCode.toDisplayableQRCode() + " is not assigned to HU " + huId
+					+ " (" + huQRCodesRepository.diagnoseAssignmentFailure(qrCode, huId) + ")");
 		}
 	}
 
