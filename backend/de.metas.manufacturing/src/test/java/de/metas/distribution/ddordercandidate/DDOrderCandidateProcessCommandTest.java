@@ -249,6 +249,43 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
+	 * Boundary of the unconditional aggregation: a candidate that carries explicit locators must NOT collapse
+	 * with an otherwise-identical candidate that has none. Because locators are always part of the key, the
+	 * explicit-locator candidate (key holds the concrete locator) and the null-locator candidate (key holds
+	 * {@code null}) compare unequal, so each gets its own DD_Order. The null-locator line still falls back to
+	 * the warehouse default (540003).
+	 */
+	@Test
+	void locatorPresentAndAbsent_notCollapsed()
+	{
+		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
+		final DDOrderCandidate withLocators = base.toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
+				.build();
+		final DDOrderCandidate withoutLocators = base.toBuilder().build();
+		ddOrderCandidateRepository.save(withLocators);
+		ddOrderCandidateRepository.save(withoutLocators);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(withLocators, withoutLocators))
+						.build())
+				.build()
+				.execute();
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(2);
+		assertThat(orders).allSatisfy(order -> assertThat(queryLines(order)).hasSize(1));
+	}
+
+	/**
 	 * Saves two candidates that differ only by their {@code targetLocatorId} (two grounds under the same target
 	 * warehouse) and runs the command.
 	 * <p>
