@@ -70,11 +70,18 @@ const expectCarrierResolvedOnSchedule = async ({ masterdata, title }) => {
     });
 };
 
-const startJob = async ({ masterdata }) => {
+const startJob = async ({ masterdata, byProduct = false }) => {
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
+    if (byProduct) {
+        // Under PRODUCT aggregation the launcher card is keyed by product/qty, not the sales-order
+        // documentNo (its text carries no documentNo), so it must be started by index — matching the
+        // productBasedPicking specs. The masterdata has a single SO line, hence a single job card.
+        const { pickingJobId } = await PickingJobsListScreen.startJob({ index: 1 });
+        return pickingJobId;
+    }
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     const { pickingJobId } = await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     return pickingJobId;
@@ -141,7 +148,7 @@ test('Carrier advise — pick into a TU on a line (PRODUCT aggregation, line-lev
     // rendered with a lineId), exercising resolveInfo's isLineLevelPickTarget branch end-to-end.
     const masterdata = await Backend.createMasterdata({ language: "en_US", request: baseRequest({ pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'], aggregationType: "product" }) });
 
-    const pickingJobId = await startJob({ masterdata });
+    const pickingJobId = await startJob({ masterdata, byProduct: true });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 
     // Enter the single line's view; the pick target + carrier advise are line-scoped here.
