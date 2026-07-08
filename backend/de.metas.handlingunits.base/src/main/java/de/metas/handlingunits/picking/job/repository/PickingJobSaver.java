@@ -82,8 +82,11 @@ import java.util.function.BiFunction;
 public class PickingJobSaver
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
-	// This plain saver is instantiated via {@code new} (e.g. PickingJobLoaderAndSaver.forSaving()), so it cannot rely on
-	// Spring constructor-injection for the repository; it resolves the Spring-managed bean directly.
+
+	/**
+	 * Resolved via {@link SpringContextHolder#getBean} because this class is instantiated plain
+	 * (via {@code new}, outside Spring's bean lifecycle — see {@link PickingJobLoaderAndSaver#forSaving()}).
+	 */
 	@NonNull protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository =
 			SpringContextHolder.instance.getBean(PickingJobLineCarrierServiceRepository.class);
 

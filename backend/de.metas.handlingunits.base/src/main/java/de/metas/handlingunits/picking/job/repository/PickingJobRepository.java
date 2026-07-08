@@ -59,9 +59,6 @@ public class PickingJobRepository
 	public static PickingJobRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		// The saver/loader (PickingJobSaver, PickingJobLoaderAndSaver) resolve this collaborator via
-		// SpringContextHolder.getBean; its factory's getBeanOrSupply registers a plain instance as a junit bean
-		// so that lookup succeeds in the no-Spring test context.
 		PickingJobLineCarrierServiceRepository.newInstanceForUnitTesting();
 		return new PickingJobRepository();
 	}
