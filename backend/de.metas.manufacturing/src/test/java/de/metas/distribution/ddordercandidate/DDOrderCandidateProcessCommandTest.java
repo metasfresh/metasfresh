@@ -235,30 +235,7 @@ class DDOrderCandidateProcessCommandTest
 	@Test
 	void oneOrderOneLinePerMove()
 	{
-		final DDOrderCandidate move1 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
-				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
-				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
-				.build();
-		final DDOrderCandidate move2 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
-				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
-				.targetLocatorId(LocatorId.ofRepoId(70, 1003))
-				.build();
-		ddOrderCandidateRepository.save(move1);
-		ddOrderCandidateRepository.save(move2);
-
-		commandBuilder
-				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
-						.aggregateBySalesOrderId(true)
-						.aggregateByPPOrderRef(true)
-						.aggregateBySalesOrderLineId(true)
-						.aggregateByLocatorId(true)
-						.build())
-				.request(DDOrderCandidateProcessRequest.builder()
-						.userId(UserId.METASFRESH)
-						.candidates(ImmutableList.of(move1, move2))
-						.build())
-				.build()
-				.execute();
+		processTwoGroundCandidates(true);
 
 		final List<I_DD_Order> orders = queryOrders();
 		assertThat(orders).hasSize(2);
@@ -273,11 +250,29 @@ class DDOrderCandidateProcessCommandTest
 	@Test
 	void flagOff_unchanged()
 	{
-		final DDOrderCandidate move1 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+		processTwoGroundCandidates(false);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+		assertThat(queryLines(orders.get(0))).hasSize(1);
+	}
+
+	/**
+	 * Saves two candidates that differ only by their {@code targetLocatorId} (two grounds under the same target
+	 * warehouse) and runs the command with the given {@code aggregateByLocatorId} setting.
+	 * <p>
+	 * Both are derived from a single {@code base} candidate so they share the same UOM instance (each
+	 * {@code newFullyFilled()} call creates a fresh UOM with a distinct id, which would otherwise split the
+	 * line aggregation by UOM and defeat the "differ only by locator" intent).
+	 */
+	private void processTwoGroundCandidates(final boolean aggregateByLocatorId)
+	{
+		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
+		final DDOrderCandidate move1 = base.toBuilder()
 				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
 				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
 				.build();
-		final DDOrderCandidate move2 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+		final DDOrderCandidate move2 = base.toBuilder()
 				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
 				.targetLocatorId(LocatorId.ofRepoId(70, 1003))
 				.build();
@@ -289,7 +284,7 @@ class DDOrderCandidateProcessCommandTest
 						.aggregateBySalesOrderId(true)
 						.aggregateByPPOrderRef(true)
 						.aggregateBySalesOrderLineId(true)
-						.aggregateByLocatorId(false)
+						.aggregateByLocatorId(aggregateByLocatorId)
 						.build())
 				.request(DDOrderCandidateProcessRequest.builder()
 						.userId(UserId.METASFRESH)
@@ -297,9 +292,6 @@ class DDOrderCandidateProcessCommandTest
 						.build())
 				.build()
 				.execute();
-
-		final List<I_DD_Order> orders = queryOrders();
-		assertThat(orders).hasSize(1);
 	}
 
 	private void processTwoProductCandidates(final boolean aggregateByProductId)
