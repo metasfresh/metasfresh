@@ -5,6 +5,8 @@ import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
+import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLineScreen';
+import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 
 // Carrier advise on picking, validated against a NO-GATEWAY IsApiCarrierAdvise shipper.
 // With no ShipperGateway, CarrierAdviseCommand resolves the advise locally: the carrier product
@@ -13,11 +15,11 @@ import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 // (carrying the IsApiCarrierAdvise shipper) is completed, so the resolved carrier product is
 // already shown in picking; the advise button re-runs the advise for the picked HUs.
 
-const baseRequest = ({ pickTo }) => ({
+const baseRequest = ({ pickTo, aggregationType = "sales_order" }) => ({
     login: { user: { language: "en_US" } },
     mobileConfig: {
         picking: {
-            aggregationType: "sales_order",
+            aggregationType,
             allowPickingAnyCustomer: true,
             createShipmentPolicy: 'CL',
             allowPickingAnyHU: true,
@@ -131,23 +133,35 @@ test('Carrier advise — pick into TU', async ({ page }) => {
 });
 
 // noinspection JSUnusedLocalSymbols
-test('Carrier advise — pick into top-level CUs (CU-direct)', async ({ page }) => {
-    allureMeta('Carrier advise resolved when picking directly into CUs');
+test('Carrier advise — pick into a TU on a line (PRODUCT aggregation, line-level target+advise)', async ({ page }) => {
+    allureMeta('Carrier advise resolved from the line view under PRODUCT aggregation');
 
-    const masterdata = await Backend.createMasterdata({ language: "en_US", request: baseRequest({ pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'] }) });
+    // PRODUCT aggregation makes the pick target (and therefore the carrier advise) a per-line concern:
+    // the target-TU / advise-carrier buttons live inside the line view (SelectCurrentLUTUButtons is
+    // rendered with a lineId), exercising resolveInfo's isLineLevelPickTarget branch end-to-end.
+    const masterdata = await Backend.createMasterdata({ language: "en_US", request: baseRequest({ pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'], aggregationType: "product" }) });
 
     const pickingJobId = await startJob({ masterdata });
-    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
-    // No target set => pick to top-level CUs.
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
 
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: 100 });
-    await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '100 Stk', qtyPicked: '100 Stk', qtyPickedCatchWeight: '' });
+    // Enter the single line's view; the pick target + carrier advise are line-scoped here.
+    await PickingJobScreen.clickLineButton({ index: 1 });
+    await PickingJobLineScreen.waitForScreen();
 
-    await PickingJobScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
-    await PickingJobScreen.expectAdviseCarrierButtonVisible();
-    await PickingJobScreen.clickAdviseCarrier();
-    await PickingJobScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
+    // Set a TU pick target on the line, then pick the HU into it.
+    await PickingJobLineScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
+    await PickingJobLineScreen.clickScanQRCodeButton();
+    await PickLineScanScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: 100, expectGoBackToPickingJob: false });
+    await PickLineScanScreen.goBack();
+    await PickingJobLineScreen.waitForScreen();
 
+    // The resolved carrier product is shown on the line, and the line-level advise re-runs it.
+    await PickingJobLineScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
+    await PickingJobLineScreen.expectAdviseCarrierButtonVisible();
+    await PickingJobLineScreen.clickAdviseCarrier();
+    await PickingJobLineScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
+
+    await PickingJobLineScreen.goBack();
     await PickingJobScreen.complete();
-    await expectCarrierResolvedOnSchedule({ masterdata, title: "after complete, CU-direct pick" });
+    await expectCarrierResolvedOnSchedule({ masterdata, title: "after complete, PRODUCT line-level TU pick" });
 });
