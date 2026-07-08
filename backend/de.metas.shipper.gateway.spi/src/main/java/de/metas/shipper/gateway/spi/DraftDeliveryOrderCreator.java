@@ -66,14 +66,15 @@ public interface DraftDeliveryOrderCreator
 
 		public Set<PackageId> getPackageIds() {return packageInfos.stream().map(PackageInfo::getPackageId).collect(ImmutableSet.toImmutableSet());}
 
-		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal minWeightKg)
+		public BigDecimal getAllPackagesGrossWeightInKg(@NonNull final BigDecimal defaultWeightKg)
 		{
 			final BigDecimal weightInKg = packageInfos.stream()
 					.map(PackageInfo::getWeightInKg)
 					.filter(weight -> weight != null && weight.signum() > 0)
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-			return weightInKg.max(minWeightKg);
+			// Coalesce, never a floor: the real summed weight when any package has one, the default ONLY when none do.
+			return weightInKg.signum() > 0 ? weightInKg : defaultWeightKg;
 		}
 
 		@NonNull
@@ -97,7 +98,8 @@ public interface DraftDeliveryOrderCreator
 			@Nullable BigDecimal weightInKg;
 			@NonNull PackageDimensions packageDimension;
 
-			public BigDecimal getWeightInKgOr(final BigDecimal minValue) {return weightInKg != null ? weightInKg.max(minValue) : minValue;}
+			// Coalesce, never a floor: the real weight when present (extractWeightInKg already dropped 0/absent), the default ONLY when absent.
+			public BigDecimal getWeightInKgOr(final BigDecimal defaultValue) {return weightInKg != null ? weightInKg : defaultValue;}
 		}
 	}
 

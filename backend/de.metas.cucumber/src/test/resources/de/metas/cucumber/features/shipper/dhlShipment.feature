@@ -191,7 +191,7 @@ Feature: Dhl Shipment
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.250         | package1     | 30         | 20        | 10         |
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | package1     | dhl_customer  | 30             | 20            | 10             | 1              |
+      | package1     | dhl_customer  | 30             | 20            | 10             | 0.250          |
 
 
   @Id:S0335.1_200
@@ -296,20 +296,20 @@ Feature: Dhl Shipment
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package8     | 20         | 10        | 5          |
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package9     | 20         | 10        | 5          |
       | shipper_DHL  | dhl_customer  | dhl_location           | 0.25          | package10    | 20         | 10        | 5          |
-    # The carrier draft enforces a 1 kg MINIMUM parcel weight, so the per-CU PackageWeight (0.25 kg
-    # above) is below the floor and reported to DHL as 1 kg; the dimensions pass through unchanged.
+    # DHL parcel weight = the per-CU PackageWeight (0.25 kg) — the real weight passes through (R5/AC8);
+    # the 1 kg default applies only when no weight is known, never as a floor on a real weight.
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
-      | package1     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package2     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package3     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package4     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package5     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package6     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package7     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package8     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package9     | dhl_customer  | 20             | 10            | 5              | 1              |
-      | package10    | dhl_customer  | 20             | 10            | 5              | 1              |
+      | package1     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package2     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package3     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package4     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package5     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package6     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package7     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package8     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package9     | dhl_customer  | 20             | 10            | 5              | 0.25           |
+      | package10    | dhl_customer  | 20             | 10            | 5              | 0.25           |
 
 
   @Id:S0335.1_300
