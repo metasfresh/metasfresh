@@ -1313,6 +1313,8 @@ Feature: nShift Shipment
     # authoritative → the non-manual-divergent-on-HU guard is skipped and completion creates the shipment.
     Given set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
     # Selection rules ON on the nShift shipper (explicit default 'Y'): divergence is NOT a completion blocker.
+    # Why: with selection rules ON + non-manual carriers, the carrier is re-advised at shipment creation, so the
+    # carrier product is (re)selected on ship — the divergent product provided during picking is not relevant.
     And metasfresh contains Carrier_Configs:
       | M_Shipper_ID | IsSelectionRules |
       | nShift       | Y                |
@@ -1436,22 +1438,17 @@ Feature: nShift Shipment
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | so_lu_avl_l1 | so_lu_avl  | product      | 10         | product_TU_10CU         |
     When the order identified by so_lu_avl is completed
+    # The auto-advise workpackage runs on order completion; wait for it to land the carrier product (advise Completed, no explicit advise needed).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_lu_avl  | so_lu_avl_l1   | N             |
-    And Process M_ShipmentSchedule_Advise is run
-      | M_ShipmentSchedule_ID |
-      | ss_lu_avl             |
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_lu_avl  | so_lu_avl_l1   | N             | cp_lu_named        |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_lu_avl  | so_lu_avl_l1   | N             | cp_lu_named        | CO                      |
     When start picking job for sales order identified by so_lu_avl
     And scan picking slot identified by slot_lu_avl
     And set picking target as new LU identified by LU
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | LU     | true      | false    | LU Std Parcel         |
 
@@ -1479,30 +1476,26 @@ Feature: nShift Shipment
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | so_lu_man_l1 | so_lu_man  | product      | 10         | product_TU_10CU         |
     When the order identified by so_lu_man is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute |
-      | ss_lu_man  | so_lu_man_l1   | N             |
     # The advise enqueued at order completion is processed asynchronously. Wait until the carrier product is set
     # (advise Completed) before manually overriding it — running the manual advise while the schedule is still
     # Requested is a silent no-op (Requested is ineligible for manual enqueue).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    | CO                      |
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_lu_man             | cp_lu_man_named    | cgt2                  | cs3                |
-    # Wait for the Manual advising status + carrier product to settle before picking, so the picked HU's
-    # carrier-advise resolves readOnly=true (every advise-enabled schedule is Manual).
+    # Assert the manual advise took effect: carrier-advising status is now Manual (drives readOnly=true in the picking display).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
-      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    |
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_lu_man  | so_lu_man_l1   | N             | cp_lu_man_named    | MAN                     |
     When start picking job for sales order identified by so_lu_man
     And scan picking slot identified by slot_lu_man
     And set picking target as new LU identified by LU
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | LU     | true      | true     | LU Man Parcel         |
 
@@ -1515,8 +1508,8 @@ Feature: nShift Shipment
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
     And contains M_Shippers
-      | Identifier | Value      | Name       | OPT.IsApiCarrierAdvise |
-      | noAdvise   | no_advise  | No Advise  | N                      |
+      | Identifier | Value     | Name      | IsApiCarrierAdvise |
+      | noAdvise   | no_advise | No Advise | N                  |
     And metasfresh contains M_PickingSlot:
       | Identifier   | PickingSlot   | IsDynamic |
       | slot_lu_none | display_lu_no | Y         |
@@ -1536,7 +1529,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly |
       | LU     | false     | false    |
 
@@ -1579,7 +1572,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | TU     | true      | false    | TU Std Parcel         |
 
@@ -1628,7 +1621,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | TU     | true      | true     | TU Man Parcel         |
 
@@ -1660,7 +1653,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly |
       | TU     | false     | false    |
 
@@ -1702,7 +1695,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | line   | true      | false    | CU Std Parcel         |
 
@@ -1750,7 +1743,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly | carrierProductCaption |
       | line   | true      | true     | CU Man Parcel         |
 
@@ -1781,7 +1774,7 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    Then expect current picking job carrier advise
+    Then expect current picking job line carrier advise
       | target | available | readOnly |
       | line   | false     | false    |
 

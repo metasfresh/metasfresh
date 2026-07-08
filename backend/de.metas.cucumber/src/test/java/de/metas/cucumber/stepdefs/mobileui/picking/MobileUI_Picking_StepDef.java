@@ -156,7 +156,7 @@ public class MobileUI_Picking_StepDef
 	 * across the pick-to shapes (LU target, TU target, or CU-direct / no-target pick) — exactly the
 	 * line-level {@code carrierAdvise*} fields {@code SelectCurrentLUTUButtons} reads to render the advise button.
 	 */
-	@Then("expect current picking job carrier advise")
+	@Then("expect current picking job line carrier advise")
 	public void expectCarrierAdvise(@NonNull final DataTable dataTable)
 	{
 		// Re-fetch the process freshly (as the mobile UI does) so the post-pick line-level carrier-advise

@@ -67,6 +67,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -652,6 +653,10 @@ public class M_ShipmentSchedule_StepDef
 		row.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID)
 				.ifPresent(identifier ->
 						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, identifier.lookupIdIn(carrierGoodsTypeTable))
+				);
+		row.getAsOptionalEnum(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, CarrierAdviseStatus.class)
+				.ifPresent(carrierAdvisingStatus ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus.getCode())
 				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
