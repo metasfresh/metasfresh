@@ -5,9 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.shipmentschedule.api.DeliveryOrderCarrierResolver;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
@@ -17,7 +15,6 @@ import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.Shipper;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
@@ -55,7 +52,6 @@ public class CarrierAdviseConsistencyService
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipperConfigRepository shipperConfigRepository;
 	@NonNull private final DeliveryOrderCarrierResolver deliveryOrderCarrierResolver;
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@VisibleForTesting
 	public static CarrierAdviseConsistencyService newInstanceForUnitTesting(
@@ -66,26 +62,6 @@ public class CarrierAdviseConsistencyService
 	{
 		Adempiere.assertUnitTestMode();
 		return new CarrierAdviseConsistencyService(huShipmentScheduleResolver, shipperRepository, shipperConfigRepository, deliveryOrderCarrierResolver);
-	}
-
-	/**
-	 * Checks every distinct top-level HU that has been picked on the given job. Throws on the first inconsistency.
-	 */
-	public void assertConsistentForJob(@NonNull final PickingJob pickingJob)
-	{
-		final ImmutableSet<HuId> pickedHuIds = pickingJob.getAllPickedHuIds();
-		if (pickedHuIds.isEmpty())
-		{
-			return;
-		}
-
-		// (two picked HUs sharing the same top-level LU can yield distinct I_M_HU instances)
-		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getTopLevelHUsByHuIds(pickedHuIds);
-
-		for (final I_M_HU topLevelHU : topLevelHUsById.values())
-		{
-			assertConsistentForClosedHU(topLevelHU);
-		}
 	}
 
 	/**
