@@ -46,6 +46,7 @@ import java.util.function.UnaryOperator;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
@@ -526,7 +527,7 @@ public class PackedHUCarrierAdviseServiceTest
 	// primitive-boolean matcher helper (matches any boolean value)
 	private static boolean anyBooleanEq()
 	{
-		return org.mockito.ArgumentMatchers.anyBoolean();
+		return anyBoolean();
 	}
 
 	@SuppressWarnings("unchecked")

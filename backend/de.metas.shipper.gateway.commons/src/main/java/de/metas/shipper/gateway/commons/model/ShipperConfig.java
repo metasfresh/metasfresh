@@ -49,10 +49,10 @@ public class ShipperConfig
 
 	/**
 	 * {@code Carrier_Config.IsSelectionRules} for this shipper — does nShift resolve the carrier via its own
-	 * selection rules? Absent property → default {@code true} (ON), matching the DB column default.
+	 * selection rules? Absent property → default {@code false} (OFF).
 	 */
 	public boolean isSelectionRules()
 	{
-		return StringUtils.toBoolean(additionalProperties.get(I_Carrier_Config.COLUMNNAME_IsSelectionRules), true);
+		return StringUtils.toBoolean(additionalProperties.get(I_Carrier_Config.COLUMNNAME_IsSelectionRules));
 	}
 }

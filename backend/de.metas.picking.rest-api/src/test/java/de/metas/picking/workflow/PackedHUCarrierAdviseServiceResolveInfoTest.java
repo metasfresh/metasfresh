@@ -25,7 +25,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Shipper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +51,6 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	void beforeEach()
 	{
 		helper = new PickingJobTestHelper();
-		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
 
 		carrierProductRepository = new CarrierProductRepository();
 		final ShipperRepository shipperRepository = new ShipperRepository();
