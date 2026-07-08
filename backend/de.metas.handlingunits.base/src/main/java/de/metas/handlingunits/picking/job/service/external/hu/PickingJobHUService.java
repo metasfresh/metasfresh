@@ -90,6 +90,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -406,6 +407,8 @@ public class PickingJobHUService
 	}
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
+
+	public Map<HuId, HUQRCode> getSingleQRCodeByHuIds(@NonNull final Collection<HuId> huIds) {return huQRCodesService.getSingleQRCodeByHuIds(huIds);}
 
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId) {return huQRCodesService.getOrCreateQRCodesByHuId(huId);}
 

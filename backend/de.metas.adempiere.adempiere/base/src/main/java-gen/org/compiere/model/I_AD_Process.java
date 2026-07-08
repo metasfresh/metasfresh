@@ -747,6 +747,27 @@ date:yyyyMMdd_HHmmss}
 	String COLUMNNAME_IsPdfA3Output = "IsPdfA3Output";
 
 	/**
+	 * Set Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPreventConcurrentExecution (boolean IsPreventConcurrentExecution);
+
+	/**
+	 * Get Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPreventConcurrentExecution();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsPreventConcurrentExecution = new ModelColumn<>(I_AD_Process.class, "IsPreventConcurrentExecution", null);
+	String COLUMNNAME_IsPreventConcurrentExecution = "IsPreventConcurrentExecution";
+
+	/**
 	 * Set Report.
 	 * Indicates a Report record
 	 *
