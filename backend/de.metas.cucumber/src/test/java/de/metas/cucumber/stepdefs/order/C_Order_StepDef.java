@@ -990,6 +990,13 @@ public class C_Order_StepDef
 					}
 				});
 
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseIdentifier -> warehouseTable.getIdOptional(warehouseIdentifier)
+						.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class)))
+				.ifPresent(warehouseId -> softly.assertThat(order.getM_Warehouse_ID())
+						.as("M_Warehouse_ID for Identifier=%s", identifierStr)
+						.isEqualTo(warehouseId.getRepoId()));
+
 		softly.assertAll();
 	}
 

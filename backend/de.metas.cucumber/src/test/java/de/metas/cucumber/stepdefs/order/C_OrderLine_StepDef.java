@@ -824,6 +824,14 @@ public class C_OrderLine_StepDef
 			}
 		}
 
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_Warehouse_ID)
+				.ifPresent(warehouseIdentifier -> {
+					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+					softly.assertThat(orderLine.getM_Warehouse_ID())
+							.as("M_Warehouse_ID for Identifier=%s", identifierStr)
+							.isEqualTo(warehouse.getM_Warehouse_ID());
+				});
+
 		softly.assertAll();
 	}
 
