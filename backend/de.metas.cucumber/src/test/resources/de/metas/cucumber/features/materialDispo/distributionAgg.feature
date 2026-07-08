@@ -13,6 +13,7 @@ Feature: create distribution order based on aggregation sysconfig
     And metasfresh contains M_Products:
       | Identifier |
       | p_1        |
+      | p_2        |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_1       |
@@ -268,4 +269,56 @@ Feature: create distribution order based on aggregation sysconfig
       | Identifier | M_Product_ID | DD_Order_ID | QtyEntered | M_Locator_ID    | M_LocatorTo_ID  |
       | ddol1      | p_1          | ddo1        | 14         | sourceWHLocator | targetWHLocator |
 
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# Ground-replenishment case: planning-less candidates differing only by product.
+# HeaderAggregationKey already carries productPlanningId, so candidates with a planning always split per product.
+# The DDOrderAggregation.header.byProductId flag only matters when candidates share the header key across products,
+# i.e. productPlanningId = null. These two scenarios prove the flag both ways.
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: Planning-less candidates for different products aggregate into one DD_Order when byProductId is off
+    When set sys config boolean value false for sys config DDOrderAggregation.header.byProductId
+    And metasfresh contains DD_Order_Candidates:
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
+      | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |
+      | cand_p2    | p_2          | sourceWH            | targetWH         | shipper      | 3 PCE |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | cand_p1               |
+      | cand_p2               |
+    # both candidates share the header key => one DD_Order, one line per product
+    Then after not more than 30s, the DD_Order_Candidates are aggregated into DD_Orders:
+      | DD_Order_Candidate_ID | DD_Order |
+      | cand_p1               | ddo      |
+      | cand_p2               | ddo      |
+
+
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+# ###############################################################################################################################################
+  @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
+  Scenario: Planning-less candidates for different products split into separate DD_Orders when byProductId is on
+    When set sys config boolean value true for sys config DDOrderAggregation.header.byProductId
+    And metasfresh contains DD_Order_Candidates:
+      | Identifier | M_Product_ID | M_Warehouse_From_ID | M_WarehouseTo_ID | M_Shipper_ID | Qty   |
+      | cand_p1    | p_1          | sourceWH            | targetWH         | shipper      | 2 PCE |
+      | cand_p2    | p_2          | sourceWH            | targetWH         | shipper      | 3 PCE |
+    And the following DD_Order_Candidates are enqueued for generating DD_Orders
+      | DD_Order_Candidate_ID |
+      | cand_p1               |
+      | cand_p2               |
+    # product added to the header key => one DD_Order per product, each with a single line
+    Then after not more than 30s, the DD_Order_Candidates are aggregated into DD_Orders:
+      | DD_Order_Candidate_ID | DD_Order |
+      | cand_p1               | ddo_p1   |
+      | cand_p2               | ddo_p2   |
 
