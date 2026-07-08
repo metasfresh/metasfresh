@@ -153,12 +153,7 @@ public class CreatePackingInstructionsCommand
 
 		final GRAI grai = generateUniqueGRAI(companyPrefixOverride, assetTypeOverride);
 
-		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
-		record.setM_HU_PI_ID(tu.getPiId().getRepoId());
-		record.setGRAI_CompanyPrefix(grai.getCompanyPrefix());
-		record.setGRAI_AssetType(grai.getAssetType());
-		record.setIsActive(true);
-		saveRecord(record);
+		huPIGraiRepository.createMapping(tu.getPiId(), grai);
 
 		logger.info("Created M_HU_PI_GRAI mapping {} -> M_HU_PI_ID={}", grai.toCanonicalString(), tu.getPiId().getRepoId());
 

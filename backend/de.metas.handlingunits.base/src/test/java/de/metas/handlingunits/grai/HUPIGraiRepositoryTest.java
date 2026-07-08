@@ -57,4 +57,13 @@ class HUPIGraiRepositoryTest
 		assertThat(repository.resolveHuPackingInstructionsId(GRAI.ofCanonicalString("7613204.00999.111111")))
 				.isEqualTo(HuPackingInstructionsId.ofRepoId(43));
 	}
+
+	@Test
+	void createMapping_thenResolves_toTheGivenPI()
+	{
+		repository.createMapping(HuPackingInstructionsId.ofRepoId(77), GRAI.ofCanonicalString("7613204.00307.123456"));
+
+		assertThat(repository.resolveHuPackingInstructionsId(GRAI.ofCanonicalString("7613204.00307.999999")))
+				.isEqualTo(HuPackingInstructionsId.ofRepoId(77));
+	}
 }
