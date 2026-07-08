@@ -289,12 +289,8 @@ public final class PickingJob implements PickingJobHeaderOrLine
 	}
 
 	/**
-	 * The first <b>existing</b> LU picking target resolving line-scope then header-scope. Unlike
-	 * {@link #getLuPickingTargetEffective(PickingJobLineId)} — which returns the first <i>present</i> target and
-	 * therefore, for a header-level (SALES_ORDER/DELIVERY_LOCATION) job, stops at the line's own <i>new</i> (not-yet-materialised)
-	 * LU target and never sees the shared header LU — this skips a not-yet-existing scope so it finds the shared,
-	 * already-picked LU. For a line-level (PRODUCT) job it returns this line's own existing LU (header has none).
-	 * Used to resolve the LU whose already-assigned GRAIs a subsequent pick of {@code lineId} must dedupe against.
+	 * The first <b>existing</b> LU picking target across line- then header-scope, skipping not-yet-materialised
+	 * ones (unlike {@link #getLuPickingTargetEffective(PickingJobLineId)}, which returns the first present target).
 	 */
 	public Optional<LUPickingTarget> getExistingLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
 	{
