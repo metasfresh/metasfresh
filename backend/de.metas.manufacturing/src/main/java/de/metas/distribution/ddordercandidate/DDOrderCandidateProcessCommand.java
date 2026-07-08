@@ -269,8 +269,12 @@ class DDOrderCandidateProcessCommand
 
 		//
 		// Locator From/To
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_To_ID()));
+		final LocatorId locatorFromId = key.getSourceLocatorId() != null
+				? key.getSourceLocatorId()
+				: warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
+		final LocatorId locatorToId = key.getTargetLocatorId() != null
+				? key.getTargetLocatorId()
+				: warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_To_ID()));
 		lineRecord.setM_Locator_ID(locatorFromId.getRepoId());
 		lineRecord.setM_LocatorTo_ID(locatorToId.getRepoId());
 
@@ -361,6 +365,9 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable ProductId productId;
 
+		@Nullable LocatorId sourceLocatorId;
+		@Nullable LocatorId targetLocatorId;
+
 		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
@@ -386,6 +393,11 @@ class DDOrderCandidateProcessCommand
 			if (aggregationConfig.isAggregateByProductId())
 			{
 				keyBuilder.productId(candidate.getProductId());
+			}
+			if (aggregationConfig.isAggregateByLocatorId())
+			{
+				keyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
+				keyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			}
 			return keyBuilder.build();
 		}
@@ -449,6 +461,9 @@ class DDOrderCandidateProcessCommand
 		boolean isAllowPush;
 		boolean isKeepTargetPlant;
 
+		@Nullable LocatorId sourceLocatorId;
+		@Nullable LocatorId targetLocatorId;
+
 		public static LineAggregationKey of(final DDOrderCandidate candidate, final @NonNull AggregationConfig aggregationConfig)
 		{
 			final LineAggregationKeyBuilder lineKeyBuilder = builder()
@@ -462,6 +477,11 @@ class DDOrderCandidateProcessCommand
 			if (aggregationConfig.isAggregateBySalesOrderLineId())
 			{
 				lineKeyBuilder.salesOrderLineId(candidate.getSalesOrderLineId());
+			}
+			if (aggregationConfig.isAggregateByLocatorId())
+			{
+				lineKeyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
+				lineKeyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			}
 			return lineKeyBuilder
 					.build();
