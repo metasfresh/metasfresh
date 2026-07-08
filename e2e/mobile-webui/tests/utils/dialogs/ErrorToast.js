@@ -6,8 +6,16 @@ import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../common';
 // This file is used by common.js which is used by playwright.config.js
 //
 
-/** @returns {import('@playwright/test').Locator} */
-const containerElement = () => page.locator('.Toastify div[role="alert"].Toastify__toast-body');
+/**
+ * @returns {import('@playwright/test').Locator}
+ * Scope to ERROR toasts only (`.Toastify__toast--error`) — this helper backs the global
+ * unexpected-error watcher (common.js) and the expect-an-error helpers, so it must match errors
+ * (`toastError` → `toast.error` → `--error`) and NOT non-blocking success/info notices
+ * (`toastNotification` → `toast.success` → `--success`, e.g. the GRAI "N skipped" notice).
+ * react-toastify renders the type modifier on the toast container and `role="alert"` on the body;
+ * without the `--error` ancestor constraint a lingering success toast was misdetected as an error.
+ */
+const containerElement = () => page.locator('.Toastify .Toastify__toast--error div[role="alert"].Toastify__toast-body');
 
 export const ErrorToast = {
     waitToPopup: (callback, timeout) => {
@@ -42,5 +50,20 @@ export const ErrorToast = {
         await closeButton.scrollIntoViewIfNeeded({ timeout: FAST_ACTION_TIMEOUT });
         await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
+    },
+
+    // Assert exactly N non-blocking success/info toasts (`.Toastify__toast--success`) are shown — one
+    // skipped scan must surface once, never as stacked duplicates (the "user must see exactly ONE" rule).
+    expectSuccessToastCount: async (expectedCount) => {
+        const successToasts = page.locator('.Toastify__toast--success');
+        if (expectedCount > 0) {
+            await expect(successToasts.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        }
+        await expect(successToasts).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+    },
+
+    // Assert no blocking (red) error toast is shown.
+    expectNoErrorToast: async () => {
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     },
 }
