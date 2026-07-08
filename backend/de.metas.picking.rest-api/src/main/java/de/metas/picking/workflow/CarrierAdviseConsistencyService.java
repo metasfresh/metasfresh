@@ -84,11 +84,15 @@ public class CarrierAdviseConsistencyService
 
 		for (final I_M_HU topLevelHU : topLevelHUsById.values())
 		{
-			assertConsistentForHU(topLevelHU);
+			assertConsistentForClosedHU(topLevelHU);
 		}
 	}
 
-	private void assertConsistentForHU(@NonNull final I_M_HU topLevelHU)
+	/**
+	 * Asserts carrier-advise consistency for one closed top-level HU (parcel). Blocks with E1 (&ge;2 distinct
+	 * manual carriers) or E2 (divergent non-manual, selection rules OFF) per the class contract.
+	 */
+	public void assertConsistentForClosedHU(@NonNull final I_M_HU topLevelHU)
 	{
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
 				huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);

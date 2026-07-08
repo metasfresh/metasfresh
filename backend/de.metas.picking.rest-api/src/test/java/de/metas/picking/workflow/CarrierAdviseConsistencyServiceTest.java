@@ -22,6 +22,7 @@ import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -382,5 +383,59 @@ class CarrierAdviseConsistencyServiceTest
 
 		assertThatCode(() -> service.assertConsistentForJob(jobWithPickedHU()))
 				.doesNotThrowAnyException();
+	}
+
+	// --------------------------------------------------
+	// Direct single-HU entry point: assertConsistentForClosedHU(topLevelHU) — called on the closed HU directly,
+	// NOT via the job. Reuses the same fixtures; exercises E1 (≥2 manual), E2 (divergent non-manual, rules OFF)
+	// and an OK case. The direct call skips getAllPickedHuIds()/getTopLevelHUsByHuIds() (job-level plumbing).
+	// --------------------------------------------------
+
+	@Nested
+	class ClosedHU
+	{
+		@Test
+		void twoDistinctManual_throwsManualInconsistent()
+		{
+			final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+			final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+			stubResolver(s1, s2);
+			stubShipper(SHIPPER_1);
+			stubCarriers(ImmutableMap.of(
+					SCHED_ID_1, carrier(true, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1)),
+					SCHED_ID_2, carrier(true, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of(SERVICE_1))));
+
+			assertThrowsWithKey(() -> service.assertConsistentForClosedHU(topLevelHU), MSG_ManualInconsistentOnHU);
+		}
+
+		@Test
+		void nonManual_divergentProduct_selectionRulesOff_throwsNonManualDivergent()
+		{
+			final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+			final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+			stubResolver(s1, s2);
+			stubShipper(SHIPPER_1);
+			stubSelectionRules(SHIPPER_1, false);
+			stubCarriers(ImmutableMap.of(
+					SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+					SCHED_ID_2, carrier(false, CARRIER_PRODUCT_2, GOODS_TYPE_1, ImmutableSet.of())));
+
+			assertThrowsWithKey(() -> service.assertConsistentForClosedHU(topLevelHU), MSG_NonManualDivergentOnHU);
+		}
+
+		@Test
+		void allNonManual_consistent_doesNotThrow()
+		{
+			final ShipmentSchedule s1 = mockSchedule(SCHED_ID_1, SHIPPER_1);
+			final ShipmentSchedule s2 = mockSchedule(SCHED_ID_2, SHIPPER_1);
+			stubResolver(s1, s2);
+			stubShipper(SHIPPER_1);
+			stubCarriers(ImmutableMap.of(
+					SCHED_ID_1, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of()),
+					SCHED_ID_2, carrier(false, CARRIER_PRODUCT_1, GOODS_TYPE_1, ImmutableSet.of())));
+
+			assertThatCode(() -> service.assertConsistentForClosedHU(topLevelHU))
+					.doesNotThrowAnyException();
+		}
 	}
 }
