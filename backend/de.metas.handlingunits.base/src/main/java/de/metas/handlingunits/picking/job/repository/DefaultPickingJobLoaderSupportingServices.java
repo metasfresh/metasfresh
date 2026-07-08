@@ -68,6 +68,7 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
 	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
+	private final HashMap<HuId, HUQRCode> qrCodesCache = new HashMap<>();
 
 	@Override
 	public PickingJobOptions getPickingJobOptions(@Nullable final BPartnerId customerId) {return profileService.getPickingJobOptions(customerId);}
@@ -171,9 +172,17 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	}
 
 	@Override
+	public void warmUpQRCodesCache(@NonNull final Collection<HuId> huIds)
+	{
+		CollectionUtils.getAllOrLoad(qrCodesCache, huIds, huService::getSingleQRCodeByHuIds);
+	}
+
+	@Override
 	public HUQRCode getQRCodeByHUId(final HuId huId)
 	{
-		return huService.getQRCodeByHuId(huId);
+		// Served from the batch-warmed cache (see warmUpQRCodesCache); on a miss (HU with no or with multiple
+		// assigned QR codes) fall back to the single-HU lookup, preserving the exact generate-if-missing semantics.
+		return qrCodesCache.computeIfAbsent(huId, huService::getQRCodeByHuId);
 	}
 
 	@Override

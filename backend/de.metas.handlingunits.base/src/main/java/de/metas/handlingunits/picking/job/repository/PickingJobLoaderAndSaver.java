@@ -209,6 +209,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
 		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
+		loadingSupportingServices.warmUpQRCodesCache(extractHUIdsFromCachedObjects());
 
 		hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
 	}
@@ -248,6 +249,39 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		this.pickingJobLines.values().forEach((pickingJobLineRecord) -> {
 			final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(pickingJobLineRecord);
 			result.add(deliveryBPLocationId.getBpartnerId());
+		});
+
+		return result.build();
+	}
+
+	/**
+	 * Collects every HU id whose QR code will be resolved while building the loaded picking jobs — the picked HUs
+	 * (one per {@link I_M_Picking_Job_Step_PickedHU}) plus the header LU/TU pick targets — so their QR codes can be
+	 * fetched in a single batch instead of one query per HU (see {@link PickingJobLoaderSupportingServices#warmUpQRCodesCache}).
+	 */
+	private ImmutableSet<HuId> extractHUIdsFromCachedObjects()
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+
+		this.pickedHUs.values().forEach(pickedHU -> {
+			final HuId pickedHUId = HuId.ofRepoIdOrNull(pickedHU.getPicked_HU_ID());
+			if (pickedHUId != null)
+			{
+				result.add(pickedHUId);
+			}
+		});
+
+		this.pickingJobs.values().forEach(pickingJobRecord -> {
+			final HuId luId = HuId.ofRepoIdOrNull(pickingJobRecord.getM_LU_HU_ID());
+			if (luId != null)
+			{
+				result.add(luId);
+			}
+			final HuId tuId = HuId.ofRepoIdOrNull(pickingJobRecord.getM_TU_HU_ID());
+			if (tuId != null)
+			{
+				result.add(tuId);
+			}
 		});
 
 		return result.build();
