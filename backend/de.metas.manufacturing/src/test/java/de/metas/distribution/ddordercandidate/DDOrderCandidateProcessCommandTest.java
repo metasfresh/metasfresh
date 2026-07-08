@@ -182,6 +182,123 @@ class DDOrderCandidateProcessCommandTest
 		assertThat(orders).allSatisfy(order -> assertThat(queryLines(order)).hasSize(1));
 	}
 
+	/**
+	 * RED (me03 30782 CASE 14): today {@code createLine} ignores the candidate's source/target locators and always
+	 * falls back to {@code warehouseBL.getOrCreateDefaultLocatorId(...)}, which this test's harness stubs to
+	 * locator repoId 540003 for every warehouse. A candidate that carries its own locators (distinct from 540003)
+	 * must have those locators carried onto the generated line instead.
+	 */
+	@Test
+	void locatorsCarriedOntoLine()
+	{
+		final LocatorId sourceLocatorId = LocatorId.ofRepoId(60, 1001);
+		final LocatorId targetLocatorId = LocatorId.ofRepoId(70, 1002);
+
+		final DDOrderCandidate candidate = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.sourceLocatorId(sourceLocatorId)
+				.targetLocatorId(targetLocatorId)
+				.build();
+		ddOrderCandidateRepository.save(candidate);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorId(true)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(candidate))
+						.build())
+				.build()
+				.execute();
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+
+		final List<I_DD_OrderLine> lines = queryLines(orders.get(0));
+		assertThat(lines).hasSize(1);
+		assertThat(lines.get(0).getM_Locator_ID()).isEqualTo(sourceLocatorId.getRepoId());
+		assertThat(lines.get(0).getM_LocatorTo_ID()).isEqualTo(targetLocatorId.getRepoId());
+	}
+
+	/**
+	 * RED (me03 30782 CASE 14): today neither the header nor the line aggregation key considers the candidate's
+	 * locators, so two candidates that differ only by {@code targetLocatorId} (i.e. different grounds) still
+	 * collapse into a single DD_Order with a single aggregated line. Once locators are part of the aggregation
+	 * key, each ground must get its own order+line.
+	 */
+	@Test
+	void oneOrderOneLinePerMove()
+	{
+		final DDOrderCandidate move1 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
+				.build();
+		final DDOrderCandidate move2 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1003))
+				.build();
+		ddOrderCandidateRepository.save(move1);
+		ddOrderCandidateRepository.save(move2);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorId(true)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(move1, move2))
+						.build())
+				.build()
+				.execute();
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(2);
+		assertThat(orders).allSatisfy(order -> assertThat(queryLines(order)).hasSize(1));
+	}
+
+	/**
+	 * Control for {@link #oneOrderOneLinePerMove()}: with {@code aggregateByLocatorId=false} (today's behaviour,
+	 * and still the behaviour once the flag exists but is off), the two per-ground candidates collapse into ONE
+	 * DD_Order with a single aggregated line. This must pass both today and after Task 2's fix.
+	 */
+	@Test
+	void flagOff_unchanged()
+	{
+		final DDOrderCandidate move1 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
+				.build();
+		final DDOrderCandidate move2 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1003))
+				.build();
+		ddOrderCandidateRepository.save(move1);
+		ddOrderCandidateRepository.save(move2);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorId(false)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(move1, move2))
+						.build())
+				.build()
+				.execute();
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+	}
+
 	private void processTwoProductCandidates(final boolean aggregateByProductId)
 	{
 		final DDOrderCandidate product20 = DDOrderCandidateRepositoryTest.newFullyFilled().toBuilder()

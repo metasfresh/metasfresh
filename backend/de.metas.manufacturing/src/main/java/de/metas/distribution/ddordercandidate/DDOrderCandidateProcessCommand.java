@@ -327,6 +327,7 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
 		boolean aggregateByProductId;
+		boolean aggregateByLocatorId;
 	}
 	//
 	//
