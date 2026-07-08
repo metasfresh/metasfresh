@@ -82,10 +82,10 @@ import java.util.function.BiFunction;
 public class PickingJobSaver
 {
 	protected final IQueryBL queryBL = Services.get(IQueryBL.class);
-	// Obtain the Spring-managed repository like the schedule side does, with a plain-new fallback for the no-Spring-context
-	// (unit-test) case in which this plain saver is instantiated directly via its factory methods.
-	protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository =
-			SpringContextHolder.getBeanOrSupply(PickingJobLineCarrierServiceRepository.class, PickingJobLineCarrierServiceRepository::new);
+	// This plain saver is instantiated via {@code new} (e.g. PickingJobLoaderAndSaver.forSaving()), so it cannot rely on
+	// Spring constructor-injection for the repository; it resolves the Spring-managed bean directly.
+	@NonNull protected final PickingJobLineCarrierServiceRepository lineCarrierServiceRepository =
+			SpringContextHolder.instance.getBean(PickingJobLineCarrierServiceRepository.class);
 
 	protected final HashMap<PickingJobId, I_M_Picking_Job> pickingJobs = new HashMap<>();
 	protected final ArrayListMultimap<PickingJobId, I_M_Picking_Job_HUAlternative> pickingJobHUAlternatives = ArrayListMultimap.create();

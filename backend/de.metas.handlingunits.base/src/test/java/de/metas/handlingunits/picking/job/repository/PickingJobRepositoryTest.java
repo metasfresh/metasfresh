@@ -68,7 +68,7 @@ class PickingJobRepositoryTest
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier(POJONextIdSuppliers.newPerTableSequence());
 
-		pickingJobRepository = new PickingJobRepository();
+		pickingJobRepository = PickingJobRepository.newInstanceForUnitTesting();
 		loadingSupportServices = new MockedPickingJobLoaderSupportingServices();
 
 		uomEach = BusinessTestHelper.createUomEach();

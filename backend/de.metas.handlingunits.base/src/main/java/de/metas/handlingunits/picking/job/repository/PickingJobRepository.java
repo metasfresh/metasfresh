@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -25,6 +26,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
@@ -52,6 +54,17 @@ import java.util.stream.Stream;
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static PickingJobRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		// The saver/loader (PickingJobSaver, PickingJobLoaderAndSaver) resolve this collaborator via
+		// SpringContextHolder.getBean; its factory's getBeanOrSupply registers a plain instance as a junit bean
+		// so that lookup succeeds in the no-Spring test context.
+		PickingJobLineCarrierServiceRepository.newInstanceForUnitTesting();
+		return new PickingJobRepository();
+	}
 
 	/**
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references

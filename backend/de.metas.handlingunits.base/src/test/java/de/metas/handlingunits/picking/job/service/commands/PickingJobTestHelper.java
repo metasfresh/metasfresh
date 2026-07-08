@@ -192,7 +192,7 @@ public class PickingJobTestHelper
 				DummyDocumentLocationBL.newInstanceForUnitTesting()
 		);
 
-		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
+		final PickingJobRepository pickingJobRepository = PickingJobRepository.newInstanceForUnitTesting();
 		final HUQRCodesService huQRCodeService = HUQRCodesService.newInstanceForUnitTesting();
 		final InventoryService inventoryService = InventoryService.newInstanceForUnitTesting();
 		this.configService = MobileUIPickingUserProfileService.newInstanceForUnitTesting();

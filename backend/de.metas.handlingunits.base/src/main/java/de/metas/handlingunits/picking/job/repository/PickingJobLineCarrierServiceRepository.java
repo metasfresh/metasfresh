@@ -58,19 +58,6 @@ public class PickingJobLineCarrierServiceRepository
 	public static PickingJobLineCarrierServiceRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return getInstance();
-	}
-
-	/**
-	 * Returns the Spring bean when a context is available, otherwise a freshly supplied instance.
-	 * Mirrors how {@code PickingJobRepository} acquires its own collaborators (field-init self-acquisition):
-	 * {@code PickingJobRepository} is {@code new}'d outside Spring in some call sites (e.g.
-	 * {@code PickingJobSlotService} and unit tests), so it cannot rely on constructor injection for this
-	 * collaborator and resolves it through this factory instead.
-	 */
-	@NonNull
-	public static PickingJobLineCarrierServiceRepository getInstance()
-	{
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(PickingJobLineCarrierServiceRepository.class,
 				PickingJobLineCarrierServiceRepository::new);
