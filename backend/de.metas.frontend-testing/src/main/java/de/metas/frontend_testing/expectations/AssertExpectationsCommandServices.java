@@ -45,6 +45,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -173,9 +174,9 @@ public class AssertExpectationsCommandServices
 		final Set<OrderLineId> orderLineIds = getOrderLineIdsByOrderId(orderId);
 		if (orderLineIds.isEmpty())
 		{
-			return java.util.Collections.emptyList();
+			return Collections.emptyList();
 		}
-		return Services.get(de.metas.inoutcandidate.api.IShipmentSchedulePA.class).getByOrderLineIds(orderLineIds);
+		return shipmentScheduleBL.getByOrderLineIds(orderLineIds);
 	}
 
 	public ProductId getProductIdOfShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)

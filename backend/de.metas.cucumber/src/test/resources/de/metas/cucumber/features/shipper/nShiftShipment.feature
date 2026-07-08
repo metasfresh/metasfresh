@@ -1617,8 +1617,6 @@ Feature: nShift Shipment
     And Process M_ShipmentSchedule_Advise_Manual is run
       | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_split_l1           | cp1                | cgt1                  | cs1                |
-    And Process M_ShipmentSchedule_Advise_Manual is run
-      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | nShift       | ss_split_l2           | cp2                | cgt2                  | cs2                |
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier  | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |

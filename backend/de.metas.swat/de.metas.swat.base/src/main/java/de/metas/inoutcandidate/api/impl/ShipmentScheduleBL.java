@@ -985,6 +985,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
+	public List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull final Set<OrderLineId> orderLineIds)
+	{
+		return shipmentSchedulePA.getByOrderLineIds(orderLineIds);
+	}
+
+	@Override
 	public void assertSalesOrderCanBeReactivated(@NonNull final OrderId salesOrderId)
 	{
 		if (shipmentSchedulePA.existsExportedShipmentScheduleForOrder(salesOrderId))
