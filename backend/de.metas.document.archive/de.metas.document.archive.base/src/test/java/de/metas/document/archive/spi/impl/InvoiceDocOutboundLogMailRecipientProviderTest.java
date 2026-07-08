@@ -33,6 +33,7 @@ import static de.metas.i18n.Language.AD_Language_en_AU;
 import static de.metas.i18n.Language.AD_Language_en_GB;
 import static de.metas.i18n.Language.AD_Language_en_US;
 import static de.metas.i18n.Language.asLanguage;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -333,8 +334,10 @@ public class InvoiceDocOutboundLogMailRecipientProviderTest
 
 		private void setPartnerInvoiceEmailEnabled(final String value)
 		{
-			billBPartnerRecord.setIsInvoiceEmailEnabled(value);
-			saveRecord(billBPartnerRecord);
+			final de.metas.document.archive.model.I_C_BPartner billPartner =
+					create(billBPartnerRecord, de.metas.document.archive.model.I_C_BPartner.class);
+			billPartner.setIsInvoiceEmailEnabled(value);
+			saveRecord(billPartner);
 		}
 
 		private void setLocationEmail(final String email)
