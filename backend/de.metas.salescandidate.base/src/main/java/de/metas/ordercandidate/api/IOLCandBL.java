@@ -45,6 +45,7 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -120,6 +121,17 @@ public interface IOLCandBL extends ISingletonService
 	ShipperId getShipperId(@Nullable BPartnerOrderParams bPartnerOrderParams, @Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand olCandRecord);
 
 	BPartnerOrderParams getBPartnerOrderParams(I_C_OLCand olCandRecord);
+
+	/**
+	 * Returns the warehouse to use for the given {@code olCand}, following this precedence:
+	 * <ol>
+	 * <li>OLCand's own {@code M_Warehouse_ID} if set</li>
+	 * <li>Buyer BP's customer picking warehouse (via {@link org.adempiere.warehouse.spi.IWarehouseAdvisor#evaluateCustomerPickingWarehouse})</li>
+	 * <li>Processor default ({@code orderDefaults.warehouseId})</li>
+	 * </ol>
+	 */
+	@Nullable
+	WarehouseId getWarehouseId(@NonNull I_C_OLCand olCand, @Nullable OLCandOrderDefaults orderDefaults);
 
 	DocTypeId getOrderDocTypeId(@Nullable OLCandOrderDefaults orderDefaults, @Nullable I_C_OLCand orderCandidateRecord);
 
