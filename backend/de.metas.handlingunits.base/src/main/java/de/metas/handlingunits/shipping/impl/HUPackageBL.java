@@ -215,22 +215,7 @@ public class HUPackageBL implements IHUPackageBL
 
 		final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 		final Product product = productRepository.getById(productStorage.getProductId());
-		// Single-unit dimensions: a self-packed CU is one label per unit, so each parcel carries the product's
-		// named dimensions verbatim (no qty-based sort/scale). Same self-packed / no-dimensions guards as
-		// getPackageDimensions.
-		final PackageDimensions singleUnitDimensions;
-		if (!product.isSelfPacked())
-		{
-			singleUnitDimensions = PackageDimensions.UNSPECIFIED;
-		}
-		else if (product.getPackageDimensions().isUnspecified())
-		{
-			throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
-		}
-		else
-		{
-			singleUnitDimensions = product.getPackageDimensions();
-		}
+		final PackageDimensions singleUnitDimensions = resolveSingleUnitDimensions(product);
 
 		final CreatePackageForHURequest perUnitRequest = request
 				.withWeightInKg(perUnitWeightInKg)
@@ -242,6 +227,27 @@ public class HUPackageBL implements IHUPackageBL
 			packages.add(createM_Package(perUnitRequest));
 		}
 		return packages.build();
+	}
+
+	/**
+	 * Single-unit dimensions: a self-packed CU is one label per unit, so each parcel carries the product's
+	 * named dimensions verbatim (no qty-based sort/scale). Same self-packed / no-dimensions guards as
+	 * {@code getPackageDimensions}.
+	 */
+	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
+	{
+		if (!product.isSelfPacked())
+		{
+			return PackageDimensions.UNSPECIFIED;
+		}
+		else if (product.getPackageDimensions().isUnspecified())
+		{
+			throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
+		}
+		else
+		{
+			return product.getPackageDimensions();
+		}
 	}
 
 	@Override

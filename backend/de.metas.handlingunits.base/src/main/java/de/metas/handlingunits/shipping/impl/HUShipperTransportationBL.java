@@ -3,6 +3,7 @@ package de.metas.handlingunits.shipping.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.IHULockBL;
@@ -287,7 +288,7 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 			return Collections.emptyList();
 		}
 
-		int generalShippertTransportationId = -1;
+		ShipperTransportationId generalShipperTransportationId = null;
 		final List<I_M_ShippingPackage> shippingPackagesMatchingHU = new ArrayList<>();
 
 		for (final I_M_Package huPackage : huPackages)
@@ -302,22 +303,23 @@ public class HUShipperTransportationBL implements IHUShipperTransportationBL
 					continue;
 				}
 
-				final int packagePartnerId = shippingPackage.getC_BPartner_ID();
-				final int packageLocationId = shippingPackage.getC_BPartner_Location_ID();
-				if (hu.getC_BPartner_ID() != packagePartnerId
-						|| hu.getC_BPartner_Location_ID() != packageLocationId)
+				// BPartnerLocationId wraps BOTH C_BPartner_ID and C_BPartner_Location_ID, so a single equals
+				// covers the partner+location match. ofRepoIdOrNull guards missing/0 ids (returns null).
+				final BPartnerLocationId huBPLocationId = BPartnerLocationId.ofRepoIdOrNull(hu.getC_BPartner_ID(), hu.getC_BPartner_Location_ID());
+				final BPartnerLocationId packageBPLocationId = BPartnerLocationId.ofRepoIdOrNull(shippingPackage.getC_BPartner_ID(), shippingPackage.getC_BPartner_Location_ID());
+				if (!BPartnerLocationId.equals(huBPLocationId, packageBPLocationId))
 				{
 					//
 					// Shipper package must match the HU's partner and location
 					continue;
 				}
 
-				final int shipperTransportationId = shippingPackage.getM_ShipperTransportation_ID();
-				if (generalShippertTransportationId < 0)
+				final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(shippingPackage.getM_ShipperTransportation_ID());
+				if (generalShipperTransportationId == null)
 				{
-					generalShippertTransportationId = shipperTransportationId;
+					generalShipperTransportationId = shipperTransportationId;
 				}
-				Check.assume(generalShippertTransportationId == shipperTransportationId, "shipper transportations shall all match for any given HU");
+				Check.assume(generalShipperTransportationId.equals(shipperTransportationId), "shipper transportations shall all match for any given HU");
 
 				shippingPackagesMatchingHU.add(shippingPackage);
 			}
