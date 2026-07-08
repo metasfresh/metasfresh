@@ -209,6 +209,7 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 
 		loadingSupportingServices.warmUpSalesOrderDocumentNosCache(extractSalesOrderIdsFromCachedObjects());
 		loadingSupportingServices.warmUpBPartnerNamesCache(extractCustomerIdsFromCachedObjects());
+		loadingSupportingServices.warmUpQRCodesCache(extractHUIdsFromCachedObjects());
 
 		hasLocks.putAll(computePickingJobHasLocks(pickingJobIds));
 	}
@@ -248,6 +249,47 @@ class PickingJobLoaderAndSaver extends PickingJobSaver
 		this.pickingJobLines.values().forEach((pickingJobLineRecord) -> {
 			final BPartnerLocationId deliveryBPLocationId = extractDeliveryBPLocationId(pickingJobLineRecord);
 			result.add(deliveryBPLocationId.getBpartnerId());
+		});
+
+		return result.build();
+	}
+
+	/**
+	 * Collects every HU id whose QR code will be resolved while building the loaded picking jobs, so those QR codes can
+	 * be fetched in a single batch (see {@link PickingJobLoaderSupportingServices#warmUpQRCodesCache}) instead of one
+	 * query per HU. Covers every {@code getQRCodeByHUId} call site of the load: the picked HUs, the pick-from HUs of the
+	 * steps and of the step/job HU-alternatives, and the header + line-level LU/TU pick targets. Any id that is missed
+	 * (or has no/ambiguous QR code) still resolves correctly via the single-HU fallback — it just isn't batched.
+	 */
+	private ImmutableSet<HuId> extractHUIdsFromCachedObjects()
+	{
+		final ImmutableSet.Builder<HuId> result = ImmutableSet.builder();
+		final java.util.function.IntConsumer addHuId = repoId -> {
+			final HuId huId = HuId.ofRepoIdOrNull(repoId);
+			if (huId != null)
+			{
+				result.add(huId);
+			}
+		};
+
+		// picked HUs (one per step-picked-HU record) — the dominant N after picking
+		this.pickedHUs.values().forEach(pickedHU -> addHuId.accept(pickedHU.getPicked_HU_ID()));
+
+		// pick-from HUs: step main pick-from, step HU-alternatives, job-level HU-alternatives
+		this.pickingJobSteps.values().forEach(step -> addHuId.accept(step.getPickFrom_HU_ID()));
+		this.pickingJobStepAlternatives.values().forEach(alt -> addHuId.accept(alt.getPickFrom_HU_ID()));
+		this.pickingJobHUAlternatives.values().forEach(alt -> addHuId.accept(alt.getPickFrom_HU_ID()));
+
+		// header LU/TU pick targets
+		this.pickingJobs.values().forEach(pickingJobRecord -> {
+			addHuId.accept(pickingJobRecord.getM_LU_HU_ID());
+			addHuId.accept(pickingJobRecord.getM_TU_HU_ID());
+		});
+
+		// line-level LU/TU pick targets
+		this.pickingJobLines.values().forEach(line -> {
+			addHuId.accept(line.getCurrent_PickTo_LU_ID());
+			addHuId.accept(line.getCurrent_PickTo_TU_ID());
 		});
 
 		return result.build();
