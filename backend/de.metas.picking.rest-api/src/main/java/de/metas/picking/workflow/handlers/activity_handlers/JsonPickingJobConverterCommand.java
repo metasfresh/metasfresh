@@ -106,13 +106,9 @@ public class JsonPickingJobConverterCommand
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
 				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue());
 
+		// The LU/TU pick targets are already set by JsonPickingJob.builderFrom(pickingJob).
+
 		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null);
-
-		pickingJob.getLuPickingTarget(null)
-				.ifPresent(target -> builder.luPickingTarget(JsonLUPickingTarget.of(target)));
-
-		pickingJob.getTuPickingTarget(null)
-				.ifPresent(target -> builder.tuPickingTarget(JsonTUPickingTarget.of(target)));
 
 		// Job-level carrier-advise flags — the mobile UI reads these for the job view's advise button.
 		builder.carrierAdviseAvailable(jobCarrierAdvise.isAvailable())
