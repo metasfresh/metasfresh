@@ -25,8 +25,10 @@ import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
+import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
@@ -68,7 +70,10 @@ public class PackedHUCarrierAdviseServiceTest
 	private HUShipmentScheduleResolver huShipmentScheduleResolver;
 	private ShipmentScheduleService shipmentScheduleService;
 	private PickingJobRepository pickingJobRepository;
+	private ShipperRepository shipperRepository;
+	private CarrierProductRepository carrierProductRepository;
 	private PackedHUCarrierAdviseService service;
+	private int idSeq = 300;
 
 	private static final ShipmentScheduleId SCHED_TOMATO = ShipmentScheduleId.ofRepoId(201);
 	private static final ShipmentScheduleId SCHED_SALAD = ShipmentScheduleId.ofRepoId(202);
@@ -87,6 +92,8 @@ public class PackedHUCarrierAdviseServiceTest
 		huShipmentScheduleResolver = mock(HUShipmentScheduleResolver.class);
 		shipmentScheduleService = mock(ShipmentScheduleService.class);
 		pickingJobRepository = mock(PickingJobRepository.class);
+		shipperRepository = mock(ShipperRepository.class);
+		carrierProductRepository = mock(CarrierProductRepository.class);
 
 		// spy: the advise(...) flow is exercised end-to-end except the static CarrierAdviseCommand call
 		// (real DB + shipper-gateway work), which is stubbed at the #adviseSchedule seam.
@@ -94,9 +101,9 @@ public class PackedHUCarrierAdviseServiceTest
 				packedHUShippingInfoService,
 				huShipmentScheduleResolver,
 				ProductRepository.newInstanceForUnitTesting(),
-				mock(CarrierProductRepository.class),
+				carrierProductRepository,
 				mock(CustomsTariffRepository.class),
-				mock(ShipperRepository.class),
+				shipperRepository,
 				shipmentScheduleService,
 				pickingJobRepository));
 
@@ -370,8 +377,9 @@ public class PackedHUCarrierAdviseServiceTest
 	@Test
 	public void resolveInfo_jobLevel_multipleLinesDifferentProducts_noTarget_notAvailable()
 	{
+		// Different products => CU ambiguous => not offered, regardless of carrier (gated before the API-advise check)
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
-		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(701));
+		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(702));
 
 		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null).isAvailable())
 				.isFalse();
@@ -394,9 +402,8 @@ public class PackedHUCarrierAdviseServiceTest
 	}
 
 	/**
-	 * Job-level advise where the CU is unambiguous (single line) but no line carries a carrier product — a
-	 * non-API-advise shipper. Advise is not eligible, so the button must not be offered (the invariant that a
-	 * carrier-product-less line filters to an empty set and returns NONE, driven end-to-end through resolveInfo).
+	 * Single line with no carrier product yet (null carrierProductId): excluded by the Objects::nonNull filter →
+	 * empty carrier-product set → button not offered.
 	 */
 	@Test
 	public void resolveInfo_jobLevel_singleProductNoCarrierProduct_notAvailable()
@@ -407,11 +414,36 @@ public class PackedHUCarrierAdviseServiceTest
 				.isFalse();
 	}
 
-	private static PickingJobLine mockLine(final ProductId productId, final CarrierProductId carrierProductId)
+	/**
+	 * A non-API-advise shipper (IsApiCarrierAdvise=N) still carries a shipper-name fallback carrier product, yet
+	 * the re-advise button must not be offered — the line is not advise-eligible.
+	 */
+	@Test
+	public void resolveInfo_jobLevel_nonApiAdviseShipper_notAvailable()
+	{
+		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701), false);
+
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+				.isFalse();
+	}
+
+	private PickingJobLine mockLine(final ProductId productId, final CarrierProductId carrierProductId)
+	{
+		return mockLine(productId, carrierProductId, true);
+	}
+
+	private PickingJobLine mockLine(final ProductId productId, final CarrierProductId carrierProductId, final boolean apiCarrierAdvise)
 	{
 		final PickingJobLine line = mock(PickingJobLine.class);
 		when(line.getProductId()).thenReturn(productId);
 		when(line.getCarrierProductId()).thenReturn(carrierProductId);
+		if (carrierProductId != null)
+		{
+			final ShipperId shipperId = ShipperId.ofRepoId(idSeq++);
+			when(carrierProductRepository.getCachedShipperProductById(carrierProductId)).thenReturn(
+					CarrierProduct.builder().id(carrierProductId).shipperId(shipperId).code("code").name("carrier").build());
+			when(shipperRepository.isApiCarrierAdvise(shipperId)).thenReturn(apiCarrierAdvise);
+		}
 		return line;
 	}
 

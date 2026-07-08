@@ -169,7 +169,8 @@ public class PackedHUCarrierAdviseService
 		}
 
 		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
-		if (carrierProduct == null)
+		// A non-API-advise shipper still has a fallback Carrier_Product, so gate the button on IsApiCarrierAdvise.
+		if (carrierProduct == null || !shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId()))
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
@@ -200,12 +201,13 @@ public class PackedHUCarrierAdviseService
 				|| pickingJob.getLines().size() == 1
 				|| pickingJob.getLines().stream().map(PickingJobLine::getProductId).distinct().count() == 1;
 
+		// Gate the whole set on IsApiCarrierAdvise so a divergent mix with a non-API shipper is excluded too.
 		final ImmutableSet<CarrierProductId> carrierProductIds = pickingJob.getLines().stream()
 				.map(PickingJobLine::getCarrierProductId)
 				.filter(Objects::nonNull)
+				.filter(this::isApiAdviseCarrierProduct)
 				.collect(ImmutableSet.toImmutableSet());
 
-		// No carrier product on any line => not advise-eligible (e.g. a non-API-advise shipper).
 		if (!cuUnambiguous || carrierProductIds.isEmpty())
 		{
 			return CarrierAdviseTargetInfo.NONE;
@@ -227,6 +229,12 @@ public class PackedHUCarrierAdviseService
 	private boolean isCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
 	{
 		return line.isManual() || line.isCarrierAdviseReadOnly();
+	}
+
+	private boolean isApiAdviseCarrierProduct(@NonNull final CarrierProductId carrierProductId)
+	{
+		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
+		return carrierProduct != null && shipperRepository.isApiCarrierAdvise(carrierProduct.getShipperId());
 	}
 
 	/**
