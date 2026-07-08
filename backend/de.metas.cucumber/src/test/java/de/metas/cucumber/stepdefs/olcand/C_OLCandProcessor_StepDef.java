@@ -57,7 +57,7 @@ public class C_OLCandProcessor_StepDef
 	 * @cucumber.columns
 	 *   <b>Name</b> — (required when C_OLCandProcessor_ID absent) name of the C_OLCandProcessor to update<br>
 	 *   <b>OPT.C_OLCandProcessor_ID</b> — (optional) raw repo-ID of the processor (preferred when Name is uncertain)<br>
-	 *   <b>OPT.M_Warehouse_ID</b> — (optional, identifier-ref) new default warehouse; resolved via M_Warehouse_StepDefData<br>
+	 *   <b>OPT.M_Warehouse_ID.Identifier</b> — (optional, identifier-ref) new default warehouse; resolved via M_Warehouse_StepDefData<br>
 	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData
 	 * @cucumber.example
 	 * <pre>

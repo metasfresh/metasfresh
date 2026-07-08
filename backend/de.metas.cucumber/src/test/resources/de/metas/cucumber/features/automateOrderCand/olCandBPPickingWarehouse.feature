@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00122
-@topic:orderCandidate
 @ghActions:run_on_executor3
 Feature: OLCand order creation uses BP picking warehouse when no warehouse is in the payload
 ## F00122: OLCand Warehouse Advisor
@@ -22,7 +21,6 @@ Feature: OLCand order creation uses BP picking warehouse when no warehouse is in
   @from:cucumber
   @allure.label.epic:E0100_Sales
   @allure.label.feature:F00122
-  @topic:orderCandidate
   @Id:S30235_01
   Scenario: OLCand without warehouse → order inherits BP picking warehouse, not processor default
     # Two warehouses: WH_PICK is the BP's picking warehouse; WH_DEFAULT is set as the

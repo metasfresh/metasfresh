@@ -603,6 +603,38 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates a single {@link I_C_OrderLine} record against expected values from the DataTable row.
+	 * Called per row by {@link #validate_created_order_lines(DataTable)}.
+	 *
+	 * <p>Supported DataTable columns (all optional unless noted):</p>
+	 * <ul>
+	 *   <li>{@code C_OrderLine_ID} — required identifier; must have been registered in {@link C_OrderLine_StepDefData}</li>
+	 *   <li>{@code C_Order_ID} — optional identifier; validates that the line belongs to this order</li>
+	 *   <li>{@code M_Product_ID} — optional identifier; resolved via M_Product_StepDefData</li>
+	 *   <li>{@code QtyOrdered} — optional BigDecimal</li>
+	 *   <li>{@code qtydelivered} — optional BigDecimal; maps to {@code QtyDelivered}</li>
+	 *   <li>{@code qtyinvoiced} — optional BigDecimal; maps to {@code QtyInvoiced}</li>
+	 *   <li>{@code price} — optional BigDecimal; maps to {@code PriceEntered}</li>
+	 *   <li>{@code discount} — optional BigDecimal</li>
+	 *   <li>{@code currencyCode} — optional ISO-4217 code</li>
+	 *   <li>{@code processed} — optional boolean</li>
+	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
+	 *       when absent the warehouse is not validated</li>
+	 *   <li>(plus further optional columns: C_UOM_BPartner_ID.X12DE355, IsManualPrice, BPartner_QtyItemCapacity,
+	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
+	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
+	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
+	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created order lines:
+	 *   | C_OrderLine_ID     | C_Order_ID   | M_Product_ID   | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Warehouse_ID.Identifier |
+	 *   | orderLine_S30235_1 | order_S30235 | product_S30235 | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH                     |
+	 * </pre>
+	 */
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
 		final String identifierStr = row.getAsIdentifier().getAsString();
