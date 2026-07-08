@@ -33,7 +33,6 @@ import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.externalsystem.ExternalSystemId;
-import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
 import de.metas.logging.LogManager;
@@ -218,7 +217,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		}
 		// selection rules ON ⇒ resolve only when NO manual is involved; any manual carrier is respected.
 		final boolean anyManual = schedules.stream()
-				.anyMatch(s -> CarrierAdviseStatus.Manual.equals(s.getCarrierAdvisingStatus()));
+				.anyMatch(s -> s.getCarrierAdvisingStatus().isManual());
 		return !anyManual;
 	}
 
