@@ -1,9 +1,11 @@
 package de.metas.shipper.gateway.spi.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
@@ -144,6 +146,14 @@ public class DeliveryOrder
 				.clearDeliveryOrderParcels()
 				.deliveryOrderParcels(deliveryOrderParcels)
 				.build();
+	}
+
+	/** The carrier product of this order, i.e. the id of the {@link #shipperProduct} (null if no shipper product is set). */
+	@Nullable
+	@JsonIgnore
+	public CarrierProductId getCarrierProductId()
+	{
+		return shipperProduct != null ? shipperProduct.getId() : null;
 	}
 }
 

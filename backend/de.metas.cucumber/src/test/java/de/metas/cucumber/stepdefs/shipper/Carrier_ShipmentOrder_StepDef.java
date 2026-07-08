@@ -142,7 +142,7 @@ public class Carrier_ShipmentOrder_StepDef
 			final DeliveryOrder match = deliveryOrderIds.stream()
 					.map(shipmentOrderRepository::getById)
 					.filter(order -> expectedCarrierProductId == null
-							|| CarrierProductId.equals(expectedCarrierProductId, carrierProductIdOfShipmentOrder(order.getId())))
+							|| CarrierProductId.equals(expectedCarrierProductId, order.getCarrierProductId()))
 					.findFirst()
 					.orElse(null);
 
@@ -175,13 +175,6 @@ public class Carrier_ShipmentOrder_StepDef
 				.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
 				.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
 				.create();
-	}
-
-	@Nullable
-	private CarrierProductId carrierProductIdOfShipmentOrder(@NonNull final DeliveryOrderId deliveryOrderId)
-	{
-		final I_Carrier_ShipmentOrder carrierShipmentOrder = InterfaceWrapperHelper.load(deliveryOrderId.getRepoId(), I_Carrier_ShipmentOrder.class);
-		return CarrierProductId.ofRepoIdOrNull(carrierShipmentOrder.getCarrier_Product_ID());
 	}
 
 	/**

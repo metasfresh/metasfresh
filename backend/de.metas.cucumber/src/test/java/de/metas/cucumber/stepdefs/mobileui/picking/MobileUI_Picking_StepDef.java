@@ -390,7 +390,7 @@ public class MobileUI_Picking_StepDef
 			return Util.equals(pickingLineProductId, productIdStr);
 		}
 
-		public List<JsonPickingJobLine> getPickingJobLines()
+		private List<JsonPickingJobLine> getPickingJobLines()
 		{
 			final JsonWFProcess wfProcess = getWfProcessNotNull();
 			final JsonWFActivity activity = wfProcess.getActivityById(PickingMobileApplication.ACTIVITY_ID_PickLines.getAsString());
