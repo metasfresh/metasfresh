@@ -2,6 +2,7 @@
 @allure.label.epic:E0350_Warehouse_Managment
 @allure.label.feature:F5020
 @ghActions:run_on_executor7
+@Id:S24821_TC1
 Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
   ## F5020: Stock
   Proves the full chain:
@@ -9,6 +10,12 @@ Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
     -> AttributesChangedEvent fired
     -> AttributesChangedEventHandlerForStockRecords re-keys MD_Stock
        from the old AttributesKey to the new.
+
+  # Uses the standard, storage-relevant "Article_Flavor" attribute, which is part
+  # of the default HU attribute set. Only an attribute the VHU actually carries can
+  # be changed via the HU attribute path, and that change is what fires the
+  # AttributesChangedEvent. (A custom attribute assigned only to the product's
+  # M_AttributeSet does NOT reach the VHU's attribute storage, so it cannot be used.)
 
   Background:
     Given infrastructure and metasfresh are running
@@ -20,21 +27,12 @@ Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
       | M_Warehouse_ID.Identifier | Value        |
       | warehouseStd              | StdWarehouse |
 
-    And metasfresh contains M_Attributes:
-      | Identifier | Value                     | Name                          | OPT.AttributeValueType | OPT.IsStorageRelevant |
-      | attr_rekey | stock_attr_rekey_20260628 | Stock Attr ReKey Test 20260628 | L                      | Y                     |
-
-    And metasfresh contains M_AttributeValues:
-      | Identifier | M_Attribute_ID.Identifier | Value | Name    | IsNullFieldValue |
-      | attrVal_A  | attr_rekey                | A     | Value-A | N                |
-      | attrVal_B  | attr_rekey                | B     | Value-B | N                |
-
     And metasfresh contains M_AttributeSetInstance with identifier "asiA":
     """
     {
       "attributeInstances":[
         {
-          "attributeCode":"stock_attr_rekey_20260628",
+          "attributeCode":"Article_Flavor",
           "valueStr":"A"
         }
       ]
@@ -46,16 +44,18 @@ Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
     {
       "attributeInstances":[
         {
-          "attributeCode":"stock_attr_rekey_20260628",
+          "attributeCode":"Article_Flavor",
           "valueStr":"B"
         }
       ]
     }
     """
 
+    # No fixed Value/Name: each scenario gets a distinct product so MD_Stock rows
+    # (keyed by product) never leak between scenarios sharing the executor's DB.
     And metasfresh contains M_Products:
-      | Identifier     | Value                        | Name                         |
-      | rekeyProduct   | rekey_product_test_20260628  | Rekey Product Test 20260628  |
+      | Identifier   |
+      | rekeyProduct |
 
   Scenario: Whole-VHU attribute change re-keys MD_Stock
     # Setup: one inventory line with attribute A, qty 10 -> VHU gets attribute A
@@ -78,10 +78,10 @@ Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
 
     # Act: change attribute on VHU from A to B
     And M_HU_Attribute is changed
-      | M_HU_ID.Identifier | M_Attribute_ID.Value              | OPT.Value |
-      | vhu1               | stock_attr_rekey_20260628         | B         |
+      | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.Value |
+      | vhu1               | Article_Flavor       | B         |
 
-    # Assert: old key A -> 0, new key B -> 10
+    # Assert: old key A -> 0, new key B -> 10 (total 10 preserved)
     Then after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand | OPT.M_Warehouse_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
       | rekeyProduct            | 0         | warehouseStd                  | asiA                                     |
@@ -110,8 +110,8 @@ Feature: MD_Stock is re-keyed when a storage-relevant HU attribute changes
 
     # Act: change attribute on ONE of the two VHUs from A to B
     And M_HU_Attribute is changed
-      | M_HU_ID.Identifier | M_Attribute_ID.Value              | OPT.Value |
-      | vhu2a              | stock_attr_rekey_20260628         | B         |
+      | M_HU_ID.Identifier | M_Attribute_ID.Value | OPT.Value |
+      | vhu2a              | Article_Flavor       | B         |
 
     # Assert: key A = 10 (unchanged VHU remains), key B = 10 (changed VHU)
     # This proves the handler moves only the changed VHU's qty, not the whole key.
