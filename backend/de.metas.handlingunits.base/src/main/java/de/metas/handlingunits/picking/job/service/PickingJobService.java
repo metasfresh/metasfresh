@@ -16,6 +16,7 @@ import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.grai.GRAIRequired;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -56,6 +57,7 @@ import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCa
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
+import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.shipment.PickingShipmentService;
@@ -113,6 +115,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
+	@NonNull private final PickingJobSalesOrderService salesOrderService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -649,10 +652,12 @@ public class PickingJobService implements PickingSlotListener
 		// is no single line product at header level.
 		final LUPickingTarget luTarget = pickingJob.getLuPickingTargetEffective(lineId).orElse(null);
 		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
+		final String poReference = resolvePOReferenceForGraiCheck(pickingJob, lineId);
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
 				luTarget,
-				lineProductId);
+				lineProductId,
+				poReference);
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
@@ -663,6 +668,37 @@ public class PickingJobService implements PickingSlotListener
 		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
 
 		return setTUPickingTarget(pickingJob, lineId, tuTarget);
+	}
+
+	/**
+	 * Resolves the current sales order's PO reference for the Migros GRAI-ownership check
+	 * ({@link PickingJobGraiTargetService#resolveTuTypeAndCapacity}), via the {@code external/salesorder} facade.
+	 *
+	 * @return {@code null} when no sales order can be unambiguously resolved (a header-level scan of a job whose
+	 * lines span more than one sales order), or when the resolved order has no PO reference set. A {@code null}
+	 * result means the Migros-ownership check is skipped, not failed.
+	 */
+	@Nullable
+	private String resolvePOReferenceForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		final OrderId salesOrderId = resolveSalesOrderIdForGraiCheck(pickingJob, lineId);
+		return salesOrderId != null ? salesOrderService.getPOReferenceById(salesOrderId) : null;
+	}
+
+	@Nullable
+	private static OrderId resolveSalesOrderIdForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		if (lineId != null)
+		{
+			return pickingJob.getLineById(lineId).getSalesOrderAndLineId().getOrderId();
+		}
+
+		// Header-level scan: only unambiguous when every line of the job belongs to the same sales order
+		// (always true for SALES_ORDER-aggregated jobs; a DELIVERY_LOCATION job can span several orders).
+		final ImmutableSet<OrderId> salesOrderIds = pickingJob.streamLines()
+				.map(line -> line.getSalesOrderAndLineId().getOrderId())
+				.collect(ImmutableSet.toImmutableSet());
+		return salesOrderIds.size() == 1 ? salesOrderIds.iterator().next() : null;
 	}
 
 	/**
@@ -682,6 +718,33 @@ public class PickingJobService implements PickingSlotListener
 			return GRAIRequired.No;
 		}
 		return bpartnerService.getGRAIRequired(customerId);
+	}
+
+	/**
+	 * @return the GRAIs already assigned to the line's effective loading unit (from prior picks on this LU), so the
+	 * mobile capture panel can mirror the server-side LU-wide dedupe. Resolves the effective LU the same way
+	 * {@link de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCommand#stampGraisIfRequired}
+	 * does. Empty when no LU is resolved yet for the line (nothing to stamp against yet).
+	 */
+	@NonNull
+	public List<GRAI> getExistingLuGrais(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		// Resolve the EXISTING LU across line-then-header scopes. For a header-level (SALES_ORDER) job the
+		// line carries its own not-yet-materialised LU target, which would shadow the shared, already-picked
+		// header LU if we used getLuPickingTargetEffective (first-present) + filter — so a later line's capture
+		// would see an empty existing-GRAI set and fail to mirror the LU-wide dedupe. getExistingLuPickingTargetEffective
+		// skips the non-existing scope and finds the shared LU (and, for PRODUCT aggregation, this line's own LU).
+		final HuId pickedLuId = pickingJob.getExistingLuPickingTargetEffective(lineId)
+				.map(LUPickingTarget::getLuIdNotNull)
+				.orElse(null);
+
+		if (pickedLuId == null)
+		{
+			return ImmutableList.of();
+		}
+
+		final GRAISet existingGrais = huService.getGrais(pickedLuId);
+		return ImmutableList.copyOf(existingGrais);
 	}
 
 	/**
