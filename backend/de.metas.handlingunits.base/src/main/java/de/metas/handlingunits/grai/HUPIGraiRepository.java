@@ -44,4 +44,21 @@ public class HUPIGraiRepository
 
 		return HuPackingInstructionsId.ofRepoId(record.getM_HU_PI_ID());
 	}
+
+	/**
+	 * Deletes every {@code M_HU_PI_GRAI} mapping for the given (company-prefix, asset-type) pair.
+	 * <p>
+	 * Intentionally NOT active-only: the unique index on (CompanyPrefix, AssetType) is global, so an
+	 * inactive stale row would still block re-creating a mapping for the same pinned pair.
+	 *
+	 * @return the number of rows deleted.
+	 */
+	public int deleteMapping(@NonNull final String companyPrefix, @NonNull final String assetType)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_PI_GRAI.class)
+				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_CompanyPrefix, companyPrefix)
+				.addEqualsFilter(I_M_HU_PI_GRAI.COLUMNNAME_GRAI_AssetType, assetType)
+				.create()
+				.delete();
+	}
 }

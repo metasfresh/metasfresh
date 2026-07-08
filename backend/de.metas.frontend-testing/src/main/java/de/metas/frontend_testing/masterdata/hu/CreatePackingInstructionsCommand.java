@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -55,6 +56,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -123,14 +125,33 @@ public class CreatePackingInstructionsCommand
 	}
 
 	/**
-	 * Generates a random canonical GRAI whose (companyPrefix, assetType) does not collide with any existing
+	 * Generates a canonical GRAI whose (companyPrefix, assetType) does not collide with any existing
 	 * {@code M_HU_PI_GRAI} row, then inserts an {@code M_HU_PI_GRAI} row linking it to the given TU packing instruction.
+	 * <p>
+	 * {@code M_HU_PI_GRAI} carries a global unique index on (companyPrefix, assetType). When the test pins BOTH via
+	 * overrides (e.g. the Migros {@code 7613204.00307} pair), a prior run's row for that exact pair would make
+	 * {@link #generateUniqueGRAI} unable to ever find a free slot — masterdata creation then fails with
+	 * "Failed to generate a unique GRAI after 100 attempts". So for a pinned pair we first delete any stale mapping
+	 * for it, making the frontend-testing masterdata re-runnable on a persistent (non-fresh) DB. The random (non-pinned)
+	 * case is unaffected — a fresh random pair never collides.
 	 *
 	 * @return the generated GRAI (canonical {@code companyPrefix.assetType.serial} format).
 	 */
 	private GRAI createGRAIMapping(@NonNull final PIResult tu)
 	{
-		final GRAI grai = generateUniqueGRAI(request.getGraiCompanyPrefix(), request.getGraiAssetType());
+		final String companyPrefixOverride = request.getGraiCompanyPrefix();
+		final String assetTypeOverride = request.getGraiAssetType();
+		if (companyPrefixOverride != null && assetTypeOverride != null)
+		{
+			final int deleted = huPIGraiRepository.deleteMapping(companyPrefixOverride, assetTypeOverride);
+			if (deleted > 0)
+			{
+				logger.info("Removed {} stale M_HU_PI_GRAI mapping(s) for pinned GRAI {}.{} (re-runnable masterdata)",
+						deleted, companyPrefixOverride, assetTypeOverride);
+			}
+		}
+
+		final GRAI grai = generateUniqueGRAI(companyPrefixOverride, assetTypeOverride);
 
 		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
 		record.setM_HU_PI_ID(tu.getPiId().getRepoId());

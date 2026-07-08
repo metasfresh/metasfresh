@@ -117,7 +117,10 @@ test('Migros GRAI belonging to another order\'s PO reference is refused', async 
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    // Product-aggregated jobs (aggregationType: 'product') are listed by product, so the launcher
+    // caption carries no documentNo — start by index after the documentNo filter has narrowed the
+    // list to a single launcher (mirrors picking-grai-scan.spec.js's product-aggregation flow).
+    await PickingJobsListScreen.startJob({ index: 1 });
 
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
