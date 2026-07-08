@@ -41,6 +41,8 @@ import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
 import de.metas.handlingunits.picking.job.service.PickingJobUnpickProductResolver;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
+import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
@@ -247,6 +249,7 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
+				PickingJobCarrierAdviseConsistencyService.newInstanceForUnitTesting(Mockito.mock(CarrierAdviseConsistencyService.class)),
 				new PickingJobGraiTargetService(huService),
 				new PickingJobUnpickProductResolver(huService, productService)
 		);

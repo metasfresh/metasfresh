@@ -28,7 +28,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -76,7 +75,6 @@ public class PickingJobRestService
 
 	private final PickingJobService pickingJobService;
 	private final MobileUIPickingUserProfileService configService;
-	private final CarrierAdviseConsistencyService carrierAdviseConsistencyService;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -157,7 +155,6 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJobId pickingJobId, @NonNull final UserId callerId)
 	{
-		carrierAdviseConsistencyService.assertConsistentForJob(pickingJobService.getById(pickingJobId));
 		return pickingJobService.complete(pickingJobId, callerId);
 	}
 
@@ -183,7 +180,6 @@ public class PickingJobRestService
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
-		carrierAdviseConsistencyService.assertConsistentForJob(pickingJob);
 		return pickingJobService.complete(pickingJob);
 	}
 

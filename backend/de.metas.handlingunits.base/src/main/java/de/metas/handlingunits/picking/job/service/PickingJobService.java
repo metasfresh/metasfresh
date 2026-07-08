@@ -53,6 +53,7 @@ import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCo
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
@@ -113,6 +114,7 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingJobCarrierAdviseConsistencyService carrierAdviseConsistencyService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 	@NonNull private final PickingJobUnpickProductResolver unpickProductResolver;
 
@@ -797,6 +799,10 @@ public class PickingJobService implements PickingSlotListener
 
 		if (!closedHUIdsCollector.isEmpty())
 		{
+			// Enforce per-parcel carrier-advise consistency at target-close: a closed LU may ship right here (isShipClosedHUs),
+			// so complete-time is too late. Throwing here aborts the close (and thus the pick/complete).
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(closedHUIdsCollector.getAllTopLevelHUIds());
+
 			pickingJobChanged.getPickingSlotIdEffective(onlyLineId)
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
