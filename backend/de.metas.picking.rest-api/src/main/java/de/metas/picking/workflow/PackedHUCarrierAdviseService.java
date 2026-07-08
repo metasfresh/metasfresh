@@ -18,6 +18,8 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.picking.job.carrieradvise.CarrierAdviseConsistencyService;
+import de.metas.handlingunits.picking.job.carrieradvise.HUShipmentScheduleResolver;
 import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;

@@ -1,4 +1,4 @@
-package de.metas.picking.workflow;
+package de.metas.handlingunits.picking.job.carrieradvise;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

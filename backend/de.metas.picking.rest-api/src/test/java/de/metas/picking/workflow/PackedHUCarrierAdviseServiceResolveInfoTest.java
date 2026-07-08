@@ -2,6 +2,7 @@ package de.metas.picking.workflow;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.handlingunits.picking.job.carrieradvise.HUShipmentScheduleResolver;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;

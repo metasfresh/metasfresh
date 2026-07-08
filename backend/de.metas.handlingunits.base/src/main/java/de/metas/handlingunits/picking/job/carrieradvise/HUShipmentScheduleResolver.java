@@ -1,4 +1,4 @@
-package de.metas.picking.workflow;
+package de.metas.handlingunits.picking.job.carrieradvise;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -19,7 +19,7 @@ import java.util.List;
  * Resolves the shipment schedules (including carrier services) linked to a given top-level HU
  * via undelivered qty-picked records.
  *
- * <p>Both {@link PackedHUCarrierAdviseService} and {@link CarrierAdviseConsistencyService} delegate here
+ * <p>Both {@code PackedHUCarrierAdviseService} and {@link CarrierAdviseConsistencyService} delegate here
  * instead of duplicating the resolution logic.
  */
 @Service
