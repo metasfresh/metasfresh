@@ -130,8 +130,9 @@ public class PackedHUCarrierAdviseService
 			return resolveTargetInfoFromCarrierProduct(line.getCarrierProductId(), isCarrierAdviseReadOnly(line));
 		}
 
-		// A job-level advise targets an unknown CU unless we can pin it down: a pick target, a single line, or one shared product.
-		final boolean cuUnambiguous = pickingJob.getLuPickingTarget(null).isPresent()
+		// A job-level advise has no single thing to advise unless we can pin down the target scope: a pick
+		// target (LU/TU parcel), a single line, or one shared product across the lines.
+		final boolean hasUnambiguousAdviseTarget = pickingJob.getLuPickingTarget(null).isPresent()
 				|| pickingJob.getTuPickingTarget(null).isPresent()
 				|| pickingJob.getLines().size() == 1
 				|| pickingJob.getLines().stream().map(PickingJobLine::getProductId).distinct().count() == 1;
@@ -144,7 +145,7 @@ public class PackedHUCarrierAdviseService
 				.filter(this::isApiAdviseCarrierProduct)
 				.collect(ImmutableSet.toImmutableSet());
 
-		if (!cuUnambiguous || carrierProductIds.isEmpty())
+		if (!hasUnambiguousAdviseTarget || carrierProductIds.isEmpty())
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
