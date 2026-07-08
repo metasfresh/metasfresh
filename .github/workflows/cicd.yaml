@@ -64,6 +64,7 @@ jobs:
           fi
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -396,6 +397,8 @@ jobs:
     permissions:
       packages: write
     needs: init
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -530,6 +533,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1318,6 +1322,8 @@ jobs:
     permissions:
       packages: write
     needs: [ init, java ]
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1330,6 +1336,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1588,6 +1595,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1946,6 +1954,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -2062,6 +2071,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
