@@ -254,7 +254,14 @@ class DDOrderCandidateProcessCommandTest
 
 		final List<I_DD_Order> orders = queryOrders();
 		assertThat(orders).hasSize(1);
-		assertThat(queryLines(orders.get(0))).hasSize(1);
+
+		final List<I_DD_OrderLine> lines = queryLines(orders.get(0));
+		assertThat(lines).hasSize(1);
+		// AC4 byte-for-byte: with the knob off the candidate's own locators (1001/1002/1003) are ignored
+		// and the warehouse default locator (stubbed to repoId 540003 for every warehouse) is used — the
+		// exact prior behaviour of createLine before this change.
+		assertThat(lines.get(0).getM_Locator_ID()).isEqualTo(540003);
+		assertThat(lines.get(0).getM_LocatorTo_ID()).isEqualTo(540003);
 	}
 
 	/**
