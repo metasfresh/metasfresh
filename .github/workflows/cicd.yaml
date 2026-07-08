@@ -397,8 +397,6 @@ jobs:
     permissions:
       packages: write
     needs: init
-    permissions:
-      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
@@ -1322,8 +1320,6 @@ jobs:
     permissions:
       packages: write
     needs: [ init, java ]
-    permissions:
-      packages: write
     steps:
       - uses: actions/checkout@v6
       - uses: docker/login-action@v4
