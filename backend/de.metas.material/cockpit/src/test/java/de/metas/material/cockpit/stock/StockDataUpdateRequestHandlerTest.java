@@ -49,12 +49,8 @@ import static org.mockito.Mockito.verify;
  */
 
 /**
- * Covers the MD_Stock reset root-cause fix:
- * <ul>
- *   <li>the reset path is <b>idempotent</b> (set-to-truth) so overlapping concurrent runs can no
- *       longer compound corrections into a runaway escalation;</li>
- *   <li>the add path rejects a non-physical resulting {@code QtyOnHand} ({@link StockQtySanityGuard}).</li>
- * </ul>
+ * Covers the MD_Stock reset root-cause fix: the reset path is <b>idempotent</b> (set-to-truth) so
+ * overlapping concurrent runs can no longer compound corrections into a runaway escalation.
  */
 class StockDataUpdateRequestHandlerTest
 {
