@@ -109,12 +109,12 @@ public class JsonPickingJobConverterCommand
 		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null);
 
 		pickingJob.getLuPickingTarget(null)
-				.ifPresent(target -> builder.luPickingTarget(JsonLUPickingTarget.of(target, jobCarrierAdvise)));
+				.ifPresent(target -> builder.luPickingTarget(JsonLUPickingTarget.of(target)));
 
 		pickingJob.getTuPickingTarget(null)
-				.ifPresent(target -> builder.tuPickingTarget(JsonTUPickingTarget.of(target, jobCarrierAdvise)));
+				.ifPresent(target -> builder.tuPickingTarget(JsonTUPickingTarget.of(target)));
 
-		// Job-level fields for the no-target (CU-direct) case; the LU/TU targets above carry it otherwise.
+		// Job-level carrier-advise flags — the mobile UI reads these for the job view's advise button.
 		builder.carrierAdviseAvailable(jobCarrierAdvise.isAvailable())
 				.carrierAdviseReadOnly(jobCarrierAdvise.isReadOnly())
 				.carrierProductCaption(jobCarrierAdvise.getProductCaption());
@@ -150,13 +150,10 @@ public class JsonPickingJobConverterCommand
 	}
 
 	/**
-	 * Exposes the carrier-advise info on the line so the mobile UI can render the advise button,
-	 * regardless of the line's pick-to structure:
-	 * <ul>
-	 *     <li>existing-LU target — on {@code luPickingTarget}</li>
-	 *     <li>existing-TU target — on {@code tuPickingTarget}</li>
-	 *     <li>no LU/TU target (CU-direct pick) — at line level, keyed on the line's picked HUs</li>
-	 * </ul>
+	 * Exposes the carrier-advise flags on the line (the mobile UI reads them for the line view's advise button)
+	 * and sets the current LU/TU pick target, if any. The carrier-advise flags live only on the line/job, never
+	 * on the pick target: the UI shows one package at a time, so the current target's advise is always the
+	 * line's (line view) / job's (job view) value — a per-target copy carried no extra information.
 	 */
 	@NonNull
 	private JsonPickingJobLine.JsonPickingJobLineBuilder enrichLineCarrierAdvise(
@@ -166,15 +163,18 @@ public class JsonPickingJobConverterCommand
 		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
 
 		// The carrier product is the line's own job-scoped persisted value (or the job's shared value for
-		// header-level aggregation); exposed below on whichever pick-to shape the line has.
+		// header-level aggregation).
 		final CarrierAdviseTargetInfo lineInfo = packedHUCarrierAdviseService.resolveInfo(pickingJob, line);
+		lineBuilder.carrierAdviseAvailable(lineInfo.isAvailable())
+				.carrierAdviseReadOnly(lineInfo.isReadOnly())
+				.carrierProductCaption(lineInfo.getProductCaption());
 
 		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
 				.filter(LUPickingTarget::isExistingLU)
 				.orElse(null);
 		if (existingLuTarget != null)
 		{
-			return lineBuilder.luPickingTarget(JsonLUPickingTarget.of(existingLuTarget, lineInfo));
+			return lineBuilder.luPickingTarget(JsonLUPickingTarget.of(existingLuTarget));
 		}
 
 		final TUPickingTarget existingTuTarget = currentPickingTarget.getTuPickingTarget()
@@ -182,14 +182,10 @@ public class JsonPickingJobConverterCommand
 				.orElse(null);
 		if (existingTuTarget != null)
 		{
-			return lineBuilder.tuPickingTarget(JsonTUPickingTarget.of(existingTuTarget, lineInfo));
+			return lineBuilder.tuPickingTarget(JsonTUPickingTarget.of(existingTuTarget));
 		}
 
-		// CU-direct: no LU/TU target — expose at line level.
-		return lineBuilder
-				.carrierAdviseAvailable(lineInfo.isAvailable())
-				.carrierAdviseReadOnly(lineInfo.isReadOnly())
-				.carrierProductCaption(lineInfo.getProductCaption());
+		return lineBuilder;
 	}
 
 	/**

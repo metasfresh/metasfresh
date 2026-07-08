@@ -65,20 +65,13 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       .finally(() => setIsAdvising(false));
   };
 
-  // Carrier-advise source, in precedence: the LU/TU pick target → the line (line-level pick) →
-  // the job (header-level CU-direct: no target and no line in scope).
-  const carrierAdviseTarget = luPickingTarget ?? tuPickingTarget;
-  const isCarrierAdviseAvailable = carrierAdviseTarget
-    ? carrierAdviseTarget.carrierAdviseAvailable === true
-    : lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
-  const isCarrierAdviseReadOnly = carrierAdviseTarget
-    ? carrierAdviseTarget.carrierAdviseReadOnly === true
-    : lineCarrierAdviseAvailable === true
-    ? lineCarrierAdviseReadOnly === true
-    : jobCarrierAdviseReadOnly === true;
-  const carrierProductCaption = carrierAdviseTarget
-    ? carrierAdviseTarget.carrierProductCaption
-    : lineCarrierProductCaption ?? jobCarrierProductCaption;
+  // Carrier-advise source: the line (line view) falls back to the job (header view / CU-direct).
+  // Only one package is shown at a time, so the current LU/TU pick target's advise is always this same
+  // line/job value — the flags live on the line/job, not on the pick target.
+  const isCarrierAdviseAvailable = lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
+  const isCarrierAdviseReadOnly =
+    lineCarrierAdviseAvailable === true ? lineCarrierAdviseReadOnly === true : jobCarrierAdviseReadOnly === true;
+  const carrierProductCaption = lineCarrierProductCaption ?? jobCarrierProductCaption;
 
   return (
     <>
