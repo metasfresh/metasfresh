@@ -68,6 +68,9 @@ public class DefaultPickingJobLoaderSupportingServices implements PickingJobLoad
 	private final HashMap<PickingSlotId, PickingSlotIdAndCaption> pickingSlotIdAndCaptionsCache = new HashMap<>();
 	private final HashMap<ProductId, ProductInfo> productInfoCache = new HashMap<>();
 	private final HashMap<LocatorId, String> locatorNamesCache = new HashMap<>();
+	// Per-load lifetime: this class is built fresh per PickingJobLoaderAndSaver.forLoading(...) call (it is @Builder,
+	// caller-constructed, never a shared @Component), so these caches — qrCodesCache included — cannot serve stale data
+	// across separate load operations. Same lifetime as the sibling caches above.
 	private final HashMap<HuId, HUQRCode> qrCodesCache = new HashMap<>();
 
 	@Override

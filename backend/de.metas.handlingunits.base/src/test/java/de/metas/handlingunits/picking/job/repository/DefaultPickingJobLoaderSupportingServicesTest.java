@@ -95,4 +95,21 @@ class DefaultPickingJobLoaderSupportingServicesTest
 		// ... and the per-HU accessor must NOT fall back to a single lookup for already-warmed HUs
 		verify(huService, never()).getQRCodeByHuId(any());
 	}
+
+	@Test
+	void getQRCode_cacheMiss_fallsBackToSingleLookupOnce()
+	{
+		final HuId huNotWarmed = HuId.ofRepoId(999);
+		// the batch omits this HU (as it would for an HU with no / multiple assigned QR codes)
+		when(huService.getSingleQRCodeByHuIds(any())).thenReturn(ImmutableMap.of());
+		when(huService.getQRCodeByHuId(huNotWarmed)).thenReturn(qr1);
+
+		loaderServices.warmUpQRCodesCache(ImmutableSet.of(huNotWarmed));
+
+		// first access falls back to the single-HU lookup (preserving generate-if-missing semantics) ...
+		assertThat(loaderServices.getQRCodeByHUId(huNotWarmed)).isSameAs(qr1);
+		// ... and the fallback result is itself cached, so a second access does NOT re-query
+		assertThat(loaderServices.getQRCodeByHUId(huNotWarmed)).isSameAs(qr1);
+		verify(huService, times(1)).getQRCodeByHuId(huNotWarmed);
+	}
 }
