@@ -55,6 +55,11 @@ import static org.mockito.Mockito.when;
  * Also covers the optional {@code aggregateByProductId} header-aggregation dimension: with the flag off,
  * candidates of different products share one DD_Order (one line each); with it on, each product gets its
  * own DD_Order.
+ * <p>
+ * Also covers locator handling: the candidate's {@code sourceLocatorId}/{@code targetLocatorId} must be
+ * carried onto the generated line, and the optional {@code aggregateByLocatorId} dimension must give each
+ * distinct ground (locator) its own DD_Order when on, while candidates keep collapsing into one DD_Order
+ * when off.
  */
 class DDOrderCandidateProcessCommandTest
 {
@@ -183,10 +188,9 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * RED (me03 30782 CASE 14): today {@code createLine} ignores the candidate's source/target locators and always
-	 * falls back to {@code warehouseBL.getOrCreateDefaultLocatorId(...)}, which this test's harness stubs to
-	 * locator repoId 540003 for every warehouse. A candidate that carries its own locators (distinct from 540003)
-	 * must have those locators carried onto the generated line instead.
+	 * A candidate that carries its own {@code sourceLocatorId}/{@code targetLocatorId} must have those locators
+	 * carried onto the generated DD_Order line, rather than falling back to the warehouse default locator
+	 * (which the harness stubs to locator repoId 540003 for every warehouse).
 	 */
 	@Test
 	void locatorsCarriedOntoLine()
@@ -224,10 +228,9 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * RED (me03 30782 CASE 14): today neither the header nor the line aggregation key considers the candidate's
-	 * locators, so two candidates that differ only by {@code targetLocatorId} (i.e. different grounds) still
-	 * collapse into a single DD_Order with a single aggregated line. Once locators are part of the aggregation
-	 * key, each ground must get its own order+line.
+	 * With {@code aggregateByLocatorId=true}, two candidates that differ only by {@code targetLocatorId}
+	 * (i.e. different grounds) must each get their own DD_Order with a single line, rather than collapsing
+	 * into one DD_Order with a single aggregated line.
 	 */
 	@Test
 	void oneOrderOneLinePerMove()
@@ -263,9 +266,9 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * Control for {@link #oneOrderOneLinePerMove()}: with {@code aggregateByLocatorId=false} (today's behaviour,
-	 * and still the behaviour once the flag exists but is off), the two per-ground candidates collapse into ONE
-	 * DD_Order with a single aggregated line. This must pass both today and after Task 2's fix.
+	 * Control for {@link #oneOrderOneLinePerMove()}: with {@code aggregateByLocatorId=false} the two per-ground
+	 * candidates collapse into ONE DD_Order with a single aggregated line (locators are not part of the
+	 * aggregation key when the flag is off).
 	 */
 	@Test
 	void flagOff_unchanged()
