@@ -45,22 +45,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * Regression test for the NPE that occurred while processing a {@link DDOrderCandidate} whose
- * {@code productPlanningId} is {@code null} (no product planning).
- * <p>
- * The header-record creation used to dereference {@code productPlanningDAO.getById(null)} unconditionally;
- * with no product planning this threw a {@link NullPointerException}. The fix guards the lookup and clears
- * {@code PP_Product_Planning_ID} / {@code AD_User_ID} / {@code SalesRep_ID} with the {@code -1} sentinel.
- * <p>
- * Also covers the optional {@code aggregateByProductId} header-aggregation dimension: with the flag off,
- * candidates of different products share one DD_Order (one line each); with it on, each product gets its
- * own DD_Order.
- * <p>
- * Also covers locator handling: the candidate's {@code sourceLocatorId}/{@code targetLocatorId} are
- * <b>unconditionally</b> part of the aggregation key and are carried onto the generated line -- distinct
- * grounds (locators) always get their own DD_Order. When a candidate has no locator, the warehouse's
- * get-create default locator is used instead (per side), which is what keeps existing (null-locator)
- * customers byte-for-byte unchanged.
+ * Unit tests for {@link DDOrderCandidateProcessCommand} — see each test method for its case.
  */
 class DDOrderCandidateProcessCommandTest
 {
