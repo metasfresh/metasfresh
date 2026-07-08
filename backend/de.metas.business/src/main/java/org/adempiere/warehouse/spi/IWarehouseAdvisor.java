@@ -35,5 +35,5 @@ public interface IWarehouseAdvisor extends ISingletonService
 	 * and has a warehouse assigned that is flagged as picking warehouse; otherwise {@code null}.
 	 */
 	@Nullable
-	WarehouseId evaluateCustomerPickingWarehouse(@NonNull BPartnerId bpartnerId);
+	public WarehouseId evaluateCustomerPickingWarehouse(@NonNull BPartnerId bpartnerId);
 }

@@ -1,7 +1,6 @@
 package org.adempiere.warehouse.spi.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.business.BusinessTestHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;

@@ -36,8 +36,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Warehouse;
 
-import javax.annotation.Nullable;
-
 /**
  * Step definitions for C_OLCandProcessor records.
  * Covers updating processor-level defaults (e.g. the default warehouse) used by the OLCand-to-Order pipeline.
