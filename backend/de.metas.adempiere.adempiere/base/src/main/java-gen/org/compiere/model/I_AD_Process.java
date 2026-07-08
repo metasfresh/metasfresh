@@ -151,31 +151,6 @@ public interface I_AD_Process
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Relation Type.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setAD_RelationType_ID (int AD_RelationType_ID);
-
-	/**
-	 * Get Relation Type.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getAD_RelationType_ID();
-
-	@Nullable org.compiere.model.I_AD_RelationType getAD_RelationType();
-
-	void setAD_RelationType(@Nullable org.compiere.model.I_AD_RelationType AD_RelationType);
-
-	ModelColumn<I_AD_Process, org.compiere.model.I_AD_RelationType> COLUMN_AD_RelationType_ID = new ModelColumn<>(I_AD_Process.class, "AD_RelationType_ID", org.compiere.model.I_AD_RelationType.class);
-	String COLUMNNAME_AD_RelationType_ID = "AD_RelationType_ID";
-
-	/**
 	 * Set Report View.
 	 * View used to generate this report
 	 *
@@ -338,29 +313,6 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldDelimiter = new ModelColumn<>(I_AD_Process.class, "CSVFieldDelimiter", null);
 	String COLUMNNAME_CSVFieldDelimiter = "CSVFieldDelimiter";
-
-	/**
-	 * Set CSV Text Qualifier.
-	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCSVFieldQuote (@Nullable java.lang.String CSVFieldQuote);
-
-	/**
-	 * Get CSV Text Qualifier.
-	 * Character used to enclose field values in CSV export (e.g. double quote). Leave empty to export values without text qualification.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCSVFieldQuote();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_CSVFieldQuote = new ModelColumn<>(I_AD_Process.class, "CSVFieldQuote", null);
-	String COLUMNNAME_CSVFieldQuote = "CSVFieldQuote";
 
 	/**
 	 * Set Description.
@@ -632,31 +584,8 @@ date:yyyyMMdd_HHmmss}
 	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
 
 	/**
-	 * Set CSV-Kopfzeile einschließen.
-	 * Wenn aktiviert, enthält die erste Zeile der CSV-Datei die Spaltenüberschriften.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsIncludeCSVHeaderRow (boolean IsIncludeCSVHeaderRow);
-
-	/**
-	 * Get CSV-Kopfzeile einschließen.
-	 * Wenn aktiviert, enthält die erste Zeile der CSV-Datei die Spaltenüberschriften.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isIncludeCSVHeaderRow();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsIncludeCSVHeaderRow = new ModelColumn<>(I_AD_Process.class, "IsIncludeCSVHeaderRow", null);
-	String COLUMNNAME_IsIncludeCSVHeaderRow = "IsIncludeCSVHeaderRow";
-
-	/**
 	 * Set Log Warning.
-	 * If enabled, PostgreSQL messages (RAISE NOTICE / RAISE WARNING) are logged to AD_PInstance_Log.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -666,7 +595,7 @@ date:yyyyMMdd_HHmmss}
 
 	/**
 	 * Get Log Warning.
-	 * If enabled, PostgreSQL messages (RAISE NOTICE / RAISE WARNING) are logged to AD_PInstance_Log.
+	 * Set to true if the warnings raised by the sql function should be logged in the AD_PInstance_Log. Only the messages returned with "Raise Warning" (max. 5000 chars per warning) will be logged, while the ones returned with "Raise Notice" will be ignored.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -724,30 +653,7 @@ date:yyyyMMdd_HHmmss}
 	String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
 
 	/**
-	 * Set PDF/A-3 output.
-	 * If set, the report is emitted as PDF/A-3 (for ZUGFeRD e-invoicing).
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsPdfA3Output (boolean IsPdfA3Output);
-
-	/**
-	 * Get PDF/A-3 output.
-	 * If set, the report is emitted as PDF/A-3 (for ZUGFeRD e-invoicing).
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isPdfA3Output();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_IsPdfA3Output = new ModelColumn<>(I_AD_Process.class, "IsPdfA3Output", null);
-	String COLUMNNAME_IsPdfA3Output = "IsPdfA3Output";
-
-	/**
-	 * Set Gleichzeitige Ausführung verhindern.
+	 * Set Prevent Concurrent Execution.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -756,7 +662,7 @@ date:yyyyMMdd_HHmmss}
 	void setIsPreventConcurrentExecution (boolean IsPreventConcurrentExecution);
 
 	/**
-	 * Get Gleichzeitige Ausführung verhindern.
+	 * Get Prevent Concurrent Execution.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -990,27 +896,6 @@ date:yyyyMMdd_HHmmss}
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set Open Target.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setOpenTarget (@Nullable java.lang.String OpenTarget);
-
-	/**
-	 * Get Open Target.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getOpenTarget();
-
-	ModelColumn<I_AD_Process, Object> COLUMN_OpenTarget = new ModelColumn<>(I_AD_Process.class, "OpenTarget", null);
-	String COLUMNNAME_OpenTarget = "OpenTarget";
-
-	/**
 	 * Set Response format.
 	 *
 	 * <br>Type: List
@@ -1123,7 +1008,6 @@ date:yyyyMMdd_HHmmss}
 
 	/**
 	 * Set SQLStatement.
-	 * SQL statement to be executed by this process
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false
@@ -1133,7 +1017,6 @@ date:yyyyMMdd_HHmmss}
 
 	/**
 	 * Get SQLStatement.
-	 * SQL statement to be executed by this process
 	 *
 	 * <br>Type: TextLong
 	 * <br>Mandatory: false

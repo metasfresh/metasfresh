@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1522866757L;
+	private static final long serialVersionUID = 577485626L;
 
     /** Standard Constructor */
     public X_AD_Process (final Properties ctx, final int AD_Process_ID, @Nullable final String trxName)
@@ -133,33 +133,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public org.compiere.model.I_AD_RelationType getAD_RelationType()
-	{
-		return get_ValueAsPO(COLUMNNAME_AD_RelationType_ID, org.compiere.model.I_AD_RelationType.class);
-	}
-
-	@Override
-	public void setAD_RelationType(final org.compiere.model.I_AD_RelationType AD_RelationType)
-	{
-		set_ValueFromPO(COLUMNNAME_AD_RelationType_ID, org.compiere.model.I_AD_RelationType.class, AD_RelationType);
-	}
-
-	@Override
-	public void setAD_RelationType_ID (final int AD_RelationType_ID)
-	{
-		if (AD_RelationType_ID < 1) 
-			set_Value (COLUMNNAME_AD_RelationType_ID, null);
-		else 
-			set_Value (COLUMNNAME_AD_RelationType_ID, AD_RelationType_ID);
-	}
-
-	@Override
-	public int getAD_RelationType_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_AD_RelationType_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_AD_ReportView getAD_ReportView()
 	{
 		return get_ValueAsPO(COLUMNNAME_AD_ReportView_ID, org.compiere.model.I_AD_ReportView.class);
@@ -247,18 +220,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public java.lang.String getCSVFieldDelimiter() 
 	{
 		return get_ValueAsString(COLUMNNAME_CSVFieldDelimiter);
-	}
-
-	@Override
-	public void setCSVFieldQuote (final @Nullable java.lang.String CSVFieldQuote)
-	{
-		set_Value (COLUMNNAME_CSVFieldQuote, CSVFieldQuote);
-	}
-
-	@Override
-	public java.lang.String getCSVFieldQuote() 
-	{
-		return get_ValueAsString(COLUMNNAME_CSVFieldQuote);
 	}
 
 	@Override
@@ -363,18 +324,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public void setIsIncludeCSVHeaderRow (final boolean IsIncludeCSVHeaderRow)
-	{
-		set_Value (COLUMNNAME_IsIncludeCSVHeaderRow, IsIncludeCSVHeaderRow);
-	}
-
-	@Override
-	public boolean isIncludeCSVHeaderRow() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsIncludeCSVHeaderRow);
-	}
-
-	@Override
 	public void setIsLogWarning (final boolean IsLogWarning)
 	{
 		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
@@ -408,18 +357,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public boolean isOneInstanceOnly() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsOneInstanceOnly);
-	}
-
-	@Override
-	public void setIsPdfA3Output (final boolean IsPdfA3Output)
-	{
-		set_Value (COLUMNNAME_IsPdfA3Output, IsPdfA3Output);
-	}
-
-	@Override
-	public boolean isPdfA3Output() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsPdfA3Output);
 	}
 
 	@Override
@@ -555,27 +492,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	/** 
-	 * OpenTarget AD_Reference_ID=542096
-	 * Reference name: ProcessOpenTarget
-	 */
-	public static final int OPENTARGET_AD_Reference_ID=542096;
-	/** ModalOverlay = O */
-	public static final String OPENTARGET_ModalOverlay = "O";
-	/** NewBrowserTab = N */
-	public static final String OPENTARGET_NewBrowserTab = "N";
-	@Override
-	public void setOpenTarget (final @Nullable java.lang.String OpenTarget)
-	{
-		set_Value (COLUMNNAME_OpenTarget, OpenTarget);
-	}
-
-	@Override
-	public java.lang.String getOpenTarget() 
-	{
-		return get_ValueAsString(COLUMNNAME_OpenTarget);
-	}
-
-	/** 
 	 * PostgrestResponseFormat AD_Reference_ID=541210
 	 * Reference name: PostgrestResponseFormat
 	 */
@@ -705,8 +621,6 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	public static final String TYPE_JasperReportsJSON = "JasperReportsJSON";
 	/** PostgREST = PostgREST */
 	public static final String TYPE_PostgREST = "PostgREST";
-	/** RelationTypeInOverlay = RelationTypeInOverlay */
-	public static final String TYPE_RelationTypeInOverlay = "RelationTypeInOverlay";
 	@Override
 	public void setType (final java.lang.String Type)
 	{
