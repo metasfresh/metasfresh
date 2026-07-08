@@ -5,6 +5,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonInOutLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
+import de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -260,20 +261,20 @@ class AssertSalesOrderExpectationsCommand
 	 */
 	private void assertCarrierAdvise(
 			@NonNull final OrderId orderId,
-			@NonNull final Map<String, de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation> expectationsByProduct)
+			@NonNull final Map<Identifier, JsonCarrierAdviseExpectation> expectationsByProduct)
 			throws InterruptedException
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 		while (true)
 		{
-			final Map<de.metas.product.ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
+			final Map<ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
 					.stream()
 					.collect(Collectors.toMap(services::getProductIdOfShipmentSchedule, s -> s, (a, b) -> a));
 
 			boolean allMatched = true;
-			for (final Map.Entry<String, de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
+			for (final Map.Entry<Identifier, JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
 			{
-				final de.metas.product.ProductId productId = context.getId(Identifier.ofString(entry.getKey()), de.metas.product.ProductId.class);
+				final ProductId productId = resolveProductId(entry.getKey());
 				final I_M_ShipmentSchedule schedule = schedulesByProductId.get(productId);
 				if (schedule == null || !isCarrierAdviseSatisfied(schedule, entry.getValue()))
 				{
@@ -292,17 +293,17 @@ class AssertSalesOrderExpectationsCommand
 			Thread.sleep(1000);
 		}
 
-		final Map<de.metas.product.ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
+		final Map<ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
 				.stream()
 				.collect(Collectors.toMap(services::getProductIdOfShipmentSchedule, s -> s, (a, b) -> a));
 
 		softly(() -> {
 			softlyPutContext("orderId", orderId);
-			for (final Map.Entry<String, de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
+			for (final Map.Entry<Identifier, JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
 			{
-				final String productIdentifier = entry.getKey();
-				final de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation exp = entry.getValue();
-				final de.metas.product.ProductId productId = context.getId(Identifier.ofString(productIdentifier), de.metas.product.ProductId.class);
+				final Identifier productIdentifier = entry.getKey();
+				final JsonCarrierAdviseExpectation exp = entry.getValue();
+				final ProductId productId = resolveProductId(productIdentifier);
 				final I_M_ShipmentSchedule schedule = schedulesByProductId.get(productId);
 
 				assertThat(schedule)
@@ -340,7 +341,7 @@ class AssertSalesOrderExpectationsCommand
 
 	private boolean isCarrierAdviseSatisfied(
 			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation exp)
+			@NonNull final JsonCarrierAdviseExpectation exp)
 	{
 		InterfaceWrapperHelper.refresh(schedule);
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(schedule.getCarrier_Product_ID());
@@ -348,7 +349,8 @@ class AssertSalesOrderExpectationsCommand
 		{
 			return false;
 		}
-		if (exp.getCarrierProductSet() != null && exp.getCarrierProductSet() != (carrierProductId != null))
+		final boolean carrierProductIsSet = carrierProductId != null;
+		if (exp.getCarrierProductSet() != null && !exp.getCarrierProductSet().equals(carrierProductIsSet))
 		{
 			return false;
 		}

@@ -1,5 +1,6 @@
 package de.metas.frontend_testing.expectations.request;
 
+import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -52,10 +53,10 @@ public class JsonSalesOrderExpectation
 	@Nullable List<JsonInOutExpectation> shipments;
 
 	/**
-	 * Carrier-advise expectation per shipment schedule of this order. Keyed by the product identifier
+	 * Carrier-advise expectation per shipment schedule of this order. Keyed by the product {@link Identifier}
 	 * of the schedule's order line (one schedule per order line). Null means no carrier-advise assertion.
 	 */
-	@Nullable Map<String, JsonCarrierAdviseExpectation> carrierAdvise;
+	@Nullable Map<Identifier, JsonCarrierAdviseExpectation> carrierAdvise;
 
 	/**
 	 * Assert the total shipped quantity for this order, summed across all PROCESSED
