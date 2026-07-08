@@ -55,6 +55,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
@@ -85,6 +86,8 @@ class DDOrderCandidateProcessCommand
 	// State
 	private final LinkedHashMap<HeaderAggregationKey, HeaderAggregate> aggregates = new LinkedHashMap<>();
 	private final AggregationConfig aggregationConfig;
+	/** memoizes the warehouse default locator so the null-locator fallback resolves once per warehouse, not once per candidate */
+	private final HashMap<WarehouseId, LocatorId> defaultLocatorByWarehouse = new HashMap<>();
 
 	@Builder
 	private DDOrderCandidateProcessCommand(
@@ -132,10 +135,25 @@ class DDOrderCandidateProcessCommand
 
 	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate)
 	{
-		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig);
+		// Resolve the source/target locators once here (candidate's own, else the warehouse default) so the
+		// aggregation key always carries concrete, non-null locators and createLine just reads them.
+		final LocatorId sourceLocatorId = resolveLocatorId(ddOrderCandidate.getSourceLocatorId(), ddOrderCandidate.getSourceWarehouseId());
+		final LocatorId targetLocatorId = resolveLocatorId(ddOrderCandidate.getTargetLocatorId(), ddOrderCandidate.getTargetWarehouseId());
+
+		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig, sourceLocatorId, targetLocatorId);
 
 		aggregates.computeIfAbsent(headerAggregationKey, aggKey -> new HeaderAggregate(aggKey, aggregationConfig))
-				.add(ddOrderCandidate);
+				.add(ddOrderCandidate, sourceLocatorId, targetLocatorId);
+	}
+
+	@NonNull
+	private LocatorId resolveLocatorId(@Nullable final LocatorId candidateLocatorId, @NonNull final WarehouseId warehouseId)
+	{
+		if (candidateLocatorId != null)
+		{
+			return candidateLocatorId;
+		}
+		return defaultLocatorByWarehouse.computeIfAbsent(warehouseId, warehouseBL::getOrCreateDefaultLocatorId);
 	}
 
 	private void createDDOrder(@NonNull final HeaderAggregate headerAggregate,
@@ -268,15 +286,9 @@ class DDOrderCandidateProcessCommand
 		lineRecord.setDD_NetworkDistributionLine_ID(distributionNetworkAndLineId != null ? distributionNetworkAndLineId.getLineId().getRepoId() : -1);
 
 		//
-		// Locator From/To
-		final LocatorId locatorFromId = key.getSourceLocatorId() != null
-				? key.getSourceLocatorId()
-				: warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
-		final LocatorId locatorToId = key.getTargetLocatorId() != null
-				? key.getTargetLocatorId()
-				: warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_To_ID()));
-		lineRecord.setM_Locator_ID(locatorFromId.getRepoId());
-		lineRecord.setM_LocatorTo_ID(locatorToId.getRepoId());
+		// Locator From/To — resolved (candidate's own, else warehouse default) already in the key
+		lineRecord.setM_Locator_ID(key.getSourceLocatorId().getRepoId());
+		lineRecord.setM_LocatorTo_ID(key.getTargetLocatorId().getRepoId());
 
 		//
 		// Product, UOM, Qty
@@ -364,10 +376,14 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable ProductId productId;
 
-		@Nullable LocatorId sourceLocatorId;
-		@Nullable LocatorId targetLocatorId;
+		@NonNull LocatorId sourceLocatorId;
+		@NonNull LocatorId targetLocatorId;
 
-		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
+		public static HeaderAggregationKey of(
+				@NonNull final DDOrderCandidate candidate,
+				@NonNull final AggregationConfig aggregationConfig,
+				@NonNull final LocatorId sourceLocatorId,
+				@NonNull final LocatorId targetLocatorId)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
 					.orgId(candidate.getOrgId())
@@ -380,7 +396,9 @@ class DDOrderCandidateProcessCommand
 					.shipperId(candidate.getShipperId())
 					.isSimulated(candidate.isSimulated())
 					.productPlanningId(candidate.getProductPlanningId())
-					.traceId(candidate.getTraceId());
+					.traceId(candidate.getTraceId())
+					.sourceLocatorId(sourceLocatorId)
+					.targetLocatorId(targetLocatorId);
 			if (aggregationConfig.isAggregateBySalesOrderId())
 			{
 				keyBuilder.salesOrderId(candidate.getSalesOrderId());
@@ -393,8 +411,6 @@ class DDOrderCandidateProcessCommand
 			{
 				keyBuilder.productId(candidate.getProductId());
 			}
-			keyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
-			keyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			return keyBuilder.build();
 		}
 	}
@@ -412,9 +428,9 @@ class DDOrderCandidateProcessCommand
 		@NonNull private final LinkedHashMap<LineAggregationKey, LineAggregate> lineAggregates = new LinkedHashMap<>();
 		@NonNull private final AggregationConfig aggregationConfig;
 
-		public void add(@NonNull final DDOrderCandidate candidate)
+		public void add(@NonNull final DDOrderCandidate candidate, @NonNull final LocatorId sourceLocatorId, @NonNull final LocatorId targetLocatorId)
 		{
-			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, aggregationConfig), LineAggregate::new)
+			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, aggregationConfig, sourceLocatorId, targetLocatorId), LineAggregate::new)
 					.add(candidate);
 		}
 
@@ -457,10 +473,14 @@ class DDOrderCandidateProcessCommand
 		boolean isAllowPush;
 		boolean isKeepTargetPlant;
 
-		@Nullable LocatorId sourceLocatorId;
-		@Nullable LocatorId targetLocatorId;
+		@NonNull LocatorId sourceLocatorId;
+		@NonNull LocatorId targetLocatorId;
 
-		public static LineAggregationKey of(final DDOrderCandidate candidate, final @NonNull AggregationConfig aggregationConfig)
+		public static LineAggregationKey of(
+				final DDOrderCandidate candidate,
+				final @NonNull AggregationConfig aggregationConfig,
+				final @NonNull LocatorId sourceLocatorId,
+				final @NonNull LocatorId targetLocatorId)
 		{
 			final LineAggregationKeyBuilder lineKeyBuilder = builder()
 					.productId(candidate.getProductId())
@@ -469,13 +489,13 @@ class DDOrderCandidateProcessCommand
 					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.isAllowPush(candidate.isAllowPush())
-					.isKeepTargetPlant(candidate.isKeepTargetPlant());
+					.isKeepTargetPlant(candidate.isKeepTargetPlant())
+					.sourceLocatorId(sourceLocatorId)
+					.targetLocatorId(targetLocatorId);
 			if (aggregationConfig.isAggregateBySalesOrderLineId())
 			{
 				lineKeyBuilder.salesOrderLineId(candidate.getSalesOrderLineId());
 			}
-			lineKeyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
-			lineKeyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			return lineKeyBuilder
 					.build();
 		}
