@@ -10,6 +10,7 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,9 +46,14 @@ public class PickingJobCarrierAdviseConsistencyService
 	 */
 	public void assertConsistentForClosedHUs(@NonNull final Set<HuId> topLevelHuIds)
 	{
-		for (final HuId topLevelHuId : topLevelHuIds)
+		if (topLevelHuIds.isEmpty())
 		{
-			final I_M_HU topLevelHU = huService.getById(topLevelHuId);
+			return;
+		}
+
+		final List<I_M_HU> topLevelHUs = huService.getByIds(topLevelHuIds);
+		for (final I_M_HU topLevelHU : topLevelHUs)
+		{
 			carrierAdviseConsistencyService.assertConsistentForClosedHU(topLevelHU);
 		}
 	}
