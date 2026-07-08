@@ -69,6 +69,7 @@ import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -113,6 +114,7 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.mockito.Mockito;
@@ -123,6 +125,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -353,7 +356,7 @@ public class PickingJobTestHelper
 			@Nullable final UserId lockedBy,
 			@Nullable final CarrierProductId carrierProductId,
 			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@Nullable final java.util.Set<de.metas.inoutcandidate.CarrierServiceId> carrierServices,
+			@Nullable final Set<CarrierServiceId> carrierServices,
 			@Nullable final String carrierAdvisingStatus,
 			final boolean assignToWorkplace)
 	{
@@ -389,11 +392,11 @@ public class PickingJobTestHelper
 		// seed the schedule carrier-services junction so the create command can copy it onto the picking-job line
 		if (carrierServices != null)
 		{
-			for (final de.metas.inoutcandidate.CarrierServiceId carrierServiceId : carrierServices)
+			for (final CarrierServiceId carrierServiceId : carrierServices)
 			{
 				// the schedule repo collects ids by following the FK to Carrier_Service, so the master record must exist
-				final org.compiere.model.I_Carrier_Service carrierService =
-						InterfaceWrapperHelper.newInstanceOutOfTrx(org.compiere.model.I_Carrier_Service.class);
+				final I_Carrier_Service carrierService =
+						InterfaceWrapperHelper.newInstanceOutOfTrx(I_Carrier_Service.class);
 				carrierService.setCarrier_Service_ID(carrierServiceId.getRepoId());
 				save(carrierService);
 
