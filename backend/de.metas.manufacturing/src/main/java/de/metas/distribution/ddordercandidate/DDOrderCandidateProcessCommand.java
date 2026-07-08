@@ -331,7 +331,6 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
 		boolean aggregateByProductId;
-		boolean aggregateByLocatorId;
 	}
 	//
 	//
@@ -394,11 +393,8 @@ class DDOrderCandidateProcessCommand
 			{
 				keyBuilder.productId(candidate.getProductId());
 			}
-			if (aggregationConfig.isAggregateByLocatorId())
-			{
-				keyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
-				keyBuilder.targetLocatorId(candidate.getTargetLocatorId());
-			}
+			keyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
+			keyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			return keyBuilder.build();
 		}
 	}
@@ -478,11 +474,8 @@ class DDOrderCandidateProcessCommand
 			{
 				lineKeyBuilder.salesOrderLineId(candidate.getSalesOrderLineId());
 			}
-			if (aggregationConfig.isAggregateByLocatorId())
-			{
-				lineKeyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
-				lineKeyBuilder.targetLocatorId(candidate.getTargetLocatorId());
-			}
+			lineKeyBuilder.sourceLocatorId(candidate.getSourceLocatorId());
+			lineKeyBuilder.targetLocatorId(candidate.getTargetLocatorId());
 			return lineKeyBuilder
 					.build();
 		}

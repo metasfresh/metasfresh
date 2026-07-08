@@ -56,10 +56,11 @@ import static org.mockito.Mockito.when;
  * candidates of different products share one DD_Order (one line each); with it on, each product gets its
  * own DD_Order.
  * <p>
- * Also covers locator handling: the candidate's {@code sourceLocatorId}/{@code targetLocatorId} must be
- * carried onto the generated line, and the optional {@code aggregateByLocatorId} dimension must give each
- * distinct ground (locator) its own DD_Order when on, while candidates keep collapsing into one DD_Order
- * when off.
+ * Also covers locator handling: the candidate's {@code sourceLocatorId}/{@code targetLocatorId} are
+ * <b>unconditionally</b> part of the aggregation key and are carried onto the generated line -- distinct
+ * grounds (locators) always get their own DD_Order. When a candidate has no locator, the warehouse's
+ * get-create default locator is used instead (per side), which is what keeps existing (null-locator)
+ * customers byte-for-byte unchanged.
  */
 class DDOrderCandidateProcessCommandTest
 {
@@ -209,7 +210,6 @@ class DDOrderCandidateProcessCommandTest
 						.aggregateBySalesOrderId(true)
 						.aggregateByPPOrderRef(true)
 						.aggregateBySalesOrderLineId(true)
-						.aggregateByLocatorId(true)
 						.build())
 				.request(DDOrderCandidateProcessRequest.builder()
 						.userId(UserId.METASFRESH)
@@ -228,14 +228,14 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * With {@code aggregateByLocatorId=true}, two candidates that differ only by {@code targetLocatorId}
+	 * Locator aggregation is unconditional: two candidates that differ only by {@code targetLocatorId}
 	 * (i.e. different grounds) must each get their own DD_Order with a single line, rather than collapsing
 	 * into one DD_Order with a single aggregated line.
 	 */
 	@Test
 	void oneOrderOneLinePerMove()
 	{
-		processTwoGroundCandidates(true);
+		processTwoGroundCandidates();
 
 		final List<I_DD_Order> orders = queryOrders();
 		assertThat(orders).hasSize(2);
@@ -243,36 +243,35 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * Control for {@link #oneOrderOneLinePerMove()}: with {@code aggregateByLocatorId=false} the two per-ground
-	 * candidates collapse into ONE DD_Order with a single aggregated line (locators are not part of the
-	 * aggregation key when the flag is off).
+	 * Byte-for-byte control for existing (null-locator) customers: two candidates that have no
+	 * source/target locator at all must still collapse into ONE DD_Order with a single aggregated line
+	 * (both locators are {@code null} in the aggregation key, so they compare equal), and the generated
+	 * line falls back -- per side -- to the warehouse's get-create default locator (stubbed here to repoId
+	 * 540003 for every warehouse).
 	 */
 	@Test
-	void flagOff_unchanged()
+	void nullLocators_defaultAndAggregated()
 	{
-		processTwoGroundCandidates(false);
+		processTwoNullLocatorCandidates();
 
 		final List<I_DD_Order> orders = queryOrders();
 		assertThat(orders).hasSize(1);
 
 		final List<I_DD_OrderLine> lines = queryLines(orders.get(0));
 		assertThat(lines).hasSize(1);
-		// AC4 byte-for-byte: with the knob off the candidate's own locators (1001/1002/1003) are ignored
-		// and the warehouse default locator (stubbed to repoId 540003 for every warehouse) is used — the
-		// exact prior behaviour of createLine before this change.
 		assertThat(lines.get(0).getM_Locator_ID()).isEqualTo(540003);
 		assertThat(lines.get(0).getM_LocatorTo_ID()).isEqualTo(540003);
 	}
 
 	/**
 	 * Saves two candidates that differ only by their {@code targetLocatorId} (two grounds under the same target
-	 * warehouse) and runs the command with the given {@code aggregateByLocatorId} setting.
+	 * warehouse) and runs the command.
 	 * <p>
 	 * Both are derived from a single {@code base} candidate so they share the same UOM instance (each
 	 * {@code newFullyFilled()} call creates a fresh UOM with a distinct id, which would otherwise split the
 	 * line aggregation by UOM and defeat the "differ only by locator" intent).
 	 */
-	private void processTwoGroundCandidates(final boolean aggregateByLocatorId)
+	private void processTwoGroundCandidates()
 	{
 		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
 		final DDOrderCandidate move1 = base.toBuilder()
@@ -291,7 +290,32 @@ class DDOrderCandidateProcessCommandTest
 						.aggregateBySalesOrderId(true)
 						.aggregateByPPOrderRef(true)
 						.aggregateBySalesOrderLineId(true)
-						.aggregateByLocatorId(aggregateByLocatorId)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(move1, move2))
+						.build())
+				.build()
+				.execute();
+	}
+
+	/**
+	 * Saves two candidates with no source/target locator at all (both {@code null}), sharing the same UOM
+	 * instance (see {@link #processTwoGroundCandidates()}), and runs the command.
+	 */
+	private void processTwoNullLocatorCandidates()
+	{
+		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
+		final DDOrderCandidate move1 = base.toBuilder().build();
+		final DDOrderCandidate move2 = base.toBuilder().build();
+		ddOrderCandidateRepository.save(move1);
+		ddOrderCandidateRepository.save(move2);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
 						.build())
 				.request(DDOrderCandidateProcessRequest.builder()
 						.userId(UserId.METASFRESH)
