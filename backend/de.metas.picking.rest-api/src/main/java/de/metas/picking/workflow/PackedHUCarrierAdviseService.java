@@ -160,7 +160,7 @@ public class PackedHUCarrierAdviseService
 
 			final CarrierProductId carrierProductId = carrierProductIds.iterator().next();
 			final boolean readOnly = pickingJob.getLines().stream()
-					.filter(l -> carrierProductId.equals(l.getCarrierProductId()))
+					.filter(jobLine -> carrierProductId.equals(jobLine.getCarrierProductId()))
 					.allMatch(this::isCarrierAdviseReadOnly);
 			return resolveTargetInfoFromCarrierProduct(carrierProductId, readOnly);
 		}
