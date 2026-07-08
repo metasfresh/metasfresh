@@ -343,6 +343,8 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
 		boolean aggregateByProductId;
+		boolean aggregateByLocatorFrom;
+		boolean aggregateByLocatorTo;
 	}
 	//
 	//
@@ -376,8 +378,12 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable ProductId productId;
 
-		@NonNull LocatorId sourceLocatorId;
-		@NonNull LocatorId targetLocatorId;
+		// Locators are part of the header key only when the corresponding sysconfig is enabled
+		// (DDOrderAggregation.header.byLocatorFrom / .byLocatorTo). When disabled they stay null here,
+		// so candidates that differ only by locator share one DD_Order header. The DD_OrderLine still
+		// carries the resolved locator unconditionally — that comes from LineAggregationKey, not this key.
+		@Nullable LocatorId sourceLocatorId;
+		@Nullable LocatorId targetLocatorId;
 
 		public static HeaderAggregationKey of(
 				@NonNull final DDOrderCandidate candidate,
@@ -396,9 +402,15 @@ class DDOrderCandidateProcessCommand
 					.shipperId(candidate.getShipperId())
 					.isSimulated(candidate.isSimulated())
 					.productPlanningId(candidate.getProductPlanningId())
-					.traceId(candidate.getTraceId())
-					.sourceLocatorId(sourceLocatorId)
-					.targetLocatorId(targetLocatorId);
+					.traceId(candidate.getTraceId());
+			if (aggregationConfig.isAggregateByLocatorFrom())
+			{
+				keyBuilder.sourceLocatorId(sourceLocatorId);
+			}
+			if (aggregationConfig.isAggregateByLocatorTo())
+			{
+				keyBuilder.targetLocatorId(targetLocatorId);
+			}
 			if (aggregationConfig.isAggregateBySalesOrderId())
 			{
 				keyBuilder.salesOrderId(candidate.getSalesOrderId());

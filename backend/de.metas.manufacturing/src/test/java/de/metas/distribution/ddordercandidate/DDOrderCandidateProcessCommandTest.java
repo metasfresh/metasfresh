@@ -213,14 +213,57 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * Locator aggregation is unconditional: two candidates that differ only by {@code targetLocatorId}
-	 * (i.e. different grounds) must each get their own DD_Order with a single line, rather than collapsing
-	 * into one DD_Order with a single aggregated line.
+	 * Header locator aggregation is OFF by default ({@code DDOrderAggregation.header.byLocatorTo=false}):
+	 * two candidates that differ only by {@code targetLocatorId} collapse into ONE DD_Order, yet still get a
+	 * separate line each because the line aggregation key always carries the locator (line-level is unconditional).
 	 */
 	@Test
-	void oneOrderOneLinePerMove()
+	void twoGrounds_byLocatorToDisabled_singleDDOrderWithTwoLines()
 	{
-		processTwoGroundCandidates();
+		processTwoGroundCandidates(false);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+		assertThat(queryLines(orders.get(0))).hasSize(2);
+	}
+
+	/**
+	 * With {@code DDOrderAggregation.header.byLocatorTo=true}: the same two candidates (differing only by
+	 * {@code targetLocatorId}, i.e. different grounds) produce TWO DD_Orders, each with a single line.
+	 */
+	@Test
+	void twoGrounds_byLocatorToEnabled_twoSingleLineDDOrders()
+	{
+		processTwoGroundCandidates(true);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(2);
+		assertThat(orders).allSatisfy(order -> assertThat(queryLines(order)).hasSize(1));
+	}
+
+	/**
+	 * Header locator aggregation is OFF by default ({@code DDOrderAggregation.header.byLocatorFrom=false}):
+	 * two candidates that differ only by {@code sourceLocatorId} collapse into ONE DD_Order with a separate
+	 * line each (line key always carries the locator).
+	 */
+	@Test
+	void twoSourceGrounds_byLocatorFromDisabled_singleDDOrderWithTwoLines()
+	{
+		processTwoSourceGroundCandidates(false);
+
+		final List<I_DD_Order> orders = queryOrders();
+		assertThat(orders).hasSize(1);
+		assertThat(queryLines(orders.get(0))).hasSize(2);
+	}
+
+	/**
+	 * With {@code DDOrderAggregation.header.byLocatorFrom=true}: the same two candidates (differing only by
+	 * {@code sourceLocatorId}) produce TWO DD_Orders, each with a single line.
+	 */
+	@Test
+	void twoSourceGrounds_byLocatorFromEnabled_twoSingleLineDDOrders()
+	{
+		processTwoSourceGroundCandidates(true);
 
 		final List<I_DD_Order> orders = queryOrders();
 		assertThat(orders).hasSize(2);
@@ -249,14 +292,14 @@ class DDOrderCandidateProcessCommandTest
 	}
 
 	/**
-	 * Boundary of the unconditional aggregation: a candidate that carries explicit locators must NOT collapse
-	 * with an otherwise-identical candidate that has none. Because locators are always part of the key, the
-	 * explicit-locator candidate (key holds the concrete locator) and the null-locator candidate (key holds
-	 * {@code null}) compare unequal, so each gets its own DD_Order. The null-locator line still falls back to
-	 * the warehouse default (540003).
+	 * With header locator aggregation ENABLED ({@code byLocatorFrom=byLocatorTo=true}): a candidate that carries
+	 * explicit locators must NOT collapse with an otherwise-identical candidate that has none. The explicit-locator
+	 * candidate's header key holds its concrete locators (1001/1002); the null-locator candidate's key holds the
+	 * warehouse-default locators (540003/540003), so the two headers compare unequal and each gets its own DD_Order.
+	 * The null-locator line still falls back to the warehouse default (540003).
 	 */
 	@Test
-	void locatorPresentAndAbsent_notCollapsed()
+	void locatorPresentAndAbsent_byLocatorEnabled_notCollapsed()
 	{
 		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
 		final DDOrderCandidate withLocators = base.toBuilder()
@@ -272,6 +315,8 @@ class DDOrderCandidateProcessCommandTest
 						.aggregateBySalesOrderId(true)
 						.aggregateByPPOrderRef(true)
 						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorFrom(true)
+						.aggregateByLocatorTo(true)
 						.build())
 				.request(DDOrderCandidateProcessRequest.builder()
 						.userId(UserId.METASFRESH)
@@ -293,7 +338,7 @@ class DDOrderCandidateProcessCommandTest
 	 * {@code newFullyFilled()} call creates a fresh UOM with a distinct id, which would otherwise split the
 	 * line aggregation by UOM and defeat the "differ only by locator" intent).
 	 */
-	private void processTwoGroundCandidates()
+	private void processTwoGroundCandidates(final boolean aggregateByLocatorTo)
 	{
 		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
 		final DDOrderCandidate move1 = base.toBuilder()
@@ -312,6 +357,41 @@ class DDOrderCandidateProcessCommandTest
 						.aggregateBySalesOrderId(true)
 						.aggregateByPPOrderRef(true)
 						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorTo(aggregateByLocatorTo)
+						.build())
+				.request(DDOrderCandidateProcessRequest.builder()
+						.userId(UserId.METASFRESH)
+						.candidates(ImmutableList.of(move1, move2))
+						.build())
+				.build()
+				.execute();
+	}
+
+	/**
+	 * Like {@link #processTwoGroundCandidates(boolean)} but the two candidates differ only by their
+	 * {@code sourceLocatorId} (two source grounds under the same source warehouse); runs with the given
+	 * {@code aggregateByLocatorFrom} header setting.
+	 */
+	private void processTwoSourceGroundCandidates(final boolean aggregateByLocatorFrom)
+	{
+		final DDOrderCandidate base = DDOrderCandidateRepositoryTest.newFullyFilled();
+		final DDOrderCandidate move1 = base.toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1001))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
+				.build();
+		final DDOrderCandidate move2 = base.toBuilder()
+				.sourceLocatorId(LocatorId.ofRepoId(60, 1004))
+				.targetLocatorId(LocatorId.ofRepoId(70, 1002))
+				.build();
+		ddOrderCandidateRepository.save(move1);
+		ddOrderCandidateRepository.save(move2);
+
+		commandBuilder
+				.aggregationConfig(DDOrderCandidateProcessCommand.AggregationConfig.builder()
+						.aggregateBySalesOrderId(true)
+						.aggregateByPPOrderRef(true)
+						.aggregateBySalesOrderLineId(true)
+						.aggregateByLocatorFrom(aggregateByLocatorFrom)
 						.build())
 				.request(DDOrderCandidateProcessRequest.builder()
 						.userId(UserId.METASFRESH)
