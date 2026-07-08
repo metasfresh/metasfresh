@@ -175,7 +175,7 @@ export const mergeGraiArrays = (prev, newGrais, existingCodes = [], alreadySkipp
   const skipped = [];
   for (const g of newGrais) {
     if (seen.has(g)) {
-      // same-buffer re-read (AC3) OR an already-reported LU-skip redelivered: silent no-op, never (re)counted
+      // same-buffer re-read OR an already-reported LU-skip redelivered: silent no-op, never (re)counted
       continue;
     }
     if (existing && existing.has(g)) {

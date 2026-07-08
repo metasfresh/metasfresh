@@ -49,7 +49,7 @@ public class PickingJobGraiTargetService
 	 * @param luTarget      the effective LU picking target; {@code null} → the TU-LU check is skipped
 	 * @param lineProductId the line's product; {@code null} → header-level scan, the capacity check is skipped
 	 * @param poReference   the current sales order's PO reference; {@code null} when the order has none (or is not
-	 *                      unambiguously resolvable). Only used to gate a Migros returnable-asset GRAI
+	 *                      unambiguously resolvable). Gates a Migros returnable-asset GRAI
 	 *                      ({@link DummyGRAITemplate#isMigrosStructure(GRAI)}) against the current order — a
 	 *                      non-Migros GRAI is never checked. {@code null} → the Migros match is skipped (not rejected);
 	 *                      a Migros order without a PO reference is a dummy-GRAI-generation prerequisite handled

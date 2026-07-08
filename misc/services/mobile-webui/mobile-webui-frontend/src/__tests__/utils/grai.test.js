@@ -20,7 +20,7 @@ describe('grai list helpers', () => {
       expect(skipped).toEqual([]);
     });
 
-    it('deduplicates GRAIs already present (same-buffer re-read — AC3, silent, not "skipped")', () => {
+    it('deduplicates GRAIs already present (same-buffer re-read — silent, not "skipped")', () => {
       const prev = ['A', 'B'];
       const { merged, skipped } = mergeGraiArrays(prev, ['B', 'C']);
       expect(merged).toEqual(['A', 'B', 'C']);
@@ -76,7 +76,7 @@ describe('grai list helpers', () => {
       });
 
       it('a same-crate re-read (already in prev) is NEVER reported as skipped, even if also in existingCodes', () => {
-        // AC3: re-scanning the identical GRAI for the SAME crate stays a silent no-op.
+        // re-scanning the identical GRAI for the SAME crate stays a silent no-op.
         const prev = ['G'];
         const { merged, skipped } = mergeGraiArrays(prev, ['G'], ['G']);
         expect(merged).toBe(prev); // same reference — nothing added, no re-render

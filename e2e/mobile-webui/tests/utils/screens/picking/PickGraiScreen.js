@@ -2,6 +2,7 @@ import { test } from '../../../../playwright.config';
 import { page, SLOW_ACTION_TIMEOUT, FAST_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
+import { ErrorToast } from '../../dialogs/ErrorToast';
 
 const NAME = 'PickGraiScreen';
 
@@ -93,11 +94,9 @@ export const PickGraiScreen = {
      */
     expectSkippedNotice: async ({ count }) => await test.step(`${NAME} - Expect "${count} skipped" notice`, async () => {
         await expect(page.getByTestId('grai-count-skipped')).toContainText(String(count), { timeout: SLOW_ACTION_TIMEOUT });
-        const successToasts = page.locator('.Toastify__toast--success');
-        await expect(successToasts.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-        await expect(successToasts).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
-        // A blocking (red) error toast must never accompany this non-blocking notice.
-        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+        // Exactly one non-blocking success notice, and never a blocking (red) error toast.
+        await ErrorToast.expectSuccessToastCount(1);
+        await ErrorToast.expectNoErrorToast();
     }),
 
     /** Assert the save button is enabled (exactly N GRAIs captured). */

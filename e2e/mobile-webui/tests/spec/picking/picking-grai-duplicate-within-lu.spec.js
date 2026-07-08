@@ -152,7 +152,7 @@ test('a GRAI reused across two products on one LU must land on at most one crate
         await PickGraiScreen.expectCount({ scanned: 0, total: 10 });
 
         // Re-scan the shared G first: the panel mirrors the server-side LU-wide dedupe — the count
-        // does NOT advance and a non-blocking "1 skipped" notice appears (AC1/AC6).
+        // does NOT advance and a non-blocking "1 skipped" notice appears.
         await PickGraiScreen.scanGrai({ graiString: sharedG });
         await PickGraiScreen.expectCount({ scanned: 0, total: 10 });
         await PickGraiScreen.expectSkippedNotice({ count: 1 });

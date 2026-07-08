@@ -51,4 +51,19 @@ export const ErrorToast = {
         await closeButton.tap({ timeout: FAST_ACTION_TIMEOUT });
         await expect(toasts).toHaveCount(0, { timeout: SLOW_ACTION_TIMEOUT });
     },
+
+    // Assert exactly N non-blocking success/info toasts (`.Toastify__toast--success`) are shown — one
+    // skipped scan must surface once, never as stacked duplicates (the "user must see exactly ONE" rule).
+    expectSuccessToastCount: async (expectedCount) => {
+        const successToasts = page.locator('.Toastify__toast--success');
+        if (expectedCount > 0) {
+            await expect(successToasts.first()).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+        }
+        await expect(successToasts).toHaveCount(expectedCount, { timeout: SLOW_ACTION_TIMEOUT });
+    },
+
+    // Assert no blocking (red) error toast is shown.
+    expectNoErrorToast: async () => {
+        await expect(page.locator('.Toastify__toast--error')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    },
 }

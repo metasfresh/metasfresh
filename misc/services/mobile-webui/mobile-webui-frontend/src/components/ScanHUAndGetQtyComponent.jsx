@@ -112,7 +112,7 @@ const ScanHUAndGetQtyComponent = ({
   );
   const handleClearAllGrais = useCallback(() => setGraiCapture((prev) => ({ ...prev, codes: [] })), []);
 
-  // AC6: non-blocking "N skipped" notice — fires once per genuinely-new skip (the delta in
+  // non-blocking "N skipped" notice — fires once per genuinely-new skip (the delta in
   // skippedCodes.length since the last commit). Because a redelivered skip is already folded out by
   // mergeGraiArrays (via prev.skippedCodes above), the delta is exactly the number of distinct new
   // already-on-LU crates, so a dual-reader duplicate never produces a second (or inflated) toast.
