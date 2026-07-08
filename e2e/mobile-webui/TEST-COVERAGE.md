@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 92 | 96 | 96% |
+| Picking | 93 | 97 | 96% |
 | Distribution | 41 | 41 | 93% |
 | Manufacturing | 26 | 32 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -90,6 +90,7 @@
 | Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/picking_partial_unpack.spec.js` |
 | Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/picking_partial_unpack.spec.js` |
 | Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/picking_partial_unpack.spec.js` |
+| Unpick a whole step and scan a target HU → picked goods move onto the scanned target HU | `picking/picking_unpick_scan_target.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -102,7 +103,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**18/19 — 95%**
+**19/20 — 95%**
 
 ### Order-based picking — filtering and facets
 
@@ -244,8 +245,10 @@
 | Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
 | BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
 | Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
+| Migros returnable-asset GRAI matching the order's PO reference → accepted, TU resolved, GRAI stamped on the picked TU | `picking/picking-grai-poreference-match.spec.js` |
+| Migros returnable-asset GRAI belonging to another order's PO reference → refused before TU resolution | `picking/picking-grai-poreference-mismatch.spec.js` |
 
-**8/8 — 100%**
+**10/10 — 100%**
 
 ### Inline GRAI capture in Flow Through (LU_TU) picking
 
@@ -255,8 +258,10 @@
 | Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
 | Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
 | "OK und LU schließen" still demands one GRAI per picked crate → GRAIs stamped, LU closed, job completes | `picking/picking-grai-flowthrough.spec.js` |
+| A GRAI already assigned to one crate is reused on a DIFFERENT product's pick onto the same LU → skipped with a non-blocking notice, not counted; each product's VHU keeps only its own GRAIs | `picking/picking-grai-duplicate-within-lu.spec.js` |
+| A GRAI already assigned to one crate is reused on a LATER pick of the SAME product onto the same LU → skipped with a non-blocking notice, not counted; each pick's VHU keeps only its own GRAIs | `picking/picking-grai-reuse-same-product.spec.js` |
 
-**4/4 — 100%**
+**6/6 — 100%**
 
 ### Navigation — device/browser Back
 

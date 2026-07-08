@@ -290,6 +290,17 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
 	}
 
+	/**
+	 * The first <b>existing</b> LU picking target across line- then header-scope, skipping not-yet-materialised
+	 * ones (unlike {@link #getLuPickingTargetEffective(PickingJobLineId)}, which returns the first present target).
+	 */
+	public Optional<LUPickingTarget> getExistingLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(
+				lineId,
+				currentPickingTarget -> currentPickingTarget.getLuPickingTarget().filter(LUPickingTarget::isExistingLU));
+	}
+
 	@NonNull
 	public PickingJob withLuPickingTarget(
 			@Nullable final PickingJobLineId lineId,
