@@ -65,9 +65,7 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
       .finally(() => setIsAdvising(false));
   };
 
-  // Carrier-advise source: the line (line view) falls back to the job (header view / CU-direct).
-  // Only one package is shown at a time, so the current LU/TU pick target's advise is always this same
-  // line/job value — the flags live on the line/job, not on the pick target.
+  // Advise flags come from the line (line view) with a job-level fallback (header view).
   const isCarrierAdviseAvailable = lineCarrierAdviseAvailable === true || jobCarrierAdviseAvailable === true;
   const isCarrierAdviseReadOnly =
     lineCarrierAdviseAvailable === true ? lineCarrierAdviseReadOnly === true : jobCarrierAdviseReadOnly === true;
