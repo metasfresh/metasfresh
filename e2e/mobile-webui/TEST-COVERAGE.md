@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 72 | 76 | 95% |
+| Picking | 74 | 78 | 95% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -91,6 +91,8 @@
 | Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/unpack/picking_partial_unpack.spec.js` |
 | Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/unpack/picking_partial_unpack.spec.js` |
 | Partial unpack to the floor from a pick-to-CU-into-TU package (bare TU target, no LU): skip the target scan → removed qty leaves the TU and reappears as re-pickable, rest stays packed, no orphaned/stuck CU in the TU, and the shipment schedule's picked qty (M_ShipmentSchedule_QtyPicked) is reduced accordingly; repeatable over 2 rounds | `picking/unpack/picking_partial_unpack_TU_floor.spec.js` |
+| Partial unpack to the floor spanning TWO separate picks of the same product into the same bare TU (2+2=4 packed): unpick 3 → the newest pick's schedule row is fully consumed and deleted, the older row is reduced to the remainder (1), no orphan row/CU | `picking/unpack/picking_partial_unpack_TU_floor_spanning_picks.spec.js` |
+| Partial unpack to the floor across TWO picking lines (two products) sharing the same bare TU: unpicking one line's qty reduces ONLY that line's shipment schedule, the other line's schedule is untouched (no cross-line bleed) | `picking/unpack/picking_partial_unpack_TU_floor_two_lines.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -101,7 +103,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**17/18 — 94%**
+**19/20 — 95%**
 
 ### Order-based picking — filtering and facets
 
