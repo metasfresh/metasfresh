@@ -243,12 +243,6 @@ public final class OLCand implements IProductPriceAware
 	}
 
 	@Nullable
-	public WarehouseId getWarehouseId()
-	{
-		return warehouseId;
-	}
-
-	@Nullable
 	public WarehouseId getWarehouseDestId()
 	{
 		return WarehouseId.ofRepoIdOrNull(olCandRecord.getM_Warehouse_Dest_ID());

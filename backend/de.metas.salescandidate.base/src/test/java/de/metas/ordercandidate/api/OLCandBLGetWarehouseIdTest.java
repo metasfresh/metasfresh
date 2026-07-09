@@ -37,6 +37,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import javax.annotation.Nullable;
@@ -69,11 +70,14 @@ class OLCandBLGetWarehouseIdTest
 		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 	}
 
+	@Nested
+	class getWarehouseId
+	{
 	/**
 	 * AC2: OLCand has an explicit M_Warehouse_ID → that warehouse is returned, regardless of BP or defaults.
 	 */
 	@Test
-	void getWarehouseId_olCandHasExplicitWarehouse_returnsIt()
+	void olCandHasExplicitWarehouse_returnsIt()
 	{
 		final WarehouseId explicitWarehouseId = createWarehouse(false);
 		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
@@ -95,7 +99,7 @@ class OLCandBLGetWarehouseIdTest
 	 * → the BP's picking warehouse is returned.
 	 */
 	@Test
-	void getWarehouseId_noOLCandWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
+	void noOLCandWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
 	{
 		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
 		final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
@@ -116,7 +120,7 @@ class OLCandBLGetWarehouseIdTest
 	 * → processor default is returned.
 	 */
 	@Test
-	void getWarehouseId_bpWarehouseNotPicking_returnsProcessorDefault()
+	void bpWarehouseNotPicking_returnsProcessorDefault()
 	{
 		final WarehouseId nonPickingWarehouseId = createWarehouse(false);
 		final BPartnerId customerBPId = createCustomerBP(true, nonPickingWarehouseId);
@@ -136,7 +140,7 @@ class OLCandBLGetWarehouseIdTest
 	 * AC3: OLCand has no warehouse, BP is NOT a customer → processor default is returned.
 	 */
 	@Test
-	void getWarehouseId_bpNotCustomer_returnsProcessorDefault()
+	void bpNotCustomer_returnsProcessorDefault()
 	{
 		final BPartnerId nonCustomerBPId = createCustomerBP(false, null);
 		final I_C_OLCand olCand = createOLCandNoBPLocation(nonCustomerBPId);
@@ -149,6 +153,7 @@ class OLCandBLGetWarehouseIdTest
 		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
 		assertThat(result).isEqualTo(processorDefault);
+	}
 	}
 
 	// ---- helpers ----

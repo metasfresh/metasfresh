@@ -24,44 +24,43 @@ package de.metas.cucumber.stepdefs.olcand;
 
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
-import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
+import de.metas.ordercandidate.api.OLCandProcessorId;
 import de.metas.ordercandidate.model.I_C_OLCandProcessor;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Warehouse;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * Step definitions for C_OLCandProcessor records.
- * Covers updating processor-level defaults (e.g. the default warehouse) used by the OLCand-to-Order pipeline.
+ * Updates processor-level defaults (e.g. the default warehouse) used by the OLCand-to-Order pipeline.
+ * The processor and its warehouse are addressed by their repo-IDs, since the processor is a standard seed record.
+ * <p>
+ * Because a C_OLCandProcessor is a shared seed record, any warehouse mutated here is restored to its original
+ * value in an {@link After} hook, so sibling scenarios on the same executor are not affected.
  */
-@RequiredArgsConstructor
 public class C_OLCandProcessor_StepDef
 {
-	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@NonNull private final M_Warehouse_StepDefData warehouseTable;
+	/** Original M_Warehouse_ID per processor touched in the current scenario, for restoration in {@link #restoreProcessors()}. */
+	private final Map<OLCandProcessorId, Integer> originalWarehouseIdByProcessor = new LinkedHashMap<>();
 
 	/**
-	 * Updates an existing C_OLCandProcessor record.
-	 * The record is located by {@code C_OLCandProcessor_ID} when provided, otherwise by {@code Name}.
+	 * Updates an existing C_OLCandProcessor record, addressed by its repo-ID.
 	 *
-	 * @cucumber.stepdef
 	 * @cucumber.columns
-	 *   <b>Name</b> — (required when C_OLCandProcessor_ID absent) name of the C_OLCandProcessor to update<br>
-	 *   <b>OPT.C_OLCandProcessor_ID</b> — (optional) raw repo-ID of the processor (preferred when Name is uncertain)<br>
-	 *   <b>OPT.M_Warehouse_ID.Identifier</b> — (optional, identifier-ref) new default warehouse; resolved via M_Warehouse_StepDefData<br>
-	 * @cucumber.depends StepDefData: M_Warehouse_StepDefData
+	 *   <b>C_OLCandProcessor_ID</b> — repo-ID of the processor to update<br>
+	 *   <b>OPT.M_Warehouse_ID</b> — (optional) repo-ID of the new default warehouse<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And update C_OLCandProcessor:
-	 *   | OPT.C_OLCandProcessor_ID | OPT.M_Warehouse_ID.Identifier |
-	 *   | 1000003                  | defaultWH                     |
+	 *   | C_OLCandProcessor_ID | M_Warehouse_ID |
+	 *   | 1000003              | 540008         |
 	 * </pre>
 	 */
 	@And("update C_OLCandProcessor:")
@@ -72,41 +71,40 @@ public class C_OLCandProcessor_StepDef
 
 	private void updateProcessor(@NonNull final DataTableRow row)
 	{
-		final I_C_OLCandProcessor processor = loadProcessor(row);
+		final OLCandProcessorId processorId = row.getAsIdentifier(I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID)
+				.getAsId(OLCandProcessorId.class);
+
+		final I_C_OLCandProcessor processor = InterfaceWrapperHelper.load(processorId.getRepoId(), I_C_OLCandProcessor.class);
+		if (processor == null)
+		{
+			throw new AdempiereException("No C_OLCandProcessor found with C_OLCandProcessor_ID=" + processorId.getRepoId());
+		}
 
 		row.getAsOptionalIdentifier(I_C_OLCandProcessor.COLUMNNAME_M_Warehouse_ID)
-				.ifPresent(warehouseIdentifier -> {
-					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
-					processor.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+				.map(identifier -> identifier.getAsId(WarehouseId.class))
+				.ifPresent(warehouseId -> {
+					originalWarehouseIdByProcessor.putIfAbsent(processorId, processor.getM_Warehouse_ID());
+					processor.setM_Warehouse_ID(warehouseId.getRepoId());
 				});
 
 		InterfaceWrapperHelper.saveRecord(processor);
 	}
 
-	@NonNull
-	private I_C_OLCandProcessor loadProcessor(@NonNull final DataTableRow row)
+	/**
+	 * Restores every processor whose warehouse this scenario changed back to its original value,
+	 * so a shared seed processor does not leak state into sibling scenarios on the same executor.
+	 */
+	@After
+	public void restoreProcessors()
 	{
-		final int processorId = row.getAsOptionalInt(I_C_OLCandProcessor.COLUMNNAME_C_OLCandProcessor_ID).orElse(0);
-		if (processorId > 0)
-		{
-			final I_C_OLCandProcessor processor = InterfaceWrapperHelper.load(processorId, I_C_OLCandProcessor.class);
-			if (processor == null)
+		originalWarehouseIdByProcessor.forEach((processorId, originalWarehouseId) -> {
+			final I_C_OLCandProcessor processor = InterfaceWrapperHelper.load(processorId.getRepoId(), I_C_OLCandProcessor.class);
+			if (processor != null)
 			{
-				throw new AdempiereException("No C_OLCandProcessor found with C_OLCandProcessor_ID=" + processorId);
+				processor.setM_Warehouse_ID(originalWarehouseId);
+				InterfaceWrapperHelper.saveRecord(processor);
 			}
-			return processor;
-		}
-
-		final String name = row.getAsString(I_C_OLCandProcessor.COLUMNNAME_Name);
-		final I_C_OLCandProcessor processor = queryBL.createQueryBuilder(I_C_OLCandProcessor.class)
-				.addEqualsFilter(I_C_OLCandProcessor.COLUMNNAME_Name, name)
-				.create()
-				.firstOnly(I_C_OLCandProcessor.class);
-
-		if (processor == null)
-		{
-			throw new AdempiereException("No C_OLCandProcessor found with Name=" + name);
-		}
-		return processor;
+		});
+		originalWarehouseIdByProcessor.clear();
 	}
 }

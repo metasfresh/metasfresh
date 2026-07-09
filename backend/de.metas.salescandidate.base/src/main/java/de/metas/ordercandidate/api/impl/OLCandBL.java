@@ -488,14 +488,12 @@ public class OLCandBL implements IOLCandBL
 			@NonNull final I_C_OLCand olCand,
 			@Nullable final OLCandOrderDefaults orderDefaults)
 	{
-		// 1. OLCand's own warehouse takes highest precedence
 		final WarehouseId olCandWarehouseId = WarehouseId.ofRepoIdOrNull(olCand.getM_Warehouse_ID());
 		if (olCandWarehouseId != null)
 		{
 			return olCandWarehouseId;
 		}
 
-		// 2. Buyer BP's customer picking warehouse
 		final BPartnerId buyerBPartnerId = effectiveValuesBL.getBuyerPartnerInfo(olCand).getBpartnerId();
 		final WarehouseId bpPickingWarehouseId = warehouseAdvisor.evaluateCustomerPickingWarehouse(buyerBPartnerId);
 		if (bpPickingWarehouseId != null)
@@ -503,7 +501,6 @@ public class OLCandBL implements IOLCandBL
 			return bpPickingWarehouseId;
 		}
 
-		// 3. Processor default
 		return orderDefaults != null ? orderDefaults.getWarehouseId() : null;
 	}
 

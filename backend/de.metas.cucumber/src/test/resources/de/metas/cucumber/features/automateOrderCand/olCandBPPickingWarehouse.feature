@@ -2,15 +2,13 @@
 @allure.label.epic:E0100_Sales
 @allure.label.feature:F00122
 @ghActions:run_on_executor3
-Feature: OLCand order creation uses BP picking warehouse when no warehouse is in the payload
+Feature: OLCand order creation uses the BP picking warehouse when no warehouse is in the payload
 ## F00122: OLCand Warehouse Advisor
 ##
-## When a sales order candidate is POSTed with no warehouse in the payload,
-## the order must be created with the business partner's picking warehouse —
-## NOT the OLCand-processor default warehouse.
-##
-## Bug: before the fix, the processor-default warehouse always wins even when
-## the BP has an explicit picking warehouse configured.
+## When a sales order candidate is POSTed with no warehouse in the payload
+## and the sold-to business partner has a picking warehouse, the created
+## order and its lines must use that BP picking warehouse, even when the
+## OLCand processor has its own default warehouse.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -22,18 +20,20 @@ Feature: OLCand order creation uses BP picking warehouse when no warehouse is in
   @allure.label.epic:E0100_Sales
   @allure.label.feature:F00122
   @Id:S30235_01
-  Scenario: OLCand without warehouse → order inherits BP picking warehouse, not processor default
-    # Two warehouses: WH_PICK is the BP's picking warehouse; WH_DEFAULT is set as the
-    # processor default warehouse.  The created order must use WH_PICK (the BP wins).
-    # With the bug the order takes WH_DEFAULT → this scenario is RED before the fix.
+  Scenario: OLCand without warehouse → order inherits the BP picking warehouse
+    # The sold-to BP has pickingWH as its picking warehouse; the OLCand processor keeps its
+    # own default warehouse. No warehouse is sent in the payload, so the created order and
+    # its lines must use pickingWH — the BP picking warehouse takes precedence over the
+    # processor default.
     Given metasfresh contains M_Warehouse:
-      | Identifier | Value      | Name       | OPT.IsPickingWarehouse |
-      | pickingWH  | pickingWH  | pickingWH  | true                   |
-      | defaultWH  | defaultWH  | defaultWH  | false                  |
+      | Identifier | Value     | Name      | IsPickingWarehouse |
+      | pickingWH  | pickingWH | pickingWH | true               |
 
+    # The standard OLCand import processor (repo-id 1000003) keeps StdWarehouse (540008) as
+    # its default warehouse, so a candidate with no warehouse would otherwise land there.
     And update C_OLCandProcessor:
-      | OPT.C_OLCandProcessor_ID | OPT.M_Warehouse_ID.Identifier |
-      | 1000003                  | defaultWH                     |
+      | C_OLCandProcessor_ID | M_Warehouse_ID |
+      | 1000003              | 540008         |
 
     And metasfresh contains M_PricingSystems
       | Identifier | Name       | Value      | OPT.IsActive |
@@ -51,15 +51,13 @@ Feature: OLCand order creation uses BP picking warehouse when no warehouse is in
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_S30235  | plv_S30235                        | product_S30235          | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier | Name       | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | OPT.M_Warehouse_ID.Identifier |
-      | bp_S30235  | bp_S30235  | Y              | N            | ps_S30235                     | bpLoc_S30235               | 3000000030235 | pickingWH                     |
+      | Identifier | Name       | IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID | GLN           | M_Warehouse_ID |
+      | bp_S30235  | bp_S30235  | Y          | N            | ps_S30235                     | bpLoc_S30235               | 3000000030235 | pickingWH      |
     And metasfresh contains C_BPartner_Locations:
       | Identifier   | GLN           | C_BPartner_ID.Identifier |
       | bpLoc_S30235 | 3000000030235 | bp_S30235                |
 
-    # POST one candidate for bp_S30235 — NO warehouse in payload.
-    # The OLCand-processor default warehouse is defaultWH; the BP's picking warehouse is pickingWH.
-    # The fix must route the order to pickingWH (the BP wins over the processor default).
+    # POST one candidate for bp_S30235 with no warehouse in the payload.
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
 {
@@ -110,12 +108,12 @@ Feature: OLCand order creation uses BP picking warehouse when no warehouse is in
       | C_Order_ID.Identifier |
       | order_S30235          |
 
-    # Before the fix: C_Order.M_Warehouse_ID = defaultWH (processor default wins) → RED.
-    # After the fix: C_Order.M_Warehouse_ID = pickingWH (BP picking warehouse wins) → GREEN.
+    # The order and its lines must use the BP's picking warehouse (pickingWH), not the
+    # processor default warehouse.
     And validate the created orders
-      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.M_Warehouse_ID.Identifier |
-      | order_S30235          | bp_S30235                | bpLoc_S30235                      | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | M_Warehouse_ID |
+      | order_S30235          | bp_S30235                | bpLoc_S30235                      | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH      |
 
     And validate the created order lines
-      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Warehouse_ID.Identifier |
-      | orderLine_S30235_1        | order_S30235          | product_S30235          | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH                     |
+      | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | M_Warehouse_ID |
+      | orderLine_S30235_1        | order_S30235          | product_S30235          | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH      |
