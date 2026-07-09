@@ -27,7 +27,6 @@ import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.model.I_M_PickingSlot;
 import de.metas.handlingunits.model.I_M_Warehouse;
-import org.compiere.model.I_M_Warehouse_PickingGroup;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.picking.PickingCandidateService;
@@ -110,7 +109,9 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.util.Env;
 import org.mockito.Mockito;
 
@@ -346,6 +347,19 @@ public class PickingJobTestHelper
 	{
 		final WarehouseId warehouseId = createWarehouseId(warehouseName);
 		return createLocatorId(warehouseId, locatorValue);
+	}
+
+	/**
+	 * Sets {@code C_Workplace.PickFrom_Locator_ID} on the (already created) {@link #workplace}. Test-only helper,
+	 * additive: mirrors how the workplace is created (via {@link WorkplaceCreateRequest#getPickFromLocatorId()}),
+	 * but applied after the fact so a test can opt in to a narrower pick-from locator without changing the
+	 * constructor's default workplace setup.
+	 */
+	public void setWorkplacePickFromLocator(@NonNull final LocatorId locatorId)
+	{
+		final I_C_Workplace record = InterfaceWrapperHelper.load(workplace.getId(), I_C_Workplace.class);
+		record.setPickFrom_Locator_ID(locatorId.getRepoId());
+		saveRecord(record);
 	}
 
 	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)

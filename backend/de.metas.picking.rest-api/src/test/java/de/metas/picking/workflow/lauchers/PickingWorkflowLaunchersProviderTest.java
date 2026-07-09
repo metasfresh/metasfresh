@@ -207,6 +207,34 @@ class PickingWorkflowLaunchersProviderTest
 			softly.assertThat(launchers.get(0).getQtyAvailableToPick()).as("job0 - qtyAvailableToPick").isEqualTo(helper.qty("50", p1_id));
 			softly.assertAll();
 		}
+
+		@Test
+		void pickFromLocatorSet_stillReportsPickingGroupAvailability()
+		{
+			mobileProfile().aggregationType(PickingJobAggregationType.PRODUCT).setup();
+
+			// workplace's own warehouse A holds NO stock for the product, and the workplace has
+			// C_Workplace.PickFrom_Locator_ID explicitly set to a locator in A that holds no stock either;
+			// stock exists only in warehouse B, which shares A's M_Warehouse_PickingGroup_ID.
+			final int pickingGroupId = helper.createPickingGroupWithWarehouse(helper.workplace.getWarehouseId());
+			final LocatorId warehouseBLocatorId = helper.createWarehouseAndLocator("warehouseB", "whB_loc");
+			helper.assignWarehouseToPickingGroup(warehouseBLocatorId.getWarehouseId(), pickingGroupId);
+			helper.setWorkplacePickFromLocator(helper.shipFromLocatorId);
+
+			helper.createVHU(p1_id, "130", warehouseBLocatorId);
+
+			packageable().qtyToDeliver("50").build();
+
+			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
+
+			assertThat(launchers).hasSize(1);
+			System.out.println(launchers);
+
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(launchers.get(0).getQtyToDeliver()).as("job0 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
+			softly.assertThat(launchers.get(0).getQtyAvailableToPick()).as("job0 - qtyAvailableToPick").isEqualTo(helper.qty("50", p1_id));
+			softly.assertAll();
+		}
 	}
 
 }
