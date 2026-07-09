@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
+import de.metas.currency.CurrencyRepository;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.money.MoneyService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -105,7 +107,8 @@ public class PackedHUCarrierAdviseServiceTest
 				mock(CustomsTariffRepository.class),
 				shipperRepository,
 				shipmentScheduleService,
-				pickingJobRepository));
+				pickingJobRepository,
+				new MoneyService(new CurrencyRepository())));
 
 		// give both products a net weight (kg/stocking-UOM); computeGrossWeight falls back to net weight
 		data.helper.pTomato.setWeight(TOMATO_WEIGHT_KG);

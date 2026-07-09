@@ -10,8 +10,7 @@ import de.metas.common.delivery.v1.json.JsonQuantity;
 import de.metas.common.delivery.v1.json.JsonTopLevelType;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.Amount;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.handlingunits.HuId;
@@ -35,8 +34,8 @@ import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.product.IProductBL;
@@ -46,14 +45,13 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipper.gateway.commons.CarrierAdviseCommand;
+import de.metas.shipper.gateway.commons.CarrierAdviseItemValue;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -82,11 +80,11 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipmentScheduleService shipmentScheduleService;
 	@NonNull private final PickingJobRepository pickingJobRepository;
+	@NonNull private final MoneyService moneyService;
 
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
-	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 
 	/**
@@ -455,9 +453,10 @@ public class PackedHUCarrierAdviseService
 	}
 
 	// Carrier "final info" build path — HU-advise item (1 of 3).
-	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	// Unit price / total value / shipped quantity derivation is shared across the three nShift build paths via
+	// de.metas.shipper.gateway.commons.CarrierAdviseItemValue (so they cannot drift):
 	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
-	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestParcel
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	// numberOfItems is intentionally path-specific (NOT part of the consistency contract):
 	// HU-advise = the product's packed qty, EXCEPT a single-product loose CU (oneCuBaseline) which advises
@@ -483,8 +482,9 @@ public class PackedHUCarrierAdviseService
 				.map(Quantity::getAsBigDecimal)
 				.orElse(BigDecimal.ZERO);
 
-		// Unit price / total value from THIS product's order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
-		// Null when no schedule or no order line is available (e.g. inventory-receipt picks).
+		// Unit price / total value from THIS product's order line — same derivation as the other two nShift build
+		// paths, via the shared CarrierAdviseItemValue. Null when no schedule or no order line is available
+		// (e.g. inventory-receipt picks).
 		JsonMoney unitPrice = null;
 		JsonMoney totalValue = null;
 		JsonQuantity shippedQuantity = null;
@@ -494,25 +494,13 @@ public class PackedHUCarrierAdviseService
 			if (orderAndLineId != null)
 			{
 				final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
-				final UomId targetUomId = CoalesceUtil.coalesceNotNull(
-						UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
-						qty.getUomId());
-				final Quantity qtyConverted = uomConversionBL.convertQuantityTo(qty, product.getId(), targetUomId);
-				final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
-				final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
-				final String currencyISOCode = currencyCode.toThreeLetterCode();
-				final Money unitPriceMoney = Money.of(orderLine.getPriceEntered(), currencyId);
-				unitPrice = JsonMoney.builder()
-						.amount(unitPriceMoney.toBigDecimal())
-						.currencyCode(currencyISOCode)
-						.build();
-				totalValue = JsonMoney.builder()
-						.amount(unitPriceMoney.multiply(qtyConverted.toBigDecimal()).toBigDecimal())
-						.currencyCode(currencyISOCode)
-						.build();
+				final CarrierAdviseItemValue itemValue = CarrierAdviseItemValue.compute(moneyService, orderLine, product.getId(), qty);
+				unitPrice = toJsonMoney(itemValue.getUnitPrice());
+				totalValue = toJsonMoney(itemValue.getTotalValue());
+				final Quantity sq = itemValue.getShippedQuantity();
 				shippedQuantity = JsonQuantity.builder()
-						.value(qtyConverted.toBigDecimal())
-						.uomCode(qtyConverted.getX12DE355().getCode())
+						.value(sq.toBigDecimal())
+						.uomCode(sq.getX12DE355().getCode())
 						.build();
 			}
 		}
@@ -527,6 +515,17 @@ public class PackedHUCarrierAdviseService
 				.totalValue(totalValue)
 				.shippedQuantity(shippedQuantity)
 				.totalWeightInKg(totalWeightInKgBD)
+				.build();
+	}
+
+	@NonNull
+	private JsonMoney toJsonMoney(@NonNull final Money money)
+	{
+		// Amount carries both the value and its ISO currency code, so the JsonMoney comes from a single coherent source.
+		final Amount amount = moneyService.toAmount(money);
+		return JsonMoney.builder()
+				.amount(amount.getAsBigDecimal())
+				.currencyCode(amount.getCurrencyCode().toThreeLetterCode())
 				.build();
 	}
 

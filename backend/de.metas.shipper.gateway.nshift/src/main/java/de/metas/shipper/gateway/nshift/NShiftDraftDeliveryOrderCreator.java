@@ -29,7 +29,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
@@ -39,8 +38,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.handlingunits.IHUPackageDAO;
@@ -62,6 +60,7 @@ import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.commons.CarrierAdviseItemValue;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
@@ -79,7 +78,6 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
@@ -115,6 +113,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final CustomsTariffRepository customsTariffRepository;
 	@NonNull private final IncotermsRepository incotermsRepository;
 	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final MoneyService moneyService;
 
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -303,11 +302,11 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	}
 
 	// Carrier "final info" build path — delivery-order (3 of 3).
-	// Field derivation MUST stay consistent across the three nShift build paths (change together):
+	// Unit price / total value / shipped quantity derivation is shared across the three nShift build paths via
+	// de.metas.shipper.gateway.commons.CarrierAdviseItemValue (so they cannot drift):
 	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
-	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestParcel
 	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
-	// Shared advise line-building: NShiftUtil#buildAdvisorLine.
 	@NonNull
 	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
@@ -317,11 +316,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
 
-		final UomId targetUOMID = CoalesceUtil.coalesceNotNull(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()), packageItem.getQuantity().getUomId());
-
-		final Quantity quantity = uomConversionBL.convertQuantityTo(packageItem.getQuantity(), productId, targetUOMID);
-		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
+		final CarrierAdviseItemValue itemValue = CarrierAdviseItemValue.compute(moneyService, orderLine, productId, packageItem.getQuantity());
 
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
@@ -334,9 +329,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.customsTariff(customsTariff)
 				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
-				.shippedQuantity(packageItem.getQuantity())
-				.unitPrice(unitPrice)
-				.totalValue(totalPackageValue)
+				.shippedQuantity(itemValue.getShippedQuantity())
+				.unitPrice(itemValue.getUnitPrice())
+				.totalValue(itemValue.getTotalValue())
 				.build();
 	}
 

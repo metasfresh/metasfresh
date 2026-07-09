@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
@@ -38,10 +37,8 @@ import de.metas.currency.Amount;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
-import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
@@ -353,9 +350,9 @@ public class CarrierAdviseCommand
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
-		// Unit price / total value from the order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
-		// Price UOM and order UOM may differ, so convert ONCE to the price of one ordered unit. The advise sends qty 1
-		// (numberOfItems=1, shippedQuantity=1 ordered unit), so unit price and total value are the same value.
+		// Unit price / total value from the order line — same derivation as the other two nShift build paths, via
+		// the shared CarrierAdviseItemValue. Schedule-advise has no packed HU, so it advises for 1 ordered unit
+		// (numberOfItems=1); with qty 1 the unit price and total value are the same value.
 		JsonMoney unitPrice = null;
 		JsonMoney totalValue = null;
 		JsonQuantity shippedQuantity = null;
@@ -363,29 +360,14 @@ public class CarrierAdviseCommand
 		if (orderAndLineId != null)
 		{
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
-			final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
-			final UomId priceUomId = CoalesceUtil.coalesceNotNull(
-					UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
-					UomId.ofRepoId(orderLine.getC_UOM_ID()));
-			final ProductPrice orderLinePrice = ProductPrice.builder()
-					.money(Money.of(orderLine.getPriceEntered(), currencyId))
-					.uomId(priceUomId)
-					.productId(shipmentSchedule.getProductId())
-					.build();
-			// Price and order UOM may differ: value of ONE ordered unit at the order-line price
-			// (MoneyService.multiply converts the qty to the price UOM once, then multiplies).
-			// The resulting Amount carries both the value and its ISO currency code, so the
-			// JsonMoney is built from a single coherent source.
 			final Quantity oneOrderedUnit = Quantitys.of(BigDecimal.ONE, UomId.ofRepoId(orderLine.getC_UOM_ID()));
-			final Amount oneOrderedUnitValue = moneyService.toAmount(moneyService.multiply(oneOrderedUnit, orderLinePrice));
-			unitPrice = JsonMoney.builder()
-					.amount(oneOrderedUnitValue.getAsBigDecimal())
-					.currencyCode(oneOrderedUnitValue.getCurrencyCode().toThreeLetterCode())
-					.build();
-			totalValue = unitPrice;
+			final CarrierAdviseItemValue itemValue = CarrierAdviseItemValue.compute(moneyService, orderLine, shipmentSchedule.getProductId(), oneOrderedUnit);
+			unitPrice = toJsonMoney(itemValue.getUnitPrice());
+			totalValue = toJsonMoney(itemValue.getTotalValue());
+			final Quantity sq = itemValue.getShippedQuantity();
 			shippedQuantity = JsonQuantity.builder()
-					.value(oneOrderedUnit.toBigDecimal())
-					.uomCode(oneOrderedUnit.getX12DE355().getCode())
+					.value(sq.toBigDecimal())
+					.uomCode(sq.getX12DE355().getCode())
 					.build();
 		}
 
@@ -410,6 +392,17 @@ public class CarrierAdviseCommand
 						.lengthInCM(dimensions.getLengthInCM())
 						.build())
 				.items(ImmutableList.of(item))
+				.build();
+	}
+
+	@NonNull
+	private JsonMoney toJsonMoney(@NonNull final Money money)
+	{
+		// Amount carries both the value and its ISO currency code, so the JsonMoney comes from a single coherent source.
+		final Amount amount = moneyService.toAmount(money);
+		return JsonMoney.builder()
+				.amount(amount.getAsBigDecimal())
+				.currencyCode(amount.getCurrencyCode().toThreeLetterCode())
 				.build();
 	}
 

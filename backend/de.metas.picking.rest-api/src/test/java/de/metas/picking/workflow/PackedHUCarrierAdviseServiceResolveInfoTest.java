@@ -1,7 +1,9 @@
 package de.metas.picking.workflow;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyRepository;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.money.MoneyService;
 import de.metas.handlingunits.picking.job.carrieradvise.HUShipmentScheduleResolver;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.job.model.PickingJob;
@@ -63,7 +65,8 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 				mock(CustomsTariffRepository.class),
 				shipperRepository,
 				mock(ShipmentScheduleService.class),
-				mock(PickingJobRepository.class));
+				mock(PickingJobRepository.class),
+				new MoneyService(new CurrencyRepository()));
 	}
 
 	private ShipperId createShipper(final String name, final boolean apiCarrierAdvise)
