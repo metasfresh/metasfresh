@@ -62,6 +62,22 @@ import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.*;
 
+/**
+ * Step definitions for {@code MD_Stock} — the aggregated on-hand read model
+ * ({@code MD_Stock.QtyOnHand} is a rolled-up aggregate of {@code M_HU_Storage} per
+ * product/warehouse/{@code AttributesKey}).
+ *
+ * <p>Provides:
+ * <ul>
+ *   <li>{@link #seed_divergent_MD_Stock_row(io.cucumber.datatable.DataTable)} — seeds a single active
+ *       row whose {@code QtyOnHand} is deliberately out of sync with the HU-derived truth (a
+ *       precondition that, in production, only a bug artifact produces)</li>
+ *   <li>{@link #run_MD_Stock_reconciliation_process()} — runs {@code MD_Stock_Update_From_M_HUs} to
+ *       reset {@code QtyOnHand} back to the HU-derived truth</li>
+ *   <li>{@link #verify_MD_Stock_Data(int, io.cucumber.datatable.DataTable)} — asserts the resulting
+ *       {@code MD_Stock} rows</li>
+ * </ul>
+ */
 public class MD_Stock_StepDef
 {
 	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
@@ -123,9 +139,8 @@ public class MD_Stock_StepDef
 	 * {@code TransactionCreatedEvent}/{@code TransactionDeletedEvent}). Divergence therefore only
 	 * arises from a bug artifact — a missed/dropped stock event, or a create-create race between two
 	 * concurrent first-writers of the same business key — never from a normal, reproducible user
-	 * action. A spike into the event handlers found no deterministic multi-event flow that produces
-	 * this state on demand (every documented path either stays in sync by construction or requires
-	 * losing/duplicating an event non-deterministically; see {@code ai-work/30640/pending-questions.md}).
+	 * action. No deterministic multi-event flow produces this state on demand: every event path either
+	 * stays in sync by construction or requires losing/duplicating an event non-deterministically.
 	 *
 	 * <p><b>Why a direct seed is necessary:</b> a cucumber scenario needs a deterministic starting
 	 * state. Since the real trigger is a non-reproducible bug artifact, this step bypasses the
@@ -183,7 +198,7 @@ public class MD_Stock_StepDef
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString())
 				.create()
-				.firstOnlyOrNull(I_MD_Stock.class);
+				.firstOnly(I_MD_Stock.class);
 
 		final I_MD_Stock dataRecord = stockRecord != null ? stockRecord : InterfaceWrapperHelper.newInstance(I_MD_Stock.class);
 		dataRecord.setM_Product_ID(product.getM_Product_ID());
