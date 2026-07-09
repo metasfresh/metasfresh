@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
 import de.metas.common.delivery.v1.json.JsonMoney;
@@ -351,8 +352,8 @@ public class CarrierAdviseCommand
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
 		// Unit price / total value from the order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
-		// The advise is per-unit (numberOfItems=1) and the price UOM equals the order UOM, so totalValue = unitPrice
-		// and the shipped quantity is one order-line unit.
+		// Price UOM and order UOM may differ, so convert ONCE to the price of one ordered unit. The advise sends qty 1
+		// (numberOfItems=1, shippedQuantity=1 ordered unit), so unit price and total value are the same value.
 		JsonMoney unitPrice = null;
 		JsonMoney totalValue = null;
 		JsonQuantity shippedQuantity = null;
@@ -364,15 +365,21 @@ public class CarrierAdviseCommand
 			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
 			final String currencyISOCode = currencyCode.toThreeLetterCode();
 			final Money unitPriceMoney = Money.of(orderLine.getPriceEntered(), currencyId);
-			final Quantity oneUnit = Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID())));
+			final UomId priceUomId = CoalesceUtil.coalesceNotNull(
+					UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
+					UomId.ofRepoId(orderLine.getC_UOM_ID()));
+			final Quantity oneOrderedUnit = Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID())));
+			// price of one ordered unit = unit price × that ordered unit expressed in the price UOM (the single conversion).
+			final Money oneOrderedUnitPrice = unitPriceMoney.multiply(
+					uomConversionBL.convertQuantityTo(oneOrderedUnit, shipmentSchedule.getProductId(), priceUomId).toBigDecimal());
 			unitPrice = JsonMoney.builder()
-					.amount(unitPriceMoney.toBigDecimal())
+					.amount(oneOrderedUnitPrice.toBigDecimal())
 					.currencyCode(currencyISOCode)
 					.build();
 			totalValue = unitPrice;
 			shippedQuantity = JsonQuantity.builder()
-					.value(oneUnit.toBigDecimal())
-					.uomCode(oneUnit.getX12DE355().getCode())
+					.value(oneOrderedUnit.toBigDecimal())
+					.uomCode(oneOrderedUnit.getX12DE355().getCode())
 					.build();
 		}
 
