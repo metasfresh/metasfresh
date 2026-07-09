@@ -8,9 +8,9 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 93 | 97 | 96% |
-| Distribution | 41 | 41 | 93% |
-| Manufacturing | 26 | 32 | 81% |
+| Picking | 98 | 102 | 96% |
+| Distribution | 38 | 41 | 93% |
+| Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
 | HU Consolidation | 8 | 9 | 89% |
 | Inventory | 1 | 3 | 33% |
@@ -84,12 +84,13 @@
 |---|---|
 | Full pick, single HU, confirm, shipment schedule marked picked | `picking/picking.spec.js` |
 | Pick HU then unpick → HU returns to unallocated | `picking/picking.spec.js` |
-| Partial unpack: scan product GTIN → qty dialog → scan target HU → chosen qty removed into target, rest stays packed; re-pick loop repeatable | `picking/picking_partial_unpack.spec.js` |
-| Partial unpack: scan product not in the package → one error toast, nothing removed | `picking/picking_partial_unpack.spec.js` |
-| Partial unpack: partial-unpick then complete the job → shipment carries the net packed qty in exactly one line, no negative counter-row | `picking/picking_partial_unpack.spec.js` |
-| Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/picking_partial_unpack.spec.js` |
-| Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/picking_partial_unpack.spec.js` |
-| Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/picking_partial_unpack.spec.js` |
+| Partial unpack: scan product GTIN → qty dialog → scan target HU → chosen qty removed into target, rest stays packed; re-pick loop repeatable | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack: scan product not in the package → one error toast, nothing removed | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack: partial-unpick then complete the job → shipment carries the net packed qty in exactly one line, no negative counter-row | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/unpack/picking_partial_unpack.spec.js` |
+| Partial unpack to the floor from a pick-to-CU-into-TU package (bare TU target, no LU): skip the target scan → removed qty leaves the TU and reappears as re-pickable, rest stays packed, no orphaned/stuck CU in the TU; repeatable over 2 rounds | `picking/unpack/picking_partial_unpack_TU_floor.spec.js` |
 | Unpick a whole step and scan a target HU → picked goods move onto the scanned target HU | `picking/picking_unpick_scan_target.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
@@ -103,7 +104,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**19/20 — 95%**
+**20/21 — 95%**
 
 ### Order-based picking — filtering and facets
 
