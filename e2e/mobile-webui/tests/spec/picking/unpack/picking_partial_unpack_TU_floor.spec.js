@@ -132,9 +132,9 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
             hus: {
                 tu1: { huStatus: 'S', storages: { P1: '3 PCE' } },
             },
-            // The shipment schedule's picked qty must follow the unpick: 4 -> 3 PCE. The unpick deletes/reduces
-            // the M_ShipmentSchedule_QtyPicked recorded for this pick. (Max, danthermuat #30480: the HU detaches
-            // correctly but this row is NOT reduced — it stays at 4 PCE, so the schedule over-reports picked qty.)
+            // The shipment schedule's picked qty must follow the unpick: 4 -> 3 PCE. The unpick must
+            // reduce/delete the M_ShipmentSchedule_QtyPicked recorded for this pick — the known bug is that
+            // the HU detaches correctly but this row is NOT reduced (stays 4 PCE), over-reporting picked qty.
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
