@@ -163,7 +163,7 @@ services:
       replicas: 1
 
   playwright-frontend:
-    image: $mfregistry/metas-frontend-test:$mfversion
+    image: ghcr.io/metasfresh/metas-frontend-test:$mfversion
     profiles: ["frontend"]
     volumes:
       - ./playwright-report-frontend:/app/playwright-report
@@ -206,7 +206,7 @@ services:
       replicas: 1
 
   playwright-mobile:
-    image: $mfregistry/metas-mobile-test:$mfversion
+    image: ghcr.io/metasfresh/metas-mobile-test:$mfversion
     profiles: ["mobile"]
     volumes:
       - ./playwright-report-mobile:/app/playwright-report
