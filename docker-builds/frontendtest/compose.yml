@@ -149,7 +149,7 @@ services:
       replicas: 1
 
   playwright:
-    image: $mfregistry/metas-frontend-test:$mfversion
+    image: ghcr.io/metasfresh/metas-frontend-test:$mfversion
     volumes:
       - ./playwright-report:/app/playwright-report
       - ./test-results:/app/test-results
