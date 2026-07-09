@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 74 | 78 | 95% |
+| Picking | 76 | 80 | 95% |
 | Distribution | 40 | 41 | 98% |
 | Manufacturing | 23 | 29 | 79% |
 | HU Manager | 14 | 16 | 88% |
@@ -92,7 +92,8 @@
 | Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/unpack/picking_partial_unpack.spec.js` |
 | Partial unpack to the floor from a pick-to-CU-into-TU package (bare TU target, no LU): skip the target scan → removed qty leaves the TU and reappears as re-pickable, rest stays packed, no orphaned/stuck CU in the TU, and the shipment schedule's picked qty (M_ShipmentSchedule_QtyPicked) is reduced accordingly; repeatable over 2 rounds | `picking/unpack/picking_partial_unpack_TU_floor.spec.js` |
 | Partial unpack to the floor spanning TWO separate picks of the same product into the same bare TU (2+2=4 packed): unpick 3 → the newest pick's schedule row is fully consumed and deleted, the older row is reduced to the remainder (1), no orphan row/CU | `picking/unpack/picking_partial_unpack_TU_floor_spanning_picks.spec.js` |
-| Partial unpack to the floor across TWO picking lines (two products) sharing the same bare TU: unpicking one line's qty reduces ONLY that line's shipment schedule, the other line's schedule is untouched (no cross-line bleed) | `picking/unpack/picking_partial_unpack_TU_floor_two_lines.spec.js` |
+| Partial unpack to the floor across TWO picking lines (two products) sharing the same bare TU: unpicking one line's qty reduces ONLY that line's shipment schedule, the other line's schedule is untouched (no cross-line bleed); fully unpicking one line while the other stays active RETAINS the shared TU's consignee (C_BPartner_ID/C_BPartner_Location_ID), fully unpicking the last one too CLEARS it | `picking/unpack/picking_partial_unpack_TU_floor_two_lines.spec.js` |
+| Unpick a whole line fully from its own TU under a shared LU (LU/TU-target unpick, not a bare-TU floor-reduce) RETAINS that TU's consignee (net-zero picked rows survive active and the consignee is re-stamped) and leaves the shared LU's consignee untouched throughout, without disturbing the other still-active line's TU/LU storage | `picking/unpack/picking_partial_unpack_LU_two_lines.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
@@ -103,7 +104,7 @@
 | completeJobAutomatically=true, scan drop-to locator after pick → job auto-completed, removed from list | `picking/completeJobAutomatically.spec.js` |
 | ❌ Scan HU from wrong warehouse/locator → error shown | — |
 
-**19/20 — 95%**
+**20/21 — 95%**
 
 ### Order-based picking — filtering and facets
 
@@ -195,8 +196,9 @@
 | Catch-weight pick via EAN13 prefix 29 — wrong product → error | `picking/picking_catchWeight.spec.js` |
 | Catch-weight pick via custom QR code format | `picking/picking_catchWeight.spec.js` |
 | ShowLastPickedBestBeforeDateForLines = Y → last best-before date shown on picking line | `picking/picking_catchWeight.spec.js` |
+| Partial floor-unpick of a catch-weight pick from a bare TU: the remaining shipment schedule row's catch weight scales proportionally with the reduced qty | `picking/unpack/picking_partial_unpack_TU_floor_catchWeight.spec.js` |
 
-**10/10 — 100%**
+**11/11 — 100%**
 
 ### Order-based picking — special flows
 

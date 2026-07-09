@@ -190,24 +190,48 @@ test('Unpick to the floor on one of two picking lines reduces that line\'s shipm
         await PickingJobScreen.expectLineButton({ index: 2, qtyPicked: '1 Stk' });
 
         await Backend.expect({
-            title: 'after driving P1 to zero on the shared TU: P1 has no QtyPicked rows left, P2 schedule row is UNCHANGED at 1 PCE (no cross-line bleed from the to-zero guard)',
+            title: 'after driving P1 to zero on the shared TU: P1 has no QtyPicked rows left, P2 schedule row is UNCHANGED at 1 PCE, and the TU consignee is RETAINED (P2 still active on it)',
             hus: {
-                // The shared TU stays active (huStatus 'S') and keeps P2's storage untouched. Note: the
-                // production fix (IHUShipmentScheduleDAO.hasActiveQtyPickedForTUExcludingSchedule) also
-                // retains the TU's C_BPartner_ID/C_BPartner_Location_ID (consignee) whenever another
-                // schedule still has active rows on it — that retention is a backend-only side effect
-                // with no field in the frontendTesting HU-expectation schema (JsonHUExpectation has no
-                // bpartner/consignee key), so it cannot be asserted directly from this Playwright spec.
-                // It is covered by the guard itself and by the unaffected-P2 assertions here (the bug's
-                // symptom, if the guard regressed, would surface as P2's TU no longer resolving to the
-                // correct consignee downstream, e.g. on shipment generation).
-                tu1: { huStatus: 'S', storages: { P1: '0 PCE', P2: '1 PCE' } },
+                // The shared TU stays active (huStatus 'S') and keeps P2's storage untouched. The
+                // production guard (HUShipmentScheduleBL.resetConsigneeIfNoActivePickedRows, backed by
+                // IHUShipmentScheduleDAO.hasActiveQtyPickedForTopLevelHU) must RETAIN the TU's consignee
+                // (C_BPartner_ID/C_BPartner_Location_ID) here because P2 still has an active picked row on
+                // it — asserted directly via the `bpartner` HU-expectation field (not a proxy).
+                tu1: { huStatus: 'S', storages: { P1: '0 PCE', P2: '1 PCE' }, bpartner: 'BP1' },
             },
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: { qtyPicked: [] },
                         P2: { qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] },
+                    }
+                }
+            }
+        });
+    });
+
+    // Now P2 becomes the LAST schedule holding picked qty on the shared TU. Driving it to zero too must
+    // FINALLY reset the TU's consignee (C_BPartner_ID/C_BPartner_Location_ID stripped) — no schedule is
+    // left active on it. Asserted directly via `consigneeCleared` (not a proxy).
+    await test.step('Unpick the remaining 1 PCE of P2 to the floor — P2 drops to ZERO too, no schedule left active on the shared TU', async () => {
+        await PickingJobScreen.unpickItemToFloor({ scannedCode: packedScanP2, expectDefaultQty: '1', qty: '1' });
+
+        await PickingJobScreen.expectLineButton({ index: 2, qtyPicked: '0 Stk' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '0 Stk' });
+
+        await Backend.expect({
+            title: 'after driving P2 to zero too: both schedules empty (the now-fully-drained TU is destroyed, per framework HU-lifecycle GC), the shared TU consignee is CLEARED (no schedule left active on it)',
+            hus: {
+                // The TU holds zero storage of both products at this point, so the framework destroys it
+                // (huStatus 'D') rather than leaving an empty active shell — unrelated to the consignee
+                // guard under test. `consigneeCleared` still asserts the guard's actual outcome directly.
+                tu1: { huStatus: 'D', consigneeCleared: true },
+            },
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [] },
+                        P2: { qtyPicked: [] },
                     }
                 }
             }
