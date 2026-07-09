@@ -34,13 +34,14 @@ import de.metas.common.delivery.v1.json.JsonMoney;
 import de.metas.common.delivery.v1.json.JsonTopLevelType;
 import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.JsonQuantity;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.ICurrencyDAO;
+import de.metas.currency.Amount;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.product.ProductPrice;
 import de.metas.uom.UomId;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequest;
@@ -74,6 +75,7 @@ import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.shipper.gateway.commons.converters.v1.JsonShipperConverter;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigList;
 import de.metas.shipper.gateway.commons.mapping.ShipperMappingConfigRepository;
@@ -131,7 +133,7 @@ public class CarrierAdviseCommand
 	@NonNull private final JsonShipperConverter jsonShipperConverter = SpringContextHolder.instance.getBean(JsonShipperConverter.class);
 	@NonNull private final CustomsTariffRepository customsTariffRepository = SpringContextHolder.instance.getBean(CustomsTariffRepository.class);
 	@NonNull private final ShipperRepository shipperRepository = SpringContextHolder.instance.getBean(ShipperRepository.class);
-	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -362,19 +364,23 @@ public class CarrierAdviseCommand
 		{
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderAndLineId);
 			final CurrencyId currencyId = CurrencyId.ofRepoId(orderLine.getC_Currency_ID());
-			final CurrencyCode currencyCode = currencyDAO.getCurrencyCodeById(currencyId);
-			final String currencyISOCode = currencyCode.toThreeLetterCode();
-			final Money unitPriceMoney = Money.of(orderLine.getPriceEntered(), currencyId);
 			final UomId priceUomId = CoalesceUtil.coalesceNotNull(
 					UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()),
 					UomId.ofRepoId(orderLine.getC_UOM_ID()));
-			final Quantity oneOrderedUnit = Quantity.of(BigDecimal.ONE, uomDAO.getById(UomId.ofRepoId(orderLine.getC_UOM_ID())));
-			// price of one ordered unit = unit price × that ordered unit expressed in the price UOM (the single conversion).
-			final Money oneOrderedUnitPrice = unitPriceMoney.multiply(
-					uomConversionBL.convertQuantityTo(oneOrderedUnit, shipmentSchedule.getProductId(), priceUomId).toBigDecimal());
+			final ProductPrice orderLinePrice = ProductPrice.builder()
+					.money(Money.of(orderLine.getPriceEntered(), currencyId))
+					.uomId(priceUomId)
+					.productId(shipmentSchedule.getProductId())
+					.build();
+			// Price and order UOM may differ: value of ONE ordered unit at the order-line price
+			// (MoneyService.multiply converts the qty to the price UOM once, then multiplies).
+			// The resulting Amount carries both the value and its ISO currency code, so the
+			// JsonMoney is built from a single coherent source.
+			final Quantity oneOrderedUnit = Quantitys.of(BigDecimal.ONE, UomId.ofRepoId(orderLine.getC_UOM_ID()));
+			final Amount oneOrderedUnitValue = moneyService.toAmount(moneyService.multiply(oneOrderedUnit, orderLinePrice));
 			unitPrice = JsonMoney.builder()
-					.amount(oneOrderedUnitPrice.toBigDecimal())
-					.currencyCode(currencyISOCode)
+					.amount(oneOrderedUnitValue.getAsBigDecimal())
+					.currencyCode(oneOrderedUnitValue.getCurrencyCode().toThreeLetterCode())
 					.build();
 			totalValue = unitPrice;
 			shippedQuantity = JsonQuantity.builder()
