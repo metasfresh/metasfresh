@@ -23,6 +23,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>de.metas.document.archive</groupId>
+			<artifactId>de.metas.document.archive.base</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>de.metas.util</groupId>
 			<artifactId>de.metas.util</artifactId>
 			<version>${project.version}</version>
@@ -82,6 +88,27 @@
 			<groupId>net.sf.saxon</groupId>
 			<artifactId>Saxon-HE</artifactId>
 			<version>9.9.1-8</version>
+		</dependency>
+
+		<!--
+			Mustangproject — ZUGFeRD/Factur-X PDF assembly and validation (Apache-2.0).
+			Version 2.11.0 is the last release that targets Java 1.8 (confirmed: maven.compiler.source=8
+			in library-2.11.0.pom and validator-2.11.0.pom).
+			library: ZUGFeRDExporterFromA3 — embeds EN16931 CII XML into an existing PDF as a
+			         Factur-X attachment (factur-x.xml, AFRelationship=Alternative, Factur-X XMP).
+			validator: ZUGFeRDValidator — validates the assembled PDF against the ZUGFeRD/Factur-X
+			           EN16931 profile (schema + schematron).
+		-->
+		<dependency>
+			<groupId>org.mustangproject</groupId>
+			<artifactId>library</artifactId>
+			<version>2.11.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mustangproject</groupId>
+			<artifactId>validator</artifactId>
+			<version>2.11.0</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>

@@ -48,6 +48,7 @@ import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackRequest;
 import de.metas.handlingunits.picking.job.service.commands.get_next_eligible_line.GetNextEligibleLineToPackResponse;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.serialno.SerialNoSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.mobile.application.MobileApplicationId;
@@ -72,6 +73,9 @@ import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActi
 import de.metas.picking.workflow.lauchers.PickingWorkflowLaunchersProvider;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
+import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
@@ -479,15 +483,20 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.bestBeforeDate(json.getBestBeforeDate())
 				.isSetLotNo(json.isSetLotNo())
 				.lotNo(json.getLotNo())
+				.isSetSerialNos(json.isSetSerialNos())
+				.serialNos(json.getSerialNos() != null ? SerialNoSet.parseStrings(json.getSerialNos()) : null)
 				.isCloseTarget(json.isCloseTarget())
 				.isSetGrais(json.isSetGrais())
 				// Parse the raw scanned strings (canonical or GS1 AI 8003) into a GRAISet once, here at the
 				// REST→domain boundary, so the picking command works with a typed GRAISet instead of re-parsing.
 				.graiCodes(json.getGraiCodes() != null ? GRAISet.parseStrings(json.getGraiCodes()) : null)
+				.isShelfLifeConfirmed(json.isShelfLifeConfirmed())
 				//
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
 						.orElse(null))
+				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
+				.qtyToUnpick(json.getUnpickQty())
 				.build();
 	}
 
@@ -576,6 +585,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.map(JsonTUPickingTarget::of)
 						.collect(ImmutableList.toImmutableList()))
 				.graiScanEnabled(pickingJobRestService.isGraiScanEnabled(pickingJob))
+				.existingLuGrais(pickingJobRestService.getExistingLuGrais(pickingJob, lineId))
 				.build();
 	}
 
@@ -699,5 +709,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.lineId(response.getLineId())
 				.logs(response.getLogs())
 				.build();
+	}
+
+	@NonNull
+	public JsonUnpickResolveResponse resolveUnpick(
+			@NonNull final JsonUnpickResolveRequest request,
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
+		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
 	}
 }

@@ -19,7 +19,15 @@ export const computeStepStatus = ({ draftStep }) => {
 };
 
 const updateLineFromSteps = ({ draftLine }) => {
-  draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
+  // Prefer the backend-provided line.qtyIssued: it is already aggregated in the BOM-line UOM
+  // (RawMaterialsIssueLine.computeQtyIssued converts each step's issued qty from the picked HU's
+  // stocking UOM — e.g. Stk — to the line UOM — e.g. kg — before summing). Summing step qtys here
+  // would be wrong whenever the step (stocking) UOM differs from the line UOM, because the frontend
+  // has no conversion factor. Fall back to the step sum only when the backend value is absent
+  // (legacy/malformed payloads); that fallback is correct only when step UOM == line UOM.
+  if (draftLine.qtyIssued == null) {
+    draftLine.qtyIssued = computeLineQtyIssuedFromSteps({ draftLine });
+  }
   draftLine.qtyToIssueRemaining = Math.max(draftLine.qtyToIssue - draftLine.qtyIssued, 0);
   draftLine.completeStatus = computeLineStatus({ draftLine });
 };
@@ -79,7 +87,8 @@ const computeActivityStatusFromLines = ({ draftActivityDataStored }) => {
   return CompleteStatus.reduceFromCompleteStatuesUniqueArray(lineStatuses);
 };
 
-const normalizeLines = (lines) => {
+// @VisibleForTesting
+export const normalizeLines = (lines) => {
   return lines.map((line) => {
     return {
       productName: line.productName,
@@ -90,6 +99,7 @@ const normalizeLines = (lines) => {
       weightable: line.weightable,
       readOnly: line.readOnly ?? false,
       qtyToIssue: line.qtyToIssue,
+      qtyIssued: line.qtyIssued,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,
       qtyToIssueTolerance: line.qtyToIssueTolerance,

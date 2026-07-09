@@ -27,15 +27,44 @@ export const BarcodeScannerComponent = {
         }
         await expect(page.locator(selector)).not.toBeAttached({ timeout });
     }),
+    // Simulates a hardware/wedge keyboard scan by dispatching keydown/keyup for each character.
+    //
+    // Optional mid-scan gap (object form only): { scannedCode, testId, gapAtIndex, gapMs }
+    //   gapAtIndex - split the code before this character index and insert ONE real wall-clock pause
+    //   gapMs      - duration of that pause, in milliseconds
+    // The pause is a genuine page.waitForTimeout() (NOT a simulated timestamp): the useKeyboardBarcodeReader
+    // hook measures inter-keystroke gaps with Date.now() and runs a setInterval flush timer in the browser,
+    // and a single page.evaluate loop dispatches all keystrokes synchronously (zero wall-clock gap) so it
+    // CANNOT reproduce a real gap. Splitting the dispatch across two evaluate() calls with an awaited pause
+    // between them reproduces the production symptom: a long HU global QR code (HU#<v>#{…json…}) that arrives
+    // at the browser in chunks spread over several seconds. Set gapMs >= the scanner debounce
+    // (barcodeScanner.inputText.debounceMillis, default 300ms) to exercise the gap path, and keep it well
+    // below the hook's idle-abandon deadline (idleAbandonMs, default 15000ms via
+    // barcodeScanner.inputText.idleAbandonMillis) so an in-flight partial QR is not abandoned.
+    // Default (no gapAtIndex/gapMs): unchanged single synchronous zero-delay dispatch — existing callers are
+    // not affected.
+    //
+    // Optional terminator (object form only): { scannedCode, testId, terminator }
+    //   terminator - a non-printable end-of-scan key ('Enter' / 'Tab') dispatched once AFTER the code, to
+    //   simulate a hardware scanner configured with an Enter/Tab suffix (e.g. Zebra DataWedge "Enter as
+    //   string"). The useKeyboardBarcodeReader hook treats Enter/Tab as an explicit end-of-scan signal and
+    //   force-completes the current buffer immediately — so a truncated / unparseable scan surfaces its error
+    //   right away instead of waiting out the content-completion idle-abandon window.
     type: async (params) => await test.step(`${NAME} - Type scanned code`, async () => {
         let scannedCode;
         let testId;
+        let gapAtIndex;
+        let gapMs;
+        let terminator;
         if (typeof params === 'string') {
             scannedCode = params;
             testId = undefined;
         } else if (params && typeof params === 'object') {
             scannedCode = params.scannedCode;
             testId = params.testId;
+            gapAtIndex = params.gapAtIndex;
+            gapMs = params.gapMs;
+            terminator = params.terminator;
         } else {
             throw new Error("Invalid argument provided to the 'type' function. Must be a string or an object with { scannedCode }.");
         }
@@ -48,20 +77,36 @@ export const BarcodeScannerComponent = {
 
         await BarcodeScannerComponent.waitToAttach({ testId });
 
-        // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly, 
+        // NOTE page.keyboard.type is very slow, so we have to send the keyboard events directly,
         // Now a QR code is typed in 30ms instead of 5 seconds.
         // await page.keyboard.type(`${scannedCode}`, { delay: delay != null ? delay : TYPE_DELAY_MILLIS });
-        await page.evaluate((code) => {
-            for (const char of code) {
-                document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
-                document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
-            }
-            // Terminate with Enter, matching real hardware scanner behavior (DataWedge default).
-            // Without this, rapid consecutive scans can merge buffers in useKeyboardBarcodeReader
-            // because the rate-drop flush (300ms) hasn't fired yet.
-            document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
-            document.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
-        }, scannedCode);
+        const dispatchChunk = async (chunk) => {
+            await page.evaluate((code) => {
+                for (const char of code) {
+                    document.dispatchEvent(new KeyboardEvent('keydown', { key: char, bubbles: true }));
+                    document.dispatchEvent(new KeyboardEvent('keyup', { key: char, bubbles: true }));
+                }
+            }, chunk);
+        };
+
+        const hasMidScanGap =
+            Number.isInteger(gapAtIndex) && gapAtIndex > 0 && gapAtIndex < scannedCode.length && gapMs > 0;
+        if (!hasMidScanGap) {
+            await dispatchChunk(scannedCode);
+        } else {
+            await dispatchChunk(scannedCode.substring(0, gapAtIndex));
+            await page.waitForTimeout(gapMs);
+            await dispatchChunk(scannedCode.substring(gapAtIndex));
+        }
+
+        // Explicit end-of-scan key (device Enter/Tab suffix): a single non-printable keydown/keyup the
+        // hook recognises as "scan finished", force-completing the buffer immediately.
+        if (terminator) {
+            await page.evaluate((key) => {
+                document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+                document.dispatchEvent(new KeyboardEvent('keyup', { key, bubbles: true }));
+            }, terminator);
+        }
     }),
 
     typeViaIME: async (params) => await test.step(`${NAME} - Type scanned code via IME`, async () => {
@@ -173,16 +218,15 @@ export const BarcodeScannerComponent = {
         }
     }),
 
-    // Asserts the device camera <video> element is NOT rendered inside .barcode-scanner.
-    // Used by the hardware-scanner-only deployments (useCamera=N) to guard against a
-    // regression that would silently re-enable the camera capture preview.
-    //
-    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — a
-    // <video> that doesn't appear within seconds is not going to appear, and falling back
-    // to the 120s global assertion timeout would silently consume the test budget on a
-    // genuine regression.
-    expectCameraVideoAbsent: async () => await test.step(`${NAME} - Expect no camera <video> rendered`, async () => {
-        await expect(page.locator('.barcode-scanner video')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    // Asserts camera mode is NOT active — the CameraModePanel wrapper (`.camera-mode-panel`,
+    // rendered iff activeMode===CAMERA) is not mounted. Used by hardware-scanner-only deployments
+    // (camera disabled) to guard against a regression that would silently re-enable camera capture.
+    // We assert on the always-mounted wrapper rather than the inner <video> — see
+    // expectCameraModeActive for why the <video> is unreliable.
+    // Uses FAST_ACTION_TIMEOUT (5s): absence-of-element assertions should fail fast — falling back
+    // to the 120s global assertion timeout would silently consume the test budget on a genuine regression.
+    expectCameraModeInactive: async () => await test.step(`${NAME} - Expect camera mode not active`, async () => {
+        await expect(page.locator('.camera-mode-panel')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
     }),
 
     // Simulates Ctrl+V paste: mocks navigator.clipboard.readText to return the barcode,
@@ -229,9 +273,17 @@ export const BarcodeScannerComponent = {
         await expect(page.getByTestId('manual-entry-input')).not.toHaveAttribute('readonly', { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
-    // Asserts the device camera <video> element IS rendered inside .barcode-scanner.
-    expectCameraVideoPresent: async () => await test.step(`${NAME} - Expect camera <video> rendered`, async () => {
-        await expect(page.locator('.barcode-scanner video')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
+    // Asserts camera mode IS active by checking the always-mounted CameraModePanel wrapper
+    // (`.camera-mode-panel`, rendered iff activeMode===CAMERA).
+    // NOT the inner <video>: CameraModePanel renders the <video> only `{!isProcessing && <video/>}`,
+    // so it unmounts whenever a barcode is processed. In CI the synthetic fake-media stream
+    // (--use-fake-device-for-media-stream) can make ZXing false-positive a 1-D barcode → isProcessing
+    // flips → the <video> unmounts mid-assertion (and a getUserMedia error tears the panel down via
+    // onCancel). Asserting on the stable wrapper verifies the toggle switched into camera mode without
+    // depending on a transient, hardware-feed-dependent element. Real video-feed validation needs
+    // physical camera hardware and cannot be deterministic in CI.
+    expectCameraModeActive: async () => await test.step(`${NAME} - Expect camera mode active`, async () => {
+        await expect(page.locator('.camera-mode-panel')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',

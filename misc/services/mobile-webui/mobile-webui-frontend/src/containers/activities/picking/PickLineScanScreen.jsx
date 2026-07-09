@@ -103,8 +103,13 @@ const PickLineScanScreen = () => {
 
   // GRAI Flow-Through: when GRAI scanning is required for this job's customer, the qty confirm
   // auto-invokes the inline GRAI capture (handled by ScanHUAndGetQtyComponent) and the captured codes
-  // are reported on the same onResult, so qty + GRAIs go out as ONE atomic pick.
-  const { graiScanEnabled, isTargetsLoading } = useAvailablePickingTargets({
+  // are reported on the same onResult, so qty + GRAIs go out as ONE atomic pick. `existingLuGrais` are
+  // the GRAIs already assigned to this line's effective LU by prior picks — the capture panel mirrors
+  // the server-side LU-wide dedupe against them, so re-scanning a GRAI already on the LU (a
+  // different product picked onto the SAME LU) is skipped, not counted. The Flow-Through pick happens on
+  // this line-scan screen (no per-step scan screen), so the wiring must live here too, not only in
+  // PickStepScanScreen.
+  const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
     wfProcessId,
     lineId,
     type: PickingTargetType.TU,
@@ -158,6 +163,7 @@ const PickLineScanScreen = () => {
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
       graiScanEnabled={isInlineGraiCaptureEnabled}
+      existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
       qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
       packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
@@ -209,7 +215,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
-    readAttributes: getReadAttributesFromActivity({ activity }),
+    // Per-line readAttributes (e.g. SerialNo for serial-no products); falls back to the job-level set.
+    readAttributes: line?.readAttributes ?? getReadAttributesFromActivity({ activity }),
   };
 };
 
@@ -411,6 +418,7 @@ const usePostQtyPicked = ({
     catchWeight = null,
     bestBeforeDate,
     lotNo,
+    serialNos,
     productNo,
     isCloseTarget = false,
     isDone = true,
@@ -454,6 +462,8 @@ const usePostQtyPicked = ({
         lotNo,
         setGrais,
         graiCodes,
+        setSerialNos: serialNos !== undefined,
+        serialNos,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

@@ -290,6 +290,17 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return getCurrentPickingTargetEffectiveValue(lineId, CurrentPickingTarget::getLuPickingTarget);
 	}
 
+	/**
+	 * The first <b>existing</b> LU picking target across line- then header-scope, skipping not-yet-materialised
+	 * ones (unlike {@link #getLuPickingTargetEffective(PickingJobLineId)}, which returns the first present target).
+	 */
+	public Optional<LUPickingTarget> getExistingLuPickingTargetEffective(@Nullable final PickingJobLineId lineId)
+	{
+		return getCurrentPickingTargetEffectiveValue(
+				lineId,
+				currentPickingTarget -> currentPickingTarget.getLuPickingTarget().filter(LUPickingTarget::isExistingLU));
+	}
+
 	@NonNull
 	public PickingJob withLuPickingTarget(
 			@Nullable final PickingJobLineId lineId,
@@ -470,6 +481,18 @@ public final class PickingJob implements PickingJobHeaderOrLine
 		return streamLines()
 				.map(PickingJobLine::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	public Quantity getPackedQty(@NonNull final ProductId productId)
+	{
+		return streamSteps()
+				.filter(step -> ProductId.equals(step.getProductId(), productId))
+				.map(PickingJobStep::getPackedQty)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.reduce(Quantity::add)
+				.orElse(null);
 	}
 
 	@Nullable

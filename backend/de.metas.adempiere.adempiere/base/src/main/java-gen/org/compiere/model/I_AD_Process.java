@@ -1,8 +1,7 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Process
  *  @author metasfresh (generated) 
@@ -409,7 +408,40 @@ public interface I_AD_Process
 
 	/**
 	 * Set Filename Pattern.
-	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 * Pattern for the archive's PDF filename for this process. Placeholders: 
+{
+orgname}
+, 
+{
+orgvalue}
+, 
+{
+doctype}
+, 
+{
+tablename}
+, 
+{
+processname}
+, 
+{
+processvalue}
+, 
+{
+documentno}
+, 
+{
+recordid}
+, 
+{
+pinstanceid}
+, plus $
+{
+date:<DateTimeFormatter-pattern>}
+ (e.g. $
+{
+date:yyyyMMdd_HHmmss}
+) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended automatically.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -419,7 +451,40 @@ public interface I_AD_Process
 
 	/**
 	 * Get Filename Pattern.
-	 * Pattern for the archive's PDF filename. Placeholders: {orgname}, {orgvalue}, {doctype}, {tablename}, {processname}, {processvalue}, {documentno}, {recordid}, {pinstanceid}, plus ${date:&lt;DateTimeFormatter-pattern&gt;} (e.g. ${date:yyyyMMdd_HHmmss}) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended if missing.
+	 * Pattern for the archive's PDF filename for this process. Placeholders: 
+{
+orgname}
+, 
+{
+orgvalue}
+, 
+{
+doctype}
+, 
+{
+tablename}
+, 
+{
+processname}
+, 
+{
+processvalue}
+, 
+{
+documentno}
+, 
+{
+recordid}
+, 
+{
+pinstanceid}
+, plus $
+{
+date:<DateTimeFormatter-pattern>}
+ (e.g. $
+{
+date:yyyyMMdd_HHmmss}
+) in the org's timezone. Unresolvable placeholders are left unchanged. The extension '.pdf' is appended automatically.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -567,8 +632,8 @@ public interface I_AD_Process
 	String COLUMNNAME_IsFormatExcelFile = "IsFormatExcelFile";
 
 	/**
-	 * Set Include CSV Header Row.
-	 * If enabled, the first row of the CSV file will contain column headers.
+	 * Set CSV-Kopfzeile einschließen.
+	 * Wenn aktiviert, enthält die erste Zeile der CSV-Datei die Spaltenüberschriften.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -577,8 +642,8 @@ public interface I_AD_Process
 	void setIsIncludeCSVHeaderRow (boolean IsIncludeCSVHeaderRow);
 
 	/**
-	 * Get Include CSV Header Row.
-	 * If enabled, the first row of the CSV file will contain column headers.
+	 * Get CSV-Kopfzeile einschließen.
+	 * Wenn aktiviert, enthält die erste Zeile der CSV-Datei die Spaltenüberschriften.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -657,6 +722,50 @@ public interface I_AD_Process
 
 	ModelColumn<I_AD_Process, Object> COLUMN_IsOneInstanceOnly = new ModelColumn<>(I_AD_Process.class, "IsOneInstanceOnly", null);
 	String COLUMNNAME_IsOneInstanceOnly = "IsOneInstanceOnly";
+
+	/**
+	 * Set PDF/A-3 output.
+	 * If set, the report is emitted as PDF/A-3 (for ZUGFeRD e-invoicing).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPdfA3Output (boolean IsPdfA3Output);
+
+	/**
+	 * Get PDF/A-3 output.
+	 * If set, the report is emitted as PDF/A-3 (for ZUGFeRD e-invoicing).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPdfA3Output();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsPdfA3Output = new ModelColumn<>(I_AD_Process.class, "IsPdfA3Output", null);
+	String COLUMNNAME_IsPdfA3Output = "IsPdfA3Output";
+
+	/**
+	 * Set Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPreventConcurrentExecution (boolean IsPreventConcurrentExecution);
+
+	/**
+	 * Get Prevent Concurrent Execution.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPreventConcurrentExecution();
+
+	ModelColumn<I_AD_Process, Object> COLUMN_IsPreventConcurrentExecution = new ModelColumn<>(I_AD_Process.class, "IsPreventConcurrentExecution", null);
+	String COLUMNNAME_IsPreventConcurrentExecution = "IsPreventConcurrentExecution";
 
 	/**
 	 * Set Report.

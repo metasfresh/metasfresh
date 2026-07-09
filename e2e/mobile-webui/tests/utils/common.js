@@ -6,6 +6,9 @@ export const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://localh
 
 export const VERY_FAST_ACTION_TIMEOUT = 1000; // 1sec
 export const FAST_ACTION_TIMEOUT = 5000; // 5sec
+// Window for the keyboard barcode-reader hook to flush a scanned barcode (rateMs default 300ms).
+// Used only for the negative dedup assertion (count must NOT change), where there's no new DOM to poll.
+export const BARCODE_HOOK_FLUSH_MS = 500;
 export const SLOW_ACTION_TIMEOUT = 20000; // 20sec
 export const VERY_SLOW_ACTION_TIMEOUT = 40000; //40sec
 export const ID_BACK_BUTTON = '#Back-button';
@@ -15,6 +18,23 @@ export let page = null;
 export const setCurrentPage = (currentPage) => {
     page = currentPage;
 }
+
+// Capture mode — OFF by default. When the env flag UAT_CAPTURE is set, the run is a deliberate
+// recording run for a UAT/documentation video; otherwise this is a no-op and the test runs at
+// full speed. The test's normal/CI speed is never affected.
+// See skill playwright-video-delivery § "Test speed vs. recording speed".
+export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
+
+// Hold the currently-painted screen on the video recorder long enough for the freshly-entered
+// values to be captured as a clear, deliberate freeze (the recorder samples ~25 fps and Playwright
+// otherwise fills + confirms within a single frame, so the values are never recorded). NO-OP unless
+// UAT_CAPTURE is set — so this can only ever slow a deliberate capture run, never a normal/CI run;
+// the value is therefore generous for legibility, not a marginal minimum.
+const CAPTURE_HOLD_MS = 500;
+export const holdForCaptureIfEnabled = async () => {
+    if (!UAT_CAPTURE || page == null) return;
+    await page.waitForTimeout(CAPTURE_HOLD_MS);
+};
 
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 

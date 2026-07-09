@@ -10,6 +10,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.adempiere.warehouse.qrcode.LocatorQRCodeJsonConverter;
 
+import javax.annotation.Nullable;
+
 @UtilityClass
 public class MobileQRCodeMessages
 {
@@ -37,6 +39,9 @@ public class MobileQRCodeMessages
 	public static final AdMessageKey LU_EXPECTED_AT_TARGET = AdMessageKey.of("de.metas.hu_consolidation.LuExpectedAtTarget");
 	public static final AdMessageKey LU_NOT_AT_SLOT        = AdMessageKey.of("de.metas.hu_consolidation.LuNotAtPickingSlot");
 
+	// GRAI scan errors
+	public static final AdMessageKey INVALID_GRAI_BARCODE  = AdMessageKey.of("de.metas.handlingunits.picking.InvalidGRAIBarcode");
+
 	/**
 	 * Creates a user-friendly exception for the case where the user scanned a GlobalQRCode that is not an HU QR code.
 	 * If the scanned code is a locator (LOC#) QR code, the locator caption is included in the message.
@@ -59,5 +64,15 @@ public class MobileQRCodeMessages
 	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode)
 	{
 		return new AdempiereException(NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
+	}
+
+	/**
+	 * Same as {@link #newNotRecognizedException(ScannedCode)} but keeps the original {@code cause} for diagnostics
+	 * (e.g. the raw payload-conversion failure of a truncated QR code).
+	 */
+	@NonNull
+	public static AdempiereException newNotRecognizedException(@NonNull final ScannedCode scannedCode, @Nullable final Throwable cause)
+	{
+		return new AdempiereException(cause, NOT_RECOGNIZED, StringUtils.trunc(scannedCode.getAsString(), 40));
 	}
 }

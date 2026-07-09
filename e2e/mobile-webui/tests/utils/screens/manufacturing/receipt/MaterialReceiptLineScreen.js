@@ -53,10 +53,26 @@ export const MaterialReceiptLineScreen = {
         await MaterialReceiptLineScreen.waitForScreen();
     }),
 
-    receiveQty: async ({ switchToManualInput, qtyEntered, expectQtyEntered, catchWeight, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
+    receiveQty: async ({ switchToManualInput, qtyEntered, expectQtyEntered, lotNo, bestBeforeDate, expectLotNoVisible, expectBestBeforeDateVisible, catchWeight, catchWeightQRCode, expectGoBackToJob = true }) => await test.step(`${NAME} - Receive qty ${qtyEntered ? qtyEntered : ''}`, async () => {
         await page.getByTestId('receive-qty-button').tap();
 
-        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, catchWeight, catchWeightQRCode });
+        await GetQuantityDialog.waitForDialog();
+        if (expectLotNoVisible != null) {
+            if (expectLotNoVisible) {
+                await GetQuantityDialog.expectLotNoVisible();
+            } else {
+                await GetQuantityDialog.expectLotNoNotVisible();
+            }
+        }
+        if (expectBestBeforeDateVisible != null) {
+            if (expectBestBeforeDateVisible) {
+                await GetQuantityDialog.expectBestBeforeDateVisible();
+            } else {
+                await GetQuantityDialog.expectBestBeforeDateNotVisible();
+            }
+        }
+
+        await GetQuantityDialog.fillAndPressDone({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode });
         // await MaterialReceiptLineScreen.waitForScreen(); // while processing
 
         // final screen

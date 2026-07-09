@@ -78,7 +78,7 @@ public class C_InvoiceEInvoiceTest
 		final EInvoiceConfigService configService = new EInvoiceConfigService();
 		interceptor = new C_Invoice(
 				configService,
-				new EInvoiceCiiService(configService),
+				new EInvoiceCiiService(configService, null, null),
 				attachmentEntryService);
 	}
 
@@ -256,7 +256,7 @@ public class C_InvoiceEInvoiceTest
 
 		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
 		sellerBP.setName("Muster GmbH");
-		sellerBP.setTaxID("DE123456789");
+		sellerBP.setVATaxID("DE123456789"); // USt-IdNr -> BT-31 (VAT identifier); required by BR-CO-26
 		sellerBP.setEMail("invoice@muster.de");
 		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
 		saveRecord(sellerBP);
