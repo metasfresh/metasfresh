@@ -151,7 +151,6 @@ public class DeliveryOrder
 	/**
 	 * Overwrites the carrier with what was actually resolved at ship time. The carrier product and services are
 	 * always taken; the goods type is overwritten only when a single one was resolved ({@code null} keeps the current).
-	 * TODO: currently applied at delivery-order level — should be moved to line level in a later iteration.
 	 */
 	public DeliveryOrder withResolvedCarrier(
 			@NonNull final ShipperProduct shipperProduct,

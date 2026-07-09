@@ -128,6 +128,6 @@ public class CarrierProductAllocationService
 		@NonNull ShipperProduct shipperProduct;
 		/** {@code null} when the resolved goods types were not a single unambiguous value (leave the current one). */
 		@Nullable CarrierGoodsType goodsType;
-		@NonNull Set<CarrierService> services;
+		@NonNull ImmutableSet<CarrierService> services;
 	}
 }
