@@ -90,7 +90,7 @@
 | Partial unpack: remove item to the floor by canceling/skipping the target-HU scan → removed qty leaves the pick, rest stays packed | `picking/unpack/picking_partial_unpack.spec.js` |
 | Partial unpack: transient network failure on submit → error toast, panel stays on SCAN_TARGET; retry succeeds, net qty moved into target HU | `picking/unpack/picking_partial_unpack.spec.js` |
 | Partial unpack: mis-scan the product GTIN as the target HU → backend rejects (4xx), error toast, panel stays on SCAN_TARGET; scanning the correct target HU then commits | `picking/unpack/picking_partial_unpack.spec.js` |
-| Partial unpack to the floor from a pick-to-CU-into-TU package (bare TU target, no LU): skip the target scan → removed qty leaves the TU and reappears as re-pickable, rest stays packed, no orphaned/stuck CU in the TU; repeatable over 2 rounds | `picking/unpack/picking_partial_unpack_TU_floor.spec.js` |
+| Partial unpack to the floor from a pick-to-CU-into-TU package (bare TU target, no LU): skip the target scan → removed qty leaves the TU and reappears as re-pickable, rest stays packed, no orphaned/stuck CU in the TU, and the shipment schedule's picked qty (M_ShipmentSchedule_QtyPicked) is reduced accordingly; repeatable over 2 rounds | `picking/unpack/picking_partial_unpack_TU_floor.spec.js` |
 | Scan invalid picking slot QR code → error shown | `picking/picking.spec.js` |
 | Line status indicator transitions draft → in-progress → complete as HUs are picked | `picking/picking.spec.js` |
 | Partial pick, allowCompletingPartialPickingJob = N → complete blocked | `picking/picking.spec.js` |
