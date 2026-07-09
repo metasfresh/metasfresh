@@ -1,7 +1,8 @@
+-- DATA FIX: de-duplicate existing MD_Stock rows.
 -- MD_Stock can end up with more than one ACTIVE row for the same business key
 -- (AD_Client_ID, AD_Org_ID, M_Product_ID, M_Warehouse_ID, AttributesKey), which breaks any
--- firstOnly()/single-row lookup on that key. This script de-duplicates existing data and then
--- adds a partial unique index to prevent the situation from recurring.
+-- firstOnly()/single-row lookup on that key. This script de-duplicates existing data; the matching
+-- pure-DDL unique index that prevents recurrence lives in its own follow-up script (5812990).
 
 -- Backup before touching business data.
 SELECT backup_table('md_stock');
@@ -23,6 +24,3 @@ WHERE t.IsActive = 'Y'
           AND k.M_Warehouse_ID = t.M_Warehouse_ID
           AND k.AttributesKey = t.AttributesKey
       );
-
--- Prevent recurrence: at most one active row per business key.
-CREATE UNIQUE INDEX MD_Stock_BusinessKey_uq ON MD_Stock (AD_Client_ID, AD_Org_ID, M_Product_ID, M_Warehouse_ID, AttributesKey) WHERE IsActive='Y';
