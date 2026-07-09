@@ -316,9 +316,8 @@ public class PickingJobUnPickCommand
 
 		final ShipmentScheduleId shipmentScheduleId = step.getScheduleId().getShipmentScheduleId();
 
-		// Resolve, before extraction detaches anything, whether this step's pick-to row is TU-keyed (a CU picked
-		// into a bare TU: the reduce path below must run instead of the extracted-CU delete) or CU/LU-keyed (a TU
-		// nested under an LU, or no TU at all: the extracted-CU delete still matches - keep it unchanged).
+		// Before extraction detaches anything: is the pick-to row TU-keyed (bare-TU pick → use the reduce path
+		// below) or CU/LU-keyed (extracted-CU delete still matches → unchanged)?
 		final HuId pickToTuId = resolvePickToTuId(wholeHUsToUnpick, boundaryHu);
 		final boolean isPickToBareTU = pickToTuId != null && !huService.hasLoadingUnit(pickToTuId);
 
@@ -406,10 +405,8 @@ public class PickingJobUnPickCommand
 		final List<I_M_HU> topLevelHUs = extractToTopLevelHUs(huIdAndQRCodeList);
 		if (!isPickToBareTU)
 		{
-			// Bare-TU pick: the schedule-side reversal is handled once for the whole step by
-			// reduceQtyPickedForPickToTU (see unpickStep) instead - a bare-TU pick's row is keyed to the TU
-			// (M_TU_HU_ID), so the extracted-CU delete below (which matches on VHU_ID with M_TU_HU_ID=null)
-			// would never find it anyway.
+			// Not a bare-TU pick: the extracted-CU delete matches the CU/LU-keyed row. (Bare-TU rows are
+			// TU-keyed and reversed once per step via reduceQtyPickedForPickToTU in unpickStep.)
 			shipmentScheduleService.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 		}
 		changeHUStatusFromPickedToActive(topLevelHUs);

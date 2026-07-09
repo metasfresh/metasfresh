@@ -899,7 +899,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		if (fullyConsumedRecords.size() == newestFirst.size())
 		{
 			// No active row remains for this schedule on this TU -> mirror the reset already done by
-			// deleteByTopLevelHUsAndShipmentScheduleId (:821-824) and unallocateTU (:388-391).
+			// deleteByTopLevelHUsAndShipmentScheduleId and unallocateTU.
 			tuHU.setC_BPartner_ID(0);
 			tuHU.setC_BPartner_Location_ID(0);
 			save(tuHU);
