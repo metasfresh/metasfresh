@@ -816,35 +816,39 @@ public class PickingJobPickCommand
 				else
 				{
 					// Decouple the two recordings for a CU-into-TU pick (the TU now carries leaf CU parts):
-					// - Shipment schedule (M_ShipmentSchedule_QtyPicked): record the destination TU, NOT the
-					//   leaf CU, for a CU-into-BARE-TU pick (no LU). That keeps the long-standing top-level-TU
-					//   behavior (VHU_ID stays NULL; the TU is expanded into per-VHU candidates at shipment
-					//   time). Recording the leaf CU here materialises a spurious VHU on the schedule and
-					//   changes downstream shipment/reversal/DESADV handling. An LU pick keeps recording the
-					//   leaf CU (its long-standing behavior), so restrict the TU-recording to the no-LU case.
+					// - Shipment schedule (M_ShipmentSchedule_QtyPicked): for a CU-into-BARE-TU pick (no LU)
+					//   record the destination TU (VHU_ID stays NULL; expanded into per-VHU COO candidates at
+					//   shipment time), NOT the leaf CU (which would materialise a spurious VHU and change
+					//   downstream shipment/reversal/DESADV handling). An LU pick keeps recording the leaf CU.
 					// - Picking-job step: ALWAYS record the leaf CU(s), so a later unpick-to-floor can extract
-					//   and re-activate them (the whole point of tracking the CU parts).
+					//   and re-activate them.
 					final boolean recordTUOnShipmentSchedule = packedHUs.getLURecords().isEmpty();
 
 					final ImmutableList<TUPart> cus = tu.getCUsNotEmpty();
 					final List<Quantity> catchWeights = getCatchWeight() != null ? getCatchWeight().spreadEqually(cus.size()) : null;
 
-					if (recordTUOnShipmentSchedule)
-					{
-						addShipmentScheduleQtyPicked(tu, huStorageFactory.getStorage(tu.toHU()).getQuantity(productId, uom));
-					}
-
+					Quantity qtyPickedThisTU = null;
 					for (int i = 0; i < cus.size(); i++)
 					{
 						final TUPart cu = cus.get(i);
 						final Quantity catchWeightPerCU = catchWeights != null ? catchWeights.get(i) : null;
 						final Quantity qtyPicked = huStorageFactory.getStorage(cu.toHU()).getQuantity(productId, uom);
+						qtyPickedThisTU = qtyPickedThisTU == null ? qtyPicked : qtyPickedThisTU.add(qtyPicked);
 						if (!recordTUOnShipmentSchedule)
 						{
 							addShipmentScheduleQtyPicked(cu, qtyPicked);
 						}
 
 						result.addAll(toPickingJobStepPickedToHU(cu, qtyPicked, catchWeightPerCU, pickFrom));
+					}
+
+					if (recordTUOnShipmentSchedule && qtyPickedThisTU != null)
+					{
+						// Record THIS pick's qty (sum of its CU parts), NOT the container TU's cumulative
+						// product storage: picking the same product more than once into one bare TU would
+						// otherwise record the running total, which the shipment-schedule expansion over-counts
+						// into a spurious extra per-COO line (nShiftShipment COO "mixed TUs" scenarios).
+						addShipmentScheduleQtyPicked(tu, qtyPickedThisTU);
 					}
 				}
 			}
