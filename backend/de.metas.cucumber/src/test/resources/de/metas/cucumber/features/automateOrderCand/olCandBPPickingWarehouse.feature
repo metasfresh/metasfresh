@@ -29,8 +29,10 @@ Feature: OLCand order creation uses the BP picking warehouse when no warehouse i
       | Identifier | Value     | Name      | IsPickingWarehouse |
       | pickingWH  | pickingWH | pickingWH | true               |
 
-    # The standard OLCand import processor (repo-id 1000003) keeps StdWarehouse (540008) as
-    # its default warehouse, so a candidate with no warehouse would otherwise land there.
+    # Give the standard OLCand import processor (repo-id 1000003) a default warehouse
+    # (StdWarehouse, 540008) — this is what a candidate with no warehouse would otherwise
+    # inherit. The @After hook in C_OLCandProcessor_StepDef restores the processor afterwards
+    # so sibling scenarios on this executor are unaffected.
     And update C_OLCandProcessor:
       | C_OLCandProcessor_ID | M_Warehouse_ID |
       | 1000003              | 540008         |

@@ -30,6 +30,7 @@ import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.adempiere.warehouse.spi.impl.WarehouseAdvisor;
@@ -39,6 +40,7 @@ import org.compiere.model.I_M_Warehouse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import javax.annotation.Nullable;
 
@@ -54,6 +56,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * 2. Buyer BP's customer picking warehouse (via WarehouseAdvisor)
  * 3. Processor default (orderDefaults.warehouseId)
  */
+@ExtendWith(AdempiereTestWatcher.class)
 class OLCandBLGetWarehouseIdTest
 {
 	private OLCandBL olCandBL;
@@ -73,87 +76,88 @@ class OLCandBLGetWarehouseIdTest
 	@Nested
 	class getWarehouseId
 	{
-	/**
-	 * AC2: OLCand has an explicit M_Warehouse_ID → that warehouse is returned, regardless of BP or defaults.
-	 */
-	@Test
-	void olCandHasExplicitWarehouse_returnsIt()
-	{
-		final WarehouseId explicitWarehouseId = createWarehouse(false);
-		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
-		final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
+		/**
+		 * OLCand has an explicit M_Warehouse_ID → that warehouse is returned, regardless of BP or defaults.
+		 */
+		@Test
+		void olCandHasExplicitWarehouse_returnsIt()
+		{
+			final WarehouseId explicitWarehouseId = createWarehouse(false);
+			final WarehouseId bpPickingWarehouseId = createWarehouse(true);
+			// BP has a picking warehouse — it must be ignored because the OLCand carries its own warehouse.
+			final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
 
-		final I_C_OLCand olCand = createOLCand(explicitWarehouseId, customerBPId);
+			final I_C_OLCand olCand = createOLCand(explicitWarehouseId, customerBPId);
 
-		final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
-				.warehouseId(createWarehouse(false))
-				.build();
+			final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
+					.warehouseId(createWarehouse(false))
+					.build();
 
-		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
+			final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
-		assertThat(result).isEqualTo(explicitWarehouseId);
-	}
+			assertThat(result).isEqualTo(explicitWarehouseId);
+		}
 
-	/**
-	 * AC1: OLCand has no warehouse, buyer BP is a customer with a picking warehouse
-	 * → the BP's picking warehouse is returned.
-	 */
-	@Test
-	void noOLCandWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
-	{
-		final WarehouseId bpPickingWarehouseId = createWarehouse(true);
-		final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
-		final I_C_OLCand olCand = createOLCandNoBPLocation(customerBPId);
+		/**
+		 * OLCand has no warehouse, buyer BP is a customer with a picking warehouse
+		 * → the BP's picking warehouse is returned.
+		 */
+		@Test
+		void noOLCandWarehouse_customerBPWithPickingWarehouse_returnsBPWarehouse()
+		{
+			final WarehouseId bpPickingWarehouseId = createWarehouse(true);
+			final BPartnerId customerBPId = createCustomerBP(true, bpPickingWarehouseId);
+			final I_C_OLCand olCand = createOLCandNoWarehouse(customerBPId);
 
-		final WarehouseId processorDefault = createWarehouse(false);
-		final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
-				.warehouseId(processorDefault)
-				.build();
+			final WarehouseId processorDefault = createWarehouse(false);
+			final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
+					.warehouseId(processorDefault)
+					.build();
 
-		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
+			final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
-		assertThat(result).isEqualTo(bpPickingWarehouseId);
-	}
+			assertThat(result).isEqualTo(bpPickingWarehouseId);
+		}
 
-	/**
-	 * AC3: OLCand has no warehouse, BP's warehouse exists but is NOT a picking warehouse
-	 * → processor default is returned.
-	 */
-	@Test
-	void bpWarehouseNotPicking_returnsProcessorDefault()
-	{
-		final WarehouseId nonPickingWarehouseId = createWarehouse(false);
-		final BPartnerId customerBPId = createCustomerBP(true, nonPickingWarehouseId);
-		final I_C_OLCand olCand = createOLCandNoBPLocation(customerBPId);
+		/**
+		 * OLCand has no warehouse, BP's warehouse exists but is NOT a picking warehouse
+		 * → processor default is returned.
+		 */
+		@Test
+		void bpWarehouseNotPicking_returnsProcessorDefault()
+		{
+			final WarehouseId nonPickingWarehouseId = createWarehouse(false);
+			final BPartnerId customerBPId = createCustomerBP(true, nonPickingWarehouseId);
+			final I_C_OLCand olCand = createOLCandNoWarehouse(customerBPId);
 
-		final WarehouseId processorDefault = createWarehouse(false);
-		final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
-				.warehouseId(processorDefault)
-				.build();
+			final WarehouseId processorDefault = createWarehouse(false);
+			final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
+					.warehouseId(processorDefault)
+					.build();
 
-		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
+			final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
-		assertThat(result).isEqualTo(processorDefault);
-	}
+			assertThat(result).isEqualTo(processorDefault);
+		}
 
-	/**
-	 * AC3: OLCand has no warehouse, BP is NOT a customer → processor default is returned.
-	 */
-	@Test
-	void bpNotCustomer_returnsProcessorDefault()
-	{
-		final BPartnerId nonCustomerBPId = createCustomerBP(false, null);
-		final I_C_OLCand olCand = createOLCandNoBPLocation(nonCustomerBPId);
+		/**
+		 * OLCand has no warehouse, BP is NOT a customer → processor default is returned.
+		 */
+		@Test
+		void bpNotCustomer_returnsProcessorDefault()
+		{
+			final BPartnerId nonCustomerBPId = createCustomerBP(false, null);
+			final I_C_OLCand olCand = createOLCandNoWarehouse(nonCustomerBPId);
 
-		final WarehouseId processorDefault = createWarehouse(false);
-		final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
-				.warehouseId(processorDefault)
-				.build();
+			final WarehouseId processorDefault = createWarehouse(false);
+			final OLCandOrderDefaults defaults = OLCandOrderDefaults.builder()
+					.warehouseId(processorDefault)
+					.build();
 
-		final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
+			final WarehouseId result = olCandBL.getWarehouseId(olCand, defaults);
 
-		assertThat(result).isEqualTo(processorDefault);
-	}
+			assertThat(result).isEqualTo(processorDefault);
+		}
 	}
 
 	// ---- helpers ----
@@ -200,10 +204,10 @@ class OLCandBLGetWarehouseIdTest
 	}
 
 	/**
-	 * Creates an OLCand with no warehouse, referencing the given BP without a BP location.
+	 * Creates an OLCand with no warehouse (M_Warehouse_ID=0) and the given buyer BP with a location.
 	 * effectiveValuesBL.getBuyerPartnerInfo uses the C_BPartner_ID field (no override) as the buyer.
 	 */
-	private I_C_OLCand createOLCandNoBPLocation(final BPartnerId bPartnerId)
+	private I_C_OLCand createOLCandNoWarehouse(final BPartnerId bPartnerId)
 	{
 		final I_C_BPartner_Location bpLocation = newInstanceOutOfTrx(I_C_BPartner_Location.class);
 		bpLocation.setC_BPartner_ID(bPartnerId.getRepoId());
