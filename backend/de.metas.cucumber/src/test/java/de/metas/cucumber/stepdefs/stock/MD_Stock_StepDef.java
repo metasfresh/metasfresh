@@ -22,8 +22,11 @@
 
 package de.metas.cucumber.stepdefs.stock;
 
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
@@ -38,14 +41,17 @@ import org.adempiere.mm.attributes.keys.AttributesKeys;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.Given;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -104,6 +110,87 @@ public class MD_Stock_StepDef
 				.buildAndPrepareExecution()
 				.onErrorThrowException()
 				.executeSync();
+	}
+
+	/**
+	 * Seeds a single active {@code MD_Stock} row whose {@code QtyOnHand} is deliberately set away
+	 * from the {@code M_HU_Storage}-derived truth — the corrective target of
+	 * {@link #run_MD_Stock_reconciliation_process()}.
+	 *
+	 * <p><b>Real-world trigger this stands in for:</b> in production, {@code MD_Stock.QtyOnHand} is
+	 * kept in sync with {@code M_HU_Storage} by the event-driven path
+	 * ({@code TransactionEventHandlerForStockRecords} adds the {@code M_Transaction} delta on every
+	 * {@code TransactionCreatedEvent}/{@code TransactionDeletedEvent}). Divergence therefore only
+	 * arises from a bug artifact — a missed/dropped stock event, or a create-create race between two
+	 * concurrent first-writers of the same business key — never from a normal, reproducible user
+	 * action. A spike into the event handlers found no deterministic multi-event flow that produces
+	 * this state on demand (every documented path either stays in sync by construction or requires
+	 * losing/duplicating an event non-deterministically; see {@code ai-work/30640/pending-questions.md}).
+	 *
+	 * <p><b>Why a direct seed is necessary:</b> a cucumber scenario needs a deterministic starting
+	 * state. Since the real trigger is a non-reproducible bug artifact, this step bypasses the
+	 * event-driven update path entirely and writes the row directly via
+	 * {@link InterfaceWrapperHelper} — no {@code StockChangedEvent} is fired, matching production
+	 * (a missed event fires no event either).
+	 *
+	 * <p>The row is written for the business key
+	 * {@code (AD_Client_ID, AD_Org_ID, M_Product_ID, M_Warehouse_ID, AttributesKey)} — the partial
+	 * unique index enforced on {@code MD_Stock} — so an existing active row for that key is updated
+	 * in place rather than duplicated.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_Product_ID} — (identifier-ref) product</li>
+	 *   <li>{@code M_Warehouse_ID} — (identifier-ref) warehouse</li>
+	 *   <li>{@code QtyOnHand} — the deliberately wrong quantity on hand to seed</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_AttributeSetInstance_ID} — (identifier-ref) ASI whose storage-relevant
+	 *       attributes determine the {@code AttributesKey} bucket; omitted defaults to
+	 *       {@link AttributesKey#NONE}</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Given metasfresh has a divergent MD_Stock row:
+	 *   | M_Product_ID | M_Warehouse_ID | QtyOnHand |
+	 *   | product      | warehouseStd   | 999       |
+	 * </pre>
+	 */
+	@Given("metasfresh has a divergent MD_Stock row:")
+	public void seed_divergent_MD_Stock_row(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::seedDivergentStockRow);
+	}
+
+	private void seedDivergentStockRow(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final I_M_Warehouse warehouse = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Warehouse_ID).lookupNotNullIn(warehouseTable);
+		final BigDecimal qtyOnHand = row.getAsBigDecimal(I_MD_Stock.COLUMNNAME_QtyOnHand);
+
+		final String asiIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID")
+				.map(StepDefDataIdentifier::getAsString)
+				.orElse(null);
+		final AttributesKey attributesKey = resolveAttributesKey(asiIdentifier);
+
+		final I_MD_Stock stockRecord = queryBL.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, Env.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, Env.getOrgId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString())
+				.create()
+				.firstOnlyOrNull(I_MD_Stock.class);
+
+		final I_MD_Stock dataRecord = stockRecord != null ? stockRecord : InterfaceWrapperHelper.newInstance(I_MD_Stock.class);
+		dataRecord.setM_Product_ID(product.getM_Product_ID());
+		dataRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		dataRecord.setAttributesKey(attributesKey.getAsString());
+		dataRecord.setQtyOnHand(qtyOnHand);
+		InterfaceWrapperHelper.saveRecord(dataRecord);
 	}
 
 	/**
