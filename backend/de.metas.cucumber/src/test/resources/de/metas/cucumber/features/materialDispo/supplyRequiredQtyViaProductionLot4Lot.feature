@@ -1,7 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0159_Manufacturing_Planning
 @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
-@ghActions:run_on_executor6
+@ghActions:run_on_executor2
 Feature: Lot-for-lot production disposition — supply tracks demand on qty change and reactivate
 ## F8022: Lot for Lot - Manufacturing Order per Sales Order
 ## For a manufactured lot-for-lot product, production supply tracks the demand's ordered qty net of the
@@ -231,7 +231,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
   @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
   Scenario: Lot for Lot - a later order's production candidate is sized to its own qty, not to an earlier order's still-open demand
     # NOTE: no PP_Product_Planning is created up front. The order is completed FIRST so its demand fires
-    # NoSupplyAdvice (no plan yet) and drives ATP negative WITHOUT a supply — the precondition for the defect.
+    # NoSupplyAdvice (no plan yet) and drives ATP negative WITHOUT a supply — a persistent open deficit from an earlier order.
     Given metasfresh contains M_Products:
       | Identifier |
       | p_1        |
@@ -291,7 +291,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | ppln_1     | p_1          | bomVersions_1             | true         | true                  |
 
     # ORDER 2 (a day later), completed AFTER planning -> lot-for-lot fires a production candidate
-    # for ORDER 2's qty ONLY (20). It must NOT cover order-1's still-open demand (that's the bug we chase later).
+    # for ORDER 2's qty ONLY (20). It must NOT cover order-1's still-open demand (lot-for-lot sizes to order 2's own qty, not the global-ATP gap).
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
       | o_2        | true    | endcustomer_1 | 2021-04-16  | 2021-04-16T21:00:00Z |
@@ -329,7 +329,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
-      | c_d2r      | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
       | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
       | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
       | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | 0                      |
@@ -696,7 +696,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
   @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
   Scenario: Lot for Lot - an order qty decrease (un-processed prior candidate) reduces the production supply
     # As S0264_810 (IsCreatePlan=false) but the reactivate is followed by a qty decrease (20 -> 10) before re-complete.
-    # The production supply must reduce to 10 (order 2's new qty) — lot-for-lot, not ATP-netted; no strand.
+    # The production supply must reduce to 10 (order 2's new qty) — lot-for-lot, not ATP-netted.
     Given metasfresh contains M_Products:
       | Identifier |
       | p_1        |
