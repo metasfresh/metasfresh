@@ -4,6 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { VENDOR_INVOICE_WINDOW_ID } from '../utils/WindowIds';
 
 const SLOW = SLOW_ACTION_TIMEOUT;
 const WEBAPI = (process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api').replace(/\/rest\/api$/, '');
@@ -16,7 +17,7 @@ const REST = `${WEBAPI}/rest/api`;
 // ReadOnlyLogic '@Processed@=Y' — editable while the invoice is a DRAFT). Everything (document
 // CRUD via REST, the UI set/save/reload, and the grid-column assertion) runs against window 183, so
 // the spec is valid on the generic core preloaded DB that core CI runs against.
-const CRUD_WIN = 183; // Eingangsrechnung — core PO-invoice window (document CRUD + UI + grid)
+const CRUD_WIN = VENDOR_INVOICE_WINDOW_ID; // Eingangsrechnung — core PO-invoice window (document CRUD + UI + grid)
 const CRUD_LINE_TAB = 291; // C_InvoiceLine tab on window 183
 
 /**

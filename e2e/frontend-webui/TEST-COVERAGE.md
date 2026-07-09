@@ -207,6 +207,31 @@ npm run test:report
 
 ---
 
+### 6a. Invoice Line — GL Account Override (F01010.4)
+**File**: `tests/spec/invoice-line-account-override.spec.js`
+**Status**: ✅ Passing (English)
+**Duration**: ~10 seconds
+
+**Features Tested**:
+- F01010.4: Invoice Accounting Overrides
+
+**Epic**: E0340: Invoicing
+
+**Workflow**:
+1. Create a drafted purchase invoice + product line via document REST API (window 183)
+2. Set the per-line GL account override (`C_ElementValue_Override_ID`) via the line's Advanced-Edit modal
+3. Assert it persists (system-of-record poll) and survives a reload
+4. Assert the override renders as a COLUMN in the invoice-line grid, showing the set account
+
+**Key Validations**:
+- Override field editable + persisted on a draft purchase invoice line (form view)
+- Override column visible in the `C_InvoiceLine` grid of window 183 with the set value (migration `5813050`)
+
+**Components Tested**:
+- Vendor Invoice window (183) / `C_InvoiceLine` tab (291)
+
+---
+
 ### 7. Payment Discount Workflow
 **File**: `tests/spec/receipt.spec.js` (extended test)
 **Status**: ✅ Passing (English, German)
