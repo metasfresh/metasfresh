@@ -18,7 +18,10 @@ const gs1GtinScan = (gtin14) => `01${gtin14}`;
 // Same bare-TU (no LU) pick-to-CU structure as picking_partial_unpack_TU_floor.spec.js, but with TWO
 // order lines (two products, two shipment schedules) sharing the SAME bare TU pick target. Verifies
 // that unpicking one line's qty to the floor reduces ONLY that line's M_ShipmentSchedule_QtyPicked,
-// leaving the other, independently-picked line untouched (no cross-line bleed).
+// leaving the other, independently-picked line untouched (no cross-line bleed). Also drives one line
+// (P1) fully to ZERO on the shared TU while the other (P2) still has active picked qty — the guarded
+// path where the shared bare TU's consignee reset must be skipped because another schedule is still
+// active on it (a bare TU is shared across schedules).
 const createMasterdata = async ({ gtinP1, gtinP2 }) => {
     return await Backend.createMasterdata({
         language: 'en_US',
@@ -165,6 +168,45 @@ test('Unpick to the floor on one of two picking lines reduces that line\'s shipm
                 [pickingJobId]: {
                     shipmentSchedules: {
                         P1: { qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] },
+                        P2: { qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] },
+                    }
+                }
+            }
+        });
+    });
+
+    // The shared bare TU is still carrying BOTH lines' picked qty at this point (P1=1, P2=1). Driving
+    // P1's remaining 1 PCE fully to the floor (P1 -> ZERO) is the case the shipment-schedule reset guard
+    // protects: on a bare TU shared across two schedules, fully unpicking ONE schedule's rows must NOT
+    // reset the TU's consignee (C_BPartner_ID/C_BPartner_Location_ID) while the OTHER schedule (P2) still
+    // holds active picked qty on the same TU. Before the guard, reaching zero on P1 unconditionally reset
+    // the TU's consignee, corrupting the still-active P2 pick sharing that TU.
+    await test.step('Unpick the remaining 1 PCE of P1 to the floor — P1 drops to ZERO while P2 still has active qty on the shared TU', async () => {
+        await PickingJobScreen.unpickItemToFloor({ scannedCode: packedScanP1, expectDefaultQty: '1', qty: '1' });
+
+        await PickingJobScreen.expectLineButton({ index: 1, qtyPicked: '0 Stk' });
+        // P2's line button (and its underlying schedule, asserted below) must be completely unaffected by
+        // P1 reaching zero on the shared TU — this is the guarded cross-line-bleed path.
+        await PickingJobScreen.expectLineButton({ index: 2, qtyPicked: '1 Stk' });
+
+        await Backend.expect({
+            title: 'after driving P1 to zero on the shared TU: P1 has no QtyPicked rows left, P2 schedule row is UNCHANGED at 1 PCE (no cross-line bleed from the to-zero guard)',
+            hus: {
+                // The shared TU stays active (huStatus 'S') and keeps P2's storage untouched. Note: the
+                // production fix (IHUShipmentScheduleDAO.hasActiveQtyPickedForTUExcludingSchedule) also
+                // retains the TU's C_BPartner_ID/C_BPartner_Location_ID (consignee) whenever another
+                // schedule still has active rows on it — that retention is a backend-only side effect
+                // with no field in the frontendTesting HU-expectation schema (JsonHUExpectation has no
+                // bpartner/consignee key), so it cannot be asserted directly from this Playwright spec.
+                // It is covered by the guard itself and by the unaffected-P2 assertions here (the bug's
+                // symptom, if the guard regressed, would surface as P2's TU no longer resolving to the
+                // correct consignee downstream, e.g. on shipment generation).
+                tu1: { huStatus: 'S', storages: { P1: '0 PCE', P2: '1 PCE' } },
+            },
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [] },
                         P2: { qtyPicked: [{ qtyPicked: '1 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] },
                     }
                 }

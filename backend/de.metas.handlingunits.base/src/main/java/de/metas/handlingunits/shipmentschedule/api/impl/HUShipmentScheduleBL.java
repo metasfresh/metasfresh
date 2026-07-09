@@ -896,10 +896,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			shipmentScheduleAllocBL.deleteRecords(fullyConsumedRecords);
 		}
 
-		if (fullyConsumedRecords.size() == newestFirst.size())
+		final boolean thisScheduleFullyUnpickedFromTU = fullyConsumedRecords.size() == newestFirst.size();
+		final boolean otherScheduleStillOnTU = huShipmentScheduleDAO.hasActiveQtyPickedForTUExcludingSchedule(
+				pickToTuId.getRepoId(), shipmentScheduleId.getRepoId());
+		if (thisScheduleFullyUnpickedFromTU && !otherScheduleStillOnTU)
 		{
-			// No active row remains for this schedule on this TU -> mirror the reset already done by
-			// deleteByTopLevelHUsAndShipmentScheduleId and unallocateTU.
+			// No active picked row remains on this TU for ANY schedule -> mirror the reset done by
+			// deleteByTopLevelHUsAndShipmentScheduleId / unallocateTU. A bare TU can be shared across
+			// schedules, so we must not strip the consignee while another line still holds picked qty on it.
 			tuHU.setC_BPartner_ID(0);
 			tuHU.setC_BPartner_Location_ID(0);
 			save(tuHU);
