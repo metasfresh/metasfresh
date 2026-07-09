@@ -1,5 +1,7 @@
 package de.metas.cucumber.stepdefs.invoice.acct;
 
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -8,7 +10,9 @@ import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_InvoiceLine_StepDefData;
 import de.metas.invoice.InvoiceId;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+import org.adempiere.service.ClientId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -29,6 +33,7 @@ import java.util.List;
 public class C_Invoice_Acct_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -43,6 +48,10 @@ public class C_Invoice_Acct_StepDef
 	 *   <b>C_InvoiceLine_ID</b> — (optional, identifier-ref) the specific invoice line (null = header override)<br>
 	 *   <b>AccountName</b> — (required) the AccountConceptualName stored on the row (e.g. {@code P_Expense_Acct})<br>
 	 *   <b>C_ElementValue_ID</b> — (required, identifier-ref) the expected GL account (override account)<br>
+	 *   <b>OPT.AssertAcctSchemaResolvedFromOrg</b> — (optional, boolean) when {@code Y}, assert the row's
+	 *     {@code C_AcctSchema_ID} equals {@code getC_AcctSchema_ID(AD_Client_ID, AD_Org_ID)} for the row's own
+	 *     client+org — i.e. the override was materialized into the accounting schema resolved from the invoice
+	 *     line's org, not spread across every client schema.<br>
 	 * @cucumber.example
 	 * <pre>
 	 * Then C_Invoice_Acct rows are found for invoice:
@@ -88,9 +97,27 @@ public class C_Invoice_Acct_StepDef
 
 		if (found.size() == 1)
 		{
-			softly.assertThat(ElementValueId.ofRepoIdOrNull(found.get(0).getC_ElementValue_ID()))
+			final I_C_Invoice_Acct acctRow = found.get(0);
+			softly.assertThat(ElementValueId.ofRepoIdOrNull(acctRow.getC_ElementValue_ID()))
 					.as("C_ElementValue_ID on C_Invoice_Acct row for accountName=" + accountName)
 					.isEqualTo(expectedElementValueId);
+
+			final boolean assertSchemaFromOrg = Boolean.TRUE.equals(
+					row.getAsOptionalBoolean("AssertAcctSchemaResolvedFromOrg").toBooleanOrNull());
+			if (assertSchemaFromOrg)
+			{
+				// The materialized row must live in the schema resolved from its own org
+				// (getC_AcctSchema_ID(client, org)), NOT be spread across every client schema.
+				final ClientId clientId = ClientId.ofRepoId(acctRow.getAD_Client_ID());
+				final OrgId orgId = OrgId.ofRepoId(acctRow.getAD_Org_ID());
+				final AcctSchemaId expectedAcctSchemaId = acctSchemaDAO.getAcctSchemaIdByClientAndOrgOrNull(clientId, orgId);
+				softly.assertThat(expectedAcctSchemaId)
+						.as("getC_AcctSchema_ID(client=%s, org=%s) must resolve a schema", clientId, orgId)
+						.isNotNull();
+				softly.assertThat(AcctSchemaId.ofRepoIdOrNull(acctRow.getC_AcctSchema_ID()))
+						.as("C_Invoice_Acct.C_AcctSchema_ID must be the org-resolved schema for accountName=" + accountName)
+						.isEqualTo(expectedAcctSchemaId);
+			}
 		}
 
 		softly.assertAll();

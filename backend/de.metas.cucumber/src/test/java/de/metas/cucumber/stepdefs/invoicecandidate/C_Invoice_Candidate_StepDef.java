@@ -787,6 +787,62 @@ public class C_Invoice_Candidate_StepDef
 
 	}
 
+	/**
+	 * Asserts the {@code LineAggregationKey} relationship across the listed invoice candidates.
+	 * The line aggregation key is the value the invoicing engine groups invoice lines by: two ICs
+	 * with the same key merge into one invoice line, two with different keys split into separate lines.
+	 * This is the deterministic mechanism behind F01010.4's per-line GL account override — with the
+	 * override added to the line-key aggregation (C_Aggregation 540003), ICs that differ only by
+	 * {@code C_ElementValue_Override_ID} get different keys (→ split), while equal overrides keep an
+	 * equal key (→ merge). Requires the partner to use aggregation 540003 as its line aggregation.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the invoice candidates to compare<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then C_Invoice_Candidate LineAggregationKeys are different:
+	 *   | C_Invoice_Candidate_ID |
+	 *   | invoiceCand_a          |
+	 *   | invoiceCand_b          |
+	 * </pre>
+	 */
+	@And("^C_Invoice_Candidate LineAggregationKeys are (equal|different):$")
+	public void assertLineAggregationKeys(@NonNull final String relation, @NonNull final DataTable dataTable)
+	{
+		// Collect the candidates and wait until the (async) recompute triggered by the override change
+		// has cleared, so LineAggregationKey reflects the current C_ElementValue_Override_ID.
+		final java.util.List<I_C_Invoice_Candidate> invoiceCandidates = new java.util.ArrayList<>();
+		final ImmutableSet.Builder<InvoiceCandidateId> idsBuilder = ImmutableSet.builder();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
+			invoiceCandidates.add(invoiceCandidate);
+			idsBuilder.add(InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID()));
+		});
+		waitUntilValid(idsBuilder.build(), 120);
+
+		final java.util.List<String> keys = new java.util.ArrayList<>();
+		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
+		{
+			InterfaceWrapperHelper.refresh(invoiceCandidate);
+			final String key = invoiceCandidate.getLineAggregationKey();
+			assertThat(key)
+					.as("LineAggregationKey must be computed for C_Invoice_Candidate_ID=%s", invoiceCandidate.getC_Invoice_Candidate_ID())
+					.isNotBlank();
+			keys.add(key);
+		}
+
+		final int distinct = new java.util.LinkedHashSet<>(keys).size();
+		if ("equal".equals(relation))
+		{
+			assertThat(distinct).as("all LineAggregationKeys must be EQUAL, but were: %s", keys).isEqualTo(1);
+		}
+		else
+		{
+			assertThat(distinct).as("all LineAggregationKeys must be DIFFERENT, but were: %s", keys).isEqualTo(keys.size());
+		}
+	}
+
 	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
 	{
 		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);

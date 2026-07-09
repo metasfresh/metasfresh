@@ -591,6 +591,10 @@ public class C_BPartner_StepDef
 				.map(aggregationTable::get)
 				.ifPresent(aggregationRecord -> bPartner.setSO_Invoice_Aggregation_ID(aggregationRecord.getC_Aggregation_ID()));
 
+		row.getAsOptionalIdentifier(de.metas.invoicecandidate.model.I_C_BPartner.COLUMNNAME_PO_InvoiceLine_Aggregation_ID)
+				.map(aggregationTable::get)
+				.ifPresent(aggregationRecord -> bPartner.setPO_InvoiceLine_Aggregation_ID(aggregationRecord.getC_Aggregation_ID()));
+
 		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_C_Dunning_ID)
 				.map(dunningTable::get)
 				.ifPresent(dunning -> bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID()));

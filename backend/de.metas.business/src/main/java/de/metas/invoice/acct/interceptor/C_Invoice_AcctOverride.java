@@ -22,12 +22,11 @@ import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-
 /**
  * On purchase invoice completion, materializes any per-line GL account overrides
  * ({@code C_ElementValue_Override_ID}) into {@code C_Invoice_Acct} rows,
- * one row per accounting schema × account concept (P_Expense_Acct, P_InventoryClearing_Acct).
+ * one row per account concept (P_Expense_Acct, P_InventoryClearing_Acct) for the accounting
+ * schema resolved from the invoice line's own org.
  *
  * <p>Derives the {@code AccountConceptualName}s from the {@code I_M_Product_Acct} column names (the
  * same source {@code ProductAcctType.P_Expense_Acct/P_InventoryClearing_Acct.getAccountConceptualName()}
@@ -66,9 +65,7 @@ public class C_Invoice_AcctOverride
 		}
 
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
-		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
 		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
-		final List<AcctSchema> acctSchemas = acctSchemaDAO.getAllByClient(clientId);
 
 		for (final I_C_InvoiceLine line : invoiceBL.getLines(invoiceId))
 		{
@@ -77,25 +74,33 @@ public class C_Invoice_AcctOverride
 			{
 				continue;
 			}
+
+			// Resolve the accounting schema of THIS line's org (org-specific schema, else the client's primary).
+			// Multi-org/one-schema-each clients must not have the override written into every org's schema.
+			final OrgId lineOrgId = OrgId.ofRepoId(line.getAD_Org_ID());
+			final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrgOrNull(clientId, lineOrgId);
+			if (acctSchema == null)
+			{
+				// No accounting schema resolvable for this line's org → nothing to materialize.
+				continue;
+			}
+			final AcctSchemaId acctSchemaId = acctSchema.getId();
+
 			final ElementValueId overrideElementValueId = ElementValueId.ofRepoId(overrideElementValueRepoId);
 			final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceId, line.getC_InvoiceLine_ID());
 
-			for (final AcctSchema acctSchema : acctSchemas)
-			{
-				final AcctSchemaId acctSchemaId = acctSchema.getId();
-				invoiceAcctRepository.createOrUpdateLineOverride(
-						invoiceAndLineId,
-						orgId,
-						acctSchemaId,
-						CONCEPT_P_EXPENSE_ACCT,
-						overrideElementValueId);
-				invoiceAcctRepository.createOrUpdateLineOverride(
-						invoiceAndLineId,
-						orgId,
-						acctSchemaId,
-						CONCEPT_P_INVENTORY_CLEARING_ACCT,
-						overrideElementValueId);
-			}
+			invoiceAcctRepository.createOrUpdateLineOverride(
+					invoiceAndLineId,
+					lineOrgId,
+					acctSchemaId,
+					CONCEPT_P_EXPENSE_ACCT,
+					overrideElementValueId);
+			invoiceAcctRepository.createOrUpdateLineOverride(
+					invoiceAndLineId,
+					lineOrgId,
+					acctSchemaId,
+					CONCEPT_P_INVENTORY_CLEARING_ACCT,
+					overrideElementValueId);
 		}
 	}
 }
