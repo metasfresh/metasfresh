@@ -43,6 +43,7 @@ import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
@@ -149,6 +150,8 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -490,6 +493,13 @@ public class MD_Candidate_StepDef
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
 	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
+		// This is a "has only" (exact-set) assertion, so it must see the fully settled candidate set.
+		// Drain the material-events queue then the async-batch queue (in that order) so the whole
+		// ShipmentSchedule -> SupplyRequired -> PPOrderCandidate chain has finished before we snapshot.
+		// Without this, a state-mutating trigger (e.g. an order reactivate + re-complete) can be snapshotted
+		// mid-flight and the assertion sees a transient (over-created or stranded) set.
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		validate_md_candidates(timeoutSec, table);
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()

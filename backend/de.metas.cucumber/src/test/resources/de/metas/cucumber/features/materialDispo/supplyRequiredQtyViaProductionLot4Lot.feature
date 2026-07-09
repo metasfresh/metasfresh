@@ -2,8 +2,11 @@
 @allure.label.epic:E0155_Material_Disposition
 @allure.label.feature:F5100
 @ghActions:run_on_executor6
-Feature: Disposal is correctly considered in Material Dispo. Stock shortage solved via production
+Feature: Lot-for-lot production disposition — supply tracks demand on qty change and reactivate
 ## F5100: Material Disposition
+## For a manufactured lot-for-lot product, production supply must track the demand's ordered qty net of
+## the supply already created for it: a real increase adds only the increment; a reactivate round-trip
+## (order or shipment, incl. an already-processed production order) adds no phantom supply; a decrease reduces it.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -219,3 +222,135 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate | OPT.M_Warehouse_ID.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange |
       | cp_1       | p_1                     | 2021-04-16  | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 10                             | 10                         | 0                             | 0                             | warehouseStd                  | 10                           | 10                 |
 
+
+  @Id:S0264_800
+  @from:cucumber
+  @allure.label.epic:E0155_Material_Disposition
+  @allure.label.feature:F5100
+  Scenario: Lot for Lot - a later order's production candidate is sized to its own qty, not to an earlier order's still-open demand
+    # NOTE: no PP_Product_Planning is created up front. The order is completed FIRST so its demand fires
+    # NoSupplyAdvice (no plan yet) and drives ATP negative WITHOUT a supply — the precondition for the defect.
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | p_1        |
+      | p_2        |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | pp_1       | plv_1                  | p_1          | 10.0     | PCE               |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_1      | p_1          | bomVersions_1             |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+
+    And metasfresh contains C_BPartners:
+      | Identifier    | M_PricingSystem_ID |
+      | endcustomer_1 | ps_1               |
+
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+
+    # ORDER 1 (a day EARLIER), completed BEFORE any lot-for-lot planning exists.
+    # No plan yet -> its demand fires NoSupplyAdvice -> ATP goes negative with NO supply (the persistent deficit).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
+      | o_1        | true    | endcustomer_1 | 2021-04-15  | 2021-04-15T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 20         |
+    When the order identified by o_1 is completed
+    # Stabilisation barrier: the completing step is synchronous for DocStatus, so no order-status check is
+    # needed. The async piece is the shipment-schedule recompute (the real material-event trigger) — wait until
+    # it reached its expected qty and settled (IsToRecompute=N) before snapshotting MD_Candidate.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_1       | ol_1           | 20           | N             |
+    # PRECONDITION (self-validating): order-1 demand exists, ATP -20, and NO supply (no plan yet)
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20 | -20                    |
+
+    # only NOW create the lot-for-lot product planning (the "created after" in the RCA)
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLot4Lot |
+      | ppln_1     | p_1          | bomVersions_1             | true         | true                  |
+
+    # ORDER 2 (a day later), completed AFTER planning -> lot-for-lot fires a production candidate
+    # for ORDER 2's qty ONLY (20). It must NOT cover order-1's still-open demand (that's the bug we chase later).
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
+      | o_2        | true    | endcustomer_1 | 2021-04-16  | 2021-04-16T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_2       | o_2        | p_1          | 20         |
+    When the order identified by o_2 is completed
+    # Stabilisation barrier: wait until order 2's shipment schedule reached qty 20 and settled (IsToRecompute=N).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_2       | ol_2           | 20           | N             |
+    # order 2's lot-for-lot production candidate = 20 (its own qty) — must NOT cover order 1.
+    # Correct pre-trigger state (a round-trip must leave it unchanged): assert MD_Candidate first, then
+    # exactly one production candidate (no more).
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -20  | -40                    |
+      | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -40                    |
+      | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+    # "nachtraeglich" trigger: reactivate + re-complete ORDER 2 -> its demand is re-evaluated as an UPDATE
+    And the order identified by o_2 is reactivated
+    # Stabilisation barrier: wait until order 2's shipment schedule qty dropped to 0 and settled (IsToRecompute=N).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_2       | ol_2           | 0            | N             |
+    # Reopened order 2: its shipment demand is retracted, but the already-processed production supply persists.
+    # Asserting here isolates the phantom to the RE-COMPLETE step. (values pinned from run)
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
+      | c_d2r      | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | 0                      |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+    And the order identified by o_2 is completed
+    # Stabilisation barrier: wait until order 2's shipment schedule qty is back to 20 and settled (IsToRecompute=N).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_2       | ol_2           | 20           | N             |
+    # EXPECTED (lot-for-lot, correct state below): order 2's demand stays 20, covered by its own production
+    # supply (20); order 1's open -20 is never absorbed. This exact-set ("has only") assertion is that state.
+    # RED (bug): the re-complete is an UPDATE -> lot-for-lot is skipped -> Min/Max netting corrupts the
+    # re-evaluation, either over-creating a phantom production candidate (extra rows) or stranding order 2's
+    # demand at 0 — the exact row set + count catches either face.
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -20  | -40                    |
+      | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -40                    |
+      | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+    # ... and still exactly ONE production candidate — the re-evaluation must not over-create a phantom.
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |

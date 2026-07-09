@@ -30,6 +30,7 @@ import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -181,6 +182,66 @@ public class PP_Order_Candidate_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
+	}
+
+	/**
+	 * Exact-set ("has only") variant of {@link #validatePP_Order_Candidate(int, DataTable)}: after the async chain
+	 * settles, the ONLY active PP_Order_Candidate records for the product(s) referenced in the table are exactly the
+	 * listed rows — no more, no fewer. Use it to prove that a re-evaluation created no phantom / extra production
+	 * candidate. Drains the rabbitMQ queues first (material -> async) so the candidate set is fully settled before the
+	 * count (module CLAUDE.md rule 7: drain inside the consuming step, never as a bare step in the .feature file).
+	 *
+	 * @cucumber.columns same as "PP_Order_Candidates are found".
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, the PP_Order_Candidate table has only the following records
+	 *   | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised | DateStartSchedule | IsClosed |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the PP_Order_Candidate table has only the following records$")
+	public void validatePP_Order_Candidate_hasOnly(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
+		final DataTableRows rows = DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID);
+
+		// each expected row must be present ...
+		rows.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
+
+		// ... and NO other active PP_Order_Candidate may exist for the product(s) referenced in the table
+		final ImmutableSet<ProductId> productIds = rows.stream()
+				.map(row -> row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIdIn(productTable))
+				.collect(ImmutableSet.toImmutableSet());
+		final int expectedCount = rows.toList().size();
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> {
+					final List<I_PP_Order_Candidate> actual = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+							.addOnlyActiveRecordsFilter()
+							.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productIds)
+							.orderBy(COLUMNNAME_PP_Order_Candidate_ID)
+							.create()
+							.list();
+					if (actual.size() != expectedCount)
+					{
+						final StringBuilder sb = new StringBuilder();
+						for (final I_PP_Order_Candidate c : actual)
+						{
+							sb.append("\n\tPP_Order_Candidate_ID=").append(c.getPP_Order_Candidate_ID())
+									.append(" M_Product_ID=").append(c.getM_Product_ID())
+									.append(" QtyEntered=").append(c.getQtyEntered())
+									.append(" Processed=").append(c.isProcessed())
+									.append(" IsClosed=").append(c.isClosed());
+						}
+						return ProviderResult.resultWasNotFound(
+								"Expected " + expectedCount + " PP_Order_Candidate(s) but found " + actual.size()
+										+ " for products " + productIds + ":" + sb);
+					}
+					return ProviderResult.resultWasFound(true);
+				})
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 	}
 
 	@And("update PP_Order_Candidates")
