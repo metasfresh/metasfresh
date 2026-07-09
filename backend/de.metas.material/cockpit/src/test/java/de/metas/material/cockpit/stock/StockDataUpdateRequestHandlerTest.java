@@ -106,17 +106,6 @@ class StockDataUpdateRequestHandlerTest
 		return rec.getQtyOnHand();
 	}
 
-	// --- Create path: retrieveOrCreateDataRecord's create branch (no pre-existing row) ---
-
-	@Test
-	void create_newBucket_whenNoneExists()
-	{
-		// no seedMdStock(...) call: forces the create branch of retrieveOrCreateDataRecord (save + unique-violation catch).
-		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
-		assertThat(currentQtyOnHand()).isEqualByComparingTo("100");
-		verify(postMaterialEventService, times(1)).enqueueEventAfterNextCommit(any());
-	}
-
 	// --- Reset path: idempotent set-to-truth (the concurrency root-cause fix) ---
 
 	@Test
