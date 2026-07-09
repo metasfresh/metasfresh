@@ -30,7 +30,6 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs;
 import de.metas.material.event.commons.AttributesKey;
@@ -52,7 +51,6 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -80,8 +78,6 @@ import static org.assertj.core.api.Assertions.*;
  */
 public class MD_Stock_StepDef
 {
-	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
@@ -280,6 +276,7 @@ public class MD_Stock_StepDef
 	private IQueryBuilder<I_MD_Stock> buildStockQuery(final int productId, @NonNull final Map<String, String> row)
 	{
 		final IQueryBuilder<I_MD_Stock> builder = queryBL.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId);
 
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_MD_Stock.COLUMNNAME_M_Warehouse_ID + ".Identifier");
