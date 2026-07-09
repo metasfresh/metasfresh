@@ -203,17 +203,19 @@ public class MD_Stock_StepDef
 	 * view's {@code IsActive='Y'}-filtered {@code MD_Stock} side) must still surface, and
 	 * {@link #run_MD_Stock_reconciliation_process()} must then CREATE a fresh active row for it.
 	 *
-	 * <p><b>Real-world trigger this stands in for:</b> in production, the {@code MD_Stock} dedup
-	 * data-fix (migration {@code 5812890_sys_MD_Stock_dedup.sql}) deactivates every duplicate row for
-	 * a business key, keeping only the lowest {@code MD_Stock_ID} — leaving an HU-only bucket until
-	 * the next reconciliation run recreates it. The same deactivated-row state also results from any
-	 * manual deactivation of a stale/corrupted row prior to a from-scratch reset.
+	 * <p><b>Real-world trigger this stands in for:</b> in production, this zero-active-row state
+	 * results from a manual/support deactivation of the sole {@code MD_Stock} row for a business key
+	 * (e.g. believed stale or corrupted) — the same UPDATE-style deactivation the {@code MD_Stock}
+	 * dedup data-fix (migration {@code 5812890_sys_MD_Stock_dedup.sql}) performs on *duplicate* rows,
+	 * though that particular script always keeps the lowest {@code MD_Stock_ID} row active and so
+	 * never leaves a business key with zero active rows on its own. Either way, the bucket then sits
+	 * HU-only until the next reconciliation run recreates the missing active row.
 	 *
 	 * <p><b>Why a direct deactivation is necessary:</b> there is no user/system action that
 	 * deactivates an {@code MD_Stock} row through the normal event-driven path (that path only ever
-	 * adds/updates rows); the deactivation is itself a maintenance action (an UPDATE, as the dedup
-	 * data-fix performs), so this step writes it directly via {@link InterfaceWrapperHelper} — no
-	 * {@code StockChangedEvent} is fired, matching the data-fix, which is a pure SQL {@code UPDATE}.
+	 * adds/updates rows); the deactivation is itself a maintenance action (an UPDATE), so this step
+	 * writes it directly via {@link InterfaceWrapperHelper} — no {@code StockChangedEvent} is fired,
+	 * matching a maintenance UPDATE, which fires none either.
 	 *
 	 * <p>Required columns:
 	 * <ul>
