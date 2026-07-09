@@ -22,6 +22,10 @@ import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * On purchase invoice completion, materializes any per-line GL account overrides
  * ({@code C_ElementValue_Override_ID}) into {@code C_Invoice_Acct} rows,
@@ -67,6 +71,10 @@ public class C_Invoice_AcctOverride
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
 		final ClientId clientId = ClientId.ofRepoId(invoice.getAD_Client_ID());
 
+		// Memoize the per-org schema lookup: multiple lines usually share an org, so resolve it once
+		// per distinct org. Optional remembers the null result too (org with no resolvable schema).
+		final Map<OrgId, Optional<AcctSchema>> acctSchemaByOrg = new HashMap<>();
+
 		for (final I_C_InvoiceLine line : invoiceBL.getLines(invoiceId))
 		{
 			final int overrideElementValueRepoId = line.getC_ElementValue_Override_ID();
@@ -78,7 +86,9 @@ public class C_Invoice_AcctOverride
 			// Resolve the accounting schema of THIS line's org (org-specific schema, else the client's primary).
 			// Multi-org/one-schema-each clients must not have the override written into every org's schema.
 			final OrgId lineOrgId = OrgId.ofRepoId(line.getAD_Org_ID());
-			final AcctSchema acctSchema = acctSchemaDAO.getByClientAndOrgOrNull(clientId, lineOrgId);
+			final AcctSchema acctSchema = acctSchemaByOrg
+					.computeIfAbsent(lineOrgId, orgId -> Optional.ofNullable(acctSchemaDAO.getByClientAndOrgOrNull(clientId, orgId)))
+					.orElse(null);
 			if (acctSchema == null)
 			{
 				// No accounting schema resolvable for this line's org → nothing to materialize.

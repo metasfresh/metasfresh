@@ -108,6 +108,7 @@ import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -812,7 +813,7 @@ public class C_Invoice_Candidate_StepDef
 	{
 		// Collect the candidates and wait until the (async) recompute triggered by the override change
 		// has cleared, so LineAggregationKey reflects the current C_ElementValue_Override_ID.
-		final java.util.List<I_C_Invoice_Candidate> invoiceCandidates = new java.util.ArrayList<>();
+		final List<I_C_Invoice_Candidate> invoiceCandidates = new ArrayList<>();
 		final ImmutableSet.Builder<InvoiceCandidateId> idsBuilder = ImmutableSet.builder();
 		DataTableRows.of(dataTable).forEach(row -> {
 			final I_C_Invoice_Candidate invoiceCandidate = row.getAsIdentifier(COLUMNNAME_C_Invoice_Candidate_ID).lookupNotNullIn(invoiceCandTable);
@@ -821,7 +822,7 @@ public class C_Invoice_Candidate_StepDef
 		});
 		waitUntilValid(idsBuilder.build(), 120);
 
-		final java.util.List<String> keys = new java.util.ArrayList<>();
+		final List<String> keys = new ArrayList<>();
 		for (final I_C_Invoice_Candidate invoiceCandidate : invoiceCandidates)
 		{
 			InterfaceWrapperHelper.refresh(invoiceCandidate);
@@ -832,7 +833,7 @@ public class C_Invoice_Candidate_StepDef
 			keys.add(key);
 		}
 
-		final int distinct = new java.util.LinkedHashSet<>(keys).size();
+		final int distinct = new LinkedHashSet<>(keys).size();
 		if ("equal".equals(relation))
 		{
 			assertThat(distinct).as("all LineAggregationKeys must be EQUAL, but were: %s", keys).isEqualTo(1);

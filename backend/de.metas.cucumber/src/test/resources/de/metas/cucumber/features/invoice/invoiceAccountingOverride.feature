@@ -314,8 +314,15 @@ Feature: Per-line GL account override on purchase invoices
 
 
   # Scenario E (Q2): on completion the override is materialized into C_Invoice_Acct scoped to the
-  # accounting schema resolved from the invoice line's OWN org — getC_AcctSchema_ID(client, org) —
-  # not spread across every client schema.
+  # accounting schema resolved from the invoice line's OWN org — getC_AcctSchema_ID(client, org).
+  # This is a single-schema functional smoke test: the standard cucumber seed client has exactly one
+  # C_AcctSchema, so it exercises the real completion->materialization path and asserts the row lands
+  # in the org-resolved schema, but it does NOT by itself DISCRIMINATE the org-scoping fix from the old
+  # every-client-schema behaviour (with one schema both write the same single row). That discrimination
+  # (two client schemas, override materialized only into org A's) lives in the interceptor unit test
+  # de.metas.invoice.acct.interceptor.C_Invoice_AcctOverrideTest — a genuine two-schema cucumber setup
+  # is infeasible (no C_AcctSchema-create step-def) and unsafe (a second client schema is global seed
+  # state that PostingService posts every document to, polluting sibling accounting scenarios).
   @Id:S30443_TC5
   @from:cucumber
   @allure.label.epic:E0340_Invoicing

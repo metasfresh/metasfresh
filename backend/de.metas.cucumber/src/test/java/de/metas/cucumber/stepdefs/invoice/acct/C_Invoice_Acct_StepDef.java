@@ -32,8 +32,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class C_Invoice_Acct_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
