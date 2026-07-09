@@ -29,11 +29,16 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.logging.LogManager;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.process.AdProcessId;
+import de.metas.process.IADProcessDAO;
+import de.metas.process.ProcessInfo;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
+import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -56,6 +61,7 @@ public class MD_Stock_StepDef
 	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_Warehouse_StepDefData warehouseTable;
@@ -69,6 +75,34 @@ public class MD_Stock_StepDef
 		this.productTable = productTable;
 		this.warehouseTable = warehouseTable;
 		this.asiTable = asiTable;
+	}
+
+	/**
+	 * Runs {@link MD_Stock_Update_From_M_HUs}, which resets {@code MD_Stock.QtyOnHand} to the
+	 * {@code M_HU_Storage}-derived truth for every product/warehouse/attributes-key row where the
+	 * two diverge.
+	 *
+	 * <p>Stands in for the periodic {@code AD_Scheduler} (CronPattern {@code * /15 * * * *}) that
+	 * reconciles MD_Stock from HU data in production — this step invokes the same process
+	 * synchronously so the test can assert on its result without waiting for the scheduler.
+	 *
+	 * <p>Takes no DataTable; the process itself finds and corrects every diverging row.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When the MD_Stock reconciliation process is run
+	 * </pre>
+	 */
+	@When("the MD_Stock reconciliation process is run")
+	public void run_MD_Stock_reconciliation_process()
+	{
+		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(MD_Stock_Update_From_M_HUs.class);
+
+		ProcessInfo.builder()
+				.setAD_Process_ID(processId.getRepoId())
+				.buildAndPrepareExecution()
+				.onErrorThrowException()
+				.executeSync();
 	}
 
 	/**
