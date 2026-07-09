@@ -64,6 +64,7 @@ jobs:
           fi
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && steps.skip-checks.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -530,6 +531,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1330,6 +1332,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1473,7 +1476,13 @@ jobs:
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
-          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/backend/junit.log && exit 1; fi      # print backend log and exit if backend failed
+          if [ $(cat junit/backend/junit.exit-code) != 0 ] || [ $(cat junit/backend/junit.mvn.exit-code) != 0 ]; then \
+            echo "----- ArchUnit violation detail (grepped from the full backend log; the tail below can miss it) -----"; \
+            grep -n -A 300 "ArchUnit found new architecture violations" junit/backend/junit.log || echo "(no ArchUnit violation block in backend log)"; \
+            echo "----- last 1000 lines of backend junit.log -----"; \
+            tail -1000 junit/backend/junit.log; \
+            exit 1; \
+          fi      # print ArchUnit detail + backend log and exit if backend failed
           if [ $(cat junit/camel/junit.exit-code) != 0 ] || [ $(cat junit/camel/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/camel/junit.log && exit 1; fi            # print camel log and exit if camel failed
       - uses: actions/upload-artifact@v6
         if: failure()
@@ -1582,6 +1591,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -1940,6 +1950,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh
@@ -2056,6 +2067,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: testspace-com/setup-testspace@v1
+        continue-on-error: true  # testspace retired — never fail the build on it
         if: env.ACT != 'true' && needs.init.outputs.skip-testspace != 'true'
         with:
           domain: metasfresh

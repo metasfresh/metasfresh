@@ -48,6 +48,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -66,6 +67,10 @@ public class WEBUI_PP_Order_Receipt
 	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL attributesBL = Services.get(IHUAttributesBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private static final String SYSCONFIG_OverrideCaptionWithPackingInfo =
+			"de.metas.ui.web.pporder.process.WEBUI_PP_Order_Receipt.OverrideCaptionWithPackingInfo";
 
 	// parameters
 	@Param(parameterName = PackingInfoProcessParams.PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -178,9 +183,10 @@ public class WEBUI_PP_Order_Receipt
 		}
 
 		//
-		// OK, Override caption with current packing info, if any
+		// OK, Override caption with current packing info, if any — unless disabled via sysconfig
 		final String packingInfo = getSingleSelectedRow().getPackingInfo();
-		if (!Check.isEmpty(packingInfo, true))
+		if (!Check.isEmpty(packingInfo, true)
+				&& sysConfigBL.getBooleanValue(SYSCONFIG_OverrideCaptionWithPackingInfo, true))
 		{
 			return ProcessPreconditionsResolution.accept()
 					.deriveWithCaptionOverride(packingInfo);

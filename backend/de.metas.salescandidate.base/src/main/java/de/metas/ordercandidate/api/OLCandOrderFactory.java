@@ -113,6 +113,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -178,6 +179,8 @@ class OLCandOrderFactory
 	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
+	// The earliest of the per-line DatePromised values; the header C_Order.DatePromised is set to it in completeOrDelete().
+	private ZonedDateTime earliestLineDatePromised = null;
 	private final List<OLCand> candidates = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
@@ -242,8 +245,11 @@ class OLCandOrderFactory
 		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
-		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
-		// also note that for now we set datepromised only in the header, so different DatePromised values result in differnt orders, and all ol have the same datepromised
+		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder().
+		// We seed the header with the first candidate's DatePromised here so the order can be saved (lines need the FK).
+		// Each line then gets its own olcand DatePromised at creation (see addOLCand0), and the header is set to the
+		// earliest of those line dates in completeOrDelete() via applyEarliestHeaderDatePromised(). The MOrder.afterSave()
+		// header->line broadcast does not overwrite the per-line dates (guarded by isUIAction || lineDateNotSet there).
 		order.setDatePromised(TimeUtil.asTimestamp(candidateOfGroup.getDatePromised()));
 
 		// if the olc has no value set, we are not falling back here!
@@ -363,6 +369,8 @@ class OLCandOrderFactory
 		}
 		else
 		{
+			applyEarliestHeaderDatePromised(order);
+
 			try
 			{
 				validateAndCreateCompensationGroups();
@@ -397,6 +405,28 @@ class OLCandOrderFactory
 					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
+		}
+	}
+
+	/**
+	 * Sets the header {@code C_Order.DatePromised} to the earliest of the lines' own delivery dates.
+	 * <p>
+	 * Each line already carries its own {@code DatePromised} from creation (see {@link #addOLCand0(OLCand)}); this method
+	 * only sets the header, leaving the per-line dates intact. When no line carried a {@code DatePromised}, the header
+	 * keeps its fallback and nothing is changed here.
+	 */
+	private void applyEarliestHeaderDatePromised(@NonNull final I_C_Order order)
+	{
+		if (earliestLineDatePromised == null)
+		{
+			return;
+		}
+
+		// compare by instant (the header stores the same moment), so the guard skips a no-op save
+		if (!Objects.equals(earliestLineDatePromised.toInstant(), TimeUtil.asInstant(order.getDatePromised())))
+		{
+			order.setDatePromised(TimeUtil.asTimestamp(earliestLineDatePromised));
+			orderDAO.save(order);
 		}
 	}
 
@@ -529,6 +559,20 @@ class OLCandOrderFactory
 		{
 			currentOrderLine = newOrderLine(candidate);
 			isNewOrderLine = true;
+
+			// Carry this candidate's own delivery date onto the new line from creation, so the line owns its
+			// per-line DatePromised. When several candidates aggregate into one line, the line keeps the creating
+			// candidate's date. The header is set to the earliest such date in completeOrDelete() via
+			// applyEarliestHeaderDatePromised().
+			final ZonedDateTime lineDatePromised = candidate.getDatePromised();
+			if (lineDatePromised != null)
+			{
+				currentOrderLine.setDatePromised(TimeUtil.asTimestamp(lineDatePromised));
+				if (earliestLineDatePromised == null || lineDatePromised.isBefore(earliestLineDatePromised))
+				{
+					earliestLineDatePromised = lineDatePromised;
+				}
+			}
 		}
 		else
 		{
@@ -650,6 +694,7 @@ class OLCandOrderFactory
 
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
+
 		candidates.add(candidate);
 	}
 

@@ -17,6 +17,8 @@ public class JsonHUExpectation
 {
 	@Nullable Identifier warehouse;
 	@Nullable Identifier locator;
+	@Nullable Identifier bpartner;
+	@Nullable Identifier bpartnerLocation;
 	@Nullable String huStatus;
 	/**
 	 * Expected HU unit type. Pass the DB code (the value of {@code M_HU_PI_Version.HU_UnitType}):

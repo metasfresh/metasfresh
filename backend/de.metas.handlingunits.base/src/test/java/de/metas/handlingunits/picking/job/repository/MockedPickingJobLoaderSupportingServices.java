@@ -68,6 +68,12 @@ public class MockedPickingJobLoaderSupportingServices implements PickingJobLoade
 	}
 
 	@Override
+	public void warmUpQRCodesCache(@NonNull final Collection<HuId> huIds)
+	{
+		// do nothing (this mock already serves QR codes from its in-memory map)
+	}
+
+	@Override
 	public String getBPartnerName(@NonNull final BPartnerId bpartnerId)
 	{
 		return "bpname-" + bpartnerId.getRepoId();

@@ -71,6 +71,34 @@ public class StockDataUpdateRequestHandler
 		fireStockChangedEvent(dataRecord, qtyOnHandOld, dataUpdateRequest.getSourceInfo());
 	}
 
+	/**
+	 * Idempotently set {@code MD_Stock.QtyOnHand} to an absolute target (the HU-derived truth) — the
+	 * reset semantics used by {@code MD_Stock_Update_From_M_HUs}. Unlike {@link #handleDataUpdateRequest}
+	 * (which ADDS a delta, correct for the transaction-event path), this SETS the value, so overlapping
+	 * concurrent reset runs all converge to the same truth instead of compounding into a runaway.
+	 */
+	public void handleResetToQtyOnHand(
+			@NonNull final StockDataRecordIdentifier identifier,
+			@NonNull final BigDecimal targetQtyOnHand,
+			@NonNull final StockChangeSourceInfo sourceInfo)
+	{
+		final BigDecimal qtyOnHandNew = NumberUtils.stripTrailingDecimalZeros(targetQtyOnHand);
+
+		final I_MD_Stock dataRecord = retrieveOrCreateDataRecord(identifier);
+		final BigDecimal qtyOnHandOld = dataRecord.getQtyOnHand();
+
+		// Idempotent: setting to the same truth twice (overlapping reset runs) is a no-op the second time.
+		if (qtyOnHandOld.compareTo(qtyOnHandNew) == 0)
+		{
+			return;
+		}
+
+		dataRecord.setQtyOnHand(qtyOnHandNew);
+		save(dataRecord);
+
+		fireStockChangedEvent(dataRecord, qtyOnHandOld, sourceInfo);
+	}
+
 	private I_MD_Stock retrieveOrCreateDataRecord(@NonNull final StockDataRecordIdentifier identifier)
 	{
 		final IQuery<I_MD_Stock> query = createQueryForIdentifier(identifier);

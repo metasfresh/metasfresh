@@ -241,10 +241,12 @@ test('Scan TU GRAI on PickingSlotScreen → TU consolidated onto target LU', asy
         // The customer requires GRAI, so the scan affordance is shown.
         await PickingSlotScreen.expectScannerVisible();
 
-        // Scan first TU's GRAI → consolidates tu1 onto the target LU
+        // Scan first TU's GRAI → consolidates tu1 onto the target LU.
+        // scanGRAI appends an Enter terminator so each instantaneous test-harness scan force-completes
+        // as a distinct code (no keyboard-hook buffer concatenation — see PickingSlotScreen.scanGRAI /
+        // CLAUDE.md § "Back-to-Back type() calls — Buffer Concatenation").
         await PickingSlotScreen.scanGRAI({ graiString: graiP1 });
-        // Assertion between scans: ensures the keyboard hook flushes before the next scan
-        // (CLAUDE.md § "Back-to-Back type() calls — Buffer Concatenation")
+        // Wait for the consolidation round-trip to land before the next scan.
         await PickingSlotScreen.waitNotLoading();
 
         // Scan second TU's GRAI → consolidates tu2 onto the target LU

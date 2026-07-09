@@ -384,6 +384,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			// DirectDebit), so the effective value is used as-is.
 			icRecord.setInvoiceRule(billBPartnerEffective.getInvoiceRule(soTrx).getCode());
 			icRecord.setPaymentRule(billBPartnerEffective.getPaymentRule(soTrx).getCode());
+			icRecord.setIsAutoInvoice(billBPartnerEffective.isAutoInvoice(soTrx));
 		}
 
 		Dimension inOutLineDimension = dimensionService.getFromRecord(inOutLineRecord);

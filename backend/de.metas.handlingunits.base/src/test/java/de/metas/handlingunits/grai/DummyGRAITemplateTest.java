@@ -83,4 +83,46 @@ class DummyGRAITemplateTest
 		final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
 		assertThat(template.extractCounter(GRAI.ofCanonicalString("7613204.00307.1234567890"))).isZero();
 	}
+
+	@Test
+	void matches_samePOReference_true()
+	{
+		final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+		final GRAI grai = template.buildGRAI(1);
+		assertThat(template.matches(grai)).isTrue();
+		assertThat(DummyGRAITemplate.isMigrosStructure(grai)).isTrue();
+	}
+
+	@Test
+	void matches_differentPOReference_false()
+	{
+		final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+		final GRAI otherOrderGrai = DummyGRAITemplate.migros("9999999999").buildGRAI(1);
+		assertThat(template.matches(otherOrderGrai)).isFalse();
+		// still Migros-structured, just the wrong order
+		assertThat(DummyGRAITemplate.isMigrosStructure(otherOrderGrai)).isTrue();
+	}
+
+	@Test
+	void isMigrosStructure_nonMigrosGrai_false()
+	{
+		final GRAI nonMigrosGrai = GRAI.ofCanonicalString("1234567.99999.1234567890");
+		assertThat(DummyGRAITemplate.isMigrosStructure(nonMigrosGrai)).isFalse();
+
+		final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+		assertThat(template.matches(nonMigrosGrai)).isFalse();
+	}
+
+	@Test
+	void matches_null_false()
+	{
+		final DummyGRAITemplate template = DummyGRAITemplate.migros("1234567890");
+		assertThat(template.matches(null)).isFalse();
+	}
+
+	@Test
+	void isMigrosStructure_null_false()
+	{
+		assertThat(DummyGRAITemplate.isMigrosStructure(null)).isFalse();
+	}
 }

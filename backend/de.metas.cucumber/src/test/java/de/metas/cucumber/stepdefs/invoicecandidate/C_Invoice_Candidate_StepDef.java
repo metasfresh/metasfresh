@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+import de.metas.cucumber.stepdefs.accounting.C_ElementValue_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -138,6 +139,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Discount_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsToClear;
@@ -156,7 +158,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyWithIssues_Effective;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -181,6 +183,7 @@ public class C_Invoice_Candidate_StepDef
 	private final M_InOut_StepDefData shipmentTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_PromotionCode_StepDefData promotionCodeTable;
+	private final C_ElementValue_StepDefData elementValueTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -194,7 +197,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final M_InOutLine_StepDefData inoutLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final C_Project_StepDefData projectTable,
-			@NonNull final C_PromotionCode_StepDefData promotionCodeTable)
+			@NonNull final C_PromotionCode_StepDefData promotionCodeTable,
+			@NonNull final C_ElementValue_StepDefData elementValueTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -208,6 +212,7 @@ public class C_Invoice_Candidate_StepDef
 		this.shipmentTable = shipmentTable;
 		this.projectTable = projectTable;
 		this.promotionCodeTable = promotionCodeTable;
+		this.elementValueTable = elementValueTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -299,6 +304,22 @@ public class C_Invoice_Candidate_StepDef
 		}
 	}
 
+	/**
+	 * Updates existing purchase/sales invoice candidates identified by alias.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>C_Invoice_Candidate_ID</b> — (required, identifier-ref) the candidate to update<br>
+	 *   <b>QtyToInvoice_Override</b> — (optional) sets the manual qty-to-invoice override<br>
+	 *   <b>C_ElementValue_Override_ID</b> — (optional, identifier-ref) per-line GL account override; propagated to the generated invoice line on processing<br>
+	 * @cucumber.depends StepDefData: C_Invoice_Candidate_StepDefData, C_ElementValue_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update C_Invoice_Candidate:
+	 *   | C_Invoice_Candidate_ID | C_ElementValue_Override_ID |
+	 *   | invoiceCand            | overrideAccount            |
+	 * </pre>
+	 */
 	@And("update C_Invoice_Candidate:")
 	public void update_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -310,6 +331,11 @@ public class C_Invoice_Candidate_StepDef
 
 					row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override)
 							.ifPresent(invoiceCandidate::setQtyToInvoice_Override);
+
+					// Per-line GL account override (purchase): propagated to the invoice line on processing.
+					row.getAsOptionalIdentifier(I_C_Invoice_Candidate.COLUMNNAME_C_ElementValue_Override_ID)
+							.map(elementValueTable::getId)
+							.ifPresent(elementValueId -> invoiceCandidate.setC_ElementValue_Override_ID(elementValueId.getRepoId()));
 
 					InterfaceWrapperHelper.saveRecord(invoiceCandidate);
 					invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -510,6 +536,36 @@ public class C_Invoice_Candidate_StepDef
 				});
 	}
 
+	/**
+	 * Validates fields on existing {@link I_C_Invoice_Candidate} records.
+	 *
+	 * <p>DataTable columns:
+	 * <ul>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} (required) — identifier registered via "after not more than Xs, C_Invoice_Candidate are found:" or similar</li>
+	 *   <li>{@code QtyToInvoice} (optional)</li>
+	 *   <li>{@code QtyOrdered} (optional)</li>
+	 *   <li>{@code QtyDelivered} (optional)</li>
+	 *   <li>{@code QtyEntered} (optional)</li>
+	 *   <li>{@code QtyInvoiced} (optional)</li>
+	 *   <li>{@code NetAmtToInvoice} (optional)</li>
+	 *   <li>{@code C_Order_ID} (optional)</li>
+	 *   <li>{@code C_OrderLine_ID} (optional)</li>
+	 *   <li>{@code PaymentRule} (optional)</li>
+	 *   <li>{@code M_Product_ID} (optional)</li>
+	 *   <li>{@code Processed} (optional)</li>
+	 *   <li>{@code IsWithoutCharge} (optional)</li>
+	 *   <li>{@code Reason} (optional)</li>
+	 *   <li>{@code IsAutoInvoice} (optional) — expected auto-invoice flag</li>
+	 *   <li>{@code InvoiceRule} (optional) — expected invoice-rule code (e.g. {@code D} = AfterDelivery, {@code I} = Immediate)</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>{@code
+	 * And validate C_Invoice_Candidate:
+	 *   | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+	 *   | invoiceCandidate                  | D           | true          |
+	 * }</pre>
+	 */
 	@And("validate C_Invoice_Candidate:")
 	public void validate_C_Invoice_Candidate(@NonNull final DataTable dataTable)
 	{
@@ -630,6 +686,12 @@ public class C_Invoice_Candidate_StepDef
 
 						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_Reason)
 								.ifPresent(reason -> softly.assertThat(finalInvoiceCandidate.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsAutoInvoice)
+								.ifPresent(isAutoInvoice -> softly.assertThat(finalInvoiceCandidate.isAutoInvoice()).as("IsAutoInvoice").isEqualTo(isAutoInvoice));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule)
+								.ifPresent(invoiceRule -> softly.assertThat(finalInvoiceCandidate.getInvoiceRule()).as("InvoiceRule").isEqualTo(invoiceRule));
 
 						softly.assertAll();
 					}

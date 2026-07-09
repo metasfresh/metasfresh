@@ -172,6 +172,8 @@ const translations = {
           'Mehrere GRAIs erkannt. Halten Sie den Leser näher an eine einzelne Kiste und scannen Sie erneut.',
         count: '%(scanned)s / %(total)s GRAIs gescannt',
         countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s übersprungen — bereits auf dieser Ladeeinheit)',
+        skippedNotice: '%(count)s Kiste(n) waren bereits auf dieser Ladeeinheit und wurden übersprungen',
         save: {
           buttonCaption: 'Speichern',
         },
@@ -196,6 +198,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

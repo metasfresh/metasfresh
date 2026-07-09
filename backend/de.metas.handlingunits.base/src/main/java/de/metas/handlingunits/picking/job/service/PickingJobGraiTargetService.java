@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.grai.DummyGRAITemplate;
 import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -33,6 +34,7 @@ public class PickingJobGraiTargetService
 	private static final AdMessageKey MSG_INVALID_GRAI_BARCODE = AdMessageKey.of("de.metas.handlingunits.picking.InvalidGRAIBarcode");
 	private static final AdMessageKey MSG_TU_NOT_ALLOWED_ON_LU = AdMessageKey.of("de.metas.handlingunits.picking.GRAITUNotAllowedOnLU");
 	private static final AdMessageKey MSG_NO_CAPACITY_FOR_PRODUCT = AdMessageKey.of("de.metas.handlingunits.picking.GRAINoCapacityForProduct");
+	private static final AdMessageKey MSG_GRAI_POREFERENCE_MISMATCH = AdMessageKey.of("de.metas.handlingunits.picking.GRAIPOReferenceMismatch");
 
 	@NonNull private final PickingJobHUService huService;
 
@@ -46,18 +48,27 @@ public class PickingJobGraiTargetService
 	 *
 	 * @param luTarget      the effective LU picking target; {@code null} → the TU-LU check is skipped
 	 * @param lineProductId the line's product; {@code null} → header-level scan, the capacity check is skipped
+	 * @param poReference   the current sales order's PO reference; {@code null} when the order has none (or is not
+	 *                      unambiguously resolvable). Gates a Migros returnable-asset GRAI
+	 *                      ({@link DummyGRAITemplate#isMigrosStructure(GRAI)}) against the current order — a
+	 *                      non-Migros GRAI is never checked. {@code null} → the Migros match is skipped (not rejected);
+	 *                      a Migros order without a PO reference is a dummy-GRAI-generation prerequisite handled
+	 *                      elsewhere ({@link DummyGRAITemplate#MSG_DUMMY_GRAI_POREFERENCE_MISSING}), not this check's job.
 	 */
 	@NonNull
 	public GraiTuResolution resolveTuTypeAndCapacity(
 			@NonNull final ScannedCode scannedGrai,
 			@Nullable final LUPickingTarget luTarget,
-			@Nullable final ProductId lineProductId)
+			@Nullable final ProductId lineProductId,
+			@Nullable final String poReference)
 	{
 		final GRAI grai = GRAI.parse(scannedGrai.getAsString());
 		if (grai == null)
 		{
 			throw new AdempiereException(MSG_INVALID_GRAI_BARCODE, scannedGrai.getAsString());
 		}
+
+		assertBelongsToCurrentOrderIfMigros(grai, poReference);
 
 		final HuPackingInstructionsId tuPIId = huService.resolveHuPackingInstructionsId(grai);
 
@@ -73,6 +84,38 @@ public class PickingJobGraiTargetService
 				.tuPIId(tuPIId)
 				.huPIItemProductId(huPIItemProductId)
 				.build();
+	}
+
+	/**
+	 * Gates a Migros returnable-asset GRAI ({@link DummyGRAITemplate#isMigrosStructure(GRAI)}) against the current
+	 * sales order's PO reference: it must match the prefix {@link DummyGRAITemplate#migros(String)} derives from
+	 * {@code poReference}, otherwise it belongs to another order. Non-Migros GRAIs are never checked; a
+	 * {@code null poReference} (no sales order, or the order has no PO reference) skips the match rather than
+	 * rejecting.
+	 *
+	 * @throws AdempiereException (keyed {@code GRAIPOReferenceMismatch}) if the GRAI is Migros-structured but does not
+	 *         match the order's PO-reference-derived prefix.
+	 */
+	private void assertBelongsToCurrentOrderIfMigros(@NonNull final GRAI grai, @Nullable final String poReference)
+	{
+		if (!DummyGRAITemplate.isMigrosStructure(grai))
+		{
+			return;
+		}
+
+		if (poReference == null)
+		{
+			return;
+		}
+
+		// A PO reference too long to form a dummy-GRAI serial prefix can never have produced this GRAI's serial,
+		// so it is a mismatch — not the (unrelated) dummy-GRAI-generation "prefix too long" prerequisite, which
+		// DummyGRAITemplate.migros(...) would otherwise throw here for a non-dummy-GRAI customer's order.
+		if (!DummyGRAITemplate.isValidSerialPrefix(poReference)
+				|| !DummyGRAITemplate.migros(poReference).matches(grai))
+		{
+			throw new AdempiereException(MSG_GRAI_POREFERENCE_MISMATCH, grai.toCanonicalString(), poReference);
+		}
 	}
 
 	/**
