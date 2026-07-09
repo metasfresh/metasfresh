@@ -87,6 +87,7 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
@@ -100,9 +101,11 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -823,6 +826,112 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			topLevelHU.setC_BPartner_Location_ID(0);
 			save(topLevelHU);
 		}
+	}
+
+	@Override
+	public void reduceQtyPickedForPickToTU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId pickToTuId,
+			@NonNull final Quantity qtyToReduce)
+	{
+		if (qtyToReduce.isZeroOrNegative())
+		{
+			return;
+		}
+
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(
+				shipmentScheduleId.getRepoId(), pickToTuId.getRepoId(), ITrx.TRXNAME_ThreadInherited);
+		if (qtyPickedRecords.isEmpty())
+		{
+			return;
+		}
+
+		assertNotAlreadyShipped(qtyPickedRecords, pickToTuId);
+
+		// Newest-first (highest M_ShipmentSchedule_QtyPicked_ID = newest pick), mirroring the HU-side
+		// LIFO order the unpick command already used to select which picked HUs to unpick.
+		final List<I_M_ShipmentSchedule_QtyPicked> newestFirst = qtyPickedRecords.stream()
+				.sorted(Comparator.comparingInt(I_M_ShipmentSchedule_QtyPicked::getM_ShipmentSchedule_QtyPicked_ID).reversed())
+				.collect(Collectors.toList());
+
+		final I_M_HU tuHU = handlingUnitsBL.getById(pickToTuId);
+		final IHUContext huContext = huContextFactory.createMutableHUContext(getContextAware(tuHU));
+
+		final List<I_M_ShipmentSchedule_QtyPicked> fullyConsumedRecords = new ArrayList<>();
+		BigDecimal remaining = qtyToReduce.getAsBigDecimal();
+
+		for (final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : newestFirst)
+		{
+			if (remaining.signum() <= 0)
+			{
+				break;
+			}
+
+			final BigDecimal rowQtyPicked = qtyPickedRecord.getQtyPicked();
+			if (rowQtyPicked.compareTo(remaining) <= 0)
+			{
+				// Row fully consumed by the unpick qty -> delete it entirely.
+				fullyConsumedRecords.add(qtyPickedRecord);
+				remaining = remaining.subtract(rowQtyPicked);
+			}
+			else
+			{
+				// Row only partially consumed -> reduce QtyPicked (+ QtyTU/QtyLU, QtyDeliveredCatch) and stop.
+				final BigDecimal newQtyPicked = rowQtyPicked.subtract(remaining);
+				reduceCatchWeightProportionally(qtyPickedRecord, rowQtyPicked, newQtyPicked);
+				qtyPickedRecord.setQtyPicked(newQtyPicked);
+				createCandidatesForQtyPicked(qtyPickedRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
+						.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
+				save(qtyPickedRecord);
+				remaining = BigDecimal.ZERO;
+			}
+		}
+
+		Check.assume(remaining.signum() <= 0,
+				"qtyToReduce={} must not exceed the total active QtyPicked for shipmentScheduleId={} and pickToTuId={}",
+				qtyToReduce, shipmentScheduleId, pickToTuId);
+
+		if (!fullyConsumedRecords.isEmpty())
+		{
+			shipmentScheduleAllocBL.deleteRecords(fullyConsumedRecords);
+		}
+
+		if (fullyConsumedRecords.size() == newestFirst.size())
+		{
+			// No active row remains for this schedule on this TU -> mirror the reset already done by
+			// deleteByTopLevelHUsAndShipmentScheduleId (:821-824) and unallocateTU (:388-391).
+			tuHU.setC_BPartner_ID(0);
+			tuHU.setC_BPartner_Location_ID(0);
+			save(tuHU);
+		}
+	}
+
+	/**
+	 * Scales {@code QtyDeliveredCatch} by the stock-qty ratio {@code newQtyPicked / oldQtyPicked}, mirroring how
+	 * the pick side spreads catch weight across CUs ({@code PickingJobPickCommand#getCatchWeight().spreadEqually}).
+	 * No-op when the row does not track a catch qty (guard: an unset {@code Catch_UOM_ID} must never reach
+	 * {@code UomId.ofRepoId(...)}, which asserts a positive id).
+	 */
+	private static void reduceCatchWeightProportionally(
+			@NonNull final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord,
+			@NonNull final BigDecimal oldQtyPicked,
+			@NonNull final BigDecimal newQtyPicked)
+	{
+		if (qtyPickedRecord.getCatch_UOM_ID() <= 0)
+		{
+			return;
+		}
+
+		final BigDecimal oldQtyDeliveredCatch = qtyPickedRecord.getQtyDeliveredCatch();
+		if (oldQtyDeliveredCatch == null || oldQtyPicked.signum() == 0)
+		{
+			return;
+		}
+
+		final BigDecimal newQtyDeliveredCatch = oldQtyDeliveredCatch
+				.multiply(newQtyPicked)
+				.divide(oldQtyPicked, Math.max(oldQtyDeliveredCatch.scale(), 2), RoundingMode.HALF_UP);
+		qtyPickedRecord.setQtyDeliveredCatch(newQtyDeliveredCatch);
 	}
 
 	private static void assertNotAlreadyShipped(final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords, @NonNull final HuId huIdInScope)
