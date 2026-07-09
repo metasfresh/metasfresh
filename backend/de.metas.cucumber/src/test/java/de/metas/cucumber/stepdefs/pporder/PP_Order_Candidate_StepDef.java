@@ -28,9 +28,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -209,7 +209,10 @@ public class PP_Order_Candidate_StepDef
 		// each expected row must be present ...
 		rows.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
 
-		// ... and NO other active PP_Order_Candidate may exist for the product(s) referenced in the table
+		// ... and NO other PP_Order_Candidate may exist for the product(s) referenced in the table.
+		// NOTE: no addOnlyActiveRecordsFilter here — the per-row query (toSqlQuery) does not filter on IsActive
+		// either, so the count must use the same population, otherwise an inactive candidate would make the
+		// per-row match and the count disagree.
 		final ImmutableSet<ProductId> productIds = rows.stream()
 				.map(row -> row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIdIn(productTable))
 				.collect(ImmutableSet.toImmutableSet());
@@ -218,7 +221,6 @@ public class PP_Order_Candidate_StepDef
 		StepDefUtil.<Boolean>tryAndWaitForItem()
 				.worker(() -> {
 					final List<I_PP_Order_Candidate> actual = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-							.addOnlyActiveRecordsFilter()
 							.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productIds)
 							.orderBy(COLUMNNAME_PP_Order_Candidate_ID)
 							.create()

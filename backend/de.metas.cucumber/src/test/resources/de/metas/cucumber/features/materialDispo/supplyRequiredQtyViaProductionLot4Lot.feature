@@ -1,12 +1,14 @@
 @from:cucumber
-@allure.label.epic:E0155_Material_Disposition
-@allure.label.feature:F5100
+@allure.label.epic:E0159_Manufacturing_Planning
+@allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
 @ghActions:run_on_executor6
 Feature: Lot-for-lot production disposition — supply tracks demand on qty change and reactivate
-## F5100: Material Disposition
-## For a manufactured lot-for-lot product, production supply must track the demand's ordered qty net of
-## the supply already created for it: a real increase adds only the increment; a reactivate round-trip
-## (order or shipment, incl. an already-processed production order) adds no phantom supply; a decrease reduces it.
+## F8022: Lot for Lot - Manufacturing Order per Sales Order
+## For a manufactured lot-for-lot product, production supply tracks the demand's ordered qty net of the
+## supply already created for it:
+## - a real increase adds only the increment;
+## - a reactivate round-trip (order or shipment, incl. an already-processed production order) adds no phantom;
+## - a decrease reduces supply.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -31,8 +33,8 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
 
   @Id:S0264_600
   @from:cucumber
-  @allure.label.epic:E0155_Material_Disposition
-  @allure.label.feature:F5100
+  @allure.label.epic:E0159_Manufacturing_Planning
+  @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
   Scenario: Partial stock available at demand time, supplied via production Lot for Lot
     Given metasfresh contains M_Products:
       | Identifier |
@@ -128,8 +130,8 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
 
   @Id:S0264_700
   @from:cucumber
-  @allure.label.epic:E0155_Material_Disposition
-  @allure.label.feature:F5100
+  @allure.label.epic:E0159_Manufacturing_Planning
+  @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
   Scenario: Full stock available at demand time, supplied via production Lot for Lot
     Given metasfresh contains M_Products:
       | Identifier |
@@ -225,8 +227,8 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
 
   @Id:S0264_800
   @from:cucumber
-  @allure.label.epic:E0155_Material_Disposition
-  @allure.label.feature:F5100
+  @allure.label.epic:E0159_Manufacturing_Planning
+  @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
   Scenario: Lot for Lot - a later order's production candidate is sized to its own qty, not to an earlier order's still-open demand
     # NOTE: no PP_Product_Planning is created up front. The order is completed FIRST so its demand fires
     # NoSupplyAdvice (no plan yet) and drives ATP negative WITHOUT a supply — the precondition for the defect.
@@ -316,7 +318,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
-    # "nachtraeglich" trigger: reactivate + re-complete ORDER 2 -> its demand is re-evaluated as an UPDATE
+    # after-the-fact trigger: reactivate + re-complete ORDER 2 -> its demand is re-evaluated as an UPDATE
     And the order identified by o_2 is reactivated
     # Stabilisation barrier: wait until order 2's shipment schedule qty dropped to 0 and settled (IsToRecompute=N).
     And after not more than 60s, M_ShipmentSchedules are found:
