@@ -83,7 +83,7 @@ public class MD_Stock_StepDef
 	private final static transient Logger logger = LogManager.getLogger(MD_Stock_StepDef.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_Warehouse_StepDefData warehouseTable;
