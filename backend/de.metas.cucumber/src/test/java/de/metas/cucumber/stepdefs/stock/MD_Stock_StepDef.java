@@ -70,6 +70,8 @@ import static org.assertj.core.api.Assertions.*;
  *   <li>{@link #seed_divergent_MD_Stock_row(io.cucumber.datatable.DataTable)} — seeds a single active
  *       row whose {@code QtyOnHand} is deliberately out of sync with the HU-derived truth (a
  *       precondition that, in production, only a bug artifact produces)</li>
+ *   <li>{@link #deactivate_MD_Stock_row(io.cucumber.datatable.DataTable)} — deactivates the active row
+ *       for a business key, leaving an HU-only bucket (no active {@code MD_Stock} row)</li>
  *   <li>{@link #run_MD_Stock_reconciliation_process()} — runs {@code MD_Stock_Update_From_M_HUs} to
  *       reset {@code QtyOnHand} back to the HU-derived truth</li>
  *   <li>{@link #verify_MD_Stock_Data(int, io.cucumber.datatable.DataTable)} — asserts the resulting
@@ -202,6 +204,74 @@ public class MD_Stock_StepDef
 		dataRecord.setAttributesKey(attributesKey.getAsString());
 		dataRecord.setQtyOnHand(qtyOnHand);
 		InterfaceWrapperHelper.saveRecord(dataRecord);
+	}
+
+	/**
+	 * Deactivates the active {@code MD_Stock} row for a business key, leaving an HU-only bucket: HU
+	 * storage still holds the product's on-hand quantity, but no active {@code MD_Stock} row
+	 * represents it — the case {@code MD_Stock_From_HUs_V}'s {@code FULL OUTER JOIN} (against the
+	 * view's {@code IsActive='Y'}-filtered {@code MD_Stock} side) must still surface, and
+	 * {@link #run_MD_Stock_reconciliation_process()} must then CREATE a fresh active row for it.
+	 *
+	 * <p><b>Real-world trigger this stands in for:</b> in production, the {@code MD_Stock} dedup
+	 * data-fix (migration {@code 5812890_sys_MD_Stock_dedup.sql}) deactivates every duplicate row for
+	 * a business key, keeping only the lowest {@code MD_Stock_ID} — leaving an HU-only bucket until
+	 * the next reconciliation run recreates it. The same deactivated-row state also results from any
+	 * manual deactivation of a stale/corrupted row prior to a from-scratch reset.
+	 *
+	 * <p><b>Why a direct deactivation is necessary:</b> there is no user/system action that
+	 * deactivates an {@code MD_Stock} row through the normal event-driven path (that path only ever
+	 * adds/updates rows); the deactivation is itself a maintenance action (an UPDATE, as the dedup
+	 * data-fix performs), so this step writes it directly via {@link InterfaceWrapperHelper} — no
+	 * {@code StockChangedEvent} is fired, matching the data-fix, which is a pure SQL {@code UPDATE}.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_Product_ID} — (identifier-ref) product</li>
+	 *   <li>{@code M_Warehouse_ID} — (identifier-ref) warehouse</li>
+	 * </ul>
+	 * Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_AttributeSetInstance_ID} — (identifier-ref) ASI whose storage-relevant
+	 *       attributes determine the {@code AttributesKey} bucket; omitted defaults to
+	 *       {@link AttributesKey#NONE}</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Given the active MD_Stock row is deactivated:
+	 *   | M_Product_ID | M_Warehouse_ID |
+	 *   | product      | warehouseStd   |
+	 * </pre>
+	 */
+	@Given("the active MD_Stock row is deactivated:")
+	public void deactivate_MD_Stock_row(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::deactivateStockRow);
+	}
+
+	private void deactivateStockRow(@NonNull final DataTableRow row)
+	{
+		final I_M_Product product = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
+		final I_M_Warehouse warehouse = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Warehouse_ID).lookupNotNullIn(warehouseTable);
+
+		final String asiIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID")
+				.map(StepDefDataIdentifier::getAsString)
+				.orElse(null);
+		final AttributesKey attributesKey = resolveAttributesKey(asiIdentifier);
+
+		final I_MD_Stock stockRecord = queryBL.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, Env.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, Env.getOrgId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString())
+				.create()
+				.firstOnlyNotNull(I_MD_Stock.class);
+
+		stockRecord.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(stockRecord);
 	}
 
 	/**

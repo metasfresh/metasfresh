@@ -91,3 +91,40 @@ Feature: MD_Stock reconciliation converges to HU-derived truth
     Then after not more than 30 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand | OPT.M_Warehouse_ID.Identifier |
       | idempotProduct          | 60        | warehouseStd                  |
+
+  Scenario: Reconciliation creates a new active MD_Stock row for an HU-only bucket
+    And metasfresh contains M_Products:
+      | Identifier    |
+      | huOnlyProduct |
+
+    # HUs give on-hand truth of 80 PCE via inventory completion
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate |
+      | invHuOnly                  | warehouseStd   | 2026-06-28   |
+    And metasfresh contains M_InventoriesLines:
+      | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
+      | invLineHuOnly                  | invHuOnly                  | huOnlyProduct           | PCE          | 80       | 0       |
+    When the inventory identified by invHuOnly is completed
+
+    Then after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLineHuOnly                  | huHuOnly            |
+
+    # Event path creates the active MD_Stock row = 80
+    Then after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand | OPT.M_Warehouse_ID.Identifier |
+      | huOnlyProduct           | 80        | warehouseStd                  |
+
+    # Deactivate the only active MD_Stock row: the HU still holds 80 on hand, but no active
+    # MD_Stock row represents the bucket anymore - the HU-only case the view's FULL OUTER JOIN
+    # (against the IsActive='Y'-filtered MD_Stock side) must still surface.
+    Given the active MD_Stock row is deactivated:
+      | M_Product_ID  | M_Warehouse_ID |
+      | huOnlyProduct | warehouseStd   |
+
+    When the MD_Stock reconciliation process is run
+
+    # Reconciliation must CREATE a new active MD_Stock row for the HU-only bucket
+    Then after not more than 30 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand | OPT.M_Warehouse_ID.Identifier |
+      | huOnlyProduct           | 80        | warehouseStd                  |
