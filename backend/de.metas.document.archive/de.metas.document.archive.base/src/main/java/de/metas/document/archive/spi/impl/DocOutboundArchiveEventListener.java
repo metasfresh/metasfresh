@@ -284,12 +284,8 @@ public class DocOutboundArchiveEventListener implements IArchiveEventListener
 
 		if (recipients.getTo() != null)
 		{
-			// an email-only recipient (e.g. the bill-to location fallback) has no AD_User => no CurrentEMailRecipient_ID
-			final DocOutBoundRecipientId toId = recipients.getTo().getId();
-			if (toId != null)
-			{
-				docOutboundLogRecord.setCurrentEMailRecipient_ID(toId.getRepoId());
-			}
+			// an email-only recipient (e.g. the bill-to location fallback) has no AD_User => toRepoId returns -1
+			docOutboundLogRecord.setCurrentEMailRecipient_ID(DocOutBoundRecipientId.toRepoId(recipients.getTo().getId()));
 			docOutboundLogRecord.setCurrentEMailAddress(recipients.getTo().getEmailAddress());
 		}
 
