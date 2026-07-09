@@ -351,8 +351,10 @@ public class CarrierAdviseCommand
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
 
-		// Unit price / total value from order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
-		// numberOfItems=1 (per-unit baseline); unit price is sent as-is; total = 1 × unitPrice.
+		// Unit price / total value from the order line — same source as NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem.
+		// The advise is per-unit (numberOfItems=1): totalValue is the value of ONE order-line unit. oneUnit = 1 C_UOM
+		// converted to the price UOM (=1 only when Price_UOM==C_UOM), so totalValue = unitPrice × oneUnit is a real
+		// UOM conversion (mirrors the sibling's unitPrice × shippedQuantity), NOT a ×1 no-op.
 		JsonMoney unitPrice = null;
 		JsonMoney totalValue = null;
 		JsonQuantity shippedQuantity = null;

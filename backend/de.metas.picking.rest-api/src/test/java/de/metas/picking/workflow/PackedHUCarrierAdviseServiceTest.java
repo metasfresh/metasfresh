@@ -32,7 +32,6 @@ import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -88,7 +87,6 @@ public class PackedHUCarrierAdviseServiceTest
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
-		SpringContextHolder.registerJUnitBean(ProductRepository.newInstanceForUnitTesting());
 
 		packedHUShippingInfoService = PackedHUShippingInfoService.newInstanceForUnitTesting();
 		huShipmentScheduleResolver = mock(HUShipmentScheduleResolver.class);
