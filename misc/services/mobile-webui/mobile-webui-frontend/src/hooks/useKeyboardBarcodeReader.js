@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { checkPartialScannedCode, ScanCompleteness } from '../utils/qrCode/common';
 
 // Abandon window for a stuck/truncated streamed QR partial (see the note in the effect below).
@@ -22,7 +22,11 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): the outgoing scanner's listener detach and the incoming scanner's
+  // attach must happen in the same commit (before paint). A deferred useEffect cleanup leaves both
+  // listeners live in the gap after the DOM the operator sees is committed, so a scan fired then is
+  // caught by the WRONG (outgoing) scanner.
+  useLayoutEffect(() => {
     // A recognised-but-incomplete streamed QR code (e.g. a long HU QR arriving in chunks over
     // several seconds) is kept buffered across inter-keystroke gaps instead of being flushed as a
     // fragment. If it never completes (genuinely truncated: device disconnect / out-of-range) we
