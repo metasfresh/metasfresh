@@ -82,9 +82,10 @@ public class MD_Stock_StepDef
 	 * {@code M_HU_Storage}-derived truth for every product/warehouse/attributes-key row where the
 	 * two diverge.
 	 *
-	 * <p>Stands in for the periodic {@code AD_Scheduler} (CronPattern {@code * /15 * * * *}) that
-	 * reconciles MD_Stock from HU data in production — this step invokes the same process
-	 * synchronously so the test can assert on its result without waiting for the scheduler.
+	 * <p>Stands in for the {@code AD_Scheduler} (CronPattern {@code * /15 * * * *}) that, where
+	 * enabled, periodically runs this same process to reconcile MD_Stock from HU data — this step
+	 * invokes the process directly and synchronously so the test doesn't depend on the scheduler
+	 * being enabled or wait for its next tick.
 	 *
 	 * <p>Takes no DataTable; the process itself finds and corrects every diverging row.
 	 *
@@ -99,7 +100,7 @@ public class MD_Stock_StepDef
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(MD_Stock_Update_From_M_HUs.class);
 
 		ProcessInfo.builder()
-				.setAD_Process_ID(processId.getRepoId())
+				.setAD_Process_ID(processId)
 				.buildAndPrepareExecution()
 				.onErrorThrowException()
 				.executeSync();
