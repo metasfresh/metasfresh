@@ -111,8 +111,7 @@ class StockDataUpdateRequestHandlerTest
 	@Test
 	void create_newBucket_whenNoneExists()
 	{
-		// no seedMdStock(...) call: retrieveOrCreateDataRecord must go down the create branch,
-		// including the new save(newDataRecord) call added for the unique-violation catch (Task 2).
+		// no seedMdStock(...) call: forces the create branch of retrieveOrCreateDataRecord (save + unique-violation catch).
 		handler.handleResetToQtyOnHand(identifier(), new BigDecimal("100"), resetSource());
 		assertThat(currentQtyOnHand()).isEqualByComparingTo("100");
 		verify(postMaterialEventService, times(1)).enqueueEventAfterNextCommit(any());
