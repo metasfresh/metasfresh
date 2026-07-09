@@ -63,6 +63,15 @@ public class OrderPaySchedule
 		return lines.stream();
 	}
 
+	/**
+	 * True if any line is linked to a committed downstream document (a goods receipt or a matched invoice).
+	 * See {@link OrderPayScheduleLine#isLinkedToDownstreamDocument()}.
+	 */
+	public boolean hasLineLinkedToDownstreamDocument()
+	{
+		return lines.stream().anyMatch(OrderPayScheduleLine::isLinkedToDownstreamDocument);
+	}
+
 	public OrderPayScheduleLine getLineById(@NonNull final OrderPayScheduleId payScheduleLineId)
 	{
 		return lines.stream()
