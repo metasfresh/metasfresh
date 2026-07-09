@@ -182,19 +182,9 @@ public class MD_Stock_StepDef
 		final I_M_Product product = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 		final I_M_Warehouse warehouse = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Warehouse_ID).lookupNotNullIn(warehouseTable);
 		final BigDecimal qtyOnHand = row.getAsBigDecimal(I_MD_Stock.COLUMNNAME_QtyOnHand);
+		final AttributesKey attributesKey = resolveAttributesKeyFromRow(row);
 
-		final String asiIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID")
-				.map(StepDefDataIdentifier::getAsString)
-				.orElse(null);
-		final AttributesKey attributesKey = resolveAttributesKey(asiIdentifier);
-
-		final I_MD_Stock stockRecord = queryBL.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, Env.getClientId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, Env.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString())
+		final I_MD_Stock stockRecord = buildActiveStockRecordQuery(product, warehouse, attributesKey)
 				.create()
 				.firstOnly(I_MD_Stock.class);
 
@@ -254,24 +244,47 @@ public class MD_Stock_StepDef
 	{
 		final I_M_Product product = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Product_ID).lookupNotNullIn(productTable);
 		final I_M_Warehouse warehouse = row.getAsIdentifier(I_MD_Stock.COLUMNNAME_M_Warehouse_ID).lookupNotNullIn(warehouseTable);
+		final AttributesKey attributesKey = resolveAttributesKeyFromRow(row);
 
-		final String asiIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID")
-				.map(StepDefDataIdentifier::getAsString)
-				.orElse(null);
-		final AttributesKey attributesKey = resolveAttributesKey(asiIdentifier);
-
-		final I_MD_Stock stockRecord = queryBL.createQueryBuilder(I_MD_Stock.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, Env.getClientId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, Env.getOrgId())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
-				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString())
+		final I_MD_Stock stockRecord = buildActiveStockRecordQuery(product, warehouse, attributesKey)
 				.create()
 				.firstOnlyNotNull(I_MD_Stock.class);
 
 		stockRecord.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(stockRecord);
+	}
+
+	/**
+	 * Resolves the {@link AttributesKey} bucket from a DataTable row's optional
+	 * {@code M_AttributeSetInstance_ID} identifier column, defaulting to {@link AttributesKey#NONE}.
+	 */
+	@NonNull
+	private AttributesKey resolveAttributesKeyFromRow(@NonNull final DataTableRow row)
+	{
+		final String asiIdentifier = row.getAsOptionalIdentifier("M_AttributeSetInstance_ID")
+				.map(StepDefDataIdentifier::getAsString)
+				.orElse(null);
+		return resolveAttributesKey(asiIdentifier);
+	}
+
+	/**
+	 * Builds the (not-yet-executed) query for the single active {@code MD_Stock} row matching a
+	 * business key — shared by {@link #seedDivergentStockRow} and {@link #deactivateStockRow}, which
+	 * differ only in whether a miss is tolerated ({@code firstOnly}) or an error ({@code firstOnlyNotNull}).
+	 */
+	@NonNull
+	private IQueryBuilder<I_MD_Stock> buildActiveStockRecordQuery(
+			@NonNull final I_M_Product product,
+			@NonNull final I_M_Warehouse warehouse,
+			@NonNull final AttributesKey attributesKey)
+	{
+		return queryBL.createQueryBuilder(I_MD_Stock.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Client_ID, Env.getClientId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AD_Org_ID, Env.getOrgId())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouse.getM_Warehouse_ID())
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_AttributesKey, attributesKey.getAsString());
 	}
 
 	/**

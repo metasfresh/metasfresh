@@ -100,15 +100,15 @@ Feature: MD_Stock reconciliation converges to HU-derived truth
     # HUs give on-hand truth of 80 PCE via inventory completion
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | M_Warehouse_ID | MovementDate |
-      | invHuOnly                  | warehouseStd   | 2026-06-28   |
+      | invHuOnly                 | warehouseStd   | 2026-06-28   |
     And metasfresh contains M_InventoriesLines:
       | M_InventoryLine_ID.Identifier | M_Inventory_ID.Identifier | M_Product_ID.Identifier | UOM.X12DE355 | QtyCount | QtyBook |
-      | invLineHuOnly                  | invHuOnly                  | huOnlyProduct           | PCE          | 80       | 0       |
+      | invLineHuOnly                 | invHuOnly                 | huOnlyProduct           | PCE          | 80       | 0       |
     When the inventory identified by invHuOnly is completed
 
     Then after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
-      | invLineHuOnly                  | huHuOnly            |
+      | invLineHuOnly                 | huHuOnly           |
 
     # Event path creates the active MD_Stock row = 80
     Then after not more than 60 seconds metasfresh has MD_Stock data
