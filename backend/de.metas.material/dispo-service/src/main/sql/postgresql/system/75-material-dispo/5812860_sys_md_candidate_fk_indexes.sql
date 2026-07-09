@@ -23,6 +23,8 @@ CREATE INDEX IF NOT EXISTS md_candidate_transaction_detail_md_candidate_id
 CREATE INDEX IF NOT EXISTS md_candidate_purchase_detail_md_candidate_id
     ON md_candidate_purchase_detail (md_candidate_id);
 
-CREATE INDEX IF NOT EXISTS md_candidate_parent_id_notnull
+-- sibling convention is <table>_<column> (= md_candidate_md_candidate_parent_id), but that
+-- name is taken by the existing STOCK-partial ATP index; disambiguate with a _notnull suffix.
+CREATE INDEX IF NOT EXISTS md_candidate_md_candidate_parent_id_notnull
     ON md_candidate (md_candidate_parent_id)
     WHERE md_candidate_parent_id IS NOT NULL;
