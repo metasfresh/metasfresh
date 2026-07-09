@@ -125,15 +125,9 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
-	public boolean hasActiveQtyPickedForTUExcludingSchedule(final int tuHUId, final int excludeShipmentScheduleId)
+	public boolean hasActiveQtyPickedForTopLevelHU(@NonNull final I_M_HU topLevelHU)
 	{
-		Preconditions.checkArgument(tuHUId > 0, "tuHUId > 0");
-		return queryBL.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_TU_HU_ID, tuHUId)
-				.addNotEqualsFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_ShipmentSchedule_ID, excludeShipmentScheduleId)
-				.create()
-				.anyMatch();
+		return queryByTopLevelHU(topLevelHU).create().anyMatch();
 	}
 
 	@Override

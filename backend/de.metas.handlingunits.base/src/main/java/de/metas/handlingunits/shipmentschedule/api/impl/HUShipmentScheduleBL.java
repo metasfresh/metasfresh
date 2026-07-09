@@ -388,10 +388,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			save(qtyPicked);
 		}
 
-		// also reset the HUs partner and location
-		tuHU.setC_BPartner_ID(0);
-		tuHU.setC_BPartner_Location_ID(0);
-		save(tuHU);
+		// also reset the HU's partner and location, unless another schedule still holds an active picked row on it
+		resetConsigneeIfNoActivePickedRows(tuHU);
 	}
 
 	@Override
@@ -821,10 +819,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			assertNotAlreadyShipped(qtyPickedRecords, HuId.ofRepoId(topLevelHU.getM_HU_ID()));
 			shipmentScheduleAllocBL.deleteRecords(qtyPickedRecords);
 
-			// also reset the HU's partner and location (same pattern as unallocateTU)
-			topLevelHU.setC_BPartner_ID(0);
-			topLevelHU.setC_BPartner_Location_ID(0);
-			save(topLevelHU);
+			// also reset the HU's partner and location, unless another schedule still holds an active picked row on it
+			resetConsigneeIfNoActivePickedRows(topLevelHU);
 		}
 	}
 
@@ -896,18 +892,28 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			shipmentScheduleAllocBL.deleteRecords(fullyConsumedRecords);
 		}
 
-		final boolean thisScheduleFullyUnpickedFromTU = fullyConsumedRecords.size() == newestFirst.size();
-		final boolean otherScheduleStillOnTU = huShipmentScheduleDAO.hasActiveQtyPickedForTUExcludingSchedule(
-				pickToTuId.getRepoId(), shipmentScheduleId.getRepoId());
-		if (thisScheduleFullyUnpickedFromTU && !otherScheduleStillOnTU)
+		// also reset the HU's partner and location, unless another schedule (or this one's partial
+		// remainder) still holds an active picked row on it. A bare TU can be shared across schedules,
+		// so we must not strip the consignee while another line still holds picked qty on it.
+		resetConsigneeIfNoActivePickedRows(tuHU);
+	}
+
+	/**
+	 * Resets the top-level HU's consignee (C_BPartner_ID / C_BPartner_Location_ID) back to none, UNLESS another
+	 * active {@link I_M_ShipmentSchedule_QtyPicked} row (this schedule's partial remainder, or another schedule
+	 * sharing the HU) still holds picked qty on it. Callers MUST delete/inactivate their own now-obsolete rows
+	 * BEFORE calling this, so the unscoped {@code topLevelHU} query below reflects the post-delete state.
+	 */
+	private void resetConsigneeIfNoActivePickedRows(@NonNull final I_M_HU topLevelHU)
+	{
+		if (huShipmentScheduleDAO.hasActiveQtyPickedForTopLevelHU(topLevelHU))
 		{
-			// No active picked row remains on this TU for ANY schedule -> mirror the reset done by
-			// deleteByTopLevelHUsAndShipmentScheduleId / unallocateTU. A bare TU can be shared across
-			// schedules, so we must not strip the consignee while another line still holds picked qty on it.
-			tuHU.setC_BPartner_ID(0);
-			tuHU.setC_BPartner_Location_ID(0);
-			save(tuHU);
+			return; // another schedule (or this one's partial remainder) still holds picked qty on this HU
 		}
+
+		topLevelHU.setC_BPartner_ID(0);
+		topLevelHU.setC_BPartner_Location_ID(0);
+		save(topLevelHU);
 	}
 
 	/**
