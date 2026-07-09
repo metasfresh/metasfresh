@@ -148,6 +148,24 @@ public class DeliveryOrder
 				.build();
 	}
 
+	/**
+	 * Overwrites the carrier with what was actually resolved at ship time. The carrier product and services are
+	 * always taken; the goods type is overwritten only when a single one was resolved ({@code null} keeps the current).
+	 * TODO: currently applied at delivery-order level — should be moved to line level in a later iteration.
+	 */
+	public DeliveryOrder withResolvedCarrier(
+			@NonNull final ShipperProduct shipperProduct,
+			@Nullable final CarrierGoodsType goodsType,
+			@NonNull final Set<CarrierService> services)
+	{
+		return this.toBuilder()
+				.shipperProduct(shipperProduct)
+				.goodsType(goodsType != null ? goodsType : this.goodsType)
+				.clearServices()
+				.services(services)
+				.build();
+	}
+
 	/** The carrier product of this order, i.e. the id of the {@link #shipperProduct} (null if no shipper product is set). */
 	@Nullable
 	@JsonIgnore

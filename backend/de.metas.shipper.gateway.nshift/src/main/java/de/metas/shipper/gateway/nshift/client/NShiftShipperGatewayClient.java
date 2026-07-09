@@ -54,7 +54,6 @@ import de.metas.shipper.gateway.spi.model.PackageLabel;
 import de.metas.shipper.gateway.spi.model.PackageLabelType;
 import de.metas.shipper.gateway.spi.model.PackageLabels;
 import de.metas.shipping.ShipperGatewayId;
-import de.metas.shipping.ShipperRepository;
 import de.metas.shipping.mpackage.PackageId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -64,6 +63,7 @@ import org.slf4j.Logger;
 
 import java.util.Base64;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -85,7 +85,6 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	@NonNull private final ShipperMappingConfigList mappingConfigs;
 	@NonNull private final ShipperServiceLevelConfigList serviceLevelConfigs;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
-	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final CarrierProductAllocationService carrierProductAllocationService;
 
 	@Override
@@ -100,7 +99,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	public DeliveryOrder completeDeliveryOrder(@NonNull final DeliveryOrder deliveryOrder) throws ShipperGatewayException
 	{
 		final List<ShipmentSchedule> schedules = loadSchedules(deliveryOrder);
-		final boolean shippingRulesActive = areShippingRulesActive(deliveryOrder, schedules);
+		final boolean shippingRulesActive = areShippingRulesActive(schedules);
 		final JsonDeliveryRequest deliveryRequestJson = applyShippingRuleOptions(
 				jsonConverter.toJson(shipperConfig, deliveryOrder, mappingConfigs),
 				schedules,
@@ -131,18 +130,28 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			throw new ShipperGatewayException("nShift request failed pls check ShipmentOrderLog");
 		}
 
-		// nShift re-resolved the carrier at ship time; persist what was shipped into the carrier-product
-		// allocations (only if missing) so it becomes selectable in manual advise.
+		// nShift re-resolved the carrier at ship time: persist what was shipped into the carrier-product
+		// allocations (only if missing) so it becomes selectable in manual advise, and overwrite the order's
+		// carrier with the resolved value (product + services always; goods type only when unambiguous).
+		// TODO: the carrier overwrite is applied at delivery-order level — move it to line level in a later iteration.
+		DeliveryOrder resolvedDeliveryOrder = deliveryOrder;
 		if (shippingRulesActive)
 		{
-			carrierProductAllocationService.persistResolvedAllocations(
+			final CarrierProductAllocationService.ResolvedCarrier resolvedCarrier = carrierProductAllocationService.persistResolvedAllocations(
 					deliveryOrder.getShipperId(),
 					response.getShipperProduct(),
 					response.getResolvedGoodsTypes(),
 					response.getResolvedServices());
+			if (resolvedCarrier != null)
+			{
+				resolvedDeliveryOrder = deliveryOrder.withResolvedCarrier(
+						resolvedCarrier.getShipperProduct(),
+						resolvedCarrier.getGoodsType(),
+						resolvedCarrier.getServices());
+			}
 		}
 
-		return updateDeliveryOrder(deliveryOrder, response);
+		return updateDeliveryOrder(resolvedDeliveryOrder, response);
 	}
 
 	private List<ShipmentSchedule> loadSchedules(@NonNull final DeliveryOrder deliveryOrder)
@@ -171,7 +180,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 
 		final ExternalSystemId externalSystemId = schedules.stream()
 				.map(ShipmentSchedule::getExternalSystemId)
-				.filter(id -> id != null)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
 
@@ -191,21 +200,14 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	/**
 	 * Whether nShift re-resolves the carrier at ship time via its own selection rules. Config-first:
 	 * <ol>
-	 * <li>the shipper must use API carrier advising (feature gate);</li>
 	 * <li>{@code Carrier_Config.IsSelectionRules} must be ON — if OFF, nShift never resolves, the explicit
 	 *     carrier is always authoritative;</li>
 	 * <li>with selection rules ON, resolution is allowed only when <b>no</b> manual advise is involved — any
 	 *     manual carrier must be respected (sent explicitly, rules OFF), never overwritten by nShift's rules.</li>
 	 * </ol>
 	 */
-	private boolean areShippingRulesActive(
-			@NonNull final DeliveryOrder deliveryOrder,
-			@NonNull final List<ShipmentSchedule> schedules)
+	private boolean areShippingRulesActive(@NonNull final List<ShipmentSchedule> schedules)
 	{
-		if (!shipperRepository.isApiCarrierAdvise(deliveryOrder.getShipperId()))
-		{
-			return false;
-		}
 		if (schedules.isEmpty())
 		{
 			return false;
@@ -217,7 +219,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 		}
 		// selection rules ON ⇒ resolve only when NO manual is involved; any manual carrier is respected.
 		final boolean anyManual = schedules.stream()
-				.anyMatch(s -> s.getCarrierAdvisingStatus().isManual());
+				.anyMatch(sched -> sched.getCarrierAdvisingStatus().isManual());
 		return !anyManual;
 	}
 

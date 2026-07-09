@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
 import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
@@ -36,9 +37,13 @@ import de.metas.shipper.gateway.commons.model.CarrierProductGoodsTypeAllocReposi
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductServiceAllocRepository;
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
+import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
+import de.metas.util.collections.CollectionUtils;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -75,7 +80,8 @@ public class CarrierProductAllocationService
 	 * (get-or-create product / goods types / services, then add the allocations only if missing) so what was
 	 * shipped becomes selectable in manual advise. No-op when no product was resolved.
 	 */
-	public void persistResolvedAllocations(
+	@Nullable
+	public ResolvedCarrier persistResolvedAllocations(
 			@NonNull final ShipperId shipperId,
 			@Nullable final JsonShipperProduct product,
 			@NonNull final Set<JsonGoodsType> goodsTypes,
@@ -83,23 +89,45 @@ public class CarrierProductAllocationService
 	{
 		if (product == null)
 		{
-			return;
+			return null;
 		}
 
 		final String productName = product.getName() != null ? product.getName() : product.getCode();
 		final CarrierProduct carrierProduct = carrierProductRepository.getOrCreateCarrierProduct(shipperId, product.getCode(), productName);
 		final CarrierProductId carrierProductId = carrierProduct.getId();
 
+		final ImmutableSet.Builder<CarrierGoodsType> resolvedGoodsTypes = ImmutableSet.builder();
 		for (final JsonGoodsType goodsType : goodsTypes)
 		{
 			final CarrierGoodsType carrierGoodsType = carrierGoodsTypeRepository.getOrCreateGoodsType(shipperId, goodsType.getId(), goodsType.getName());
 			addGoodsTypeIfMissing(carrierProductId, carrierGoodsType.getId());
+			resolvedGoodsTypes.add(carrierGoodsType);
 		}
 
+		final ImmutableSet.Builder<CarrierService> resolvedServices = ImmutableSet.builder();
 		for (final JsonCarrierService service : services)
 		{
 			final CarrierService carrierService = carrierServiceRepository.getOrCreateService(shipperId, service.getId(), service.getName());
 			addServiceIfMissing(carrierProductId, carrierService.getId());
+			resolvedServices.add(carrierService);
 		}
+
+		return ResolvedCarrier.builder()
+				.shipperProduct(carrierProduct)
+				// The delivery order carries a SINGLE goods type: overwrite it only when the resolved set is unambiguous.
+				.goodsType(CollectionUtils.singleElementOrEmpty(resolvedGoodsTypes.build()).orElse(null))
+				.services(resolvedServices.build())
+				.build();
+	}
+
+	/** The carrier nShift actually resolved at ship time, ready to overwrite the delivery order's carrier. */
+	@Value
+	@Builder
+	public static class ResolvedCarrier
+	{
+		@NonNull ShipperProduct shipperProduct;
+		/** {@code null} when the resolved goods types were not a single unambiguous value (leave the current one). */
+		@Nullable CarrierGoodsType goodsType;
+		@NonNull Set<CarrierService> services;
 	}
 }

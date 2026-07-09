@@ -14,7 +14,6 @@ import de.metas.shipper.gateway.spi.ShipperGatewayClient;
 import de.metas.shipper.gateway.spi.ShipperGatewayClientFactory;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
-import de.metas.shipping.ShipperRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,7 +30,6 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 	@NonNull private final ShipperMappingConfigRepository shipperMappingConfigRepository;
 	@NonNull private final ShipperServiceLevelConfigRepository serviceLevelConfigRepository;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
-	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final CarrierProductAllocationService carrierProductAllocationService;
 
 
@@ -50,7 +48,6 @@ public class NShiftShipperGatewayClientFactory implements ShipperGatewayClientFa
 				.shipmentDispatchService(shipmentDispatchService)
 				.shipAdvisorService(shipAdvisorService)
 				.shipmentScheduleRepository(shipmentScheduleRepository)
-				.shipperRepository(shipperRepository)
 				.carrierProductAllocationService(carrierProductAllocationService)
 				.build();
 	}
