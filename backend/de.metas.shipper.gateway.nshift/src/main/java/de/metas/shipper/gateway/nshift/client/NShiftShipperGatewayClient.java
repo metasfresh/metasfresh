@@ -146,7 +146,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 			{
 				resolvedDeliveryOrder = deliveryOrder.withResolvedCarrier(
 						resolvedCarrier.getShipperProduct(),
-						resolvedCarrier.getGoodsType(),
+						resolvedCarrier.getGoodsTypes(),
 						resolvedCarrier.getServices());
 			}
 		}

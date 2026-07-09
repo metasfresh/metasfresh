@@ -39,7 +39,6 @@ import de.metas.shipper.gateway.commons.model.CarrierProductServiceAllocReposito
 import de.metas.shipper.gateway.commons.model.CarrierShipmentOrderServiceRepository;
 import de.metas.shipper.gateway.spi.model.ShipperProduct;
 import de.metas.shipping.ShipperId;
-import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -114,8 +113,7 @@ public class CarrierProductAllocationService
 
 		return ResolvedCarrier.builder()
 				.shipperProduct(carrierProduct)
-				// The delivery order carries a SINGLE goods type: overwrite it only when the resolved set is unambiguous.
-				.goodsType(CollectionUtils.singleElementOrEmpty(resolvedGoodsTypes.build()).orElse(null))
+				.goodsTypes(resolvedGoodsTypes.build())
 				.services(resolvedServices.build())
 				.build();
 	}
@@ -126,8 +124,8 @@ public class CarrierProductAllocationService
 	public static class ResolvedCarrier
 	{
 		@NonNull ShipperProduct shipperProduct;
-		/** {@code null} when the resolved goods types were not a single unambiguous value (leave the current one). */
-		@Nullable CarrierGoodsType goodsType;
+		/** All resolved goods types; the delivery order collapses these to its single goods-type field. */
+		@NonNull ImmutableSet<CarrierGoodsType> goodsTypes;
 		@NonNull ImmutableSet<CarrierService> services;
 	}
 }

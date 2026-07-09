@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.CarrierGoodsType;
 import de.metas.inoutcandidate.CarrierService;
+import de.metas.util.collections.CollectionUtils;
 import de.metas.shipper.gateway.spi.DeliveryOrderId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
@@ -150,16 +151,17 @@ public class DeliveryOrder
 
 	/**
 	 * Overwrites the carrier with what was actually resolved at ship time. The carrier product and services are
-	 * always taken; the goods type is overwritten only when a single one was resolved ({@code null} keeps the current).
+	 * always taken; the goods type is overwritten only when the resolved set collapses to a single unambiguous
+	 * value (otherwise the current goods type is kept).
 	 */
 	public DeliveryOrder withResolvedCarrier(
 			@NonNull final ShipperProduct shipperProduct,
-			@Nullable final CarrierGoodsType goodsType,
+			@NonNull final Set<CarrierGoodsType> goodsTypes,
 			@NonNull final Set<CarrierService> services)
 	{
 		return this.toBuilder()
 				.shipperProduct(shipperProduct)
-				.goodsType(goodsType != null ? goodsType : this.goodsType)
+				.goodsType(CollectionUtils.singleElementOrEmpty(goodsTypes).orElse(this.goodsType))
 				.clearServices()
 				.services(services)
 				.build();
