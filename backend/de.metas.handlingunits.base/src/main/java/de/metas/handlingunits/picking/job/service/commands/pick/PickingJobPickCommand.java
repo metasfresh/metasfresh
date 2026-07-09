@@ -576,9 +576,10 @@ public class PickingJobPickCommand
 		// Resolve the picked LU via the current line's effective target (after splitOutPickToHUs → updatePickingTarget):
 		// PRODUCT-agg → the line's just-materialised LU; SALES_ORDER/DELIVERY_LOCATION-agg → the header LU. Resolving
 		// per current line (not findFirst over all lines) avoids stamping the wrong LU in a multi-line PRODUCT-agg job
-		// where a prior line's LU is already materialised.
-		final HuId pickedLuId = _pickingJob.getLuPickingTargetEffective(_lineId)
-				.filter(LUPickingTarget::isExistingLU)
+		// where a prior line's LU is already materialised. Shares the first-existing-across-line-then-header resolution
+		// with the read side (PickingJobService.getExistingLuGrais) via getExistingLuPickingTargetEffective — keeping
+		// the write (stamp) and read (mirror-for-UI) paths from drifting.
+		final HuId pickedLuId = _pickingJob.getExistingLuPickingTargetEffective(_lineId)
 				.map(LUPickingTarget::getLuIdNotNull)
 				.orElse(null);
 

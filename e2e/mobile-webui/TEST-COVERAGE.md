@@ -245,8 +245,10 @@
 | Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
 | BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
 | Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
+| Migros returnable-asset GRAI matching the order's PO reference → accepted, TU resolved, GRAI stamped on the picked TU | `picking/picking-grai-poreference-match.spec.js` |
+| Migros returnable-asset GRAI belonging to another order's PO reference → refused before TU resolution | `picking/picking-grai-poreference-mismatch.spec.js` |
 
-**8/8 — 100%**
+**10/10 — 100%**
 
 ### Inline GRAI capture in Flow Through (LU_TU) picking
 
@@ -256,8 +258,10 @@
 | Pick 10 crates onto one LU; capture fewer than 10 GRAIs in the inline capture → save stays disabled (and the backend completion guard blocks completing with a GRAI-less crate) | `picking/picking-grai-flowthrough.spec.js` |
 | Pick two products onto one shared LU; each pick auto-invokes its own inline GRAI capture for that pick's crates (an RFID re-read of a crate within the burst is deduped) → each product's VHU carries exactly its own GRAIs and the job completes | `picking/picking-grai-flowthrough-mixed-product.spec.js` |
 | "OK und LU schließen" still demands one GRAI per picked crate → GRAIs stamped, LU closed, job completes | `picking/picking-grai-flowthrough.spec.js` |
+| A GRAI already assigned to one crate is reused on a DIFFERENT product's pick onto the same LU → skipped with a non-blocking notice, not counted; each product's VHU keeps only its own GRAIs | `picking/picking-grai-duplicate-within-lu.spec.js` |
+| A GRAI already assigned to one crate is reused on a LATER pick of the SAME product onto the same LU → skipped with a non-blocking notice, not counted; each pick's VHU keeps only its own GRAIs | `picking/picking-grai-reuse-same-product.spec.js` |
 
-**4/4 — 100%**
+**6/6 — 100%**
 
 ### Navigation — device/browser Back
 

@@ -6,6 +6,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.handlingunits.grai.GRAI;
+import de.metas.handlingunits.grai.HUPIGraiRepository;
 import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -55,6 +56,7 @@ public class CreatePackingInstructionsCommand
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	@NonNull private final HUPIGraiRepository huPIGraiRepository = new HUPIGraiRepository();
 	@NonNull private final MasterdataContext context;
 	@NonNull private final JsonPackingInstructionsRequest request;
 	@NonNull private final Identifier identifier;
@@ -123,21 +125,35 @@ public class CreatePackingInstructionsCommand
 	}
 
 	/**
-	 * Generates a random canonical GRAI whose (companyPrefix, assetType) does not collide with any existing
+	 * Generates a canonical GRAI whose (companyPrefix, assetType) does not collide with any existing
 	 * {@code M_HU_PI_GRAI} row, then inserts an {@code M_HU_PI_GRAI} row linking it to the given TU packing instruction.
+	 * <p>
+	 * {@code M_HU_PI_GRAI} carries a global unique index on (companyPrefix, assetType). When the test pins BOTH via
+	 * overrides (e.g. the Migros {@code 7613204.00307} pair), a prior run's row for that exact pair would make
+	 * {@link #generateUniqueGRAI} unable to ever find a free slot — masterdata creation then fails with
+	 * "Failed to generate a unique GRAI after 100 attempts". So for a pinned pair we first delete any stale mapping
+	 * for it, making the frontend-testing masterdata re-runnable on a persistent (non-fresh) DB. The random (non-pinned)
+	 * case is unaffected — a fresh random pair never collides.
 	 *
 	 * @return the generated GRAI (canonical {@code companyPrefix.assetType.serial} format).
 	 */
 	private GRAI createGRAIMapping(@NonNull final PIResult tu)
 	{
-		final GRAI grai = generateUniqueGRAI();
+		final String companyPrefixOverride = request.getGraiCompanyPrefix();
+		final String assetTypeOverride = request.getGraiAssetType();
+		if (companyPrefixOverride != null && assetTypeOverride != null)
+		{
+			final int deleted = huPIGraiRepository.deleteMapping(companyPrefixOverride, assetTypeOverride);
+			if (deleted > 0)
+			{
+				logger.info("Removed {} stale M_HU_PI_GRAI mapping(s) for pinned GRAI {}.{} (re-runnable masterdata)",
+						deleted, companyPrefixOverride, assetTypeOverride);
+			}
+		}
 
-		final I_M_HU_PI_GRAI record = InterfaceWrapperHelper.newInstance(I_M_HU_PI_GRAI.class);
-		record.setM_HU_PI_ID(tu.getPiId().getRepoId());
-		record.setGRAI_CompanyPrefix(grai.getCompanyPrefix());
-		record.setGRAI_AssetType(grai.getAssetType());
-		record.setIsActive(true);
-		saveRecord(record);
+		final GRAI grai = generateUniqueGRAI(companyPrefixOverride, assetTypeOverride);
+
+		huPIGraiRepository.createMapping(tu.getPiId(), grai);
 
 		logger.info("Created M_HU_PI_GRAI mapping {} -> M_HU_PI_ID={}", grai.toCanonicalString(), tu.getPiId().getRepoId());
 
@@ -211,17 +227,22 @@ public class CreatePackingInstructionsCommand
 	}
 
 	/**
-	 * Generates a random canonical GRAI ({@code companyPrefix.assetType.serial}) whose (companyPrefix, assetType)
-	 * pair does not already exist in {@code M_HU_PI_GRAI} (the global unique index is on those two columns).
+	 * Generates a canonical GRAI ({@code companyPrefix.assetType.serial}) whose (companyPrefix, assetType) pair
+	 * does not already exist in {@code M_HU_PI_GRAI} (the global unique index is on those two columns).
+	 * <p>
+	 * When {@code companyPrefixOverride}/{@code assetTypeOverride} are given (e.g. the Migros returnable-asset
+	 * pair), they are used instead of a random pair — e.g. to build a scannable Migros GRAI in a test whose
+	 * {@code (companyPrefix, assetType)} must be known ahead of time. The collision-avoidance loop still applies:
+	 * if that fixed pair already has a mapping, generation fails after 100 attempts, same as the random case.
 	 */
-	private GRAI generateUniqueGRAI()
+	private GRAI generateUniqueGRAI(@Nullable final String companyPrefixOverride, @Nullable final String assetTypeOverride)
 	{
 		final ThreadLocalRandom random = ThreadLocalRandom.current();
 		for (int attempt = 0; attempt < 100; attempt++)
 		{
 			// 7-digit company prefix + 5-digit asset type + numeric serial → also valid as a GS1 AI 8003 barcode (12-digit base).
-			final String companyPrefix = String.format("%07d", random.nextInt(0, 10_000_000));
-			final String assetType = String.format("%05d", random.nextInt(0, 100_000));
+			final String companyPrefix = companyPrefixOverride != null ? companyPrefixOverride : String.format("%07d", random.nextInt(0, 10_000_000));
+			final String assetType = assetTypeOverride != null ? assetTypeOverride : String.format("%05d", random.nextInt(0, 100_000));
 			final String serial = String.format("%010d", random.nextLong(0, 10_000_000_000L));
 			final GRAI grai = GRAI.ofCanonicalString(companyPrefix + "." + assetType + "." + serial);
 

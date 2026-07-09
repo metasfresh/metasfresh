@@ -585,6 +585,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.map(JsonTUPickingTarget::of)
 						.collect(ImmutableList.toImmutableList()))
 				.graiScanEnabled(pickingJobRestService.isGraiScanEnabled(pickingJob))
+				.existingLuGrais(pickingJobRestService.getExistingLuGrais(pickingJob, lineId))
 				.build();
 	}
 
