@@ -12,6 +12,7 @@ Feature: Invoice doc outbound log - bill-to location email fallback
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-02-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
 
   @Id:S30521_TC1
@@ -27,7 +28,7 @@ Feature: Invoice doc outbound log - bill-to location email fallback
       | pl         | ps                            | DE                        | EUR                 | price_list | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name | ValidFrom  |
-      | plv        | pl                        | plv  | 2022-01-30 |
+      | plv        | pl                        | plv  | 2022-01-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp         | plv                               | product                 | 10.0     | PCE               | Normal                        |
@@ -42,7 +43,7 @@ Feature: Invoice doc outbound log - bill-to location email fallback
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | order      | true    | bpartner                 | 2022-02-02  |
+      | order      | true    | bpartner                 | 2022-01-15  |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine  | order                 | product                 | 10         |
