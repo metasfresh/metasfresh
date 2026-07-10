@@ -230,6 +230,7 @@ public class C_Order_StepDef
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 *   <li>{@code HandOver_Location_ID} (optional) — identifier referencing the delivery/hand-over {@code C_BPartner_Location} (also sets {@code IsUseHandOver_Location})</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -281,6 +282,14 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_Location_ID)
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
+
+		// handover (delivery) location — distinct from the bill/ship location
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_HandOver_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(id -> {
+					order.setHandOver_Location_ID(id.getRepoId());
+					order.setIsUseHandOver_Location(true);
+				});
 
 		final OrgId orgId = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
 				.map(orgTable::getId)

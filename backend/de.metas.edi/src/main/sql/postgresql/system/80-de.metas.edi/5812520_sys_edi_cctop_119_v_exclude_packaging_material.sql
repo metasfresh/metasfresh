@@ -1,9 +1,13 @@
--- View: EDI_Cctop_119_v
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_119_v_view.sql
+-- EDI INVOIC party view: exclude packaging-material invoice lines from the ship (DP), snum (SN)
+-- and cust (BY) location resolution. A packaging line has no C_OrderLine_ID, so it falls through
+-- to the "no C_Order" branch (i.C_BPartner_Location_ID) and, via SELECT DISTINCT, emitted a
+-- spurious second party row (two DP addresses). Filtering IsPackagingMaterial='N' removes it
+-- without a per-invoice ORDER BY/LIMIT (which broke performance).
 
-DROP VIEW IF EXISTS EDI_Cctop_119_v
-;
+DROP VIEW IF EXISTS edi_cctop_119_v$new;
 
-CREATE OR REPLACE VIEW EDI_Cctop_119_v AS
+CREATE OR REPLACE VIEW edi_cctop_119_v$new AS
 SELECT lookup.C_Invoice_ID                                               AS EDI_Cctop_119_v_ID,
        lookup.C_Invoice_ID,
        lookup.C_Invoice_ID                                               AS EDI_Cctop_INVOIC_v_ID,
@@ -186,3 +190,12 @@ ORDER BY (
                                 ELSE 'Error EANCOM_Type'::TEXT
           END)
 ;
+
+SELECT db_alter_view(
+    'edi_cctop_119_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_cctop_119_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_119_v$new;
