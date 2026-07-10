@@ -1,11 +1,11 @@
-import { test } from "../../../playwright.config";
+import { test } from "../../../../playwright.config";
 import { allure } from 'allure-playwright';
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
-import { Backend } from "../../utils/screens/Backend";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
-import { expectErrorToast } from "../../utils/common";
+import { ApplicationsListScreen } from "../../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../../utils/screens/Backend";
+import { LoginScreen } from "../../../utils/screens/LoginScreen";
+import { expectErrorToast } from "../../../utils/common";
 
 // A valid 14-digit GS1 GTIN, made unique per run so the strict GTIN->product resolve
 // (ProductDAO.getProductIdByGTINStrictly, AD_Client_ID=METASFRESH) matches EXACTLY one product.
