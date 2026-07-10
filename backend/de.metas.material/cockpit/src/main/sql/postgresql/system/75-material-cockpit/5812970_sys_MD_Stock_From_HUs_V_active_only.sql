@@ -1,3 +1,10 @@
+-- MD_Stock_From_HUs_V must consider only ACTIVE MD_Stock rows.
+-- A deactivated MD_Stock row (e.g. a de-duplicated business-key row) still matched the old
+-- "FROM MD_Stock s" and was emitted with a non-zero QtyOnHandChange, but MD_Stock_Update_From_M_HUs
+-- resets only active rows -> the phantom divergence never clears -> the drain loop runs to MAX_LOOPS.
+-- Restrict the "current stock" side to IsActive='Y' (kept inside the FROM so the FULL OUTER JOIN
+-- still yields HU-only buckets that have no MD_Stock row yet).
+
 DROP VIEW IF EXISTS MD_Stock_From_HUs_V
 ;
 

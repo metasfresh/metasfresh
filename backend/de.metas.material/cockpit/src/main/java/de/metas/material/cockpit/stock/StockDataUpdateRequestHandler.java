@@ -11,6 +11,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -117,7 +118,23 @@ public class StockDataUpdateRequestHandler
 		newDataRecord.setAttributesKey(identifier.getStorageAttributesKey().getAsString());
 		newDataRecord.setM_Warehouse_ID(identifier.getWarehouseId().getRepoId());
 
-		return newDataRecord;
+		try
+		{
+			save(newDataRecord);
+			return newDataRecord;
+		}
+		catch (final DBUniqueConstraintException e)
+		{
+			// meanwhile another thread created the same bucket; return the existing one.
+			// The event dispatch path does not retry on a bare exception, so this in-code fallback
+			// is the only guarantee against a lost update on a create-create race.
+			final I_MD_Stock winner = query.firstOnly(I_MD_Stock.class);
+			if (winner != null)
+			{
+				return winner;
+			}
+			throw e;
+		}
 	}
 
 	private IQuery<I_MD_Stock> createQueryForIdentifier(@NonNull final StockDataRecordIdentifier identifier)
