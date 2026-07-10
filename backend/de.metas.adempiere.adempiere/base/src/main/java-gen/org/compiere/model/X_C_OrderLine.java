@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 323037538L;
+	private static final long serialVersionUID = -1836513807L;
 
     /** Standard Constructor */
     public X_C_OrderLine (final Properties ctx, final int C_OrderLine_ID, @Nullable final String trxName)
@@ -1429,6 +1429,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setPreparationDate (final @Nullable java.sql.Timestamp PreparationDate)
+	{
+		set_Value (COLUMNNAME_PreparationDate, PreparationDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getPreparationDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_PreparationDate);
+	}
+
+	@Override
 	public void setPresetDateInvoiced (final @Nullable java.sql.Timestamp PresetDateInvoiced)
 	{
 		set_Value (COLUMNNAME_PresetDateInvoiced, PresetDateInvoiced);
@@ -1752,6 +1764,8 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public static final String REASON_PromotionalCampaign = "P";
 	/** InternalUse = I */
 	public static final String REASON_InternalUse = "I";
+	/** Bestandteil Handelsstückliste = B */
+	public static final String REASON_BestandteilHandelsstueckliste = "B";
 	@Override
 	public void setReason (final @Nullable java.lang.String Reason)
 	{

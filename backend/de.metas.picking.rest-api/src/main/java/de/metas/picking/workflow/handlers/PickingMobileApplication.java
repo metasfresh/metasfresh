@@ -72,6 +72,9 @@ import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActi
 import de.metas.picking.workflow.lauchers.PickingWorkflowLaunchersProvider;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetGroupList;
 import de.metas.rest_workflows.facets.WorkflowLaunchersFacetQuery;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
+import de.metas.product.ProductId;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
@@ -486,6 +489,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.unpickToTargetQRCode(StringUtils.trimBlankToOptional(json.getUnpickToTargetQRCode())
 						.map(HUQRCode::fromGlobalQRCodeJsonString)
 						.orElse(null))
+				.unpickProductId(ProductId.ofNullableString(json.getUnpickProductId()))
+				.qtyToUnpick(json.getUnpickQty())
 				.build();
 	}
 
@@ -697,5 +702,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.lineId(response.getLineId())
 				.logs(response.getLogs())
 				.build();
+	}
+
+	@NonNull
+	public JsonUnpickResolveResponse resolveUnpick(
+			@NonNull final JsonUnpickResolveRequest request,
+			@NonNull final UserId callerId,
+			@NonNull final String adLanguage)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(WFProcessId.ofString(request.getWfProcessId()));
+		return pickingJobRestService.resolveUnpick(pickingJobId, ScannedCode.ofString(request.getScannedCode()), callerId, adLanguage);
 	}
 }
