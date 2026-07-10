@@ -121,18 +121,19 @@ public class NShiftOrderAdvisorService
 
 	private static JsonDeliveryAdvisorResponse buildJsonDeliveryAdvisorResponse(@NonNull final JsonOrderAdviceResponse response, @NonNull final String requestId)
 	{
-		// OrderAdvice wraps the advised shipment under "Shipment"; the carrier product is identified by ProdCSID.
+		// OrderAdvice wraps the advised shipment under "Shipment". The carrier PRODUCT is the product CONCEPT:
+		// ProdConceptID + ProdName (e.g. 9303 / "UPS Standard®"), NOT ProdCSID + CarrierFullName (the carrier-service
+		// instance / integration, e.g. 10672 / "UPS Rest API"). Reading the concept matches the ship path
+		// (NShiftShipmentService: sends and reads ProdConceptID + ProdName), so the advised and the shipped carrier
+		// product agree, and the rules-off ship request re-sends the correct ProdConceptID.
 		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice response should contain a Shipment, pls check defined shipment rules. Status={}", response.getStatus());
-		final Integer prodCSID = Check.assumeNotNull(shipment.getProdCSID(), "OrderAdvice Shipment should contain a ProdCSID, pls check defined shipment rules");
+		final Integer prodConceptID = Check.assumeNotNull(shipment.getProdConceptID(), "OrderAdvice Shipment should contain a ProdConceptID, pls check defined shipment rules");
 
-		// Name = the carrier PRODUCT (ProdName, e.g. "UPS Standard®"), NOT CarrierFullName (the carrier/integration,
-		// e.g. "UPS Rest API"). Mirrors the ship path (NShiftShipmentService#extractResolvedShipperProduct), so the
-		// advise-time and ship-time carrier product carry the same name; fall back to the code when ProdName is absent.
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
 				.shipperProduct(JsonShipperProduct.builder()
-						.code(String.valueOf(prodCSID))
-						.name(shipment.getProdName() != null ? shipment.getProdName() : String.valueOf(prodCSID))
+						.code(String.valueOf(prodConceptID))
+						.name(shipment.getProdName() != null ? shipment.getProdName() : String.valueOf(prodConceptID))
 						.build());
 
 		// GoodsType is reported per line (no shipment-level GoodsType / Services in the OrderAdvice response);
