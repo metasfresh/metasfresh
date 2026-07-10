@@ -7,6 +7,7 @@ import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
+import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryWriteService;
 import de.metas.material.dispo.commons.repository.CandidateSaveResult;
@@ -20,14 +21,17 @@ import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.MaterialPlanningContext;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Optional;
@@ -70,6 +74,7 @@ public class DemandCandidateHandler implements CandidateHandler
 	@NonNull private final SupplyCandidateHandler supplyCandidateHandler;
 	@NonNull private final MaterialPlanningContextHelper helper;
 	@NonNull private final PPOrderCandidateDemandMatcher ppOrderCandidateDemandMatcher;
+	@NonNull private final PPOrderCandidateRepository ppOrderCandidateRepository;
 
 	@Override
 	public Collection<CandidateType> getHandeledTypes()
@@ -136,9 +141,9 @@ public class DemandCandidateHandler implements CandidateHandler
 		{
 			// Lot-for-lot is (re)evaluated on every demand increase, not only on create: a later reactivate /
 			// qty-change is still lot-for-lot and must size supply to THIS order's own qty. One material-planning
-			// context lookup that short-circuits for non-lot-for-lot products.
-			final boolean isLotForLotDemand = isUseLotForLotQty(savedCandidate);
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isLotForLotDemand);
+			// context lookup that short-circuits (returns null) for non-lot-for-lot products.
+			final MaterialPlanningContext lotForLotContext = getLotForLotContextOrNull(savedCandidate);
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), lotForLotContext);
 		}
 
 		// Demand decreased: reduce the bound supply. SupplyRequiredDecreasedHandler reduces what it can (un-processed
@@ -152,12 +157,17 @@ public class DemandCandidateHandler implements CandidateHandler
 		return candidateSaveResult;
 	}
 
-	private boolean isUseLotForLotQty(@NonNull final Candidate savedCandidate)
+	/**
+	 * The lot-for-lot material-planning context for this demand, or {@code null} if the product is not lot-for-lot.
+	 * Lot-for-lot applies to any demand change, not only the demand's first creation: a later reactivate / qty-change
+	 * is still lot-for-lot and must size supply to THIS order's own qty — not fall back to global-ATP netting (which
+	 * absorbs other orders' still-open deficits). Returning the context (rather than a boolean) lets the caller reuse
+	 * its product-planning id for the committed-qty netting without a second lookup.
+	 * This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
+	 */
+	@Nullable
+	private MaterialPlanningContext getLotForLotContextOrNull(@NonNull final Candidate savedCandidate)
 	{
-		// Lot-for-lot applies to any demand change, not only to the demand's first creation: a later
-		// reactivate / qty-change is still lot-for-lot and must size supply to THIS order's own qty — not
-		// fall back to global-ATP netting (which absorbs other orders' still-open deficits).
-		// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
 		final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
 				.orgId(savedCandidate.getClientAndOrgId().getOrgId())
 				.warehouseId(savedCandidate.getWarehouseId())
@@ -167,10 +177,12 @@ public class DemandCandidateHandler implements CandidateHandler
 
 		if (materialPlanningContext == null)
 		{
-			return false;
+			return null;
 		}
 
-		return materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext);
+		final boolean isLotForLot = materialPlanningContext.isManufacturedLot4Lot()
+				&& ppOrderCandidateDemandMatcher.matches(materialPlanningContext);
+		return isLotForLot ? materialPlanningContext : null;
 	}
 
 	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
@@ -241,20 +253,26 @@ public class DemandCandidateHandler implements CandidateHandler
 	private void fireSupplyRequiredEventIfNeeded(
 			@NonNull final Candidate demandCandidate,
 			@NonNull final Candidate stockCandidate,
-			final boolean isUseLotForLotQty)
+			@Nullable final MaterialPlanningContext lotForLotContext)
 	{
 		if (demandCandidate.isSimulated())
 		{
 			fireSimulatedSupplyRequiredEvent(demandCandidate, stockCandidate);
 		}
-		else if (isUseLotForLotQty)
+		else if (lotForLotContext != null)
 		{
-			// Lot-for-lot sizes supply to THIS order's OWN demand qty (order / order line / shipment schedule), not
-			// the global product ATP (which would absorb other orders' still-open deficits). Fire the demand's own
-			// qty; the advisor tops up only the shortfall (demand - already-committed for the schedule) as a NEW
-			// candidate — same shape as ATP, no reuse/grow. A re-fire of an already-covered demand nets to 0 and
-			// advises nothing, so no guard is needed here.
-			postLotForLotSupplyRequiredEvent(demandCandidate, demandCandidate.getQuantity());
+			// Lot-for-lot sizes supply to THIS order's OWN demand qty (order / shipment schedule), not the global
+			// product ATP (which would absorb other orders' still-open deficits). Fire the NET shortfall = own demand
+			// minus what is already committed to real production for this schedule — mirroring how ATP fires a gap
+			// already net of existing supply. This net qty (computed here, at the fire point) is the ONLY
+			// lot-for-lot-specific thing; the advisor then treats ATP and lot-for-lot identically (grow the open
+			// candidate / create new / capacity split).
+			final BigDecimal committedProductionQty = getCommittedProductionQtyForSchedule(demandCandidate, lotForLotContext);
+			final BigDecimal shortfall = demandCandidate.getQuantity().subtract(committedProductionQty);
+			if (shortfall.signum() > 0)
+			{
+				postLotForLotSupplyRequiredEvent(demandCandidate, shortfall);
+			}
 		}
 		else
 		{
@@ -263,10 +281,10 @@ public class DemandCandidateHandler implements CandidateHandler
 	}
 
 	/**
-	 * Lot-for-lot supply event: fired with {@code supplyCandidateId=null} (no eager placeholder) so the advisor
-	 * ({@code PPOrderCandidateAdvisedEventCreator}) sizes the shortfall against what is already committed for the
-	 * shipment schedule and advises a NEW production candidate for it — the same create-new shape as the ATP path,
-	 * differing only in that the required qty is this order's own demand rather than the global ATP gap.
+	 * Lot-for-lot supply event: fired with the demand's OWN qty and {@code supplyCandidateId=null}, exactly like the
+	 * ATP path fires the global-ATP gap. The advisor ({@code PPOrderCandidateAdvisedEventCreator}) then handles it
+	 * identically for both — updating the pre-existing supply candidate (if any) or creating one. The sole
+	 * lot-for-lot difference is the qty: this order's own demand rather than the global ATP gap.
 	 */
 	private void postLotForLotSupplyRequiredEvent(
 			@NonNull final Candidate demandCandidateWithId,
@@ -277,6 +295,35 @@ public class DemandCandidateHandler implements CandidateHandler
 
 		materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent);
 		Loggables.addLog("Fire lot-for-lot supplyRequiredEvent after next commit; event={}", supplyRequiredEvent);
+	}
+
+	/**
+	 * Qty already committed to real production for this demand's shipment schedule — the {@code QtyEntered} of the
+	 * immovable ({@code Processed} or {@code IsClosed}) {@code PP_Order_Candidate}s bound to it. {@code QtyEntered}
+	 * persists once production is realized (unlike the MD supply candidate qty, which drains to 0 on receipt), so
+	 * lot-for-lot never re-produces an order already covered by finished/closed production. Netted off the demand so
+	 * only the true shortfall is requested (mirrors ATP's already-net gap). Open (un-processed, un-closed) candidates
+	 * are excluded — those are the ones the advisor grows to the shortfall, so counting them would double-net.
+	 */
+	@NonNull
+	private BigDecimal getCommittedProductionQtyForSchedule(
+			@NonNull final Candidate demandCandidate,
+			@NonNull final MaterialPlanningContext lotForLotContext)
+	{
+		final DemandDetail demandDetail = demandCandidate.getDemandDetail();
+		if (demandDetail == null || demandDetail.getShipmentScheduleId() <= 0)
+		{
+			return ZERO;
+		}
+
+		final int productPlanningId = lotForLotContext.getProductPlanning().getIdNotNull().getRepoId();
+
+		return ppOrderCandidateRepository
+				.retrieveActiveByShipmentScheduleAndPlanning(demandDetail.getShipmentScheduleId(), productPlanningId)
+				.stream()
+				.filter(ppOrderCandidate -> ppOrderCandidate.isProcessed() || ppOrderCandidate.isClosed())
+				.map(I_PP_Order_Candidate::getQtyEntered)
+				.reduce(ZERO, BigDecimal::add);
 	}
 
 	private void fireSimulatedSupplyRequiredEvent(@NonNull final Candidate simulatedCandidate, @NonNull final Candidate stockCandidate)

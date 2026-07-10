@@ -24,8 +24,6 @@ package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.material.planning.ProductPlanningId;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -67,25 +65,6 @@ public class PPOrderCandidateDAO
 	public I_PP_Order_Candidate getById(@NonNull final PPOrderCandidateId ppOrderCandidateId)
 	{
 		return InterfaceWrapperHelper.load(ppOrderCandidateId, I_PP_Order_Candidate.class);
-	}
-
-	/**
-	 * All active PP_Order_Candidates bound to the given shipment schedule and product planning (ordered by id).
-	 * Used by lot-for-lot production advice to measure how much is already committed against the schedule, so the
-	 * advisor only tops up the shortfall.
-	 */
-	@NonNull
-	public ImmutableList<I_PP_Order_Candidate> retrieveActiveByShipmentScheduleAndPlanning(
-			@NonNull final ShipmentScheduleId shipmentScheduleId,
-			@NonNull final ProductPlanningId productPlanningId)
-	{
-		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
-				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID)
-				.create()
-				.listImmutable(I_PP_Order_Candidate.class);
 	}
 
 	@NonNull

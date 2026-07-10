@@ -24,7 +24,6 @@ package org.eevolution.productioncandidate.material.planning;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -84,26 +83,10 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
-		MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
-
-		// Lot-for-lot sizes supply to THIS order's own demand (not the global ATP gap) and — exactly like the ATP
-		// path — always advises a NEW candidate for the shortfall rather than growing an existing one. A lot-for-lot
-		// order changes only via a reactivate, which first drives its bound production to 0; the re-complete then
-		// creates a fresh candidate. The shortfall nets against whatever is still committed for the schedule (e.g. an
-		// already-processed candidate that could not be reduced), so it never double-produces. No reuse/grow special
-		// case: the advisor treats lot-for-lot and ATP the same, differing only in HOW MUCH is needed.
-		boolean createNewForDelta = false;
-		if (productPlanning.isManufacturedLot4Lot())
-		{
-			final BigDecimal alreadyCommitted = getCommittedQtyForSchedule(supplyRequiredDescriptor, productPlanning);
-			final BigDecimal needed = completeRequest.getQtyToSupply().toBigDecimal().subtract(alreadyCommitted);
-			if (needed.signum() <= 0)
-			{
-				return ImmutableList.of();
-			}
-			completeRequest = completeRequest.withQtyToSupply(Quantitys.of(needed, completeRequest.getQtyToSupply().getUomId()));
-			createNewForDelta = true;
-		}
+		// Lot-for-lot and ATP share this whole path; they differ ONLY in the requested qty carried by the
+		// SupplyRequiredDescriptor (this order's own demand for lot-for-lot vs the global ATP gap for ATP, decided
+		// upstream in DemandCandidateHandler). Everything below treats them identically.
+		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(context, completeRequest, maxQtyPerOrder);
@@ -124,9 +107,9 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
-			// ATP: the first partial updates the pre-existing supply, further partials create their own. Lot-for-lot
-			// always creates new (createNewForDelta) — no grow/reuse — so every partial gets its own candidate.
-			eventBuilder.tryUpdateExistingCandidate(firstRequest && !createNewForDelta);
+			// The first partial updates the pre-existing supply candidate (if any); further partials (capacity
+			// split) create their own. Identical for ATP and lot-for-lot.
+			eventBuilder.tryUpdateExistingCandidate(firstRequest);
 			firstRequest = false;
 
 			result.add(eventBuilder.build());
@@ -134,28 +117,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		}
 
 		return result.build();
-	}
-
-	/**
-	 * Qty still committed by the active production candidates already bound to this demand's shipment schedule —
-	 * what must be netted off the demand so the advisor only tops up the shortfall. Sums ALL active bound candidates
-	 * (processed or not): a reactivate reduces the reducible ones to 0 (so they drop out), while an already-processed
-	 * candidate stays counted (it cannot be un-produced), which is exactly the qty we must not re-produce.
-	 */
-	@NonNull
-	private BigDecimal getCommittedQtyForSchedule(
-			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
-			@NonNull final ProductPlanning productPlanning)
-	{
-		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(supplyRequiredDescriptor.getShipmentScheduleId());
-		if (shipmentScheduleId == null)
-		{
-			return BigDecimal.ZERO;
-		}
-		return ppOrderCandidateDAO.retrieveActiveByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanning.getIdNotNull())
-				.stream()
-				.map(I_PP_Order_Candidate::getQtyEntered)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@Nullable

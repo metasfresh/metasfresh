@@ -30,6 +30,7 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.candidate.businesscase.DemandDetail;
+import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.DateAndSeqNo;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
@@ -172,12 +173,27 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
 				.build();
 
-		return CandidatesQuery.builder()
+		final CandidatesQuery existingSupplyQuery = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.demandDetailsQuery(demandDetailsQuery)
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
+
+		// Only ever grow an OPEN supply candidate (one not yet turned into a PP_Order). A candidate already bound to a
+		// PP_Order is processed/closed and must NOT be touched — the shortfall becomes a NEW candidate instead
+		// (ppOrderId / pp_order_docstatus non-null == a real order exists). Shared by ATP and lot-for-lot.
+		final Candidate existingSupply = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(existingSupplyQuery);
+		if (existingSupply == null)
+		{
+			return CandidatesQuery.FALSE;
+		}
+		final ProductionDetail existingProductionDetail = ProductionDetail.castOrNull(existingSupply.getBusinessCaseDetail());
+		if (existingProductionDetail != null && existingProductionDetail.getPpOrderId() != null)
+		{
+			return CandidatesQuery.FALSE;
+		}
+		return CandidatesQuery.fromId(existingSupply.getId());
 	}
 
 	@NonNull

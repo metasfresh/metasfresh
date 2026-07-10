@@ -452,18 +452,18 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 20           | N             |
-    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 — c_s2/c_cd2
-    # keep pointing at those now-0 rows (left in place, internal/low-harm) — and the re-complete created a FRESH
-    # supply (c_s2b 20, c_cd2b -200). Order 2's demand 20 is covered by the new production; order 1's -20 stays
-    # open. Production for order 2 = its own qty (20), never absorbing order 1's deficit. The emptied
-    # PP_Order_Candidate is deactivated (below).
+    # EXPECTED (grow-open, unified advisor): the re-complete GROWS order 2's still-open production supply back to
+    # its own qty (c_s2 reused -> 20) rather than creating a fresh MD supply. The old component-demand row is drained
+    # to 0 (c_cd2) and a fresh component-demand is added for the grown supply (c_cd2b -200). Order 2's demand 20 is
+    # covered by the grown production; order 1's -20 stays open. Production for order 2 = its own qty (20), never
+    # absorbing order 1's deficit. At the PP_Order_Candidate level the emptied candidate is deactivated and a fresh
+    # one carries the 20 (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -20  | -40                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -40                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
       | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
-      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
       | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
     # ONE active production candidate (the fresh oc_2b, 20); the original oc_2 was emptied by the reactivate and
     # deactivated (IsActive=false, QtyEntered 0) — shown here rather than filtered out.
@@ -574,18 +574,18 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 40           | N             |
-    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 (c_s2/c_cd2 keep
-    # pointing at those now-0 rows, internal/low-harm) and the re-complete created a FRESH supply for the full new
-    # qty (c_s2b 40, c_cd2b -400). Order 2's demand 40 is covered by the new production; order 1's -20 stays open.
-    # Production for order 2 = its own qty (40), not netted vs global ATP. The emptied PP_Order_Candidate is
-    # deactivated (below).
+    # EXPECTED (grow-open, unified advisor): the re-complete GROWS order 2's still-open production supply to its new
+    # qty (c_s2 reused -> 40) rather than creating a fresh MD supply. The old component-demand row is drained to 0
+    # (c_cd2) and a fresh component-demand is added for the grown supply (c_cd2b -400). Order 2's demand 40 is covered
+    # by the grown production; order 1's -20 stays open. Production for order 2 = its own qty (40), not netted vs
+    # global ATP. At the PP_Order_Candidate level the emptied candidate is deactivated and a fresh one carries the
+    # 40 (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -40  | -60                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -60                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 40   | -20                    |
       | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
-      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 40   | -20                    |
       | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -400 | -400                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
@@ -812,17 +812,17 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 10           | N             |
-    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 (c_s2/c_cd2 keep
-    # pointing at those now-0 rows, internal/low-harm) and the re-complete created a FRESH supply for the new lower
-    # qty (c_s2b 10, c_cd2b -100). Order 2's demand 10 is covered by the new production; order 1's -20 stays open.
-    # The emptied PP_Order_Candidate is deactivated (below).
+    # EXPECTED (grow-open, unified advisor): the re-complete resizes order 2's still-open production supply down to
+    # its new qty (c_s2 reused -> 10) rather than creating a fresh MD supply. The old component-demand row is drained
+    # to 0 (c_cd2) and a fresh component-demand is added for the resized supply (c_cd2b -100). Order 2's demand 10 is
+    # covered by the resized production; order 1's -20 stays open. At the PP_Order_Candidate level the emptied
+    # candidate is deactivated and a fresh one carries the 10 (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -30                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -30                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -20                    |
       | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
-      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -20                    |
       | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
