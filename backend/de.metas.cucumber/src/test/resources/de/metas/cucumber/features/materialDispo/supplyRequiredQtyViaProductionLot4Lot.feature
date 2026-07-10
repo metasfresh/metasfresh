@@ -1019,17 +1019,17 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | M_ShipmentSchedule_ID | M_InOut_ID |
       | ss_2                  | shipment_2 |
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
-      | ss_1       | ol_1           | 20           | N             |
-      | ss_2       | ol_2           | 0            | N             |
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 10           | N             |
     # TRIGGER: reactivate order 2's stock shipment -> re-evaluate its demand while order 1 stays uncovered.
     And the shipment identified by shipment_2 is reactivated
     # Reactivating undoes the delivery (Processed Y->N, QtyDelivered->0); ss_2's QtyToDeliver settles at 0
     # (a reversal instead reopens it to 10). Wait for the schedules to settle first.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
-      | ss_1       | ol_1           | 20           | N             |
-      | ss_2       | ol_2           | 0            | N             |
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 0            | N             |
     # Invariant: order 2's demand reopens (-10) and is covered by the returned inventory + its single existing
     # production candidate — NO new production. No extra SUPPLY / component-DEMAND rows and no duplicate production
     # candidate (lot-for-lot sizing to order 2's own qty, not global-ATP netting).
@@ -1044,6 +1044,30 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | c_inv      | INVENTORY_UP        |                               | p_1                     | 2021-04-11T06:00:00Z | 10   | 10                     |
       | c_ship     | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-15T22:00:00Z | 0    | -10                    |
     # Same guard, more readable: exactly ONE production candidate (order 2's own).
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+    # ROUND-TRIP: re-complete the reactivated shipment UNCHANGED -> order 2 re-ships from the returned stock. No qty
+    # change, so order 2 stays covered by its single existing production candidate — NO new PP_Order_Candidate must
+    # appear (the over-creation guard, applied to the re-ship leg). QtyDelivered 0->10 is the discriminating gate
+    # for the re-completion (QtyToDeliver stays 0 throughout, so it cannot gate this).
+    And the shipment identified by shipment_2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 10           | N             |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | c_d1       | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -10                    |
+      | c_d2       | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_s2a      | SUPPLY              | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_cd2a     | DEMAND              | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2       | SUPPLY              | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -10                    |
+      | c_cd2      | DEMAND              | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
+      | c_inv      | INVENTORY_UP        |                               | p_1                     | 2021-04-11T06:00:00Z | 10   | 10                     |
+      | c_ship     | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-15T22:00:00Z | 10   | -20                    |
+    # Idempotency guard: still exactly ONE production candidate (order 2's own) after the re-ship.
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
@@ -1186,9 +1210,9 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     # Shipping updates the schedules -> wait for the SS recompute to settle BEFORE reading MD candidates.
     # ss_1 stays open (order 1 never shipped); ss_2 is fully delivered (QtyToDeliver 0).
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
-      | ss_1       | ol_1           | 20           | N             |
-      | ss_2       | ol_2           | 0            | N             |
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 10           | N             |
     # Post-shipment MD state: order 2's demand is fulfilled (c_d2 -> 0) and a real stock decrease (UNEXPECTED_DECREASE
     # 10) records the goods leaving; the produced +10 (UNEXPECTED_INCREASE) minus the shipped 10 nets to 0 on hand.
     And after not more than 60s, the MD_Candidate table has only the following records
@@ -1208,9 +1232,9 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     # Reactivating undoes the delivery (Processed Y->N, QtyDelivered->0); ss_2's QtyToDeliver settles at 0
     # (a reversal instead reopens it to 10). Wait for the schedules to settle first.
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
-      | ss_1       | ol_1           | 20           | N             |
-      | ss_2       | ol_2           | 0            | N             |
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 0            | N             |
     # Invariant: order 2's demand reopens (-10) and is covered by its already-produced on-hand stock (+10, c_prod)
     # — NO new production. No extra SUPPLY / component-DEMAND rows and no duplicate production candidate (lot-for-lot
     # sizing to order 2's own qty, not to order 1's still-open 20).
@@ -1225,6 +1249,29 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | c_prod     | UNEXPECTED_INCREASE | PRODUCTION                    | p_1                     | 2021-04-11T06:00:00Z | 10   | 10                     |
       | c_ship     | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-15T22:00:00Z | 0    | -10                    |
     # Same guard, more readable: exactly ONE production candidate (order 2's own oc_2).
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+    # ROUND-TRIP: re-complete the reactivated shipment UNCHANGED -> order 2 re-ships from its produced on-hand stock.
+    # No qty change, so order 2 stays covered by its single existing production candidate — NO new PP_Order_Candidate
+    # (over-creation guard on the re-ship leg). QtyDelivered 0->10 is the discriminating gate (QtyToDeliver stays 0).
+    And the shipment identified by shipment_2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | QtyDelivered | IsToRecompute |
+      | ss_1       | ol_1           | 20           | 0            | N             |
+      | ss_2       | ol_2           | 0            | 10           | N             |
+    And after not more than 60s, the MD_Candidate table has only the following records
+      | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
+      | c_d1       | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -10                    |
+      | c_d2       | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_s2a      | SUPPLY              | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_cd2a     | DEMAND              | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2       | SUPPLY              | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
+      | c_cd2      | DEMAND              | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
+      | c_prod     | UNEXPECTED_INCREASE | PRODUCTION                    | p_1                     | 2021-04-11T06:00:00Z | 10   | 10                     |
+      | c_ship     | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-15T22:00:00Z | 10   | -20                    |
+    # Idempotency guard: still exactly ONE production candidate (order 2's own oc_2) after the re-ship.
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
