@@ -149,7 +149,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_ALREADY_EXPORTED = AdMessageKey.of("salesorder.shipmentschedule.exported");
 	static final AdMessageKey MSG_REACTIVATION_VOID_NOT_ALLOWED_BECAUSE_SCHEDULED_FOR_PICKING = AdMessageKey.of("salesorder.shipmentschedule.cannotReactivateBecauseScheduledForPicking");
 
-	private static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
+	static final String SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped = "M_ShipmentSchedule_Close_PartiallyShipped";
 
 	private static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds";
 	private static final String SYSCONFIG_CAN_BE_REEXPORTED_IF_QTYTODELIVER_IS_INCREASED = "de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedIfQtyToDeliverIsIncreased";
@@ -692,10 +692,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		// Sum how much each schedule got delivered by THIS shipment (its own M_InOutLines' MovementQty).
-		// This M_InOut's lines are NOT yet Processed=true at this point (completeIt fires
-		// TIMING_AFTER_COMPLETE before setProcessed), so the committed ledger read below - which counts
-		// only PROCESSED lines - does not see them; we add this shipment's qty on top of that ledger.
+		// This shipment's just-delivered qty per schedule. Its own lines are not yet Processed here, so the
+		// PROCESSED-only ledger read below excludes them and we add this qty on top (see the
+		// TIMING_AFTER_COMPLETE-runs-before-setProcessed gotcha in de.metas.inoutcandidate/CLAUDE.md).
 		final HashMap<ShipmentScheduleId, BigDecimal> qtyDeliveredByThisShipmentByScheduleId = new HashMap<>();
 		final HashSet<OrderId> orderIds = new HashSet<>();
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
@@ -716,14 +715,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 
-		// Close every not-yet-closed, not-fully-delivered schedule of those orders. Delivered qty here is
-		// THIS shipment's just-shipped qty (see above) PLUS the committed picked->shipped ledger of every
-		// already-completed sibling M_InOut of the same order (IShipmentScheduleAllocDAO.retrieveQtyDelivered
-		// = the summed MovementQty of the schedule's PROCESSED shipment lines) - the two sources are
-		// disjoint (this shipment's lines are not yet Processed). We deliberately do NOT read the schedule's
-		// own QtyDelivered column: it is written by a deferred per-M_InOut runAfterCommit recompute from
-		// that very same ledger, so it can still read 0 for a line already fully shipped by an earlier
-		// sibling M_InOut (multi-InOut split) and would wrongly close it.
+		// Close every not-yet-closed schedule that is not fully delivered. Delivered = this shipment's qty
+		// (above) + the committed processed-line ledger of already-completed sibling M_InOuts
+		// (retrieveQtyDelivered). We intentionally do NOT read the schedule's own QtyDelivered: it is a
+		// deferred runAfterCommit recompute of that same ledger and lags here (the multi-InOut bug this fixes).
 		for (final OrderId orderId : orderIds)
 		{
 			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);

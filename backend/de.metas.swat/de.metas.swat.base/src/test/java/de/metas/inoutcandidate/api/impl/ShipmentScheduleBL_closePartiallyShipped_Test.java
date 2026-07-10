@@ -68,17 +68,22 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		shipmentScheduleBL = (ShipmentScheduleBL)Services.get(IShipmentScheduleBL.class);
 	}
 
+	private static void enableCloseIfPartiallyShipped(final OrgId orgId)
+	{
+		Services.get(ISysConfigBL.class).setValue(
+				ShipmentScheduleBL.SYS_Config_M_ShipmentSchedule_Close_PartiallyShipped,
+				true,
+				ClientId.METASFRESH,
+				orgId);
+	}
+
 	@Test
 	public void closePartiallyShipped_ShipmentSchedules_doesNotCloseScheduleAlreadyFullyDeliveredBySiblingInOut()
 	{
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
@@ -184,11 +189,7 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 	{
 		final OrgId orgId = OrgId.ANY;
 
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
@@ -292,11 +293,7 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
@@ -366,11 +363,7 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		final OrgId orgId = OrgId.ANY;
 
 		// enable "close partially shipped schedules" for this org
-		Services.get(ISysConfigBL.class).setValue(
-				"M_ShipmentSchedule_Close_PartiallyShipped",
-				true,
-				ClientId.METASFRESH,
-				orgId);
+		enableCloseIfPartiallyShipped(orgId);
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(true);
