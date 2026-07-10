@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -19,6 +20,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.MinMaxDescriptor;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.planning.MaterialPlanningContext;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderCandidateRepository;
@@ -311,10 +313,11 @@ public class DemandCandidateHandler implements CandidateHandler
 			return ZERO;
 		}
 
-		final int productPlanningId = lotForLotContext.getProductPlanning().getIdNotNull().getRepoId();
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(demandDetail.getShipmentScheduleId());
+		final ProductPlanningId productPlanningId = lotForLotContext.getProductPlanning().getIdNotNull();
 
 		return ppOrderCandidateRepository
-				.retrieveActiveByShipmentScheduleAndPlanning(demandDetail.getShipmentScheduleId(), productPlanningId)
+				.retrieveActiveByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanningId)
 				.stream()
 				.filter(ppOrderCandidate -> ppOrderCandidate.isProcessed() || ppOrderCandidate.isClosed())
 				.map(I_PP_Order_Candidate::getQtyEntered)

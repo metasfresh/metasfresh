@@ -23,6 +23,8 @@
 package de.metas.material.planning.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -30,11 +32,12 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Repository;
 
 /**
- * Reusable read access to {@link I_PP_Order_Candidate} for planning/disposition decisions. Deliberately kept generic:
- * callers derive whatever they need from the returned records (e.g. the qty already committed to production for a
- * shipment schedule). The write-lifecycle DAO stays in {@code de.metas.manufacturing}
- * ({@code PPOrderCandidateDAO}); this repo only reads, so it is reachable from the dispo layer without pulling in the
- * manufacturing module ({@code I_PP_Order_Candidate} is a base model).
+ * Reusable read access to {@link I_PP_Order_Candidate} for planning/disposition decisions. The write-lifecycle DAO
+ * stays in {@code de.metas.manufacturing} ({@code PPOrderCandidateDAO}); this repo only reads, so it is reachable from
+ * the dispo layer without pulling in the manufacturing module ({@code I_PP_Order_Candidate} is a base model).
+ *
+ * Repository Tables: PP_Order_Candidate
+ * Repository Cluster: PPOrderCandidateDAO, PPOrderCandidateRepository
  */
 @Repository
 public class PPOrderCandidateRepository
@@ -46,8 +49,8 @@ public class PPOrderCandidateRepository
 	 * (ordered by id).
 	 */
 	public ImmutableList<I_PP_Order_Candidate> retrieveActiveByShipmentScheduleAndPlanning(
-			final int shipmentScheduleId,
-			final int productPlanningId)
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ProductPlanningId productPlanningId)
 	{
 		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()

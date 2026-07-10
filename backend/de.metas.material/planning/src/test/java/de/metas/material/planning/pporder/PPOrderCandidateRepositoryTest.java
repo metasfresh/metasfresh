@@ -23,6 +23,8 @@
 package de.metas.material.planning.pporder;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.planning.ProductPlanningId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.eevolution.model.I_PP_Order_Candidate;
@@ -78,7 +80,7 @@ class PPOrderCandidateRepositoryTest
 		createCandidate(SCHEDULE_1, PLANNING_2, true, "8");   // other planning -> excluded
 
 		final ImmutableList<I_PP_Order_Candidate> result =
-				repository.retrieveActiveByShipmentScheduleAndPlanning(SCHEDULE_1, PLANNING_1);
+				repository.retrieveActiveByShipmentScheduleAndPlanning(ShipmentScheduleId.ofRepoId(SCHEDULE_1), ProductPlanningId.ofRepoId(PLANNING_1));
 
 		assertThat(result)
 				.extracting(I_PP_Order_Candidate::getPP_Order_Candidate_ID)
@@ -90,6 +92,6 @@ class PPOrderCandidateRepositoryTest
 	{
 		createCandidate(SCHEDULE_2, PLANNING_2, true, "10");
 
-		assertThat(repository.retrieveActiveByShipmentScheduleAndPlanning(SCHEDULE_1, PLANNING_1)).isEmpty();
+		assertThat(repository.retrieveActiveByShipmentScheduleAndPlanning(ShipmentScheduleId.ofRepoId(SCHEDULE_1), ProductPlanningId.ofRepoId(PLANNING_1))).isEmpty();
 	}
 }
