@@ -242,6 +242,7 @@ jobs:
           --tag metas-frontend:test \
           .
       - name: publish results
+        continue-on-error: true  # testspace retired — never fail the build on it (this branch has no skip-testspace gate)
         run: |
           docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
           find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
@@ -747,6 +748,7 @@ jobs:
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
       - name: push-results
+        continue-on-error: true  # testspace retired — never fail the build on it (this branch has no skip-testspace gate)
         run: |
           find cucumber -type d -links 2 -exec testspace [{}/${{ matrix.profile }}]{}/*.xml \;                                                                            # upload all cucumber xml's to testspace
           testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                              # upload cucumber html
