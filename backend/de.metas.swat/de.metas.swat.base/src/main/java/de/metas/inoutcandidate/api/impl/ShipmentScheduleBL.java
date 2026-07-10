@@ -20,9 +20,9 @@ import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
@@ -739,18 +739,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
 
-				final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
 				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
-				// The schedule's own QtyDelivered is written by a deferred, per-InOut runAfterCommit
-				// recompute (M_InOut_Shipment.invalidateShipmentSchedulesForLines), so when this order's
-				// picked lines ship via >=2 sibling InOuts, a schedule fully delivered by an EARLIER
-				// sibling InOut can still read QtyDelivered=0 here - and that sibling's line is not part of
-				// qtyDeliveredThisShipment either. retrieveQtyDelivered sums the MovementQty of the
-				// PROCESSED shipment lines actually linked to the schedule (this InOut + all committed
-				// siblings), independent of the async recompute, so it sees that delivery. Take the max so
-				// a schedule whose persisted QtyDelivered is already ahead of the ledger still counts.
-				final BigDecimal qtyDeliveredCommitted = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule);
-				final BigDecimal qtyDeliveredTotal = qtyDeliveredPersisted.add(qtyDeliveredThisShipment).max(qtyDeliveredCommitted);
+				final BigDecimal qtyDeliveredTotal = computeQtyDeliveredForCloseDecision(schedule, qtyDeliveredThisShipment);
 
 				if (qtyDeliveredTotal.compareTo(effectiveQtyOrdered) >= 0)
 				{
@@ -763,6 +753,25 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				closeShipmentSchedule(schedule);
 			}
 		}
+	}
+
+	/**
+	 * Effective delivered qty used to decide whether {@link #closePartiallyShipped_ShipmentSchedules}
+	 * may close a schedule. The schedule's own {@code QtyDelivered} is written by a deferred, per-{@code
+	 * M_InOut} {@code runAfterCommit} recompute, so when an order's picked lines ship via several sibling
+	 * {@code M_InOut}s it can still read 0 for a line already fully shipped by an earlier sibling (and
+	 * that sibling's line is not part of {@code qtyDeliveredThisShipment} either). Reading the committed
+	 * processed-shipment-line ledger ({@link IShipmentScheduleAllocDAO#retrieveQtyDelivered}) sees that
+	 * delivery regardless of the async recompute. The {@code max} keeps the persisted figure for the rare
+	 * case it is ahead of the ledger (e.g. a manually-created shipment with no {@code M_ShipmentSchedule_QtyPicked} row).
+	 */
+	private BigDecimal computeQtyDeliveredForCloseDecision(
+			@NonNull final I_M_ShipmentSchedule schedule,
+			@NonNull final BigDecimal qtyDeliveredThisShipment)
+	{
+		final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
+		final BigDecimal qtyDeliveredCommitted = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule);
+		return qtyDeliveredPersisted.add(qtyDeliveredThisShipment).max(qtyDeliveredCommitted);
 	}
 
 	public void applyShipmentScheduleChanges(@NonNull final ApplyShipmentScheduleChangesRequest request)
