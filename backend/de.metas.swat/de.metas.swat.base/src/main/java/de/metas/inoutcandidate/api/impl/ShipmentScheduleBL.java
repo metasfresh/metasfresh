@@ -10,7 +10,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -693,16 +692,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		// Sum up how much each schedule got delivered by THIS shipment (MovementQty), per schedule.
-		// Note on timing: this method runs synchronously at TIMING_AFTER_COMPLETE of the M_InOut, but the
-		// schedule's own QtyDelivered is only updated in a runAfterCommit hook (see
-		// M_InOut_Shipment.invalidateShipmentSchedulesForLines), i.e. AFTER this method. So at this point
-		// QtyDelivered does NOT yet reflect the current shipment - it only reflects deliveries from sibling
-		// shipments of the same order that were completed in earlier, already-committed transactions.
-		// We therefore add this shipment's just-shipped MovementQty on top of QtyDelivered below.
+		// Sum how much each schedule got delivered by THIS shipment (its own M_InOutLines' MovementQty).
+		// This M_InOut's lines are NOT yet Processed=true at this point (completeIt fires
+		// TIMING_AFTER_COMPLETE before setProcessed), so the committed ledger read below - which counts
+		// only PROCESSED lines - does not see them; we add this shipment's qty on top of that ledger.
 		final HashMap<ShipmentScheduleId, BigDecimal> qtyDeliveredByThisShipmentByScheduleId = new HashMap<>();
 		final HashSet<OrderId> orderIds = new HashSet<>();
-
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
 		{
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(iolrecord))
@@ -721,11 +716,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			}
 		}
 
-		// Close all not-yet-closed schedules of the involved orders that are NOT already fully delivered.
-		// A schedule that is already fully delivered must stay open, regardless of which shipment delivered
-		// it: whether by THIS shipment (its MovementQty is not yet in QtyDelivered - see above) or by a
-		// sibling shipment of the same order (multi-InOut split; its qty IS already in QtyDelivered).
-		// Only genuinely partially/unshipped schedules are closed here.
+		// Close every not-yet-closed, not-fully-delivered schedule of those orders. Delivered qty here is
+		// THIS shipment's just-shipped qty (see above) PLUS the committed picked->shipped ledger of every
+		// already-completed sibling M_InOut of the same order (IShipmentScheduleAllocDAO.retrieveQtyDelivered
+		// = the summed MovementQty of the schedule's PROCESSED shipment lines) - the two sources are
+		// disjoint (this shipment's lines are not yet Processed). We deliberately do NOT read the schedule's
+		// own QtyDelivered column: it is written by a deferred per-M_InOut runAfterCommit recompute from
+		// that very same ledger, so it can still read 0 for a line already fully shipped by an earlier
+		// sibling M_InOut (multi-InOut split) and would wrongly close it.
 		for (final OrderId orderId : orderIds)
 		{
 			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
@@ -738,14 +736,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				}
 
 				final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
-
 				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
-				final BigDecimal qtyDeliveredTotal = computeQtyDeliveredForCloseDecision(schedule, qtyDeliveredThisShipment);
+				final BigDecimal qtyDelivered = qtyDeliveredThisShipment.add(shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule));
 
-				if (qtyDeliveredTotal.compareTo(effectiveQtyOrdered) >= 0)
+				if (qtyDelivered.compareTo(effectiveQtyOrdered) >= 0)
 				{
-					logger.debug("Not closing shipment schedule {} - already fully delivered (qtyDeliveredTotal={} >= effectiveQtyOrdered={})",
-							scheduleId, qtyDeliveredTotal, effectiveQtyOrdered);
+					logger.debug("Not closing shipment schedule {} - already fully delivered (qtyDelivered={} >= effectiveQtyOrdered={})",
+							scheduleId, qtyDelivered, effectiveQtyOrdered);
 					continue;
 				}
 
@@ -753,25 +750,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				closeShipmentSchedule(schedule);
 			}
 		}
-	}
-
-	/**
-	 * Effective delivered qty used to decide whether {@link #closePartiallyShipped_ShipmentSchedules}
-	 * may close a schedule. The schedule's own {@code QtyDelivered} is written by a deferred, per-{@code
-	 * M_InOut} {@code runAfterCommit} recompute, so when an order's picked lines ship via several sibling
-	 * {@code M_InOut}s it can still read 0 for a line already fully shipped by an earlier sibling (and
-	 * that sibling's line is not part of {@code qtyDeliveredThisShipment} either). Reading the committed
-	 * processed-shipment-line ledger ({@link IShipmentScheduleAllocDAO#retrieveQtyDelivered}) sees that
-	 * delivery regardless of the async recompute. The {@code max} keeps the persisted figure for the rare
-	 * case it is ahead of the ledger (e.g. a manually-created shipment with no {@code M_ShipmentSchedule_QtyPicked} row).
-	 */
-	private BigDecimal computeQtyDeliveredForCloseDecision(
-			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final BigDecimal qtyDeliveredThisShipment)
-	{
-		final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
-		final BigDecimal qtyDeliveredCommitted = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule);
-		return qtyDeliveredPersisted.add(qtyDeliveredThisShipment).max(qtyDeliveredCommitted);
 	}
 
 	public void applyShipmentScheduleChanges(@NonNull final ApplyShipmentScheduleChangesRequest request)

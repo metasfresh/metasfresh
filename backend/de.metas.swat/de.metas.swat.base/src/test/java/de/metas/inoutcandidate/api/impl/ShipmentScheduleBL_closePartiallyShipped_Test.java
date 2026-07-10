@@ -100,9 +100,30 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		scheduleFull.setRecord_ID(orderLineFull.getC_OrderLine_ID());
 		scheduleFull.setQtyOrdered(new BigDecimal("12"));
 		scheduleFull.setQtyOrdered_Calculated(new BigDecimal("12")); // effective QtyOrdered (no override)
-		scheduleFull.setQtyDelivered(new BigDecimal("12")); // fully delivered already, e.g. by a sibling InOut
+		scheduleFull.setQtyDelivered(new BigDecimal("12")); // recompute already landed (not read by the close decision)
 		scheduleFull.setIsClosed(false);
 		save(scheduleFull);
+
+		// the committed sibling delivery backing S_full: a completed M_InOut line (12) linked to S_full via
+		// M_ShipmentSchedule_QtyPicked - this is what the close decision actually reads (the processed-line ledger)
+		final I_M_InOut siblingInOut = newInstance(I_M_InOut.class);
+		siblingInOut.setAD_Org_ID(orgId.getRepoId());
+		siblingInOut.setIsSOTrx(true);
+		siblingInOut.setDocStatus(DocStatus.Completed.getCode());
+		save(siblingInOut);
+
+		final I_M_InOutLine siblingLineFull = newInstance(I_M_InOutLine.class);
+		siblingLineFull.setM_InOut(siblingInOut);
+		siblingLineFull.setC_OrderLine_ID(orderLineFull.getC_OrderLine_ID());
+		siblingLineFull.setMovementQty(new BigDecimal("12"));
+		siblingLineFull.setProcessed(true);
+		save(siblingLineFull);
+
+		final I_M_ShipmentSchedule_QtyPicked allocFull = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		allocFull.setM_ShipmentSchedule_ID(scheduleFull.getM_ShipmentSchedule_ID());
+		allocFull.setM_InOutLine_ID(siblingLineFull.getM_InOutLine_ID());
+		allocFull.setQtyPicked(new BigDecimal("12"));
+		save(allocFull);
 
 		// S_partial: shipped by the CURRENT InOut with MovementQty=8 of 12 ordered (partial delivery).
 		// QtyDelivered is still 0 at TIMING_AFTER_COMPLETE - the QtyPicked->QtyDelivered shift for this
@@ -241,7 +262,9 @@ public class ShipmentScheduleBL_closePartiallyShipped_Test
 		currentLinePartial.setM_InOut(currentInOut);
 		currentLinePartial.setC_OrderLine_ID(orderLinePartial.getC_OrderLine_ID());
 		currentLinePartial.setMovementQty(new BigDecimal("8"));
-		currentLinePartial.setProcessed(true);
+		// this InOut is completing NOW: its lines are not yet Processed at close-time (TIMING_AFTER_COMPLETE
+		// fires before setProcessed), so this delivery is counted via MovementQty, not the processed-line ledger
+		currentLinePartial.setProcessed(false);
 		save(currentLinePartial);
 
 		final I_M_ShipmentSchedule_QtyPicked allocPartial = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
