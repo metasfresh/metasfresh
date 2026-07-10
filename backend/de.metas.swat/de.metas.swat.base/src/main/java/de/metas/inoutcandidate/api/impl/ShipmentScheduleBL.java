@@ -22,6 +22,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.ApplyShipmentScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
@@ -161,6 +162,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
@@ -739,7 +741,16 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 				final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
 				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
-				final BigDecimal qtyDeliveredTotal = qtyDeliveredPersisted.add(qtyDeliveredThisShipment);
+				// The schedule's own QtyDelivered is written by a deferred, per-InOut runAfterCommit
+				// recompute (M_InOut_Shipment.invalidateShipmentSchedulesForLines), so when this order's
+				// picked lines ship via >=2 sibling InOuts, a schedule fully delivered by an EARLIER
+				// sibling InOut can still read QtyDelivered=0 here - and that sibling's line is not part of
+				// qtyDeliveredThisShipment either. retrieveQtyDelivered sums the MovementQty of the
+				// PROCESSED shipment lines actually linked to the schedule (this InOut + all committed
+				// siblings), independent of the async recompute, so it sees that delivery. Take the max so
+				// a schedule whose persisted QtyDelivered is already ahead of the ledger still counts.
+				final BigDecimal qtyDeliveredCommitted = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedule);
+				final BigDecimal qtyDeliveredTotal = qtyDeliveredPersisted.add(qtyDeliveredThisShipment).max(qtyDeliveredCommitted);
 
 				if (qtyDeliveredTotal.compareTo(effectiveQtyOrdered) >= 0)
 				{
