@@ -32,6 +32,7 @@ public class WorkplaceCreateRequest
 	int maxPickingJobs;
 	/** Defaults to {@code true} to match the {@code C_Workplace.IsPackingPlace} DB column default ('Y'): a workplace created without an explicit role is a packing place, preserving the pre-existing launcher behaviour. */
 	@Builder.Default boolean isPackingPlace = true;
+	boolean warnShelfLifeUndercut;
 
 	@NonNull @Singular ImmutableSet<ProductCategoryId> productCategoryIds;
 	@NonNull @Singular ImmutableSet<ProductId> productIds;

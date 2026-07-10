@@ -167,6 +167,8 @@ const translations = {
         multipleScanned: 'Multiple GRAIs detected. Move reader closer to a single crate and scan again.',
         count: '%(scanned)s / %(total)s GRAIs scanned',
         countExtra: '(%(extra)s extra)',
+        countSkipped: '(%(count)s skipped — already on this loading unit)',
+        skippedNotice: '%(count)s crate(s) already on this loading unit were skipped',
         save: {
           buttonCaption: 'Save',
         },
@@ -191,6 +193,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Open demand remaining',
         skippedProducts: 'Skipped products',
       },
+      rlzConfirmDeclined: 'Pick skipped — shelf life too short',
     },
     distribution: {
       DistributionLine: 'Distribution Line',

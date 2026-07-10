@@ -136,6 +136,7 @@ public class MobileUIPickingUserProfileRepository
 				.isShowLastPickedBestBeforeDateForLines(profileRecord.isShowLastPickedBestBeforeDateForLines())
 				.isAnonymousPickHUsOnTheFly(profileRecord.isAnonymousHuPickedOnTheFly())
 				.pickingSlotRequired(OptionalBoolean.ofBoolean(profileRecord.isPickingSlotRequired()))
+				.isWarnShelfLifeUndercut(profileRecord.isWarnShelfLifeUndercut())
 				.displayPickingSlotSuggestions(OptionalBoolean.ofBoolean(profileRecord.isDisplayPickingSlotSuggestions()))
 				.createShipmentPolicy(CreateShipmentPolicy.ofCode(profileRecord.getCreateShipmentPolicy()))
 				.completeJobAutomatically(OptionalBoolean.ofBoolean(profileRecord.isCompleteJobAutomatically()))
@@ -354,6 +355,7 @@ public class MobileUIPickingUserProfileRepository
 		record.setIsShowLastPickedBestBeforeDateForLines(from.isShowLastPickedBestBeforeDateForLines());
 		record.setIsAnonymousHuPickedOnTheFly(from.isAnonymousPickHUsOnTheFly());
 		record.setIsPickingSlotRequired(from.isPickingSlotRequired());
+		record.setIsWarnShelfLifeUndercut(from.isWarnShelfLifeUndercut());
 		record.setIsDisplayPickingSlotSuggestions(from.getDisplayPickingSlotSuggestions().orElse(false));
 		record.setCreateShipmentPolicy(from.getCreateShipmentPolicy().getCode());
 		record.setIsCompleteJobAutomatically(from.getCompleteJobAutomatically().orElse(false));

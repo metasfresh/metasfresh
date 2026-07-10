@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -97,6 +98,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -689,8 +691,14 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			return;
 		}
 
-		// Track which schedules were fully shipped in this shipment (MovementQty >= QtyOrdered)
-		final HashSet<ShipmentScheduleId> fullyShippedScheduleIds = new HashSet<>();
+		// Sum up how much each schedule got delivered by THIS shipment (MovementQty), per schedule.
+		// Note on timing: this method runs synchronously at TIMING_AFTER_COMPLETE of the M_InOut, but the
+		// schedule's own QtyDelivered is only updated in a runAfterCommit hook (see
+		// M_InOut_Shipment.invalidateShipmentSchedulesForLines), i.e. AFTER this method. So at this point
+		// QtyDelivered does NOT yet reflect the current shipment - it only reflects deliveries from sibling
+		// shipments of the same order that were completed in earlier, already-committed transactions.
+		// We therefore add this shipment's just-shipped MovementQty on top of QtyDelivered below.
+		final HashMap<ShipmentScheduleId, BigDecimal> qtyDeliveredByThisShipmentByScheduleId = new HashMap<>();
 		final HashSet<OrderId> orderIds = new HashSet<>();
 
 		for (final I_M_InOutLine iolrecord : inOutDAO.retrieveLines(inoutRecord))
@@ -706,34 +714,42 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 						orderIds.add(orderId);
 					}
 
-					if (iolrecord.getMovementQty().compareTo(shipmentScheduleRecord.getQtyOrdered()) >= 0)
-					{
-						fullyShippedScheduleIds.add(scheduleId);
-					}
+					qtyDeliveredByThisShipmentByScheduleId.merge(scheduleId, iolrecord.getMovementQty(), BigDecimal::add);
 				}
 			}
 		}
 
-		// Close all schedules from the involved orders that were NOT fully shipped.
-		// This includes partially shipped schedules (MovementQty < QtyOrdered) and
-		// completely unshipped schedules (no shipment line at all).
+		// Close all not-yet-closed schedules of the involved orders that are NOT already fully delivered.
+		// A schedule that is already fully delivered must stay open, regardless of which shipment delivered
+		// it: whether by THIS shipment (its MovementQty is not yet in QtyDelivered - see above) or by a
+		// sibling shipment of the same order (multi-InOut split; its qty IS already in QtyDelivered).
+		// Only genuinely partially/unshipped schedules are closed here.
 		for (final OrderId orderId : orderIds)
 		{
 			final ImmutableSet<ShipmentScheduleId> allScheduleIds = shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
 			for (final ShipmentScheduleId scheduleId : allScheduleIds)
 			{
-				if (fullyShippedScheduleIds.contains(scheduleId))
+				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
+				if (schedule.isClosed())
 				{
-					logger.debug("Not closing shipment schedule {} - fully shipped in this delivery", scheduleId);
 					continue;
 				}
 
-				final I_M_ShipmentSchedule schedule = shipmentSchedulePA.getById(scheduleId);
-				if (!schedule.isClosed())
+				final BigDecimal effectiveQtyOrdered = shipmentScheduleEffectiveBL.computeQtyOrdered(schedule);
+
+				final BigDecimal qtyDeliveredPersisted = CoalesceUtil.coalesce(schedule.getQtyDelivered(), BigDecimal.ZERO);
+				final BigDecimal qtyDeliveredThisShipment = qtyDeliveredByThisShipmentByScheduleId.getOrDefault(scheduleId, BigDecimal.ZERO);
+				final BigDecimal qtyDeliveredTotal = qtyDeliveredPersisted.add(qtyDeliveredThisShipment);
+
+				if (qtyDeliveredTotal.compareTo(effectiveQtyOrdered) >= 0)
 				{
-					logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
-					closeShipmentSchedule(schedule);
+					logger.debug("Not closing shipment schedule {} - already fully delivered (qtyDeliveredTotal={} >= effectiveQtyOrdered={})",
+							scheduleId, qtyDeliveredTotal, effectiveQtyOrdered);
+					continue;
 				}
+
+				logger.debug("Closing shipment schedule {} for order {} (M_ShipmentSchedule_Close_PartiallyShipped=Y)", scheduleId, orderId);
+				closeShipmentSchedule(schedule);
 			}
 		}
 	}

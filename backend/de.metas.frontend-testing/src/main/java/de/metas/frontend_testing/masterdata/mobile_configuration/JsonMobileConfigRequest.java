@@ -62,6 +62,7 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean allowQuickPackAll;
 		@Nullable Boolean massPrinting;
 		@Nullable Boolean showPromptWhenOverPicking;
+		@Nullable Boolean warnShelfLifeUndercut;
 
 		@Nullable List<Customer> customers;
 		

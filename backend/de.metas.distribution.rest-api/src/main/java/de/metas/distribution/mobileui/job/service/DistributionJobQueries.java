@@ -13,7 +13,6 @@ import lombok.experimental.UtilityClass;
 import org.adempiere.warehouse.WarehouseId;
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nullable;
 import java.util.Set;
 
 @UtilityClass
@@ -47,14 +46,13 @@ public class DistributionJobQueries
 	{
 		final DistributionFacetIdsCollection activeFacetIds = query.getActiveFacetIds();
 
-		final InSetPredicate<WarehouseId> warehouseToIds = extractWarehouseToIds(query);
-
 		return newDDOrdersQuery()
 				.orderBys(query.getSorting().toDDOrderQueryOrderBys())
 				.responsibleId(ValueRestriction.isNull())
+				.workplaceWarehouseId(query.getWorkplaceWarehouseId())
+				.workplacePickFromLocatorId(query.getWorkplacePickFromLocatorId())
 				.warehouseFromIds(activeFacetIds.getWarehouseFromIds())
-				.warehouseToIds(warehouseToIds)
-				.locatorToIds(InSetPredicate.onlyOrAny(query.getLocatorToId()))
+				.warehouseToIds(extractWarehouseToIds(query))
 				.excludeLocatorToIds(query.getExcludeLocatorToIds())
 				.salesOrderIds(activeFacetIds.getSalesOrderIds())
 				.manufacturingOrderIds(activeFacetIds.getManufacturingOrderIds())
@@ -65,30 +63,12 @@ public class DistributionJobQueries
 				.build();
 	}
 
-	@Nullable
+	@NonNull
 	private static InSetPredicate<WarehouseId> extractWarehouseToIds(final @NotNull DDOrderReferenceQuery query)
 	{
 		final Set<WarehouseId> facetWarehouseToIds = query.getActiveFacetIds().getWarehouseToIds();
-
-		final WarehouseId onlyWarehouseToId = query.getWarehouseToId();
-		if (onlyWarehouseToId != null)
-		{
-			if (facetWarehouseToIds.isEmpty() || facetWarehouseToIds.contains(onlyWarehouseToId))
-			{
-				return InSetPredicate.only(onlyWarehouseToId);
-			}
-			else
-			{
-				return InSetPredicate.none();
-			}
-		}
-		else if (!facetWarehouseToIds.isEmpty())
-		{
-			return InSetPredicate.only(facetWarehouseToIds);
-		}
-		else
-		{
-			return InSetPredicate.any();
-		}
+		return facetWarehouseToIds.isEmpty()
+				? InSetPredicate.any()
+				: InSetPredicate.only(facetWarehouseToIds);
 	}
 }

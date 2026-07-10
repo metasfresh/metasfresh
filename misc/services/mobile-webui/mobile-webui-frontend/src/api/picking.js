@@ -6,20 +6,38 @@ import { useQuery } from '../hooks/useQuery';
 import { PickingTargetType } from '../constants/PickingTargetType';
 import { toQRCodeString } from '../utils/qrCode/hu';
 
-export const useAvailablePickingTargets = ({ wfProcessId, lineId, type }) => {
+// Stable empty-array reference: avoids handing callers a fresh [] literal every render (a caller may
+// use this as a useCallback dependency — e.g. ScanHUAndGetQtyComponent's handleAddGrais — where a
+// changing reference would defeat the stable-handler-identity guarantee needed for RFID burst safety).
+const EMPTY_LU_GRAIS = [];
+
+export const useAvailablePickingTargets = ({ wfProcessId, lineId, stepId, altStepId, type }) => {
   const isTU = type === PickingTargetType.TU;
   const { isPending: isTargetsLoading, data: responseData } = useQuery({
-    queryKey: [wfProcessId, lineId, type],
+    // stepId/altStepId are in the key (not the URL) purely to force a re-fetch on every pick-step
+    // entry: two steps of the SAME line share lineId, and PickStepScanScreen is mounted on sibling
+    // routes that differ only by altStepId (react-router v5, no <Switch>), so a step→step move need
+    // not remount the component. Without stepId in the key, step 2's capture would reuse step 1's
+    // stale existingLuGrais and miss a same-line, same-LU duplicate. The server still resolves the
+    // response from lineId alone. Callers that omit stepId (line-scan / select-target screens) pass a
+    // stable undefined, so their fetch behaviour is unchanged.
+    queryKey: [wfProcessId, lineId, stepId, altStepId, type],
     queryFn: () => getAvailablePickingTargets({ wfProcessId, lineId }),
   });
 
   const targets = responseData ? (isTU ? responseData.tuTargets : responseData.targets) : undefined;
   const graiScanEnabled = isTU ? responseData?.graiScanEnabled ?? false : false;
+  // Canonical GRAI strings already assigned to the line's effective LU (from prior picks on this LU) —
+  // lets the mobile capture panel mirror the server-side LU-wide dedupe. Re-fetched on every pick-step
+  // entry (see the queryKey note above), so it always reflects the LU state AFTER the prior pick's
+  // atomic Save committed.
+  const existingLuGrais = isTU ? responseData?.existingLuGrais ?? EMPTY_LU_GRAIS : EMPTY_LU_GRAIS;
 
   return {
     isTargetsLoading,
     targets,
     graiScanEnabled,
+    existingLuGrais,
     setPickingTarget: ({ target }) => {
       return isTU
         ? setTUPickingTarget({ wfProcessId, lineId, target })
@@ -92,6 +110,7 @@ export const postStepPicked = ({
   setSerialNos,
   serialNos,
   isCloseTarget = false,
+  isShelfLifeConfirmed = false,
 }) => {
   const realRejectedQtyReason =
     qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
@@ -119,6 +138,7 @@ export const postStepPicked = ({
     setSerialNos,
     serialNos,
     isCloseTarget,
+    isShelfLifeConfirmed,
   });
 };
 

@@ -1128,3 +1128,156 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     And the EPCIS JSON pallet has:
       | palletIndex | sscc               | crateCount |
       | 0           | 987654321000003059 | 15         |
+
+  @from:cucumber
+  @Id:S30771_010
+  @allure.label.epic:E0375_External_Traceability
+  @allure.label.feature:F5410_EPCIS_JSON_Export
+  Scenario: S30771_010 — cuGTIN resolved from M_Product_ASI_Data when M_Product.GTIN is null and no C_BPartner_Product GTIN exists
+  ## RED scenario: product has M_Product.GTIN=null and no GTIN in C_BPartner_Product.
+  ## A wildcard M_Product_ASI_Data row carries GTIN=4060000000772.
+  ## The EPCIS function currently resolves cuGTIN only from C_BPartner_Product/M_Product.GTIN
+  ## and never reads M_Product_ASI_Data — so cuGTIN comes out null.
+  ## This scenario asserts the ASI_Data GTIN and therefore FAILS (intended RED).
+    Given metasfresh contains M_Products:
+      | Identifier    |
+      | p_S30771_010  |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S30771_010 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S30771_010 | ps_S30771_010      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S30771_010 | pl_S30771_010  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30771_010         | p_S30771_010  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S30771_010 | Y          | ps_S30771_010      | 9900000306770 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S30771_010 | true                 | 9900000306770         | edi_setting_S30771_010_bp |
+
+    # C_BPartner_Product row with NO gtin/ean_cu — must not satisfy the old GTIN resolution path
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID  |
+      | bp_S30771_010 | p_S30771_010  |
+
+    # Wildcard ASI_Data row: no C_BPartner_ID (matches any buyer), no ASI (matches any ASI), SeqNo=10
+    # This is the only source of GTIN for this product — mirrors the case where
+    # M_Product.GTIN is null and only M_Product_ASI_Data carries the GTIN.
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier         | M_Product_ID | SeqNo | GTIN          |
+      | asiData_S30771_010 | p_S30771_010 | 10    | 4060000000772 |
+
+    # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_Products:
+      | Identifier             |
+      | pmProdLU_S30771_010    |
+      | pmProdTU_S30771_010    |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID        | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30771_010         | pmProdLU_S30771_010 | 0.0      | PCE      | Normal           |
+      | plv_S30771_010         | pmProdTU_S30771_010 | 0.0      | PCE      | Normal           |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                  |
+      | pm_LU_S30771_010                   | pmProdLU_S30771_010         | Pallet_S30771_010     |
+      | pm_TU_S30771_010                   | pmProdTU_S30771_010         | Karton_S30771_010     |
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID          |
+      | pi_LU_S30771_010    |
+      | pi_TU_S30771_010    |
+      | pi_VHU_S30771_010   |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID  | M_HU_PI_ID          | HU_UnitType | IsCurrent |
+      | piv_LU_S30771_010   | pi_LU_S30771_010    | LU          | Y         |
+      | piv_TU_S30771_010   | pi_TU_S30771_010    | TU          | Y         |
+      | piv_VHU_S30771_010  | pi_VHU_S30771_010   | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID        | M_HU_PI_Version_ID  | Qty | ItemType | Included_HU_PI_ID   | OPT.M_HU_PackingMaterial_ID |
+      | pii_LU_S30771_010      | piv_LU_S30771_010   | 20  | HU       | pi_TU_S30771_010    |                             |
+      | pii_LU_PM_S30771_010   | piv_LU_S30771_010   | 0   | PM       |                     | pm_LU_S30771_010            |
+      | pii_TU_S30771_010      | piv_TU_S30771_010   | 0   | PM       |                     | pm_TU_S30771_010            |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID  | M_Attribute.Value |
+      | piv_LU_S30771_010   | SSCC18            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S30771_010          | pii_TU_S30771_010 | p_S30771_010  | 10  | 2020-01-01 |
+
+    # Sales order: 10 PCE = 1 TU
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S30771_010  | true    | bp_S30771_010 | 2026-06-10  | 3067700001  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S30771_010 | o_S30771_010  | p_S30771_010  | 10         | pip_S30771_010          |
+
+    When the order identified by o_S30771_010 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_S30771_010             | bp_S30771_010            | o_S30771_010          | P                |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S30771_010 | ol_S30771_010  | N             |
+
+    # ─── Inventory → CU → TU → LU → SSCC18 ──────────────────────────────────────────
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_S30771_010            | 2026-06-10   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S30771_010            | invLine_S30771_010            | p_S30771_010            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S30771_010'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLine_S30771_010            | cu_S30771_010      |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cu_S30771_010       | 10    | pip_S30771_010                     | tu_S30771_010                 |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tu_S30771_010       | 1     | pii_LU_S30771_010          | lu_S30771_010             |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID       | M_Attribute_ID.Value | Value              |
+      | lu_S30771_010 | SSCC18               | 987654321000006770 |
+
+    # ─── TU-level picking ─────────────────────────────────────────────────────────────
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tu_S30771_010      | ss_S30771_010                    | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tu_S30771_010      | ss_S30771_010                    |
+
+    # ─── Generate picked shipment (QuantityType=PD) ───────────────────────────────────
+    When 'generate shipments' process is invoked with QuantityType=PD, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S30771_010         |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S30771_010         | io_S30771_010 |
+
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
+      | pack_S30771_010    | d_S30771_010             | false               |
+
+    # ─── CORE ASSERTION (RED) ────────────────────────────────────────────────────────
+    # cuGTIN must be resolved from M_Product_ASI_Data (4060000000772).
+    # Current code only checks C_BPartner_Product.gtin / M_Product.gtin — both null here.
+    # This assertion FAILS on the current code: item.cuGTIN is null, expected 4060000000772.
+    When the EPCIS JSON export function is called for M_InOut identified by io_S30771_010
+    Then the EPCIS JSON item has:
+      | palletIndex | crateIndex | itemIndex | cuGTIN        |
+      | 0           | 0          | 0         | 4060000000772 |

@@ -163,7 +163,8 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
             },
         },
         hus: {
-            vhuP1: { attributes: { GRAI: product1Grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhuP1: { attributes: { GRAI: product1Grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -202,8 +203,10 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
             },
         },
         hus: {
-            vhuP1: { attributes: { GRAI: product1Grais.join(',') } },
-            vhuP2: { attributes: { GRAI: product2Grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhuP1: { attributes: { GRAI: product1Grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhuP2: { attributes: { GRAI: product2Grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 
@@ -221,8 +224,10 @@ test('Flow Through: each pick onto a mixed-product LU captures its own crate GRA
             },
         },
         hus: {
-            vhuP1: { attributes: { GRAI: product1Grais.join(',') } },
-            vhuP2: { attributes: { GRAI: product2Grais.join(',') } },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhuP1: { attributes: { GRAI: product1Grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
+            // Picked-target VHU also carries the consignee (BP1's single default ship-to → BP1_singleBPLocationI).
+            vhuP2: { attributes: { GRAI: product2Grais.join(',') }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         },
     });
 });

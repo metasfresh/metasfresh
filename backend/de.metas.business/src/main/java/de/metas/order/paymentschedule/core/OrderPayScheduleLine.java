@@ -124,6 +124,14 @@ public class OrderPayScheduleLine
 
 	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
 
+	/**
+	 * True if this line is linked to a committed downstream document — a goods receipt ({@code inoutId})
+	 * or a matched invoice ({@code invoiceId}). Such a link reflects real activity that a reactivate
+	 * (drop-and-rebuild) would orphan; a line that is merely {@code Awaiting_Pay}/{@code Paid} because its
+	 * reference date was known at completion carries no such link.
+	 */
+	public boolean isLinkedToDownstreamDocument() {return inoutId != null || invoiceId != null;}
+
 	public void applyAndProcess(@NonNull final OrderPayScheduleLineContext context)
 	{
 		final OrderPayScheduleStatus nextStatus = context.getStatus();

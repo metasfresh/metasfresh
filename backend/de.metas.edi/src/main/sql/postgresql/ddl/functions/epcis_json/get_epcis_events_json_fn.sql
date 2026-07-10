@@ -42,7 +42,7 @@
 --   - Flat CTEs only (no nested LATERALs)
 --   - m_hu ha_vtu join computed once in ha_items_with_vtu, reused for attrs + items
 --   - m_hu_attribute scanned once via hu_attrs pivot (vs 6 separate joins previously)
---   - c_bpartner_product scanned once via bp_prod_lookup (vs N LATERAL calls)
+--   - cuGTIN resolved ASI-aware from m_product_asi_data via LEFT JOIN LATERAL (buyer-or-wildcard + IsASIAttributesKeySubset, lowest SeqNo)
 --   - Scalar variables for buyer_bpartner_id and poreference (vs scalar subqueries per row)
 
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
@@ -115,7 +115,7 @@ BEGIN
               SELECT 1
               FROM m_hu_assignment ha2
                        JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id
+                       JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id and io2.issotrx='Y' /*only a sales shipment counts as coverage - a purchase-receipt of the same goods from a vendor must not open the close-gate*/
               WHERE ha2.ad_table_id = v_m_inoutline_table_id
                 AND ha2.isactive = 'Y'
                 AND iol2.isactive = 'Y'
@@ -150,7 +150,7 @@ BEGIN
         SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
-                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+                 JOIN m_inout io ON io.m_inout_id = iol.m_inout_id and io.issotrx='Y' /*sibling CO/CL shipments only - exclude purchase-receipts of the same goods from a vendor*/
         WHERE ha.ad_table_id = v_m_inoutline_table_id
           AND ha.m_lu_hu_id IN (SELECT lu_hu_id FROM this_inout_lu)
           AND ha.isactive = 'Y'
@@ -238,11 +238,12 @@ BEGIN
                         ord.poreference
                  FROM inout_context ctx
                           JOIN m_inoutline iol ON iol.m_inout_id = ctx.m_inout_id
+                          JOIN m_inout io ON io.m_inout_id = iol.m_inout_id and io.issotrx='Y' /*exclude material-receipt-lines - we might have received the goods from another vendor*/
                           JOIN m_hu_assignment ha
                                ON ha.ad_table_id = v_m_inoutline_table_id
                                    AND ha.record_id = iol.m_inoutline_id
                           LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
-                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
+                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id and ord.IsSoTrx='Y' /*also exclude purchase-orders*/
                  WHERE ha.m_lu_hu_id IS NOT NULL
                    AND ha.isactive = 'Y'
 
@@ -358,9 +359,9 @@ BEGIN
                                               SELECT vtu_hu_id FROM ha_items_with_vtu)
                       ) asg
                           JOIN m_inoutline iol ON iol.m_inoutline_id = asg.record_id
-                          JOIN m_inout io ON io.m_inout_id = iol.m_inout_id
+                          JOIN m_inout io ON io.m_inout_id = iol.m_inout_id and io.issotrx='Y' /*exclude material-receipts, as might have received the goods from another vendor*/
                           LEFT JOIN c_orderline ol ON ol.c_orderline_id = iol.c_orderline_id
-                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id
+                          LEFT JOIN c_order ord ON ord.c_order_id = ol.c_order_id and ord.IsSoTrx='Y' /*also exclude purchase-orders*/
                  WHERE iol.isactive = 'Y'
                    AND io.docstatus IN ('CO', 'CL')
              ) ranked
@@ -382,16 +383,6 @@ BEGIN
                AND ha.m_attribute_id IN (v_grai_attribute_id, v_lot_attribute_id, v_bbd_attribute_id)
              GROUP BY ha.m_hu_id),
 
-         bp_prod_lookup AS MATERIALIZED (
-             -- Buyer-specific product GTINs: ONE scan replaces N LATERAL calls in items CTEs
-             SELECT DISTINCT ON (bp.m_product_id) bp.m_product_id,
-                                                  bp.gtin,
-                                                  bp.ean_cu
-             FROM c_bpartner_product bp
-             WHERE bp.c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context)
-               AND bp.isactive = 'Y'
-             ORDER BY bp.m_product_id, bp.seqno DESC),
-
          individual_tus AS MATERIALIZED (
              -- CASE A: individual TUs with attributes joined from hu_attrs
              SELECT it.lu_hu_id,
@@ -412,7 +403,7 @@ BEGIN
              SELECT it.tu_hu_id,
                     JSONB_AGG(
                             JSONB_BUILD_OBJECT(
-                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                    'cuGTIN', COALESCE(asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, prod.gtin),
                                     'tuGTIN', COALESCE(pi_prod.gtin, pi_prod.ean_tu),
                                     'quantity', stor.qty,
                                     'movementqty', stor.qty,
@@ -429,7 +420,18 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = it.tu_pi_item_product_id
-                      LEFT JOIN bp_prod_lookup bp_prod ON bp_prod.m_product_id = prod.m_product_id
+                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                          -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
+                      LEFT JOIN LATERAL (
+                          SELECT gtin, ean_cu, ean13_productcode
+                          FROM m_product_asi_data
+                          WHERE isactive = 'Y'
+                            AND m_product_id = prod.m_product_id
+                            AND (c_bpartner_id IS NULL OR c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context))
+                            AND IsASIAttributesKeySubset(m_attributesetinstance_id, stor.m_attributesetinstance_id)
+                          ORDER BY seqno
+                          LIMIT 1
+                          ) asi_data ON TRUE
              GROUP BY it.tu_hu_id),
 
          aggregated_tu_base AS MATERIALIZED (
@@ -457,7 +459,7 @@ BEGIN
              SELECT atb.tu_hu_id,
                     JSONB_AGG(
                             JSONB_BUILD_OBJECT(
-                                    'cuGTIN', COALESCE(bp_prod.gtin, bp_prod.ean_cu, prod.gtin),
+                                    'cuGTIN', COALESCE(asi_data.gtin, asi_data.ean_cu, asi_data.ean13_productcode, prod.gtin),
                                     'tuGTIN', COALESCE(pi_prod.gtin, pi_prod.ean_tu),
                                     'quantity',
                                     CASE
@@ -482,7 +484,18 @@ BEGIN
                       LEFT JOIN c_uom uom ON uom.c_uom_id = stor.c_uom_id
                       LEFT JOIN m_hu_pi_item_product pi_prod
                                 ON pi_prod.m_hu_pi_item_product_id = atb.vtu_pi_item_product_id
-                      LEFT JOIN bp_prod_lookup bp_prod ON bp_prod.m_product_id = prod.m_product_id
+                          -- ASI-aware CU GTIN lookup (M_Product_ASI_Data, content-based ASI subset match), mirroring DESADV get_desadv_packs_json_fn.
+                          -- Buyer scoping uses the inout_context-resolved buyer (DESADV is optional for EPCIS; the DESADV fn uses its own edi_desadv.C_BPartner_ID).
+                      LEFT JOIN LATERAL (
+                          SELECT gtin, ean_cu, ean13_productcode
+                          FROM m_product_asi_data
+                          WHERE isactive = 'Y'
+                            AND m_product_id = prod.m_product_id
+                            AND (c_bpartner_id IS NULL OR c_bpartner_id = (SELECT buyer_bpartner_id FROM inout_context))
+                            AND IsASIAttributesKeySubset(m_attributesetinstance_id, stor.m_attributesetinstance_id)
+                          ORDER BY seqno
+                          LIMIT 1
+                          ) asi_data ON TRUE
              GROUP BY atb.tu_hu_id, atb.qty),
 
          all_crates_raw AS (
