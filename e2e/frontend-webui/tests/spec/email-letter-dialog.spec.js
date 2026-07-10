@@ -21,7 +21,9 @@ test.describe('Email & Letter Dialogs', () => {
   test('Email and Letter dialogs on Sales Order', async ({ page }) => {
     allure.epic('E0193: User Interface');
     allure.tag('F14010: Navigation');
+    allure.tag('F14010');
     allure.tag('F14100: Email & Letter');
+    allure.tag('F14100');
     allure.story('Email and Letter Composition');
     allure.severity('normal');
 
@@ -372,9 +374,14 @@ dialog opened only after the third click.
       // RED before fix: the list does not open on the first click (needed 3 clicks).
       // GREEN after fix: the list is visible after a single click.
       await expect(dropdownList).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      // Stability re-check: the reported defect is a *transient* open (flash-then-
+      // ghost-close). A single retrying toBeVisible() can false-green on a millisecond
+      // flash, so re-assert after a settle delay that the dropdown STAYS open.
+      await page.waitForTimeout(600);
+      await expect(dropdownList).toBeVisible();
       await expect(
         page.locator('.input-dropdown-list .input-dropdown-list-option').first()
-      ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      ).toBeVisible();
 
       const screenshot = await page.screenshot();
       allure.attachment('Template dropdown after single click', screenshot, 'image/png');
@@ -392,6 +399,9 @@ dialog opened only after the third click.
       await picker.click();
       const dropdownList = page.locator('.input-dropdown-list');
       await expect(dropdownList).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      // stays open on re-open too (AC3)
+      await page.waitForTimeout(600);
+      await expect(dropdownList).toBeVisible();
 
       // the applied template carries the selected marker class
       await expect(
