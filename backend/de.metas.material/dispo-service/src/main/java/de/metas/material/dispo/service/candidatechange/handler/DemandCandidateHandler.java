@@ -24,12 +24,12 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.pporder.PPOrderCandidateRepository;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -316,12 +316,12 @@ public class DemandCandidateHandler implements CandidateHandler
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(demandDetail.getShipmentScheduleId());
 		final ProductPlanningId productPlanningId = lotForLotContext.getProductPlanning().getIdNotNull();
 
+		// The repo keeps the sum UOM-aware (Quantity); convert to BigDecimal here — the latest point, since the
+		// demand qty and the SupplyRequiredEvent are UOM-less BigDecimal.
 		return ppOrderCandidateRepository
-				.retrieveActiveByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanningId)
-				.stream()
-				.filter(ppOrderCandidate -> ppOrderCandidate.isProcessed() || ppOrderCandidate.isClosed())
-				.map(I_PP_Order_Candidate::getQtyEntered)
-				.reduce(ZERO, BigDecimal::add);
+				.retrieveProcessedQtyByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanningId)
+				.map(quantity -> quantity.toBigDecimal())
+				.orElse(ZERO);
 	}
 
 	private void fireSimulatedSupplyRequiredEvent(@NonNull final Candidate simulatedCandidate, @NonNull final Candidate stockCandidate)

@@ -22,19 +22,23 @@
 
 package de.metas.material.planning.pporder;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.ProductPlanningId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
- * Reusable read access to {@link I_PP_Order_Candidate} for planning/disposition decisions. The write-lifecycle DAO
- * stays in {@code de.metas.manufacturing} ({@code PPOrderCandidateDAO}); this repo only reads, so it is reachable from
- * the dispo layer without pulling in the manufacturing module ({@code I_PP_Order_Candidate} is a base model).
+ * Read access to {@link I_PP_Order_Candidate} for planning/disposition decisions. The write-lifecycle DAO stays in
+ * {@code de.metas.manufacturing} ({@code PPOrderCandidateDAO}); this repo only reads, so it is reachable from the
+ * dispo layer without pulling in the manufacturing module ({@code I_PP_Order_Candidate} is a base model).
  *
  * Repository Tables: PP_Order_Candidate
  * Repository Cluster: PPOrderCandidateDAO, PPOrderCandidateRepository
@@ -45,10 +49,10 @@ public class PPOrderCandidateRepository
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * All active {@link I_PP_Order_Candidate}s bound to the given shipment schedule and product planning
-	 * (ordered by id).
+	 * Qty already committed to production for the given shipment schedule + planning: the summed {@code QtyEntered}
+	 * of the active immovable ({@code Processed} or {@code IsClosed}) candidates. Empty when there is none.
 	 */
-	public ImmutableList<I_PP_Order_Candidate> retrieveActiveByShipmentScheduleAndPlanning(
+	public Optional<Quantity> retrieveProcessedQtyByShipmentScheduleAndPlanning(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final ProductPlanningId productPlanningId)
 	{
@@ -58,6 +62,9 @@ public class PPOrderCandidateRepository
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID)
 				.create()
-				.listImmutable(I_PP_Order_Candidate.class);
+				.stream()
+				.filter(candidate -> candidate.isProcessed() || candidate.isClosed())
+				.map(candidate -> Quantitys.of(candidate.getQtyEntered(), UomId.ofRepoId(candidate.getC_UOM_ID())))
+				.reduce(Quantity::add);
 	}
 }
