@@ -80,8 +80,8 @@ public class PPOrderCandidateDAO
 	{
 		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId.getRepoId())
-				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId.getRepoId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID)
 				.create()
 				.listImmutable(I_PP_Order_Candidate.class);

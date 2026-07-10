@@ -45,15 +45,12 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
-import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 public class CreateUpdateOrderCandidateCommand
 {
@@ -76,20 +73,12 @@ public class CreateUpdateOrderCandidateCommand
 				Check.assumeNotNull(request.getProductPlanningId(), "request.getProductPlanningId; request={}", request));
 
 		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
-		// Create PP Order Candidate
-		final I_PP_Order_Candidate ppOrderCandidateRecord;
-		if (request.getPpOrderCandidateId() != null)
-		{
-			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
-		}
-		else
-		{
-			// Lot-for-lot: reuse the demand's single existing candidate (by shipment schedule) so a demand-change re-fire updates it in place instead of duplicating it.
-			final PPOrderCandidateId reuseId = findExistingLot4LotCandidateIdToReuse(productPlanning);
-			ppOrderCandidateRecord = reuseId != null
-					? ppOrderCandidateDAO.getById(reuseId)
-					: InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
-		}
+		// Create PP Order Candidate. The material-dispo path never carries a ppOrderCandidateId, so it always
+		// creates a NEW candidate (both ATP and lot-for-lot); the by-id branch serves the callers that do supply
+		// one (model interceptor / maturing sync).
+		final I_PP_Order_Candidate ppOrderCandidateRecord = request.getPpOrderCandidateId() != null
+				? ppOrderCandidateDAO.getById(request.getPpOrderCandidateId())
+				: InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
 		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
@@ -148,29 +137,6 @@ public class CreateUpdateOrderCandidateCommand
 				ppOrderCandidateRecord.getPP_Order_Candidate_ID());
 
 		return ppOrderCandidateRecord;
-	}
-
-	@Nullable
-	private PPOrderCandidateId findExistingLot4LotCandidateIdToReuse(@NonNull final ProductPlanning productPlanning)
-	{
-		if (!productPlanning.isManufacturedLot4Lot()
-				|| request.getShipmentScheduleId() == null
-				|| request.getProductPlanningId() == null)
-		{
-			return null;
-		}
-
-		// Reuse only a single un-processed candidate (grow the still-mutable plan in place). A processed candidate
-		// must not be touched — the advisor sizes the missing delta as its own new candidate.
-		final List<I_PP_Order_Candidate> unprocessed = ppOrderCandidateDAO
-				.retrieveActiveByShipmentScheduleAndPlanning(request.getShipmentScheduleId(), request.getProductPlanningId())
-				.stream()
-				.filter(candidate -> !candidate.isProcessed())
-				.collect(Collectors.toList());
-
-		return unprocessed.size() == 1
-				? PPOrderCandidateId.ofRepoId(unprocessed.get(0).getPP_Order_Candidate_ID())
-				: null;
 	}
 
 	@NonNull

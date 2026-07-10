@@ -506,6 +506,10 @@ public class PP_Order_Candidate_StepDef
 				.ifPresent(processed -> softly.assertThat(actual.isProcessed()).as("Processed").isEqualTo(processed));
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed)
 				.ifPresent(isClosed -> softly.assertThat(actual.isClosed()).as("IsClosed").isEqualTo(isClosed));
+		// asserted explicitly (not filtered out) so a candidate emptied + deactivated by a decrease stays visible in
+		// the "has only" set as IsActive=false rather than silently disappearing.
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsActive)
+				.ifPresent(isActive -> softly.assertThat(actual.isActive()).as("IsActive").isEqualTo(isActive));
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> softly.assertThat(actual.isMaturing()).as("IsMaturing").isEqualTo(isMaturing));

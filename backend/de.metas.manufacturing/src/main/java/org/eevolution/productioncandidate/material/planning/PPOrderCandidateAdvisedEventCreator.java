@@ -86,24 +86,23 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
 
-		// Lot-for-lot sizes supply to THIS demand, not to the global ATP gap. Production already PROCESSED for the
-		// same shipment schedule can be neither un-produced nor grown, so only its delta is advised — as a NEW
-		// candidate: needed = demand - alreadyProcessed (<=0 => advise nothing). Un-processed production has no
-		// processed qty here, so it falls through and is grown in place instead (createNewForDelta stays false).
+		// Lot-for-lot sizes supply to THIS order's own demand (not the global ATP gap) and — exactly like the ATP
+		// path — always advises a NEW candidate for the shortfall rather than growing an existing one. A lot-for-lot
+		// order changes only via a reactivate, which first drives its bound production to 0; the re-complete then
+		// creates a fresh candidate. The shortfall nets against whatever is still committed for the schedule (e.g. an
+		// already-processed candidate that could not be reduced), so it never double-produces. No reuse/grow special
+		// case: the advisor treats lot-for-lot and ATP the same, differing only in HOW MUCH is needed.
 		boolean createNewForDelta = false;
 		if (productPlanning.isManufacturedLot4Lot())
 		{
-			final BigDecimal alreadyProcessed = getProcessedQtyForSchedule(supplyRequiredDescriptor, productPlanning);
-			if (alreadyProcessed.signum() > 0)
+			final BigDecimal alreadyCommitted = getCommittedQtyForSchedule(supplyRequiredDescriptor, productPlanning);
+			final BigDecimal needed = completeRequest.getQtyToSupply().toBigDecimal().subtract(alreadyCommitted);
+			if (needed.signum() <= 0)
 			{
-				final BigDecimal needed = completeRequest.getQtyToSupply().toBigDecimal().subtract(alreadyProcessed);
-				if (needed.signum() <= 0)
-				{
-					return ImmutableList.of();
-				}
-				completeRequest = completeRequest.withQtyToSupply(Quantitys.of(needed, completeRequest.getQtyToSupply().getUomId()));
-				createNewForDelta = true;
+				return ImmutableList.of();
 			}
+			completeRequest = completeRequest.withQtyToSupply(Quantitys.of(needed, completeRequest.getQtyToSupply().getUomId()));
+			createNewForDelta = true;
 		}
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
@@ -125,8 +124,8 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
-			// The first partial updates the pre-existing supply; further partials create their own. A lot-for-lot
-			// delta beside an already-processed candidate must NOT update it — force a new candidate instead.
+			// ATP: the first partial updates the pre-existing supply, further partials create their own. Lot-for-lot
+			// always creates new (createNewForDelta) — no grow/reuse — so every partial gets its own candidate.
 			eventBuilder.tryUpdateExistingCandidate(firstRequest && !createNewForDelta);
 			firstRequest = false;
 
@@ -137,9 +136,14 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		return result.build();
 	}
 
-	/** Qty already committed by PROCESSED production candidates on this demand's shipment schedule (survives receipt). */
+	/**
+	 * Qty still committed by the active production candidates already bound to this demand's shipment schedule —
+	 * what must be netted off the demand so the advisor only tops up the shortfall. Sums ALL active bound candidates
+	 * (processed or not): a reactivate reduces the reducible ones to 0 (so they drop out), while an already-processed
+	 * candidate stays counted (it cannot be un-produced), which is exactly the qty we must not re-produce.
+	 */
 	@NonNull
-	private BigDecimal getProcessedQtyForSchedule(
+	private BigDecimal getCommittedQtyForSchedule(
 			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
 			@NonNull final ProductPlanning productPlanning)
 	{
@@ -150,7 +154,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		}
 		return ppOrderCandidateDAO.retrieveActiveByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanning.getIdNotNull())
 				.stream()
-				.filter(I_PP_Order_Candidate::isProcessed)
 				.map(I_PP_Order_Candidate::getQtyEntered)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
@@ -263,6 +266,14 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 			final BigDecimal qtyToDecrease = remainingQtyToDistribute.min(quantityToProcess).toBigDecimal();
 			ppOrderCandidate.setQtyToProcess(ppOrderCandidate.getQtyToProcess().subtract(qtyToDecrease));
 			ppOrderCandidate.setQtyEntered(ppOrderCandidate.getQtyEntered().subtract(qtyToDecrease));
+
+			// A candidate emptied by the decrease carries no production and must not linger as a 0-qty row: deactivate
+			// it. Safe because we only ever reduce the QtyToProcess headroom, so QtyEntered==0 also means QtyProcessed==0
+			// (nothing was produced). Shared by ATP and lot-for-lot — this is the single production-decrease path.
+			if (ppOrderCandidate.getQtyEntered().signum() == 0)
+			{
+				ppOrderCandidate.setIsActive(false);
+			}
 			ppOrderCandidateDAO.save(ppOrderCandidate);
 			return remainingQtyToDistribute.subtract(qtyToDecrease);
 		}

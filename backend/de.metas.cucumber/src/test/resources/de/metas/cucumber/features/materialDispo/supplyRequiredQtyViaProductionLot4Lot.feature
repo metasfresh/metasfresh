@@ -452,17 +452,25 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 20           | N             |
-    # EXPECTED (correct state): order 2's demand 20 covered by its own production supply (20); order 1's -20 open;
-    # Guards lot-for-lot sizing on a no-change round-trip: order 2's production stays 20, order 1's -20 stays open.
+    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 — c_s2/c_cd2
+    # keep pointing at those now-0 rows (left in place, internal/low-harm) — and the re-complete created a FRESH
+    # supply (c_s2b 20, c_cd2b -200). Order 2's demand 20 is covered by the new production; order 1's -20 stays
+    # open. Production for order 2 = its own qty (20), never absorbing order 1's deficit. The emptied
+    # PP_Order_Candidate is deactivated (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -20  | -40                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -40                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
+      | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+    # ONE active production candidate (the fresh oc_2b, 20); the original oc_2 was emptied by the reactivate and
+    # deactivated (IsActive=false, QtyEntered 0) — shown here rather than filtered out.
     And after not more than 60s, the PP_Order_Candidate table has only the following records
-      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_2       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 20           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | false     | false    | p_1          | bom_1             | ppln_1                 | 540006        | 0          | 0            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2b      | false     | true     | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 20           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
 
   @Id:S0264_820
@@ -566,17 +574,23 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 40           | N             |
-    # EXPECTED (correct state): order 2's demand grows to 40, covered by its own production supply (40); order 1's
-    # Guards lot-for-lot on a qty increase: production grows to 40 by the increment only, not netted vs global ATP.
+    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 (c_s2/c_cd2 keep
+    # pointing at those now-0 rows, internal/low-harm) and the re-complete created a FRESH supply for the full new
+    # qty (c_s2b 40, c_cd2b -400). Order 2's demand 40 is covered by the new production; order 1's -20 stays open.
+    # Production for order 2 = its own qty (40), not netted vs global ATP. The emptied PP_Order_Candidate is
+    # deactivated (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -40  | -60                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 40   | -20                    |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -400 | -400                   |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -60                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 40   | -20                    |
+      | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -400 | -400                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
-      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_2       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 40         | 40           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | false     | false    | p_1          | bom_1             | ppln_1                 | 540006        | 0          | 0            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2b      | false     | true     | p_1          | bom_1             | ppln_1                 | 540006        | 40         | 40           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
 
   @Id:S0264_830
@@ -798,17 +812,22 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 10           | N             |
-    # EXPECTED (correct state): order 2's demand reduces to 10, covered by its own production supply (10); order 1's
-    # Guards lot-for-lot on a qty decrease: production reduces to the new 10, order 1's -20 stays open.
+    # EXPECTED (ATP-shape, no grow/reuse): the reactivate drained order 2's ORIGINAL production to 0 (c_s2/c_cd2 keep
+    # pointing at those now-0 rows, internal/low-harm) and the re-complete created a FRESH supply for the new lower
+    # qty (c_s2b 10, c_cd2b -100). Order 2's demand 10 is covered by the new production; order 1's -20 stays open.
+    # The emptied PP_Order_Candidate is deactivated (below).
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -30                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -20                    |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -30                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
+      | c_s2b      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -20                    |
+      | c_cd2b     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
-      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_2       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_2       | false     | false    | p_1          | bom_1             | ppln_1                 | 540006        | 0          | 0            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2b      | false     | true     | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
 
   @Id:S0264_850
@@ -1564,3 +1583,137 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+
+  @Id:S0264_900
+  @from:cucumber
+  @allure.label.epic:E0159_Manufacturing_Planning
+  @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
+  # Capacity: a lot-for-lot order larger than MaxManufacturedQtyPerOrderDispo must split into multiple production
+  # candidates (each <= the cap) — not collapse into a single candidate. Guards the per-order-capacity path for
+  # lot-for-lot (the reuse-by-schedule must stay capacity-aware).
+  Scenario: Lot for Lot - production respects MaxManufacturedQtyPerOrderDispo (capacity split)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | p_1        |
+      | p_2        |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | pp_1       | plv_1                  | p_1          | 10.0     | PCE               |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_1      | p_1          | bomVersions_1             |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLot4Lot | MaxManufacturedQtyPerOrderDispo |
+      | ppln_1     | p_1          | bomVersions_1             | true         | true                  | 25 PCE                          |
+    And metasfresh contains C_BPartners:
+      | Identifier    | M_PricingSystem_ID |
+      | endcustomer_1 | ps_1               |
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
+      | o_1        | true    | endcustomer_1 | 2021-04-16  | 2021-04-16T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 40         |
+    When the order identified by o_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_1       | ol_1           | 40           | N             |
+    # 40 > cap 25 -> TWO production candidates (25 + 15), NOT one collapsed candidate.
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1a      | true      | p_1          | bom_1             | ppln_1                 | 540006        | 25         | 0            | 25           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1b      | true      | p_1          | bom_1             | ppln_1                 | 540006        | 15         | 0            | 15           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+
+  @Id:S0264_910
+  @from:cucumber
+  @allure.label.epic:E0159_Manufacturing_Planning
+  @allure.label.feature:F8022_Lot_for_Lot_Manufacturing_Order_per_Sales_Order
+  # Capacity on INCREASE (the reuse-grow path): an un-processed lot-for-lot candidate grown past
+  # MaxManufacturedQtyPerOrderDispo must split into multiple candidates (each <= the cap) — the reuse-by-schedule
+  # must neither grow one candidate beyond the cap nor collapse the split into a single candidate.
+  Scenario: Lot for Lot - a qty increase past MaxManufacturedQtyPerOrderDispo splits production (capacity)
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | p_1        |
+      | p_2        |
+    And metasfresh contains M_PricingSystems
+      | Identifier |
+      | ps_1       |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
+      | pl_1       | ps_1               | DE                    | EUR                 | true  |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier | M_PriceList_ID |
+      | plv_1      | pl_1           |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID.X12DE355 |
+      | pp_1       | plv_1                  | p_1          | 10.0     | PCE               |
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID |
+      | bom_1      | p_1          | bomVersions_1             |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID | M_Product_ID | QtyBatch |
+      | boml_1     | bom_1             | p_2          | 10       |
+    And the PP_Product_BOM identified by bom_1 is completed
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID | PP_Product_BOMVersions_ID | IsCreatePlan | IsManufacturedLot4Lot | MaxManufacturedQtyPerOrderDispo |
+      | ppln_1     | p_1          | bomVersions_1             | false        | true                  | 25 PCE                          |
+    And metasfresh contains C_BPartners:
+      | Identifier    | M_PricingSystem_ID |
+      | endcustomer_1 | ps_1               |
+    And load M_Warehouse:
+      | M_Warehouse_ID.Identifier | Value        |
+      | warehouseStd              | StdWarehouse |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | PreparationDate      |
+      | o_1        | true    | endcustomer_1 | 2021-04-16  | 2021-04-16T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | ol_1       | o_1        | p_1          | 20         |
+    When the order identified by o_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_1       | ol_1           | 20           | N             |
+    # 20 <= cap 25 -> single un-processed production candidate
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | false     | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 20           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+
+    # reactivate + increase the order line to 40 (> cap 25), then re-complete
+    And the order identified by o_1 is reactivated
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_1       | ol_1           | 0            | N             |
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
+      | ol_1                      | 40             | 40             |
+    And the order identified by o_1 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
+      | ss_1       | ol_1           | 40           | N             |
+    # 40 > cap 25 -> the reactivate drained the original candidate to 0 (deactivated, oc_1) and the re-complete
+    # created a proper capacity SPLIT of the full new qty: 25 + 15 (each <= cap). NOT one grown to 40, NOT a
+    # collapsed single candidate (the old reuse-by-schedule bug), NOT one candidate > cap.
+    And after not more than 60s, the PP_Order_Candidate table has only the following records
+      | Identifier | Processed | IsActive | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | false     | false    | p_1          | bom_1             | ppln_1                 | 540006        | 0          | 0            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1a      | false     | true     | p_1          | bom_1             | ppln_1                 | 540006        | 25         | 25           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_1b      | false     | true     | p_1          | bom_1             | ppln_1                 | 540006        | 15         | 15           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
