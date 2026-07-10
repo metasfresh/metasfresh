@@ -88,7 +88,7 @@ const loginAndStartJob = async ({ masterdata }) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Partial floor-unpick of a catch-weight pick from a bare TU scales the remaining catch weight proportionally', async ({ page }) => {
+test('Partial floor-unpick of a catch-weight pick from a bare TU scales the remaining catch weight and the physical HU weight attributes proportionally', async ({ page }) => {
     allure.epic('E0105: Picking');
     allure.tag('F00230: MobileUI Picking');
     allure.tag('F00230');
@@ -119,7 +119,15 @@ test('Partial floor-unpick of a catch-weight pick from a bare TU scales the rema
                 }
             },
             hus: {
-                tu1: { huStatus: 'S', storages: { P1: '4 PCE' } },
+                tu1: {
+                    huStatus: 'S',
+                    storages: { P1: '4 PCE' },
+                    // Physical HU weight attributes on the single picked CU (VHU) under the bare TU.
+                    // The manually-entered catch weight (0.44 KGM) is stored as the CU's measured
+                    // WeightNet; WeightGross follows it (tare 0, so gross == net). This is the source
+                    // of truth the schedule row's QtyDeliveredCatch was derived from at pick time.
+                    cus: [{ qty: '4 PCE', attributes: { WeightNet: '0.440', WeightGross: '0.440' } }],
+                },
             }
         });
     });
@@ -136,7 +144,16 @@ test('Partial floor-unpick of a catch-weight pick from a bare TU scales the rema
         await Backend.expect({
             title: 'after floor unpick: 3 PCE stays in the TU, remaining catch weight proportionally reduced 0.440 -> 0.330 KGM',
             hus: {
-                tu1: { huStatus: 'S', storages: { P1: '3 PCE' } },
+                tu1: {
+                    huStatus: 'S',
+                    storages: { P1: '3 PCE' },
+                    // The remaining CU's physical WeightNet/WeightGross must scale by the SAME 3/4 ratio
+                    // as the piece qty (0.440 -> 0.330), NOT stay stale at 0.440. The carved-out 1-PCE
+                    // floor CU carries the complementary 0.110 (0.440 x 1/4); 0.330 + 0.110 == 0.440
+                    // (conservation). WeightNet is redistributed by RedistributeQtyHUAttributeTransferStrategy
+                    // on the VHU-to-VHU split; WeightGross follows via the Net->Gross callout (tare 0).
+                    cus: [{ qty: '3 PCE', attributes: { WeightNet: '0.330', WeightGross: '0.330' } }],
+                },
             },
             pickings: {
                 [pickingJobId]: {
