@@ -159,11 +159,8 @@ public class DemandCandidateHandler implements CandidateHandler
 
 	/**
 	 * The lot-for-lot material-planning context for this demand, or {@code null} if the product is not lot-for-lot.
-	 * Lot-for-lot applies to any demand change, not only the demand's first creation: a later reactivate / qty-change
-	 * is still lot-for-lot and must size supply to THIS order's own qty — not fall back to global-ATP netting (which
-	 * absorbs other orders' still-open deficits). Returning the context (rather than a boolean) lets the caller reuse
-	 * its product-planning id for the committed-qty netting without a second lookup.
-	 * This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
+	 * Returns the context (not a boolean) so the caller can reuse its product-planning id for the committed-qty
+	 * netting without a second lookup; assumes a single material-planning match.
 	 */
 	@Nullable
 	private MaterialPlanningContext getLotForLotContextOrNull(@NonNull final Candidate savedCandidate)
@@ -298,12 +295,10 @@ public class DemandCandidateHandler implements CandidateHandler
 	}
 
 	/**
-	 * Qty already committed to real production for this demand's shipment schedule — the {@code QtyEntered} of the
-	 * immovable ({@code Processed} or {@code IsClosed}) {@code PP_Order_Candidate}s bound to it. {@code QtyEntered}
-	 * persists once production is realized (unlike the MD supply candidate qty, which drains to 0 on receipt), so
-	 * lot-for-lot never re-produces an order already covered by finished/closed production. Netted off the demand so
-	 * only the true shortfall is requested (mirrors ATP's already-net gap). Open (un-processed, un-closed) candidates
-	 * are excluded — those are the ones the advisor grows to the shortfall, so counting them would double-net.
+	 * Qty already committed to real production for this demand's shipment schedule — {@code QtyEntered} of the
+	 * immovable ({@code Processed}/{@code IsClosed}) candidates, which persists through realization (unlike the MD
+	 * supply qty, which drains to 0 on receipt), so a produced/closed order is never re-produced. Open candidates are
+	 * excluded — those are what the advisor grows to the shortfall, so counting them would double-net.
 	 */
 	@NonNull
 	private BigDecimal getCommittedProductionQtyForSchedule(

@@ -325,7 +325,7 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 0            | N             |
     # Reopened order 2: its shipment demand is retracted, but the already-processed production supply persists.
-    # Asserting here isolates the re-evaluation to the RE-COMPLETE step. (values pinned from run)
+    # Asserting here isolates the re-evaluation to the RE-COMPLETE step.
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |

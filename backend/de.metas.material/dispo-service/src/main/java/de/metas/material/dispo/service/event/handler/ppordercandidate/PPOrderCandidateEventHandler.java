@@ -207,11 +207,9 @@ abstract class  PPOrderCandidateEventHandler
 				.pickDirectlyIfFeasible(Flag.FALSE)
 				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId());
 
-		// Only (re)assign the PP_Order_Candidate link when the event actually carries one. An ADVISED event carries
-		// none (it advises the system to create/update the candidate), so overwriting with null here would wipe the
-		// link on an UPDATED supply candidate (ATP's first partial with tryUpdateExistingCandidate=true) — and the
-		// Created/Updated handler, which matches the header supply by ppOrderCandidateId, would then fail to find it
-		// and spawn a duplicate. Preserve the existing link instead.
+		// Only (re)assign the PP_Order_Candidate link when the event carries one: an ADVISED event carries none, and
+		// overwriting with null would wipe the link on an updated supply candidate → the by-id header match would then
+		// miss it and spawn a duplicate. Preserve the existing link.
 		if (ppOrderCandidate.getPpOrderCandidateId() != null)
 		{
 			productionDetailBuilder.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()));

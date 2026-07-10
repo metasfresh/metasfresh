@@ -24,6 +24,7 @@ package de.metas.material.planning.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.springframework.stereotype.Repository;
@@ -38,7 +39,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class PPOrderCandidateRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * All active {@link I_PP_Order_Candidate}s bound to the given shipment schedule and product planning

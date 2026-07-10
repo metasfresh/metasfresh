@@ -180,9 +180,8 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.productionDetailsQuery(productionDetailsQuery)
 				.build();
 
-		// Only ever grow an OPEN supply candidate (one not yet turned into a PP_Order). A candidate already bound to a
-		// PP_Order is processed/closed and must NOT be touched — the shortfall becomes a NEW candidate instead
-		// (ppOrderId / pp_order_docstatus non-null == a real order exists). Shared by ATP and lot-for-lot.
+		// Grow only an OPEN supply candidate; one already bound to a PP_Order (ppOrderId set) must not be touched, so
+		// the shortfall becomes a NEW candidate instead. Shared by ATP and lot-for-lot.
 		final Candidate existingSupply = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(existingSupplyQuery);
 		if (existingSupply == null)
 		{
