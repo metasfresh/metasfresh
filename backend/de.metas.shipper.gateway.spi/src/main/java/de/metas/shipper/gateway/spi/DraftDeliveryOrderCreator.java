@@ -120,6 +120,12 @@ public interface DraftDeliveryOrderCreator
 		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
 		@Nullable Set<CarrierServiceId> carrierServices;
 		AsyncBatchId asyncBatchId;
+		/**
+		 * When set, this key is unique per package, i.e. one delivery order per package. Used when the carrier is
+		 * resolved by nShift at ship time (selection rules ON, non-manual): the final per-package carrier is not known
+		 * at grouping time, so packages must not be grouped under a preliminary carrier.
+		 */
+		@Nullable PackageId packageId;
 
 		@Builder
 		public DeliveryOrderKey(
@@ -135,7 +141,8 @@ public interface DraftDeliveryOrderCreator
 				@Nullable final CarrierProductId carrierProductId,
 				@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
 				@Nullable final Set<CarrierServiceId> carrierServices,
-				@Nullable final AsyncBatchId asyncBatchId)
+				@Nullable final AsyncBatchId asyncBatchId,
+				@Nullable final PackageId packageId)
 		{
 			Check.assume(fromOrgId > 0, "fromOrgId > 0");
 			Check.assume(deliverToBPartnerId > 0, "deliverToBPartnerId > 0");
@@ -155,6 +162,7 @@ public interface DraftDeliveryOrderCreator
 			this.carrierServices = carrierServices;
 
 			this.asyncBatchId = asyncBatchId;
+			this.packageId = packageId;
 		}
 	}
 }

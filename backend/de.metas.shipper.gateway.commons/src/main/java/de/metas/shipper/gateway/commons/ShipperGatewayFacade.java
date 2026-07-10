@@ -19,6 +19,7 @@ import de.metas.shipper.gateway.spi.DraftDeliveryOrderCreator.DeliveryOrderKey;
 import de.metas.shipper.gateway.spi.exceptions.ShipperGatewayException;
 import de.metas.shipper.gateway.spi.model.DeliveryOrder;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.commons.model.ShipperConfigRepository;
 import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -82,6 +83,7 @@ public class ShipperGatewayFacade
 	@NonNull private final ShipperRepository shipperRepository;
 	@NonNull private final ShipperGatewayServicesRegistry shipperRegistry;
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull private final ShipperConfigRepository shipperConfigRepository;
 
 	private final UOMPrecision kgPrecision = uomDAO.getStandardPrecision(uomDAO.getUomIdByX12DE355(X12DE355.KILOGRAM));
 
@@ -154,8 +156,23 @@ public class ShipperGatewayFacade
 		// is authoritative and overrides the non-manual ones. Otherwise all non-manual carriers are considered.
 		final List<ResolvedCarrier> effectiveCarriers = reduceToManualWinningCarriers(resolvedCarriers);
 
+		final ShipperId shipperId = ShipperId.ofRepoId(mpackage.getM_Shipper_ID());
+
+		// When the carrier is resolved by nShift at ship time (selection rules ON) and no manual carrier overrides it,
+		// the final per-package carrier is NOT known at grouping time — it only surfaces on the ship re-advise, where
+		// two packages sharing the same preliminary carrier may still resolve to different ones. Grouping them into one
+		// delivery order would force a single carrier on all of them. So force ONE delivery order per package in that
+		// case. Otherwise the carrier is final now (rules OFF → explicit carrier is authoritative, or a manual carrier),
+		// so packages group normally.
+		final boolean carrierResolvedAtShipTime =
+				effectiveCarriers.stream().noneMatch(ResolvedCarrier::isManual)
+						&& shipperConfigRepository.isSelectionRules(shipperId);
+		final PackageId perPackageKey = carrierResolvedAtShipTime
+				? PackageId.ofRepoId(mpackage.getM_Package_ID())
+				: null;
+
 		return DeliveryOrderKey.builder()
-				.shipperId(ShipperId.ofRepoId(mpackage.getM_Shipper_ID()))
+				.shipperId(shipperId)
 				.shipperTransportationId(shipperTransportationId)
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
@@ -168,6 +185,7 @@ public class ShipperGatewayFacade
 				.carrierGoodsTypeId(getCommonCarrierGoodsTypeIdOrNull(effectiveCarriers))
 				.carrierServices(getCarrierServices(effectiveCarriers))
 				.asyncBatchId(asyncBatchId)
+				.packageId(perPackageKey)
 				.build();
 	}
 
