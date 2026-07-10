@@ -475,7 +475,7 @@ public class MD_Candidate_StepDef
 				.map(asiId -> AttributesKeys.createAttributesKeyFromASIStorageAttributes(asiId).orElse(AttributesKey.NONE))
 				.orElse(null);
 
-		StepDefUtil.tryAndWaitForItem(timeoutSec, 1000, () -> {
+		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> {
 			final List<I_MD_Candidate> candidates = queryBL.createQueryBuilder(I_MD_Candidate.class)
 					.addOnlyActiveRecordsFilter()
 					.addEqualsFilter(COLUMNNAME_M_Product_ID, productId)
