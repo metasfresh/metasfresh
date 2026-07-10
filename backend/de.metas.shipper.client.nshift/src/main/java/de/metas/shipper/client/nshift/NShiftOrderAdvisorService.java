@@ -125,11 +125,14 @@ public class NShiftOrderAdvisorService
 		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice response should contain a Shipment, pls check defined shipment rules. Status={}", response.getStatus());
 		final Integer prodCSID = Check.assumeNotNull(shipment.getProdCSID(), "OrderAdvice Shipment should contain a ProdCSID, pls check defined shipment rules");
 
+		// Name = the carrier PRODUCT (ProdName, e.g. "UPS Standard®"), NOT CarrierFullName (the carrier/integration,
+		// e.g. "UPS Rest API"). Mirrors the ship path (NShiftShipmentService#extractResolvedShipperProduct), so the
+		// advise-time and ship-time carrier product carry the same name; fall back to the code when ProdName is absent.
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
 				.requestId(requestId)
 				.shipperProduct(JsonShipperProduct.builder()
 						.code(String.valueOf(prodCSID))
-						.name(shipment.getCarrierFullName())
+						.name(shipment.getProdName() != null ? shipment.getProdName() : String.valueOf(prodCSID))
 						.build());
 
 		// GoodsType is reported per line (no shipment-level GoodsType / Services in the OrderAdvice response);
