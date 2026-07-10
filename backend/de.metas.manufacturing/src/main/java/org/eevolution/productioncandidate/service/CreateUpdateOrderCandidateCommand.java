@@ -158,9 +158,17 @@ public class CreateUpdateOrderCandidateCommand
 			return null;
 		}
 
-		return ppOrderCandidateDAO.retrieveSingleActiveIdByShipmentScheduleAndPlanning(
-				request.getShipmentScheduleId(),
-				request.getProductPlanningId());
+		// Reuse only a single un-processed candidate (grow the still-mutable plan in place). A processed candidate
+		// must not be touched — the advisor sizes the missing delta as its own new candidate.
+		final java.util.List<I_PP_Order_Candidate> unprocessed = ppOrderCandidateDAO
+				.retrieveActiveByShipmentScheduleAndPlanning(request.getShipmentScheduleId(), request.getProductPlanningId())
+				.stream()
+				.filter(candidate -> !candidate.isProcessed())
+				.collect(java.util.stream.Collectors.toList());
+
+		return unprocessed.size() == 1
+				? PPOrderCandidateId.ofRepoId(unprocessed.get(0).getPP_Order_Candidate_ID())
+				: null;
 	}
 
 	@NonNull

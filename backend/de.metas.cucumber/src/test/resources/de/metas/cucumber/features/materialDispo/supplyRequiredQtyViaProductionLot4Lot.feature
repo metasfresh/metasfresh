@@ -440,16 +440,14 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 0            | N             |
-    # Reopened order 2: the shipment demand is retracted (c_d2 -> 0) but the lot-for-lot production supply STAYS
-    # (c_s2 = 20, its component c_cd2 = -200) — it is NOT churned to 0 and re-created. This mirrors the
-    # already-processed case S0264_800 (production persists across the reactivate); an un-processed candidate is
-    # treated the same for lot-for-lot, so the reactivate is a no-op on the production side.
+    # Reopened order 2: the un-processed production plan is retracted along with the demand (c_s2 -> 0), then
+    # re-created on the re-complete below. (A processed production would instead persist — cf. S0264_800.)
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
-      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | 0                      |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20 | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      |
     And the order identified by o_2 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
@@ -553,14 +551,14 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 0            | N             |
-    # Reopened order 2: demand retracted (c_d2 -> 0) but the lot-for-lot production STAYS (c_s2 = 20, c_cd2 = -200),
-    # not churned to 0 — consistent with the processed case S0264_800.
+    # Reopened order 2: the un-processed production plan is retracted with the demand (c_s2 -> 0); it is re-created
+    # for the new qty on the re-complete below.
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
-      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | 0                      |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20 | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
       | ol_2                      | 40             | 40             |
@@ -681,19 +679,25 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 40           | N             |
-    # EXPECTED (correct state): order 2's demand grows to 40, covered by its own production supply (40); order 1's
-    # Same lot-for-lot increase guard for an already-processed prior candidate: production grows to 40, order 1's -20 open.
+    # EXPECTED (correct state): order 2's demand grows to 40. Its first production (20) is already PROCESSED and
+    # cannot be grown, so the missing delta (20) is produced as a NEW second candidate — the two lot-for-lot
+    # candidates (20 + 20) together cover order 2's own 40. Order 1's -20 stays open.
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -40  | -60                    |
       | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -60                    |
       | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 40   | -20                    |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -400 | -400                   |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -40                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+      | c_s3a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -40                    |
+      | c_cd3a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | -200                   |
+      | c_s3       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -20                    |
+      | c_cd3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -400                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 40         | 0            | 40           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_3       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
 
   @Id:S0264_840
@@ -779,14 +783,14 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 0            | N             |
-    # Reopened order 2: demand retracted (c_d2 -> 0) but the lot-for-lot production STAYS (c_s2 = 20, c_cd2 = -200),
-    # not churned to 0 — consistent with the processed case S0264_800.
+    # Reopened order 2: the un-processed production plan is retracted with the demand (c_s2 -> 0); it is re-created
+    # for the new qty on the re-complete below.
     And after not more than 60s, the MD_Candidate table has only the following records
-      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
-      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
-      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0    | -20                    |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | 0                      |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
+      | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
+      | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20 | -20                    |
+      | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0   | -20                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0   | 0                      |
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
       | ol_2                      | 10             | 10             |
@@ -906,19 +910,20 @@ Feature: Lot-for-lot production disposition — supply tracks demand on qty chan
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver | IsToRecompute |
       | ss_2       | ol_2           | 10           | N             |
-    # EXPECTED (correct state): order 2's demand reduces to 10, covered by its own production supply (10); order 1's
-    # Same lot-for-lot decrease guard for an already-processed prior candidate: production reduces to 10, order 1's -20 open.
+    # EXPECTED (correct state): order 2's demand drops to 10, but its production was already PROCESSED and cannot be
+    # un-produced, so the production STAYS at 20 (over-supply) and a SupplyRequiredDecreased notification is fired for
+    # a planner to rebalance. Order 1's -20 stays open.
     And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_d1       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-15T21:00:00Z | -20  | -20                    |
       | c_d2       | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -30                    |
       | c_s2a      | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 0    | -30                    |
       | c_cd2a     | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 0    | 0                      |
-      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | -20                    |
-      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
+      | c_s2       | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 20   | -10                    |
+      | c_cd2      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -200 | -200                   |
     And after not more than 60s, the PP_Order_Candidate table has only the following records
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
-      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | true      | p_1          | bom_1             | ppln_1                 | 540006        | 20         | 0            | 20           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
 
 
   @Id:S0264_860

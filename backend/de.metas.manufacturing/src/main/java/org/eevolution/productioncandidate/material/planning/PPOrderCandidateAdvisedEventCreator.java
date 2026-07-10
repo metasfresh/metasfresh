@@ -49,6 +49,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import de.metas.inout.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
@@ -83,7 +84,27 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 
 		final ProductPlanning productPlanning = context.getProductPlanning();
 
-		final MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
+		MaterialRequest completeRequest = SupplyRequiredHandlerUtils.mkRequest(supplyRequiredDescriptor, context);
+
+		// Lot-for-lot sizes supply to THIS demand, not to the global ATP gap. Production already PROCESSED for the
+		// same shipment schedule can be neither un-produced nor grown, so only its delta is advised — as a NEW
+		// candidate: needed = demand - alreadyProcessed (<=0 => advise nothing). Un-processed production has no
+		// processed qty here, so it falls through and is grown in place instead (createNewForDelta stays false).
+		boolean createNewForDelta = false;
+		if (productPlanning.isManufacturedLot4Lot())
+		{
+			final BigDecimal alreadyProcessed = getProcessedQtyForSchedule(supplyRequiredDescriptor, productPlanning);
+			if (alreadyProcessed.signum() > 0)
+			{
+				final BigDecimal needed = completeRequest.getQtyToSupply().toBigDecimal().subtract(alreadyProcessed);
+				if (needed.signum() <= 0)
+				{
+					return ImmutableList.of();
+				}
+				completeRequest = completeRequest.withQtyToSupply(Quantitys.of(needed, completeRequest.getQtyToSupply().getUomId()));
+				createNewForDelta = true;
+			}
+		}
 
 		final Quantity maxQtyPerOrder = extractMaxQuantityPerOrder(productPlanning);
 		final Quantity maxQtyPerOrderConv = convertQtyToRequestUOM(context, completeRequest, maxQtyPerOrder);
@@ -105,21 +126,34 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 					.ppOrderCandidate(ppOrderCandidate)
 					.directlyCreatePPOrder(productPlanning.isCreatePlan());
 
-			if (firstRequest)
-			{
-				eventBuilder.tryUpdateExistingCandidate(true);
-				firstRequest = false;
-			}
-			else
-			{ // all further events need to get their respective new supply candidates, rather that updating ("overwriting") the existing one.
-				eventBuilder.tryUpdateExistingCandidate(false);
-			}
+			// The first partial updates the pre-existing supply; further partials create their own. A lot-for-lot
+			// delta beside an already-processed candidate must NOT update it — force a new candidate instead.
+			eventBuilder.tryUpdateExistingCandidate(firstRequest && !createNewForDelta);
+			firstRequest = false;
 
 			result.add(eventBuilder.build());
 			Loggables.addLog("Created PPOrderCandidateAdvisedEvent with quantity={}", request.getQtyToSupply());
 		}
 
 		return result.build();
+	}
+
+	/** Qty already committed by PROCESSED production candidates on this demand's shipment schedule (survives receipt). */
+	@NonNull
+	private BigDecimal getProcessedQtyForSchedule(
+			@NonNull final SupplyRequiredDescriptor supplyRequiredDescriptor,
+			@NonNull final ProductPlanning productPlanning)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(supplyRequiredDescriptor.getShipmentScheduleId());
+		if (shipmentScheduleId == null)
+		{
+			return BigDecimal.ZERO;
+		}
+		return ppOrderCandidateDAO.retrieveActiveByShipmentScheduleAndPlanning(shipmentScheduleId, productPlanning.getIdNotNull())
+				.stream()
+				.filter(I_PP_Order_Candidate::isProcessed)
+				.map(I_PP_Order_Candidate::getQtyEntered)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@Nullable

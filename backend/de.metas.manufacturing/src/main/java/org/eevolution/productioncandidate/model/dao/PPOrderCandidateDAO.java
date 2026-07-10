@@ -31,7 +31,6 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
@@ -69,27 +68,22 @@ public class PPOrderCandidateDAO
 	}
 
 	/**
-	 * The active PP_Order_Candidate bound to the given shipment schedule and product planning, if exactly one exists.
-	 * Used by lot-for-lot to reconcile the demand's own single production candidate in place on a demand change
-	 * (reactivate / qty change) instead of creating a duplicate. Returns {@code null} when none — or more than one
-	 * (e.g. maxQtyPerOrder batching) — matches, so the caller falls back to creating a new candidate.
+	 * All active PP_Order_Candidates bound to the given shipment schedule and product planning (ordered by id).
+	 * Used by lot-for-lot production advice to measure how much is already committed against the schedule and
+	 * whether an un-processed candidate exists to grow.
 	 */
-	@Nullable
-	public PPOrderCandidateId retrieveSingleActiveIdByShipmentScheduleAndPlanning(
+	@NonNull
+	public ImmutableList<I_PP_Order_Candidate> retrieveActiveByShipmentScheduleAndPlanning(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final ProductPlanningId productPlanningId)
 	{
-		final List<I_PP_Order_Candidate> matches = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId.getRepoId())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId.getRepoId())
 				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID)
 				.create()
 				.listImmutable(I_PP_Order_Candidate.class);
-
-		return matches.size() == 1
-				? PPOrderCandidateId.ofRepoId(matches.get(0).getPP_Order_Candidate_ID())
-				: null;
 	}
 
 	@NonNull

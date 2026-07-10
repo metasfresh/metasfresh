@@ -141,15 +141,13 @@ public class DemandCandidateHandler implements CandidateHandler
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isLotForLotDemand, candidateSaveResult.isNew());
 		}
 
-		if (candidateSaveResult.getQtyDelta().signum() < 0 && !isLotForLotDemand)
+		// Demand decreased: reduce the bound supply. SupplyRequiredDecreasedHandler reduces what it can (un-processed
+		// candidates) and, for whatever it cannot reduce (an already-processed production that cannot be un-produced),
+		// fires a user notification so a planner can rebalance another candidate. This holds for lot-for-lot too.
+		if (candidateSaveResult.getQtyDelta().signum() < 0)
 		{
 			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
 		}
-		// Lot-for-lot: do NOT retract the production supply while the demand is momentarily reduced. A sales-order /
-		// shipment reactivate drives the demand to 0 before it is re-completed, and a lot-for-lot order can only be
-		// changed via such a reactivate round-trip; retracting then re-creating the production would churn its
-		// candidate group and race/duplicate it. The production stays put and is reconciled to the final demand qty
-		// on the re-complete (positive-delta) leg above (resized in place on a real qty change).
 
 		return candidateSaveResult;
 	}

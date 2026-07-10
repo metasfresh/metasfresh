@@ -97,6 +97,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -206,8 +207,14 @@ public class PP_Order_Candidate_StepDef
 		final DataTableRows rows = DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID);
 
-		// each expected row must be present ...
-		rows.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
+		// each expected row must be present, and each row must resolve to a DISTINCT record: exclude the candidates
+		// already matched by earlier rows so that two byte-identical candidates (e.g. a lot-for-lot delta produced
+		// beside an already-processed one) are asserted one-to-one, instead of both matching the same attribute query.
+		final Set<PPOrderCandidateId> alreadyMatchedIds = new HashSet<>();
+		rows.forEach(row -> {
+			final I_PP_Order_Candidate matched = validatePP_Order_Candidate(timeoutSec, row, alreadyMatchedIds);
+			alreadyMatchedIds.add(PPOrderCandidateId.ofRepoId(matched.getPP_Order_Candidate_ID()));
+		});
 
 		// ... and NO other PP_Order_Candidate may exist for the product(s) referenced in the table.
 		// NOTE: no addOnlyActiveRecordsFilter here — the per-row query (toSqlQuery) does not filter on IsActive
@@ -418,13 +425,22 @@ public class PP_Order_Candidate_StepDef
 
 	private void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row))
+		validatePP_Order_Candidate(timeoutSec, row, ImmutableSet.of());
+	}
+
+	private I_PP_Order_Candidate validatePP_Order_Candidate(
+			final int timeoutSec,
+			@NonNull final DataTableRow row,
+			@NonNull final Set<PPOrderCandidateId> excludeIds) throws InterruptedException
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row, excludeIds))
 				.validateUsingConsumer((record) -> validatePP_Order_Candidate(record, row))
 				.logContext(() -> toTabularStringForProductIdentifier(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID)))
 				.maxWaitSeconds(timeoutSec)
 				.execute();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderCandidateTable.putOrReplace(identifier, ppOrderCandidate));
+		return ppOrderCandidate;
 	}
 
 	private void validatePP_Order_Candidate(@NonNull final I_PP_Order_Candidate actual, @NonNull final DataTableRow row)
@@ -511,6 +527,11 @@ public class PP_Order_Candidate_StepDef
 
 	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row)
 	{
+		return toSqlQuery(row, ImmutableSet.of());
+	}
+
+	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row, @NonNull final Set<PPOrderCandidateId> excludeIds)
+	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier().orElse(null);
 		if (identifier != null && ppOrderCandidateTable.isPresent(identifier))
 		{
@@ -532,6 +553,11 @@ public class PP_Order_Candidate_StepDef
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, bomId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId);
+
+		if (!excludeIds.isEmpty())
+		{
+			builder.addNotInArrayFilter(COLUMNNAME_PP_Order_Candidate_ID, excludeIds);
+		}
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing));
