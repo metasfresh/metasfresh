@@ -123,6 +123,17 @@ public class PickingJobShipmentScheduleService
 		huShipmentScheduleBL.deleteByTopLevelHUsAndShipmentScheduleId(topLevelHUs, shipmentScheduleId);
 	}
 
+	/**
+	 * @see IHUShipmentScheduleBL#reduceQtyPickedForPickToTU(ShipmentScheduleId, HuId, Quantity)
+	 */
+	public void reduceQtyPickedForPickToTU(
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final HuId pickToTuId,
+			@NonNull final Quantity qtyToReduce)
+	{
+		huShipmentScheduleBL.reduceQtyPickedForPickToTU(shipmentScheduleId, pickToTuId, qtyToReduce);
+	}
+
 	public Stream<Packageable> stream(@NonNull final PackageableQuery query)
 	{
 		return packagingDAO.stream(query);
