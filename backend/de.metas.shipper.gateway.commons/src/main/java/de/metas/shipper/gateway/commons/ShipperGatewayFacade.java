@@ -165,7 +165,7 @@ public class ShipperGatewayFacade
 		// case. Otherwise the carrier is final now (rules OFF → explicit carrier is authoritative, or a manual carrier),
 		// so packages group normally.
 		final boolean carrierResolvedAtShipTime =
-				effectiveCarriers.stream().noneMatch(ResolvedCarrier::isManual)
+				!ResolvedCarrier.hasManual(effectiveCarriers)
 						&& shipperConfigRepository.isSelectionRules(shipperId);
 		final PackageId perPackageKey = carrierResolvedAtShipTime
 				? PackageId.ofRepoId(mpackage.getM_Package_ID())

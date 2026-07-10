@@ -69,6 +69,16 @@ public class ResolvedCarrier
 	}
 
 	/**
+	 * True if any of the given carriers was manually advised. A manual carrier is final (nShift does not re-resolve
+	 * it), so this distinguishes "carrier already known" from "nShift resolves it at ship time". Central so every
+	 * caller (delivery-order grouping, picking consistency check) agrees on what "manual" means.
+	 */
+	public static boolean hasManual(@NonNull final List<ResolvedCarrier> carriers)
+	{
+		return carriers.stream().anyMatch(ResolvedCarrier::isManual);
+	}
+
+	/**
 	 * The DISTINCT manual carriers among the given ones (by product + goods-type + services). A package must not
 	 * carry more than one — {@code > 1} is the "mixed manual" reject condition (enforced by callers with their own
 	 * exception type). Central so the delivery-order carrier reducer and the picking consistency check agree.
