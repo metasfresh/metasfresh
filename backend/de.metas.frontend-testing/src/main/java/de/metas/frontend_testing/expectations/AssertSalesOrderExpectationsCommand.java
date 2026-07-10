@@ -5,15 +5,12 @@ import de.metas.document.engine.DocStatus;
 import de.metas.frontend_testing.expectations.request.JsonInOutExpectation;
 import de.metas.frontend_testing.expectations.request.JsonInOutLineExpectation;
 import de.metas.frontend_testing.expectations.request.JsonSalesOrderExpectation;
-import de.metas.frontend_testing.expectations.request.JsonCarrierAdviseExpectation;
 import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.frontend_testing.masterdata.MasterdataContext;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
-import de.metas.shipping.CarrierProductId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -83,11 +80,6 @@ class AssertSalesOrderExpectationsCommand
 		if (expectation.getShippedQty() != null)
 		{
 			assertShippedQty(orderId, expectation.getShippedQty());
-		}
-
-		if (expectation.getCarrierAdvise() != null)
-		{
-			assertCarrierAdvise(orderId, expectation.getCarrierAdvise());
 		}
 
 		if (expectation.getShipments() == null)
@@ -251,114 +243,6 @@ class AssertSalesOrderExpectationsCommand
 		// A line's product is always a masterdata map key (e.g. "P1"), never a raw repo-id, so resolve
 		// strictly from the carried context — mirroring AssertPickingExpectationsCommand's product resolution.
 		return context.getId(identifier, ProductId.class);
-	}
-
-	/**
-	 * Asserts the carrier-advise outcome per shipment schedule of the order, keyed by the schedule's product identifier.
-	 *
-	 * <p>Carrier advise runs asynchronously (workpackage on order completion), so this polls until the
-	 * expected advising status / carrier product appear, or the timeout elapses.
-	 */
-	private void assertCarrierAdvise(
-			@NonNull final OrderId orderId,
-			@NonNull final Map<Identifier, JsonCarrierAdviseExpectation> expectationsByProduct)
-			throws InterruptedException
-	{
-		final Stopwatch stopwatch = Stopwatch.createStarted();
-		while (true)
-		{
-			final Map<ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
-					.stream()
-					.collect(Collectors.toMap(services::getProductIdOfShipmentSchedule, s -> s, (a, b) -> a));
-
-			boolean allMatched = true;
-			for (final Map.Entry<Identifier, JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
-			{
-				final ProductId productId = resolveProductId(entry.getKey());
-				final I_M_ShipmentSchedule schedule = schedulesByProductId.get(productId);
-				if (schedule == null || !isCarrierAdviseSatisfied(schedule, entry.getValue()))
-				{
-					allMatched = false;
-					break;
-				}
-			}
-
-			if (allMatched || stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) >= 0)
-			{
-				break;
-			}
-
-			logger.info("Waiting for carrier-advise on order {} (elapsed: {})", orderId, stopwatch);
-			//noinspection BusyWait
-			Thread.sleep(1000);
-		}
-
-		final Map<ProductId, I_M_ShipmentSchedule> schedulesByProductId = services.getShipmentSchedulesByOrderId(orderId)
-				.stream()
-				.collect(Collectors.toMap(services::getProductIdOfShipmentSchedule, s -> s, (a, b) -> a));
-
-		softly(() -> {
-			softlyPutContext("orderId", orderId);
-			for (final Map.Entry<Identifier, JsonCarrierAdviseExpectation> entry : expectationsByProduct.entrySet())
-			{
-				final Identifier productIdentifier = entry.getKey();
-				final JsonCarrierAdviseExpectation exp = entry.getValue();
-				final ProductId productId = resolveProductId(productIdentifier);
-				final I_M_ShipmentSchedule schedule = schedulesByProductId.get(productId);
-
-				assertThat(schedule)
-						.as("shipment schedule for product " + productIdentifier + " of order " + orderId)
-						.isNotNull();
-				if (schedule == null)
-				{
-					continue;
-				}
-
-				InterfaceWrapperHelper.refresh(schedule);
-
-				if (exp.getAdvisingStatus() != null)
-				{
-					assertThat(schedule.getCarrier_Advising_Status())
-							.as("Carrier_Advising_Status of schedule for product " + productIdentifier)
-							.isEqualTo(exp.getAdvisingStatus());
-				}
-				final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(schedule.getCarrier_Product_ID());
-				if (exp.getCarrierProductSet() != null)
-				{
-					assertThat(carrierProductId != null)
-							.as("Carrier_Product_ID set on schedule for product " + productIdentifier)
-							.isEqualTo(exp.getCarrierProductSet());
-				}
-				if (exp.getCarrierProductName() != null)
-				{
-					assertThat(services.getCarrierProductName(carrierProductId))
-							.as("Carrier_Product.Name on schedule for product " + productIdentifier)
-							.isEqualTo(exp.getCarrierProductName());
-				}
-			}
-		});
-	}
-
-	private boolean isCarrierAdviseSatisfied(
-			@NonNull final I_M_ShipmentSchedule schedule,
-			@NonNull final JsonCarrierAdviseExpectation exp)
-	{
-		InterfaceWrapperHelper.refresh(schedule);
-		final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(schedule.getCarrier_Product_ID());
-		if (exp.getAdvisingStatus() != null && !exp.getAdvisingStatus().equals(schedule.getCarrier_Advising_Status()))
-		{
-			return false;
-		}
-		final boolean carrierProductIsSet = carrierProductId != null;
-		if (exp.getCarrierProductSet() != null && !exp.getCarrierProductSet().equals(carrierProductIsSet))
-		{
-			return false;
-		}
-		if (exp.getCarrierProductName() != null && !exp.getCarrierProductName().equals(services.getCarrierProductName(carrierProductId)))
-		{
-			return false;
-		}
-		return true;
 	}
 
 	/**

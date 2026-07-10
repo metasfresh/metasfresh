@@ -1,6 +1,5 @@
 package de.metas.frontend_testing.expectations.request;
 
-import de.metas.frontend_testing.masterdata.Identifier;
 import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
@@ -8,7 +7,6 @@ import lombok.extern.jackson.Jacksonized;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Expectation for a sales order (C_Order), keyed by the order's identifier string in the
@@ -51,12 +49,6 @@ public class JsonSalesOrderExpectation
 	 * </ul>
 	 */
 	@Nullable List<JsonInOutExpectation> shipments;
-
-	/**
-	 * Carrier-advise expectation per shipment schedule of this order. Keyed by the product {@link Identifier}
-	 * of the schedule's order line (one schedule per order line). Null means no carrier-advise assertion.
-	 */
-	@Nullable Map<Identifier, JsonCarrierAdviseExpectation> carrierAdvise;
 
 	/**
 	 * Assert the total shipped quantity for this order, summed across all PROCESSED

@@ -31,9 +31,6 @@ import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQty;
-import de.metas.shipper.gateway.commons.model.CarrierProduct;
-import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
-import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +42,6 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -67,7 +63,6 @@ public class AssertExpectationsCommandServices
 	@NonNull private final PickingJobService pickingJobService;
 	@NonNull private final HUQRCodesService huQRCodeService;
 	@NonNull private final PickingSlotService pickingSlotService;
-	@NonNull private final CarrierProductRepository carrierProductRepository;
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
@@ -169,29 +164,4 @@ public class AssertExpectationsCommandServices
 		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
 	}
 
-	public List<I_M_ShipmentSchedule> getShipmentSchedulesByOrderId(@NonNull final OrderId orderId)
-	{
-		final Set<OrderLineId> orderLineIds = getOrderLineIdsByOrderId(orderId);
-		if (orderLineIds.isEmpty())
-		{
-			return Collections.emptyList();
-		}
-		return shipmentScheduleBL.getByOrderLineIds(orderLineIds);
-	}
-
-	public ProductId getProductIdOfShipmentSchedule(@NonNull final I_M_ShipmentSchedule schedule)
-	{
-		return ProductId.ofRepoId(schedule.getM_Product_ID());
-	}
-
-	@Nullable
-	public String getCarrierProductName(@Nullable final CarrierProductId carrierProductId)
-	{
-		if (carrierProductId == null)
-		{
-			return null;
-		}
-		final CarrierProduct carrierProduct = carrierProductRepository.getCachedShipperProductById(carrierProductId);
-		return carrierProduct != null ? carrierProduct.getName() : null;
-	}
 }
