@@ -628,9 +628,11 @@ Feature: EDI INVOIC export via postgREST
     # Build the invoice directly (not via the IC pipeline): a product line linked to the order line
     # (so its delivery party resolves to the order's HandOver location) plus an order-less
     # packaging-material line (as a deposit / Leergut line would be — no C_OrderLine_ID).
+    # M_PriceList_ID is set explicitly: bpLoc_bill is a non-default bill location, so the invoice's
+    # price list is not defaulted for it — the explicit price list keeps completion deterministic.
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context  | C_BPartner_ID | C_BPartner_Location_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | pkgInvoice | pkgInvoice_ID | customer1     | bpLoc_bill             | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context  | C_BPartner_ID | C_BPartner_Location_ID | M_PriceList_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | pkgInvoice | pkgInvoice_ID | customer1     | bpLoc_bill             | salesPriceList | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
       | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | IsPackagingMaterial |
       | pkgInvoice   | productNormal | ol_1           | 1 PCE       | N                   |
