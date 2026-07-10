@@ -282,6 +282,14 @@ public class C_Order_StepDef
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
 
+		// handover (delivery) location — distinct from the bill/ship location
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_HandOver_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(id -> {
+					order.setHandOver_Location_ID(id.getRepoId());
+					order.setIsUseHandOver_Location(true);
+				});
+
 		final OrgId orgId = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
 				.map(orgTable::getId)
 				.orElse(StepDefConstants.ORG_ID);

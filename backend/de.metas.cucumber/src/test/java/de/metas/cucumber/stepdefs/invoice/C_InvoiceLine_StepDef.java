@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -108,6 +109,7 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	/**
 	 * @cucumber.stepdef Creates C_InvoiceLine records on existing C_Invoices.
@@ -118,10 +120,11 @@ public class C_InvoiceLine_StepDef
 	 *   <b>C_UOM_ID</b> — (optional) UOM x12de355 code, when not embedded in QtyInvoiced<br>
 	 *   <b>Price</b> — (optional) manual price; sets IsManualPrice + PriceEntered/PriceActual<br>
 	 *   <b>IsPackagingMaterial</b> — (optional) mark the line as packaging material; omit to keep the model default (N)<br>
+	 *   <b>C_OrderLine_ID</b> — (optional, identifier-ref) link the line to a C_OrderLine<br>
 	 *   <b>C_Tax_ID$set</b> — (optional, identifier-ref) force this tax on the line<br>
 	 *   <b>C_Tax_ID</b> — (optional, identifier-ref) store the resolved tax under this alias<br>
 	 *   <b>Identifier</b> — (optional) alias for cross-step reference<br>
-	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData
+	 * @cucumber.depends StepDefData: C_Invoice_StepDefData, M_Product_StepDefData, C_Tax_StepDefData, C_OrderLine_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains C_InvoiceLines
@@ -440,6 +443,9 @@ public class C_InvoiceLine_StepDef
 		{
 			invoiceLine.setIsPackagingMaterial(isPackagingMaterial);
 		}
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.lookupNotNullIn(orderLineTable).getC_OrderLine_ID()));
 
 		invoiceLineBL.updatePrices(invoiceLine);
 		invoiceLineBL.updateLineNetAmt(invoiceLine, qtyEntered.toBigDecimal());

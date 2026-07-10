@@ -520,32 +520,52 @@ Feature: EDI INVOIC export via postgREST
 
   @from:cucumber
 @allure.label.epic:E0292_EDI
-@allure.label.feature:F00350_EDI
-@F00350
-  Scenario: packaging-material invoice lines are excluded from the INVOIC export
+@allure.label.feature:F00359_EDI_INVOICE_JSON
+@F00359
+  Scenario: a packaging-material invoice line does not add a second delivery party (DP)
     # A packaging-material line (deposit / Leergut) carries no C_OrderLine_ID.
-    # It must NOT be exported as an INVOIC line item; only the normal product line is exported.
+    # It must not be exported as an INVOIC line item, and — because it would otherwise fall back to
+    # the invoice's own bill-to location — it must not emit a second DP party. The order's delivery
+    # (HandOver) location differs from the bill-to, so the genuine DP is the delivery location and a
+    # spurious second DP (= bill-to, from the packaging line) is detectable.
     Given metasfresh contains C_BPartners without locations:
       | Identifier | IsCustomer | REST.Context.Name | REST.Context.Value | IsVendor | M_PricingSystem_ID |
       | customer1  | Y          | customerName      | customerValue      | N        | pricingSystem      |
+    And metasfresh contains C_Location:
+      | C_Location_ID.Identifier | CountryCode | OPT.Address1 | OPT.Postal | OPT.City   |
+      | loc_bill                 | DE          | billAddr     | 111        | billCity   |
+      | loc_delivery             | DE          | delivAddr    | 222        | delivCity  |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault |
-      | bpartner_location_1 | customer1     | Y               | Y               |
+      | Identifier   | GLN           | C_BPartner_ID.Identifier | OPT.C_Location_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo | OPT.BPartnerName |
+      | bpLoc_bill   | 1111111111111 | customer1                | loc_bill                     | true         | true         | billBPName       |
+      | bpLoc_deliv  | 2222222222222 | customer1                | loc_delivery                 | true         | false        | delivBPName      |
+    And metasfresh contains M_Warehouse:
+      | M_Warehouse_ID | C_BPartner_ID | C_BPartner_Location_ID |
+      | wh             | customer1     | bpLoc_bill             |
     And metasfresh contains M_Products:
-      | Identifier       | Value              | Name              | Description              |
-      | productNormal    | normalProductValue | normalProductName | normalProductDescription |
-      | productPackaging | pkgProductValue    | pkgProductName    | pkgProductDescription    |
+      | Identifier    | Value              | Name              | Description              |
+      | productNormal | normalProductValue | normalProductName | normalProductDescription |
     And metasfresh contains M_ProductPrices
-      | M_PriceList_Version_ID | M_Product_ID     | PriceStd | C_UOM_ID |
-      | salesPLV               | productNormal    | 5.00     | PCE      |
-      | salesPLV               | productPackaging | 3.00     | PCE      |
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID |
+      | salesPLV               | productNormal | 5.00     | PCE      |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | C_BPartner_Location_ID | HandOver_Location_ID | DeliveryRule | DateOrdered | DatePromised | M_Warehouse_ID |
+      | o_1        | true    | customer1     | bpLoc_bill             | bpLoc_deliv          | F            | 2025-05-01  | 2025-05-01Z  | wh             |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID  | QtyEntered |
+      | ol_1       | o_1                   | productNormal | 1          |
+    And the order identified by o_1 is completed
+
+    # Build the invoice directly (not via the IC pipeline): a product line linked to the order line
+    # (so its delivery party resolves to the order's HandOver location) plus an order-less
+    # packaging-material line (as a deposit / Leergut line would be — no C_OrderLine_ID).
     And metasfresh contains C_Invoice:
-      | Identifier | REST.Context  | C_BPartner_ID | C_DocTypeTarget_ID.Name | DocumentNo    | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
-      | pkgInvoice | pkgInvoice_ID | customer1     | Ausgangsrechnung        | invoicePkg010 | 2025-05-01   | Spot                     | true    | EUR                 |
+      | Identifier | REST.Context  | C_BPartner_ID | C_BPartner_Location_ID | C_DocTypeTarget_ID.Name | DateInvoiced | C_ConversionType_ID.Name | IsSOTrx | C_Currency.ISO_Code |
+      | pkgInvoice | pkgInvoice_ID | customer1     | bpLoc_bill             | Ausgangsrechnung        | 2025-05-01   | Spot                     | true    | EUR                 |
     And metasfresh contains C_InvoiceLines
-      | C_Invoice_ID | M_Product_ID     | QtyInvoiced | IsPackagingMaterial |
-      | pkgInvoice   | productNormal    | 1 PCE       | N                   |
-      | pkgInvoice   | productPackaging | 1 PCE       | Y                   |
+      | C_Invoice_ID | M_Product_ID  | C_OrderLine_ID | QtyInvoiced | IsPackagingMaterial |
+      | pkgInvoice   | productNormal | ol_1           | 1 PCE       | N                   |
+      | pkgInvoice   | productNormal |                | 1 PCE       | Y                   |
     And the invoice identified by pkgInvoice is completed
 
     And the following API_Audit_Config records are created:
@@ -568,19 +588,29 @@ Feature: EDI INVOIC export via postgREST
 }
     """
 
+    # The packaging line is excluded from Lines (only the product line is exported), and Partners
+    # carries exactly ONE "DP" (the HandOver delivery location) — NOT a second DP at the bill-to
+    # location. Without the fix the order-less packaging line adds that second DP and the Partners
+    # array has 6 entries, so this assertion fails.
     Then the metasfresh REST-API responds with
     """
 {
   "metasfresh_INVOIC": [
     {
       "Invoice_ID": @pkgInvoice_ID@,
-      "Invoice_DocumentNo": "invoicePkg010",
       "Lines": [
         {
           "Invoice_Line": 10,
           "Product_Name": "normalProductName",
           "Product_Supplier_ProductNo": "normalProductValue"
         }
+      ],
+      "Partners": [
+        { "EANCOM_LocationType": "SU", "Name": "metasfresh AG", "City": "Bonn" },
+        { "EANCOM_LocationType": "BY", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "IV", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "SN", "GLN": "1111111111111", "Address1": "billAddr", "City": "billCity" },
+        { "EANCOM_LocationType": "DP", "GLN": "2222222222222", "Address1": "delivAddr", "City": "delivCity" }
       ]
     }
   ]
