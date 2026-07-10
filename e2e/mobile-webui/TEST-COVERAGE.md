@@ -196,7 +196,7 @@
 | Catch-weight pick via EAN13 prefix 29 — wrong product → error | `picking/picking_catchWeight.spec.js` |
 | Catch-weight pick via custom QR code format | `picking/picking_catchWeight.spec.js` |
 | ShowLastPickedBestBeforeDateForLines = Y → last best-before date shown on picking line | `picking/picking_catchWeight.spec.js` |
-| Partial floor-unpick of a catch-weight pick from a bare TU: the remaining shipment schedule row's catch weight scales proportionally with the reduced qty | `picking/unpack/picking_partial_unpack_TU_floor_catchWeight.spec.js` |
+| Partial floor-unpick of a catch-weight pick from a bare TU: the remaining shipment schedule row's catch weight AND the remaining CU's physical HU weight attributes (WeightNet/WeightGross) both scale proportionally with the reduced qty (0.440 → 0.330 for a 3/4 carve) | `picking/unpack/picking_partial_unpack_TU_floor_catchWeight.spec.js` |
 
 **11/11 — 100%**
 
