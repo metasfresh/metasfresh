@@ -24,10 +24,14 @@ package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ASIQueryFilterModifier;
@@ -49,6 +53,10 @@ import java.util.Objects;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
+/**
+ * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
+ * Repository Cluster: Manufacturing / Production Order Candidates
+ */
 @Repository
 public class PPOrderCandidateDAO
 {
@@ -66,12 +74,12 @@ public class PPOrderCandidateDAO
 	 * (reactivate / qty change) instead of creating a duplicate. Returns {@code null} when none — or more than one
 	 * (e.g. maxQtyPerOrder batching) — matches, so the caller falls back to creating a new candidate.
 	 */
-	@javax.annotation.Nullable
+	@Nullable
 	public PPOrderCandidateId retrieveSingleActiveIdByShipmentScheduleAndPlanning(
-			@NonNull final de.metas.inout.ShipmentScheduleId shipmentScheduleId,
-			@NonNull final de.metas.material.planning.ProductPlanningId productPlanningId)
+			@NonNull final ShipmentScheduleId shipmentScheduleId,
+			@NonNull final ProductPlanningId productPlanningId)
 	{
-		final java.util.List<I_PP_Order_Candidate> matches = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		final List<I_PP_Order_Candidate> matches = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId.getRepoId())
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId.getRepoId())

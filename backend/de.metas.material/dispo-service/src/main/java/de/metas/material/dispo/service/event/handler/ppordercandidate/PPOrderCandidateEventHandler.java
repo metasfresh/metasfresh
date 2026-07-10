@@ -278,6 +278,9 @@ abstract class  PPOrderCandidateEventHandler
 		// materialDispoGroupId, which would orphan the existing component (line) candidate and leave a stale 0-qty
 		// duplicate. The line is uniquely identified by its PP_OrderLine_Candidate id (productionDetailsQuery), so
 		// match on that alone — without the group filter — to reconcile it in place.
+		// Safe for other (non-lot-for-lot) production paths: this only runs when the group-scoped query above found
+		// nothing, i.e. only when the candidate group changed. When the group is stable the group-scoped match
+		// already succeeds and this fallback is never reached.
 		final CandidatesQuery lineCandidateQueryAnyGroup = CandidatesQuery.builder()
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)

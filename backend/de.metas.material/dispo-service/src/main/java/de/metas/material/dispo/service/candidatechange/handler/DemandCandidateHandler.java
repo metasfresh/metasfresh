@@ -131,6 +131,9 @@ public class DemandCandidateHandler implements CandidateHandler
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
+		// Evaluated on every DEMAND change now (not only on create). Accepted trade-off: it is one material-planning
+		// context lookup that short-circuits for non-lot-for-lot products; the extra bound-supply DB query is done
+		// only inside the lot-for-lot branch below.
 		final boolean isLotForLotDemand = savedCandidate.getType() == CandidateType.DEMAND && isUseLotForLotQty(savedCandidate);
 
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
@@ -144,10 +147,9 @@ public class DemandCandidateHandler implements CandidateHandler
 		}
 		// Lot-for-lot: do NOT retract the production supply while the demand is momentarily reduced. A sales-order /
 		// shipment reactivate drives the demand to 0 before it is re-completed, and a lot-for-lot order can only be
-		// changed via such a reactivate round-trip. Retracting-then-re-creating the production churns the candidate
-		// group and races/duplicates it. Instead the production stays stable (as it already does for an
-		// already-processed candidate, cf. S0264_800) and is reconciled to the final demand qty on the re-complete
-		// (positive-delta) leg above, resized in place on a real qty change.
+		// changed via such a reactivate round-trip; retracting then re-creating the production would churn its
+		// candidate group and race/duplicate it. The production stays put and is reconciled to the final demand qty
+		// on the re-complete (positive-delta) leg above (resized in place on a real qty change).
 
 		return candidateSaveResult;
 	}

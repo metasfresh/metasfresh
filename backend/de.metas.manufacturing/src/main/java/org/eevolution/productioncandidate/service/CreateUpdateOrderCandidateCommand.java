@@ -82,9 +82,7 @@ public class CreateUpdateOrderCandidateCommand
 		}
 		else
 		{
-			// Lot-for-lot reconciliation: a demand change (reactivate / qty change) re-fires the supply request for
-			// the demand's OWN shipment schedule. Reuse the single existing production candidate bound to that
-			// shipment schedule so it is UPDATED in place, instead of spawning a duplicate PP_Order_Candidate.
+			// Lot-for-lot: reuse the demand's single existing candidate (by shipment schedule) so a demand-change re-fire updates it in place instead of duplicating it.
 			final PPOrderCandidateId reuseId = findExistingLot4LotCandidateIdToReuse(productPlanning);
 			ppOrderCandidateRecord = reuseId != null
 					? ppOrderCandidateDAO.getById(reuseId)
