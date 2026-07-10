@@ -36,6 +36,20 @@ CREATE FUNCTION de_metas_material.retrieve_available_for_sales(
             )
 AS
 $BODY$
+-- Performance rewrite: the previous implementation read from
+-- de_metas_material.MD_ShipmentQty_V and applied the look-behind / look-ahead date filters
+-- on top of the view. Because the view FULL-OUTER-JOINs the order-line side and the
+-- shipment-schedule side, and the filter contained "... OR SalesOrderLastUpdated IS NULL",
+-- Postgres could not push the date filters down: for a high-runner product it built the
+-- product's ENTIRE C_OrderLine history (150k+ rows) and only then discarded almost all of
+-- it -> several seconds per order-line entry (the Available-for-Sales calc, gh#5108).
+--
+-- The view's two demand sides are disjoint (the order-line side excludes lines that already
+-- have a shipment schedule; the schedule side is the schedules), so the join is effectively a
+-- concatenation. We inline both sides as separate branches and push the date filters INTO each
+-- source, so the look-behind prunes order lines (using the existing
+-- C_OrderLine(Updated, M_Product_ID) index) before any join. Result on a 2.2M-shipment-schedule
+-- / 150k-order-line instance: ~7.6 s -> sub-second. Output semantics are unchanged.
 SELECT p_QueryNo,
        p_M_Product_ID,
        final.AttributesKey,
