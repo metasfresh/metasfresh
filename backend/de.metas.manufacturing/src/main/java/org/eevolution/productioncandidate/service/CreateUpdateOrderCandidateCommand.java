@@ -50,8 +50,10 @@ import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class CreateUpdateOrderCandidateCommand
 {
@@ -160,11 +162,11 @@ public class CreateUpdateOrderCandidateCommand
 
 		// Reuse only a single un-processed candidate (grow the still-mutable plan in place). A processed candidate
 		// must not be touched — the advisor sizes the missing delta as its own new candidate.
-		final java.util.List<I_PP_Order_Candidate> unprocessed = ppOrderCandidateDAO
+		final List<I_PP_Order_Candidate> unprocessed = ppOrderCandidateDAO
 				.retrieveActiveByShipmentScheduleAndPlanning(request.getShipmentScheduleId(), request.getProductPlanningId())
 				.stream()
 				.filter(candidate -> !candidate.isProcessed())
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 
 		return unprocessed.size() == 1
 				? PPOrderCandidateId.ofRepoId(unprocessed.get(0).getPP_Order_Candidate_ID())

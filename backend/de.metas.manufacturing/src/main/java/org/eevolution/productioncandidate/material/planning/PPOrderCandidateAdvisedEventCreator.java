@@ -24,6 +24,7 @@ package org.eevolution.productioncandidate.material.planning;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -49,7 +50,6 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import de.metas.inout.ShipmentScheduleId;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
@@ -116,7 +116,6 @@ public class PPOrderCandidateAdvisedEventCreator implements SupplyRequiredAdviso
 		{
 			final PPOrderCandidateId parentPPOrderCandidateId = supplyRequiredDescriptor.getPpOrderCandidateId();
 
-			// this is the PPOrderCandidate which we advise the system to create! 
 			final PPOrderCandidate ppOrderCandidate = ppOrderCandidatePojoSupplier.supplyPPOrderCandidatePojoWithoutLines(request)
 					.withParentPPOrderCandidateId(parentPPOrderCandidateId);
 

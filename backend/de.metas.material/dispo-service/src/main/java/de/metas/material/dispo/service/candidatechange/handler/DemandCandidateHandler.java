@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.material.dispo.commons.candidate.Candidate;
+import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
@@ -131,13 +132,13 @@ public class DemandCandidateHandler implements CandidateHandler
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
-		// Evaluated on every DEMAND change now (not only on create). Accepted trade-off: it is one material-planning
-		// context lookup that short-circuits for non-lot-for-lot products; the extra bound-supply DB query is done
-		// only inside the lot-for-lot branch below.
-		final boolean isLotForLotDemand = savedCandidate.getType() == CandidateType.DEMAND && isUseLotForLotQty(savedCandidate);
 
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
+			// Lot-for-lot is (re)evaluated on every demand increase, not only on create: a later reactivate /
+			// qty-change is still lot-for-lot and must size supply to THIS order's own qty. One material-planning
+			// context lookup that short-circuits for non-lot-for-lot products.
+			final boolean isLotForLotDemand = isUseLotForLotQty(savedCandidate);
 			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isLotForLotDemand, candidateSaveResult.isNew());
 		}
 
@@ -265,7 +266,7 @@ public class DemandCandidateHandler implements CandidateHandler
 				// of an already-covered lot-for-lot demand re-runs the advisor and (with IsCreatePlan) spawns a
 				// duplicate PP_Order / supply candidate.
 				final BigDecimal boundSupplyQty = candidateRepositoryWriteService
-						.getSupplyCandidatesForDemand(demandCandidate, de.metas.material.dispo.commons.candidate.CandidateBusinessCase.PRODUCTION)
+						.getSupplyCandidatesForDemand(demandCandidate, CandidateBusinessCase.PRODUCTION)
 						.stream()
 						.map(Candidate::getQuantity)
 						.reduce(ZERO, BigDecimal::add);
