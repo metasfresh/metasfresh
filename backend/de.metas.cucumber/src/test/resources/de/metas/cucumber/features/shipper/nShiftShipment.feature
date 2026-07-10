@@ -692,22 +692,24 @@ Feature: nShift Shipment
     And set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
-    # Reuse test shipper from S0355_DeliveryOrder_110 (nShift_coo_test already idempotent)
+    # Dedicated shipper with IsSelectionRules=N: the carrier is explicit/known, so the two same-carrier TUs
+    # consolidate into ONE delivery order with two parcels (no per-package split at ship time). A distinct shipper
+    # (not the shared nShift_coo_test, which stays rules=Y) keeps this setting from leaking into the sibling COO scenarios.
     And contains M_Shippers
-      | Identifier      | Value           | Name            | OPT.ShipperGateway |
-      | nShift_coo_test | nshift_coo_test | nShift COO Test | nshift             |
+      | Identifier    | Value         | Name               | OPT.ShipperGateway |
+      | nShift_coo_tu | nshift_coo_tu | nShift COO TU Test | nshift             |
     And metasfresh contains Carrier_Configs:
-      | M_Shipper_ID    |
-      | nShift_coo_test |
+      | M_Shipper_ID  | IsSelectionRules |
+      | nShift_coo_tu | N                |
     And metasfresh contains Carrier_Products:
-      | Identifier | M_Shipper_ID    |
-      | cp_coo1    | nShift_coo_test |
+      | Identifier | M_Shipper_ID  |
+      | cp_coo1    | nShift_coo_tu |
     And metasfresh contains Carrier_Goods_Types:
-      | Identifier | M_Shipper_ID    |
-      | cgt_coo1   | nShift_coo_test |
+      | Identifier | M_Shipper_ID  |
+      | cgt_coo1   | nShift_coo_tu |
     And metasfresh contains M_Shipper_Mapping_Configs:
-      | M_Shipper_ID    | SeqNo | MappingAttributeType | MappingGroupKey | MappingAttributeKey | MappingAttributeValue |
-      | nShift_coo_test | 170   | LineDetailGroup      | 1               | 4                   | CountryOfOrigin       |
+      | M_Shipper_ID  | SeqNo | MappingAttributeType | MappingGroupKey | MappingAttributeKey | MappingAttributeValue |
+      | nShift_coo_tu | 170   | LineDetailGroup      | 1               | 4                   | CountryOfOrigin       |
     And metasfresh contains M_Warehouse:
       | M_Warehouse_ID |
       | wh_coo         |
@@ -768,7 +770,7 @@ Feature: nShift Shipment
       | customerContact_tu | nShift Customer Contact3 | customer      | contact3@nshift-test.example | +41 79 123 45 69 |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID    | AD_User_ID         |
-      | so_coo_tu  | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_test | customerContact_tu |
+      | so_coo_tu  | true    | customer      | 2025-04-01  | wh_coo         | nShift_coo_tu   | customerContact_tu |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID | M_Product_ID | QtyEntered |
       | so_coo_tu_l1 | so_coo_tu  | product      | 15         |
