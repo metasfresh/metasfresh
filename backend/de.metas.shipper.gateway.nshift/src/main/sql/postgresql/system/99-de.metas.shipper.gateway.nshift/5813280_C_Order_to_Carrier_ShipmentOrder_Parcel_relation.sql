@@ -9,7 +9,7 @@
 
 -- Target AD_Reference
 INSERT INTO AD_Reference (AD_Client_ID,AD_Org_ID,AD_Reference_ID,Created,CreatedBy,EntityType,IsActive,IsOrderByValue,Name,Updated,UpdatedBy,ValidationType)
-VALUES (0,0,542116,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','Carrier_ShipmentOrder_Parcel_Target_For_C_Order',TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
+VALUES (0,0,542116 /*From ID Server*/,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','N','Carrier_ShipmentOrder_Parcel_Target_For_C_Order',TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'T')
 ;
 
 INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -34,5 +34,5 @@ VALUES (0,0,542116,542535,591136,541957,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY
 
 -- Relation type linking the reused C_Order SO source (540666) to the parcel target (542116)
 INSERT INTO AD_RelationType (AD_Client_ID,AD_Org_ID,AD_RelationType_ID,Created,CreatedBy,Updated,UpdatedBy,EntityType,IsActive,Name,InternalName,IsTableRecordIDTarget,AD_Reference_Source_ID,AD_Reference_Target_ID)
-VALUES (0,0,540500,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','C_Order -> Carrier Shipment Order Parcel','C_Order_to_Carrier_ShipmentOrder_Parcel','N',540666,542116)
+VALUES (0,0,540500 /*From ID Server*/,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,TO_TIMESTAMP('2026-07-10 12:00:00','YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC',100,'D','Y','C_Order -> Carrier Shipment Order Parcel','C_Order_to_Carrier_ShipmentOrder_Parcel','N',540666,542116)
 ;
