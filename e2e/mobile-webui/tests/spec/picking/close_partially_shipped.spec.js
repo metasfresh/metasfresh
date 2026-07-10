@@ -124,40 +124,57 @@ test('Sysconfig M_ShipmentSchedule_Close_PartiallyShipped: partial and unshipped
         await PickingJobScreen.complete();
     });
 
-    await test.step("Assert shipment schedules: P2 and P3 should be closed", async () => {
+    // Completing the job enqueues shipment generation + M_ShipmentSchedule_Close_PartiallyShipped
+    // close-processing on an async workpackage (a separate thread/transaction). Reading P1's IsClosed
+    // right after complete() races that work: the fully-shipped line P1 passes through a transient,
+    // committed "closed" state while the workpackage runs, before it settles back to open. So the
+    // final IsClosed assertions must be gated on the async work having landed first, not fired
+    // immediately. The backend `expect` polls up to 60s for isClosed:true and for processed lines, so
+    // asserting "P2 + P3 are closed and every picked line is processed" first blocks until the
+    // workpackage has finished; only then do we assert P1 is (and stays) open.
+    const p1PickedLine = {
+        qtyPicked: "12 PCE",
+        qtyTUs: 3,
+        qtyLUs: 1,
+        vhu: 'vhu1',
+        tu: 'tu1',
+        lu: 'lu1',
+        processed: true,
+        shipmentLineId: 'shipmentLineId1',
+    };
+    const p2PickedLine = {
+        qtyPicked: "8 PCE",
+        qtyTUs: 2,
+        qtyLUs: 1,
+        vhu: 'vhu2',
+        tu: 'tu2',
+        lu: 'lu2',
+        processed: true,
+        shipmentLineId: 'shipmentLineId2',
+    };
+
+    await test.step("Wait until the shipment processing has completed (P2 + P3 closed, lines processed)", async () => {
         await Backend.expect({
             pickings: {
                 [pickingJobId]: {
                     shipmentSchedules: {
-                        P1: {
-                            isClosed: false,
-                            qtyPicked: [{
-                                qtyPicked: "12 PCE",
-                                qtyTUs: 3,
-                                qtyLUs: 1,
-                                vhu: 'vhu1',
-                                tu: 'tu1',
-                                lu: 'lu1',
-                                processed: true,
-                                shipmentLineId: 'shipmentLineId1',
-                            }]
-                        },
-                        P2: {
-                            isClosed: true,
-                            qtyPicked: [{
-                                qtyPicked: "8 PCE",
-                                qtyTUs: 2,
-                                qtyLUs: 1,
-                                vhu: 'vhu2',
-                                tu: 'tu2',
-                                lu: 'lu2',
-                                processed: true,
-                                shipmentLineId: 'shipmentLineId2',
-                            }]
-                        },
-                        P3: {
-                            isClosed: true,
-                        },
+                        P1: { qtyPicked: [p1PickedLine] },
+                        P2: { isClosed: true, qtyPicked: [p2PickedLine] },
+                        P3: { isClosed: true },
+                    }
+                }
+            },
+        });
+    });
+
+    await test.step("Assert final state: P1 stays open (fully shipped), P2 + P3 are closed", async () => {
+        await Backend.expect({
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { isClosed: false, qtyPicked: [p1PickedLine] },
+                        P2: { isClosed: true, qtyPicked: [p2PickedLine] },
+                        P3: { isClosed: true },
                     }
                 }
             },
