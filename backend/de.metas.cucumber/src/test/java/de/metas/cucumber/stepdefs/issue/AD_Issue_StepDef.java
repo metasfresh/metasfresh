@@ -41,6 +41,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Issue;
@@ -51,28 +52,20 @@ import org.compiere.model.I_M_Product;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@RequiredArgsConstructor
 public class AD_Issue_StepDef
 {
-	private final AD_Issue_StepDefData issueTable;
-	private final M_Product_StepDefData productTable;
+	@NonNull private final AD_Issue_StepDefData issueTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final TestContext testContext;
 
 	private PInstanceId pInstanceId;
-	private final TestContext testContext;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	public AD_Issue_StepDef(
-			@NonNull final AD_Issue_StepDefData issueTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final TestContext testContext)
-	{
-		this.issueTable = issueTable;
-		this.productTable = productTable;
-		this.testContext = testContext;
-	}
 
 	@Given("I_AD_PInstance with id {int} is created")
 	public void new_PInstanceId_is_created(final int pInstanceIdString)
@@ -156,7 +149,7 @@ public class AD_Issue_StepDef
 			assertThat(issues)
 					.as("Expected no AD_Issue referencing product %s (needle '%s'), but found %s: %s",
 							productId.getRepoId(), needle, issues.size(),
-							issues.stream().map(I_AD_Issue::getIssueSummary).collect(java.util.stream.Collectors.toList()))
+							issues.stream().map(I_AD_Issue::getIssueSummary).collect(Collectors.toList()))
 					.isEmpty();
 		});
 	}
