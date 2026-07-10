@@ -158,7 +158,6 @@ public class DemandCandidateHandler implements CandidateHandler
 		// reactivate / qty-change is still lot-for-lot and must size supply to THIS order's own qty — not
 		// fall back to global-ATP netting (which absorbs other orders' still-open deficits).
 		// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
-		// So other parts shouldn't be affected by this.
 		final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
 				.orgId(savedCandidate.getClientAndOrgId().getOrgId())
 				.warehouseId(savedCandidate.getWarehouseId())

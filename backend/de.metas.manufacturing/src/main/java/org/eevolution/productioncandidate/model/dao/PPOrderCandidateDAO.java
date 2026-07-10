@@ -55,7 +55,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 /**
  * Repository Tables: PP_Order_Candidate, PP_OrderLine_Candidate, PP_OrderCandidate_PP_Order
  * Repository Cluster: PPOrderCandidateDAO (main reader/writer); also PPMaturingCandidatesViewRepo (read),
- * CreateUpdateOrderCandidateCommand and PPOrderCandidatePojoConverter (write).
+ * CreateUpdateOrderCandidateCommand and PPOrderCandidatePojoConverter (write), PPOrderCandidateAdvisedEventCreator
+ * (read/write).
  */
 @Repository
 public class PPOrderCandidateDAO
@@ -70,8 +71,8 @@ public class PPOrderCandidateDAO
 
 	/**
 	 * All active PP_Order_Candidates bound to the given shipment schedule and product planning (ordered by id).
-	 * Used by lot-for-lot production advice to measure how much is already committed against the schedule and
-	 * whether an un-processed candidate exists to grow.
+	 * Used by lot-for-lot production advice to measure how much is already committed against the schedule, so the
+	 * advisor only tops up the shortfall.
 	 */
 	@NonNull
 	public ImmutableList<I_PP_Order_Candidate> retrieveActiveByShipmentScheduleAndPlanning(
