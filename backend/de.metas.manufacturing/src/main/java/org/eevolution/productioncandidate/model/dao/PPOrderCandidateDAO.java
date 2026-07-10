@@ -60,6 +60,30 @@ public class PPOrderCandidateDAO
 		return InterfaceWrapperHelper.load(ppOrderCandidateId, I_PP_Order_Candidate.class);
 	}
 
+	/**
+	 * The active PP_Order_Candidate bound to the given shipment schedule and product planning, if exactly one exists.
+	 * Used by lot-for-lot to reconcile the demand's own single production candidate in place on a demand change
+	 * (reactivate / qty change) instead of creating a duplicate. Returns {@code null} when none — or more than one
+	 * (e.g. maxQtyPerOrder batching) — matches, so the caller falls back to creating a new candidate.
+	 */
+	@javax.annotation.Nullable
+	public PPOrderCandidateId retrieveSingleActiveIdByShipmentScheduleAndPlanning(
+			@NonNull final de.metas.inout.ShipmentScheduleId shipmentScheduleId,
+			@NonNull final de.metas.material.planning.ProductPlanningId productPlanningId)
+	{
+		final java.util.List<I_PP_Order_Candidate> matches = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId.getRepoId())
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId.getRepoId())
+				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID)
+				.create()
+				.listImmutable(I_PP_Order_Candidate.class);
+
+		return matches.size() == 1
+				? PPOrderCandidateId.ofRepoId(matches.get(0).getPP_Order_Candidate_ID())
+				: null;
+	}
+
 	@NonNull
 	public ImmutableList<I_PP_Order_Candidate> getByIds(@NonNull final Collection<PPOrderCandidateId> ppOrderCandidateIds)
 	{

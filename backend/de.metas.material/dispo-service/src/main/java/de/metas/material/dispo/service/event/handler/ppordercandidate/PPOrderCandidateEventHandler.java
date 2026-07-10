@@ -199,15 +199,24 @@ abstract class  PPOrderCandidateEventHandler
 
 		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
 
-		return productionDetailBuilder
+		productionDetailBuilder
 				.advised(Flag.of(event instanceof PPOrderCandidateAdvisedEvent))
 				.qty(ppOrderCandidate.getPpOrderData().getQtyOpen())
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
 				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.pickDirectlyIfFeasible(Flag.FALSE)
-				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
-				.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()))
-				.build();
+				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId());
+
+		// Only (re)assign the PP_Order_Candidate link when the event actually carries one. An ADVISED event carries
+		// none (it advises the system to create/update the candidate), so overwriting with null here would wipe the
+		// link on a REUSED supply candidate — and the Created/Updated handler, which matches the header supply by
+		// ppOrderCandidateId, would then fail to find it and spawn a duplicate. Preserve the existing link instead.
+		if (ppOrderCandidate.getPpOrderCandidateId() != null)
+		{
+			productionDetailBuilder.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()));
+		}
+
+		return productionDetailBuilder.build();
 	}
 
 	@NonNull
@@ -259,7 +268,24 @@ abstract class  PPOrderCandidateEventHandler
 				.groupId(groupId)
 				.build();
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
+		final Candidate matchInGroup = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
+		if (matchInGroup != null)
+		{
+			return matchInGroup;
+		}
+
+		// Fallback: during a lot-for-lot reactivate round-trip the header supply can be re-created under a NEW
+		// materialDispoGroupId, which would orphan the existing component (line) candidate and leave a stale 0-qty
+		// duplicate. The line is uniquely identified by its PP_OrderLine_Candidate id (productionDetailsQuery), so
+		// match on that alone — without the group filter — to reconcile it in place.
+		final CandidatesQuery lineCandidateQueryAnyGroup = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
+				.productionDetailsQuery(productionDetailsQuery)
+				.simulatedQueryQualifier(simulatedQueryQualifier)
+				.build();
+
+		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQueryAnyGroup);
 	}
 
 	@NonNull

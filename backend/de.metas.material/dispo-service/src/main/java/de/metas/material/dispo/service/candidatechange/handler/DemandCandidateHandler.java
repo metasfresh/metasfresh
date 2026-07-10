@@ -131,44 +131,47 @@ public class DemandCandidateHandler implements CandidateHandler
 		stockCandidateService.applyDeltaToMatchingLaterStockCandidates(savedStockCandidate);
 
 		candidateSaveResult = candidateSaveResult.withParentId(savedStockCandidate.getId());
+		final boolean isLotForLotDemand = savedCandidate.getType() == CandidateType.DEMAND && isUseLotForLotQty(savedCandidate);
+
 		if (savedCandidate.getType() == CandidateType.DEMAND && candidateSaveResult.getQtyDelta().signum() > 0)
 		{
-			final boolean isUseLotForLotQty = isUseLotForLotQty(candidateSaveResult, savedCandidate);
-			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isUseLotForLotQty);
+			fireSupplyRequiredEventIfNeeded(candidateSaveResult.getCandidate(), savedStockCandidate.getCandidate(), isLotForLotDemand, candidateSaveResult.isNew());
 		}
 
-		if (candidateSaveResult.getQtyDelta().signum() < 0)
+		if (candidateSaveResult.getQtyDelta().signum() < 0 && !isLotForLotDemand)
 		{
 			fireSupplyRequiredDecreasedEventIfNeeded(savedCandidate, candidateSaveResult.getQtyDelta().negate());
 		}
+		// Lot-for-lot: do NOT retract the production supply while the demand is momentarily reduced. A sales-order /
+		// shipment reactivate drives the demand to 0 before it is re-completed, and a lot-for-lot order can only be
+		// changed via such a reactivate round-trip. Retracting-then-re-creating the production churns the candidate
+		// group and races/duplicates it. Instead the production stays stable (as it already does for an
+		// already-processed candidate, cf. S0264_800) and is reconciled to the final demand qty on the re-complete
+		// (positive-delta) leg above, resized in place on a real qty change.
 
 		return candidateSaveResult;
 	}
 
-	private boolean isUseLotForLotQty(@NonNull final CandidateSaveResult candidateSaveResult, @NonNull final Candidate savedCandidate)
+	private boolean isUseLotForLotQty(@NonNull final Candidate savedCandidate)
 	{
-		if(candidateSaveResult.isNew())
+		// Lot-for-lot applies to any demand change, not only to the demand's first creation: a later
+		// reactivate / qty-change is still lot-for-lot and must size supply to THIS order's own qty — not
+		// fall back to global-ATP netting (which absorbs other orders' still-open deficits).
+		// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
+		// So other parts shouldn't be affected by this.
+		final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
+				.orgId(savedCandidate.getClientAndOrgId().getOrgId())
+				.warehouseId(savedCandidate.getWarehouseId())
+				.productId(savedCandidate.getProductId())
+				.attributeSetInstanceId(savedCandidate.getAttributeSetInstanceId())
+				.build());
+
+		if (materialPlanningContext == null)
 		{
-			// This assumes that there is only one match on the material planning context. (de.metas.material.planning.event.SupplyRequiredHandler.handleSupplyRequiredEvent)
-			// So other parts shouldn't be affected by this.
-			final MaterialPlanningContext materialPlanningContext = helper.createContextOrNull(MaterialPlanningContextHelper.MaterialPlanningContextRequest.builder()
-					.orgId(savedCandidate.getClientAndOrgId().getOrgId())
-					.warehouseId(savedCandidate.getWarehouseId())
-					.productId(savedCandidate.getProductId())
-					.attributeSetInstanceId(savedCandidate.getAttributeSetInstanceId())
-					.build());
-
-			if (materialPlanningContext == null)
-			{
-				return false;
-			}
-
-			if (materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext))
-			{
-				return true;
-			}
+			return false;
 		}
-		return false;
+
+		return materialPlanningContext.isManufacturedLot4Lot() && ppOrderCandidateDemandMatcher.matches(materialPlanningContext);
 	}
 
 	private void fireSupplyRequiredDecreasedEventIfNeeded(final Candidate savedCandidate, final BigDecimal decreasedQty)
@@ -236,7 +239,11 @@ public class DemandCandidateHandler implements CandidateHandler
 		return minMaxDescriptor.getMax().subtract(availableQuantityAfterDemandWasApplied);
 	}
 
-	private void fireSupplyRequiredEventIfNeeded(@NonNull final Candidate demandCandidate, @NonNull final Candidate stockCandidate, final boolean isUseLotForLotQty)
+	private void fireSupplyRequiredEventIfNeeded(
+			@NonNull final Candidate demandCandidate,
+			@NonNull final Candidate stockCandidate,
+			final boolean isUseLotForLotQty,
+			final boolean isNewDemand)
 	{
 		if (demandCandidate.isSimulated())
 		{
@@ -244,12 +251,58 @@ public class DemandCandidateHandler implements CandidateHandler
 		}
 		else if (isUseLotForLotQty)
 		{
-			postSupplyRequiredEvent(demandCandidate, demandCandidate.getQuantity());
+			if (isNewDemand)
+			{
+				// first time this lot-for-lot demand is seen: create its bound production supply for the full demand qty.
+				postSupplyRequiredEvent(demandCandidate, demandCandidate.getQuantity());
+			}
+			else
+			{
+				// a lot-for-lot demand CHANGE (reactivate / qty change). Reconcile the demand's OWN already-bound
+				// production supply (matched by DemandDetail = order / order line / shipment schedule) to the new
+				// demand qty — NOT the global product ATP (which would absorb other orders' still-open deficits).
+				// CRITICAL: fire ONLY when the bound supply does not already equal the demand qty. A spurious re-fire
+				// of an already-covered lot-for-lot demand re-runs the advisor and (with IsCreatePlan) spawns a
+				// duplicate PP_Order / supply candidate.
+				final BigDecimal boundSupplyQty = candidateRepositoryWriteService
+						.getSupplyCandidatesForDemand(demandCandidate, de.metas.material.dispo.commons.candidate.CandidateBusinessCase.PRODUCTION)
+						.stream()
+						.map(Candidate::getQuantity)
+						.reduce(ZERO, BigDecimal::add);
+
+				if (boundSupplyQty.compareTo(demandCandidate.getQuantity()) != 0)
+				{
+					postLotForLotSupplyRequiredEventReusingBoundSupply(demandCandidate, demandCandidate.getQuantity());
+				}
+				else
+				{
+					Loggables.addLog("Lot-for-lot demand change already covered by bound supply (qty={}); firing nothing", boundSupplyQty);
+				}
+			}
 		}
 		else
 		{
 			fireSupplyRequiredEventIfQtyBelowZero(demandCandidate);
 		}
+	}
+
+	/**
+	 * Lot-for-lot demand change: fire a {@link SupplyRequiredEvent} with {@code supplyCandidateId=null} so that
+	 * {@code PPOrderCandidateAdvisedHandler} matches the demand's EXISTING bound production supply by its
+	 * {@code DemandDetail} (order / order line / shipment schedule) — group-agnostically — and updates that single
+	 * candidate to {@code requiredQty} (grow, shrink or no-op) rather than minting a duplicate. Keeps lot-for-lot to
+	 * exactly one production candidate sized to this order's own qty, never absorbing an earlier order's open
+	 * deficit.
+	 */
+	private void postLotForLotSupplyRequiredEventReusingBoundSupply(
+			@NonNull final Candidate demandCandidateWithId,
+			@NonNull final BigDecimal requiredQty)
+	{
+		final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator
+				.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, null);
+
+		materialEventService.enqueueEventAfterNextCommit(supplyRequiredEvent);
+		Loggables.addLog("Fire lot-for-lot supplyRequiredEvent (reuse bound supply) after next commit; event={}", supplyRequiredEvent);
 	}
 
 	private void fireSimulatedSupplyRequiredEvent(@NonNull final Candidate simulatedCandidate, @NonNull final Candidate stockCandidate)

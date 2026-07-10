@@ -45,6 +45,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
@@ -75,13 +76,19 @@ public class CreateUpdateOrderCandidateCommand
 		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
 		// Create PP Order Candidate
 		final I_PP_Order_Candidate ppOrderCandidateRecord;
-		if (request.getPpOrderCandidateId() == null)
+		if (request.getPpOrderCandidateId() != null)
 		{
-			ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
+			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
 		}
 		else
 		{
-			ppOrderCandidateRecord = ppOrderCandidateDAO.getById(request.getPpOrderCandidateId());
+			// Lot-for-lot reconciliation: a demand change (reactivate / qty change) re-fires the supply request for
+			// the demand's OWN shipment schedule. Reuse the single existing production candidate bound to that
+			// shipment schedule so it is UPDATED in place, instead of spawning a duplicate PP_Order_Candidate.
+			final PPOrderCandidateId reuseId = findExistingLot4LotCandidateIdToReuse(productPlanning);
+			ppOrderCandidateRecord = reuseId != null
+					? ppOrderCandidateDAO.getById(reuseId)
+					: InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
 		}
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
@@ -141,6 +148,21 @@ public class CreateUpdateOrderCandidateCommand
 				ppOrderCandidateRecord.getPP_Order_Candidate_ID());
 
 		return ppOrderCandidateRecord;
+	}
+
+	@Nullable
+	private PPOrderCandidateId findExistingLot4LotCandidateIdToReuse(@NonNull final ProductPlanning productPlanning)
+	{
+		if (!productPlanning.isManufacturedLot4Lot()
+				|| request.getShipmentScheduleId() == null
+				|| request.getProductPlanningId() == null)
+		{
+			return null;
+		}
+
+		return ppOrderCandidateDAO.retrieveSingleActiveIdByShipmentScheduleAndPlanning(
+				request.getShipmentScheduleId(),
+				request.getProductPlanningId());
 	}
 
 	@NonNull
