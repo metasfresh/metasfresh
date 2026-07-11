@@ -23,6 +23,11 @@
 package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
+<<<<<<< HEAD
+=======
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
+>>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -42,6 +47,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_InOut;
 
@@ -64,22 +70,32 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final C_Invoice_StepDefData invoiceTable;
+<<<<<<< HEAD
 	private final M_InOut_StepDefData inOutTable;
+=======
+>>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
+<<<<<<< HEAD
 			@NonNull final C_Invoice_StepDefData invoiceTable,
 			@NonNull final M_InOut_StepDefData inOutTable)
+=======
+			@NonNull final C_Invoice_StepDefData invoiceTable)
+>>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.invoiceTable = invoiceTable;
+<<<<<<< HEAD
 		this.inOutTable = inOutTable;
+=======
+>>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -183,6 +199,7 @@ public class C_Doc_Outbound_Log_StepDef
 			final I_C_Invoice invoice = invoiceTable.get(recordIdentifier);
 			assertThat(invoice).isNotNull();
 
+<<<<<<< HEAD
 			return TableRecordReference.of(invoice);
 		}
 		else if (I_M_InOut.Table_Name.equals(tableName))
@@ -197,6 +214,18 @@ public class C_Doc_Outbound_Log_StepDef
 			throw new AdempiereException("Unhandled tableName")
 					.appendParametersToMessage()
 					.setParameter("TableName", tableName);
+=======
+			case I_C_Invoice.Table_Name:
+				final I_C_Invoice invoice = invoiceTable.get(recordIdentifier);
+				assertThat(invoice).isNotNull();
+
+				return TableRecordReference.of(invoice);
+
+			default:
+				throw new AdempiereException("Unhandled tableName")
+						.appendParametersToMessage()
+						.setParameter("TableName", tableName);
+>>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 		}
 	}
 
