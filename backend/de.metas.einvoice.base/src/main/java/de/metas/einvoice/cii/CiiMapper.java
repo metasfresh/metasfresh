@@ -91,6 +91,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -508,45 +509,46 @@ public class CiiMapper
 	}
 
 	/**
-	 * Builds BG-6 Seller contact (DefinedTradeContact) from the first AD_User linked to the seller BPartner.
+	 * Builds BG-6 Seller contact (DefinedTradeContact) from the seller BPartner's AD_User contacts.
 	 *
 	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact on the seller party.
 	 * BR-DE-5 requires PersonName or DepartmentName; BR-DE-6 requires a telephone number
 	 * (CompleteNumber matching ≥3 digits); BR-DE-7 requires an email URI.
 	 * BR-DE-27 / BR-DE-28 validate the phone/email format.
 	 *
-	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}. The first contact
-	 * with a non-empty phone number (BT-42) is preferred; if none has a phone, the first contact
-	 * overall is used.
+	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}, restricted to active
+	 * contacts and ordered by {@code SeqNo, AD_User_ID}. Among the active contacts, the contact
+	 * is selected by this precedence:
+	 * <ol>
+	 * <li>the first contact with {@code IsSalesContact = Y}</li>
+	 * <li>else the first contact with {@code IsDefaultContact = Y}</li>
+	 * <li>else the first contact with a non-empty phone number, or if none has a phone, the first
+	 * contact overall</li>
+	 * </ol>
+	 * An explicit-flag match (tier 1 or 2) is used regardless of whether it has a phone number —
+	 * the phone preference applies only to the tier-3 fallback.
 	 *
-	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no contacts.
+	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no active contacts.
 	 */
 	@Nullable
 	private TradeContactType buildSellerContact(@NonNull final I_C_BPartner sellerBP)
 	{
-		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
-		if (contacts.isEmpty())
+		final List<I_AD_User> activeContacts = new ArrayList<>();
+		for (final I_AD_User u : bPartnerDAO.retrieveContacts(sellerBP))
 		{
-			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+			if (u.isActive())
+			{
+				activeContacts.add(u);
+			}
+		}
+		if (activeContacts.isEmpty())
+		{
+			log.warn("Seller BPartner {} has no active contact — XRechnung BR-DE-2 will fail validation",
 					sellerBP.getC_BPartner_ID());
 			return null;
 		}
 
-		// Prefer the first contact that has a phone number (BR-DE-6 requires a phone)
-		I_AD_User contact = null;
-		for (final I_AD_User u : contacts)
-		{
-			final String phone = u.getPhone();
-			if (phone != null && !phone.trim().isEmpty())
-			{
-				contact = u;
-				break;
-			}
-		}
-		if (contact == null)
-		{
-			contact = contacts.get(0);
-		}
+		final I_AD_User contact = selectSellerContact(activeContacts);
 
 		final TradeContactType tradeContact = new TradeContactType();
 
@@ -583,6 +585,42 @@ public class CiiMapper
 		}
 
 		return tradeContact;
+	}
+
+	/**
+	 * Selects the seller contact to use for BG-6 among the given (already active-filtered) contacts,
+	 * which are expected to be ordered by {@code SeqNo, AD_User_ID}. See {@link #buildSellerContact}
+	 * for the full precedence description.
+	 */
+	private I_AD_User selectSellerContact(@NonNull final List<I_AD_User> activeContacts)
+	{
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isSalesContact())
+			{
+				return u;
+			}
+		}
+
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isDefaultContact())
+			{
+				return u;
+			}
+		}
+
+		// Fallback: prefer the first contact that has a phone number (BR-DE-6 requires a phone)
+		for (final I_AD_User u : activeContacts)
+		{
+			final String phone = u.getPhone();
+			if (phone != null && !phone.trim().isEmpty())
+			{
+				return u;
+			}
+		}
+
+		return activeContacts.get(0);
 	}
 
 	// ===== Buyer trade party (BG-7/BG-8) =====

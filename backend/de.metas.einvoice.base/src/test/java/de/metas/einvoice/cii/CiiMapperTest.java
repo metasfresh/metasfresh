@@ -1304,6 +1304,241 @@ public class CiiMapperTest
 	}
 
 	/**
+	 * Test fixture bundling the org/seller/buyer/invoice skeleton shared by the seller-contact
+	 * precedence tests (see {@code sellerContact_*} tests below). Contacts (AD_User records) are
+	 * added by each test individually before calling {@link CiiMapper#map}.
+	 */
+	private static final class SellerContactFixture
+	{
+		private final I_C_BPartner sellerBP;
+		private final I_C_Invoice invoice;
+
+		private SellerContactFixture(final I_C_BPartner sellerBP, final I_C_Invoice invoice)
+		{
+			this.sellerBP = sellerBP;
+			this.invoice = invoice;
+		}
+	}
+
+	private SellerContactFixture newSellerContactFixture()
+	{
+		// === Seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setAddress1("Musterstraße 1");
+		sellerLocation.setCity("Berlin");
+		sellerLocation.setPostal("10115");
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Muster GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		sellerBPLoc.setIsBillTo(true);
+		saveRecord(sellerBPLoc);
+
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00701");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		saveRecord(invoice);
+
+		return new SellerContactFixture(sellerBP, invoice);
+	}
+
+	private void assertSellerContactPersonName(@NonNull final I_C_Invoice invoice, @NonNull final String expectedPersonName, @NonNull final String description) throws Exception
+	{
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String contactXPath = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeAgreement/ram:SellerTradeParty/ram:DefinedTradeContact";
+
+		xmlAssert.valueByXPath(contactXPath + "/ram:PersonName")
+				.as(description)
+				.isEqualTo(expectedPersonName);
+	}
+
+	/**
+	 * AC1.2: a tier-1 IsSalesContact contact must win even over an earlier (lower SeqNo) contact
+	 * that has a phone number — the explicit flag match ignores the phone heuristic entirely.
+	 */
+	@Test
+	void sellerContact_salesContactWins_evenWithoutPhone() throws Exception
+	{
+		final SellerContactFixture fx = newSellerContactFixture();
+
+		final I_AD_User earlierWithPhone = newInstance(I_AD_User.class);
+		earlierWithPhone.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		earlierWithPhone.setName("Erika Musterfrau");
+		earlierWithPhone.setPhone("+49 30 111111");
+		earlierWithPhone.setIsDefaultContact(true);
+		earlierWithPhone.setSeqNo(10);
+		saveRecord(earlierWithPhone);
+
+		final I_AD_User salesContactNoPhone = newInstance(I_AD_User.class);
+		salesContactNoPhone.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		salesContactNoPhone.setName("Max Mustermann");
+		salesContactNoPhone.setIsSalesContact(true);
+		salesContactNoPhone.setSeqNo(20);
+		saveRecord(salesContactNoPhone);
+
+		assertSellerContactPersonName(fx.invoice, "Max Mustermann",
+				"IsSalesContact must win over an earlier IsDefaultContact contact with a phone");
+	}
+
+	/**
+	 * AC1.2: when no contact has IsSalesContact, the tier-2 IsDefaultContact contact must be
+	 * selected over a plain (unflagged) contact.
+	 */
+	@Test
+	void sellerContact_defaultContactWins_whenNoSalesContact() throws Exception
+	{
+		final SellerContactFixture fx = newSellerContactFixture();
+
+		final I_AD_User plainContact = newInstance(I_AD_User.class);
+		plainContact.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		plainContact.setName("Erika Musterfrau");
+		plainContact.setSeqNo(10);
+		saveRecord(plainContact);
+
+		final I_AD_User defaultContact = newInstance(I_AD_User.class);
+		defaultContact.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		defaultContact.setName("Max Mustermann");
+		defaultContact.setIsDefaultContact(true);
+		defaultContact.setSeqNo(20);
+		saveRecord(defaultContact);
+
+		assertSellerContactPersonName(fx.invoice, "Max Mustermann",
+				"IsDefaultContact must win over a plain contact when no IsSalesContact exists");
+	}
+
+	/**
+	 * AC1.4: when no contact has either flag, fall back to today's rule — prefer the first
+	 * (by SeqNo) contact that has a phone number.
+	 */
+	@Test
+	void sellerContact_noFlags_prefersPhoneOverSeqNo() throws Exception
+	{
+		final SellerContactFixture fx = newSellerContactFixture();
+
+		final I_AD_User firstNoPhone = newInstance(I_AD_User.class);
+		firstNoPhone.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		firstNoPhone.setName("Erika Musterfrau");
+		firstNoPhone.setSeqNo(10);
+		saveRecord(firstNoPhone);
+
+		final I_AD_User laterWithPhone = newInstance(I_AD_User.class);
+		laterWithPhone.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		laterWithPhone.setName("Max Mustermann");
+		laterWithPhone.setPhone("+49 30 222222");
+		laterWithPhone.setSeqNo(20);
+		saveRecord(laterWithPhone);
+
+		assertSellerContactPersonName(fx.invoice, "Max Mustermann",
+				"without any flag, the first-by-SeqNo contact with a phone must win over an earlier contact without a phone");
+	}
+
+	/**
+	 * AC1.4: when no contact has either flag AND none has a phone, fall back to the first
+	 * (by SeqNo) contact overall.
+	 */
+	@Test
+	void sellerContact_noFlagsNoPhone_prefersFirstBySeqNo() throws Exception
+	{
+		final SellerContactFixture fx = newSellerContactFixture();
+
+		final I_AD_User first = newInstance(I_AD_User.class);
+		first.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		first.setName("Erika Musterfrau");
+		first.setSeqNo(10);
+		saveRecord(first);
+
+		final I_AD_User second = newInstance(I_AD_User.class);
+		second.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		second.setName("Max Mustermann");
+		second.setSeqNo(20);
+		saveRecord(second);
+
+		assertSellerContactPersonName(fx.invoice, "Erika Musterfrau",
+				"with no flags and no phone anywhere, the first-by-SeqNo contact must win");
+	}
+
+	/**
+	 * AC1.3: an inactive contact must never be selected, even when it is the only
+	 * IsSalesContact match — an active plain contact must be selected instead.
+	 */
+	@Test
+	void sellerContact_inactiveNeverSelected() throws Exception
+	{
+		final SellerContactFixture fx = newSellerContactFixture();
+
+		final I_AD_User inactiveSalesContact = newInstance(I_AD_User.class);
+		inactiveSalesContact.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		inactiveSalesContact.setName("Inactive Sales");
+		inactiveSalesContact.setIsSalesContact(true);
+		inactiveSalesContact.setSeqNo(10);
+		inactiveSalesContact.setIsActive(false);
+		saveRecord(inactiveSalesContact);
+
+		final I_AD_User activePlainContact = newInstance(I_AD_User.class);
+		activePlainContact.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		activePlainContact.setName("Active Plain");
+		activePlainContact.setSeqNo(20);
+		saveRecord(activePlainContact);
+
+		assertSellerContactPersonName(fx.invoice, "Active Plain",
+				"an inactive IsSalesContact contact must never be selected; the active contact must be used instead");
+	}
+
+	/**
 	 * BT-49 happy path: when a {@link DocOutboundLogMailRecipientRegistry} stub returns a recipient with
 	 * a distinct email address, the mapper must use that address (not the BPartnerLocation email).
 	 */
