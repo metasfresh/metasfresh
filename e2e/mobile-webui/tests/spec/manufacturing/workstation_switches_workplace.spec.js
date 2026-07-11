@@ -44,9 +44,11 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
 
-    await test.step('Scan workstation WS1 (linked to workplace A) and assign it -> active workplace = A', async () => {
+    await test.step('Scan workstation WS1 (linked to workplace A) -> auto-assigned, active workplace = A', async () => {
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
-        await WorkstationManagerScreen.clickAssignButton();
+        // Scan-and-go (mirrors the workplace app): the scan itself assigns the workstation, so the
+        // operator never taps a separate Assign button — it is already hidden.
+        await WorkstationManagerScreen.expectAssignButtonNotVisible();
         await WorkstationManagerScreen.goBack();
     });
 
@@ -57,6 +59,11 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
 
     await test.step('Re-scan workstation WS1 -> the operator\'s active workplace must switch back to A', async () => {
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
+
+        // AC3 — the screen shows the operator's current workstation and current active workplace,
+        // so any drift is visible. After the re-scan the active workplace is back on A.
+        await WorkstationManagerScreen.expectCurrentWorkstation(masterdata.resources.WS1.name);
+        await WorkstationManagerScreen.expectCurrentWorkplace(masterdata.workplaces.wpA.name);
 
         // Decisive assertion: NOT the workstation SCREEN's statically-linked workplace (always A,
         // would not catch this bug) — the operator's ACTUAL active workplace, read from the system

@@ -24,6 +24,7 @@ import WorkstationInfoComponent from '../components/WorkstationInfoComponent';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import * as api from '../../../api/workstation';
+import * as workplaceApi from '../../../api/workplace';
 import { toastError } from '../../../utils/toast';
 import { appTrl } from '../utils';
 import * as scanAnythingRoutes from '../../scanAnything/routes';
@@ -41,18 +42,44 @@ const AppScreen = () => {
 
   const [loading, setLoading] = useState(true);
   const [workstation, setWorkstation] = useState();
+  // The operator's CURRENT active workplace (system of record: GET /workplace), shown alongside the
+  // workstation so a drift between the two is visible to the operator (AC3). Distinct from the
+  // workstation's statically-linked workplace.
+  const [currentWorkplace, setCurrentWorkplace] = useState();
 
   const queryParameters = new URLSearchParams(window.location.search);
   const qrCodeParam = queryParameters.get('qrCode');
   const callerApplicationId = queryParameters.get('callerApplicationId');
   useEffect(() => {
-    if (qrCodeParam && !workstation) {
-      setLoading(true);
-      onBarcodeScanned({ scannedBarcode: qrCodeParam }).finally(() => setLoading(false));
-    } else {
-      setLoading(false);
-    }
+    setLoading(true);
+    // Scan path: onBarcodeScanned assigns, then refreshes the current workplace itself — so it reflects
+    // the POST-assign workplace. Do NOT also refresh here in parallel: that parallel GET reads the
+    // PRE-assign (drifted) workplace and, resolving last, would clobber the correct post-assign value.
+    // Entry path (no scan): load the current workstation + current active workplace so drift is visible.
+    const init =
+      qrCodeParam && !workstation
+        ? onBarcodeScanned({ scannedBarcode: qrCodeParam })
+        : Promise.all([loadCurrentWorkstation(), refreshCurrentWorkplace()]);
+    init.finally(() => setLoading(false));
   }, []);
+
+  const loadCurrentWorkstation = () => {
+    return api
+      .getCurrentWorkstationInfo()
+      .then(({ assignedWorkstation }) => {
+        if (assignedWorkstation) {
+          setWorkstation(assignedWorkstation);
+        }
+      })
+      .catch((axiosError) => toastError({ axiosError }));
+  };
+
+  const refreshCurrentWorkplace = () => {
+    return workplaceApi
+      .getCurrentWorkplaceInfo()
+      .then(({ assignedWorkplace }) => setCurrentWorkplace(assignedWorkplace))
+      .catch((axiosError) => toastError({ axiosError }));
+  };
 
   const setWorkstationAndUpdateUrl = (newWorkstation) => {
     setWorkstation(newWorkstation);
@@ -60,15 +87,25 @@ const AppScreen = () => {
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
+    // Assign on scan (mirror the workplace app): a scan — including a re-scan of an already-assigned
+    // workstation — re-assigns it, switching the operator's active workplace back to the scanned
+    // workstation's workplace. A read-only lookup here would silently fail to re-switch a drifted workplace.
     return api
-      .getWorkstationByQRCode(scannedBarcode)
-      .then((workplaceInfo) => setWorkstationAndUpdateUrl(workplaceInfo));
+      .assignWorkstationByQRCode(scannedBarcode)
+      .then((workstationInfo) => {
+        setWorkstationAndUpdateUrl(workstationInfo);
+        return refreshCurrentWorkplace();
+      })
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   const onAssignClick = () => {
     api
       .assignWorkstationById(workstation.id)
-      .then((workstation) => setWorkstation(workstation))
+      .then((newWorkstation) => {
+        setWorkstation(newWorkstation);
+        return refreshCurrentWorkplace();
+      })
       .catch((axiosError) => toastError({ axiosError }));
   };
 
@@ -89,7 +126,7 @@ const AppScreen = () => {
   } else if (workstation) {
     return (
       <div className="app-workstantionManager">
-        <WorkstationInfoComponent workstationInfo={workstation} />
+        <WorkstationInfoComponent workstationInfo={workstation} currentWorkplaceName={currentWorkplace?.name} />
         <div className="pt-3 section">
           {!workstation.userAssigned && (
             <ButtonWithIndicator
