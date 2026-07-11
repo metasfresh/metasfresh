@@ -76,10 +76,10 @@ public class CreateMasterdataCommand
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
-		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
