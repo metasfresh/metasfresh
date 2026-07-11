@@ -91,3 +91,8 @@ act_output_*.txt
 nul
 
 /mcp-scripts/**/*
+
+# Claude-config links (created by install-claude-config.sh; must not be tracked)
+/REVIEW.md
+/docs/documentation-naming.md
+/docs/manual
