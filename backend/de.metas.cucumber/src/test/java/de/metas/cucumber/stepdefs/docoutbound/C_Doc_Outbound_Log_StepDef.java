@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.docoutbound;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
@@ -39,6 +40,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 
 import java.util.Map;
@@ -59,17 +61,20 @@ public class C_Doc_Outbound_Log_StepDef
 	private final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
+	private final C_Invoice_StepDefData invoiceTable;
 
 	public C_Doc_Outbound_Log_StepDef(
 			@NonNull final C_Doc_Outbound_Log_StepDefData docOutboundLogTable,
 			@NonNull final C_Doc_Outbound_Log_Line_StepDefData docOutboundLogLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_Order_StepDefData orderTable)
+			@NonNull final C_Order_StepDefData orderTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.docOutboundLogTable = docOutboundLogTable;
 		this.docOutboundLogLineTable = docOutboundLogLineTable;
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
+		this.invoiceTable = invoiceTable;
 	}
 
 	@And("^after not more than (.*)s validate C_Doc_Outbound_Log:$")
@@ -168,6 +173,12 @@ public class C_Doc_Outbound_Log_StepDef
 				assertThat(order).isNotNull();
 
 				return TableRecordReference.of(order);
+
+			case I_C_Invoice.Table_Name:
+				final I_C_Invoice invoice = invoiceTable.get(recordIdentifier);
+				assertThat(invoice).isNotNull();
+
+				return TableRecordReference.of(invoice);
 
 			default:
 				throw new AdempiereException("Unhandled tableName")

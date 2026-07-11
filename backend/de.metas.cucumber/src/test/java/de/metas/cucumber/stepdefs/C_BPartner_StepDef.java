@@ -125,6 +125,13 @@ public class C_BPartner_StepDef
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
+	/**
+	 * Creates C_BPartner records (auto-generates Value/Name; default location added).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>IsInvoiceEmailEnabled</b> — (optional) partner-level invoice-email flag (Y/N); when Y, invoices are emailable to the bill-to location email even without a bill contact.<br>
+	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
 	{
@@ -230,6 +237,11 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsCustomer(row.getAsOptionalBoolean(COLUMNNAME_IsCustomer).orElseFalse());
 		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
+
+		row.getAsOptionalString(de.metas.document.archive.model.I_C_BPartner.COLUMNNAME_IsInvoiceEmailEnabled)
+				.ifPresent(isInvoiceEmailEnabled -> InterfaceWrapperHelper
+						.create(bPartnerRecord, de.metas.document.archive.model.I_C_BPartner.class)
+						.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled));
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final StepDefDataIdentifier discountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_PO_DiscountSchema_ID).orElse(null);
