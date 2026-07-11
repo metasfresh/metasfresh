@@ -29,7 +29,12 @@ export const SelectPickTargetScreen = () => {
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    closePickingTarget().then(() => history.goBack());
+    // On success navigate back; on a server rejection (e.g. the carrier-advise consistency guard rejecting a
+    // parcel with two distinct manual carriers) stay on the screen and surface the error, instead of swallowing
+    // it — the same way completing the job surfaces it. See mobile-webui CLAUDE.md "API Error Surfacing".
+    closePickingTarget()
+      .then(() => history.goBack())
+      .catch((axiosError) => toastError({ axiosError }));
   };
 
   return (
