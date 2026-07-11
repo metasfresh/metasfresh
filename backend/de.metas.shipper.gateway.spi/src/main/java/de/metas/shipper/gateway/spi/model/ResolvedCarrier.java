@@ -29,11 +29,11 @@ import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipping.CarrierProductId;
 import lombok.Builder;
 import lombok.NonNull;
+import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.List;
-import java.util.Set;
 
 /**
  * The carrier (product + goods-type + services) resolved for a single shipment schedule, ready to be packed
@@ -48,25 +48,13 @@ import java.util.Set;
  * manual carrier is a human override and must win over an automatic one when a package's schedules diverge.
  */
 @Value
+@Builder
 public class ResolvedCarrier
 {
 	@Nullable CarrierProductId carrierProductId;
 	@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
-	@NonNull ImmutableSet<CarrierServiceId> carrierServices;
+	@NonNull @Singular ImmutableSet<CarrierServiceId> carrierServices;
 	boolean manual;
-
-	@Builder
-	private ResolvedCarrier(
-			@Nullable final CarrierProductId carrierProductId,
-			@Nullable final CarrierGoodsTypeId carrierGoodsTypeId,
-			@Nullable final Set<CarrierServiceId> carrierServices,
-			final boolean manual)
-	{
-		this.carrierProductId = carrierProductId;
-		this.carrierGoodsTypeId = carrierGoodsTypeId;
-		this.carrierServices = carrierServices != null ? ImmutableSet.copyOf(carrierServices) : ImmutableSet.of();
-		this.manual = manual;
-	}
 
 	/**
 	 * True if any of the given carriers was manually advised. A manual carrier is final (nShift does not re-resolve
