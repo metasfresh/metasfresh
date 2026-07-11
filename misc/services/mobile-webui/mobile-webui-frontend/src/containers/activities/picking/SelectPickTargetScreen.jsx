@@ -14,7 +14,8 @@ import { PickingTargetType } from '../../../constants/PickingTargetType';
 import { pickingJobOrLineLocation } from '../../../routes/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseGraiFromRawInput } from '../../../utils/grai';
-import { toastError } from '../../../utils/toast';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import * as uiTrace from '../../../utils/ui_trace';
 
 const GRAI_DEBOUNCE_MILLIS = 1500;
 
@@ -34,7 +35,15 @@ export const SelectPickTargetScreen = () => {
     // it — the same way completing the job surfaces it. See mobile-webui CLAUDE.md "API Error Surfacing".
     closePickingTarget()
       .then(() => history.goBack())
-      .catch((axiosError) => toastError({ axiosError }));
+      .catch((axiosError) => {
+        uiTrace.trace({
+          eventName: 'closePickingTargetFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          message: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
+        });
+        toastError({ axiosError });
+      });
   };
 
   return (
