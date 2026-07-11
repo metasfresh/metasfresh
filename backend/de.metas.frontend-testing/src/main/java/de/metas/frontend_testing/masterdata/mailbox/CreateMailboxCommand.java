@@ -24,7 +24,7 @@ import java.util.Map;
  * otherwise. The generic e2e tenant ships neither, so the dialog cannot open. This command
  * get-or-creates BOTH:
  * <ul>
- *     <li>an {@code AD_MailBox} (SMTP, no authorization so the user-config merge passes), and</li>
+ *     <li>an {@code AD_MailBox} (SMTP, no authorization — no mail is sent), and</li>
  *     <li>a wildcard {@code AD_MailConfig} routing row referencing it (blank CustomType/DocBaseType).</li>
  * </ul>
  * Both are keyed on a stable value and reused if already present, so repeated runs against the
@@ -80,7 +80,9 @@ public class CreateMailboxCommand
 		mailbox.setType(X_AD_MailBox.TYPE_SMTP);
 		mailbox.setSMTPHost(request.getSmtpHost() != null ? request.getSmtpHost() : DEFAULT_SMTP_HOST);
 		mailbox.setSMTPPort(request.getSmtpPort() != null ? request.getSmtpPort() : DEFAULT_SMTP_PORT);
-		mailbox.setIsSmtpAuthorization(false); // no auth => findMailbox's user-config merge does not require SMTP credentials
+		mailbox.setIsSmtpAuthorization(false); // no SMTP auth (no mail is sent). NOTE: findMailbox still
+		// merges the sending user's config and asserts a non-empty SMTP username regardless of this flag,
+		// so the login user must carry EMailUser (set in LoginUserCommand) for the Email dialog to open.
 		mailbox.setIsStartTLS(false);
 		InterfaceWrapperHelper.save(mailbox);
 		return mailbox;
