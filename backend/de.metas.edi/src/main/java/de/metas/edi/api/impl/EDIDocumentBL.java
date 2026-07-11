@@ -26,30 +26,34 @@ import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.edi.api.EDIBPartnerConfig;
+import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.EDIType;
 import de.metas.edi.api.ValidationState;
 import de.metas.edi.exception.EDIFillMandatoryException;
 import de.metas.edi.exception.EDIMissingDependencyException;
-import de.metas.edi.model.I_C_BPartner;
 import de.metas.edi.model.I_C_Invoice;
 import de.metas.edi.model.I_EDI_Document;
 import de.metas.edi.model.I_EDI_Document_Extension;
 import de.metas.edi.model.I_M_InOut;
+import de.metas.edi.model.I_M_InOutLine;
 import de.metas.edi.process.export.IExport;
 import de.metas.edi.process.export.impl.C_InvoiceExport;
 import de.metas.edi.process.export.impl.EDI_DESADVExport;
 import de.metas.edi.process.export.impl.EDI_DESADV_InOut_Export;
+import de.metas.esb.edi.model.I_C_BPartner_EDI_Setting;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_M_InOut_Desadv_V;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.inout.IInOutBL;
+import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -90,14 +94,17 @@ import java.util.Set;
 public class EDIDocumentBL
 {
 	private static final String ERR_NotExistsShipmentForOrderError = "NotExistsShipmentForOrderError";
+	private static final String ERR_NotExistsNonPackagingInvoiceLineError = "NotExistsNonPackagingInvoiceLineError";
 	private static final String MSG_Partner_ValidateIsEDIRecipient_Error = "de.metas.edi.ValidateIsEDIRecipientError";
 	private static final String MSG_Invalid_Invoice_Aggregation_Error = "de.metas.edi.InvalidInvoiceAggregationError";
 
 	@NonNull private static final Logger logger = LogManager.getLogger(EDIDocumentBL.class);
 	@NonNull private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+	@NonNull private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	@NonNull private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	@NonNull private final EDIBPartnerConfigService ediBpartnerConfigService;
     @NonNull private final DesadvBL desadvBL;
@@ -117,13 +124,17 @@ public class EDIDocumentBL
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(inOut))
 		{
+			// Use the effective dropship location so that status-setting is consistent
+			// with the export/processor path (which also resolves DropShip_Location_ID first).
+			final BPartnerLocationId effectiveBpl = inOutBL.getEffectiveDropshipLocationId(inOut);
+
 			if (huInOutBL.isCustomerReturn(inOut))
 			{
 				// no EDI for customer return (for the time being)
-				return updateEdiExportStatus(inOut, EDIType.DESADV, false);
+				return updateEdiExportStatus(inOut, EDIType.DESADV, false, effectiveBpl);
 			}
 
-			if (!updateEdiExportStatus(inOut, EDIType.DESADV, true))
+			if (!updateEdiExportStatus(inOut, EDIType.DESADV, true, effectiveBpl))
 			{
 				return false;
 			}
@@ -151,7 +162,10 @@ public class EDIDocumentBL
 	{
 		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
-			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true))
+			// Invoices have no dropship concept — use the raw location directly.
+			final BPartnerLocationId bpl = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+
+			if (!updateEdiExportStatus(invoice, EDIType.INVOIC, true, bpl))
 			{
 				return;
 			}
@@ -175,7 +189,8 @@ public class EDIDocumentBL
 
 	private boolean updateEdiExportStatus(@NonNull final I_EDI_Document_Extension document,
 										 @NonNull final EDIType ediType,
-										 final boolean isDocumentEligibleForEDI)
+										 final boolean isDocumentEligibleForEDI,
+										 @NonNull final BPartnerLocationId bPartnerLocationId)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -213,11 +228,11 @@ public class EDIDocumentBL
 		final boolean isBPartnerEDIConfigEnabled;
 		if (ediType.isDesadv())
 		{
-			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiDesadvRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiDesadvRecipient(bPartnerLocationId);
 		}
 		else if (ediType.isInvoic())
 		{
-			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(document.getC_BPartner_ID()));
+			isBPartnerEDIConfigEnabled = ediBpartnerConfigService.isEdiInvoicRecipient(bPartnerLocationId);
 		}
 		else
 		{
@@ -246,16 +261,17 @@ public class EDIDocumentBL
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		final List<Exception> feedback = new ArrayList<>();
 		final EDIExportStatus ediExportStatus = EDIExportStatus.ofCode(invoice.getEDI_ExportStatus());
-		final boolean isEdiInvoicRecipient = ediBpartnerConfigService.isEdiInvoicRecipient(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+		final BPartnerLocationId invoiceBPartnerLocationId = BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID());
+		final boolean isEdiInvoicRecipient = ediBpartnerConfigService.isEdiInvoicRecipient(invoiceBPartnerLocationId);
 		if (!isEdiInvoicRecipient && !ediExportStatus.isInvalid())
 		{
 			loggable.addLog("isValidInvoice - C_Invoice_ID={} has isBPartnerEDIConfigEnabled=false, EDI_ExportStatus={}; return empty list", invoice.getC_Invoice_ID(), ediExportStatus.name());
 			return feedback;
 		}
 
-		feedback.addAll(isValidPartner(invoice.getC_BPartner(), EDIType.INVOIC));
+		feedback.addAll(isValidPartner(invoice.getC_BPartner(), invoiceBPartnerLocationId, EDIType.INVOIC));
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(invoice.getC_BPartner_ID(), invoice.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(invoiceBPartnerLocationId);
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		// task 09182: for return material credit memos, we don't have or need an (imported) EDI ORDERS PoReference
@@ -283,17 +299,23 @@ public class EDIDocumentBL
 
 		final Set<String> ilMissingFields = new HashSet<>();
 		final List<I_C_InvoiceLine> invoiceLines = Services.get(IInvoiceDAO.class).retrieveLines(invoice);
+		boolean hasExportableLine = false;
 		for (final I_C_InvoiceLine il : invoiceLines)
 		{
+			if (!il.isPackagingMaterial())
+			{
+				hasExportableLine = true;
+			}
+
 			if (il.getLine() <= 0)
 			{
 				// use invoice here, it's easier to identify as a user
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line);
 			}
 
-			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo)
+			if (il.getC_OrderLine_ID() <= 0 && !invoiceIsRMCreditMemo && !il.isPackagingMaterial())
 			{
-				// task 09182: on line level, we need an order line reference,
+				// task 09182: on line-level for not-packaging-material-lines, we need an order line reference,
 				// only for docSubType='CS' an orderLine does not have to be linked to an invoiceLine for successful EDI export.
 				// note: if this changes in a new project, use AD_SysConfig
 				ilMissingFields.add(org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID);
@@ -303,6 +325,17 @@ public class EDIDocumentBL
 		if (!ilMissingFields.isEmpty())
 		{
 			feedback.add(new EDIFillMandatoryException(ilMissingFields));
+		}
+
+		// Packaging-material lines are exempt from the C_OrderLine_ID check above and are filtered out
+		// of the INVOIC export views. Guard the boundary case where an invoice's lines are ALL packaging
+		// material: it would otherwise pass validation and export an empty INVOIC (no line items, no
+		// DP/SN party address). Fail loudly instead. (RM credit memos and line-less invoices keep their
+		// prior behaviour.)
+		if (!invoiceIsRMCreditMemo && !invoiceLines.isEmpty() && !hasExportableLine)
+		{
+			feedback.add(new EDIMissingDependencyException(ERR_NotExistsNonPackagingInvoiceLineError,
+														   org.compiere.model.I_C_Invoice.Table_Name, invoice.getDocumentNo()));
 		}
 
 		if (logger.isDebugEnabled() && !feedback.isEmpty())
@@ -317,22 +350,34 @@ public class EDIDocumentBL
 	{
 		final List<Exception> feedback = new ArrayList<>();
 
-		if (Check.isEmpty(shipment.getPOReference()))
+		if (Check.isBlank(shipment.getPOReference()))
 		{
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentPOReference", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null)
+		// For consolidated shipments whose lines come from multiple source orders,
+		// M_InOutLine.unsetM_InOut_C_Order_ID nulls out M_InOut.C_Order_ID. The shipment
+		// is still EDI-valid as long as its InOutLines reference C_OrderLines.
+		if (OrderId.ofRepoIdOrNull(shipment.getC_Order_ID()) == null
+				&& !hasInOutLineWithOrderLine(shipment))
 		{
 			feedback.add(new EDIMissingDependencyException("NotExistsShipmentOrder", I_M_InOut.Table_Name, shipment.getDocumentNo()));
 		}
 
-		feedback.addAll(isValidPartner(shipment.getC_BPartner(), EDIType.DESADV));
+		final BPartnerLocationId shipmentBPartnerLocationId = BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID());
+		feedback.addAll(isValidPartner(shipment.getC_BPartner(), shipmentBPartnerLocationId, EDIType.DESADV));
 
-		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(shipment.getC_BPartner_ID(), shipment.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bPartnerLocationRecord = bpartnerDAO.getBPartnerLocationByIdEvenInactive(shipmentBPartnerLocationId);
 		feedback.addAll(isValidBPLocation(bPartnerLocationRecord));
 
 		return feedback;
+	}
+
+	private boolean hasInOutLineWithOrderLine(@NonNull final I_M_InOut shipment)
+	{
+		return inOutDAO.retrieveLines(shipment, I_M_InOutLine.class)
+				.stream()
+				.anyMatch(line -> line.getC_OrderLine_ID() > 0);
 	}
 
 	public List<Exception> isValidDesAdv(@NonNull final I_EDI_Desadv desadvRecord)
@@ -347,30 +392,32 @@ public class EDIDocumentBL
 		return feedback;
 	}
 
-	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner)
+	public List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner,
+										  @NonNull final BPartnerLocationId bPartnerLocationId)
 	{
-		return isValidPartner(bpartner, null);
+		return isValidPartner(bpartner, bPartnerLocationId, null);
 	}
 
 	private List<Exception> isValidPartner(@NonNull final org.compiere.model.I_C_BPartner bpartner,
-										  @Nullable final EDIType ediType)
+										   @NonNull final BPartnerLocationId bPartnerLocationId,
+										   @Nullable final EDIType ediType)
 	{
 		final List<Exception> feedback = new ArrayList<>();
 		final List<String> missingFields = new ArrayList<>();
 
-		final I_C_BPartner ediPartner = InterfaceWrapperHelper.create(bpartner, I_C_BPartner.class);
+		final EDIBPartnerConfig ediConfig = ediBpartnerConfigService.getByIdOrNull(bPartnerLocationId);
 		final boolean isBPartnerEDIConfigEnabled;
 		if (ediType == null)
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiDesadvRecipient() || ediPartner.isEdiInvoicRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && (ediConfig.isEdiDesadvRecipient() || ediConfig.isEdiInvoicRecipient());
 		}
 		else if (ediType.isDesadv())
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiDesadvRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && ediConfig.isEdiDesadvRecipient();
 		}
 		else if (ediType.isInvoic())
 		{
-			isBPartnerEDIConfigEnabled = ediPartner.isEdiInvoicRecipient();
+			isBPartnerEDIConfigEnabled = ediConfig != null && ediConfig.isEdiInvoicRecipient();
 		}
 		else
 		{
@@ -379,16 +426,16 @@ public class EDIDocumentBL
 
 		if (!isBPartnerEDIConfigEnabled)
 		{
-			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(ediPartner), MSG_Partner_ValidateIsEDIRecipient_Error)));
+			feedback.add(new AdempiereException(Services.get(IMsgBL.class).getMsg(InterfaceWrapperHelper.getCtx(bpartner), MSG_Partner_ValidateIsEDIRecipient_Error)));
 		}
 
-		if (ediPartner.isEdiDesadvRecipient() && Check.isBlank(ediPartner.getEdiDesadvRecipientGLN()))
+		if (ediConfig != null && ediConfig.isEdiDesadvRecipient() && Check.isBlank(ediConfig.getEdiDesadvRecipientGLN()))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
+			missingFields.add(I_C_BPartner_EDI_Setting.COLUMNNAME_EdiDesadvRecipientGLN);
 		}
-		if (ediPartner.isEdiInvoicRecipient() && Check.isBlank(ediPartner.getEdiInvoicRecipientGLN()))
+		if (ediConfig != null && ediConfig.isEdiInvoicRecipient() && Check.isBlank(ediConfig.getEdiInvoicRecipientGLN()))
 		{
-			missingFields.add(I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+			missingFields.add(I_C_BPartner_EDI_Setting.COLUMNNAME_EdiInvoicRecipientGLN);
 		}
 
 		// VATaxIDs are not needed in general, but only if the customer is in a different country or if the customer explicitly requests them to be in their INVOICs
@@ -476,7 +523,17 @@ public class EDIDocumentBL
 			final String tableIdentifier = I_M_InOut.COLUMNNAME_M_InOut_ID;
 			verifyRecordId(recordId, tableIdentifier);
 
-			final I_M_InOut_Desadv_V desadvInOut = desadvBL.getInOutDesadvByInOutId(InOutId.ofRepoId(recordId));
+			// The shipment carries an EDI_Desadv_ID that points at the (single, for this RPL branch) source-DESADV.
+			// M_InOut_Desadv_V emits one row per (M_InOut, EDI_Desadv) pair via the EDI_Desadv_M_InOut junction,
+			// so we must filter by both columns; filtering by M_InOut_ID alone would return N rows on
+			// consolidated multi-DESADV shipments and cause a MoreThanOneRecordFoundException.
+			final I_M_InOut shipment = InterfaceWrapperHelper.create(ctx, recordId, I_M_InOut.class, trxName);
+			final EDIDesadvId shipmentDesadvId = EDIDesadvId.ofRepoIdOrNull(shipment.getEDI_Desadv_ID());
+			if (shipmentDesadvId == null)
+			{
+				throw new AdempiereException("@NotFound@ @EDI_Desadv_ID@ for M_InOut_ID=" + recordId);
+			}
+			final I_M_InOut_Desadv_V desadvInOut = desadvBL.getInOutDesadvByInOutIdAndDesadvId(InOutId.ofRepoId(recordId), shipmentDesadvId);
 			export = new EDI_DESADV_InOut_Export(desadvInOut, tableIdentifier, clientId);
 		}
 		else

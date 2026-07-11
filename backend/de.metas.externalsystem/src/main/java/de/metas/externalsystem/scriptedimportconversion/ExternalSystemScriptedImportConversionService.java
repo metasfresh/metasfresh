@@ -22,6 +22,9 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
@@ -35,6 +38,16 @@ import java.util.Map;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PASSWORD;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +55,9 @@ public class ExternalSystemScriptedImportConversionService
 {
 	@NonNull
 	private final UserAuthTokenRepository userAuthTokenRepository;
+
+	@NonNull
+	private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 
 	@NonNull
 	public Map<String, String> getParameters(@NonNull final ExternalSystemScriptedImportConversionConfig config)
@@ -53,6 +69,43 @@ public class ExternalSystemScriptedImportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, config.getEndpointName());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
+
+		// Add SFTP endpoint parameters if endpoint is configured
+		if (config.getExternalSystemEndpointId() != null)
+		{
+			final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
+			if (endpoint.getTransportType() == TransportType.SFTP)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
+				if (endpoint.getPassword() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PASSWORD, endpoint.getPassword());
+				}
+				if (endpoint.getSshPrivateKey() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY, endpoint.getSshPrivateKey());
+				}
+				if (endpoint.getSftpRemotePath() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, endpoint.getSftpRemotePath());
+				}
+				if (config.getSftpPollingIntervalMs() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(config.getSftpPollingIntervalMs()));
+				}
+				if (config.getSftpProcessedDirectory() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, config.getSftpProcessedDirectory());
+				}
+				if (config.getSftpErrorDirectory() != null)
+				{
+					parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, config.getSftpErrorDirectory());
+				}
+			}
+		}
 
 		return parameters;
 	}

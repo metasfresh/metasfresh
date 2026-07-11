@@ -28,6 +28,10 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.endpoint.TransportType;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfig;
 import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionCommand;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -51,10 +55,14 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemEndpointRepository endpointRepository;
 
-	public ExternalSystemScriptedImportConversionHouseKeepingTask(@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
+	public ExternalSystemScriptedImportConversionHouseKeepingTask(
+			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
+			@NonNull final ExternalSystemEndpointRepository endpointRepository)
 	{
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
+		this.endpointRepository = endpointRepository;
 	}
 
 	@Override
@@ -72,15 +80,34 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 
 		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.ScriptedImportConversion);
 
-		parentConfigList
-				.stream()
-				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for ScriptedImportConversion config " + config.getChildConfig().getId()))
-				.forEach((config -> ProcessInfo.builder()
-						.setAD_Process_ID(processId)
-						.setAD_User_ID(UserId.METASFRESH.getRepoId())
-						.addParameter(PARAM_EXTERNAL_REQUEST, ScriptedImportConversionCommand.EnableRestAPI.getValue())
-						.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
-						.buildAndPrepareExecution()
-						.executeSync()));
+		for (final ExternalSystemParentConfig config : parentConfigList)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for ScriptedImportConversion config " + config.getChildConfig().getId());
+			final ScriptedImportConversionCommand command = resolveStartupCommand(config);
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Using command " + command + " for config " + config.getChildConfig().getId());
+			ProcessInfo.builder()
+					.setAD_Process_ID(processId)
+					.setAD_User_ID(UserId.METASFRESH.getRepoId())
+					.addParameter(PARAM_EXTERNAL_REQUEST, command.getValue())
+					.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
+					.buildAndPrepareExecution()
+					.executeSync();
+		}
+	}
+
+	@NonNull
+	private ScriptedImportConversionCommand resolveStartupCommand(@NonNull final ExternalSystemParentConfig parentConfig)
+	{
+		final ExternalSystemScriptedImportConversionConfig childConfig = ExternalSystemScriptedImportConversionConfig.cast(parentConfig.getChildConfig());
+		final ExternalSystemEndpointId endpointId = childConfig.getExternalSystemEndpointId();
+		if (endpointId != null)
+		{
+			final TransportType transportType = endpointRepository.getById(endpointId).getTransportType();
+			if (transportType == TransportType.SFTP)
+			{
+				return ScriptedImportConversionCommand.EnableSftpPolling;
+			}
+		}
+		return ScriptedImportConversionCommand.EnableRestAPI;
 	}
 }

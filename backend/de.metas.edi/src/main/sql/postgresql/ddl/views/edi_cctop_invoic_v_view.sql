@@ -52,7 +52,11 @@ SELECT i.C_Invoice_ID                                                           
      , CASE WHEN dt.DocSubType = 'CS' THEN NULL ELSE COALESCE(shipment.DocumentNo, iodn.documentno) END     AS Shipment_DocumentNo
      , taxAndSurchage.TotalVAT
      , taxAndSurchage.TotalTaxBaseAmt
-     , COALESCE(rbp.EdiInvoicRecipientGLN, rl.GLN)                                                          AS ReceiverGLN
+     -- EdiInvoicRecipientGLN resolved from C_BPartner_EDI_Setting via LATERAL:
+     -- lowest SeqNo (then lowest ID) among active rows matching the doc's partner+location
+     -- (exact-location OR partner-default), mirroring Java EDIBPartnerConfigMap.resolve.
+     -- Falls back to rl.GLN (location-level GLN) when no EDI setting row matches.
+     , COALESCE(edi_setting.EdiInvoicRecipientGLN, rl.GLN)                                                 AS ReceiverGLN
      , rl.C_BPartner_Location_ID
      , (SELECT DISTINCT ON (REGEXP_REPLACE(sl.GLN, '\s+$', '')) REGEXP_REPLACE(sl.GLN, '\s+$', '') AS GLN
         FROM C_BPartner_Location sl
@@ -109,7 +113,17 @@ FROM C_Invoice i
                                AND io.DocStatus IN ('CO', 'CL')
                              ORDER BY inv.c_invoice_id NULLS LAST, io.Created
                              LIMIT 1 ) shipment ON TRUE -- for the case of missing EDI_Desadv, we still get the first M_InOut; DESADV can be switched off for individual C_BPartners
-         LEFT JOIN C_BPartner rbp ON rbp.C_BPartner_ID = i.C_BPartner_ID
+         -- EDI setting: LATERAL picks the single active row with lowest SeqNo (then lowest ID)
+         -- among rows matching partner+location exactly OR partner-default (location IS NULL).
+         LEFT JOIN LATERAL (
+             SELECT s.*
+             FROM c_bpartner_edi_setting s
+             WHERE s.c_bpartner_id = i.C_BPartner_ID
+               AND (s.c_bpartner_location_id = i.C_BPartner_Location_ID OR s.c_bpartner_location_id IS NULL)
+               AND s.isactive = 'Y'
+             ORDER BY s.seqno, s.c_bpartner_edi_setting_id
+             LIMIT 1
+         ) edi_setting ON TRUE
          LEFT JOIN C_BPartner_Location rl ON rl.C_BPartner_Location_ID = i.C_BPartner_Location_ID
          LEFT JOIN C_Location l ON l.C_Location_ID = rl.C_Location_ID
          LEFT JOIN C_Currency c ON c.C_Currency_ID = i.C_Currency_ID
