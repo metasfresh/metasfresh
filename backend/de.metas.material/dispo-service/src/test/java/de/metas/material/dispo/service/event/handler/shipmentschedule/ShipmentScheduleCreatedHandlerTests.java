@@ -25,6 +25,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import lombok.NonNull;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
@@ -112,7 +113,7 @@ public class ShipmentScheduleCreatedHandlerTests
 						stockCandidateService,
 						supplyCandidateHandler,
 						Mockito.mock(MaterialPlanningContextHelper.class),
-						new PPOrderCandidateDemandMatcher())));
+						new PPOrderCandidateDemandMatcher(), new PPOrderCandidateRepository())));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,
