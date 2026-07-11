@@ -80,7 +80,15 @@ export const Backend = {
     // statically-linked workplace (which never drifts and would not catch a re-assign bug).
     getCurrentWorkplace: async () => await test.step(`Backend: get current workplace`, async () => {
         const backendBaseUrl = await getBackendBaseUrl();
-        const response = await page.request.get(`${backendBaseUrl}/workplace`);
+        // The mobile REST API authenticates via the login token header (not a browser cookie),
+        // so page.request must carry it explicitly — same token the logged-in UI uses.
+        const token = testContext.lastMasterdata?.login?.user?.token;
+        if (!token) {
+            throw new Error('No login token in masterdata:\n' + JSON.stringify(testContext.lastMasterdata, null, 2));
+        }
+        const response = await page.request.get(`${backendBaseUrl}/workplace`, {
+            headers: { 'Authorization': token },
+        });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
         return responseBody;

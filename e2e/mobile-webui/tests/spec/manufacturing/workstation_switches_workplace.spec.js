@@ -45,20 +45,17 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
     await ApplicationsListScreen.expectVisible();
 
     await test.step('Scan workstation WS1 (linked to workplace A) and assign it -> active workplace = A', async () => {
-        await ApplicationsListScreen.startApplication('workstationManager');
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
         await WorkstationManagerScreen.clickAssignButton();
         await WorkstationManagerScreen.goBack();
     });
 
     await test.step('Scan workplace B directly -> active workplace drifts to B', async () => {
-        await ApplicationsListScreen.startApplication('workplaceManager');
         await WorkplaceManagerScreen.scanWorkplace(masterdata.workplaces.wpB.qrCode);
         await WorkplaceManagerScreen.goBack();
     });
 
     await test.step('Re-scan workstation WS1 -> the operator\'s active workplace must switch back to A', async () => {
-        await ApplicationsListScreen.startApplication('workstationManager');
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
 
         // Decisive assertion: NOT the workstation SCREEN's statically-linked workplace (always A,
@@ -66,7 +63,8 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
         // of record (Backend.getCurrentWorkplace, backed by the same /api/v2/workplace endpoint the
         // app itself reads its current workplace from).
         const { assignedWorkplace } = await Backend.getCurrentWorkplace();
-        // TODO(controller): confirm assignedWorkplace field shape at run-time (.name vs .caption vs .id)
+        // assignedWorkplace.name is the workplace name (confirmed at run-time). RED proof: on the
+        // current (unfixed) code this reads wpB (the drifted workplace) — the re-scan did NOT re-assign.
         expect(assignedWorkplace?.name).toBe(masterdata.workplaces.wpA.name);
     });
 });
