@@ -150,27 +150,53 @@ public class PackedHUCarrierAdviseService
 
 		if (hasTarget)
 		{
-			// Carriers diverge (same shipper): keep the button, but show no current carrier, so the picker can re-advise to converge.
+			// Read-only comes from the TARGET parcel's own schedules — empty target (nothing picked onto it yet)
+			// or any MANUAL carrier advise on it — NOT the picking-job lines, whose isManual/Carrier_Product_ID is
+			// null when a line's schedules diverge from the start and whose set is not this target's contents.
+			// Availability + caption stay line-derived: a line carrier product is the reliable "is there an API
+			// carrier at all" signal that already gated us past the empty/non-API early-out above, so the target-HU
+			// schedule query below runs only for a genuinely advise-enabled job.
+			final PickingJobLineId lineId = line != null ? line.getId() : null;
+			final boolean readOnly = isTargetCarrierAdviseReadOnly(pickingJob, lineId);
+
+			// Carriers diverge (same shipper): keep the button, but show no single current carrier.
 			if (carrierProductIds.size() != 1)
 			{
-				return CarrierAdviseTargetInfo.builder().available(true).readOnly(false).productCaption(null).build();
+				return CarrierAdviseTargetInfo.builder().available(true).readOnly(readOnly).productCaption(null).build();
 			}
-
-			final CarrierProductId carrierProductId = carrierProductIds.iterator().next();
-			final boolean readOnly = pickingJob.getLines().stream()
-					.filter(jobLine -> carrierProductId.equals(jobLine.getCarrierProductId()))
-					.allMatch(this::isCarrierAdviseReadOnly);
-			return resolveTargetInfoFromCarrierProduct(carrierProductId, readOnly);
+			return resolveTargetInfoFromCarrierProduct(carrierProductIds.iterator().next(), readOnly);
 		}
 
-		// No target: there is nothing to (re-)advise onto, so this is a read-only DISPLAY of the current
-		// carrier — and only when it is unambiguous (exactly one distinct API-advise carrier, whether a single
-		// line or all lines sharing the same carrier). A divergent set has no single current carrier to show.
+		// No target: there is nothing to (re-)advise onto → a read-only DISPLAY. Availability is decided ONLY by
+		// whether an API-advise carrier product exists (the empty early-out above is the sole not-available case),
+		// so a divergent set stays available + read-only — it just has no single current carrier to show.
 		if (carrierProductIds.size() != 1)
 		{
-			return CarrierAdviseTargetInfo.NONE;
+			return CarrierAdviseTargetInfo.builder().available(true).readOnly(true).productCaption(null).build();
 		}
 		return resolveTargetInfoFromCarrierProduct(carrierProductIds.iterator().next(), /*readOnly=*/true);
+	}
+
+	/**
+	 * Whether the mobile advise for the CURRENT pick target must be read-only. Sourced from the target parcel's
+	 * own shipment schedules — the same authoritative source {@link #advise} uses — because a picking-job line's
+	 * {@code isManual}/{@code Carrier_Product_ID} is null when its schedules diverge from the start, and the line
+	 * set is not the target's contents (a target may hold only some lines' picks; an existing HU may be selected
+	 * as the target). Read-only iff the target has nothing picked onto it yet OR any of its schedules is a MANUAL
+	 * carrier advise (a human override {@code advise()} skips; two distinct manuals cannot be converged).
+	 * <p>Only invoked once availability is established (the job carries an API-advise carrier product), so the HU
+	 * schedule query never runs for a non-advise job.
+	 */
+	private boolean isTargetCarrierAdviseReadOnly(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	{
+		final ImmutableSet<HuId> targetHuIds = resolveAdviseTargetHuIds(pickingJob, lineId);
+		if (targetHuIds.isEmpty())
+		{
+			return true; // nothing picked onto the target yet → nothing to advise
+		}
+		return handlingUnitsBL.getByIdsReturningMap(targetHuIds).values().stream()
+				.flatMap(hu -> huShipmentScheduleResolver.resolveSchedulesByIdForHU(hu).values().stream())
+				.anyMatch(schedule -> schedule.getCarrierAdvisingStatus().isManual());
 	}
 
 	private boolean isCarrierAdviseReadOnly(@NonNull final PickingJobLine line)

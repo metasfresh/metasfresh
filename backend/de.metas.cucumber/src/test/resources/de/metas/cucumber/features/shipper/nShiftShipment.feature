@@ -1251,6 +1251,142 @@ Feature: nShift Shipment
     Then completing the picking job is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
 
   @from:cucumber
+  @Id:S0355_DeliveryOrder_201
+  Scenario: Carrier-advise guard — closing an LU carrying two different manual carriers is rejected, and the advise is read-only
+    # Same two-distinct-manual setup as _200, but the picker CLOSES the LU instead of completing. Closing the LU
+    # routes through closeLUAndTUPickingTargets, so the consistency guard runs on the closed LU → rejected at close.
+    # Also: with a manual carrier on the target, the mobile advise button must be read-only (a manual is a human
+    # override that a re-advise cannot converge). The read-only expectation is target-shape-agnostic (resolveInfo
+    # keys on presence-of-target, not LU-vs-TU), so it is asserted here for the LU target and in _202 for the TU.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot       | guard_lu    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so         | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_l1      | so         | product      | 5          | product_TU_10CU         |
+      | so_l2      | so         | product_2    | 5          | product_2_TU_10CU       |
+    When the order identified by so is completed
+    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND carrier resolved in one
+    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_1       | so_l1          | N             | cp1                |
+      | ss_2       | so_l2          | N             | cp1                |
+    # Manually override the two schedules with DIFFERENT carriers → two distinct manual carriers on one package.
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_2                  | cp1                | cgt1                  | cs1                |
+      | nShift       | ss_1                  | cp2                | cgt2                  | cs2                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_2       | so_l2          | N             | cp1                |
+      | ss_1       | so_l1          | N             | cp2                |
+    When start picking job for sales order identified by so
+    And scan picking slot identified by slot
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU   | QtyPicked |
+      | product               | hu_1         | 5         |
+      | product_2             | hu_product_2 | 5         |
+    # Both lines carry a (distinct) manual carrier → the header advise button must be read-only.
+    Then expect current picking job:
+      | HasLuTarget |
+      | Y           |
+    # The advise button (resolveInfo output → JSON) must be read-only: the target LU holds a manual carrier.
+    Then expect current picking job header carrier advise
+      | available | readOnly |
+      | true      | true     |
+    Then closing the LU picking target is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
+
+  @from:cucumber
+  @Id:S0355_DeliveryOrder_202
+  Scenario: Carrier-advise guard — closing a TU carrying two different manual carriers is rejected, and the advise is read-only
+    # Same two-distinct-manual setup as _200/_201, but both products are packed into ONE TU (a mixed TU) and the
+    # picker CLOSES the TU. The standalone TU-close must run the same consistency guard as LU-close/complete —
+    # otherwise the two distinct manual carriers slip silently past close and only surface as a raw
+    # ShipperGatewayException at shipment generation.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | slot       | guard_tu    | Y         |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp1                | cgt1                  | cs1                |
+    # Own inventory producing plain CUs (no packing presupposed — the TU is a pick-time decision) so both
+    # products can be picked INTO the one new TU target. The Background hu_1/hu_product_2 are bare TUs and a TU
+    # cannot be nested into a TU pick target.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_tu         | 2022-12-12   | wh             |
+    And metasfresh contains M_InventoriesLines:
+      | Identifier | M_Inventory_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_tu_l1  | inv_tu         | product      | 0       | 5        | PCE          |
+      | inv_tu_l2  | inv_tu         | product_2    | 0       | 5        | PCE          |
+    When the inventory identified by inv_tu is completed
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID |
+      | inv_tu_l1          | cu_p1   |
+      | inv_tu_l2          | cu_p2   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so         | true    | customer      | 2025-04-01  | wh             | nShift       |
+    # Order lines in CU units (no M_HU_PI_Item_Product_ID) so picks pack CUs INTO the one TU target (like :689);
+    # the TU-unit picking that M_HU_PI_Item_Product_ID triggers is for LU targets (whole TUs onto a pallet).
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | so_l1      | so         | product      | 5          |
+      | so_l2      | so         | product_2    | 5          |
+    When the order identified by so is completed
+    # Wait for the auto-advise (cp1) to land on BOTH schedules — recompute settled AND carrier resolved in one
+    # gate — before overriding them manually (a manual advise on a still-Requested schedule is silently skipped).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_1       | so_l1          | N             | cp1                |
+      | ss_2       | so_l2          | N             | cp1                |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_2                  | cp1                | cgt1                  | cs1                |
+      | nShift       | ss_1                  | cp2                | cgt2                  | cs2                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_2       | so_l2          | N             | cp1                |
+      | ss_1       | so_l1          | N             | cp2                |
+    When start picking job for sales order identified by so
+    And scan picking slot identified by slot
+    # Before a target is selected: divergent API-advise carriers → available, but read-only (nothing to advise onto).
+    Then expect current picking job header carrier advise
+      | available | readOnly |
+      | true      | true     |
+    And set picking target as new TU identified by TU
+    # Target set but nothing picked into it yet → still read-only (nothing to advise onto).
+    Then expect current picking job header carrier advise
+      | available | readOnly |
+      | true      | true     |
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | cu_p1      | 5         |
+      | product_2             | cu_p2      | 5         |
+    Then expect current picking job:
+      | HasTuTarget |
+      | Y           |
+    # The advise button (resolveInfo output → JSON) must be read-only: the target TU holds a manual carrier.
+    Then expect current picking job header carrier advise
+      | available | readOnly |
+      | true      | true     |
+    Then closing the TU picking target is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
+
+  @from:cucumber
   @Id:S0355_DeliveryOrder_210
   Scenario: Carrier-advise guard — picking job completion blocked on divergent non-manual carrier products, selection rules OFF
     # Two non-manual schedules on one LU. On order completion both auto-advise to cp1. Re-advising

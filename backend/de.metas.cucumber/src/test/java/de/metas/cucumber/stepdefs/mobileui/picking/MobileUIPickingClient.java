@@ -134,6 +134,25 @@ public class MobileUIPickingClient
 	}
 
 	/**
+	 * Closes the current LU pick target — the {@code POST /job/{wfProcessId}/target/close} endpoint the
+	 * mobile "close LU" button calls. Routes through {@code closeLUAndTUPickingTargets}, so the carrier-advise
+	 * consistency guard runs on the closed LU.
+	 */
+	public JsonWFProcess closeLUPickingTarget(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.closeLUPickingTarget(wfProcessId, null);
+	}
+
+	/**
+	 * Closes the current TU pick target — the {@code POST /job/{wfProcessId}/target/tu/close} endpoint the
+	 * mobile "close TU" button calls.
+	 */
+	public JsonWFProcess closeTUPickingTarget(@NonNull final String wfProcessId)
+	{
+		return pickingRestController.closeTUPickingTarget(wfProcessId, null);
+	}
+
+	/**
 	 * Re-fetches the current workflow process from the server, exactly like the mobile UI does after each step.
 	 * Unlike the post-event responses, this rebuilds the picking-job JSON freshly, so values that materialize
 	 * only after a pick (e.g. the existing LU/TU picking target and its carrier-advise flags) are reflected.

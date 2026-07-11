@@ -840,6 +840,14 @@ public class PickingJobService implements PickingSlotListener
 			return pickingJob;
 		}
 
+		// Enforce per-parcel carrier-advise consistency on the closed TU — the same guard the LU-close / complete
+		// path runs (closeLUAndTUPickingTargets). Without it, a TU carrying two distinct manual carriers slips
+		// silently past close and only fails later at shipment generation with a raw ShipperGatewayException.
+		if (pickingTarget.isExistingTU())
+		{
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(pickingTarget.getTuId()));
+		}
+
 		return setTUPickingTarget(pickingJob, lineId, null);
 	}
 

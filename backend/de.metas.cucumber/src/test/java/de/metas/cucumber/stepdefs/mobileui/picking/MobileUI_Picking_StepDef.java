@@ -487,6 +487,55 @@ public class MobileUI_Picking_StepDef
 	}
 
 	/**
+	 * Attempts to close the current LU or TU pick target and asserts it is rejected with the given AD_Message key.
+	 * Mirrors {@link #completeExpectingRejection}: the close path runs the same carrier-advise consistency guard,
+	 * so a package carrying inconsistent carriers (e.g. two distinct manual carriers on one HU) must be rejected
+	 * at close time too — not silently deferred to shipment generation. Asserts the AD_Message KEY (robust to
+	 * text/translation changes). The target type (LU / TU) is carried in the step text.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then closing the TU picking target is rejected with AD_Message "de.metas.picking.CarrierAdvise_ManualInconsistentOnHU"
+	 * </pre>
+	 */
+	@Then("closing the {word} picking target is rejected with AD_Message {string}")
+	public void closePickingTargetExpectingRejection(@NonNull final String targetType, @NonNull final String adMessageKey) throws InterruptedException
+	{
+		waitUntilPickingJobSchedulesValid();
+		final AdMessageKey expectedMessageKey = AdMessageKey.of(adMessageKey);
+
+		final Throwable thrown = catchThrowable(() -> closePickingTarget(targetType));
+
+		assertThat(thrown)
+				.as("Closing the %s pick target must be rejected", targetType)
+				.isInstanceOf(AdempiereException.class);
+
+		final Optional<AdMessageKey> actualMessageKey = AdempiereException.extractMessageTrl(thrown).getAdMessageKey();
+		assertThat(actualMessageKey)
+				.as("Close-%s rejection must carry AD_Message key %s", targetType, adMessageKey)
+				.contains(expectedMessageKey);
+	}
+
+	private void closePickingTarget(@NonNull final String targetType)
+	{
+		final String wfProcessId = context.getWfProcessIdNotNull();
+		final JsonWFProcess wfProcess;
+		switch (targetType)
+		{
+			case "LU":
+				wfProcess = mobileUIPickingClient.closeLUPickingTarget(wfProcessId);
+				break;
+			case "TU":
+				wfProcess = mobileUIPickingClient.closeTUPickingTarget(wfProcessId);
+				break;
+			default:
+				throw new AdempiereException("Unsupported pick target type `" + targetType + "` (expected LU or TU)");
+		}
+		context.setWfProcess(wfProcess);
+	}
+
+	/**
 	 * Waits until all shipment schedules for the current picking job's sales order
 	 * have no pending recompute entries. This ensures retrieveNotShippedRecords
 	 * (which uses TRXNAME_None) sees a consistent state when shipment generation runs.
