@@ -303,6 +303,9 @@ public abstract class QueueProcessorPlanner implements Runnable
 			final List<I_C_Queue_WorkPackage> workPackages = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
 					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, now)
 					.addInArrayFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID, queueProcessor.getAssignedPackageProcessorIds())
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_Processed, false)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsError, false)
+					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_IsReadyForProcessing, true)
 					.orderBy(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID)
 					.list();
 

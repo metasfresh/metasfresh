@@ -78,6 +78,38 @@ public class QueueProcessorPlanner_PollGuardTest extends QueueProcessorTestBase
 	}
 
 	@Test
+	public void refetch_still_returns_claimed_package_with_predicates()
+	{
+		final I_C_Queue_PackageProcessor packageProcessorDef = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
+		final I_C_Queue_Processor queueProcessorDef = helper.createQueueProcessor(StaticMockedWorkpackageProcessor.class.getName(), 1, 1000);
+		helper.assignPackageProcessor(queueProcessorDef, packageProcessorDef);
+
+		final IWorkPackageQueue workpackageQueue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, StaticMockedWorkpackageProcessor.class);
+
+		final List<I_C_Queue_WorkPackage> workpackages = helper.createAndEnqueueWorkpackages(workpackageQueue, 1, true); // markReadyForProcessing=true
+		final I_C_Queue_WorkPackage workpackage = workpackages.get(0);
+
+		final MockedWorkpackageProcessor workpackageProcessor = StaticMockedWorkpackageProcessor.getMockedWorkpackageProcessor();
+		workpackageProcessor.setDefaultResult(Result.SUCCESS);
+
+		final IQueueProcessor processor = helper.newSynchronousQueueProcessor(workpackageQueue);
+		SynchronousProcessorPlanner.executeNow(processor);
+
+		// the just-claimed row (Processed='N', IsError='N', IsReadyForProcessing='Y' at claim time) must still be
+		// returned by the re-fetch (and thus processed) even after the new predicates are added to that query
+		final List<I_C_Queue_WorkPackage> processedWorkpackages = workpackageProcessor.getProcessedWorkpackages();
+		assertThat(processedWorkpackages)
+				.extracting(I_C_Queue_WorkPackage::getC_Queue_WorkPackage_ID)
+				.containsExactly(workpackage.getC_Queue_WorkPackage_ID());
+
+		InterfaceWrapperHelper.refresh(workpackage);
+		assertThat(workpackage.isProcessed()).as("workpackage shall be processed").isTrue();
+		assertThat(workpackage.isError()).as("workpackage shall not be in error").isFalse();
+
+		helper.assertNothingLocked();
+	}
+
+	@Test
 	public void ready_packages_processed_exactly_once_in_priority_order()
 	{
 		final I_C_Queue_PackageProcessor packageProcessorDef = helper.createPackageProcessor(ctx, StaticMockedWorkpackageProcessor.class);
