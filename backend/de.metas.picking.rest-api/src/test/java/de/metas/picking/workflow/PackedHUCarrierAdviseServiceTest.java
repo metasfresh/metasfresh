@@ -13,7 +13,6 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.job.carrieradvise.HUShipmentScheduleResolver;
-import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
@@ -374,35 +373,24 @@ public class PackedHUCarrierAdviseServiceTest
 	}
 
 	/**
-	 * Job-level advise (no line context) with multiple lines of DIFFERENT products and no pick target: the
-	 * picker cannot tell which CU the advise would target, so the button must not be offered.
+	 * Job-level (no line context), multiple lines of DIFFERENT products, no pick target: the carriers diverge and
+	 * there is nothing to advise onto, so the button is available (an API-advise carrier exists) but read-only.
 	 */
 	@Test
-	public void resolveInfo_jobLevel_multipleLinesDifferentProducts_noTarget_notAvailable()
+	public void resolveInfo_jobLevel_multipleLinesDifferentProducts_noTarget_availableReadOnly()
 	{
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
 		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(702));
 
-		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null).isAvailable())
-				.isFalse();
-	}
-
-	/**
-	 * Job-level advise WITH a pick target but DIVERGENT carrier products: the button stays available with no
-	 * current carrier (null caption) and editable, so the picker can re-advise the target parcel to converge.
-	 * (Without a target, a divergent set is not shown at all — see the resolveInfo no-target cases.)
-	 */
-	@Test
-	public void resolveInfo_jobLevel_withTarget_divergentCarriers_availableNoCaption()
-	{
-		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
-		final PickingJobLine line2 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(702));
-
-		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJobWithTarget(ImmutableList.of(line1, line2)), null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null);
 		assertThat(info.isAvailable()).isTrue();
-		assertThat(info.isReadOnly()).isFalse();
-		assertThat(info.getProductCaption()).isNull();
+		assertThat(info.isReadOnly()).isTrue();
 	}
+
+	// Job-level WITH a pick target: the read-only flag now derives from the target parcel's own shipment
+	// schedules, not the job lines — not faithfully reproducible on a mocked PickingJob (in-memory JUnit does
+	// not prove HU behaviour, de.metas.handlingunits.base/CLAUDE.md). Covered with real HU data by
+	// nShiftShipment.feature display _300/_310/_330 and guard _201/_202.
 
 	/**
 	 * Job-level advise with the SAME product (CU unambiguous) but a MIXED shipper set: one line's carrier is an
@@ -472,15 +460,6 @@ public class PackedHUCarrierAdviseServiceTest
 		when(job.isLineLevelPickTarget()).thenReturn(false);
 		when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
 		when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
-		when(job.getLines()).thenReturn(lines);
-		return job;
-	}
-
-	private static PickingJob mockJobLevelJobWithTarget(final ImmutableList<PickingJobLine> lines)
-	{
-		final PickingJob job = mock(PickingJob.class);
-		when(job.isLineLevelPickTarget()).thenReturn(false);
-		when(job.getLuPickingTarget(null)).thenReturn(Optional.of(mock(LUPickingTarget.class)));
 		when(job.getLines()).thenReturn(lines);
 		return job;
 	}

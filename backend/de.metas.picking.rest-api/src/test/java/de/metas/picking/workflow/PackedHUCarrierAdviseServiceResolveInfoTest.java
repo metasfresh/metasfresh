@@ -183,35 +183,12 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		return job;
 	}
 
-	@Test
-	void resolveInfo_withTarget_singleCarrier_availableEditableWithCaption()
-	{
-		final ShipperId shipperId = createShipper("nShift", true);
-		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
-		final PickingJob job = mockJobLevelJob(true, ImmutableList.of(mockApiAdviseLine(cp, false)));
-
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
-
-		assertThat(info.isAvailable()).isTrue();
-		assertThat(info.isReadOnly()).isFalse();
-		assertThat(info.getProductCaption()).isEqualTo("Std Parcel");
-	}
-
-	@Test
-	void resolveInfo_withTarget_divergentCarriers_availableEditableNoCaption()
-	{
-		final ShipperId shipperId = createShipper("nShift", true);
-		final CarrierProduct cp1 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "A");
-		final CarrierProduct cp2 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp2", "B");
-		final PickingJob job = mockJobLevelJob(true, ImmutableList.of(
-				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
-
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
-
-		assertThat(info.isAvailable()).isTrue();
-		assertThat(info.isReadOnly()).isFalse();
-		assertThat(info.getProductCaption()).isNull();
-	}
+	// With a pick target, the read-only flag now comes from the target parcel's OWN shipment schedules
+	// (PackedHUCarrierAdviseService.isTargetCarrierAdviseReadOnly). That HU-schedule resolution is not
+	// meaningfully reproducible with a mocked PickingJob — in-memory JUnit does not prove HU behaviour
+	// (de.metas.handlingunits.base/CLAUDE.md). The with-target editable / read-only cases are covered
+	// faithfully with real HU data by nShiftShipment.feature: display _300 (editable), _310 (manual → read-only),
+	// _330 (divergent → editable), and the guard scenarios _201/_202.
 
 	@Test
 	void resolveInfo_noTarget_singleCarrier_availableReadOnlyWithCaption()
@@ -243,15 +220,20 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	}
 
 	@Test
-	void resolveInfo_noTarget_divergentCarriers_notAvailable()
+	void resolveInfo_noTarget_divergentCarriers_availableReadOnly()
 	{
+		// No target + divergent carriers: available whenever an API-advise carrier product exists (unavailable
+		// only when none does), read-only because there is nothing to advise onto, and no single carrier to caption.
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp1 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "A");
 		final CarrierProduct cp2 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp2", "B");
 		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(
 				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
 
-		assertThat(service.resolveInfo(job, null).isAvailable()).isFalse();
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		assertThat(info.isAvailable()).isTrue();
+		assertThat(info.isReadOnly()).isTrue();
+		assertThat(info.getProductCaption()).isNull();
 	}
 
 	@Test
