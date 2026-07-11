@@ -13,7 +13,7 @@ export const WorkstationInfoComponent = ({ workstationInfo, currentWorkplaceName
         </tr>
         {currentWorkplaceName && (
           // The operator's CURRENT active workplace (read from GET /workplace), not the workstation's
-          // statically-linked workplace — so any drift between them is visible to the operator (AC3).
+          // statically-linked workplace — so any drift between them is visible to the operator.
           <tr>
             <th>{trl('general.workplace')}</th>
             <td>{currentWorkplaceName}</td>

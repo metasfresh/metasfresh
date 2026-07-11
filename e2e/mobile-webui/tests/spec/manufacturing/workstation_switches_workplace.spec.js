@@ -60,7 +60,7 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
     await test.step('Re-scan workstation WS1 -> the operator\'s active workplace must switch back to A', async () => {
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
 
-        // AC3 — the screen shows the operator's current workstation and current active workplace,
+        // The screen shows the operator's current workstation and current active workplace,
         // so any drift is visible. After the re-scan the active workplace is back on A.
         await WorkstationManagerScreen.expectCurrentWorkstation(masterdata.resources.WS1.name);
         await WorkstationManagerScreen.expectCurrentWorkplace(masterdata.workplaces.wpA.name);
@@ -70,8 +70,8 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
         // of record (Backend.getCurrentWorkplace, backed by the same /api/v2/workplace endpoint the
         // app itself reads its current workplace from).
         const { assignedWorkplace } = await Backend.getCurrentWorkplace();
-        // assignedWorkplace.name is the workplace name (confirmed at run-time). RED proof: on the
-        // current (unfixed) code this reads wpB (the drifted workplace) — the re-scan did NOT re-assign.
+        // The re-scan must re-assign the workstation and switch the active workplace back to A; a
+        // read-only scan leaves it on the drifted workplace B and this assertion fails.
         expect(assignedWorkplace?.name).toBe(masterdata.workplaces.wpA.name);
     });
 });

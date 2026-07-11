@@ -43,7 +43,7 @@ const AppScreen = () => {
   const [loading, setLoading] = useState(true);
   const [workstation, setWorkstation] = useState();
   // The operator's CURRENT active workplace (system of record: GET /workplace), shown alongside the
-  // workstation so a drift between the two is visible to the operator (AC3). Distinct from the
+  // workstation so a drift between the two is visible to the operator. Distinct from the
   // workstation's statically-linked workplace.
   const [currentWorkplace, setCurrentWorkplace] = useState();
 
