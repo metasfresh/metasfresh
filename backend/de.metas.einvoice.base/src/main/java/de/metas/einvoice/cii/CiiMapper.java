@@ -66,6 +66,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -148,6 +149,7 @@ public class CiiMapper
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final CiiMappingRepository repo = new CiiMappingRepository();
 
 	@NonNull
@@ -991,11 +993,25 @@ public class CiiMapper
 			return Collections.emptyList();
 		}
 
-		// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
-		// Resolve the org's default bank account to obtain the IBAN.
+		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+
+		// Silent factoring (stille Zession): when the bill partner (invoice.C_BPartner_ID) is set up
+		// for factoring (IsFactoring=Y), payment is legally owed to the factor. BT-84 must then carry
+		// the FACTOR's IBAN instead of the seller's. The assignment itself is never disclosed on the
+		// invoice — BG-10 PayeeTradeParty is (and remains) never populated, see below.
+		final I_C_BPartner billBPartner = bPartnerDAO.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+
 		String iban = null;
-		if (sellerBPartnerId != null)
+		if (billBPartner.isFactoring())
 		{
+			// Misconfiguration (no factorer, or factorer with no IBAN) vetoes invoice completion
+			// rather than silently falling back to the seller's IBAN.
+			iban = resolveFactorerIban(invoice);
+		}
+		else if (sellerBPartnerId != null)
+		{
+			// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
+			// Resolve the org's default bank account to obtain the IBAN.
 			final BankAccount bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId).orElse(null);
 			if (bankAccount != null)
 			{
@@ -1007,8 +1023,8 @@ public class CiiMapper
 			}
 		}
 
-		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN
-		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN.
+		// (Not reachable for factoring: resolveFactorerIban either returns a non-blank IBAN or throws.)
 		if (isCreditTransfer && iban == null)
 		{
 			log.warn("CII mapping: PaymentMeans code {} (credit transfer) suppressed — no IBAN on seller BPartner [C_BPartner_ID={}]. "
@@ -1023,7 +1039,9 @@ public class CiiMapper
 		meansCode.setValue(uncl4461Code);
 		paymentMeans.setTypeCode(meansCode);
 
-		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes)
+		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes).
+		// NOTE: BG-10 PayeeTradeParty is intentionally never populated — even for a factored invoice,
+		// only the creditor financial account differs; the payee identity is unchanged/undisclosed.
 		if (iban != null)
 		{
 			final CreditorFinancialAccountType creditorAccount = new CreditorFinancialAccountType();
@@ -1032,6 +1050,78 @@ public class CiiMapper
 		}
 
 		return Collections.singletonList(paymentMeans);
+	}
+
+	/**
+	 * Resolves the payee IBAN for a factored ({@code C_BPartner.IsFactoring=Y}) invoice: looks up the
+	 * org's factorer {@code C_BPartner} ({@code IsFactorer=Y}, same {@code AD_Org_ID}) and its default
+	 * bank account IBAN.
+	 *
+	 * <p>The factorer lookup mirrors the printed-invoice report SQL function
+	 * {@code de_metas_endcustomer_fresh_reports.getFactorer_BankDetails(AD_Org_ID)}: {@code WHERE
+	 * IsFactorer='Y' AND AD_Org_ID=?}, with no {@code IsActive} filter. This keeps the CII (XML) and the
+	 * printed invoice (PDF) selecting the same factorer {@code C_BPartner}. The report SQL function is
+	 * out of scope to change here (DESIGN).
+	 *
+	 * <p><b>PDF↔XML default-account consistency assumption:</b> the report SQL function joins the
+	 * factorer's bank account(s) with no {@code IsDefault} filter, whereas this method uses
+	 * {@link IBPBankAccountDAO#getDefaultBankAccount} ({@code IsDefault=Y}). For a factorer with a
+	 * single bank account (the expected setup) these are identical, so the PDF and XML IBANs agree. A
+	 * factorer with multiple bank accounts could in theory diverge between PDF and XML; using the
+	 * deterministic default account here is correct per DESIGN/PLAN. Do not "fix" this by changing the
+	 * report SQL function.
+	 *
+	 * <p>Never falls back to the seller's IBAN: a misconfigured factoring setup (no factorer, or a
+	 * factorer with no bank account / no IBAN) vetoes invoice completion via a user-validation error
+	 * instead of silently emitting the wrong (seller) creditor account.
+	 */
+	@NonNull
+	private String resolveFactorerIban(@NonNull final I_C_Invoice invoice)
+	{
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		// Mirror the printed-invoice report SQL (getFactorer_BankDetails): IsFactorer='Y' AND AD_Org_ID=?,
+		// with no IsActive filter, so the PDF and the XML select the same factorer. Use list() rather than
+		// firstOnlyOrNull (which returns null on >1) so we can distinguish "no factorer" from "ambiguous
+		// multiple factorers": the DB uniqueness guard only enforces one factorer among ACTIVE rows, so a
+		// deactivated old factorer left alongside a new one yields two matches — that must be reported as
+		// ambiguity, not misdiagnosed as "no factorer configured".
+		final List<I_C_BPartner> factorers = queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
+
+		if (factorers.isEmpty())
+		{
+			throw new AdempiereException("No factorer (C_BPartner.IsFactorer=Y) is configured for AD_Org_ID=" + orgId.getRepoId()
+					+ "; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ " whose bill partner is set up for silent factoring (IsFactoring=Y).")
+					.markAsUserValidationError();
+		}
+		if (factorers.size() > 1)
+		{
+			throw new AdempiereException("Multiple factorers (C_BPartner.IsFactorer=Y) are configured for AD_Org_ID=" + orgId.getRepoId()
+					+ " — the factorer is ambiguous; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ ". Ensure exactly one active factorer per organisation.")
+					.markAsUserValidationError();
+		}
+		final I_C_BPartner factorer = factorers.get(0);
+
+		final BPartnerId factorerBPartnerId = BPartnerId.ofRepoId(factorer.getC_BPartner_ID());
+		final BankAccount factorerBankAccount = bpBankAccountDAO.getDefaultBankAccount(factorerBPartnerId).orElse(null);
+		final String factorerIban = factorerBankAccount != null ? factorerBankAccount.getIBAN() : null;
+
+		if (factorerIban == null || factorerIban.trim().isEmpty())
+		{
+			throw new AdempiereException("Factorer C_BPartner_ID=" + factorer.getC_BPartner_ID()
+					+ " (AD_Org_ID=" + orgId.getRepoId() + ") has no default bank account with an IBAN; "
+					+ "cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID() + ".")
+					.markAsUserValidationError();
+		}
+
+		return factorerIban;
 	}
 
 	/**

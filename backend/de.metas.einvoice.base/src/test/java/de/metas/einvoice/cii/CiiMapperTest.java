@@ -20,6 +20,7 @@ import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.CrossIndustryInvoiceType;
 import de.metas.einvoice.cii.model.ObjectFactory;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_AD_User;
@@ -1407,7 +1408,7 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * AC1.2: a tier-1 IsSalesContact contact must win even over an earlier (lower SeqNo) contact
+	 * A tier-1 IsSalesContact contact must win even over an earlier (lower SeqNo) contact
 	 * that has a phone number — the explicit flag match ignores the phone heuristic entirely.
 	 */
 	@Test
@@ -1435,7 +1436,7 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * AC1.2: when no contact has IsSalesContact, the tier-2 IsDefaultContact contact must be
+	 * When no contact has IsSalesContact, the tier-2 IsDefaultContact contact must be
 	 * selected over a plain (unflagged) contact.
 	 */
 	@Test
@@ -1461,7 +1462,7 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * AC1.4: when no contact has either flag, fall back to today's rule — prefer the first
+	 * When no contact has either flag, fall back to today's rule — prefer the first
 	 * (by SeqNo) contact that has a phone number.
 	 */
 	@Test
@@ -1487,7 +1488,7 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * AC1.4: when no contact has either flag AND none has a phone, fall back to the first
+	 * When no contact has either flag AND none has a phone, fall back to the first
 	 * (by SeqNo) contact overall.
 	 */
 	@Test
@@ -1512,7 +1513,7 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * AC1.3: an inactive contact must never be selected, even when it is the only
+	 * An inactive contact must never be selected, even when it is the only
 	 * IsSalesContact match — an active plain contact must be selected instead.
 	 */
 	@Test
@@ -1912,6 +1913,290 @@ public class CiiMapperTest
 								+ "/ram:URIUniversalCommunication/ram:URIID")
 				.as("BT-34: must fall back to BPartner email when no MailService is injected")
 				.isEqualTo("invoice@seller.de");
+	}
+
+	// ===== Silent factoring (stille Zession): BT-84 payee IBAN =====
+
+	/**
+	 * Bill partner is factoring (IsFactoring=Y) and a factorer BPartner (IsFactorer=Y,
+	 * same AD_Org_ID) with a default bank account exists: BT-84 must carry the FACTORER's IBAN, never
+	 * the seller's, and no BG-10 PayeeTradeParty may be present (the assignment stays undisclosed).
+	 */
+	@Test
+	void payment_factoring_usesFactorerIban_noPayeeParty() throws Exception
+	{
+		final FactoringFixture fx = newFactoringFixture(true, "T"); // PaymentRule T → UNCL4461 code 30
+
+		// Seller has its OWN default IBAN — must NOT be the one used on a factored invoice
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		// Factorer BPartner (IsFactorer=Y, same AD_Org_ID) with its own default IBAN
+		final I_C_BPartner factorerBP = newInstance(I_C_BPartner.class);
+		factorerBP.setName("Factorer AG");
+		factorerBP.setIsFactorer(true);
+		factorerBP.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(factorerBP);
+		final I_C_BP_BankAccount factorerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		factorerBankAccount.setC_BPartner_ID(factorerBP.getC_BPartner_ID());
+		factorerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		factorerBankAccount.setIBAN("DE11500105170648489890");
+		factorerBankAccount.setIsDefault(true);
+		factorerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(factorerBankAccount);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fx.invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String paymentMeans = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans";
+
+		// BT-84: the FACTORER's IBAN, not the seller's
+		xmlAssert.valueByXPath(paymentMeans + "/ram:PayeePartyCreditorFinancialAccount/ram:IBANID")
+				.as("BT-84 must carry the factorer IBAN on a factored invoice")
+				.isEqualTo("DE11500105170648489890");
+
+		// BG-10: PayeeTradeParty must never be populated (assignment stays undisclosed)
+		xmlAssert.nodesByXPath(paymentMeans + "/ram:PayeeTradeParty").doNotExist();
+	}
+
+	/**
+	 * Regression guard — bill partner is not factoring: BT-84 must carry the seller's own
+	 * default IBAN, unchanged behaviour.
+	 */
+	@Test
+	void payment_nonFactoring_usesSellerIban() throws Exception
+	{
+		final FactoringFixture fx = newFactoringFixture(false, "T"); // PaymentRule T → UNCL4461 code 30
+
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fx.invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		xmlAssert.valueByXPath("//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+						+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementPaymentMeans"
+						+ "/ram:PayeePartyCreditorFinancialAccount/ram:IBANID")
+				.as("BT-84 must carry the seller IBAN when the bill partner is not factoring")
+				.isEqualTo("DE89370400440532013000");
+	}
+
+	/**
+	 * Bill partner is factoring but NO factorer BPartner (IsFactorer=Y) exists for the
+	 * invoice's AD_Org_ID: mapping must throw a user-validation error naming the org, and must
+	 * never fall back to the seller's IBAN.
+	 */
+	@Test
+	void payment_factoring_noFactorer_throwsUserValidationError()
+	{
+		final FactoringFixture fx = newFactoringFixture(true, "T");
+
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		// No IsFactorer=Y C_BPartner exists at all for this AD_Org_ID
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(fx.invoice, recipientConfig))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("AD_Org_ID=" + fx.org.getAD_Org_ID());
+	}
+
+	/**
+	 * More than one factorer (C_BPartner.IsFactorer=Y) exists for the invoice's AD_Org_ID
+	 * (e.g. a deactivated old factorer left alongside a new one — the DB uniqueness guard only covers
+	 * active rows): mapping must throw a user-validation error reporting the ambiguity, and must never
+	 * fall back to the seller's IBAN.
+	 */
+	@Test
+	void payment_factoring_multipleFactorers_throwsUserValidationError()
+	{
+		final FactoringFixture fx = newFactoringFixture(true, "T");
+
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		// TWO IsFactorer=Y C_BPartners in the same AD_Org_ID → the factorer is ambiguous
+		final I_C_BPartner factorer1 = newInstance(I_C_BPartner.class);
+		factorer1.setName("Factorer One AG");
+		factorer1.setIsFactorer(true);
+		factorer1.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(factorer1);
+		final I_C_BPartner factorer2 = newInstance(I_C_BPartner.class);
+		factorer2.setName("Factorer Two AG");
+		factorer2.setIsFactorer(true);
+		factorer2.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(factorer2);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(fx.invoice, recipientConfig))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Multiple factorers")
+				.hasMessageContaining("AD_Org_ID=" + fx.org.getAD_Org_ID());
+	}
+
+	/**
+	 * The factorer BPartner exists but has no bank account / no IBAN: mapping must throw a
+	 * user-validation error naming the factorer, and must never fall back to the seller's IBAN.
+	 */
+	@Test
+	void payment_factoring_factorerHasNoIban_throwsUserValidationError()
+	{
+		final FactoringFixture fx = newFactoringFixture(true, "T");
+
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_BP_BankAccount sellerBankAccount = newInstance(I_C_BP_BankAccount.class);
+		sellerBankAccount.setC_BPartner_ID(fx.sellerBP.getC_BPartner_ID());
+		sellerBankAccount.setC_Currency_ID(currency.getC_Currency_ID());
+		sellerBankAccount.setIBAN("DE89370400440532013000");
+		sellerBankAccount.setIsDefault(true);
+		sellerBankAccount.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(sellerBankAccount);
+
+		// Factorer exists but has NO bank account at all
+		final I_C_BPartner factorerBP = newInstance(I_C_BPartner.class);
+		factorerBP.setName("Factorer AG");
+		factorerBP.setIsFactorer(true);
+		factorerBP.setAD_Org_ID(fx.org.getAD_Org_ID());
+		saveRecord(factorerBP);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(fx.invoice, recipientConfig))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_BPartner_ID=" + factorerBP.getC_BPartner_ID());
+	}
+
+	/**
+	 * Test fixture bundling the org/seller/bill-partner/invoice skeleton shared by the silent-factoring
+	 * payment-means tests above. Bank accounts and the optional factorer BPartner are added by each
+	 * test individually.
+	 */
+	private static final class FactoringFixture
+	{
+		private final I_AD_Org org;
+		private final I_C_BPartner sellerBP;
+		private final I_C_Invoice invoice;
+
+		private FactoringFixture(final I_AD_Org org, final I_C_BPartner sellerBP, final I_C_Invoice invoice)
+		{
+			this.org = org;
+			this.sellerBP = sellerBP;
+			this.invoice = invoice;
+		}
+	}
+
+	private FactoringFixture newFactoringFixture(final boolean billPartnerIsFactoring, final String paymentRule)
+	{
+		// === Seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Bill partner (invoice.C_BPartner_ID) — the factoring flag lives here ===
+		final I_C_Country billCountry = newInstance(I_C_Country.class);
+		billCountry.setCountryCode("DE");
+		saveRecord(billCountry);
+		final I_C_Location billLocation = newInstance(I_C_Location.class);
+		billLocation.setC_Country_ID(billCountry.getC_Country_ID());
+		saveRecord(billLocation);
+		final I_C_BPartner billBP = newInstance(I_C_BPartner.class);
+		billBP.setName("Bill Partner AG");
+		billBP.setIsFactoring(billPartnerIsFactoring);
+		saveRecord(billBP);
+		final I_C_BPartner_Location billBPLoc = newInstance(I_C_BPartner_Location.class);
+		billBPLoc.setC_BPartner_ID(billBP.getC_BPartner_ID());
+		billBPLoc.setC_Location_ID(billLocation.getC_Location_ID());
+		saveRecord(billBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00800");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(billBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(billBPLoc.getC_BPartner_Location_ID());
+		invoice.setPaymentRule(paymentRule);
+		saveRecord(invoice);
+
+		return new FactoringFixture(org, sellerBP, invoice);
 	}
 
 	// ===== Shared helpers =====
