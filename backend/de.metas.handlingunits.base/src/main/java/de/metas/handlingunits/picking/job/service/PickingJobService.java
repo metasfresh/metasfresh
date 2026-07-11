@@ -843,9 +843,14 @@ public class PickingJobService implements PickingSlotListener
 		// Enforce per-parcel carrier-advise consistency on the closed TU — the same guard the LU-close / complete
 		// path runs (closeLUAndTUPickingTargets). Without it, a TU carrying two distinct manual carriers slips
 		// silently past close and only fails later at shipment generation with a raw ShipperGatewayException.
+		// Guard the TOP-LEVEL HU of the closing TU (the LU when the TU is nested under one, else the TU itself):
+		// the guard's schedule lookup only matches top-level HUs, and a nested TU's picked schedules carry the LU's
+		// M_LU_HU_ID, so guarding the TU directly would miss them. This mirrors the LU-close / complete path, which
+		// already passes top-level HU ids (closedHUIdsCollector.getAllTopLevelHUIds()).
 		if (pickingTarget.isExistingTU())
 		{
-			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(pickingTarget.getTuIdNotNull()));
+			final HuId topLevelHuId = huService.getTopLevelHuId(pickingTarget.getTuIdNotNull());
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(topLevelHuId));
 		}
 
 		return setTUPickingTarget(pickingJob, lineId, null);
