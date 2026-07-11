@@ -231,8 +231,7 @@ public class PickingJobHUService
 
 	/**
 	 * @return the top-level HU id for the given HU — itself when it is already top-level, or its loading unit (LU)
-	 * when it is a TU nested under one. The carrier-advise consistency guard is scoped to a top-level parcel and
-	 * its schedule lookup only matches top-level HUs, so a nested TU must be resolved to its LU before guarding.
+	 * when it is a TU nested under one.
 	 */
 	public HuId getTopLevelHuId(@NonNull final HuId huId)
 	{

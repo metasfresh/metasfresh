@@ -40,6 +40,7 @@ export const SelectPickTargetScreen = () => {
           eventName: 'closePickingTargetFailed',
           httpStatus: axiosError?.response?.status ?? null,
           axiosCode: axiosError?.code ?? null,
+          isNetworkFailure: !axiosError?.response,
           message: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
         });
         toastError({ axiosError });
