@@ -1112,10 +1112,12 @@ Feature: nShift Shipment
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_ps      | true    | customer      | 2025-04-01  | wh             | nShift       |
-    # No M_HU_PI_Item_Product_ID: pick loose CU so QtyPicked is in product units (6 of 10), not TUs.
+    # No M_HU_PI_Item_Product_ID: pick loose CU so QtyPicked is in product units (2 of 4), not TUs.
+    # This customer ships self-packed loose CUs, so each picked CU becomes its own M_Package ⇒ its own
+    # Carrier_ShipmentOrder under selection rules. Small qty keeps the 1-order-per-CU split visible without noise.
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
-      | so_ps_l1   | so_ps      | product      | 10         |
+      | so_ps_l1   | so_ps      | product      | 4          |
     When the order identified by so_ps is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute |
@@ -1127,37 +1129,36 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | Carrier_Product_ID |
       | ss_ps      | so_ps_l1       | cp1                |
-    # First job: pick only 6 of 10 and complete (partial). The line carrier advise resolves to cp1.
+    # First job: pick only 2 of 4 and complete (partial). The line carrier advise resolves to cp1.
     When start picking job for sales order identified by so_ps
     And scan picking slot identified by slot_ps
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
-      | product               | hu_1       | 6         |
+      | product               | hu_1       | 2         |
     When complete picking job
     Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID    | DocStatus |
       | ss_ps                 | inout_partial | CO        |
-    And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier  | M_InOut_ID    | Carrier_Product_ID |
-      | cso_partial | inout_partial | cp1                |
-    # Loose-CU split: 6 CU picked with no packing item ⇒ 6 M_Package (one label/parcel per CU).
+    # Loose-CU split: 2 CU picked with no packing item ⇒ 2 M_Package (one label/parcel per CU) ⇒ 2 delivery
+    # orders, both frozen on cp1. Listed 1-to-1 so the split is visible on the page. The exact-set step polls
+    # (delivery orders are the LAST link of the async packages→orders chain), so it also gates the M_Package check.
+    And after not more than 60s, Carrier_ShipmentOrders for M_InOut_ID inout_partial have exactly:
+      | Carrier_Product_ID |
+      | cp1                |
+      | cp1                |
     And validate M_Packages for shipment inout_partial
       | M_Package_ID |
       | pkg_p1       |
       | pkg_p2       |
-      | pkg_p3       |
-      | pkg_p4       |
-      | pkg_p5       |
-      | pkg_p6       |
-    # Re-stub to cp2 AFTER the first advise landed + froze on cso_partial.
+    # Re-stub to cp2 AFTER the first advise landed + froze onto inout_partial's orders.
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp2                | cgt2                  | cs3, cs4           |
-    # Job 1 shipped 6 of 10 ⇒ the remainder settles to QtyToDeliver=4. (In production a qty change auto-re-advises;
+    # Job 1 shipped 2 of 4 ⇒ the remainder settles to QtyToDeliver=2. (In production a qty change auto-re-advises;
     # under SKIP_WP_PROCESSOR_FOR_AUTOMATION the async workpackage doesn't run, so trigger the re-advise explicitly.)
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | QtyToDeliver |
-      | ss_ps      | so_ps_l1       | 4            |
+      | ss_ps      | so_ps_l1       | 2            |
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID | IsIncludeCarrierAdviseManual |
       | ss_ps                 | true                         |
@@ -1165,33 +1166,33 @@ Feature: nShift Shipment
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | Carrier_Product_ID |
       | ss_ps      | so_ps_l1       | cp2                |
-    # Second job: pick the remaining 4 → its line inherits cp2 from the schedule → a second Carrier_ShipmentOrder on cp2.
+    # Second job: pick the remaining 2 → its line inherits cp2 from the schedule → two more Carrier_ShipmentOrders on cp2.
     When start picking job for sales order identified by so_ps
     And scan picking slot identified by slot_ps
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
-      | product               | hu_1       | 4         |
+      | product               | hu_1       | 2         |
     When complete picking job
-    # The 4-CU remainder ships in a SECOND shipment; capture it (ignoring the first shipment's lines).
+    # The 2-CU remainder ships in a SECOND shipment; capture it (ignoring the first shipment's lines).
     And after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID | M_InOut_ID      | DocStatus | OPT.IgnoreCreated.M_InOut_ID.Identifier |
       | ss_ps                 | inout_remainder | CO        | inout_partial                           |
-    # Remainder ships on cp2 → a SECOND Carrier_ShipmentOrder (its parcels/packages are created with it).
-    And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier    | M_InOut_ID      | Carrier_Product_ID |
-      | cso_remainder | inout_remainder | cp2                |
-    # Loose-CU split: the re-advised remainder of 4 CU ⇒ 4 M_Package (one label/parcel per CU).
+    # Loose-CU split: the re-advised remainder of 2 CU ⇒ 2 M_Package ⇒ 2 delivery orders, both on cp2.
+    # Exact-set step polls (gates the M_Package check below on the async packages→orders chain).
+    And after not more than 60s, Carrier_ShipmentOrders for M_InOut_ID inout_remainder have exactly:
+      | Carrier_Product_ID |
+      | cp2                |
+      | cp2                |
     And validate M_Packages for shipment inout_remainder
       | M_Package_ID |
       | pkg_r1       |
       | pkg_r2       |
-      | pkg_r3       |
-      | pkg_r4       |
     # The remainder was re-advised to cp2 (asserted above) and now shipped in this second job.
-    # The FIRST (frozen) Carrier_ShipmentOrder must still carry cp1 — the remainder's cp2 must not mutate it.
-    Then validate Carrier_ShipmentOrder product for shipment:
-      | M_InOut_ID    | Carrier_Product_ID |
-      | inout_partial | cp1                |
+    # The FIRST (frozen) shipment's orders must ALL still carry cp1 — the remainder's cp2 must not mutate them.
+    Then after not more than 60s, Carrier_ShipmentOrders for M_InOut_ID inout_partial have exactly:
+      | Carrier_Product_ID |
+      | cp1                |
+      | cp1                |
 
   @from:cucumber
   @Id:S0355_DeliveryOrder_200

@@ -40,7 +40,6 @@ import org.compiere.model.I_M_InOutLine;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -163,5 +162,4 @@ public class AssertExpectationsCommandServices
 	{
 		return inOutDAO.retrieveProcessedLinesForOrderLineIds(orderLineIds);
 	}
-
 }

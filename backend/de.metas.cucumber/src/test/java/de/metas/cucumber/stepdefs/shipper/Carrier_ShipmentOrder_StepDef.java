@@ -53,7 +53,7 @@ import org.compiere.model.I_Carrier_ShipmentOrder_Parcel;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Package;
 
-import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -175,6 +175,69 @@ public class Carrier_ShipmentOrder_StepDef
 				.addEqualsFilter(I_M_Package.COLUMNNAME_M_InOut_ID, inOutId)
 				.andCollectChildren(I_Carrier_ShipmentOrder_Parcel.COLUMNNAME_M_Package_ID, I_Carrier_ShipmentOrder_Parcel.class)
 				.create();
+	}
+
+	/**
+	 * Exact-set ("has only") assertion scoped by shipment: the delivery orders created for the given shipment carry
+	 * EXACTLY the listed carrier products — no more, no fewer — read fresh from the DB. One row per delivery order:
+	 * under selection rules the gateway creates one {@code Carrier_ShipmentOrder} per {@link I_M_Package}, so a
+	 * shipment of N self-packed loose CUs has N one-parcel orders; the table lists them 1-to-1. Because the assertion
+	 * re-reads the DB each poll, it also proves negatives over time — e.g. that a frozen shipment's orders keep their
+	 * carrier product after a later re-advise mutates only the schedule. Polls until the async delivery-order chain
+	 * has settled. Replaces the former single-order "validate ... product for shipment:" step.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Carrier_Product_ID</b> — (required, identifier-ref) expected carrier product of one delivery order
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, Carrier_Product_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, Carrier_ShipmentOrders for M_InOut_ID inout_partial have exactly:
+	 *   | Carrier_Product_ID |
+	 *   | cp1                |
+	 *   | cp1                |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, Carrier_ShipmentOrders for M_InOut_ID (.*) have exactly:$")
+	public void carrierShipmentOrdersForShipmentHaveExactly(
+			final int timeoutSec,
+			@NonNull final String inOutIdentifier,
+			@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final InOutId inOutId = inOutTable.getId(inOutIdentifier);
+
+		// One expected carrier product per delivery order the shipment should have; sorted so the comparison is a
+		// multiset match (row order irrelevant).
+		final List<CarrierProductId> expectedCarrierProductIds = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID).lookupNotNullIdIn(carrierProductTable))
+				.sorted(Comparator.comparingInt(CarrierProductId::getRepoId))
+				.collect(Collectors.toList());
+
+		@SuppressWarnings("unchecked") final List<CarrierProductId>[] actualHolder = new List[1];
+
+		// Poll until the async delivery-order chain has produced EXACTLY the expected carrier-product multiset,
+		// re-read fresh from the DB on every try.
+		final Supplier<Boolean> hasExactly = () -> {
+			final ImmutableSet<DeliveryOrderId> orderIds = queryParcelsOfShipment(inOutId).list().stream()
+					.map(parcel -> DeliveryOrderId.ofRepoId(parcel.getCarrier_ShipmentOrder_ID()))
+					.collect(ImmutableSet.toImmutableSet());
+
+			final List<CarrierProductId> actual = orderIds.stream()
+					.map(shipmentOrderRepository::getById)
+					.map(DeliveryOrder::getCarrierProductId)
+					.sorted(Comparator.nullsFirst(Comparator.comparingInt(CarrierProductId::getRepoId)))
+					.collect(Collectors.toList());
+
+			actualHolder[0] = actual;
+			return actual.equals(expectedCarrierProductIds);
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, hasExactly);
+
+		assertThat(actualHolder[0])
+				.as("Carrier_ShipmentOrders for M_InOut_ID=%s: the shipment's delivery-order carrier products (fresh from DB, one per order) must be EXACTLY the expected set",
+						inOutId)
+				.isEqualTo(expectedCarrierProductIds);
 	}
 
 	/**
@@ -409,46 +472,4 @@ public class Carrier_ShipmentOrder_StepDef
 		});
 	}
 
-	/**
-	 * Freshly reloads the {@link I_Carrier_ShipmentOrder} DB record for the given shipment and asserts
-	 * its {@code Carrier_Product_ID}. Bypasses {@link Carrier_ShipmentOrder_StepDefData} so the assertion
-	 * always reflects the current DB state, not the value captured when the order was first found.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>M_InOut_ID</b>          — (required, identifier-ref) shipment whose delivery order is checked<br>
-	 *   <b>Carrier_Product_ID</b>  — (required, identifier-ref) expected carrier product
-	 * @cucumber.depends StepDefData: M_InOut_StepDefData, Carrier_Product_StepDefData
-	 * @cucumber.example
-	 * <pre>
-	 * And validate Carrier_ShipmentOrder product for shipment:
-	 *   | M_InOut_ID    | Carrier_Product_ID |
-	 *   | inout_partial | cp1                |
-	 * </pre>
-	 */
-	@And("validate Carrier_ShipmentOrder product for shipment:")
-	public void validateCarrierShipmentOrderProductForShipment(@NonNull final DataTable dataTable)
-	{
-		DataTableRows.of(dataTable).forEach(row -> {
-			final InOutId inOutId = inOutTable.getId(row.getAsIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID));
-			final CarrierProductId expectedCarrierProductId = row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID)
-					.lookupNotNullIdIn(carrierProductTable);
-
-			final I_Carrier_ShipmentOrder_Parcel parcel = queryParcelsOfShipment(inOutId).first();
-
-			assertThat(parcel)
-					.as("Carrier_ShipmentOrder_Parcel for M_InOut_ID=%s", inOutId)
-					.isNotNull();
-
-			final I_Carrier_ShipmentOrder carrierShipmentOrder = InterfaceWrapperHelper.load(
-					parcel.getCarrier_ShipmentOrder_ID(), I_Carrier_ShipmentOrder.class);
-			assertThat(carrierShipmentOrder)
-					.as("Carrier_ShipmentOrder for M_InOut_ID=%s", inOutId)
-					.isNotNull();
-
-			assertThat(CarrierProductId.ofRepoIdOrNull(carrierShipmentOrder.getCarrier_Product_ID()))
-					.as("Carrier_ShipmentOrder.Carrier_Product_ID for M_InOut_ID=%s", inOutId)
-					.isEqualTo(expectedCarrierProductId);
-		});
-	}
 }
