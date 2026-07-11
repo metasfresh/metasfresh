@@ -59,6 +59,10 @@ public class PickingJobRepository
 	public static PickingJobRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
+		// Register PickingJobLineCarrierServiceRepository in the JUnit bean registry (a side effect of its
+		// getBeanOrSupply in unit-test mode). The returned instance is intentionally discarded: PickingJobSaver
+		// resolves it lazily via SpringContextHolder.getBean(...) at save time, so it only needs to be REGISTERED
+		// before a save runs, not held here.
 		PickingJobLineCarrierServiceRepository.newInstanceForUnitTesting();
 		return new PickingJobRepository();
 	}

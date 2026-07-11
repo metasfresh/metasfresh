@@ -210,7 +210,7 @@ public class Carrier_ShipmentOrder_StepDef
 		// multiset match (row order irrelevant).
 		final List<CarrierProductId> expectedCarrierProductIds = DataTableRows.of(dataTable).stream()
 				.map(row -> row.getAsIdentifier(I_Carrier_ShipmentOrder.COLUMNNAME_Carrier_Product_ID).lookupNotNullIdIn(carrierProductTable))
-				.sorted(Comparator.comparingInt(CarrierProductId::getRepoId))
+				.sorted(Comparator.nullsFirst(Comparator.comparingInt(CarrierProductId::getRepoId)))
 				.collect(Collectors.toList());
 
 		@SuppressWarnings("unchecked") final List<CarrierProductId>[] actualHolder = new List[1];
