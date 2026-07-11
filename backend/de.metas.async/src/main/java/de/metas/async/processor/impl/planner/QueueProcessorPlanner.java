@@ -293,6 +293,12 @@ public abstract class QueueProcessorPlanner implements Runnable
 			final int lockedCount = query.updateDirectly(workPackageUpdater);
 			logger.debug("Locked {} workpackages for queueProcessor {} with queueProcessorId={}", lockedCount, queueProcessor.getName(), queueProcessor.getQueueProcessorId());
 
+			if (lockedCount == 0)
+			{
+				// nothing claimed => nothing this processor could re-fetch; skip the (otherwise wasted) re-fetch query
+				continue;
+			}
+
 			// Execute query - returns successfully locked rows only
 			final List<I_C_Queue_WorkPackage> workPackages = queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
 					.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_LockedAt, now)
