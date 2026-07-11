@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.material.planning.ManufacturingResourceType;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
+import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -35,6 +36,12 @@ public class CreateResourceCommand
 		record.setIsManufacturingResource(true);
 		record.setManufacturingResourceType(manufacturingResourceType.getCode());
 		record.setPlanningHorizon(365);
+
+		if (request.getWorkplace() != null)
+		{
+			final WorkplaceId workplaceId = context.getId(request.getWorkplace(), WorkplaceId.class);
+			record.setC_Workplace_ID(workplaceId.getRepoId());
+		}
 
 		InterfaceWrapperHelper.save(record);
 		final ResourceId resourceId = ResourceId.ofRepoId(record.getS_Resource_ID());
