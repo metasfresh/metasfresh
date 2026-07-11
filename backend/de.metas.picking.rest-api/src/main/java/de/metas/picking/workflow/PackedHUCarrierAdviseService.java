@@ -192,7 +192,7 @@ public class PackedHUCarrierAdviseService
 		final ImmutableSet<HuId> targetHuIds = resolveAdviseTargetHuIds(pickingJob, lineId);
 		if (targetHuIds.isEmpty())
 		{
-			return true; // nothing picked onto the target yet → nothing to advise
+			return true;
 		}
 		return handlingUnitsBL.getByIdsReturningMap(targetHuIds).values().stream()
 				.flatMap(hu -> huShipmentScheduleResolver.resolveSchedulesByIdForHU(hu).values().stream())

@@ -845,7 +845,7 @@ public class PickingJobService implements PickingSlotListener
 		// silently past close and only fails later at shipment generation with a raw ShipperGatewayException.
 		if (pickingTarget.isExistingTU())
 		{
-			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(pickingTarget.getTuId()));
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(pickingTarget.getTuIdNotNull()));
 		}
 
 		return setTUPickingTarget(pickingJob, lineId, null);

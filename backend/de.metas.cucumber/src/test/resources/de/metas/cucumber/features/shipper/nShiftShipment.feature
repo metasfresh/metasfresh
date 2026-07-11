@@ -1293,6 +1293,8 @@ Feature: nShift Shipment
     When start picking job for sales order identified by so
     And scan picking slot identified by slot
     And set picking target as new LU identified by LU
+    # The Background hu_1/hu_product_2 are TUs — valid here because they pack as whole TUs onto the LU pallet
+    # (a TU target instead needs CU sources — see _202).
     And pick lines
       | PickingLine.byProduct | PickFromHU   | QtyPicked |
       | product               | hu_1         | 5         |
