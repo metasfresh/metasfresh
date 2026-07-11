@@ -169,8 +169,9 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	{
 		final PickingJob job = mock(PickingJob.class);
 		when(job.isLineLevelPickTarget()).thenReturn(false);
-		when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
-		when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
+		// no pick target → hasExistingTarget=false (read the header, read-only DISPLAY)
+		when(job.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
+		when(job.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
 		when(job.getLines()).thenReturn(lines);
 		return job;
 	}
@@ -188,6 +189,8 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(mockApiAdviseLine(cp, false)));
+		// the header carries the current (single, API-advise) carrier → its name is the caption
+		when(job.getCarrierProductId()).thenReturn(cp.getId());
 
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
 
@@ -203,6 +206,8 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(
 				mockApiAdviseLine(cp, false), mockApiAdviseLine(cp, false)));
+		// the header carries the current (single, API-advise) carrier → its name is the caption
+		when(job.getCarrierProductId()).thenReturn(cp.getId());
 
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
 

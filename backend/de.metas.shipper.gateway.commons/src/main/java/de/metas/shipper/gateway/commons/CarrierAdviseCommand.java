@@ -202,33 +202,7 @@ public class CarrierAdviseCommand
 
 		try
 		{
-			final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "shipmentSchedule.shipperId should be set at this point");
-			final ShipperGatewayId shipperGatewayId = getShipperGatewayIdOrNull(shipperId);
-
-			final JsonDeliveryAdvisorResponse response;
-			if(shipperGatewayId != null)
-			{
-				final ShipperGatewayClient client = shipperRegistry
-						.getClientFactory(shipperGatewayId)
-						.newClientForShipperId(shipperId);
-
-				final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipperId, shipmentSchedule, client);
-				logger.debug("AdviseShipment request: {}", request);
-				response = client.adviseShipment(request);
-				logger.debug("AdviseShipment response: {}", response);
-			}
-			else
-			{
-				final Shipper shipper = shipperRepository.getById(shipperId);
-				response = JsonDeliveryAdvisorResponse.builder()
-						.requestId(UUID.randomUUID().toString())
-						.shipperProduct(JsonShipperProduct.builder()
-								.name(shipper.getName())
-								.code(shipper.getName())
-								.build())
-						.build();
-			}
-
+			final JsonDeliveryAdvisorResponse response = callAdvisor(shipmentSchedule);
 			updateShipmentFromResponse(shipmentSchedule, response);
 		}
 		catch (final Exception e)
@@ -237,6 +211,87 @@ public class CarrierAdviseCommand
 			shipmentSchedule.setCarrierAdviseErrorMessage(e.getMessage());
 			updateAdviseStatusAndSave(shipmentSchedule, CarrierAdviseStatus.Failed);
 		}
+	}
+
+	/**
+	 * Runs the shipper-gateway advisor for the schedule (against this command's packed-HU parcel when set) and
+	 * resolves the response into a carrier product + goods type + services WITHOUT persisting anything onto the
+	 * shipment schedule.
+	 * <p>
+	 * This is the mobile-packing display path: the picker's re-advise must NOT overwrite the schedule (which is the
+	 * WebUI advise + shipment-carrier source and whose write triggers expensive recomputes) — the advised carrier is
+	 * persisted only onto the picking job (header/line) by the caller. The auto/WebUI advise paths keep using
+	 * {@link #execute()} / {@link #executeSync()}, which DO persist onto the schedule.
+	 */
+	@NonNull
+	public AdvisedCarrierResult adviseWithoutPersisting()
+	{
+		final ShipmentSchedule shipmentSchedule = retrieveShipmentSchedule();
+		final JsonDeliveryAdvisorResponse response = callAdvisor(shipmentSchedule);
+		if (response.isError())
+		{
+			throw new AdempiereException("Carrier advise failed: " + response.getErrorMessage());
+		}
+		return resolveAdvisedCarrier(shipmentSchedule, response);
+	}
+
+	private JsonDeliveryAdvisorResponse callAdvisor(@NonNull final ShipmentSchedule shipmentSchedule)
+	{
+		final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "shipmentSchedule.shipperId should be set at this point");
+		final ShipperGatewayId shipperGatewayId = getShipperGatewayIdOrNull(shipperId);
+
+		if (shipperGatewayId != null)
+		{
+			final ShipperGatewayClient client = shipperRegistry
+					.getClientFactory(shipperGatewayId)
+					.newClientForShipperId(shipperId);
+
+			final JsonDeliveryAdvisorRequest request = createAdvisorRequest(shipperId, shipmentSchedule, client);
+			logger.debug("AdviseShipment request: {}", request);
+			final JsonDeliveryAdvisorResponse response = client.adviseShipment(request);
+			logger.debug("AdviseShipment response: {}", response);
+			return response;
+		}
+		else
+		{
+			final Shipper shipper = shipperRepository.getById(shipperId);
+			return JsonDeliveryAdvisorResponse.builder()
+					.requestId(UUID.randomUUID().toString())
+					.shipperProduct(JsonShipperProduct.builder()
+							.name(shipper.getName())
+							.code(shipper.getName())
+							.build())
+					.build();
+		}
+	}
+
+	/**
+	 * Resolves a successful advisor response into the carrier product + goods type + services (creating the
+	 * carrier-product / goods-type / service master records as the persisting path does), WITHOUT touching the
+	 * shipment schedule. Shared shape with {@link #updateShipmentFromResponse} but persistence-free.
+	 */
+	@NonNull
+	private AdvisedCarrierResult resolveAdvisedCarrier(@NonNull final ShipmentSchedule shipmentSchedule, @NonNull final JsonDeliveryAdvisorResponse response)
+	{
+		final ShipperId shipperId = Check.assumeNotNull(shipmentSchedule.getShipperId(), "Shipment Schedule ShipperId should be set at this point");
+
+		final JsonShipperProduct shipperProduct = response.getShipperProduct();
+		final CarrierProductId carrierProductId = shipperProduct != null
+				? extractCarrierProductId(shipperId, shipperProduct)
+				: null;
+
+		final JsonGoodsType goodsType = response.getGoodsType();
+		final CarrierGoodsTypeId goodsTypeId = goodsType != null
+				? extractCarrierGoodsTypeId(shipperId, goodsType)
+				: null;
+
+		final Set<CarrierServiceId> serviceIds = extractCarrierServiceIds(shipperId, response.getShipperProductServices());
+
+		return AdvisedCarrierResult.builder()
+				.carrierProductId(carrierProductId)
+				.carrierGoodsTypeId(goodsTypeId)
+				.carrierServices(ImmutableList.copyOf(serviceIds))
+				.build();
 	}
 
 	@Nullable
@@ -505,5 +560,18 @@ public class CarrierAdviseCommand
 	{
 		shipmentSchedule.setCarrierAdvisingStatus(status);
 		shipmentScheduleService.save(shipmentSchedule);
+	}
+
+	/**
+	 * The carrier advised for a packed HU, resolved from a successful advisor response WITHOUT persisting to the
+	 * shipment schedule — the mobile-packing display result, persisted only onto the picking job by the caller.
+	 */
+	@lombok.Value
+	@lombok.Builder
+	public static class AdvisedCarrierResult
+	{
+		@Nullable CarrierProductId carrierProductId;
+		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
+		@NonNull ImmutableList<CarrierServiceId> carrierServices;
 	}
 }

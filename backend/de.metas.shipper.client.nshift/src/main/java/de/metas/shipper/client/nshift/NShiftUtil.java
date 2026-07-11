@@ -49,6 +49,24 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class NShiftUtil
 {
+	/**
+	 * Display name for a carrier product resolved from an nShift response:
+	 * {@code "<CarrierFullName> - <ProdName>"} (e.g. "UPS Rest API - UPS Standard®").
+	 * Falls back to the product part alone when {@code carrierFullName} is blank, and to {@code fallback} when
+	 * {@code prodName} is null. This enriches only the display NAME — the carrier-product IDENTITY stays the
+	 * ProdConceptID (the {@code code}).
+	 */
+	public static String buildCarrierProductName(
+			@Nullable final String carrierFullName,
+			@Nullable final String prodName,
+			@NonNull final String fallback)
+	{
+		final String product = prodName != null ? prodName : fallback;
+		return carrierFullName != null && !carrierFullName.trim().isEmpty()
+				? carrierFullName + " - " + product
+				: product;
+	}
+
 	public static JsonAddress.JsonAddressBuilder buildNShiftAddressBuilder(@NonNull final de.metas.common.delivery.v1.json.JsonAddress commonAddress,
 																		   @Nullable final JsonContact contact,
 																		   @NonNull final JsonAddressKind kind)

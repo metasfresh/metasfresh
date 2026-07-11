@@ -350,6 +350,8 @@ public class PickingJobPickCommand
 
 		changeStep(step -> updateStepFromPickedHUs(step, pickedHUs));
 
+		foldPickedLineIntoHeaderCarrier();
+
 		if (isCloseTarget)
 		{
 			closeLUAndTUPickingTargets();
@@ -533,6 +535,23 @@ public class PickingJobPickCommand
 			// Must be called inside the pick transaction so the attribute write commits together with the pick.
 			huService.setGrais(newTuId, GRAISet.of(grai));
 		}
+	}
+
+	/**
+	 * Folds the just-picked line into the header's carrier state (the header tracks the CURRENT top-level parcel).
+	 * A manual pick makes the header read-only and carries its carrier onto the header (divergent manuals collapse to
+	 * no single carrier); a non-manual pick leaves the header untouched (its carrier comes only from advise). Skipped
+	 * for a line-level ({@code PRODUCT}) job: there the LINE is the parcel and stays at its create-time carrier, so
+	 * the header is not the current parcel and must not be folded into.
+	 */
+	private void foldPickedLineIntoHeaderCarrier()
+	{
+		if (isLineLevelPickTarget())
+		{
+			return;
+		}
+		final PickingJobLine pickedLine = getLine();
+		_pickingJob = _pickingJob.withHeaderCarrierFromPickedLine(pickedLine);
 	}
 
 	private void closeLUAndTUPickingTargets()

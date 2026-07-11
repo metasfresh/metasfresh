@@ -36,6 +36,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -85,8 +86,23 @@ class CarrierAdviseConsistencyServiceTest
 		// The rules-ON case (skip divergence) overrides this per-test via stubSelectionRules(...).
 		when(shipperConfigRepository.isSelectionRules(any())).thenReturn(false);
 
+		// Default: the instance HAS an API-advise shipper, so the early gate passes and the guard runs. The
+		// no-api-advise-instance gate (skip everything) is covered by its own test.
+		when(shipperRepository.isAnyApiCarrierAdvise()).thenReturn(true);
+
 		topLevelHU = mock(I_M_HU.class);
 		when(topLevelHU.getM_HU_ID()).thenReturn(HU_ID_1.getRepoId());
+	}
+
+	@Test
+	void noApiCarrierAdviseShipperOnInstance_skipsGuardEntirely()
+	{
+		// Even a would-be-rejecting HU (two distinct manual carriers) passes: with no API-advise shipper on the
+		// instance the early gate returns before any per-HU schedule resolution.
+		when(shipperRepository.isAnyApiCarrierAdvise()).thenReturn(false);
+
+		assertThatCode(() -> service.assertConsistentForClosedHU(topLevelHU)).doesNotThrowAnyException();
+		verifyNoInteractions(resolver);
 	}
 
 	// --------------------------------------------------

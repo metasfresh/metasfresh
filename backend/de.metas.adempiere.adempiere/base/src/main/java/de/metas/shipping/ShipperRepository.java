@@ -68,6 +68,16 @@ public class ShipperRepository
 		return getMap().getById(shipperId).isApiCarrierAdvise();
 	}
 
+	/**
+	 * {@code true} iff at least one active shipper has {@code IsApiCarrierAdvise}. Cache-backed (no DB hit on the hot
+	 * path) — an early gate so carrier-advise work (e.g. the per-HU schedule resolution in the consistency guard) is
+	 * skipped entirely on instances that do not use API carrier advise at all.
+	 */
+	public boolean isAnyApiCarrierAdvise()
+	{
+		return getMap().anyApiCarrierAdvise();
+	}
+
 	@NonNull
 	public ExplainedOptional<ShipperGatewayId> getShipperGatewayId(@NonNull final ShipperId shipperId)
 	{
@@ -140,6 +150,11 @@ public class ShipperRepository
 			return shipperIds.stream()
 					.filter(byId::containsKey)
 					.collect(ImmutableMap.toImmutableMap(id -> id, byId::get));
+		}
+
+		public boolean anyApiCarrierAdvise()
+		{
+			return byId.values().stream().anyMatch(Shipper::isApiCarrierAdvise);
 		}
 	}
 }

@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -182,17 +182,14 @@ public class PackedHUCarrierAdviseServiceTest
 				SCHED_SALAD, saladSched);
 		when(huShipmentScheduleResolver.resolveSchedulesByIdForHU(any())).thenReturn(schedulesById);
 
-		// stub the static-command seam (no real DB / shipper-gateway call in a unit test)
-		doNothing().when(service).adviseSchedule(any(), any());
-
-		// post-executeSync batch re-read: the Tomato schedule now carries the advised product + goods-type + services
-		final ShipmentSchedule tomatoSchedAdvised = mock(ShipmentSchedule.class);
-		when(tomatoSchedAdvised.getId()).thenReturn(SCHED_TOMATO);
-		when(tomatoSchedAdvised.getCarrierProductId()).thenReturn(advisedProductId);
-		when(tomatoSchedAdvised.getCarrierGoodsTypeId()).thenReturn(advisedGoodsTypeId);
-		when(tomatoSchedAdvised.getCarrierServicesIfLoaded()).thenReturn(advisedServices);
-		when(shipmentScheduleService.getByIds(ImmutableSet.of(SCHED_TOMATO)))
-				.thenReturn(ImmutableList.of(tomatoSchedAdvised));
+		// stub the static-command seam (no real DB / shipper-gateway call in a unit test): the mobile advise resolves
+		// the carrier WITHOUT persisting to the schedule, returning it for the job to persist.
+		doReturn(PackedHUCarrierAdviseService.AdvisedCarrier.builder()
+				.carrierProductId(advisedProductId)
+				.carrierGoodsTypeId(advisedGoodsTypeId)
+				.carrierServices(advisedServices)
+				.build())
+				.when(service).adviseSchedule(eq(SCHED_TOMATO), any());
 
 		// --- picking job: one non-Manual line (Tomato) + one Manual line (Salad) ---
 		final PickingJobLine tomatoLine = mock(PickingJobLine.class);
@@ -344,15 +341,12 @@ public class PackedHUCarrierAdviseServiceTest
 		when(tomatoSched.getCarrierAdvisingStatus()).thenReturn(CarrierAdviseStatus.Completed);
 		when(huShipmentScheduleResolver.resolveSchedulesByIdForHU(any()))
 				.thenReturn(ImmutableMap.of(SCHED_TOMATO, tomatoSched));
-		doNothing().when(service).adviseSchedule(any(), any());
-
-		final ShipmentSchedule advised = mock(ShipmentSchedule.class);
-		when(advised.getId()).thenReturn(SCHED_TOMATO);
-		when(advised.getCarrierProductId()).thenReturn(CarrierProductId.ofRepoId(777));
-		when(advised.getCarrierGoodsTypeId()).thenReturn(CarrierGoodsTypeId.ofRepoId(888));
-		when(advised.getCarrierServicesIfLoaded()).thenReturn(ImmutableSet.of());
-		when(shipmentScheduleService.getByIds(ImmutableSet.of(SCHED_TOMATO)))
-				.thenReturn(ImmutableList.of(advised));
+		doReturn(PackedHUCarrierAdviseService.AdvisedCarrier.builder()
+				.carrierProductId(CarrierProductId.ofRepoId(777))
+				.carrierGoodsTypeId(CarrierGoodsTypeId.ofRepoId(888))
+				.carrierServices(ImmutableSet.of())
+				.build())
+				.when(service).adviseSchedule(any(), any());
 
 		// line plumbing so persistAdvisedProductOnJob completes without NPE
 		final PickingJobLine line = mock(PickingJobLine.class);
@@ -400,10 +394,15 @@ public class PackedHUCarrierAdviseServiceTest
 	@Test
 	public void resolveInfo_jobLevel_sameProductMixedApiAndNonApiCarriers_availableForApiCarrier()
 	{
-		final PickingJobLine apiLine = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701), true);
+		final CarrierProductId apiCarrierProductId = CarrierProductId.ofRepoId(701);
+		final PickingJobLine apiLine = mockLine(data.helper.pTomatoProductId, apiCarrierProductId, true);
 		final PickingJobLine nonApiLine = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(702), false);
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(apiLine, nonApiLine)), null);
+		// the header carries the (single, API-advise) current carrier → its name is the caption
+		final PickingJob job = mockJobLevelJob(ImmutableList.of(apiLine, nonApiLine));
+		when(job.getCarrierProductId()).thenReturn(apiCarrierProductId);
+
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.getProductCaption()).isEqualTo("carrier");
 	}
@@ -458,8 +457,9 @@ public class PackedHUCarrierAdviseServiceTest
 	{
 		final PickingJob job = mock(PickingJob.class);
 		when(job.isLineLevelPickTarget()).thenReturn(false);
-		when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
-		when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
+		// no pick target → hasExistingTarget=false (read the header, read-only DISPLAY)
+		when(job.getLuPickingTargetEffective(null)).thenReturn(Optional.empty());
+		when(job.getTuPickingTargetEffective(null)).thenReturn(Optional.empty());
 		when(job.getLines()).thenReturn(lines);
 		return job;
 	}

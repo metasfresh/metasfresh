@@ -63,7 +63,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -118,90 +117,84 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Carrier-advise DISPLAY info, read from the job's persisted carrier product — NOT the picked HU's shipment
-	 * schedule, which is not scoped to this picking job. Pass the line for line-level (PRODUCT) aggregation; null
-	 * for the job level (header / CU-direct).
+	 * Carrier-advise DISPLAY info, read entirely from the loaded job model — NO shipment-schedule or HU resolution
+	 * on any read (the header/line persisted carrier state is the source of truth, event-maintained by the pick
+	 * lifecycle). Pass the line for the per-line display, {@code null} for the job header.
+	 * <p>
+	 * The <b>header</b> carries the CURRENT top-level parcel's carrier state ({@code carrierProductId},
+	 * {@code carrierAdviseReadOnly}). The <b>line</b> carries its create-time initial carrier. A per-line display
+	 * reads the header once the line HAS a pick target (the parcel is being built) and the line's own carrier before
+	 * that (nothing to advise onto yet).
 	 */
 	@NonNull
 	public CarrierAdviseTargetInfo resolveInfo(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLine line)
 	{
-		if (pickingJob.isLineLevelPickTarget() && line != null)
+		// Job header (line == null): read the header's current-parcel carrier state.
+		if (line == null)
 		{
-			return resolveTargetInfoFromCarrierProduct(line.getCarrierProductId(), isCarrierAdviseReadOnly(line));
+			return resolveHeaderInfo(pickingJob);
 		}
 
-		// A job-level advise needs a target parcel to advise onto. With a target the picker can (re-)advise;
-		// without one we only DISPLAY the current carrier, and only when it is unambiguous.
-		final boolean hasTarget = pickingJob.getLuPickingTarget(null).isPresent()
-				|| pickingJob.getTuPickingTarget(null).isPresent();
+		// Per-line display: once the line has a pick target (its parcel is being built), the CURRENT parcel's state
+		// lives on the header → read the header. Before a target exists, show the line's own create-time carrier,
+		// read-only (nothing to advise onto yet, or a manual/read-only line).
+		if (hasExistingTarget(pickingJob, line.getId()))
+		{
+			return resolveHeaderInfo(pickingJob);
+		}
 
-		// Exclude non-API-advise shippers' fallback carrier products from the set — so a divergent mix that
-		// includes a non-API shipper is gated out too, not just the single-target case.
-		final ImmutableSet<CarrierProductId> carrierProductIds = pickingJob.getLines().stream()
+		final CarrierProductId lineCarrierProductId = line.getCarrierProductId();
+		if (lineCarrierProductId == null || !isApiAdviseCarrierProduct(lineCarrierProductId))
+		{
+			return CarrierAdviseTargetInfo.NONE;
+		}
+		final boolean readOnly = true; // no target ⇒ nothing to advise onto
+		return resolveTargetInfoFromCarrierProduct(lineCarrierProductId, readOnly || line.isManual() || line.isCarrierAdviseReadOnly());
+	}
+
+	/**
+	 * The header (job-level) carrier-advise DISPLAY — the CURRENT top-level parcel's state, read from the loaded job:
+	 * <ul>
+	 *     <li><b>available</b> — any line carries an API-advise carrier product (the button is rendered);</li>
+	 *     <li><b>caption</b> — the header's persisted carrier product name, only when it is itself API-advise
+	 *         (a divergent/none header carrier ⇒ null ⇒ no single current carrier shown);</li>
+	 *     <li><b>readOnly</b> — no existing pick target (nothing to advise onto yet) OR the header is flagged
+	 *         read-only (a manual override the parcel carries).</li>
+	 * </ul>
+	 */
+	@NonNull
+	private CarrierAdviseTargetInfo resolveHeaderInfo(@NonNull final PickingJob pickingJob)
+	{
+		// Availability gate: at least one line carries an API-advise carrier product (excludes non-API fallback
+		// carrier products used only for workplace assignment).
+		final boolean available = pickingJob.getLines().stream()
 				.map(PickingJobLine::getCarrierProductId)
 				.filter(Objects::nonNull)
-				.filter(this::isApiAdviseCarrierProduct)
-				.collect(ImmutableSet.toImmutableSet());
-
-		if (carrierProductIds.isEmpty())
+				.anyMatch(this::isApiAdviseCarrierProduct);
+		if (!available)
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
 
-		if (hasTarget)
-		{
-			// Read-only comes from the TARGET parcel's own schedules — empty target (nothing picked onto it yet)
-			// or any MANUAL carrier advise on it — NOT the picking-job lines, whose isManual/Carrier_Product_ID is
-			// null when a line's schedules diverge from the start and whose set is not this target's contents.
-			// Availability + caption stay line-derived: a line carrier product is the reliable "is there an API
-			// carrier at all" signal that already gated us past the empty/non-API early-out above, so the target-HU
-			// schedule query below runs only for a genuinely advise-enabled job.
-			final PickingJobLineId lineId = line != null ? line.getId() : null;
-			final boolean readOnly = isTargetCarrierAdviseReadOnly(pickingJob, lineId);
+		final boolean readOnly = !hasExistingTarget(pickingJob, null) || pickingJob.isCarrierAdviseReadOnly();
 
-			// Carriers diverge (same shipper): keep the button, but show no single current carrier.
-			if (carrierProductIds.size() != 1)
-			{
-				return CarrierAdviseTargetInfo.builder().available(true).readOnly(readOnly).productCaption(null).build();
-			}
-			return resolveTargetInfoFromCarrierProduct(carrierProductIds.iterator().next(), readOnly);
-		}
-
-		// No target: there is nothing to (re-)advise onto → a read-only DISPLAY. Availability is decided ONLY by
-		// whether an API-advise carrier product exists (the empty early-out above is the sole not-available case),
-		// so a divergent set stays available + read-only — it just has no single current carrier to show.
-		if (carrierProductIds.size() != 1)
+		// Caption = the header's current carrier product, but only when it is an API-advise product; a null/divergent
+		// header carrier shows the button without a single current carrier.
+		final CarrierProductId headerCarrierProductId = pickingJob.getCarrierProductId();
+		if (headerCarrierProductId == null || !isApiAdviseCarrierProduct(headerCarrierProductId))
 		{
-			return CarrierAdviseTargetInfo.builder().available(true).readOnly(true).productCaption(null).build();
+			return CarrierAdviseTargetInfo.builder().available(true).readOnly(readOnly).productCaption(null).build();
 		}
-		return resolveTargetInfoFromCarrierProduct(carrierProductIds.iterator().next(), /*readOnly=*/true);
+		return resolveTargetInfoFromCarrierProduct(headerCarrierProductId, readOnly);
 	}
 
 	/**
-	 * Whether the mobile advise for the CURRENT pick target must be read-only. Sourced from the target parcel's
-	 * own shipment schedules — the same authoritative source {@link #advise} uses — because a picking-job line's
-	 * {@code isManual}/{@code Carrier_Product_ID} is null when its schedules diverge from the start, and the line
-	 * set is not the target's contents (a target may hold only some lines' picks; an existing HU may be selected
-	 * as the target). Read-only iff the target has nothing picked onto it yet OR any of its schedules is a MANUAL
-	 * carrier advise (a human override {@code advise()} skips; two distinct manuals cannot be converged).
-	 * <p>Only invoked once availability is established (the job carries an API-advise carrier product), so the HU
-	 * schedule query never runs for a non-advise job.
+	 * Whether a pick target parcel already exists to (re-)advise onto — purely in-memory on the loaded job (no query):
+	 * {@code true} iff {@link #resolveAdviseTargetHuIds} finds an existing LU/TU target for the scope.
 	 */
-	private boolean isTargetCarrierAdviseReadOnly(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
+	private boolean hasExistingTarget(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
 	{
-		final ImmutableSet<HuId> targetHuIds = resolveAdviseTargetHuIds(pickingJob, lineId);
-		if (targetHuIds.isEmpty())
-		{
-			return true;
-		}
-		return handlingUnitsBL.getByIdsReturningMap(targetHuIds).values().stream()
-				.flatMap(hu -> huShipmentScheduleResolver.resolveSchedulesByIdForHU(hu).values().stream())
-				.anyMatch(schedule -> schedule.getCarrierAdvisingStatus().isManual());
-	}
-
-	private boolean isCarrierAdviseReadOnly(@NonNull final PickingJobLine line)
-	{
-		return line.isManual() || line.isCarrierAdviseReadOnly();
+		return !resolveAdviseTargetHuIds(pickingJob, lineId).isEmpty();
 	}
 
 	private boolean isApiAdviseCarrierProduct(@NonNull final CarrierProductId carrierProductId)
@@ -241,11 +234,13 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Re-advises the single current pick-target parcel (see {@link #resolveAdviseTargetHuIds}), then persists
+	 * Re-advises the single current pick-target parcel (see {@link #resolveAdviseTargetHuIds}) and persists
 	 * the advised carrier product (and the read-only flag) onto the picking job header + its non-Manual lines,
 	 * so the mobile preview and the {@link CarrierAdviseConsistencyService} checks read the same persisted state.
-	 * Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
-	 * must never be overwritten, neither on the schedule nor on the picking job line).
+	 * The advise runs against the packed HU but persists ONLY to the job — it does NOT write the shipment schedule
+	 * (the schedule is the WebUI advise + shipment-carrier source, and each schedule write triggers expensive
+	 * recomputes). Skips shipment schedules whose carrier advising status is Manual (a manually-set carrier product
+	 * must never be overwritten on the picking job line).
 	 *
 	 * @return the (possibly unchanged) picking job after persisting the advised product onto header + lines.
 	 */
@@ -263,8 +258,8 @@ public class PackedHUCarrierAdviseService
 		// top-level re-resolution is needed — load the (at most one) target HU directly.
 		final ImmutableMap<HuId, I_M_HU> topLevelHUsById = handlingUnitsBL.getByIdsReturningMap(adviseHuIds);
 
-		// the non-Manual schedules just re-advised (insertion order preserved for a stable header product pick)
-		final LinkedHashSet<ShipmentScheduleId> advisedScheduleIds = new LinkedHashSet<>();
+		// the advised carrier per non-Manual schedule (insertion order preserved for a stable header product pick)
+		final Map<ShipmentScheduleId, AdvisedCarrier> advisedCarrierByScheduleId = new LinkedHashMap<>();
 		// at least one schedule among the processed HUs is Manual → the whole job's carrier product is read-only
 		boolean anyManual = false;
 
@@ -281,24 +276,8 @@ public class PackedHUCarrierAdviseService
 					anyManual = true;
 					continue;
 				}
-				adviseSchedule(schedule.getId(), parcel);
-				advisedScheduleIds.add(schedule.getId());
-			}
-		}
-
-		// adviseSchedule (executeSync) persisted the advised carrier onto each schedule; re-read them (the in-memory
-		// schedules from resolveSchedulesByIdForHU are now stale) in ONE batch to learn the results — avoids a
-		// per-schedule getById inside the loop.
-		final Map<ShipmentScheduleId, AdvisedCarrier> advisedCarrierByScheduleId = new LinkedHashMap<>();
-		if (!advisedScheduleIds.isEmpty())
-		{
-			for (final ShipmentSchedule advisedSchedule : shipmentScheduleService.getByIds(ImmutableSet.copyOf(advisedScheduleIds)))
-			{
-				advisedCarrierByScheduleId.put(advisedSchedule.getId(), AdvisedCarrier.builder()
-						.carrierProductId(advisedSchedule.getCarrierProductId())
-						.carrierGoodsTypeId(advisedSchedule.getCarrierGoodsTypeId())
-						.carrierServices(ImmutableSet.copyOf(advisedSchedule.getCarrierServicesIfLoaded()))
-						.build());
+				// Advise against the packed HU WITHOUT persisting to the schedule; the result goes onto the job only.
+				advisedCarrierByScheduleId.put(schedule.getId(), adviseSchedule(schedule.getId(), parcel));
 			}
 		}
 
@@ -306,12 +285,13 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * The carrier advice re-read from a just-advised shipment schedule: the carrier product the header carries,
+	 * The carrier advice resolved for a schedule against the packed HU: the carrier product the header carries,
 	 * plus the goods-type + services that (with the product) are persisted onto the picking-job line.
 	 */
 	@Value
 	@Builder
-	private static class AdvisedCarrier
+	@VisibleForTesting
+	static class AdvisedCarrier
 	{
 		@Nullable CarrierProductId carrierProductId;
 		@Nullable CarrierGoodsTypeId carrierGoodsTypeId;
@@ -319,21 +299,27 @@ public class PackedHUCarrierAdviseService
 	}
 
 	/**
-	 * Re-advises one non-Manual schedule against the packed-HU parcel.
+	 * Re-advises one non-Manual schedule against the packed-HU parcel and returns the advised carrier WITHOUT
+	 * persisting anything onto the shipment schedule (the mobile advise persists only onto the picking job).
 	 * <p>
-	 * executeSync (not execute): re-advise against the packed HU regardless of the schedule's
-	 * current advising status — at packing time it is typically already Completed from the
-	 * auto-advise at order completion, so the Requested-only execute() guard would no-op.
+	 * {@link CarrierAdviseCommand#adviseWithoutPersisting()} re-advises against the packed HU regardless of the
+	 * schedule's current advising status — at packing time it is typically already Completed from the auto-advise
+	 * at order completion.
 	 * <p>
 	 * Extracted as a seam so {@link #advise(PickingJob, PickingJobLineId)} can be unit-tested without
 	 * exercising the static {@link CarrierAdviseCommand} (which performs real DB + shipper-gateway work).
 	 */
 	@VisibleForTesting
-	void adviseSchedule(
+	AdvisedCarrier adviseSchedule(
 			@NonNull final ShipmentScheduleId shipmentScheduleId,
 			@NonNull final JsonDeliveryAdvisorRequestParcel parcel)
 	{
-		CarrierAdviseCommand.ofPackedHU(shipmentScheduleId, parcel).executeSync();
+		final CarrierAdviseCommand.AdvisedCarrierResult result = CarrierAdviseCommand.ofPackedHU(shipmentScheduleId, parcel).adviseWithoutPersisting();
+		return AdvisedCarrier.builder()
+				.carrierProductId(result.getCarrierProductId())
+				.carrierGoodsTypeId(result.getCarrierGoodsTypeId())
+				.carrierServices(ImmutableSet.copyOf(result.getCarrierServices()))
+				.build();
 	}
 
 	/**

@@ -187,6 +187,57 @@ public final class PickingJob implements PickingJobHeaderOrLine
 				: toBuilder().header(header.toBuilder().carrierAdviseReadOnly(carrierAdviseReadOnly).build()).build();
 	}
 
+	/**
+	 * (Re-)initialises the header's carrier state from the lines that are still to be picked — the batch that will
+	 * land on the NEXT top-level parcel. Called when a new top-level parcel starts (LU / top-level TU select) or when
+	 * a top-level parcel is closed. The header then carries the single distinct carrier product of the unprocessed
+	 * lines (all-same → that carrier; divergent or none → {@code null}) and is no longer read-only (advise can run
+	 * again against the fresh parcel). This module has no shipper repository, so the RAW carrier aggregate is stored;
+	 * the read side ({@code PackedHUCarrierAdviseService}) applies the api-advise filter.
+	 */
+	public PickingJob withHeaderCarrierFromUnprocessedLines()
+	{
+		final ImmutableSet<CarrierProductId> unprocessedCarriers = lines.stream()
+				.filter(line -> line.getQtyRemainingToPick().signum() > 0)
+				.map(PickingJobLine::getCarrierProductId)
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final CarrierProductId headerCarrier = unprocessedCarriers.size() == 1
+				? unprocessedCarriers.iterator().next()
+				: null;
+
+		return withCarrierProductId(headerCarrier).withCarrierAdviseReadOnly(false);
+	}
+
+	/**
+	 * Folds a just-picked line into the header carrier state (the header tracks the CURRENT top-level parcel).
+	 * <ul>
+	 *     <li><b>non-manual</b> pick → the carrier is set only by advise, so the header carrier + read-only flag are
+	 *         left UNCHANGED;</li>
+	 *     <li><b>manual</b> pick → the picked carrier is a human override the parcel now carries → header becomes
+	 *         read-only, and the header carrier becomes that line's carrier — EXCEPT when the header already holds a
+	 *         DIFFERENT non-null carrier (a divergent manual mix on the parcel), where the single carrier collapses
+	 *         to {@code null}.</li>
+	 * </ul>
+	 */
+	public PickingJob withHeaderCarrierFromPickedLine(@NonNull final PickingJobLine pickedLine)
+	{
+		if (!pickedLine.isManual())
+		{
+			return this;
+		}
+
+		final CarrierProductId lineCarrier = pickedLine.getCarrierProductId();
+		final CarrierProductId currentHeaderCarrier = header.getCarrierProductId();
+		final CarrierProductId newHeaderCarrier = (currentHeaderCarrier != null
+				&& !CarrierProductId.equals(currentHeaderCarrier, lineCarrier))
+				? null // divergent manual carriers on the same parcel → no single carrier
+				: lineCarrier;
+
+		return withCarrierProductId(newHeaderCarrier).withCarrierAdviseReadOnly(true);
+	}
+
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
 		final ImmutableSet<PickingJobProgress> lineProgresses = lines.stream().map(PickingJobLine::getProgress).collect(ImmutableSet.toImmutableSet());

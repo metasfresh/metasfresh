@@ -71,6 +71,13 @@ public class CarrierAdviseConsistencyService
 	 */
 	public void assertConsistentForClosedHU(@NonNull final I_M_HU topLevelHU)
 	{
+		// Early gate: with NO API-carrier-advise shipper configured on the instance, no schedule can be advise-enabled,
+		// so nothing can ever be inconsistent — skip the (heavy) per-HU schedule resolution entirely. Cache-backed.
+		if (!shipperRepository.isAnyApiCarrierAdvise())
+		{
+			return;
+		}
+
 		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
 				huShipmentScheduleResolver.resolveSchedulesByIdForHU(topLevelHU);
 		if (schedulesById.isEmpty())

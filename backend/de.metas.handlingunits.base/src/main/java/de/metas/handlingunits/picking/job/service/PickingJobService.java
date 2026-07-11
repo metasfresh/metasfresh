@@ -675,10 +675,17 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final LUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// Selecting an LU starts a NEW top-level parcel → re-init the header carrier from the unprocessed lines
+		// (the batch that will land on it). Only on a genuine new-*parcel* select (a real LU), not when clearing it.
+		if (target != null && target.isNewLU())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -690,10 +697,18 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final TUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// A TU is a new top-level parcel ONLY when it is NOT nested under an existing LU pick target. A TU nested
+		// under an LU keeps the LU's header carrier state untouched (the LU is the parcel). Re-init only on a real
+		// new-*parcel* select (a new TU), not when clearing the target.
+		if (target != null && target.isNewTU() && !pickingJobChanged.getLuPickingTargetEffective(lineId).isPresent())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -790,7 +805,14 @@ public class PickingJobService implements PickingSlotListener
 			final boolean isShipClosedHUs)
 	{
 		final LUIdsAndTopLevelTUIdsCollector closedHUIdsCollector = new LUIdsAndTopLevelTUIdsCollector();
-		final PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+		PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+
+		// Closing a TOP-LEVEL parcel (header scope) frees the header for the next batch → re-init its carrier
+		// state from the still-unprocessed lines. A per-line close (isCloseOnHeader=false) leaves the header alone.
+		if (isCloseOnHeader)
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
+		}
 
 		if (!Util.equals(pickingJob, pickingJobChanged))
 		{

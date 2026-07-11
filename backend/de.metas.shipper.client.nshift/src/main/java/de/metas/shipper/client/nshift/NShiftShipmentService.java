@@ -361,7 +361,7 @@ public class NShiftShipmentService
 		final String code = String.valueOf(response.getProdConceptID());
 		return JsonShipperProduct.builder()
 				.code(code)
-				.name(response.getProdName() != null ? response.getProdName() : code)
+				.name(NShiftUtil.buildCarrierProductName(response.getCarrierFullName(), response.getProdName(), code))
 				.build();
 	}
 

@@ -1731,11 +1731,253 @@ Feature: nShift Shipment
       | true      | false    |
 
   @from:cucumber
+  @Id:S0355_PickingDisplay_340
+  Scenario: Carrier-advise picking display — no target yet, each line shows its OWN divergent carrier, read-only
+    # Two order lines auto-advised to divergent carriers (product→Div Parcel 1, product_2→Div Parcel 2) BEFORE any
+    # pick target is selected. Each line's advise button must display THAT line's own carrier product, read-only
+    # (nothing to advise onto yet) — NOT the job-wide "divergent → no carrier" collapse, which is a header-only
+    # display. The per-line display never depends on where the pick target is stored (line vs header), so it is
+    # identical for PRODUCT and SALES_ORDER aggregation.
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier    | PickingSlot       | IsDynamic |
+      | slot_div_notg | display_div_notgt | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier | M_Shipper_ID | Name         |
+      | cp_div1    | nShift       | Div Parcel 1 |
+      | cp_div2    | nShift       | Div Parcel 2 |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_div1            | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_div_nt  | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier   | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_div_nt_l1 | so_div_nt  | product      | 10         | product_TU_10CU         |
+      | so_div_nt_l2 | so_div_nt  | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_div_nt is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_div_nt_1 | so_div_nt_l1   | N             | cp_div1            | CO                      |
+      | ss_div_nt_2 | so_div_nt_l2   | N             | cp_div1            | CO                      |
+    # Re-advise line 2 to a distinct carrier product → divergent per-line carriers.
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_div2            | cgt2                  | cs2                |
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_div_nt_2           |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier  | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID |
+      | ss_div_nt_2 | so_div_nt_l2   | N             | cp_div2            |
+    When start picking job for sales order identified by so_div_nt
+    And scan picking slot identified by slot_div_notg
+    # No pick target selected, nothing picked yet: each line still shows its OWN carrier, read-only.
+    Then expect current picking job line carrier advise
+      | target | M_Product_ID | available | readOnly | carrierProductCaption |
+      | none   | product      | true      | true     | Div Parcel 1          |
+      | none   | product_2    | true      | true     | Div Parcel 2          |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_350
+  Scenario: Carrier-advise picking display — ORDER header carrier follows the parcel: select LU shows the carrier read-only, a non-manual pick keeps it and makes it editable
+    # One order, two lines sharing the SAME auto-advised (non-manual) carrier cp_ord_named. The header holds the
+    # CURRENT top-level parcel's carrier, maintained by picking events: selecting a NEW LU re-inits the header from
+    # the still-unprocessed lines (all-same → that carrier) and read-only (the new LU is not materialised yet, so
+    # there is nothing to advise onto). Picking a NON-manual line materialises the LU and leaves the carrier as-is,
+    # but the button becomes editable (a real parcel now exists to (re-)advise onto).
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier   | PickingSlot     | IsDynamic |
+      | slot_ord_hdr | display_ord_hdr | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier    | M_Shipper_ID | Name           |
+      | cp_ord_named  | nShift       | Ord Std Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_ord_named       | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ord_hdr | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_ord_hdr_l1 | so_ord_hdr | product      | 10         | product_TU_10CU         |
+      | so_ord_hdr_l2 | so_ord_hdr | product_2    | 10         | product_2_TU_10CU       |
+    When the order identified by so_ord_hdr is completed
+    # Wait for the order-completion auto-advise to land the SAME carrier on both schedules (advise Completed).
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier      | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_ord_hdr_1    | so_ord_hdr_l1  | N             | cp_ord_named       | CO                      |
+      | ss_ord_hdr_2    | so_ord_hdr_l2  | N             | cp_ord_named       | CO                      |
+    When start picking job for sales order identified by so_ord_hdr
+    And scan picking slot identified by slot_ord_hdr
+    And set picking target as new LU identified by LU
+    # New LU selected but not yet materialised (no pick onto it) → the header shows the carrier of the unprocessed
+    # lines (all-same) but read-only.
+    Then expect current picking job:
+      | HasLuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+      | Y           | cp_ord_named       | N                       |
+    And expect current picking job header carrier advise
+      | available | readOnly | carrierProductCaption |
+      | true      | true     | Ord Std Parcel        |
+    # Pick a non-manual line → the LU materialises; the header carrier is UNCHANGED (only advise sets it), now editable.
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    Then expect current picking job:
+      | HasLuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+      | Y           | cp_ord_named       | N                       |
+    And expect current picking job header carrier advise
+      | available | readOnly | carrierProductCaption |
+      | true      | false    | Ord Std Parcel        |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_360
+  Scenario: Carrier-advise picking display — ORDER header carrier: a MANUAL pick carries the manual carrier onto the header and makes it read-only
+    # Same all-same setup as _350, but the (single) schedule is advised MANUALLY. Picking a manual line folds its
+    # carrier onto the header AND flags the header read-only (a manual is a human override advise cannot converge).
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier       | PickingSlot         | IsDynamic |
+      | slot_ord_hdr_man | display_ord_hdr_man | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier       | M_Shipper_ID | Name           |
+      | cp_ord_man_named | nShift       | Ord Man Parcel |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_ord_man_named   | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier     | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_ord_hdr_man | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier        | C_Order_ID     | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_ord_hdr_man_l1 | so_ord_hdr_man | product      | 10         | product_TU_10CU         |
+    When the order identified by so_ord_hdr_man is completed
+    # Wait for the auto-advise to land (Completed) before overriding manually — a manual advise on a still-Requested
+    # schedule is silently skipped.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID    | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_ord_hdr_man | so_ord_hdr_man_l1 | N             | cp_ord_man_named   | CO                      |
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_ord_hdr_man        | cp_ord_man_named   | cgt1                  | cs1                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID    | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_ord_hdr_man | so_ord_hdr_man_l1 | N             | cp_ord_man_named   | MAN                     |
+    When start picking job for sales order identified by so_ord_hdr_man
+    And scan picking slot identified by slot_ord_hdr_man
+    And set picking target as new LU identified by LU
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | hu_1       | 10        |
+    # Manual pick → header carries the manual carrier and is read-only.
+    Then expect current picking job:
+      | HasLuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+      | Y           | cp_ord_man_named   | Y                       |
+    And expect current picking job header carrier advise
+      | available | readOnly | carrierProductCaption |
+      | true      | true     | Ord Man Parcel        |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_370
+  Scenario: Carrier-advise picking display — PRODUCT aggregation, the line shows its OWN carrier (no target), read-only
+    # PRODUCT (line-level) aggregation: the LINE is the parcel. Before any pick target exists, the per-line advise
+    # display reads the LINE's own create-time carrier, read-only (nothing to advise onto yet) — identically to the
+    # SALES_ORDER per-line no-target case (_340). The per-line read branches only on has-target, never on the
+    # aggregation type, so this proves the PRODUCT (line-level) scope reads the line the same way.
+    # (A single product line → a single PRODUCT-aggregation launcher, so the sales-order start step applies; a
+    # multi-product PRODUCT order yields one launcher per product, which needs a product-scoped start step.)
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | PRODUCT                   |
+    And metasfresh contains M_PickingSlot:
+      | Identifier    | PickingSlot      | IsDynamic |
+      | slot_prod_hdr | display_prod_hdr | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier     | M_Shipper_ID | Name        |
+      | cp_prod_manual | nShift       | Prod Manual |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_prod_manual     | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier  | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_prod_hdr | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID  | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_prod_hdr_l1 | so_prod_hdr | product      | 10         | product_TU_10CU         |
+    When the order identified by so_prod_hdr is completed
+    # Wait for the auto-advise to land (Completed) before overriding manually — a manual advise on a still-Requested
+    # schedule is silently skipped.
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_prod_hdr_1 | so_prod_hdr_l1 | N             | cp_prod_manual     | CO                      |
+    # Override the schedule manually → the line becomes manual/read-only.
+    And Process M_ShipmentSchedule_Advise_Manual is run
+      | M_Shipper_ID | M_ShipmentSchedule_ID | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | nShift       | ss_prod_hdr_1         | cp_prod_manual     | cgt1                  | cs1                |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_prod_hdr_1 | so_prod_hdr_l1 | N             | cp_prod_manual     | MAN                     |
+    When start picking job for sales order identified by so_prod_hdr
+    # No pick target yet → the line shows its OWN carrier, read-only (manual override).
+    Then expect current picking job line carrier advise
+      | target | M_Product_ID | available | readOnly | carrierProductCaption |
+      | none   | product      | true      | true     | Prod Manual           |
+
+  @from:cucumber
+  @Id:S0355_PickingDisplay_380
+  Scenario: Carrier-advise picking display — ORDER nested LU→TU: selecting a TU UNDER an existing LU does NOT reset the header carrier
+    # The header tracks the TOP-LEVEL parcel (the LU). Selecting a TU nested under an existing LU pick target is a
+    # sub-parcel action and must leave the header carrier state untouched (only a NEW top-level parcel re-inits it).
+    Given set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
+    And metasfresh contains M_PickingSlot:
+      | Identifier    | PickingSlot      | IsDynamic |
+      | slot_nest_lutu | display_nest_lutu | Y         |
+    And metasfresh contains Carrier_Products:
+      | Identifier    | M_Shipper_ID | Name          |
+      | cp_nest_named | nShift       | Nest Parcel   |
+    And the nShift ship advisor service is stubbed to return a successful response based on the request
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
+      | cp_nest_named      | cgt1                  | cs1                |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_nest    | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_nest_l1 | so_nest    | product      | 10         | product_TU_10CU         |
+    When the order identified by so_nest is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Advising_Status |
+      | ss_nest    | so_nest_l1     | N             | cp_nest_named      | CO                      |
+    When start picking job for sales order identified by so_nest
+    And scan picking slot identified by slot_nest_lutu
+    # Select the top-level LU → header re-inits from the unprocessed line (cp_nest_named).
+    And set picking target as new LU identified by LU
+    Then expect current picking job:
+      | HasLuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+      | Y           | cp_nest_named      | N                       |
+    # Select a TU nested UNDER the existing LU → header carrier state is UNCHANGED (sub-parcel action).
+    And set picking target as new TU identified by TU
+    Then expect current picking job:
+      | HasLuTarget | HasTuTarget | Carrier_Product_ID | IsCarrierAdviseReadOnly |
+      | Y           | Y           | cp_nest_named      | N                       |
+
+  @from:cucumber
   @Id:S0355_PickingReadvise_390
-  Scenario: nShift Carrier Re-advise — mobile packing re-advise overwrites an already-advised schedule's carrier product
+  Scenario: nShift Carrier Re-advise — mobile packing re-advise sets the carrier on the JOB and leaves the schedule UNCHANGED
     # The schedule is auto-advised to cp1 at order completion (advising status Completed). When the operator packs
-    # and triggers the carrier advise from mobile picking, the schedule must be RE-advised against the packed HU —
-    # here the advisor now returns cp2 — even though the schedule is already Completed.
+    # and triggers the carrier advise from mobile picking, the packed HU is re-advised (advisor now returns cp2) and
+    # the result is persisted ONLY onto the picking job (header + line) — the SHIPMENT SCHEDULE is NOT written (it is
+    # the WebUI advise / shipment-carrier source, and each schedule write triggers expensive recomputes).
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob |
       | Y                   | CREATE_COMPLETE_CLOSE | Y                                  |
@@ -1768,14 +2010,22 @@ Feature: nShift Shipment
     And pick lines
       | PickingLine.byProduct | PickFromHU | QtyPicked |
       | product               | hu_1       | 10        |
-    # The advisor now returns a different product; the mobile packing re-advise must apply it to the Completed schedule
+    # The advisor now returns a different product; the mobile packing re-advise persists it onto the JOB only.
     And the nShift ship advisor service is stubbed to return a successful response based on the request
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp2                | cgt1                  | cs1                |
     And run carrier advise for the current picking job
-    Then after not more than 60s, M_ShipmentSchedules are found:
+    # The JOB header + line now carry the re-advised carrier cp2 …
+    Then expect current picking job:
+      | HasTuTarget | Carrier_Product_ID |
+      | Y           | cp2                |
+    And expect current picking job lines:
+      | M_Product_ID | Carrier_Product_ID |
+      | product      | cp2                |
+    # … while the SHIPMENT SCHEDULE carrier is UNCHANGED (still cp1 — the mobile advise no longer writes the schedule).
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | Carrier_Product_ID |
-      | ss_readv   | so_readv_l1    | cp2                |
+      | ss_readv   | so_readv_l1    | cp1                |
 
   @from:cucumber
   @Id:S0355_DeliveryOrder_400

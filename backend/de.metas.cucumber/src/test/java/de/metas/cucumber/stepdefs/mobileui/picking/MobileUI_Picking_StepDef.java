@@ -165,6 +165,15 @@ public class MobileUI_Picking_StepDef
 	 * Asserts the carrier-advise display flags the mobile picking UI renders for the current job line,
 	 * across the pick-to shapes (LU target, TU target, or CU-direct / no-target pick) — exactly the
 	 * line-level {@code carrierAdvise*} fields {@code SelectCurrentLUTUButtons} reads to render the advise button.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>target</b> — (required) names the pick-to shape being asserted (LU/TU/none); the flags are line-level<br>
+	 *   <b>available</b> — (required) expected line carrierAdviseAvailable<br>
+	 *   <b>readOnly</b> — (required) expected line carrierAdviseReadOnly<br>
+	 *   <b>carrierProductCaption</b> — (optional) expected line carrier product caption<br>
+	 *   <b>M_Product_ID</b> — (optional, identifier-ref) select the line by product when the job has several
+	 *   lines with divergent carriers; omit for a single-line job (asserts the only line)<br>
 	 */
 	@Then("expect current picking job line carrier advise")
 	public void expectCarrierAdvise(@NonNull final DataTable dataTable)
@@ -182,8 +191,13 @@ public class MobileUI_Picking_StepDef
 		final boolean expectedReadOnly = row.getAsBoolean("readOnly");
 		final Optional<String> expectedCaption = row.getAsOptionalString("carrierProductCaption");
 
-		// flags are always at line level; `target` just names the pick-to shape being asserted
-		final JsonPickingJobLine line = CollectionUtils.singleElement(context.getPickingJobLines());
+		// Flags are always at line level; `target` just names the pick-to shape being asserted. When a scenario
+		// has several lines with divergent per-line carriers, select the line by M_Product_ID; otherwise (single
+		// line) assert the only line.
+		final JsonPickingJobLine line = row.getAsOptionalIdentifier("M_Product_ID")
+				.map(productsTable::getId)
+				.map(context::getPickingJobLineByProductId)
+				.orElseGet(() -> CollectionUtils.singleElement(context.getPickingJobLines()));
 
 		assertThat(line.isCarrierAdviseAvailable()).as("carrierAdviseAvailable for target %s", target).isEqualTo(expectedAvailable);
 		assertThat(line.isCarrierAdviseReadOnly()).as("carrierAdviseReadOnly for target %s", target).isEqualTo(expectedReadOnly);
@@ -599,6 +613,14 @@ public class MobileUI_Picking_StepDef
 			{
 				return eligibleLines.get(0).getPickingLineId();
 			}
+		}
+
+		public JsonPickingJobLine getPickingJobLineByProductId(@NonNull final ProductId productId)
+		{
+			final ImmutableList<JsonPickingJobLine> eligibleLines = getPickingJobLines().stream()
+					.filter(pickingLine -> isMatching(pickingLine, productId))
+					.collect(ImmutableList.toImmutableList());
+			return CollectionUtils.singleElement(eligibleLines);
 		}
 
 		private static boolean isMatching(final JsonPickingJobLine pickingLine, final ProductId productId)
