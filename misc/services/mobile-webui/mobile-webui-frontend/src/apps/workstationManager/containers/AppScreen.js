@@ -92,7 +92,11 @@ const AppScreen = () => {
         <WorkstationInfoComponent workstationInfo={workstation} />
         <div className="pt-3 section">
           {!workstation.userAssigned && (
-            <ButtonWithIndicator caption={appTrl('action.assign.buttonCaption')} onClick={onAssignClick} />
+            <ButtonWithIndicator
+              caption={appTrl('action.assign.buttonCaption')}
+              onClick={onAssignClick}
+              testId="assign-button"
+            />
           )}
           <ButtonWithIndicator caption={appTrl('action.scanAgain.buttonCaption')} onClick={onScanAgainClick} />
         </div>

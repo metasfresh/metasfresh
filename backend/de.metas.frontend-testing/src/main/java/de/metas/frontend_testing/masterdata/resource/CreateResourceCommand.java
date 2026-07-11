@@ -5,6 +5,7 @@ import de.metas.frontend_testing.masterdata.MasterdataContext;
 import de.metas.material.planning.ManufacturingResourceType;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceTypeId;
+import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.workplace.WorkplaceId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,6 +49,8 @@ public class CreateResourceCommand
 		context.putIdentifier(identifier, resourceId);
 
 		return JsonCreateResourceResponse.builder()
+				.name(record.getName())
+				.qrCode(ResourceQRCode.ofResource(record).toGlobalQRCodeJsonString())
 				.build();
 	}
 }

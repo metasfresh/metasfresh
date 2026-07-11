@@ -35,6 +35,19 @@ export const WorkstationManagerScreen = {
         await WorkstationManagerScreen.waitForScreen();
     }),
 
+    // The frontend's Assign button (apps/workstationManager/containers/AppScreen.js) carries
+    // testId="assign-button" (mirroring WorkplaceManagerScreen's own assign-button) — select by testId.
+    clickAssignButton: async () => await test.step(`${NAME} - Click Assign button`, async () => {
+        await page.getByTestId('assign-button').tap();
+        await page.getByTestId('assign-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await WorkstationManagerScreen.waitForScreen();
+    }),
+
+    expectAssignButtonNotVisible: async () => await test.step(`${NAME} - Expect Assign button NOT visible`, async () => {
+        const assignButton = containerElement().locator('button', { hasText: 'Assign' });
+        await expect(assignButton).toHaveCount(0);
+    }),
+
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
         const row = await page.locator(
             `tr:has(th:has-text("${caption}")):has(td:has-text("${value}"))`
