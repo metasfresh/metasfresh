@@ -1,3 +1,16 @@
+-- Source DDL: backend/de.metas.material/cockpit/src/main/sql/postgresql/ddl/functions/de_metas_material/Retrieve_available_for_Sales.sql
+--
+-- Available-for-Sales performance refinement of de_metas_material.retrieve_available_for_sales.
+-- Branch (2) (demand from open Processed='N' shipment schedules) previously filtered only on
+-- s.Processed='N' and could not use the existing partial index
+-- m_shipmentschedule_m_product_id_catchuom_id (on (m_product_id, catch_uom_id)
+-- WHERE isactive='Y' AND processed='N') -> it fell back to a wide index scan. Adding the
+-- s.IsActive='Y' predicate lets the planner reuse that partial index (measured on a large
+-- production instance: ~50x fewer buffers / ~70x faster on a high-runner). The change is
+-- output-neutral: no inactive open shipment schedules exist. Only branch (2) is changed.
+--
+-- Prior perf rewrite of this function: https://github.com/metasfresh/metasfresh/pull/24361
+
 SELECT db_drop_functions('*.retrieve_available_for_sales')
 ;
 
