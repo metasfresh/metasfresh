@@ -60,6 +60,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsIssueWarehouse;
+import static org.compiere.model.I_M_Warehouse.COLUMNNAME_IsPickingWarehouse;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -205,6 +206,8 @@ public class M_Warehouse_StepDef
 						queryBL.createQueryBuilder(I_M_Warehouse.class).addEqualsFilter(COLUMNNAME_IsIssueWarehouse, true).addEqualsFilter(COLUMNNAME_IsActive, true).create().updateDirectly(updater);
 					}
 
+					final boolean isPickingWarehouse = row.getAsOptionalBoolean(COLUMNNAME_IsPickingWarehouse).orElse(false);
+
 					final boolean isDropShipWarehouse = row.getAsOptionalBoolean(I_M_Warehouse.COLUMNNAME_IsDropShipWarehouse).orElse(false);
 					warehouseRecord.setIsDropShipWarehouse(isDropShipWarehouse);
 
@@ -231,6 +234,7 @@ public class M_Warehouse_StepDef
 					warehouseRecord.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 					warehouseRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(bpartnerLocationId));
 					warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+					warehouseRecord.setIsPickingWarehouse(isPickingWarehouse);
 					warehouseRecord.setIsInTransit(isInTransit);
 					warehouseRecord.setIsQuarantineWarehouse(isQuarantineWarehouse);
 					warehouseRecord.setIsQualityReturnWarehouse(isQualityReturnWarehouse);
