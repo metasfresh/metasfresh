@@ -63,14 +63,16 @@ public class NShiftGateway_StepDef
 
 	/**
 	 * Holds the most recent {@link JsonDeliveryRequest} captured by the shipment service stub.
-	 * Reset to {@code null} each time {@link #stubShipmentServiceWithSuccess()} is called.
+	 * Reset to {@code null} each time either shipment stub is set up
+	 * ({@link #stubShipmentServiceWithSuccess()} or {@link #stubShipmentServiceWithSuccessWithoutTrackingUrl()}).
 	 */
 	@Nullable private JsonDeliveryRequest capturedShipmentRequest = null;
 
 	/**
 	 * Holds every {@link JsonDeliveryRequest} captured by the shipment service stub, in call order.
 	 * One entry per nShift {@code createShipment} call — i.e. one per delivery order the gateway splits the
-	 * packages into. Cleared each time {@link #stubShipmentServiceWithSuccess()} is called.
+	 * packages into. Cleared each time either shipment stub is set up
+	 * ({@link #stubShipmentServiceWithSuccess()} or {@link #stubShipmentServiceWithSuccessWithoutTrackingUrl()}).
 	 */
 	@NonNull private final List<JsonDeliveryRequest> capturedShipmentRequests = new ArrayList<>();
 
@@ -144,6 +146,11 @@ public class NShiftGateway_StepDef
 				});
 	}
 
+	/**
+	 * Stubs the nShift shipment service to return a successful shipment creation response that carries a
+	 * tracking URL for every parcel. See {@link #stubShipmentServiceWithSuccessWithoutTrackingUrl()} for the
+	 * tracking-absent variant.
+	 */
 	@Given("the nShift shipment service is stubbed to return a successful shipment creation response")
 	public void stubShipmentServiceWithSuccess()
 	{
