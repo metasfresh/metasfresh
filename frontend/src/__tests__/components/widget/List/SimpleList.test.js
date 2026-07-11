@@ -29,12 +29,59 @@ describe('SimpleList component', () => {
     wrapper.setProps({ selected: itemB });
     wrapper.update();
 
-    // dev-note (bug AC2): `listHash` is memoized on `[list]` only (SimpleList.js line 21),
-    // so when `selected` changes but `list` keeps the same reference, RawList's
-    // componentDidUpdate never re-runs setSelectedValue (gated on listHash change),
-    // leaving the dropdown's highlighted option (state.selected) stale at itemA
-    // instead of reflecting the new itemB.
+    // AC2: because `listHash` now depends on `selected?.key`, changing `selected` to a
+    // different-key item (same `list` ref) regenerates the hash, so RawList's
+    // componentDidUpdate re-runs setSelectedValue and the highlighted option updates.
     const updatedRawListInstance = wrapper.find('RawList0').instance();
     expect(updatedRawListInstance.state.selected).toEqual(itemB);
+  });
+
+  // Blast-radius guard for the shared consumers (SimulationsDropDown / ResourcesDropDown),
+  // which rebuild `selected` as a fresh object literal on every (e.g. websocket-driven)
+  // render: the hash must stay STABLE when only `selected`'s identity changes but its key
+  // does not — otherwise an open dropdown would reorder/reload under the user's cursor.
+  it('does NOT regenerate listHash when `selected` changes identity but keeps the same key', () => {
+    const list = fixtures.data1.listData;
+    const itemA = list[0];
+    const wrapper = mount(
+      <SimpleList list={list} selected={itemA} onSelect={jest.fn()} />
+    );
+    const hashBefore = wrapper.find('RawList0').prop('listHash');
+
+    const sameKeyNewIdentity = { ...itemA }; // new object, same key — the calendar pattern
+    expect(sameKeyNewIdentity).not.toBe(itemA);
+    wrapper.setProps({ selected: sameKeyNewIdentity });
+    wrapper.update();
+
+    expect(wrapper.find('RawList0').prop('listHash')).toBe(hashBefore);
+  });
+
+  it('regenerates listHash when the `selected` key changes (re-highlight the applied entry)', () => {
+    const list = fixtures.data1.listData;
+    const wrapper = mount(
+      <SimpleList list={list} selected={list[0]} onSelect={jest.fn()} />
+    );
+    const hashBefore = wrapper.find('RawList0').prop('listHash');
+
+    wrapper.setProps({ selected: list[1] }); // different key
+    wrapper.update();
+
+    expect(wrapper.find('RawList0').prop('listHash')).not.toBe(hashBefore);
+  });
+
+  it('starts unfocused by default (shared consumers unchanged) and focused only when keepFocused is set', () => {
+    const list = fixtures.data1.listData;
+
+    const dflt = mount(
+      <SimpleList list={list} selected={list[0]} onSelect={jest.fn()} />
+    );
+    // calendar dropdowns pass no keepFocused → identical to the previous useState(false)
+    expect(dflt.find('RawList0').prop('isFocused')).toBe(false);
+
+    const kept = mount(
+      <SimpleList list={list} selected={list[0]} onSelect={jest.fn()} keepFocused />
+    );
+    // the email picker opts in → starts focused so it opens on the first click
+    expect(kept.find('RawList0').prop('isFocused')).toBe(true);
   });
 });
