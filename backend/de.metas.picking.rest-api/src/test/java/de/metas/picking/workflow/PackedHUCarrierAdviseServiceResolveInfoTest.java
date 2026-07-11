@@ -24,7 +24,6 @@ import de.metas.shipping.ShipperRepository;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import com.google.common.collect.ImmutableList;
-import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
@@ -166,19 +165,12 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		return line;
 	}
 
-	private static PickingJob mockJobLevelJob(final boolean hasTarget, final ImmutableList<PickingJobLine> lines)
+	private static PickingJob mockJobLevelJob(final ImmutableList<PickingJobLine> lines)
 	{
 		final PickingJob job = mock(PickingJob.class);
 		when(job.isLineLevelPickTarget()).thenReturn(false);
-		if (hasTarget)
-		{
-			when(job.getLuPickingTarget(null)).thenReturn(Optional.of(mock(LUPickingTarget.class)));
-		}
-		else
-		{
-			when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
-			when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
-		}
+		when(job.getLuPickingTarget(null)).thenReturn(Optional.empty());
+		when(job.getTuPickingTarget(null)).thenReturn(Optional.empty());
 		when(job.getLines()).thenReturn(lines);
 		return job;
 	}
@@ -195,7 +187,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	{
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
-		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(mockApiAdviseLine(cp, false)));
+		final PickingJob job = mockJobLevelJob(ImmutableList.of(mockApiAdviseLine(cp, false)));
 
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
 
@@ -209,7 +201,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	{
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
-		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(
+		final PickingJob job = mockJobLevelJob(ImmutableList.of(
 				mockApiAdviseLine(cp, false), mockApiAdviseLine(cp, false)));
 
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
@@ -227,7 +219,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final ShipperId shipperId = createShipper("nShift", true);
 		final CarrierProduct cp1 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "A");
 		final CarrierProduct cp2 = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp2", "B");
-		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(
+		final PickingJob job = mockJobLevelJob(ImmutableList.of(
 				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
 
 		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
@@ -241,7 +233,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	{
 		final ShipperId shipperId = createShipper("noAdvise", false);
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Fallback");
-		final PickingJob job = mockJobLevelJob(false, ImmutableList.of(mockApiAdviseLine(cp, false)));
+		final PickingJob job = mockJobLevelJob(ImmutableList.of(mockApiAdviseLine(cp, false)));
 
 		assertThat(service.resolveInfo(job, null).isAvailable()).isFalse();
 	}
