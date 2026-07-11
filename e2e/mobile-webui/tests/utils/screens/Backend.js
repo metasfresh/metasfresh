@@ -82,12 +82,8 @@ export const Backend = {
         const backendBaseUrl = await getBackendBaseUrl();
         // The mobile REST API authenticates via the login token header (not a browser cookie),
         // so page.request must carry it explicitly — same token the logged-in UI uses.
-        const token = testContext.lastMasterdata?.login?.user?.token;
-        if (!token) {
-            throw new Error('No login token in masterdata:\n' + JSON.stringify(testContext.lastMasterdata, null, 2));
-        }
         const response = await page.request.get(`${backendBaseUrl}/workplace`, {
-            headers: { 'Authorization': token },
+            headers: { 'Authorization': getAuthToken() },
         });
         const responseBody = await response.json();
         assertNoErrors({ responseBody });
@@ -156,9 +152,9 @@ const assertNoErrors = ({ responseBody }) => {
 };
 
 const getAuthToken = () => {
-    const token = lastMasterdata?.login?.user?.token;
+    const token = testContext.lastMasterdata?.login?.user?.token;
     if (!token) {
-        throw new Error('No token found in masterdata:\n' + JSON.stringify(lastMasterdata, null, 2));
+        throw new Error('No token found in masterdata:\n' + JSON.stringify(testContext.lastMasterdata, null, 2));
     }
     return token;
 }
