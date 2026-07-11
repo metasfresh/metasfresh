@@ -293,6 +293,12 @@ dialog opened only after the third click.
         login: {
           user: { language: 'en_US', firstname: 'first', lastname: 'last' },
         },
+        // Seed a tenant mailbox so the Email dialog can open (createEmail asserts a
+        // resolvable mailbox via MailService.findMailbox). Get-or-create, so it never
+        // accumulates duplicates in the shared e2e DB.
+        mailboxes: {
+          MB1: {},
+        },
         bpartners: {
           CUSTOMER1: {
             isVendor: false,
@@ -353,18 +359,9 @@ dialog opened only after the third click.
             .catch(() => false);
         }
       }
-      // The Email dialog only opens when the tenant has a mailbox configured
-      // (createEmail asserts a valid mailbox via MailService.findMailbox and the
-      // dialog auto-closes on failure). The generic e2e stack's tenant has no
-      // mailbox, so this scenario can only run where mail is configured (a real /
-      // customer instance, or once the masterdata API can seed a mailbox). Skip
-      // rather than fail there — AC1/AC3 are verified at UAT on the mail-configured
-      // instance. Where the dialog DOES open, the picker assertions below run as a
-      // full regression guard.
-      test.skip(
-        !emailVisible,
-        'Email dialog needs a configured mailbox (not present in the generic e2e stack)'
-      );
+      // The seeded tenant mailbox (masterdata `mailboxes`) makes createEmail resolve a
+      // mailbox via MailService.findMailbox, so the Email dialog opens.
+      expect(emailVisible, 'Email dialog must open (tenant mailbox is seeded)').toBe(true);
     });
 
     // === PRECONDITION: template picker rendered (>=1 template available) ===
