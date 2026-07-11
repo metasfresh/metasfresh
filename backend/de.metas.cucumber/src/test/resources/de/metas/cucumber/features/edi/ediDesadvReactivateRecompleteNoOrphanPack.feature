@@ -62,9 +62,9 @@ Feature: Reactivating and re-completing a shipment must not leave an orphan Qty-
     And metasfresh contains C_BPartners:
       | Identifier  | IsCustomer | M_PricingSystem_ID | GLN          |
       | endcustomer | Y          | ps_S0353_020       | location_gln |
-    And the following c_bpartner is changed
-      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      |
-      | endcustomer   | true                 | bPartnerDesadvRecipientGLN |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | Identifier            |
+      | endcustomer   | true                 | bPartnerDesadvRecipientGLN | edi_setting_S0353_020 |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer              | product_main            |

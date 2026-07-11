@@ -26,9 +26,9 @@ Feature: EDI DESADV export via postgREST
     And metasfresh contains C_BPartners without locations:
       | Identifier | Value               | Name               | IsCustomer | IsVendor | M_PricingSystem_ID |
       | customer1  | desadvReceiverValue | desadvReceiverName | Y          | N        | pricingSystem      |
-    And the following c_bpartner is changed
-      | Identifier | IsEdiDesadvRecipient | EdiDesadvRecipientGLN |
-      | customer1  | true                 | 1234567890            |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                    |
+      | customer1     | true                 | 1234567890            | edi_setting_postgrest_cust1_1 |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | C_BPartner_ID | IsShipToDefault | IsBillToDefault | GLN           |
       | bpartner_location_1 | customer1     | Y               | Y               | 1234567890123 |
