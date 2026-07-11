@@ -147,6 +147,21 @@ public class NShiftGateway_StepDef
 	@Given("the nShift shipment service is stubbed to return a successful shipment creation response")
 	public void stubShipmentServiceWithSuccess()
 	{
+		stubShipmentServiceWithSuccess(true);
+	}
+
+	/**
+	 * Same successful shipment stub, but the response carries NO tracking URL — the parcel is created without one,
+	 * so the shipment-notification delay gate holds the mail workpackage until a tracking URL is set later.
+	 */
+	@Given("the nShift shipment service is stubbed to return a successful shipment creation response without tracking url")
+	public void stubShipmentServiceWithSuccessWithoutTrackingUrl()
+	{
+		stubShipmentServiceWithSuccess(false);
+	}
+
+	private void stubShipmentServiceWithSuccess(final boolean includeTrackingUrl)
+	{
 		capturedShipmentRequest = null; // reset before each stub setup so stale captures don't leak between scenarios
 		capturedShipmentRequests.clear();
 
@@ -169,7 +184,7 @@ public class NShiftGateway_StepDef
 						builder.item(JsonDeliveryResponseItem.builder()
 								.lineId(deliveryOrderParcels.get(i).getId())
 								.awb("awb" + (i + 1))
-								.trackingUrl("trackingUrl" + (i + 1))
+								.trackingUrl(includeTrackingUrl ? "trackingUrl" + (i + 1) : null)
 								.labelPdfBase64("JVBERi0xLjAKMSAwIG9iajw8L1R5cGUvQ2F0YWxvZy9QYWdlcyAyIDAgUj4+ZW5kb2JqCjIgMCBvYmo8PC9UeXBlL1BhZ2VzL0NvdW50IDAvS2lkc1tdPj5lbmRvYmoKeHJlZgowIDMKMDAwMDAwMDAwMCA2NTUzNSBmMDAwMDAwMDAxMCAwMDAwMCBuCjAwMDAwMDAwNTYgMDAwMDAgbgp0cmFpbGVyPDwvU2l6ZSAzL1Jvb3QgMSAwIFI+PgpzdGFydHhyZWYKMTAxCiUlRU9GCg==".getBytes(StandardCharsets.US_ASCII))
 								.build()
 						);
