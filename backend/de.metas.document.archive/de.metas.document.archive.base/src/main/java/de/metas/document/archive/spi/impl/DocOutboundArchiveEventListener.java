@@ -12,11 +12,8 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.DocOutboundUtils;
 import de.metas.document.archive.api.IDocOutboundDAO;
-<<<<<<< HEAD
 import de.metas.document.archive.api.impl.DocOutboundService;
-=======
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipientId;
->>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 import de.metas.document.archive.mailrecipient.DocOutBoundRecipients;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRegistry;
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;

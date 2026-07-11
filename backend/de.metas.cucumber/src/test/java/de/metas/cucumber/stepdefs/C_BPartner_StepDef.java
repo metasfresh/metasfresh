@@ -148,7 +148,6 @@ public class C_BPartner_StepDef
 
 	@Nullable private AdempiereException lastUpdateException = null;
 
-<<<<<<< HEAD
 	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 	@NonNull private final IncotermsRepository incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 
@@ -165,15 +164,8 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
-=======
-	/**
-	 * Creates C_BPartner records (auto-generates Value/Name; default location added).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.columns
-	 *   <b>IsInvoiceEmailEnabled</b> — (optional) partner-level invoice-email flag (Y/N); when Y, invoices are emailable to the bill-to location email even without a bill contact.<br>
->>>>>>> 0b78cfaf31 (Outbound Emails — invoice mail: bill-to location-email fallback (#25038))
 	 */
 	@Given("metasfresh contains C_BPartners:")
 	public void metasfresh_contains_c_bpartners(@NonNull final DataTable dataTable) throws Throwable
