@@ -36,6 +36,7 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.contracts.bpartner.process.C_BPartner_MoveToAnotherOrg;
 import de.metas.cucumber.stepdefs.aggregation.C_Aggregation_StepDefData;
 import de.metas.cucumber.stepdefs.bpgroup.C_BP_Group_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
@@ -139,6 +140,7 @@ public class C_BPartner_StepDef
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final C_Aggregation_StepDefData aggregationTable;
 	@NonNull private final AD_User_StepDefData userTable;
+	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final TestContext restTestContext;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IBPartnerStatsDAO bpartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
@@ -448,6 +450,10 @@ public class C_BPartner_StepDef
 
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_VATaxID)
 				.ifPresent(vatId -> bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vatId)));
+
+		row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseTable::getId)
+				.ifPresent(warehouseId -> bPartnerRecord.setM_Warehouse_ID(warehouseId.getRepoId()));
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 
