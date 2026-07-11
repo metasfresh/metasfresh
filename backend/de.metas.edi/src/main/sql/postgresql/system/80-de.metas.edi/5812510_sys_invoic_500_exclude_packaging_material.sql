@@ -1,31 +1,11 @@
-/*
- * #%L
- * de.metas.edi
- * %%
- * Copyright (C) 2025 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+-- Source DDL: backend/de.metas.edi/src/main/sql/postgresql/ddl/views/edi_cctop_invoic_500_v_view.sql
+-- INVOIC export: exclude packaging-material invoice lines (IsPackagingMaterial='Y').
+-- Packaging-material lines (deposit / Leergut, pallets) carry no C_OrderLine_ID and must not
+-- be exported as INVOIC line items; they otherwise fail the mandatory-C_OrderLine_ID check.
 
--- View: public.edi_cctop_invoic_500_v
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
 
-DROP VIEW IF EXISTS public.edi_cctop_invoic_500_v
-;
-
-CREATE OR REPLACE VIEW edi_cctop_invoic_500_v AS
+CREATE OR REPLACE VIEW edi_cctop_invoic_500_v$new AS
 SELECT SUM(il.qtyEntered)                                                        AS QtyInvoiced,
        CASE
            WHEN u.x12de355 = 'TU' THEN 'PCE'
@@ -84,9 +64,8 @@ SELECT SUM(il.qtyEntered)                                                       
        REGEXP_REPLACE(pip.EAN_TU::text, '\s+$'::text, ''::text)                  AS EAN_TU,
        REGEXP_REPLACE(pip.UPC::text, '\s+$'::text, ''::text)                     AS UPC_TU,
        REGEXP_REPLACE(pip.GTIN::text, '\s+$'::text, ''::text)                    AS Buyer_GTIN_TU,
-       COALESCE( -- if there is no explicit asi_data GTIN, fall back to the buyer-specific EAN_CU on the same M_Product_ASI_Data row (EAN_CU and GTIN_CU are semantically equivalent for modern EAN-13/EAN-14 codes); only when both are missing do we fall back to the supplier-side base M_Product.GTIN
+       COALESCE( -- if there is no explicit asi_data GTIN, then assume that the G from GTIN is respected and thus buyer&supplier work with the same value
                NULLIF(REGEXP_REPLACE(asi_data.GTIN::text, '\s+$'::text, ''::text), ''::text),
-               NULLIF(REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text), ''::text),
                REGEXP_REPLACE(p.GTIN::text, '\s+$'::text, ''::text)
        )                                                                         AS Buyer_GTIN_CU,
        REGEXP_REPLACE(asi_data.EAN_CU::text, '\s+$'::text, ''::text)             AS Buyer_EAN_CU,
@@ -166,9 +145,11 @@ GROUP BY il.c_invoice_id,
 ORDER BY COALESCE(ol.line, il.line)
 ;
 
-COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
-we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.
-task 08878: Note: we try to aggregate ils which have the same order line. Grouping by C_OrderLine_ID to make sure that we don''t aggregate too much;
-task 09182: in OrderPOReference and OrderLine we show reference and line for the original order, but fall back to the invoice''s own reference and line if there is no order(line).
-'
-;
+SELECT db_alter_view(
+    'edi_cctop_invoic_500_v',
+    (SELECT view_definition
+     FROM information_schema.views
+     WHERE lower(views.table_name) = lower('edi_cctop_invoic_500_v$new'))
+);
+
+DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
