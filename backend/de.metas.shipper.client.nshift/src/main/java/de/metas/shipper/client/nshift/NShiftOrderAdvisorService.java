@@ -127,7 +127,17 @@ public class NShiftOrderAdvisorService
 		// shipped carrier product agree, and the rules-off ship request re-sends the correct ProdConceptID.
 		// The display NAME combines CarrierFullName + ProdName (e.g. "UPS Rest API - UPS Standard®"), same as the ship
 		// path — this enriches only the name; the code/identity stays ProdConceptID.
-		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice response should contain a Shipment, pls check defined shipment rules. Status={}", response.getStatus());
+		final JsonShipmentResponse shipment = response.getShipment();
+		if (shipment == null)
+		{
+			// No advised Shipment. Surface nShift's own reason(s) if present (same as the booking path), else the
+			// status; getErrorMessages() is null when the key is absent, so guard before joining.
+			final List<String> nShiftErrors = response.getErrorMessages();
+			final String reason = nShiftErrors != null && !nShiftErrors.isEmpty()
+					? "nShift errors: " + String.join(" | ", nShiftErrors)
+					: "please check the defined shipment rules. Status=" + response.getStatus();
+			throw new RuntimeException("OrderAdvice response contains no Shipment; " + reason);
+		}
 		final Integer prodConceptID = Check.assumeNotNull(shipment.getProdConceptID(), "OrderAdvice Shipment should contain a ProdConceptID, pls check defined shipment rules");
 
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()
