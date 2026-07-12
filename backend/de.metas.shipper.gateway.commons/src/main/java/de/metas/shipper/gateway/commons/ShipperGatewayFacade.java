@@ -1,5 +1,6 @@
 package de.metas.shipper.gateway.commons;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
@@ -177,7 +178,7 @@ public class ShipperGatewayFacade
 				.fromOrgId(mpackage.getAD_Org_ID())
 				.deliverToBPartnerId(mpackage.getC_BPartner_ID())
 				.deliverToBPartnerLocationId(mpackage.getC_BPartner_Location_ID())
-				.deliverToContactId(UserId.ofRepoIdOrNull(mpackage.getAD_User_ID()))
+				.deliverToContactId(toDeliverToContactId(mpackage.getAD_User_ID()))
 				.pickupDate(pickupDate)
 				.timeFrom(timeFrom)
 				.timeTo(timeTo)
@@ -187,6 +188,22 @@ public class ShipperGatewayFacade
 				.asyncBatchId(asyncBatchId)
 				.packageId(perPackageKey)
 				.build();
+	}
+
+	/**
+	 * Resolves the delivery-order receiver contact from an {@code M_Package.AD_User_ID}.
+	 * <p>
+	 * {@code AD_User_ID == 0} means the shipment carries <b>no</b> contact. It must NOT resolve to the
+	 * System user: {@link UserId#ofRepoIdOrNull(int)} maps {@code 0 -> UserId.SYSTEM}, and that (non-null)
+	 * System user then survives the {@code deliverContactId != null} guard in the draft-delivery-order
+	 * creators (e.g. {@code NShiftDraftDeliveryOrderCreator}), so the System user's name/phone/email are
+	 * sent as the carrier shipment order's receiver contact. Resolving to {@code null} instead lets the
+	 * delivery-order builder fall back to the delivery BPartner/location.
+	 */
+	@VisibleForTesting
+	static UserId toDeliverToContactId(final int adUserRepoId)
+	{
+		return UserId.ofRegularUserRepoIdOrNull(adUserRepoId);
 	}
 
 	/**
