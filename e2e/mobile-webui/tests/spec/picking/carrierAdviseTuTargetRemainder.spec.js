@@ -64,13 +64,14 @@ test('Carrier advise — previewable on the remainder TU after the first TU was 
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
     await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode, expectNextScreen: 'PickLineScanScreen', gotoPickingJobScreen: true });
 
-    // Pack the first TU and confirm the advise is shown on it.
+    // Pack ONE full TU (100 of the 200 ordered), leaving a 100-CU remainder still to pick — so the fresh TU
+    // below is a genuine remainder target and the advise must stay previewable on it.
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
-    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode });
+    await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, qtyEntered: '100' });
     await PickingJobScreen.expectCarrierProductCaption({ caption: masterdata.shippers.carrier.name });
     await PickingJobScreen.expectAdviseCarrierButtonVisible();
 
-    // Ship that first TU, then start a fresh TU for the order remainder.
+    // Ship that first TU, then start a fresh TU for the order remainder (100 CU still to pick).
     await PickingJobScreen.closeTargetTU();
     await PickingJobScreen.setTargetTU({ tu: masterdata.packingInstructions.PI1.tuName });
 
