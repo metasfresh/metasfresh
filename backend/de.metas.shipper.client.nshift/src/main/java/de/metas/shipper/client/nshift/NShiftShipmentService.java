@@ -112,9 +112,14 @@ public class NShiftShipmentService
 			final JsonOrderAdviceResponse orderAdviceResponse = restClient.post(NShiftConstants.ORDER_ADVICE_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
 
 			logger.debug("Successfully received nShift OrderAdvice response: {}", orderAdviceResponse);
-			final JsonShipmentResponse shipment = Check.assumeNotNull(
-					orderAdviceResponse.getShipment(),
-					"OrderAdvice(Submit=1) response should contain a booked Shipment; Status={}", orderAdviceResponse.getStatus());
+			final JsonShipmentResponse shipment = orderAdviceResponse.getShipment();
+			if (shipment == null)
+			{
+				// nShift returned Success but booked no Shipment (it resolved nothing). Include the request JSON —
+				// same as the HTTP-error path (NShiftRestClient.createApiException) — so the offending request is visible.
+				throw new RuntimeException("OrderAdvice(Submit=1) response should contain a booked Shipment; Status=" + orderAdviceResponse.getStatus() + "\n"
+						+ "nShiftRequest: " + restClient.requestBodyAsJsonForError(requestBody));
+			}
 			return buildJsonDeliveryResponse(shipment, deliveryRequest);
 		}
 		catch (final Throwable throwable)
