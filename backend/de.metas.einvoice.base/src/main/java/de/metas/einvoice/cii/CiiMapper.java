@@ -1053,27 +1053,11 @@ public class CiiMapper
 	}
 
 	/**
-	 * Resolves the payee IBAN for a factored ({@code C_BPartner.IsFactoring=Y}) invoice: looks up the
-	 * org's factorer {@code C_BPartner} ({@code IsFactorer=Y}, same {@code AD_Org_ID}) and its default
-	 * bank account IBAN.
-	 *
-	 * <p>The factorer lookup mirrors the printed-invoice report SQL function
-	 * {@code de_metas_endcustomer_fresh_reports.getFactorer_BankDetails(AD_Org_ID)}: {@code WHERE
-	 * IsFactorer='Y' AND AD_Org_ID=?}, with no {@code IsActive} filter. This keeps the CII (XML) and the
-	 * printed invoice (PDF) selecting the same factorer {@code C_BPartner}. The report SQL function is
-	 * out of scope to change here (DESIGN).
-	 *
-	 * <p><b>PDF↔XML default-account consistency assumption:</b> the report SQL function joins the
-	 * factorer's bank account(s) with no {@code IsDefault} filter, whereas this method uses
-	 * {@link IBPBankAccountDAO#getDefaultBankAccount} ({@code IsDefault=Y}). For a factorer with a
-	 * single bank account (the expected setup) these are identical, so the PDF and XML IBANs agree. A
-	 * factorer with multiple bank accounts could in theory diverge between PDF and XML; using the
-	 * deterministic default account here is correct per DESIGN/PLAN. Do not "fix" this by changing the
-	 * report SQL function.
-	 *
-	 * <p>Never falls back to the seller's IBAN: a misconfigured factoring setup (no factorer, or a
-	 * factorer with no bank account / no IBAN) vetoes invoice completion via a user-validation error
-	 * instead of silently emitting the wrong (seller) creditor account.
+	 * Resolves the BT-84 payee IBAN for a factored invoice ({@code IsFactoring=Y}): the org's factorer
+	 * ({@code IsFactorer=Y}, same {@code AD_Org_ID}) default bank-account IBAN. The factorer lookup
+	 * mirrors the printed-invoice report SQL {@code getFactorer_BankDetails} so PDF and XML pick the same
+	 * factorer (single/default bank account assumed for IBAN parity). Never falls back to the seller
+	 * IBAN: a misconfigured setup vetoes completion via a user-validation error.
 	 */
 	@NonNull
 	private String resolveFactorerIban(@NonNull final I_C_Invoice invoice)
