@@ -149,6 +149,13 @@ public class NShiftRestClient
 	 * marker if serialization fails. Shared by {@link #createApiException} (the HTTP-error path) and by callers that
 	 * fail AFTER a successful HTTP response (e.g. an OrderAdvice booking whose Success response carries no Shipment),
 	 * so the offending request is always visible in the error.
+	 * <p>
+	 * On a serialization failure the {@link JsonProcessingException} is logged (WARN, with its stack trace) and its
+	 * message is embedded in the returned marker; it is deliberately NOT chained as a cause, to preserve the
+	 * never-throws contract (callers build their own error from the returned string and read only {@code getMessage()}).
+	 * <p>
+	 * Pass only request bodies — never a credential-bearing object such as {@code JsonShipperConfig}: its contents
+	 * would land in an error message / log. Credentials travel through the HTTP headers, not the request body.
 	 */
 	public String requestBodyAsJsonForError(@NonNull final Object requestBody)
 	{
