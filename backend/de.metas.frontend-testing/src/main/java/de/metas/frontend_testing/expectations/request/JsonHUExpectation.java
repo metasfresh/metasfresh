@@ -21,12 +21,6 @@ public class JsonHUExpectation
 	@Nullable Identifier bpartnerLocation;
 	@Nullable String huStatus;
 	/**
-	 * Expected HU consignee ({@code C_BPartner_ID}). When set, assert the HU's consignee resolves
-	 * to this bpartner (i.e. the consignee was RETAINED). Mutually meaningful with
-	 * {@link #consigneeCleared} (only one applies to a given assertion).
-	 */
-	@Nullable Identifier bpartner;
-	/**
 	 * When {@code true}, assert the HU's consignee was STRIPPED, i.e. {@code C_BPartner_ID <= 0}.
 	 */
 	@Nullable Boolean consigneeCleared;
