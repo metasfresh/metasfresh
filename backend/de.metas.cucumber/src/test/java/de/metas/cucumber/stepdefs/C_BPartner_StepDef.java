@@ -164,6 +164,7 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")
@@ -338,6 +339,11 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsTaxExempt(row.getAsOptionalBoolean(COLUMNNAME_IsTaxExempt).orElseFalse());
 		bPartnerRecord.setIsSalesRep(row.getAsOptionalBoolean(COLUMNNAME_IsSalesRep).orElseFalse());
 		bPartnerRecord.setAD_Org_ID(orgId);
+
+		row.getAsOptionalString(de.metas.document.archive.model.I_C_BPartner.COLUMNNAME_IsInvoiceEmailEnabled)
+				.ifPresent(isInvoiceEmailEnabled -> InterfaceWrapperHelper
+						.create(bPartnerRecord, de.metas.document.archive.model.I_C_BPartner.class)
+						.setIsInvoiceEmailEnabled(isInvoiceEmailEnabled));
 		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final StepDefDataIdentifier discountSchemaIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_PO_DiscountSchema_ID).orElse(null);
