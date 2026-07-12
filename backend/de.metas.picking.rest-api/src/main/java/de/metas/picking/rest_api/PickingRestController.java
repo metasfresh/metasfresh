@@ -201,6 +201,19 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/job/{wfProcessId}/target/advise")
+	public JsonWFProcess advisePackedHU(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
+		final WFProcess wfProcess = pickingMobileApplication.advisePackedHU(wfProcessId, lineId, getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
 	@PostMapping("/job/{wfProcessId}/target/tu/close")
 	public JsonWFProcess closeTUPickingTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,

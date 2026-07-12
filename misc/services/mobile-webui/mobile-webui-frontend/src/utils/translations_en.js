@@ -194,6 +194,7 @@ const translations = {
         skippedProducts: 'Skipped products',
       },
       rlzConfirmDeclined: 'Pick skipped — shelf life too short',
+      adviseCarrier: 'Carrier Advise',
     },
     distribution: {
       DistributionLine: 'Distribution Line',
