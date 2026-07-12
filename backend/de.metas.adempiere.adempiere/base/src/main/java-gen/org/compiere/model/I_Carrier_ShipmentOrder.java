@@ -180,6 +180,48 @@ public interface I_Carrier_ShipmentOrder
 	String COLUMNNAME_CustomerReference = "CustomerReference";
 
 	/**
+	 * Set Externes System.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem (@Nullable java.lang.String ExternalSystem);
+
+	/**
+	 * Get Externes System.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalSystem();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_ExternalSystem = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "ExternalSystem", null);
+	String COLUMNNAME_ExternalSystem = "ExternalSystem";
+
+	/**
+	 * Set Incoterms Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermsValue (@Nullable java.lang.String IncotermsValue);
+
+	/**
+	 * Get Incoterms Value.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermsValue();
+
+	ModelColumn<I_Carrier_ShipmentOrder, Object> COLUMN_IncotermsValue = new ModelColumn<>(I_Carrier_ShipmentOrder.class, "IncotermsValue", null);
+	String COLUMNNAME_IncotermsValue = "IncotermsValue";
+
+	/**
 	 * Set International Delivery.
 	 *
 	 * <br>Type: YesNo

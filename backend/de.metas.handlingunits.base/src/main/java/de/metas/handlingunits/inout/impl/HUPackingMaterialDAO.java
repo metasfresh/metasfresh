@@ -116,14 +116,13 @@ public class HUPackingMaterialDAO implements IHUPackingMaterialDAO
 	@Override
 	public PackageDimensions retrievePackageDimensions(@NonNull final I_M_HU_PackingMaterial packingMaterial, @NonNull final UomId toUomId)
 	{
-		if (packingMaterial.getC_UOM_Dimension_ID() <= 0)
+		final UomId fromUomId = UomId.ofRepoIdOrNull(packingMaterial.getC_UOM_Dimension_ID());
+		if (fromUomId == null)
 		{
-			// A packing material without a dimension UOM has unknown dimensions;
+			// A packing material with no dimension UOM has unknown (optional) dimensions;
 			// return UNSPECIFIED rather than letting UomId.ofRepoId(0) abort package creation.
 			return PackageDimensions.UNSPECIFIED;
 		}
-
-		final UomId fromUomId = UomId.ofRepoId(packingMaterial.getC_UOM_Dimension_ID());
 
 		final IUOMConversionBL iuomConversionBL = Services.get(IUOMConversionBL.class);
 		return PackageDimensions.builder()

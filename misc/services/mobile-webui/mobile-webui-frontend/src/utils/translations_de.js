@@ -199,6 +199,7 @@ const translations = {
         skippedProducts: 'Übersprungene Produkte',
       },
       rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

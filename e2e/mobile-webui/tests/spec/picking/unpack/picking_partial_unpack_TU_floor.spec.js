@@ -131,6 +131,16 @@ test('Partial unpack to the floor from a pick-to-CU-into-TU package — repeatab
             title: 'round 1 after floor unpick: 3 PCE stays in the TU; unpicked 1 PCE dropped to the floor as an active standalone CU, no orphan left Picked in the TU',
             hus: {
                 tu1: { huStatus: 'S', storages: { P1: '3 PCE' } },
+            },
+            // The shipment schedule's picked qty must follow the unpick: 4 -> 3 PCE. The unpick must
+            // reduce/delete the M_ShipmentSchedule_QtyPicked recorded for this pick — the known bug is that
+            // the HU detaches correctly but this row is NOT reduced (stays 4 PCE), over-reporting picked qty.
+            pickings: {
+                [pickingJobId]: {
+                    shipmentSchedules: {
+                        P1: { qtyPicked: [{ qtyPicked: '3 PCE', qtyTUs: 1, qtyLUs: 0, vhu: '-', tu: 'tu1', lu: '-', processed: false, shipmentLineId: '-' }] }
+                    }
+                }
             }
         });
 

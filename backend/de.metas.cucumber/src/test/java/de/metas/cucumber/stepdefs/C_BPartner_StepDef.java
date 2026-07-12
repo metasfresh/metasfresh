@@ -167,6 +167,7 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_BPartners:")

@@ -58,6 +58,8 @@ public class JsonDeliveryRequest
 	@Nullable String deliveryDate;
 	@Nullable String deliveryNote;
 	@Nullable String customerReference;
+	@Nullable String incotermsValue;
+	@Nullable String externalSystemValue;
 	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
 	@Nullable JsonShipperProduct shipperProduct;
 	@Nullable String shipperEORI;
@@ -120,6 +122,10 @@ public class JsonDeliveryRequest
 				return getDeliveryAddress().getAttention();
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION:
 				return getPickupAddress().getAttention();
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE:
+				return incotermsValue;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE:
+				return externalSystemValue;
 			default:
 				return null; // attribute not available at request level — filtered out by caller
 		}

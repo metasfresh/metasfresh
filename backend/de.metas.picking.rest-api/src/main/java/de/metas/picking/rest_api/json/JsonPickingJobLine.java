@@ -62,6 +62,12 @@ public class JsonPickingJobLine
 	@Nullable JsonLUPickingTarget luPickingTarget;
 	@Nullable JsonTUPickingTarget tuPickingTarget;
 
+	//
+	// Carrier advise at line level — for the CU-direct case (picked HUs but no LU/TU picking target).
+	boolean carrierAdviseAvailable;
+	boolean carrierAdviseReadOnly;
+	@Nullable String carrierProductCaption;
+
 	@NonNull PickingUnit pickingUnit;
 	@NonNull String packingItemName;
 	@NonNull String uom;
