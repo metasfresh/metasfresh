@@ -31,6 +31,7 @@ import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
@@ -73,7 +74,7 @@ public class NShiftShipAdvisorService
 			logger.error("Got error", throwable);
 			return JsonDeliveryAdvisorResponse.builder()
 					.requestId(deliveryAdvisorRequest.getId())
-					.errorMessage(throwable.getMessage())
+					.errorMessage(CoalesceUtil.coalesceNotNull(throwable.getMessage(), throwable.toString()))
 					.build();
 		}
 	}

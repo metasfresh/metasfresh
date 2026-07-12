@@ -29,6 +29,7 @@ import de.metas.common.delivery.v1.json.request.JsonGoodsType;
 import de.metas.common.delivery.v1.json.request.JsonShipperProduct;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryAdvisorResponse;
 import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonLine;
@@ -77,7 +78,7 @@ public class NShiftOrderAdvisorService
 			logger.error("Got error", throwable);
 			return JsonDeliveryAdvisorResponse.builder()
 					.requestId(deliveryAdvisorRequest.getId())
-					.errorMessage(throwable.getMessage())
+					.errorMessage(CoalesceUtil.coalesceNotNull(throwable.getMessage(), throwable.toString()))
 					.build();
 		}
 	}
@@ -134,7 +135,6 @@ public class NShiftOrderAdvisorService
 		// shipped carrier product agree, and the rules-off ship request re-sends the correct ProdConceptID.
 		// The display NAME combines CarrierFullName + ProdName (e.g. "UPS Rest API - UPS Standard®"), same as the ship
 		// path — this enriches only the name; the code/identity stays ProdConceptID.
-		// Shipment presence + nShift-error surfacing are handled in advise() before we get here.
 		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice Shipment must be present (validated in advise())");
 		final Integer prodConceptID = Check.assumeNotNull(shipment.getProdConceptID(), "OrderAdvice Shipment should contain a ProdConceptID, pls check defined shipment rules");
 
