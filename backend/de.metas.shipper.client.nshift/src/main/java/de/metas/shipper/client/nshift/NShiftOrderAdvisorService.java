@@ -63,6 +63,13 @@ public class NShiftOrderAdvisorService
 			final JsonOrderAdviceResponse response = restClient.post(NShiftConstants.ORDER_ADVICE_ENDPOINT, requestBody, deliveryAdvisorRequest.getShipperConfig(), JsonOrderAdviceResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
+			if (response.getShipment() == null)
+			{
+				// No advised Shipment. Surface nShift's own reason (ErrorMessages/Status) plus the request JSON as the
+				// last line — same visibility as the send path.
+				throw new RuntimeException("OrderAdvice response contains no Shipment; " + response.failureReason() + "\n"
+						+ "nShiftRequest: " + restClient.requestBodyAsJsonForError(requestBody));
+			}
 			return buildJsonDeliveryAdvisorResponse(response, deliveryAdvisorRequest.getId());
 		}
 		catch (final Throwable throwable)
@@ -127,17 +134,8 @@ public class NShiftOrderAdvisorService
 		// shipped carrier product agree, and the rules-off ship request re-sends the correct ProdConceptID.
 		// The display NAME combines CarrierFullName + ProdName (e.g. "UPS Rest API - UPS Standard®"), same as the ship
 		// path — this enriches only the name; the code/identity stays ProdConceptID.
-		final JsonShipmentResponse shipment = response.getShipment();
-		if (shipment == null)
-		{
-			// No advised Shipment. Surface nShift's own reason(s) if present (same as the booking path), else the
-			// status; getErrorMessages() is null when the key is absent, so guard before joining.
-			final List<String> nShiftErrors = response.getErrorMessages();
-			final String reason = nShiftErrors != null && !nShiftErrors.isEmpty()
-					? "nShift errors: " + String.join(" | ", nShiftErrors)
-					: "please check the defined shipment rules. Status=" + response.getStatus();
-			throw new RuntimeException("OrderAdvice response contains no Shipment; " + reason);
-		}
+		// Shipment presence + nShift-error surfacing are handled in advise() before we get here.
+		final JsonShipmentResponse shipment = Check.assumeNotNull(response.getShipment(), "OrderAdvice Shipment must be present (validated in advise())");
 		final Integer prodConceptID = Check.assumeNotNull(shipment.getProdConceptID(), "OrderAdvice Shipment should contain a ProdConceptID, pls check defined shipment rules");
 
 		final JsonDeliveryAdvisorResponse.JsonDeliveryAdvisorResponseBuilder responseBuilder = JsonDeliveryAdvisorResponse.builder()

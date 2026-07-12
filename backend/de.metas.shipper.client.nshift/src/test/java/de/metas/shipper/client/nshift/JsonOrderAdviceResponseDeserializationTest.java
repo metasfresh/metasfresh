@@ -99,5 +99,6 @@ class JsonOrderAdviceResponseDeserializationTest
 		assertThat(response.getErrorMessages())
 				.containsExactly("Shipment submit failed. Internal Server Error: list index out of range");
 		assertThat(response.getCorrelationID()).isEqualTo("15cefb2a-04c7-4f16-9596-6fe6c30a7b9a");
+		assertThat(response.failureReason()).contains("nShift errors:", "list index out of range");
 	}
 }

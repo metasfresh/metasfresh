@@ -53,4 +53,15 @@ public class JsonOrderAdviceResponse
 
 	@JsonProperty("CorrelationID")
 	String correlationID;
+
+	/**
+	 * Human-readable failure reason for a no-Shipment response: nShift's {@code ErrorMessages} joined when present
+	 * (absent key ⇒ null, so guard), otherwise the {@code Status}. Shared by the advise and booking error paths.
+	 */
+	public String failureReason()
+	{
+		return errorMessages != null && !errorMessages.isEmpty()
+				? "nShift errors: " + String.join(" | ", errorMessages)
+				: "Status=" + status;
+	}
 }

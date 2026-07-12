@@ -115,13 +115,9 @@ public class NShiftShipmentService
 			final JsonShipmentResponse shipment = orderAdviceResponse.getShipment();
 			if (shipment == null)
 			{
-				// No booked (forward) Shipment. nShift reports why under ErrorMessages (e.g. an internal booking
-				// failure) — surface those verbatim, and include the request JSON so the offending request is visible.
-				final List<String> nShiftErrors = orderAdviceResponse.getErrorMessages();
-				final String reason = nShiftErrors != null && !nShiftErrors.isEmpty()
-						? "nShift errors: " + String.join(" | ", nShiftErrors)
-						: "Status=" + orderAdviceResponse.getStatus();
-				throw new RuntimeException("OrderAdvice(Submit=1) response contains no booked Shipment; " + reason + "\n"
+				// No booked (forward) Shipment. Surface nShift's own reason (ErrorMessages/Status) plus the request
+				// JSON so the offending request is visible.
+				throw new RuntimeException("OrderAdvice(Submit=1) response contains no booked Shipment; " + orderAdviceResponse.failureReason() + "\n"
 						+ "nShiftRequest: " + restClient.requestBodyAsJsonForError(requestBody));
 			}
 			return buildJsonDeliveryResponse(shipment, deliveryRequest);
