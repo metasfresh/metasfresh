@@ -87,6 +87,14 @@ public class NShiftShipmentService
 			final JsonShipmentResponse response = restClient.post(endpoint, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
+			if (response == null || response.getShpCSID() == null)
+			{
+				// No booked shipment came back (missing ShpCSID = booking failed / empty response). Fail with the
+				// request JSON — same visibility as the OrderAdvice and HTTP-error (createApiException) paths — instead
+				// of letting an empty response fall through to the less-clear downstream line-count assertion.
+				throw new RuntimeException("Shipments endpoint returned no booked shipment (missing ShpCSID)\n"
+						+ "nShiftRequest: " + restClient.requestBodyAsJsonForError(requestBody));
+			}
 			return buildJsonDeliveryResponse(response, deliveryRequest);
 		}
 		catch (final Throwable throwable)
@@ -115,9 +123,14 @@ public class NShiftShipmentService
 			final JsonShipmentResponse shipment = orderAdviceResponse.getShipment();
 			if (shipment == null)
 			{
-				// nShift returned Success but booked no Shipment (it resolved nothing). Include the request JSON —
-				// same as the HTTP-error path (NShiftRestClient.createApiException) — so the offending request is visible.
-				throw new RuntimeException("OrderAdvice(Submit=1) response should contain a booked Shipment; Status=" + orderAdviceResponse.getStatus() + "\n"
+				// No booked (forward) Shipment. nShift reports why under ErrorMessages (e.g. an internal booking
+				// failure) — surface those verbatim, and include the request JSON (same visibility as the HTTP-error
+				// path, NShiftRestClient.createApiException) so the offending request is always in the error too.
+				final List<String> nShiftErrors = orderAdviceResponse.getErrorMessages();
+				final String reason = nShiftErrors != null && !nShiftErrors.isEmpty()
+						? "nShift errors: " + String.join(" | ", nShiftErrors)
+						: "Status=" + orderAdviceResponse.getStatus();
+				throw new RuntimeException("OrderAdvice(Submit=1) response contains no booked Shipment; " + reason + "\n"
 						+ "nShiftRequest: " + restClient.requestBodyAsJsonForError(requestBody));
 			}
 			return buildJsonDeliveryResponse(shipment, deliveryRequest);

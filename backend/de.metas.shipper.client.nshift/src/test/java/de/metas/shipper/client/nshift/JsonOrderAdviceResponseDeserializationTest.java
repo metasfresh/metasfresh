@@ -82,4 +82,22 @@ class JsonOrderAdviceResponseDeserializationTest
 		assertThat(shipment.getProdName()).isEqualTo("Home Delivery");
 		assertThat(shipment.getServices()).containsExactly(337011, 337012);
 	}
+
+	@Test
+	void deserialize_readsErrorMessages_whenNoForwardShipmentBooked() throws Exception
+	{
+		// nShift's OrderAdvice response when the FORWARD booking fails: no "Shipment", the reason under
+		// "ErrorMessages" (a "ReturnShipment" may still be present and must be ignored gracefully). Mirrors the
+		// DHL Freight "Internal Server Error: list index out of range" case — the error must be surfaced, not lost.
+		final String json = "{ \"ReturnShipment\" : { \"ShpNo\" : \"FRT-1\" },"
+				+ " \"ErrorMessages\" : [ \"Shipment submit failed. Internal Server Error: list index out of range\" ],"
+				+ " \"CorrelationID\" : \"15cefb2a-04c7-4f16-9596-6fe6c30a7b9a\" }";
+
+		final JsonOrderAdviceResponse response = objectMapper.readValue(json, JsonOrderAdviceResponse.class);
+
+		assertThat(response.getShipment()).as("no forward Shipment when the booking failed").isNull();
+		assertThat(response.getErrorMessages())
+				.containsExactly("Shipment submit failed. Internal Server Error: list index out of range");
+		assertThat(response.getCorrelationID()).isEqualTo("15cefb2a-04c7-4f16-9596-6fe6c30a7b9a");
+	}
 }

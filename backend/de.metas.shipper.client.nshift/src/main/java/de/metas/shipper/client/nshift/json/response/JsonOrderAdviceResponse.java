@@ -27,10 +27,14 @@ import lombok.Builder;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import java.util.List;
+
 /**
  * Response of the nShift {@code OrderAdvice} endpoint. Unlike the {@code Shipments} endpoint
  * (which returns the shipment object directly), OrderAdvice wraps the advised shipment under
- * {@code Shipment} alongside a {@code Status} and {@code CorrelationID}.
+ * {@code Shipment} alongside a {@code Status} and {@code CorrelationID}. When the booking fails,
+ * {@code Shipment} is absent and nShift reports the reason(s) under {@code ErrorMessages} (a return
+ * shipment, if the product generates one, may still be present under a separate key).
  */
 @Value
 @Builder
@@ -39,6 +43,10 @@ public class JsonOrderAdviceResponse
 {
 	@JsonProperty("Shipment")
 	JsonShipmentResponse shipment;
+
+	/** nShift's own failure reason(s); present (instead of {@link #shipment}) when the booking failed. */
+	@JsonProperty("ErrorMessages")
+	List<String> errorMessages;
 
 	@JsonProperty("Status")
 	String status;
