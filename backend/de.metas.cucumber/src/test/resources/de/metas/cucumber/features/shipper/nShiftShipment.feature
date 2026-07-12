@@ -1897,7 +1897,7 @@ Feature: nShift Shipment
     # multi-product PRODUCT order yields one launcher per product, which needs a product-scoped start step.)
     Given set mobile UI picking profile
       | IsAllowPickingAnyHU | CreateShipmentPolicy  | IsAllowCompletingPartialPickingJob | PickingJobAggregationType |
-      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | PRODUCT                   |
+      | Y                   | CREATE_COMPLETE_CLOSE | Y                                  | product                   |
     And metasfresh contains M_PickingSlot:
       | Identifier    | PickingSlot      | IsDynamic |
       | slot_prod_hdr | display_prod_hdr | Y         |

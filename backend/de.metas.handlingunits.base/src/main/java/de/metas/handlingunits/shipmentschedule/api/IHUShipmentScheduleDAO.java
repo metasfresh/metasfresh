@@ -34,6 +34,8 @@ import java.util.List;
 
 public interface IHUShipmentScheduleDAO extends ISingletonService
 {
+	void saveQtyPicked(@NonNull I_M_ShipmentSchedule_QtyPicked qtyPicked);
+
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForHU(I_M_HU hu);
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveByTopLevelHUAndShipmentScheduleId(

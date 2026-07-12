@@ -124,8 +124,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getContextAware;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -225,7 +223,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		qtyPickedRecord.setIsAnonymousHuPickedOnTheFly(request.isAnonymousHuPickedOnTheFly()); // mark this as an 'anonymousOnTheFly` pick
 		setHUs(qtyPickedRecord, husPair); // Set HU specific stuff
 		createCandidatesForQtyPicked(qtyPickedRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
-		saveRecord(qtyPickedRecord);
+		huShipmentScheduleDAO.saveQtyPicked(qtyPickedRecord);
 
 		//
 		// Update LU/TU/VHU
@@ -310,7 +308,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final IHUContext huContext = request.getHuContext();
 		ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(existing, huContext)
 				.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
-		saveRecord(existing);
+		huShipmentScheduleDAO.saveQtyPicked(existing);
 
 		// Drive the same HU side-effects as the create-new path. On the well-formed reversal
 		// flow the topLevelHU is already Picked with the right partner/location (the FIRST
@@ -376,7 +374,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			restored.setCatch_UOM_ID(alloc.getCatch_UOM_ID());
 			restored.setQtyDeliveredCatch(alloc.getQtyDeliveredCatch());
 			// M_InOutLine_ID stays null (un-shipped); IsActive defaults Y; Processed defaults N.
-			saveRecord(restored);
+			huShipmentScheduleDAO.saveQtyPicked(restored);
 
 			// The reverse reactivated the HU to Active; a picked row needs the HU to be Picked
 			// (retrieveNotShippedRecords keeps only Picked/Shipped HUs). Also re-stamp BPartner/Location
@@ -470,7 +468,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			ssQtyPicked.setM_LU_HU(luHU);
 			createCandidatesForQtyPicked(ssQtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
 
-			save(ssQtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(ssQtyPicked);
 		}
 	}
 
@@ -500,7 +498,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			ssQtyPicked.setM_LU_HU(luHU);
 			createCandidatesForQtyPicked(ssQtyPicked, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER).forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
 
-			save(ssQtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(ssQtyPicked);
 		}
 	}
 
@@ -546,7 +544,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			}
 
 			qtyPicked.setIsActive(false);
-			save(qtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(qtyPicked);
 		}
 
 		// also reset the HU's partner and location, unless another schedule still holds an active picked row on it
@@ -1039,7 +1037,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				qtyPickedRecord.setQtyPicked(newQtyPicked);
 				createCandidatesForQtyPicked(qtyPickedRecord, huContext, M_ShipmentSchedule_QuantityTypeToUse.TYPE_QTY_TO_DELIVER)
 						.forEach(ShipmentScheduleWithHU::updateQtyTUAndQtyLU);
-				save(qtyPickedRecord);
+				huShipmentScheduleDAO.saveQtyPicked(qtyPickedRecord);
 				remaining = BigDecimal.ZERO;
 			}
 		}
@@ -1074,7 +1072,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 		topLevelHU.setC_BPartner_ID(0);
 		topLevelHU.setC_BPartner_Location_ID(0);
-		save(topLevelHU);
+		handlingUnitsDAO.save(topLevelHU);
 	}
 
 	/**
@@ -1301,7 +1299,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 				groupQtyPicked.setVHU_ID(attributeSourceVHU.getM_HU_ID());
 			}
 			groupQtyPicked.setQtyPicked(groupStorageQty.toBigDecimal());
-			saveRecord(groupQtyPicked);
+			huShipmentScheduleDAO.saveQtyPicked(groupQtyPicked);
 
 			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
 					groupQtyPicked, huContext, attributeSourceVHU, groupStorageQty, qtyTypeToUse));
