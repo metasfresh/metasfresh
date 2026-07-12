@@ -1069,9 +1069,9 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
-	public void save(@NonNull final I_M_HU huPi)
+	public void save(@NonNull final I_M_HU hu)
 	{
-		InterfaceWrapperHelper.save(huPi);
+		InterfaceWrapperHelper.save(hu);
 	}
 
 	@Override
