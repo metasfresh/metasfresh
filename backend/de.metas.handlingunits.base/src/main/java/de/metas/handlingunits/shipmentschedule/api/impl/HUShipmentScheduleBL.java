@@ -76,6 +76,7 @@ import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -1069,8 +1070,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		}
 
 		// Case 1: find the VHU whose qty exactly matches QtyPicked — one candidate using that VHU.
-		// Using the specific VHU as override ensures its UseInASI attributes (e.g. COO) are read
-		// from the VHU itself rather than from the destination TU, which may carry a mixed/null COO.
+		// Using the specific VHU as override ensures its UseInASI attributes are read from the VHU
+		// itself rather than from the destination TU, which may carry mixed/null attribute values.
 		// UOM is consistent (same product → same stocking UOM), so BigDecimal comparison is safe.
 		final BigDecimal pickedQtyBD = qtyPicked.getQtyPicked();
 		final IHUProductStorage exactMatchStorage = storagesByFingerprint.values().stream()
@@ -1097,16 +1098,53 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(qtyPicked, huContext, qtyTypeToUse);
 		}
 
+		// Split the single whole-TU pick into one M_ShipmentSchedule_QtyPicked row per attribute-fingerprint group,
+		// so every resulting M_InOutLine (one per distinct UseInASI attribute set) binds its OWN allocation — exactly
+		// as the multi-pick path already does. Sharing one row across groups would leave all but one line with no
+		// QtyPicked, breaking qty-sync (M_InOutLine.onMovementQtyChange) and HU-based package/content resolution.
+		// Reuse the original row for the first group; split off a copy (same TU/LU) for each further group.
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
+		boolean firstGroup = true;
 		for (final AttributesKey fingerprint : storagesByFingerprint.keySet())
 		{
 			final List<IHUProductStorage> group = storagesByFingerprint.get(fingerprint);
-			final IHUProductStorage representative = group.get(0);
+			// Any VHU of the group supplies the group's (shared) attribute set — the candidate/line reads its
+			// attributes from it. All members carry the same fingerprint, so the choice is arbitrary.
+			final IHUProductStorage attributeSourceStorage = group.get(0);
+			final I_M_HU attributeSourceVHU = attributeSourceStorage.getM_HU();
 			final Quantity groupStorageQty = group.stream()
 					.map(IHUProductStorage::getQty)
-					.reduce(representative.getQty().toZero(), Quantity::add);
+					.reduce(attributeSourceStorage.getQty().toZero(), Quantity::add);
+
+			final I_M_ShipmentSchedule_QtyPicked groupQtyPicked;
+			if (firstGroup)
+			{
+				groupQtyPicked = qtyPicked;
+				firstGroup = false;
+			}
+			else
+			{
+				groupQtyPicked = shipmentScheduleAllocBL.createNewQtyPickedRecordNoSave(
+						qtyPicked.getM_ShipmentSchedule(),
+						StockQtyAndUOMQtys.ofQtyInStockUOM(groupStorageQty, productId),
+						I_M_ShipmentSchedule_QtyPicked.class);
+				groupQtyPicked.setM_TU_HU_ID(qtyPicked.getM_TU_HU_ID());
+				groupQtyPicked.setM_LU_HU_ID(qtyPicked.getM_LU_HU_ID());
+			}
+			// Reference the VHU on the row only when the group is a single VHU — then the row's qty equals that
+			// VHU's qty exactly, so it is accurate and each VHU is referenced by at most one row. For a multi-VHU
+			// group keep VHU_ID null: the group's summed qty must not be attributed to one child VHU (that would
+			// over-state it and mis-restore it on reversal). Either way the representative VHU is the candidate's
+			// attribute source (in-memory override) so the line's attributes are read from it.
+			if (group.size() == 1)
+			{
+				groupQtyPicked.setVHU_ID(attributeSourceVHU.getM_HU_ID());
+			}
+			groupQtyPicked.setQtyPicked(groupStorageQty.toBigDecimal());
+			saveRecord(groupQtyPicked);
+
 			result.add(ShipmentScheduleWithHU.ofShipmentScheduleQtyPickedForVHU(
-					qtyPicked, huContext, representative.getM_HU(), groupStorageQty, qtyTypeToUse));
+					groupQtyPicked, huContext, attributeSourceVHU, groupStorageQty, qtyTypeToUse));
 		}
 		return result.build();
 	}
@@ -1163,7 +1201,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IAttributeStorageFactory factory)
 	{
 		// IAttributeStorage does not implement getAttributeValueIdOrNull, so we cannot use
-		// AttributesKeys.createAttributesKeyFromAttributeSet here — list attributes (e.g. COO)
+		// AttributesKeys.createAttributesKeyFromAttributeSet here — list-type attributes
 		// would be silently dropped. Instead, we build the key directly from IAttributeValue,
 		// using the value string for all attribute types (consistent for grouping purposes).
 		final ImmutableSet<AttributesKeyPart> parts = factory.getAttributeStorage(vhu)

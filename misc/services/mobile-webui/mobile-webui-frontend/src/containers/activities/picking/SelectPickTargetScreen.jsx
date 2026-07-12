@@ -14,7 +14,8 @@ import { PickingTargetType } from '../../../constants/PickingTargetType';
 import { pickingJobOrLineLocation } from '../../../routes/picking';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { parseGraiFromRawInput } from '../../../utils/grai';
-import { toastError } from '../../../utils/toast';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import * as uiTrace from '../../../utils/ui_trace';
 
 const GRAI_DEBOUNCE_MILLIS = 1500;
 
@@ -29,7 +30,21 @@ export const SelectPickTargetScreen = () => {
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    closePickingTarget().then(() => history.goBack());
+    // On success navigate back; on a server rejection (e.g. the carrier-advise consistency guard rejecting a
+    // parcel with two distinct manual carriers) stay on the screen and surface the error, instead of swallowing
+    // it — the same way completing the job surfaces it. See mobile-webui CLAUDE.md "API Error Surfacing".
+    closePickingTarget()
+      .then(() => history.goBack())
+      .catch((axiosError) => {
+        uiTrace.trace({
+          eventName: 'closePickingTargetFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          isNetworkFailure: !axiosError?.response,
+          message: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
+        });
+        toastError({ axiosError });
+      });
   };
 
   return (

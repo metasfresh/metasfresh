@@ -24,6 +24,7 @@ package de.metas.inoutcandidate;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
@@ -41,6 +42,7 @@ import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
@@ -52,6 +54,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
@@ -69,18 +72,17 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Locator;
-import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_PackageLine;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_AD_Client_ID;
@@ -494,23 +496,89 @@ public class ShipmentScheduleRepository
 		return shipmentScheduleStream;
 	}
 
-	public List<ShipmentSchedule> loadByPackageId(final @NonNull PackageId packageId)
+	/**
+	 * Resolves the shipment schedules for ALL the given packages in a fixed number of queries (package-lines, then
+	 * their picked-line→schedule links, then the schedules), instead of one multi-hop query per package. Returns a
+	 * package → its (distinct) schedules map; a package with no shipped line is simply absent.
+	 * <p>
+	 * The package's shipment schedules are those of the lines it actually holds:
+	 * M_PackageLine → M_InOutLine → M_ShipmentSchedule_QtyPicked → M_ShipmentSchedule. The pick row is the
+	 * authoritative shipped-line → schedule link (source-agnostic, unlike navigating via C_OrderLine, which only
+	 * works for order-line-based schedules). M_PackageLine is written per shipped line by
+	 * HUPackageBL.createPackageLines, so a multi-line package (e.g. a mixed LU) yields exactly its lines.
+	 */
+	public ImmutableListMultimap<PackageId, ShipmentSchedule> loadByPackageIds(@NonNull final Set<PackageId> packageIds)
 	{
-		//TODO Adrian verify if there's a cleaner way to get the associated shipment schedule.
-		return queryBL.createQueryBuilder(I_M_Package.class)
-				.addEqualsFilter(I_M_Package.COLUMNNAME_M_Package_ID, packageId)
-				.andCollect(I_M_Package.COLUMN_M_InOut_ID)
-				.andCollectChildren(I_M_InOutLine.COLUMN_M_InOut_ID)
-				.andCollect(I_M_InOutLine.COLUMN_C_OrderLine_ID)
-				.andCollectChildren(I_M_ShipmentSchedule.COLUMN_C_OrderLine_ID)
+		if (packageIds.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		final List<I_M_PackageLine> packageLines = queryBL.createQueryBuilder(I_M_PackageLine.class)
+				.addInArrayFilter(I_M_PackageLine.COLUMNNAME_M_Package_ID, packageIds)
+				.create()
+				.list();
+		if (packageLines.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		final ImmutableSet<Integer> inOutLineIds = packageLines.stream()
+				.map(I_M_PackageLine::getM_InOutLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// M_ShipmentSchedule_ID is nullable on M_ShipmentSchedule_QtyPicked → resolve the id once, skip unset
+		final ImmutableListMultimap.Builder<Integer, ShipmentScheduleId> scheduleIdsByInOutLineIdBuilder = ImmutableListMultimap.builder();
+		queryBL
+				.createQueryBuilder(I_M_ShipmentSchedule_QtyPicked.class)
+				.addInArrayFilter(I_M_ShipmentSchedule_QtyPicked.COLUMNNAME_M_InOutLine_ID, inOutLineIds)
 				.create()
 				.stream()
-				.map(this::ofRecord)
-				.collect(Collectors.toList());
+				.forEach(qtyPickedRecord -> {
+					final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoIdOrNull(qtyPickedRecord.getM_ShipmentSchedule_ID());
+					if (shipmentScheduleId == null)
+					{
+						return;
+					}
+					scheduleIdsByInOutLineIdBuilder.put(qtyPickedRecord.getM_InOutLine_ID(), shipmentScheduleId);
+				});
+		final ImmutableListMultimap<Integer, ShipmentScheduleId> scheduleIdsByInOutLineId = scheduleIdsByInOutLineIdBuilder.build();
+		if (scheduleIdsByInOutLineId.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		final ImmutableMap<ShipmentScheduleId, ShipmentSchedule> schedulesById =
+				getByIds(ImmutableSet.copyOf(scheduleIdsByInOutLineId.values()));
+
+		final ImmutableListMultimap.Builder<PackageId, ShipmentSchedule> result = ImmutableListMultimap.builder();
+		final Set<PackageScheduleKey> seenPackageSchedule = new HashSet<>();
+		for (final I_M_PackageLine packageLine : packageLines)
+		{
+			final PackageId packageId = PackageId.ofRepoId(packageLine.getM_Package_ID());
+			for (final ShipmentScheduleId scheduleId : scheduleIdsByInOutLineId.get(packageLine.getM_InOutLine_ID()))
+			{
+				final ShipmentSchedule schedule = schedulesById.get(scheduleId);
+				// dedup per package: two lines of one package can hit the same schedule
+				if (schedule != null && seenPackageSchedule.add(new PackageScheduleKey(packageId, scheduleId)))
+				{
+					result.put(packageId, schedule);
+				}
+			}
+		}
+		return result.build();
 	}
 
 	public ImmutableSet<ShipmentScheduleId> getIdsByQuery(@NonNull final ShipmentScheduleQuery query)
 	{
 		return toSqlQuery(query).create().idsAsSet(ShipmentScheduleId::ofRepoId);
+	}
+
+	/** Dedup key for {@link #loadByPackageIds} — a (package, schedule) pair with value equality (avoids a string key). */
+	@Value
+	private static class PackageScheduleKey
+	{
+		@NonNull PackageId packageId;
+		@NonNull ShipmentScheduleId shipmentScheduleId;
 	}
 }
