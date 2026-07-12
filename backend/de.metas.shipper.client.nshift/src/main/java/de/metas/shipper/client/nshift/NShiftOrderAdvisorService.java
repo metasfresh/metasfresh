@@ -70,7 +70,7 @@ public class NShiftOrderAdvisorService
 			logger.error("Got error", throwable);
 			return JsonDeliveryAdvisorResponse.builder()
 					.requestId(deliveryAdvisorRequest.getId())
-					.errorMessage(throwable.toString())
+					.errorMessage(throwable.getMessage())
 					.build();
 		}
 	}
