@@ -98,7 +98,7 @@ public class PickingJobCreateCommand
 		{
 			final PickingJobHeaderKey headerKey = extractPickingJobHeaderKey(items);
 
-			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
+			PickingJob pickingJob = pickingJobRepository.createNewAndGet(
 					PickingJobCreateRepoRequest.builder()
 							.aggregationType(request.getAggregationType())
 							.orgId(headerKey.getOrgId())
@@ -113,6 +113,12 @@ public class PickingJobCreateCommand
 							.handoverLocationId(headerKey.getHandoverLocationId())
 							.build(),
 					loadingSupportServices);
+
+			// Initialise the header carrier from the (all-unprocessed) lines at creation, so the carrier-advise
+			// caption is shown as soon as the job is opened — before any parcel (LU/TU select/close) event.
+			// All lines share one carrier → that carrier; divergent → null (shown per-line in the line view).
+			pickingJob = pickingJob.withHeaderCarrierFromUnprocessedLines();
+			pickingJobRepository.save(pickingJob);
 
 			huService.reservePickFromHUs(pickingJob);
 

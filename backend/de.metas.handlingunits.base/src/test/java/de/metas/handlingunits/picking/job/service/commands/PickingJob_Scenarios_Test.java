@@ -263,6 +263,12 @@ class PickingJob_Scenarios_Test
 		assertThat(line.getCarrierServices()).isEqualTo(carrierServices);
 		assertThat(line.isManual()).isTrue();
 		assertThat(line.isCarrierAdviseReadOnly()).isFalse();
+
+		// The header carrier is initialised at job creation from the (all-unprocessed) lines, so the
+		// carrier-advise caption renders at the initial job opening — before any parcel (LU/TU) event.
+		// A single line → its carrier becomes the header carrier; the header is not read-only.
+		assertThat(pickingJob.getCarrierProductId()).isEqualTo(carrierProductId);
+		assertThat(pickingJob.isCarrierAdviseReadOnly()).isFalse();
 	}
 
 	@Nested
