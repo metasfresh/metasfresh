@@ -23,6 +23,10 @@ const baseRequest = {
             shipOnCloseLU: false,
             pickTo: ['LU_TU', 'TU', 'LU_CU', 'CU'],
             allowCompletingPartialPickingJob: true,
+            // Under-picking one TU (100 of 200) leaves a rejected remainder; allow skipping the
+            // rejected reason so the "ignore" option is offered AND pre-selected (Done not gated on
+            // a manual Not-Found/Damaged choice) — the un-picked 100 stays to pick into the next TU.
+            allowSkippingRejectedReason: true,
         }
     },
     bpartners: { "BP1": {} },
