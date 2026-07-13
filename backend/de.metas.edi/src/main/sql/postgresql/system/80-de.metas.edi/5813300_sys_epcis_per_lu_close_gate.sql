@@ -295,22 +295,6 @@ BEGIN
                          AND ha2.isactive = 'Y'
                    )
              ) lwp
-             WHERE NOT EXISTS (
-                 -- Ledger-exclusion: drop any LU whose physical SSCC18 is already recorded in the
-                 -- EPCIS transmission ledger (EDI_EPCIS_Transmitted_SSCC), i.e. already sent to the
-                 -- EPCIS receiver — defense-in-depth against a re-export / duplicate trigger emitting
-                 -- the same physical SSCC twice. A row is only ever written after a successful send, so
-                 -- its mere presence means "already transmitted". Receiver-agnostic on purpose: this
-                 -- function only has p_m_inout_id (no receiver config) and there is a single EPCIS
-                 -- receiver in production, so matching on SSCC18 alone is correct here. (If multiple EPCIS
-                 -- receivers/configs are ever added, this needs the config threaded into the function.)
-                 SELECT 1
-                 FROM edi_epcis_transmitted_sscc t
-                          JOIN m_hu_attribute sa ON sa.m_hu_id = lwp.lu_hu_id
-                                                AND sa.m_attribute_id = v_sscc_attribute_id
-                 WHERE t.isactive = 'Y'
-                   AND t.sscc18 = sa.value
-             )
              GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (
