@@ -1659,6 +1659,160 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     Then the EPCIS export-relevance for M_InOut identified by io_S30916_020 is false
 
   @from:cucumber
+  @Id:S30916_040
+  @allure.label.epic:E0375_External_Traceability
+  @allure.label.feature:F5410_EPCIS_JSON_Export
+  Scenario: S30916_040 — a deactivated ledger row does NOT suppress its SSCC
+  ## Regression / guard scenario locking in existing correct behaviour: get_epcis_events_json_fn's
+  ## ledger-exclusion filter only matches ACTIVE ledger rows (t.isactive='Y' — see
+  ## get_epcis_events_json_fn.sql). This is the mechanism that lets support deactivate a
+  ## EDI_EPCIS_Transmitted_SSCC row via the WebUI shipment tab (AD_Tab 549333) to allow a physical
+  ## SSCC to be re-transmitted. Mirrors S30916_020's setup: single order, one standalone,
+  ## fully-covered LU (one physical pallet, one SSCC18). Baseline sanity confirms the function
+  ## returns that pallet. A ledger row is then seeded for the LU's physical SSCC18 with
+  ## IsActive='N' (simulating a row support has already deactivated). Unlike S30916_020 (where an
+  ## ACTIVE ledger row excludes the SSCC), here the SSCC must still be emitted — proving inactive
+  ## rows are ignored by the exclusion. Expected GREEN on first run (guard, not RED→GREEN TDD):
+  ## the isactive='Y' filter already exists in production code.
+    Given metasfresh contains M_Products:
+      | Identifier   | GTIN          |
+      | p_S30916_040 | 4060000000940 |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S30916_040 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S30916_040 | ps_S30916_040      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S30916_040 | pl_S30916_040  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30916_040         | p_S30916_040  | 10.0     | PCE      | Normal           |
+
+    # BPartner: EDI DESADV recipient
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S30916_040 | Y          | ps_S30916_040      | 9900000309400 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S30916_040 | true                 | 9900000309400         | edi_setting_S30916_040_bp |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID  |
+      | bp_S30916_040 | p_S30916_040  |
+
+    # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | pi_LU_S30916_040  |
+      | pi_TU_S30916_040  |
+      | pi_VHU_S30916_040 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent |
+      | piv_LU_S30916_040  | pi_LU_S30916_040  | LU          | Y         |
+      | piv_TU_S30916_040  | pi_TU_S30916_040  | TU          | Y         |
+      | piv_VHU_S30916_040 | pi_VHU_S30916_040 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_S30916_040 | piv_LU_S30916_040  | 20  | HU       | pi_TU_S30916_040  |
+      | pii_TU_S30916_040 | piv_TU_S30916_040  | 0   | MI       |                    |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | piv_LU_S30916_040  | SSCC18            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID  | Qty | ValidFrom  |
+      | pip_S30916_040          | pii_TU_S30916_040 | p_S30916_040  | 10  | 2020-01-01 |
+
+    # Sales order: 10 PCE = 1 TU, standalone pallet
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S30916_040 | true    | bp_S30916_040 | 2026-06-10  | 1300000004  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID    | M_Product_ID  | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S30916_040 | o_S30916_040  | p_S30916_040  | 10         | pip_S30916_040          |
+
+    When the order identified by o_S30916_040 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | d_S30916_040             | bp_S30916_040            | o_S30916_040          | P                |
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S30916_040 | ol_S30916_040  | N             |
+
+    # ─── Inventory → CU → TU → LU → SSCC18 ──────────────────────────────────────────
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_S30916_040            | 2026-06-10   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S30916_040            | invLine_S30916_040            | p_S30916_040            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S30916_040'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLine_S30916_040            | cu_S30916_040      |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cu_S30916_040       | 10    | pip_S30916_040                     | tu_S30916_040                 |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tu_S30916_040       | 1     | pii_LU_S30916_040          | lu_S30916_040             |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID       | M_Attribute_ID.Value | Value              |
+      | lu_S30916_040 | SSCC18               | 987654321000030940 |
+
+    # ─── TU-level picking ─────────────────────────────────────────────────────────────
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tu_S30916_040      | ss_S30916_040                    | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tu_S30916_040      | ss_S30916_040                    |
+
+    # ─── Generate picked shipment (QuantityType=PD) — standalone LU, fully covered ─────
+    When 'generate shipments' process is invoked with QuantityType=PD, IsCompleteShipments=true and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S30916_040         |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S30916_040         | io_S30916_040 |
+
+    And after not more than 60s, EDI_Desadv_Pack records are found:
+      | EDI_Desadv_Pack_ID | EDI_Desadv_ID.Identifier | IsManual_IPA_SSCC18 |
+      | pack_S30916_040    | d_S30916_040             | false               |
+
+    # ─── Baseline sanity: the function DOES return the pallet BEFORE any ledger row exists ──
+    And the EPCIS transmission ledger is empty
+    When the EPCIS JSON export function is called for M_InOut identified by io_S30916_040
+    Then the EPCIS JSON pallets contain SSCC18 values in any order:
+      | sscc18             |
+      | 987654321000030940 |
+
+    # ─── Seed a DEACTIVATED ledger row for this physical SSCC (support already deactivated it) ──
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName |
+      | esConfig_S30916_040      | scriptedCfg_S30916_040                            | M_InOut_EDI_Export_JSON          | M_InOut   |
+    And metasfresh contains EDI_EPCIS_Transmitted_SSCC:
+      | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    | OPT.IsActive |
+      | 987654321000030940 | scriptedCfg_S30916_040                            | io_S30916_040 | false        |
+
+    # ─── CORE ASSERTION: a deactivated ledger row must NOT suppress the SSCC ────────────
+    # Unlike S30916_020 (active row → excluded), an inactive row is ignored by the
+    # ledger-exclusion filter (t.isactive='Y'), so the LU stays in pallet_list and the
+    # shipment remains export-relevant — the physical SSCC is eligible for re-transmission.
+    When the EPCIS JSON export function is called for M_InOut identified by io_S30916_040
+    Then the EPCIS JSON pallets contain SSCC18 values in any order:
+      | sscc18             |
+      | 987654321000030940 |
+    Then the EPCIS export-relevance for M_InOut identified by io_S30916_040 is true
+
+  @from:cucumber
   @Id:S30916_030
   @allure.label.epic:E0375_External_Traceability
   @allure.label.feature:F5410_EPCIS_JSON_Export

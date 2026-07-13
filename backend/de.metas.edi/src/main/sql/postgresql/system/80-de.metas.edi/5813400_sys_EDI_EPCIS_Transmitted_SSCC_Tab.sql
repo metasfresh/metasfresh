@@ -1,10 +1,21 @@
--- Read-only diagnostic child tab for EDI_EPCIS_Transmitted_SSCC (AD_Table 542624) on the
--- Lieferung / shipment window (AD_Window_ID=169). Lets support/ops see, per shipment, which
--- SSCCs have already been transmitted to which EPCIS receiver config, and when.
+-- Diagnostic child tab for EDI_EPCIS_Transmitted_SSCC (AD_Table 542624) on the Lieferung /
+-- shipment window (AD_Window_ID=169). Lets support/ops see, per shipment, which SSCCs have
+-- already been transmitted to which EPCIS receiver config, and when. The ledger data itself
+-- (SSCC18, export config, transmission timestamp) is read-only — support cannot edit or add
+-- rows — but the tab DOES let support deactivate a row (IsActive='N'): the ledger-exclusion
+-- filter in get_epcis_events_json_fn only matches active rows, so deactivating a row makes that
+-- physical SSCC eligible for re-transmission again (e.g. after a confirmed-lost delivery to the
+-- EPCIS receiver).
 --
--- Mirrors the read-only diagnostic tab pattern of AD_Tab 549295 ("EPCIS-Exportstatus", added by
--- 5806870/5807070 for ExternalSystem_ScriptedExportConversion_Status): TabLevel=1, IsReadOnly='Y',
--- IsInsertRecord='N', single-section/single-column/single-element-group layout.
+-- Started from the read-only diagnostic tab pattern of AD_Tab 549295 ("EPCIS-Exportstatus",
+-- added by 5806870/5807070 for ExternalSystem_ScriptedExportConversion_Status): TabLevel=1,
+-- single-section/single-column/single-element-group layout. Diverges from that sibling on
+-- IsReadOnly: this tab sets IsReadOnly='N' at the tab level (required for the IsActive field's
+-- own edit to be reachable at all — a tab-level IsReadOnly='Y' would block every field
+-- including IsActive), while every DATA field keeps its own AD_Field.IsReadOnly='Y'.
+-- IsInsertRecord stays 'N' (no new rows) and the table's own IsDeleteable='N' (set by the
+-- 78dc8660bb0 table-creation migration) keeps the hard-delete row action unavailable — the only
+-- action available on this tab is deactivate/reactivate a row.
 --
 -- Key difference from that sibling: ExternalSystem_ScriptedExportConversion_Status is linked
 -- polymorphically (AD_Table_ID=319 + Record_ID=@M_InOut_ID@, via AD_Tab.Parent_Column_ID pointing
@@ -14,11 +25,11 @@
 -- used by the window's other direct-FK child tabs (e.g. AD_Tab 187 "Auftragsposition" on the Sales
 -- Order window, Parent_Column_ID -> C_OrderLine.C_Order_ID).
 --
--- Columns shown: SSCC18, ExternalSystem_Config_ScriptedExportConversion_ID (label override
--- "Exportkonfiguration" / "Export Configuration" via a dedicated forked element — see PART 4.2
--- below for why a raw AD_Field_Trl.Name override on the shared column element is unsafe),
--- Transmitted (drives the default sort, newest first), and Updated (shown last, mirroring the
--- sibling tab).
+-- Columns shown: IsActive (the one editable/actionable field, placed first), SSCC18,
+-- ExternalSystem_Config_ScriptedExportConversion_ID (label override "Exportkonfiguration" /
+-- "Export Configuration" via a dedicated forked element — see PART 4.2 below for why a raw
+-- AD_Field_Trl.Name override on the shared column element is unsafe), Transmitted (drives the
+-- default sort, newest first), and Updated (shown last, mirroring the sibling tab).
 --
 -- IDs allocated from idserver.metas.de:
 --   AD_MigrationScript 5813400
@@ -28,6 +39,8 @@
 --   AD_UI_Section      547842
 --   AD_UI_Column       549583
 --   AD_UI_ElementGroup 555487
+--   AD_Field           781419 (IsActive)
+--   AD_UI_Element      652535 (IsActive)
 --   AD_Field           781376 (SSCC18)
 --   AD_UI_Element      652492 (SSCC18)
 --   AD_Field           781377 (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Name_ID=585087)
@@ -94,7 +107,7 @@ WHERE AD_Language IN ('de_DE', 'de_CH') AND AD_Element_ID = 585086
 ;
 
 -- ===========================================================================
--- PART 2: Read-only child tab over EDI_EPCIS_Transmitted_SSCC
+-- PART 2: Diagnostic, deactivate-capable child tab over EDI_EPCIS_Transmitted_SSCC
 -- ===========================================================================
 
 -- Parent_Column_ID = 592936 (M_InOut_ID — the direct FK in this table's own row set to the
@@ -117,7 +130,10 @@ VALUES
      TO_TIMESTAMP('2026-07-13 09:01:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
      NULL, 'de.metas.esb.edi',
      'N', 'Y', 'N', 'N',
-     'N', 'N' /*no insert — rows are system-written*/, 'Y' /*read-only diagnostic tab*/, 'N',
+     'N', 'N' /*no insert — rows are system-written*/,
+     'N' /*tab-level must be 'N' so the IsActive field's own edit is reachable at all; every
+            DATA AD_Field below still carries its own IsReadOnly='Y'*/,
+     'N',
      'N', 'N', 'N', 'N',
      'EPCIS-SSCC-Übertragungen', 'Transmitted DESC', 70, 1,
      592936 /*M_InOut_ID — direct FK link to the parent shipment*/,
@@ -202,9 +218,45 @@ VALUES
 
 -- ===========================================================================
 -- PART 4: AD_Field + AD_UI_Element rows for each ledger column
--- Grid + form columns: SSCC18, Exportkonfiguration, Transmitted, Updated
+-- Grid + form columns: IsActive, SSCC18, Exportkonfiguration, Transmitted, Updated
 -- Sort indicator SortNo=-1 on Transmitted (Transmitted DESC per OrderByClause)
 -- ===========================================================================
+
+-- 4.0 IsActive (AD_Column 592929, AD_Element 348 — the standard shared "Aktiv"/"Active"
+--     element, reused as-is: no fork needed, the standard wording applies unchanged here).
+--     The only editable field on this tab (IsReadOnly='N'): deactivating a row here makes it
+--     inactive, and get_epcis_events_json_fn's ledger-exclusion only matches active rows
+--     (t.isactive='Y'), so that physical SSCC becomes eligible for re-transmission again.
+--     Placed first (SeqNo/SeqNoGrid=5) as the tab's one actionable column.
+-- 2026-07-13T09:02:10Z
+INSERT INTO AD_Field
+    (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID,
+     Created, CreatedBy, Description, DisplayLength, EntityType,
+     Help, IsActive, IsDisplayed, IsDisplayedGrid,
+     IsEncrypted, IsFieldOnly, IsHeading, IsMandatory, IsReadOnly,
+     IsSameLine, Name, SeqNo, SeqNoGrid,
+     SortNo, SpanX, SpanY, Updated, UpdatedBy)
+VALUES
+    (0, 592929, 781419 /*From ID Server*/, 0, 549333,
+     TO_TIMESTAMP('2026-07-13 09:02:10', 'YYYY-MM-DD HH24:MI:SS'), 100,
+     'Der Eintrag ist im System aktiv', 1, 'de.metas.esb.edi',
+     'Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.', 'Y', 'Y', 'Y',
+     'N', 'N', 'N', 'N', 'N' /*editable — the one action support may take on this tab*/,
+     'N', 'Aktiv', 5, 5,
+     0, 1, 1,
+     TO_TIMESTAMP('2026-07-13 09:02:10', 'YYYY-MM-DD HH24:MI:SS'), 100)
+;
+INSERT INTO AD_Field_Trl (AD_Language, AD_Field_ID, Description, Help, Name, IsTranslated, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy, IsActive)
+SELECT l.AD_Language, t.AD_Field_ID, t.Description, t.Help, t.Name, 'N', t.AD_Client_ID, t.AD_Org_ID, t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
+FROM AD_Language l, AD_Field t WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Field_ID=781419
+AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID);
+/* DDL */ SELECT update_FieldTranslation_From_AD_Name_Element(348);
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=781419;
+/* DDL */ SELECT AD_Element_Link_Create_Missing_Field(781419);
+UPDATE AD_Field_Trl SET IsTranslated='Y', Updated=TO_TIMESTAMP('2026-07-13 09:02:11','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Field_ID=781419 AND AD_Language IN ('de_DE','de_CH','en_US');
+INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, IsActive, IsAdvancedField, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
+VALUES (0, 781419, 0, 549333, 555487, 652535 /*From ID Server*/, 'F', TO_TIMESTAMP('2026-07-13 09:02:12','YYYY-MM-DD HH24:MI:SS'), 100, 'Y', 'N', 'Y', 'Y', 'N', 'Aktiv', 5, 5, 0, TO_TIMESTAMP('2026-07-13 09:02:12','YYYY-MM-DD HH24:MI:SS'), 100);
 
 -- 4.1 SSCC18 (AD_Column 592934, AD_Element 585084)
 -- 2026-07-13T09:03:00Z

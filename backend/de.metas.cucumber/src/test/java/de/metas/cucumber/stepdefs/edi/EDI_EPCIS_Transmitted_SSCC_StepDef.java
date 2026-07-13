@@ -78,6 +78,10 @@ public class EDI_EPCIS_Transmitted_SSCC_StepDef
 	 *   <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> — (required, identifier-ref) the receiver config<br>
 	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment the SSCC was transmitted on<br>
 	 *   <b>OPT.Transmitted</b> — (optional) transmission timestamp override; defaults to the current (test) clock<br>
+	 *   <b>OPT.IsActive</b> — (optional) defaults to {@code true}. Set to {@code false} to simulate a
+	 *   ledger row that support has deactivated via the WebUI shipment tab — the ledger-exclusion filter
+	 *   in {@code get_epcis_events_json_fn} only matches active rows, so a deactivated row must NOT
+	 *   suppress re-sending its SSCC.<br>
 	 * @cucumber.example
 	 * <pre>
 	 * And metasfresh contains EDI_EPCIS_Transmitted_SSCC:
@@ -103,6 +107,7 @@ public class EDI_EPCIS_Transmitted_SSCC_StepDef
 			record.setM_InOut_ID(inout.getM_InOut_ID());
 			record.setTransmitted(row.getAsOptionalInstantTimestamp("OPT." + I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_Transmitted)
 					.orElseGet(SystemTime::asTimestamp));
+			record.setIsActive(row.getAsOptionalBoolean("OPT." + I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_IsActive).orElse(true));
 
 			saveRecord(record);
 		});
