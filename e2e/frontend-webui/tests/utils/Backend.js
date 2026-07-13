@@ -2,10 +2,6 @@ import { test, testContext } from '../../playwright.config';
 import { getPage } from './common';
 import { WEBAPI_BASE_URL } from './WebAPIValidation';
 
-// The webapi node (mailbox/cache endpoints live here), distinct from the app-node testing API.
-const WEBAPI_BASE_URL =
-  process.env.WEBAPI_BASE_URL || 'http://localhost:8080/rest/api';
-
 /**
  * Backend API client for interacting with /rest/api/v2/frontendTesting endpoints.
  * Used to create test master data and validate expectations.
