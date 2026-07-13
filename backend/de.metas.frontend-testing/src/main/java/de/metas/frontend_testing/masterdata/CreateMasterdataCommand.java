@@ -70,6 +70,8 @@ import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
+import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
@@ -107,6 +109,7 @@ public class CreateMasterdataCommand
 
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
+		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		configureOrgSeller();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
@@ -141,6 +144,7 @@ public class CreateMasterdataCommand
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
 				.mobileConfig(mobileConfig)
 				.login(login)
+				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
 				.bpartners(bpartners)
 				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
 				.products(products)
@@ -326,6 +330,16 @@ public class CreateMasterdataCommand
 				.identifier(Identifier.ofString(identifier))
 				.build()
 				.execute();
+	}
+
+	private ImmutableMap<String, JsonMailboxResponse> createMailboxes()
+	{
+		if (request.getMailboxes() == null) {return ImmutableMap.of();}
+
+		return CreateMailboxCommand.builder()
+				.context(context)
+				.requests(request.getMailboxes())
+				.build().execute();
 	}
 
 	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
