@@ -23,13 +23,16 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_ScriptedExportConversion_StepDefData;
 import de.metas.esb.edi.model.I_EDI_EPCIS_Transmitted_SSCC;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -111,5 +114,50 @@ public class EDI_EPCIS_Transmitted_SSCC_StepDef
 
 			saveRecord(record);
 		});
+	}
+
+	/**
+	 * Polls until an ACTIVE {@code EDI_EPCIS_Transmitted_SSCC} ledger row exists for every
+	 * (SSCC18, config, shipment) triple in the table — used to verify that a successful EPCIS send
+	 * actually recorded the transmitted SSCC(s), whether seeded directly (as above) or written by
+	 * the production success listener as the real side-effect of a live send.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>SSCC18</b> — (required) physical SSCC18 value expected to be recorded as transmitted<br>
+	 *   <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> — (required, identifier-ref) the receiver config<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment expected to have transmitted it<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 10s, EDI_EPCIS_Transmitted_SSCC is found:
+	 *   | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
+	 *   | 987654321000030916 | scriptedCfg_020                                    | io_020     |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, EDI_EPCIS_Transmitted_SSCC is found:$")
+	public void after_not_more_than_epcis_transmitted_sscc_is_found(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
+		{
+			final String sscc18 = row.getAsString(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18);
+
+			final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(
+					row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID));
+
+			final I_M_InOut inout = inoutTable.get(row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID));
+
+			StepDefUtil.<I_EDI_EPCIS_Transmitted_SSCC>tryAndWaitForItem()
+					.maxWaitSeconds(timeoutSec)
+					.checkingIntervalMs(500L)
+					.workerFromOptionalSupplier(() -> Services.get(IQueryBL.class)
+							.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
+							.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18, sscc18)
+							.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, cfg.getId().getRepoId())
+							.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID, inout.getM_InOut_ID())
+							.addOnlyActiveRecordsFilter()
+							.create()
+							.firstOptional(I_EDI_EPCIS_Transmitted_SSCC.class))
+					.execute();
+		}
 	}
 }

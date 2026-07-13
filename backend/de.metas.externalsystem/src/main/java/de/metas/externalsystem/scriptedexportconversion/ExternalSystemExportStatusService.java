@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * State machine for the scripted-export-conversion status row.
@@ -191,6 +192,21 @@ public class ExternalSystemExportStatusService
 		repo.update(existing
 				.withStatus(ExternalSystemExportStatus.Invalid)
 				.withStatusMessage(message));
+	}
+
+	// ------------------------------------------------------------------
+	// Queries
+	// ------------------------------------------------------------------
+
+	/**
+	 * Returns the status row bound to the given {@code pInstanceId}, if any — the read-only
+	 * counterpart of the pInstance-keyed {@code markXxx} transitions below. Callers use this to
+	 * resolve the (config, sourceRecord) that a successful/failed invocation belongs to.
+	 */
+	@NonNull
+	public Optional<ScriptedExportConversionStatus> getLatestByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	{
+		return repo.getLatestByPInstanceId(pInstanceId);
 	}
 
 	// ------------------------------------------------------------------
