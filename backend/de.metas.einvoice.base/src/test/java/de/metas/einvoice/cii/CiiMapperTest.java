@@ -2640,6 +2640,120 @@ public class CiiMapperTest
 				.isEqualTo("100.00");
 	}
 
+	/**
+	 * Fail-fast on a tax-included invoice whose line references a {@code C_Tax} that has NO matching
+	 * {@code C_InvoiceTax} breakdown row. Without that row the BT-131 reconciliation has no
+	 * {@code TaxBaseAmt} anchor to satisfy BR-S-08/BR-CO-10, so the mapper must throw (with the
+	 * offending {@code C_Tax_ID} + {@code C_Invoice_ID}) rather than silently emit broken XML — matching
+	 * the fail-fast style of the other mandatory-data checks in this class.
+	 */
+	@Test
+	void tax_included_missingInvoiceTaxRow_throwsWithIds() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00703");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-703");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S' (NOT whole-tax) ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === Invoice line references the tax — but DELIBERATELY no C_InvoiceTax breakdown row exists ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
+				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
+	}
+
 	// ===== Shared helpers =====
 
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException
