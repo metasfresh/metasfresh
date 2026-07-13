@@ -39,6 +39,25 @@ export const Backend = {
       const responseBody = await response.json();
       assertNoErrors({ responseBody });
 
+      // Mailboxes are created on the app node (:8282). MailService.findMailbox runs on
+      // the webapi node (:8080) with its own MailboxRepository caches (AD_MailBox /
+      // AD_MailConfig). A prior findMailbox call (e.g. an earlier test opening the Email
+      // dialog) may have primed those caches empty, so the cross-JVM invalidation isn't
+      // guaranteed to have arrived. Reset them synchronously so the freshly-seeded
+      // mailbox is visible before the Email dialog is opened.
+      if (request.mailboxes) {
+        for (const tableName of ['AD_MailBox', 'AD_MailConfig']) {
+          const resetResponse = await page.request.get(
+            `${WEBAPI_BASE_URL}/cache/resetByTable?tableName=${tableName}`
+          );
+          if (!resetResponse.ok()) {
+            throw Error(
+              `Failed resetting webapi cache for ${tableName}: HTTP ${resetResponse.status()}`
+            );
+          }
+        }
+      }
+
       console.log('Created master data:', JSON.stringify(responseBody, null, 2));
 
       // Store masterdata in test context for later use
