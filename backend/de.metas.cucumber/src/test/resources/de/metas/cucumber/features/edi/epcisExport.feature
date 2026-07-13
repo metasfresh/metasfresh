@@ -1131,8 +1131,8 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
 
   @from:cucumber
   @Id:S30916_010
-  @allure.label.epic:E0292_EDI
-  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @allure.label.epic:E0375_External_Traceability
+  @allure.label.feature:F5410_EPCIS_JSON_Export
   Scenario: S30916_010 — mixed standalone+shared: standalone pallet emits at own completion
   ## Per-LU close-gate: a shipment (ioA) physically touches TWO LUs —
   ## luStandalone_S30916_010 (carries ONLY order A's crates) and luShared_S30916_010 (carries
@@ -1657,3 +1657,260 @@ Feature: EPCIS JSON export via get_epcis_events_json_fn
     # function ignores the ledger, still returns the pallet, and stays export-relevant, so
     # this assertion FAILS (intended RED).
     Then the EPCIS export-relevance for M_InOut identified by io_S30916_020 is false
+
+  @from:cucumber
+  @Id:S30916_030
+  @allure.label.epic:E0375_External_Traceability
+  @allure.label.feature:F5410_EPCIS_JSON_Export
+  Scenario: S30916_030 — header DESADV/PO refs match the emitted pallet set (multi-order shared LU)
+  ## Header-array over-claim (H1): shipment X (order A's shipment) touches TWO LUs —
+  ## luStandalone_S30916_030 (order A's own portion only, fully covered by X alone) and
+  ## luShared_S30916_030 (order A's portion + order C's portion + a THIRD portion belonging
+  ## to order D). Order C's own shipment Y is completed (CO) — a valid CO/CL sibling on
+  ## luShared — but order D's portion of luShared is only covered by a still-DRAFT shipment,
+  ## so luShared is NOT fully covered and must NOT appear in X's pallets[].
+  ## RED assertion: X's pallets[] must contain ONLY luStandalone's SSCC (luShared is absent,
+  ## correctly gated by the per-LU coverage filter). But desadvReferences[] / poReferences[] /
+  ## shipmentDocumentNos[] are built from shared_lu_inout, which (pre-fix) is scoped to EVERY
+  ## LU X touches — including the not-fully-covered luShared — so it still pulls in order C's
+  ## DESADV/PO and Y's delivery-note number even though luShared's pallet is absent from
+  ## pallets[]. The header thus over-claims an order/DESADV the emitted document does not
+  ## actually carry. This MUST FAIL on the current (un-rescoped) code (intended RED): the array
+  ## sizes are 2 instead of the correct 1 (X's own order A references only).
+    And set sys config boolean value false for sys config de.metas.handlingunits.HUConstants.Fresh_QuickShipment
+    And set sys config boolean value true for sys config de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService.PackCUsToTU
+
+    And metasfresh contains M_PickingSlot:
+      | Identifier | PickingSlot | IsDynamic |
+      | 200.0      | 200.0       | Y         |
+
+    Given metasfresh contains M_Products:
+      | Identifier   | GTIN          |
+      | p_S30916_030 | 4060000000930 |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S30916_030 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S30916_030 | ps_S30916_030      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S30916_030 | pl_S30916_030  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30916_030         | p_S30916_030 | 5.0      | PCE      | Normal           |
+
+    # AllowConsolidateInOut=N so the three orders' shipments stay separate M_InOuts (no consolidation)
+    And metasfresh contains C_BPartners without locations:
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           | AllowConsolidateInOut |
+      | bp_S30916_030 | Y          | ps_S30916_030      | 9900000309030 | N                     |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID | OPT.IsBillToDefault | OPT.IsShipTo |
+      | bpLoc_S30916_030 | 2900000309030 | bp_S30916_030 | true                | true         |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S30916_030 | true                 | 9900000309030         | edi_setting_S30916_030_bp |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID |
+      | bp_S30916_030 | p_S30916_030 |
+
+    # HU PI: LU holds up to 20 TUs, each TU holds 10 PCE
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID       |
+      | pi_LU_S30916_030 |
+      | pi_TU_S30916_030 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID       | HU_UnitType | IsCurrent |
+      | piv_LU_S30916_030  | pi_LU_S30916_030 | LU          | Y         |
+      | piv_TU_S30916_030  | pi_TU_S30916_030 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_S30916_030 | piv_LU_S30916_030  | 20  | HU       | pi_TU_S30916_030  |
+      | pii_TU_S30916_030 | piv_TU_S30916_030  | 0   | MI       |                   |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | piv_LU_S30916_030  | SSCC18            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID | Qty | ValidFrom  |
+      | pip_S30916_030          | pii_TU_S30916_030 | p_S30916_030 | 10  | 2020-01-01 |
+
+    # Mobile UI picking profile — DO_NOT_CREATE: no shipment is auto-created on job completion.
+    # IsAllowCompletingPartialPickingJob=Y: order A's single schedule is picked across TWO jobs
+    # (job 1 partial: 5/8 TUs → standalone LU; job 2 completes it: remaining 3/8 TUs → shared LU).
+    # IsAlwaysSplitHUsEnabled=N: the newly-created LUs survive intact across picking sessions.
+    And set mobile UI picking profile
+      | IsAllowPickingAnyHU | CreateShipmentPolicy | IsAllowCompletingPartialPickingJob | IsAlwaysSplitHUsEnabled |
+      | Y                   | DO_NOT_CREATE        | Y                                  | N                       |
+
+    # Source: aggregated LU with 150 PCE (5 TUs standalone-A + 3 TUs shared-A + 2 TUs shared-C + 1 TU shared-D)
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID | MovementDate | M_Warehouse_ID |
+      | inv_S30916_030 | 2026-06-05   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID | M_InventoryLine_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S30916_030 | invLine_S30916_030 | p_S30916_030 | 0       | 150      | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S30916_030'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID | M_HU_ID               |
+      | invLine_S30916_030 | pickFromCU_S30916_030 |
+
+    And transform CU to new LU
+      | sourceCU              | newLU                       | TU_PI_ID         | QtyCUsPerTU | QtyTUsPerLU |
+      | pickFromCU_S30916_030 | pickFromAggregatedLU_S30916 | pi_TU_S30916_030 | 10          | 15          |
+
+    # Order A — 80 PCE → 8 TUs, split 5/3 across the standalone and the shared LU.
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | oA_S30916_030 | true    | bp_S30916_030 | 2026-06-05  | 1300000301  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olA_S30916_030 | oA_S30916_030 | p_S30916_030 | 80         | pip_S30916_030          |
+
+    When the order identified by oA_S30916_030 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dA_S30916_030            | bp_S30916_030            | oA_S30916_030         | P                |
+
+    # Order C — 20 PCE → 2 TUs, joins the shared LU only. Its OWN shipment (Y) will be completed
+    # (CO/CL) — a valid sibling on luShared, but luShared still won't be fully covered because of D.
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | oC_S30916_030 | true    | bp_S30916_030 | 2026-06-05  | 1300000302  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olC_S30916_030 | oC_S30916_030 | p_S30916_030 | 20         | pip_S30916_030          |
+
+    When the order identified by oC_S30916_030 is completed
+
+    Then EDI_Desadv is found:
+      | EDI_Desadv_ID.Identifier | C_BPartner_ID.Identifier | C_Order_ID.Identifier | EDI_ExportStatus |
+      | dC_S30916_030            | bp_S30916_030            | oC_S30916_030         | P                |
+
+    # Order D — 10 PCE → 1 TU, joins the shared LU too. Its shipment is generated as a DRAFT and
+    # deliberately NEVER completed — this is the third portion of luShared that keeps it NOT fully
+    # covered, even after both X (order A) and Y (order C) are completed.
+    And metasfresh contains C_Orders:
+      | Identifier    | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | oD_S30916_030 | true    | bp_S30916_030 | 2026-06-05  | 1300000303  |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID    | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | olD_S30916_030 | oD_S30916_030 | p_S30916_030 | 10         | pip_S30916_030          |
+
+    When the order identified by oD_S30916_030 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssA_S30916_030 | olA_S30916_030 | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssC_S30916_030 | olC_S30916_030 | N             |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier     | C_OrderLine_ID | IsToRecompute |
+      | ssD_S30916_030 | olD_S30916_030 | N             |
+
+    # ─── Picking job 1: order A, PARTIAL — 5 TUs → brand-new standalone LU ───────────
+    And start picking job for sales order identified by oA_S30916_030
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by pi_LU_S30916_030
+    And pick lines
+      | PickingLine.byProduct | PickFromHU                  | QtyPicked |
+      | p_S30916_030          | pickFromAggregatedLU_S30916 | 5         |
+    And expect current picking target
+      | Existing_LU              |
+      | luStandalone_S30916_030  |
+    And complete picking job
+
+    # ─── Picking job 2: order A, completes the schedule — remaining 3 TUs → brand-new shared LU ─
+    And start picking job for sales order identified by oA_S30916_030
+    And scan picking slot identified by 200.0
+    And set picking target as new LU identified by pi_LU_S30916_030
+    And pick lines
+      | PickingLine.byProduct | PickFromHU                  | QtyPicked |
+      | p_S30916_030          | pickFromAggregatedLU_S30916 | 3         |
+    And expect current picking target
+      | Existing_LU          |
+      | luShared_S30916_030  |
+    And complete picking job
+
+    # ─── Picking job 3: order C joins the SAME shared LU (LUPickingTarget.ofExistingHU) ──
+    And start picking job for sales order identified by oC_S30916_030
+    And scan picking slot identified by 200.0
+    And set picking target as existing LU identified by luShared_S30916_030
+    And pick lines
+      | PickingLine.byProduct | PickFromHU                  | QtyPicked |
+      | p_S30916_030          | pickFromAggregatedLU_S30916 | 2         |
+    And complete picking job
+
+    # ─── Picking job 4: order D ALSO joins the same shared LU — its portion stays covered only
+    # by D's (never-completed) draft shipment, keeping luShared NOT fully covered ──────────────
+    And start picking job for sales order identified by oD_S30916_030
+    And scan picking slot identified by 200.0
+    And set picking target as existing LU identified by luShared_S30916_030
+    And pick lines
+      | PickingLine.byProduct | PickFromHU                  | QtyPicked |
+      | p_S30916_030          | pickFromAggregatedLU_S30916 | 1         |
+    And complete picking job
+
+    # ─── Stamp distinct SSCC18 values on each physical LU ────────────────────────────
+    And M_HU_Attribute is changed
+      | M_HU_ID                  | M_Attribute_ID.Value | Value              |
+      | luStandalone_S30916_030  | SSCC18               | 987654321000030930 |
+    And M_HU_Attribute is changed
+      | M_HU_ID                | M_Attribute_ID.Value | Value              |
+      | luShared_S30916_030    | SSCC18               | 987654321000030931 |
+
+    # ─── Generate all three shipments as DRAFTs ────────────────────────────────────────
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ssA_S30916_030        | P            | false               | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | ssA_S30916_030        | ioA_S30916_030 |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ssC_S30916_030        | P            | false               | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | ssC_S30916_030        | ioC_S30916_030 |
+
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ssD_S30916_030        | P            | false               | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID     |
+      | ssD_S30916_030        | ioD_S30916_030 |
+
+    # ─── Complete X (ioA) and Y (ioC) — ioD (order D's shipment) stays DRAFT forever ──────
+    And the shipment identified by ioA_S30916_030 is completed
+    And the shipment identified by ioC_S30916_030 is completed
+
+    # ─── CORE ASSERTION (RED) ───────────────────────────────────────────────────────────
+    # luShared is NOT fully covered (order D's portion is only on a draft shipment) so it must be
+    # absent from pallets[] — only luStandalone (order A's own, fully self-covered LU) is emitted.
+    When the EPCIS JSON export function is called for M_InOut identified by ioA_S30916_030
+    Then the EPCIS JSON pallets contain SSCC18 values in any order:
+      | sscc18             |
+      | 987654321000030930 |
+    And the EPCIS JSON pallet has:
+      | palletIndex | sscc               | crateCount |
+      | 0           | 987654321000030930 | 5          |
+
+    # Header reference arrays must be scoped to the SAME emitted-LU set as pallets[]: only
+    # luStandalone (order A's own LU) is emitted, so the header must carry ONLY order A's own
+    # DESADV / PO reference / delivery-note — NOT order C's, even though order C's shipment (Y)
+    # is a completed CO/CL sibling sharing luShared with X. Pre-fix, shared_lu_inout is scoped to
+    # EVERY LU X touches (including the not-fully-covered luShared), so it also pulls in Y as a
+    # sibling and the arrays come out as size 2 (X's + Y's refs) — this assertion FAILS pre-fix
+    # (intended RED).
+    And the EPCIS JSON array field has:
+      | field               | expectedSize |
+      | desadvReferences    | 1            |
+      | shipmentDocumentNos | 1            |
+    And the EPCIS JSON array field has:
+      | field        | expectedSize | containsValue |
+      | poReferences | 1            | 1300000301    |
