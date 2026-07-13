@@ -21,8 +21,6 @@ import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.MAccount;
 import org.compiere.util.Env;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -148,19 +146,7 @@ public class AccountDAO implements IAccountDAO
 			}
 		}
 
-		final List<I_C_ValidCombination> matches = queryBuilder.create().list(I_C_ValidCombination.class);
-		if (matches.isEmpty())
-		{
-			return null;
-		}
-		// When multiple combinations match (e.g. minimal dimension with no BPartner/Org filters),
-		// prefer the one with no partner assigned on org 0 — the most "generic" entry.
-		final I_C_ValidCombination existingAccount = matches.stream()
-				.min(Comparator
-						.comparingInt((I_C_ValidCombination vc) -> vc.getC_BPartner_ID() == 0 ? 0 : 1)
-						.thenComparingInt(vc -> vc.getAD_Org_ID() == 0 ? 0 : 1)
-						.thenComparingInt(I_C_ValidCombination::getC_ValidCombination_ID))
-				.orElseThrow();
+		final I_C_ValidCombination existingAccount = queryBuilder.create().firstOnly(I_C_ValidCombination.class);
 		return LegacyAdapters.convertToPO(existingAccount);
 	}
 
