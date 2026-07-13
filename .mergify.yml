@@ -92,7 +92,6 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
-              - base=temporary_test20260713_hotfix
               - base=midnight_xylophone_hotfix
               - base=boomerang_signal_hotfix
               - base=galaxy_hero_hotfix
@@ -124,7 +123,6 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
-              - base=temporary_test20260713_release
               - base=midnight_xylophone_release
               - base=boomerang_signal_release
               - base=deep_tundra_release
