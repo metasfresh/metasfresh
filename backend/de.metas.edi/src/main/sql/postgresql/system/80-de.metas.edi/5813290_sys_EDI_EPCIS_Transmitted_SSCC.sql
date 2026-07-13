@@ -17,8 +17,9 @@
 -- UNIQUE INDEX on (ExternalSystem_Config_ScriptedExportConversion_ID, SSCC18)
 -- — one ledger row per (receiver-config, physical SSCC).
 --
--- WebUI window / field placement: intentionally deferred (framework-internal ledger table for now,
--- same deferral pattern as ExternalSystem_ScriptedExportConversion_Status, script 5806850).
+-- WebUI window / field placement: a read-only diagnostic child tab is added on the Lieferung /
+-- shipment window (AD_Window_ID=169) by migration 5813400, mirroring the read-only diagnostic
+-- tab already shipped for ExternalSystem_ScriptedExportConversion_Status (5806870/5807070).
 --
 -- Reused system AD_Element_IDs:
 --   102 AD_Client_ID | 113 AD_Org_ID | 348 IsActive
