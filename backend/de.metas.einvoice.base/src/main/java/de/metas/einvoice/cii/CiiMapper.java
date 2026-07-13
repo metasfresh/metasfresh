@@ -6,6 +6,8 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.einvoice.EInvoiceFormat;
 import de.metas.einvoice.EInvoiceRecipientConfig;
 import de.metas.einvoice.cii.model.AmountType;
@@ -63,7 +65,11 @@ import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -94,7 +100,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Maps a metasfresh {@code C_Invoice} to the CII {@link CrossIndustryInvoiceType} structure.
@@ -150,6 +158,8 @@ public class CiiMapper
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final CiiMappingRepository repo = new CiiMappingRepository();
 
 	@NonNull
@@ -242,18 +252,123 @@ public class CiiMapper
 	{
 		final SupplyChainTradeTransactionType tx = new SupplyChainTradeTransactionType();
 
+		// BG-23 VAT breakdown rows — fetched once and shared between the BT-131 reconciliation
+		// pre-pass (below) and buildTradeSettlement/buildMonetarySummation (BT-106/BT-109/BT-110).
+		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
+
 		// BG-25 Invoice lines
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
+		final Map<Integer, BigDecimal> lineNetAmountsForBt131 = computeLineNetAmountsForBt131(invoice, lines, invoiceTaxes);
 		for (final I_C_InvoiceLine line : lines)
 		{
-			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(line));
+			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(invoice, line, lineNetAmountsForBt131));
 		}
 
 		tx.setApplicableHeaderTradeAgreement(buildTradeAgreement(invoice, recipientConfig));
 		tx.setApplicableHeaderTradeDelivery(buildHeaderTradeDelivery(invoice));
-		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice));
+		tx.setApplicableHeaderTradeSettlement(buildTradeSettlement(invoice, invoiceTaxes));
 
 		return tx;
+	}
+
+	/**
+	 * Computes the BT-131 (line net amount) value to emit for every invoice line.
+	 *
+	 * <p><b>Tax-EXCLUDED invoices</b>: unchanged — the map holds {@code LineNetAmt} as-is, exactly
+	 * as before this fix (byte-identical behaviour).
+	 *
+	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount (see
+	 * class-level investigation notes), so the tax-exclusive net must be derived. A naive per-line
+	 * {@link Tax#calculateBaseAmt} can sum to a different total than the tax breakdown's
+	 * {@code C_InvoiceTax.TaxBaseAmt} (sum-of-rounds vs. the header's round-of-sum), which fails
+	 * KoSIT BR-S-08 (BT-131 sum must equal BT-116) / BR-CO-10. To guarantee an EXACT match, lines
+	 * are grouped by {@code C_Tax_ID}; within each group every line's natural net is computed, then
+	 * the LAST line of the group absorbs the rounding delta so the group sums exactly to that tax's
+	 * {@code TaxBaseAmt}.
+	 */
+	private Map<Integer, BigDecimal> computeLineNetAmountsForBt131(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceLine> lines,
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+	{
+		final Map<Integer, BigDecimal> result = new LinkedHashMap<>();
+
+		if (!invoice.isTaxIncluded())
+		{
+			for (final I_C_InvoiceLine line : lines)
+			{
+				result.put(line.getC_InvoiceLine_ID(), line.getLineNetAmt());
+			}
+			return result;
+		}
+
+		final Map<Integer, BigDecimal> taxBaseAmtByTaxId = new LinkedHashMap<>();
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			taxBaseAmtByTaxId.put(invoiceTax.getC_Tax_ID(), invoiceTax.getTaxBaseAmt());
+		}
+
+		final Map<Integer, List<I_C_InvoiceLine>> linesByTaxId = new LinkedHashMap<>();
+		for (final I_C_InvoiceLine line : lines)
+		{
+			linesByTaxId.computeIfAbsent(line.getC_Tax_ID(), taxId -> new ArrayList<>()).add(line);
+		}
+
+		final CurrencyPrecision amountPrecision = resolveAmountPrecision(invoice);
+
+		for (final Map.Entry<Integer, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
+		{
+			final int taxId = groupEntry.getKey();
+			final List<I_C_InvoiceLine> groupLines = groupEntry.getValue();
+			final Tax tax = taxBL.getTaxById(TaxId.ofRepoId(taxId));
+
+			final Map<Integer, BigDecimal> naturalNetByLineId = new LinkedHashMap<>();
+			BigDecimal sumOfNaturalNets = BigDecimal.ZERO;
+			for (final I_C_InvoiceLine line : groupLines)
+			{
+				final BigDecimal naturalNet = tax.calculateBaseAmt(line.getLineNetAmt(), true, amountPrecision.toInt());
+				naturalNetByLineId.put(line.getC_InvoiceLine_ID(), naturalNet);
+				sumOfNaturalNets = sumOfNaturalNets.add(naturalNet);
+			}
+
+			final BigDecimal targetTaxBaseAmt = taxBaseAmtByTaxId.get(taxId);
+			if (targetTaxBaseAmt == null)
+			{
+				// No matching C_InvoiceTax row for this tax (shouldn't happen on a completed
+				// invoice) — fall back to the natural per-line nets, without reconciliation.
+				result.putAll(naturalNetByLineId);
+				continue;
+			}
+
+			// The last line of the group absorbs the rounding delta so the group's BT-131 sum
+			// matches this tax's TaxBaseAmt (BT-116) EXACTLY — this is what satisfies BR-S-08/BR-CO-10.
+			final BigDecimal delta = targetTaxBaseAmt.subtract(sumOfNaturalNets);
+			final I_C_InvoiceLine lastLine = groupLines.get(groupLines.size() - 1);
+			for (final I_C_InvoiceLine line : groupLines)
+			{
+				final BigDecimal naturalNet = naturalNetByLineId.get(line.getC_InvoiceLine_ID());
+				final BigDecimal net = line == lastLine ? naturalNet.add(delta) : naturalNet;
+				result.put(line.getC_InvoiceLine_ID(), net);
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Resolves the decimal scale used for the tax-included net-amount reconciliation (BT-131/BT-146),
+	 * sourced from the invoice currency's standard precision. Mirrors the currency-based precision
+	 * lookup pattern in {@code InvoiceCandBL.getPrecisionFromCurrency} rather than the
+	 * {@code M_PriceList_ID}-keyed {@code AbstractInvoiceBL.getAmountPrecision}, since a {@link I_C_Invoice}
+	 * reaching this mapper is not guaranteed to carry a price list reference.
+	 */
+	@NonNull
+	private CurrencyPrecision resolveAmountPrecision(@NonNull final I_C_Invoice invoice)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(invoice.getC_Currency_ID());
+		return currencyId != null
+				? currencyDAO.getStdPrecision(currencyId)
+				: CurrencyPrecision.TWO;
 	}
 
 	// ===== BG-13 Delivery information =====
@@ -281,7 +396,10 @@ public class CiiMapper
 
 	// ===== BG-25 Invoice line item =====
 
-	private SupplyChainTradeLineItemType buildLineItem(@NonNull final I_C_InvoiceLine line)
+	private SupplyChainTradeLineItemType buildLineItem(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final I_C_InvoiceLine line,
+			@NonNull final Map<Integer, BigDecimal> lineNetAmountsForBt131)
 	{
 		final SupplyChainTradeLineItemType item = new SupplyChainTradeLineItemType();
 
@@ -305,11 +423,33 @@ public class CiiMapper
 		}
 		item.setSpecifiedTradeProduct(product);
 
-		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount)
+		// BT-151/BT-152/BT-146/BT-131 all key off the line's tax — load it once (model-level; the
+		// full Tax value object, needed only for the tax-included net-amount conversion below, is
+		// fetched separately and lazily so tax-excluded invoices never require C_Tax.ValidFrom).
+		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
+
+		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount).
+		// Tax-included invoices: PriceActual is GROSS (see class-level investigation notes) — convert
+		// to the tax-exclusive net unit price. Tax-excluded invoices: unchanged (byte-identical).
+		// isTaxIncluded mirrors IInvoiceBL.isTaxIncluded(invoice, tax) (whole-tax override OR the
+		// invoice's flag) without going through the full Tax value object.
+		final boolean lineIsTaxIncluded = (tax != null && tax.isWholeTax()) || invoice.isTaxIncluded();
+		final BigDecimal netUnitPrice;
+		if (lineIsTaxIncluded)
+		{
+			final Tax taxForLine = taxBL.getTaxById(TaxId.ofRepoId(line.getC_Tax_ID()));
+			final CurrencyPrecision pricePrecision = resolveAmountPrecision(invoice);
+			netUnitPrice = taxForLine.calculateBaseAmt(line.getPriceActual(), true, pricePrecision.toInt());
+		}
+		else
+		{
+			netUnitPrice = line.getPriceActual();
+		}
+
 		final LineTradeAgreementType tradeAgreement = new LineTradeAgreementType();
 		final TradePriceType netPrice = new TradePriceType();
 		final AmountType priceAmount = new AmountType();
-		priceAmount.setValue(line.getPriceActual());
+		priceAmount.setValue(netUnitPrice);
 		netPrice.setChargeAmount(priceAmount);
 		tradeAgreement.setNetPriceProductTradePrice(netPrice);
 		item.setSpecifiedLineTradeAgreement(tradeAgreement);
@@ -332,7 +472,6 @@ public class CiiMapper
 		item.setSpecifiedLineTradeDelivery(delivery);
 
 		// BT-151 VAT category code (fail fast if null) + BT-152 VAT rate + BT-131 line net amount
-		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
 		final String vatCategory = tax != null ? tax.getEN16931VATCategory() : null;
 		if (vatCategory == null || vatCategory.isEmpty())
 		{
@@ -360,10 +499,11 @@ public class CiiMapper
 		}
 		settlement.setApplicableTradeTax(tradeTax);
 
-		// BT-131 Line net amount
+		// BT-131 Line net amount — reconciled to this tax's TaxBaseAmt (BT-116) on tax-included
+		// invoices (see computeLineNetAmountsForBt131); unchanged (LineNetAmt) otherwise.
 		final TradeSettlementLineMonetarySummationType monetarySummation = new TradeSettlementLineMonetarySummationType();
 		final AmountType lineTotal = new AmountType();
-		lineTotal.setValue(line.getLineNetAmt());
+		lineTotal.setValue(lineNetAmountsForBt131.get(line.getC_InvoiceLine_ID()));
 		monetarySummation.setLineTotalAmount(lineTotal);
 		settlement.setSpecifiedTradeSettlementLineMonetarySummation(monetarySummation);
 
@@ -773,7 +913,9 @@ public class CiiMapper
 
 	// ===== HeaderTradeSettlement =====
 
-	private HeaderTradeSettlementType buildTradeSettlement(@NonNull final I_C_Invoice invoice)
+	private HeaderTradeSettlementType buildTradeSettlement(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
 	{
 		final HeaderTradeSettlementType settlement = new HeaderTradeSettlementType();
 
@@ -795,7 +937,6 @@ public class CiiMapper
 		buildPaymentMeans(invoice, sellerBPartnerId).forEach(pm -> settlement.getSpecifiedTradeSettlementPaymentMeans().add(pm));
 
 		// BG-23 VAT breakdown — one ApplicableTradeTax per C_InvoiceTax row
-		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
 			settlement.getApplicableTradeTax().add(buildHeaderTradeTax(invoiceTax));
@@ -930,14 +1071,23 @@ public class CiiMapper
 	{
 		final TradeSettlementHeaderMonetarySummationType summation = new TradeSettlementHeaderMonetarySummationType();
 
-		// BT-106 Sum of line net amounts = C_Invoice.TotalLines
+		// BT-106 Sum of line net amounts / BT-109 Invoice total without VAT.
+		// Tax-included invoices: C_Invoice.TotalLines is the GROSS sum (see class-level investigation
+		// notes) — the tax-exclusive value is SUM(C_InvoiceTax.TaxBaseAmt), sourced directly from the
+		// already-fetched invoiceTaxes list (guaranteed consistent with BT-116 — same stored values —
+		// and with the per-line BT-131 reconciliation, since both are anchored on TaxBaseAmt).
+		// Tax-excluded invoices: unchanged — TotalLines exactly as before this fix.
+		final BigDecimal lineTotalNetAmt = invoice.isTaxIncluded()
+				? sumTaxBaseAmt(invoiceTaxes)
+				: invoice.getTotalLines();
+
 		final AmountType lineTotal = new AmountType();
-		lineTotal.setValue(invoice.getTotalLines());
+		lineTotal.setValue(lineTotalNetAmt);
 		summation.setLineTotalAmount(lineTotal);
 
-		// BT-109 Invoice total without VAT = TotalLines (no header charges/allowances in current scope)
+		// BT-109 Invoice total without VAT (no header charges/allowances in current scope)
 		final AmountType taxBasisTotal = new AmountType();
-		taxBasisTotal.setValue(invoice.getTotalLines());
+		taxBasisTotal.setValue(lineTotalNetAmt);
 		summation.setTaxBasisTotalAmount(taxBasisTotal);
 
 		// BT-110 Invoice total VAT amount = sum of C_InvoiceTax.TaxAmt
@@ -972,6 +1122,21 @@ public class CiiMapper
 		summation.setDuePayableAmount(duePayable);
 
 		return summation;
+	}
+
+	/** Sums {@code C_InvoiceTax.TaxBaseAmt} over the given VAT breakdown rows (null-safe). */
+	private static BigDecimal sumTaxBaseAmt(@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
+	{
+		BigDecimal sum = BigDecimal.ZERO;
+		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
+		{
+			final BigDecimal taxBaseAmt = invoiceTax.getTaxBaseAmt();
+			if (taxBaseAmt != null)
+			{
+				sum = sum.add(taxBaseAmt);
+			}
+		}
+		return sum;
 	}
 
 	// ===== BG-16 Payment means =====
