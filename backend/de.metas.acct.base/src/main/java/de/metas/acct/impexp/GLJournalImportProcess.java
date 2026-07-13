@@ -436,13 +436,27 @@ public class GLJournalImportProcess extends SimpleImportProcessTemplate<I_I_GLJo
 
 	private AccountDimension newMinimalAccountDimension(final I_I_GLJournal importRecord, final int accountId)
 	{
+		// All optional segments are set to 0 so AccountDAO produces IS NULL filters for each,
+		// ensuring the lookup matches only the most generic C_ValidCombination entry (org=0, no partner/product/etc.).
 		return AccountDimension.builder()
 				.setAcctSchemaId(AcctSchemaId.ofRepoIdOrNull(importRecord.getC_AcctSchema_ID()))
 				.setAD_Client_ID(importRecord.getAD_Client_ID())
-				.setAD_Org_ID(0)  // chart-of-accounts entries live at system org (0); produces AD_Org_ID=0 filter
+				.setAD_Org_ID(0)
 				.setC_ElementValue_ID(accountId)
-				.setC_BPartner_ID(0)  // no partner; produces C_BPartner_ID IS NULL filter
-				.setM_Product_ID(0)   // no product; produces M_Product_ID IS NULL filter
+				.setC_SubAcct_ID(0)
+				.setM_Product_ID(0)
+				.setC_BPartner_ID(0)
+				.setAD_OrgTrx_ID(0)
+				.setC_LocFrom_ID(0)
+				.setC_LocTo_ID(0)
+				.setC_SalesRegion_ID(null)
+				.setC_Project_ID(0)
+				.setC_Campaign_ID(0)
+				.setC_Activity_ID(0)
+				.setUser1_ID(0)
+				.setUser2_ID(0)
+				.setUserElement1_ID(0)
+				.setUserElement2_ID(0)
 				.build();
 	}
 
