@@ -2517,6 +2517,129 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.07");
 	}
 
+	/**
+	 * Guards the BT-146 gate against a whole-tax regression on the tax-EXCLUDED path.
+	 *
+	 * <p>{@link org.compiere.model.I_C_Tax} with {@code IsWholeTax=Y} makes
+	 * {@code Tax.calculateBaseAmt} return {@code ZERO} regardless of the {@code taxIncluded} flag. If the
+	 * BT-146 gate keys on whole-tax (rather than on the invoice's {@code IsTaxIncluded} flag), a
+	 * tax-EXCLUDED invoice whose line uses a whole-tax {@code C_Tax} would emit BT-146 = 0.00 instead of
+	 * the raw {@code PriceActual} — a behavioural regression on the path the tax-included fix promised to
+	 * leave byte-identical. On the tax-excluded path BT-146 must be the raw {@code PriceActual}.
+	 */
+	@Test
+	void tax_excluded_wholeTax_line_bt146_is_raw_priceActual_not_zero() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=N (tax-EXCLUDED) ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00702");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(false);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-702");
+		saveRecord(product);
+
+		// === Tax: whole-tax (IsWholeTax=Y). Tax.calculateBaseAmt returns ZERO for such a tax. ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("Whole tax");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setIsWholeTax(true);
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === Invoice line: PriceActual/LineNetAmt = 100.00 (tax-excluded: raw net) ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+
+		// BT-146 on a tax-EXCLUDED invoice MUST be the raw PriceActual (100.00), NOT 0.00 — even when
+		// the line's C_Tax is a whole-tax (which would make calculateBaseAmt return ZERO if wrongly gated).
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("100.00");
+	}
+
 	// ===== Shared helpers =====
 
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException

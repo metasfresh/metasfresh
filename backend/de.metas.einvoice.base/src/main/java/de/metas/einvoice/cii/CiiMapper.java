@@ -64,6 +64,7 @@ import de.metas.email.MailService;
 import de.metas.email.mailboxes.Mailbox;
 import de.metas.email.mailboxes.MailboxQuery;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -110,6 +111,15 @@ import java.util.Map;
  * <p>Covers: ExchangedDocument header (BT-1, BT-2, BT-3), seller/buyer trade parties (BG-4/BG-5,
  * BG-7/BG-8), document-level references (BT-13, BT-25/BT-26), BG-25 invoice lines
  * (BT-126 through BT-152), BG-23 VAT breakdown, BG-22 monetary totals, and BG-16 payment means.
+ *
+ * <p><b>Tax-included investigation notes.</b> On a tax-INCLUDED invoice ({@code C_Invoice.IsTaxIncluded=Y})
+ * the line-level amounts {@code C_InvoiceLine.LineNetAmt} / {@code PriceActual} are stored GROSS, whereas
+ * the tax breakdown {@code C_InvoiceTax.TaxBaseAmt} / {@code TaxAmt} and {@code C_Invoice.GrandTotal} are
+ * already net / tax / gross respectively. EN 16931 requires BT-131/BT-146/BT-106/BT-109 to be tax-exclusive,
+ * so on the tax-included path they must be derived to net (they are NOT taken raw from the line). BT-131 is
+ * additionally reconciled per {@code C_Tax} group to that group's {@code TaxBaseAmt} so the BT-131 sum equals
+ * BT-116 exactly, satisfying KoSIT BR-S-08 / BR-CO-10. On the tax-EXCLUDED path all these values are emitted
+ * unchanged.
  */
 public class CiiMapper
 {
@@ -258,7 +268,7 @@ public class CiiMapper
 
 		// BG-25 Invoice lines
 		final List<I_C_InvoiceLine> lines = invoiceDAO.retrieveLines(invoice);
-		final Map<Integer, BigDecimal> lineNetAmountsForBt131 = computeLineNetAmountsForBt131(invoice, lines, invoiceTaxes);
+		final Map<InvoiceLineId, BigDecimal> lineNetAmountsForBt131 = computeLineNetAmountsForBt131(invoice, lines, invoiceTaxes);
 		for (final I_C_InvoiceLine line : lines)
 		{
 			tx.getIncludedSupplyChainTradeLineItem().add(buildLineItem(invoice, line, lineNetAmountsForBt131));
@@ -286,58 +296,60 @@ public class CiiMapper
 	 * the LAST line of the group absorbs the rounding delta so the group sums exactly to that tax's
 	 * {@code TaxBaseAmt}.
 	 */
-	private Map<Integer, BigDecimal> computeLineNetAmountsForBt131(
+	private Map<InvoiceLineId, BigDecimal> computeLineNetAmountsForBt131(
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final List<I_C_InvoiceLine> lines,
 			@NonNull final List<I_C_InvoiceTax> invoiceTaxes)
 	{
-		final Map<Integer, BigDecimal> result = new LinkedHashMap<>();
+		final Map<InvoiceLineId, BigDecimal> result = new LinkedHashMap<>();
 
 		if (!invoice.isTaxIncluded())
 		{
 			for (final I_C_InvoiceLine line : lines)
 			{
-				result.put(line.getC_InvoiceLine_ID(), line.getLineNetAmt());
+				result.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), line.getLineNetAmt());
 			}
 			return result;
 		}
 
-		final Map<Integer, BigDecimal> taxBaseAmtByTaxId = new LinkedHashMap<>();
+		final Map<TaxId, BigDecimal> taxBaseAmtByTaxId = new LinkedHashMap<>();
 		for (final I_C_InvoiceTax invoiceTax : invoiceTaxes)
 		{
-			taxBaseAmtByTaxId.put(invoiceTax.getC_Tax_ID(), invoiceTax.getTaxBaseAmt());
+			taxBaseAmtByTaxId.put(TaxId.ofRepoId(invoiceTax.getC_Tax_ID()), invoiceTax.getTaxBaseAmt());
 		}
 
-		final Map<Integer, List<I_C_InvoiceLine>> linesByTaxId = new LinkedHashMap<>();
+		final Map<TaxId, List<I_C_InvoiceLine>> linesByTaxId = new LinkedHashMap<>();
 		for (final I_C_InvoiceLine line : lines)
 		{
-			linesByTaxId.computeIfAbsent(line.getC_Tax_ID(), taxId -> new ArrayList<>()).add(line);
+			linesByTaxId.computeIfAbsent(TaxId.ofRepoId(line.getC_Tax_ID()), k -> new ArrayList<>()).add(line);
 		}
 
 		final CurrencyPrecision amountPrecision = resolveAmountPrecision(invoice);
 
-		for (final Map.Entry<Integer, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
+		for (final Map.Entry<TaxId, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
 		{
-			final int taxId = groupEntry.getKey();
+			final TaxId taxId = groupEntry.getKey();
 			final List<I_C_InvoiceLine> groupLines = groupEntry.getValue();
-			final Tax tax = taxBL.getTaxById(TaxId.ofRepoId(taxId));
+			final Tax tax = taxBL.getTaxById(taxId);
 
-			final Map<Integer, BigDecimal> naturalNetByLineId = new LinkedHashMap<>();
+			final Map<InvoiceLineId, BigDecimal> naturalNetByLineId = new LinkedHashMap<>();
 			BigDecimal sumOfNaturalNets = BigDecimal.ZERO;
 			for (final I_C_InvoiceLine line : groupLines)
 			{
 				final BigDecimal naturalNet = tax.calculateBaseAmt(line.getLineNetAmt(), true, amountPrecision.toInt());
-				naturalNetByLineId.put(line.getC_InvoiceLine_ID(), naturalNet);
+				naturalNetByLineId.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), naturalNet);
 				sumOfNaturalNets = sumOfNaturalNets.add(naturalNet);
 			}
 
 			final BigDecimal targetTaxBaseAmt = taxBaseAmtByTaxId.get(taxId);
 			if (targetTaxBaseAmt == null)
 			{
-				// No matching C_InvoiceTax row for this tax (shouldn't happen on a completed
-				// invoice) — fall back to the natural per-line nets, without reconciliation.
-				result.putAll(naturalNetByLineId);
-				continue;
+				// No C_InvoiceTax breakdown row for a tax used by an invoice line. On a completed
+				// tax-included invoice this is a genuine data error — without the TaxBaseAmt anchor
+				// the BT-131 reconciliation cannot satisfy BR-S-08/BR-CO-10, so fail fast rather
+				// than silently emit broken XML.
+				throw new AdempiereException("CII mapping: no C_InvoiceTax breakdown row for a tax used by an invoice line"
+						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
 			}
 
 			// The last line of the group absorbs the rounding delta so the group's BT-131 sum
@@ -346,9 +358,10 @@ public class CiiMapper
 			final I_C_InvoiceLine lastLine = groupLines.get(groupLines.size() - 1);
 			for (final I_C_InvoiceLine line : groupLines)
 			{
-				final BigDecimal naturalNet = naturalNetByLineId.get(line.getC_InvoiceLine_ID());
+				final InvoiceLineId lineId = InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID());
+				final BigDecimal naturalNet = naturalNetByLineId.get(lineId);
 				final BigDecimal net = line == lastLine ? naturalNet.add(delta) : naturalNet;
-				result.put(line.getC_InvoiceLine_ID(), net);
+				result.put(lineId, net);
 			}
 		}
 
@@ -399,7 +412,7 @@ public class CiiMapper
 	private SupplyChainTradeLineItemType buildLineItem(
 			@NonNull final I_C_Invoice invoice,
 			@NonNull final I_C_InvoiceLine line,
-			@NonNull final Map<Integer, BigDecimal> lineNetAmountsForBt131)
+			@NonNull final Map<InvoiceLineId, BigDecimal> lineNetAmountsForBt131)
 	{
 		final SupplyChainTradeLineItemType item = new SupplyChainTradeLineItemType();
 
@@ -431,9 +444,9 @@ public class CiiMapper
 		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount).
 		// Tax-included invoices: PriceActual is GROSS (see class-level investigation notes) — convert
 		// to the tax-exclusive net unit price. Tax-excluded invoices: unchanged (byte-identical).
-		// isTaxIncluded mirrors IInvoiceBL.isTaxIncluded(invoice, tax) (whole-tax override OR the
-		// invoice's flag) without going through the full Tax value object.
-		final boolean lineIsTaxIncluded = (tax != null && tax.isWholeTax()) || invoice.isTaxIncluded();
+		// The gate is the invoice-level IsTaxIncluded flag only — consistent with the BT-131
+		// reconciliation (computeLineNetAmountsForBt131) and BT-106/BT-109, which also key on it.
+		final boolean lineIsTaxIncluded = invoice.isTaxIncluded();
 		final BigDecimal netUnitPrice;
 		if (lineIsTaxIncluded)
 		{
@@ -503,7 +516,7 @@ public class CiiMapper
 		// invoices (see computeLineNetAmountsForBt131); unchanged (LineNetAmt) otherwise.
 		final TradeSettlementLineMonetarySummationType monetarySummation = new TradeSettlementLineMonetarySummationType();
 		final AmountType lineTotal = new AmountType();
-		lineTotal.setValue(lineNetAmountsForBt131.get(line.getC_InvoiceLine_ID()));
+		lineTotal.setValue(lineNetAmountsForBt131.get(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID())));
 		monetarySummation.setLineTotalAmount(lineTotal);
 		settlement.setSpecifiedTradeSettlementLineMonetarySummation(monetarySummation);
 
