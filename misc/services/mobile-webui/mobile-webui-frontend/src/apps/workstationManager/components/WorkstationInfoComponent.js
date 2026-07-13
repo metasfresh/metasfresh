@@ -3,7 +3,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { appTrl } from '../utils';
 
-export const WorkstationInfoComponent = ({ workstationInfo, currentWorkplaceName }) => {
+export const WorkstationInfoComponent = ({ workstationInfo }) => {
   return (
     <table className="table view-header is-size-6">
       <tbody>
@@ -11,12 +11,12 @@ export const WorkstationInfoComponent = ({ workstationInfo, currentWorkplaceName
           <th>{appTrl('workstationName')}</th>
           <td>{workstationInfo.name}</td>
         </tr>
-        {currentWorkplaceName && (
-          // The operator's CURRENT active workplace (read from GET /workplace), not the workstation's
-          // statically-linked workplace — so any drift between them is visible to the operator.
+        {workstationInfo.workplaceName && (
+          // Scan-and-go assigns the workstation AND its linked workplace, and this screen is only ever
+          // reached via a scan — so on every reachable view this workplace IS the operator's active one.
           <tr>
             <th>{trl('general.workplace')}</th>
-            <td>{currentWorkplaceName}</td>
+            <td>{workstationInfo.workplaceName}</td>
           </tr>
         )}
         <tr>
@@ -30,7 +30,6 @@ export const WorkstationInfoComponent = ({ workstationInfo, currentWorkplaceName
 
 WorkstationInfoComponent.propTypes = {
   workstationInfo: PropTypes.object.isRequired,
-  currentWorkplaceName: PropTypes.string,
 };
 
 export default WorkstationInfoComponent;

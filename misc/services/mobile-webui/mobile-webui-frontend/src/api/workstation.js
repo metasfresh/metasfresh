@@ -48,10 +48,6 @@ export const getWorkstationByQRCode = (qrCode) => {
   return axios.post(`${workstationAPIBase}/byQRCode`, { qrCode }).then(unboxAxiosResponse);
 };
 
-export const assignWorkstationById = (workstationId) => {
-  return axios.post(`${workstationAPIBase}/assign`, { workstationId }).then(unboxAxiosResponse);
-};
-
 export const assignWorkstationByQRCode = (workstationQRCode) => {
   return axios.post(`${workstationAPIBase}/assign`, { workstationQRCode }).then(unboxAxiosResponse);
 };

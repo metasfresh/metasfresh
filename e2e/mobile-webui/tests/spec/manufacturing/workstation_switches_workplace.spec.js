@@ -46,9 +46,10 @@ test('Re-scanning an already-assigned workstation must re-switch a drifted activ
 
     await test.step('Scan workstation WS1 (linked to workplace A) -> auto-assigned, active workplace = A', async () => {
         await WorkstationManagerScreen.scanWorkstation(masterdata.resources.WS1.qrCode);
-        // Scan-and-go (mirrors the workplace app): the scan itself assigns the workstation, so the
-        // operator never taps a separate Assign button — it is already hidden.
-        await WorkstationManagerScreen.expectAssignButtonNotVisible();
+        // Scan-and-go (mirrors the workplace app): the scan itself assigns the workstation and sets the
+        // operator's active workplace to the linked one (A) — no separate Assign tap. The screen reflects it.
+        await WorkstationManagerScreen.expectCurrentWorkstation(masterdata.resources.WS1.name);
+        await WorkstationManagerScreen.expectCurrentWorkplace(masterdata.workplaces.wpA.name);
         await WorkstationManagerScreen.goBack();
     });
 

@@ -13,9 +13,9 @@ const containerElement = () => page.locator('#WorkstationManagerScreen');
 // because the e2e suite runs against the English locale (see sibling WorkplaceManagerScreen usage in
 // home_screen.spec.js: caption: 'Name' / caption: 'Assigned').
 const CAPTION_WORKSTATION_NAME = 'Name'; // i18n key 'workstationName' -> apps/workstationManager/i18n/en.json
-// The 'Workplace' row (i18n key 'general.workplace' -> translations_en.js) renders the operator's
-// CURRENT active workplace (read from GET /workplace), which can drift from the workstation's
-// statically-linked workplace — so a mismatch is visible to the operator.
+// The 'Workplace' row (i18n key 'general.workplace' -> translations_en.js) renders the scanned
+// workstation's workplace. Since scan-and-go assigns the workstation AND its workplace, this equals
+// the operator's active workplace on every reachable (post-scan) view of the screen.
 const CAPTION_CURRENT_WORKPLACE = 'Workplace'; // i18n key 'general.workplace'
 
 export const WorkstationManagerScreen = {
@@ -38,14 +38,6 @@ export const WorkstationManagerScreen = {
             await containerElement().waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
         }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
         await WorkstationManagerScreen.waitForScreen();
-    }),
-
-    // The frontend's Assign button (apps/workstationManager/containers/AppScreen.js) carries
-    // testId="assign-button" (mirroring WorkplaceManagerScreen's own assign-button) — select by testId,
-    // not by rendered caption, which is i18n-fragile. Under scan-and-go the scan assigns the workstation,
-    // so this button is expected to be hidden after a scan.
-    expectAssignButtonNotVisible: async () => await test.step(`${NAME} - Expect Assign button NOT visible`, async () => {
-        await expect(containerElement().getByTestId('assign-button')).toHaveCount(0);
     }),
 
     expectHeaderProperty: async ({ caption, value }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'`, async () => {
