@@ -194,7 +194,7 @@ UPDATE AD_UI_Element   u SET Labels_Selector_Field_ID = m.new_id FROM _ob_field_
 UPDATE AD_Element_Link l SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE l.AD_Field_ID              = m.old_id;
 UPDATE AD_Field        f SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE f.AD_Field_ID              = m.old_id;
 
--- --- AD_UI_Element PK (leaf, no further children) ---
+-- --- AD_UI_Element PK (leaf, no _Trl table in metasfresh schema) ---
 UPDATE AD_UI_Element u SET AD_UI_Element_ID = m.new_id FROM _ob_uielem_map m WHERE u.AD_UI_Element_ID = m.old_id;
 
 COMMIT;

@@ -3,16 +3,19 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-07-02:
 --   AD_Field       781321  (M_Product_ID in Overview tab)
---   AD_UI_Element  652429  (M_Product_ID in Overview tab)
+--   AD_UI_Element  652430  (M_Product_ID in Overview tab)
 
 -- ============================================================
 -- 1. Remove ProductValue and ProductName fields from Overview tab
 -- ============================================================
-DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID IN (652523/*ProductValue*/, 652524/*ProductName*/);
+-- Includes both the fresh ID-server allocations (652523/652524, 781407/781408)
+-- used by the current 5811430 and the earlier hand-picked values (581186/581187,
+-- 581172/581173) still present on instances applied before the renumbering.
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID IN (652523/*ProductValue*/, 652524/*ProductName*/, 581186, 581187);
 
-DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/);
-DELETE FROM AD_Field_Trl     WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/);
-DELETE FROM AD_Field          WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/);
+DELETE FROM AD_Element_Link WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/, 581172, 581173);
+DELETE FROM AD_Field_Trl     WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/, 581172, 581173);
+DELETE FROM AD_Field          WHERE AD_Field_ID IN (781407/*ProductValue*/, 781408/*ProductName*/, 581172, 581173);
 
 -- ============================================================
 -- 2. Add M_Product_ID lookup field (replaces both removed fields, SeqNo=10)
