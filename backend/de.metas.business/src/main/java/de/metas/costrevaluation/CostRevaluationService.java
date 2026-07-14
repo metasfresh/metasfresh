@@ -293,9 +293,9 @@ public class CostRevaluationService
 	 * SOURCE element's opening amounts and write ONE opening-anchor {@code M_CostDetail}.
 	 * <p>
 	 * Builds ONE {@link CostDetailPreviousAmounts opening} object and reuses it for BOTH the {@code M_Cost} seed and the
-	 * anchor's {@code Prev_*} — that shared snapshot is the recompute-survival crux. Own price and qty come from the line;
-	 * the lower-level (LL/component) price is re-read fresh from the SOURCE element's {@code M_Cost} (it is not carried on
-	 * the line, mirroring the {@code Calculated} path).
+	 * anchor's {@code Prev_*} — that shared snapshot is the recompute-survival crux. Own price, LL and qty are all read
+	 * together from a SINGLE fresh read of the SOURCE element's {@code M_Cost} at complete time, so the seed is internally
+	 * consistent (value-neutral as of completion); the line's own/qty are only the drafted preview.
 	 */
 	private void createDetailsForCopyFromCostElement(
 			@NonNull final CostRevaluation costRevaluation,
@@ -311,28 +311,26 @@ public class CostRevaluationService
 		final CostSegment targetSegment = targetSegAndElem.toCostSegment();
 		final CostSegmentAndElement sourceSegAndElem = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
-		final CurrentCost sourceCurrentCost = currentCostsRepo.getOrNull(sourceSegAndElem);
+		final CurrentCost sourceCurrentCost = costingService.getCurrentCostOrNull(sourceSegAndElem);
 		if (sourceCurrentCost == null)
 		{
 			throw new AdempiereException("No current cost found for source cost element " + sourceSegAndElem);
 		}
+
+		// Value-neutral seed: snapshot own price + LL + qty together from a SINGLE fresh read of the source's M_Cost
+		// at complete time — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview
+		// frozen at create-lines time; a gap during which the still-active source keeps moving would make them
+		// inconsistent with a fresh LL and silently corrupt the target's forward-costing base.
 		final CostPrice sourceCostPrice = sourceCurrentCost.getCostPrice();
-
-		// Own price = line's (value-neutral copy of the source's own); LL = re-read fresh from the source element.
-		final CostPrice openingCostPrice = CostPrice.builder()
-				.ownCostPrice(line.getNewCostPrice())
-				.componentsCostPrice(sourceCostPrice.getComponentsCostPrice())
-				.uomId(sourceCostPrice.getUomId())
-				.build();
-
-		final CostAmount cumulatedAmt = line.getNewCostPrice().multiply(line.getCurrentQty());
+		final Quantity sourceQty = sourceCurrentCost.getCurrentQty();
+		final CostAmount cumulatedAmt = sourceCostPrice.getOwnCostPrice().multiply(sourceQty);
 
 		// ONE opening object, reused for both the M_Cost seed and the anchor's Prev_*.
 		final CostDetailPreviousAmounts opening = CostDetailPreviousAmounts.builder()
-				.costPrice(openingCostPrice)
-				.qty(line.getCurrentQty())
+				.costPrice(sourceCostPrice)
+				.qty(sourceQty)
 				.cumulatedAmt(cumulatedAmt)
-				.cumulatedQty(line.getCurrentQty())
+				.cumulatedQty(sourceQty)
 				.build();
 
 		costingService.seedCurrentCostFromOpening(

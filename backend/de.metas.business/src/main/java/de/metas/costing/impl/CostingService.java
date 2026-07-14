@@ -134,6 +134,11 @@ public class CostingService implements ICostingService
 		return costElementsRepo.getById(costElementId);
 	}
 
+	public CurrentCost getCurrentCostOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	{
+		return currentCostsRepo.getOrNull(costSegmentAndElement);
+	}
+
 	@Override
 	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
@@ -578,15 +583,15 @@ public class CostingService implements ICostingService
 
 		final CostElement targetCostElement = getCostElementById(targetSegAndElem.getCostElementId());
 
-		final CostDetailCreateRequest request = CostDetailCreateRequest.builder()
-				.costSegment(targetSegAndElem.toCostSegment())
-				.costElement(targetCostElement)
-				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
-				.qty(opening.getQty().toZero())
-				.amt(opening.getCumulatedAmt().toZero())
-				.date(anchorDate)
-				.build();
-
-		utils.createCostDetailRecordWithChangedCosts(request, opening);
+		utils.createCostDetailRecordWithChangedCosts(
+				CostDetailCreateRequest.builder()
+						.costSegment(targetSegAndElem.toCostSegment())
+						.costElement(targetCostElement)
+						.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
+						.qty(opening.getQty().toZero())
+						.amt(opening.getCumulatedAmt().toZero())
+						.date(anchorDate)
+						.build(),
+				opening);
 	}
 }

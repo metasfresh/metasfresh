@@ -239,6 +239,38 @@ public class CostRevaluationServiceTest
 		currentCostsRepo.save(currentCost);
 	}
 
+	/** Updates the EXISTING source {@code M_Cost} in place (unlike {@link #seedSourceCurrentCost} which inserts). */
+	private void updateSourceCurrentCost(
+			@NonNull final ProductId productId,
+			@NonNull final String ownCostPrice,
+			@NonNull final String componentsCostPrice,
+			@NonNull final String qty)
+	{
+		final de.metas.costing.CostSegmentAndElement seg = de.metas.costing.CostSegmentAndElement.builder()
+				.costingLevel(CostingLevel.Client)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(sourceCostElementId)
+				.build();
+
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(seg);
+		currentCost.setFrom(de.metas.costing.CostDetailPreviousAmounts.builder()
+				.costPrice(de.metas.costing.CostPrice.builder()
+						.ownCostPrice(de.metas.costing.CostAmount.of(ownCostPrice, euroCurrencyId))
+						.componentsCostPrice(de.metas.costing.CostAmount.of(componentsCostPrice, euroCurrencyId))
+						.uomId(de.metas.uom.UomId.ofRepoId(eachUOM.getC_UOM_ID()))
+						.build())
+				.qty(Quantity.of(qty, eachUOM))
+				.cumulatedAmt(de.metas.costing.CostAmount.of(new BigDecimal(ownCostPrice).multiply(new BigDecimal(qty)), euroCurrencyId))
+				.cumulatedQty(Quantity.of(qty, eachUOM))
+				.build());
+		currentCostsRepo.save(currentCost);
+	}
+
 	private CostRevaluationId createCopyFromCostElementHeader()
 	{
 		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
@@ -385,5 +417,63 @@ public class CostRevaluationServiceTest
 		assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("100");
 		assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1250.00");
 		assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+	}
+
+	/**
+	 * Guards against a stale/fresh mixed snapshot: the seed must take own price, LL, and qty from a SINGLE fresh
+	 * read of the source's {@code M_Cost} at complete time — not the line's values frozen at create-lines time.
+	 * Here the source element receives further activity (price + LL + qty all move) in the create-lines -> complete
+	 * gap; the seeded target and the anchor must reflect the FRESH source, never a mix of the two instants.
+	 */
+	@Test
+	public void createDetails_copyFromCostElement_usesFreshSourceSnapshot_notStaleLineValues()
+	{
+		final ProductId productWithStock = createProduct("productWithStock");
+		seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+		final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+		costRevaluationService.createLines(costRevaluationId); // freezes line own=12.50, qty=100
+
+		// Source keeps moving (old costing method still active until the separate schema flip):
+		updateSourceCurrentCost(productWithStock, "20.00", "5.00", "200");
+
+		costRevaluationService.createDetails(costRevaluationId);
+
+		final de.metas.costing.CostSegmentAndElement targetSeg = de.metas.costing.CostSegmentAndElement.builder()
+				.costingLevel(CostingLevel.Client)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.productId(productWithStock)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(targetCostElementId)
+				.build();
+
+		final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSeg);
+		assertThat(targetCurrentCost).isNotNull();
+		// FRESH source (20.00 / 5.00 / 200), not the stale line (12.50 / 100).
+		assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("20.00");
+		assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("5.00");
+		assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("200");
+		assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("4000.00");
+		assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("200");
+
+		final List<de.metas.costing.CostDetail> anchorDetails = new CostDetailRepository()
+				.stream(de.metas.costing.CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(targetCostElementId)
+						.productId(productWithStock)
+						.build())
+				.collect(ImmutableList.toImmutableList());
+		assertThat(anchorDetails).hasSize(1);
+
+		final de.metas.costing.CostDetailPreviousAmounts previousAmounts = anchorDetails.get(0).getPreviousAmounts();
+		assertThat(previousAmounts).isNotNull();
+		assertThat(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("20.00");
+		assertThat(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("5.00");
+		assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("200");
+		assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("4000.00");
+		assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("200");
 	}
 }
