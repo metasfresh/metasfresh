@@ -167,6 +167,8 @@ public class C_BPartner_StepDef
 	 *   <li>{@code IsEInvoiceRecipeint} — {@code Y}/{@code N}; marks the partner as an e-invoice recipient (note: column name is misspelled in the DB)</li>
 	 *   <li>{@code EInvoiceType} — the e-invoice format code (e.g. {@code X} for XRechnung)</li>
 	 *   <li>{@code EInvoice_BuyerReference} — the buyer reference / Leitweg-ID (BT-10)</li>
+	 *   <li>{@code IsFactoring} — {@code Y}/{@code N}; marks the partner's invoices as silently factored (payment owed to the org's factorer)</li>
+	 *   <li>{@code IsFactorer} — {@code Y}/{@code N}; marks the partner as the factorer resolved for its {@code AD_Org_ID}</li>
 	 *   <li>{@code IsInvoiceEmailEnabled} — {@code Y}/{@code N}; when {@code Y}, invoices are emailable to the bill-to location email even without a bill contact</li>
 	 * </ul>
 	 */
@@ -411,6 +413,10 @@ public class C_BPartner_StepDef
 		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsEInvoiceRecipeint).ifPresent(bPartnerRecord::setIsEInvoiceRecipeint);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoiceType).ifPresent(bPartnerRecord::setEInvoiceType);
 		row.getAsOptionalString(I_C_BPartner.COLUMNNAME_EInvoice_BuyerReference).ifPresent(bPartnerRecord::setEInvoice_BuyerReference);
+
+		// silent factoring (stille Zession): see de.metas.einvoice.cii.CiiMapper#buildPaymentMeans
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactoring).ifPresent(bPartnerRecord::setIsFactoring);
+		row.getAsOptionalBoolean(I_C_BPartner.COLUMNNAME_IsFactorer).ifPresent(bPartnerRecord::setIsFactorer);
 
 		final String paymentTermValue = row.getAsOptionalString(I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + ".Value").orElse(null);
 		if (Check.isNotBlank(paymentTermValue))
