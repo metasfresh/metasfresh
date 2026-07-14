@@ -154,6 +154,9 @@ public class CostRevaluationRepository
 		record.setM_CostElement_ID(targetCostElementId.getRepoId());
 
 		final CostPrice costPrice = sourceCurrentCost.getCostPrice();
+		// Only the own price is copied here; the lower-level (components) cost is deliberately NOT persisted at line
+		// level (M_CostRevaluationLine has no LL column, as in the Calculated path) — it is re-read fresh from the
+		// source at complete time (see CostRevaluationService.createDetailsForCopyFromCostElement).
 		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
 		// Always mirror the source's own price (value-neutral copy, not a user-adjustable revaluation).
 		record.setNewCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
