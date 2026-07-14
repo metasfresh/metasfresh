@@ -40,6 +40,11 @@ import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 
+/**
+ * Creates / loads {@code C_Aggregation} header records — the aggregation config referenced by
+ * {@code PP_Product_Planning.C_Manufacturing_Aggregation_ID} (manufacturing candidate grouping) and by
+ * invoice-candidate aggregation. Items (the grouped columns/attributes) are added via {@link C_AggregationItem_StepDef}.
+ */
 public class C_Aggregation_StepDef
 {
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
@@ -51,6 +56,26 @@ public class C_Aggregation_StepDef
 		this.aggregationTable = aggregationTable;
 	}
 
+	/**
+	 * Creates one {@code C_Aggregation} header per DataTable row.
+	 * <p>
+	 * Required columns: {@code TableName} (the table this aggregation groups, e.g. {@code PP_Order_Candidate}),
+	 * {@code EntityType}.
+	 * <p>
+	 * Optional columns:
+	 * <ul>
+	 * <li>{@code Name} — omit it to auto-generate a unique name via {@code suggestValueAndName()} (avoids the
+	 * {@code C_Aggregation_UniqueName} unique-index collision across scenarios / re-runs); supply an explicit
+	 * {@code Name} only when the test needs a known value.</li>
+	 * <li>{@code AggregationUsageLevel} — e.g. {@code H} (header).</li>
+	 * </ul>
+	 *
+	 * <pre>
+	 * And metasfresh contains C_Aggregations:
+	 *   | Identifier | TableName          | EntityType | AggregationUsageLevel |
+	 *   | bioAgg     | PP_Order_Candidate | EE01       | H                     |
+	 * </pre>
+	 */
 	@Given("metasfresh contains C_Aggregations:")
 	public void metasfresh_contains_c_aggregation(@NonNull final DataTable dataTable)
 	{
