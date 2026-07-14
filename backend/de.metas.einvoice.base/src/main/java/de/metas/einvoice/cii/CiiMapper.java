@@ -66,6 +66,7 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -91,6 +92,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -147,6 +149,7 @@ public class CiiMapper
 	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	@NonNull private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	@NonNull private final IBPBankAccountDAO bpBankAccountDAO = Services.get(IBPBankAccountDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final CiiMappingRepository repo = new CiiMappingRepository();
 
 	@NonNull
@@ -508,45 +511,46 @@ public class CiiMapper
 	}
 
 	/**
-	 * Builds BG-6 Seller contact (DefinedTradeContact) from the first AD_User linked to the seller BPartner.
+	 * Builds BG-6 Seller contact (DefinedTradeContact) from the seller BPartner's AD_User contacts.
 	 *
 	 * <p>XRechnung CIUS BR-DE-2 mandates DefinedTradeContact on the seller party.
 	 * BR-DE-5 requires PersonName or DepartmentName; BR-DE-6 requires a telephone number
 	 * (CompleteNumber matching ≥3 digits); BR-DE-7 requires an email URI.
 	 * BR-DE-27 / BR-DE-28 validate the phone/email format.
 	 *
-	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}. The first contact
-	 * with a non-empty phone number (BT-42) is preferred; if none has a phone, the first contact
-	 * overall is used.
+	 * <p>Source: {@code AD_User} records linked via {@code C_BPartner_ID}, restricted to active
+	 * contacts and ordered by {@code SeqNo, AD_User_ID}. Among the active contacts, the contact
+	 * is selected by this precedence:
+	 * <ol>
+	 * <li>the first contact with {@code IsSalesContact = Y}</li>
+	 * <li>else the first contact with {@code IsDefaultContact = Y}</li>
+	 * <li>else the first contact with a non-empty phone number, or if none has a phone, the first
+	 * contact overall</li>
+	 * </ol>
+	 * An explicit-flag match (tier 1 or 2) is used regardless of whether it has a phone number —
+	 * the phone preference applies only to the tier-3 fallback.
 	 *
-	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no contacts.
+	 * @return a populated {@link TradeContactType}, or {@code null} when the seller has no active contacts.
 	 */
 	@Nullable
 	private TradeContactType buildSellerContact(@NonNull final I_C_BPartner sellerBP)
 	{
-		final List<I_AD_User> contacts = bPartnerDAO.retrieveContacts(sellerBP);
-		if (contacts.isEmpty())
+		final List<I_AD_User> activeContacts = new ArrayList<>();
+		for (final I_AD_User u : bPartnerDAO.retrieveContacts(sellerBP))
 		{
-			log.warn("Seller BPartner {} has no contact — XRechnung BR-DE-2 will fail validation",
+			if (u.isActive())
+			{
+				activeContacts.add(u);
+			}
+		}
+		if (activeContacts.isEmpty())
+		{
+			log.warn("Seller BPartner {} has no active contact — XRechnung BR-DE-2 will fail validation",
 					sellerBP.getC_BPartner_ID());
 			return null;
 		}
 
-		// Prefer the first contact that has a phone number (BR-DE-6 requires a phone)
-		I_AD_User contact = null;
-		for (final I_AD_User u : contacts)
-		{
-			final String phone = u.getPhone();
-			if (phone != null && !phone.trim().isEmpty())
-			{
-				contact = u;
-				break;
-			}
-		}
-		if (contact == null)
-		{
-			contact = contacts.get(0);
-		}
+		final I_AD_User contact = selectSellerContact(activeContacts);
 
 		final TradeContactType tradeContact = new TradeContactType();
 
@@ -583,6 +587,42 @@ public class CiiMapper
 		}
 
 		return tradeContact;
+	}
+
+	/**
+	 * Selects the seller contact to use for BG-6 among the given (already active-filtered) contacts,
+	 * which are expected to be ordered by {@code SeqNo, AD_User_ID}. See {@link #buildSellerContact}
+	 * for the full precedence description.
+	 */
+	private I_AD_User selectSellerContact(@NonNull final List<I_AD_User> activeContacts)
+	{
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isSalesContact())
+			{
+				return u;
+			}
+		}
+
+		for (final I_AD_User u : activeContacts)
+		{
+			if (u.isDefaultContact())
+			{
+				return u;
+			}
+		}
+
+		// Fallback: prefer the first contact that has a phone number (BR-DE-6 requires a phone)
+		for (final I_AD_User u : activeContacts)
+		{
+			final String phone = u.getPhone();
+			if (phone != null && !phone.trim().isEmpty())
+			{
+				return u;
+			}
+		}
+
+		return activeContacts.get(0);
 	}
 
 	// ===== Buyer trade party (BG-7/BG-8) =====
@@ -953,11 +993,25 @@ public class CiiMapper
 			return Collections.emptyList();
 		}
 
-		// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
-		// Resolve the org's default bank account to obtain the IBAN.
+		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+
+		// Silent factoring (stille Zession): when the bill partner (invoice.C_BPartner_ID) is set up
+		// for factoring (IsFactoring=Y), payment is legally owed to the factor. BT-84 must then carry
+		// the FACTOR's IBAN instead of the seller's. The assignment itself is never disclosed on the
+		// invoice — BG-10 PayeeTradeParty is (and remains) never populated, see below.
+		final I_C_BPartner billBPartner = bPartnerDAO.getById(BPartnerId.ofRepoId(invoice.getC_BPartner_ID()));
+
 		String iban = null;
-		if (sellerBPartnerId != null)
+		if (billBPartner.isFactoring())
 		{
+			// Misconfiguration (no factorer, or factorer with no IBAN) vetoes invoice completion
+			// rather than silently falling back to the seller's IBAN.
+			iban = resolveFactorerIban(invoice);
+		}
+		else if (sellerBPartnerId != null)
+		{
+			// BR-61: payment means code 30 (credit transfer) or 58 REQUIRES BT-84 (payee IBAN).
+			// Resolve the org's default bank account to obtain the IBAN.
 			final BankAccount bankAccount = bpBankAccountDAO.getDefaultBankAccount(sellerBPartnerId).orElse(null);
 			if (bankAccount != null)
 			{
@@ -969,8 +1023,8 @@ public class CiiMapper
 			}
 		}
 
-		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN
-		final boolean isCreditTransfer = "30".equals(uncl4461Code) || "58".equals(uncl4461Code);
+		// BR-61: suppress the payment-means element entirely when code 30/58 has no IBAN.
+		// (Not reachable for factoring: resolveFactorerIban either returns a non-blank IBAN or throws.)
 		if (isCreditTransfer && iban == null)
 		{
 			log.warn("CII mapping: PaymentMeans code {} (credit transfer) suppressed — no IBAN on seller BPartner [C_BPartner_ID={}]. "
@@ -985,7 +1039,9 @@ public class CiiMapper
 		meansCode.setValue(uncl4461Code);
 		paymentMeans.setTypeCode(meansCode);
 
-		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes)
+		// BT-84 Payee IBAN (mandatory for code 30/58 per BR-61; set when available for other codes).
+		// NOTE: BG-10 PayeeTradeParty is intentionally never populated — even for a factored invoice,
+		// only the creditor financial account differs; the payee identity is unchanged/undisclosed.
 		if (iban != null)
 		{
 			final CreditorFinancialAccountType creditorAccount = new CreditorFinancialAccountType();
@@ -994,6 +1050,62 @@ public class CiiMapper
 		}
 
 		return Collections.singletonList(paymentMeans);
+	}
+
+	/**
+	 * Resolves the BT-84 payee IBAN for a factored invoice ({@code IsFactoring=Y}): the org's factorer
+	 * ({@code IsFactorer=Y}, same {@code AD_Org_ID}) default bank-account IBAN. The factorer lookup
+	 * mirrors the printed-invoice report SQL {@code getFactorer_BankDetails} so PDF and XML pick the same
+	 * factorer (single/default bank account assumed for IBAN parity). Never falls back to the seller
+	 * IBAN: a misconfigured setup vetoes completion via a user-validation error.
+	 */
+	@NonNull
+	private String resolveFactorerIban(@NonNull final I_C_Invoice invoice)
+	{
+		final OrgId orgId = OrgId.ofRepoId(invoice.getAD_Org_ID());
+
+		// Mirror the printed-invoice report SQL (getFactorer_BankDetails): IsFactorer='Y' AND AD_Org_ID=?,
+		// with no IsActive filter, so the PDF and the XML select the same factorer. Use list() rather than
+		// firstOnlyOrNull (which returns null on >1) so we can distinguish "no factorer" from "ambiguous
+		// multiple factorers": the DB uniqueness guard only enforces one factorer among ACTIVE rows, so a
+		// deactivated old factorer left alongside a new one yields two matches — that must be reported as
+		// ambiguity, not misdiagnosed as "no factorer configured".
+		final List<I_C_BPartner> factorers = queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
+
+		if (factorers.isEmpty())
+		{
+			throw new AdempiereException("No factorer (C_BPartner.IsFactorer=Y) is configured for AD_Org_ID=" + orgId.getRepoId()
+					+ "; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ " whose bill partner is set up for silent factoring (IsFactoring=Y).")
+					.markAsUserValidationError();
+		}
+		if (factorers.size() > 1)
+		{
+			throw new AdempiereException("Multiple factorers (C_BPartner.IsFactorer=Y) are configured for AD_Org_ID=" + orgId.getRepoId()
+					+ " — the factorer is ambiguous; cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID()
+					+ ". Ensure exactly one active factorer per organisation.")
+					.markAsUserValidationError();
+		}
+		final I_C_BPartner factorer = factorers.get(0);
+
+		final BPartnerId factorerBPartnerId = BPartnerId.ofRepoId(factorer.getC_BPartner_ID());
+		final BankAccount factorerBankAccount = bpBankAccountDAO.getDefaultBankAccount(factorerBPartnerId).orElse(null);
+		final String factorerIban = factorerBankAccount != null ? factorerBankAccount.getIBAN() : null;
+
+		if (factorerIban == null || factorerIban.trim().isEmpty())
+		{
+			throw new AdempiereException("Factorer C_BPartner_ID=" + factorer.getC_BPartner_ID()
+					+ " (AD_Org_ID=" + orgId.getRepoId() + ") has no default bank account with an IBAN; "
+					+ "cannot resolve the BT-84 payee IBAN for invoice C_Invoice_ID=" + invoice.getC_Invoice_ID() + ".")
+					.markAsUserValidationError();
+		}
+
+		return factorerIban;
 	}
 
 	/**
