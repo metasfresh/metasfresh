@@ -22,6 +22,7 @@
 
 package de.metas.edi.api.impl;
 
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
@@ -32,6 +33,8 @@ import de.metas.externalsystem.scriptedexportconversion.ScriptedExportConversion
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.process.PInstanceId;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -82,24 +85,29 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 			@NonNull final ExternalSystemInvocationContext context,
 			@NonNull final HttpStatus httpStatus)
 	{
+		// Log to both the slf4j logger and the current ILoggable sink (process / async-workpackage log),
+		// so support can see on the shipment's process log why (or whether) a transmission was recorded.
+		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
+
 		final ScriptedExportConversionStatus status = exportStatusService.getLatestByPInstanceId(pInstanceId).orElse(null);
 		if (status == null)
 		{
-			logger.debug("No scripted-export status row found for pInstanceId={} - not a scripted export, skipping", pInstanceId);
+			loggable.addLog("EPCIS ledger: no scripted-export status row for pInstanceId={} - not a scripted export, skipping", pInstanceId);
 			return;
 		}
 
 		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(status.getConfigId());
 		if (!epcisExportProcess.isEpcisExportConfig(config))
 		{
-			logger.debug("configId={} is not the EPCIS outbound export - skipping", status.getConfigId());
+			loggable.addLog("EPCIS ledger: configId={} is not the EPCIS outbound export - skipping", status.getConfigId());
 			return;
 		}
 
 		final TableRecordReference sourceRecord = status.getSourceRecord();
 		if (!sourceRecord.tableNameEqualsTo(I_M_InOut.Table_Name))
 		{
-			logger.warn("EPCIS config configId={} fired for a non-M_InOut sourceRecord={} - skipping", status.getConfigId(), sourceRecord);
+			Loggables.withLogger(logger, Level.WARN)
+					.addLog("EPCIS ledger: EPCIS config configId={} fired for a non-M_InOut sourceRecord={} - skipping", status.getConfigId(), sourceRecord);
 			return;
 		}
 
@@ -107,7 +115,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		final ImmutableList<String> sscc18s = epcisEventsJsonDAO.getPalletSscc18s(inOutId);
 		if (sscc18s.isEmpty())
 		{
-			logger.debug("M_InOut_ID={} carries no EPCIS pallets - nothing to record in the transmission ledger", inOutId);
+			loggable.addLog("EPCIS ledger: M_InOut_ID={} carries no EPCIS pallets - nothing to record", inOutId);
 			return;
 		}
 
@@ -115,5 +123,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		{
 			transmittedSsccRepository.recordTransmittedIfAbsent(config.getId(), inOutId, sscc18);
 		}
+		loggable.addLog("EPCIS ledger: recorded {} transmitted SSCC(s) {} for M_InOut_ID={} (config={})",
+				sscc18s.size(), sscc18s, inOutId, config.getId());
 	}
 }

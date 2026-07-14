@@ -9,6 +9,7 @@ import de.metas.edi.api.impl.DesadvBL;
 import de.metas.edi.api.impl.EpcisReverseGuardService;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.InOutId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -29,6 +30,8 @@ public class M_InOut
 	@NonNull private final DesadvBL desadvBL;
 	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
 	@NonNull private final EpcisReverseGuardService epcisReverseGuardService;
+
+	private static final AdMessageKey MSG_EPCIS_ReverseBlocked = AdMessageKey.of("EPCIS_ReverseBlocked_SSCCTransmitted");
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_Order_ID, I_M_InOut.COLUMNNAME_POReference })
@@ -113,10 +116,8 @@ public class M_InOut
 			return;
 		}
 
-		throw new AdempiereException("This shipment's EPCIS SSCC events were already transmitted (or are currently being"
-				+ " transmitted) to the receiver; reversing, reactivating or voiding it would duplicate those events at the"
-				+ " receiver. Deactivate the transmitted-SSCC ledger row (or a stuck in-flight export-status row) on the"
-				+ " shipment's EPCIS tab first if this is intentional.")
+		throw new AdempiereException(MSG_EPCIS_ReverseBlocked)
+				.markAsUserValidationError()
 				.appendParametersToMessage()
 				.setParameter("M_InOut_ID", inOut.getM_InOut_ID());
 	}
