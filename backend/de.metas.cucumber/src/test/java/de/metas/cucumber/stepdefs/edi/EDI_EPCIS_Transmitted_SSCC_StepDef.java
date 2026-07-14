@@ -34,6 +34,7 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
+import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
@@ -41,9 +42,11 @@ import org.compiere.model.I_M_InOut;
 import de.metas.util.Services;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for seeding {@code EDI_EPCIS_Transmitted_SSCC} — the EPCIS transmission ledger
@@ -205,5 +208,56 @@ public class EDI_EPCIS_Transmitted_SSCC_StepDef
 				saveRecord(ledgerRecord);
 			});
 		});
+	}
+
+	/**
+	 * Asserts that the set of ACTIVE {@code EDI_EPCIS_Transmitted_SSCC} ledger rows is EXACTLY the
+	 * (SSCC18, config, shipment) triples given — no more, no fewer. Unlike the presence-only
+	 * "is found" step, this catches BOTH a missing row (an orphaned pallet that never sent) AND a
+	 * surplus row (a physical SSCC transmitted more than once): it is the exactly-once / no-orphan /
+	 * no-duplicate assertion for the end-to-end send-path scenarios.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>SSCC18</b> — (required) physical SSCC18 expected in the ledger<br>
+	 *   <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> — (required, identifier-ref) the receiver config<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment that transmitted it<br>
+	 * @cucumber.example
+	 * <pre>
+	 * Then the EPCIS transmission ledger contains exactly:
+	 *   | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
+	 *   | 987654321000030916 | scriptedCfg_120                                    | ioA_120    |
+	 *   | 987654321000030917 | scriptedCfg_120                                    | ioB_120    |
+	 * </pre>
+	 */
+	@Then("the EPCIS transmission ledger contains exactly:")
+	public void the_epcis_transmission_ledger_contains_exactly(@NonNull final DataTable dataTable)
+	{
+		final List<String> expected = DataTableRows.of(dataTable).toList().stream()
+				.map(row -> {
+					final String sscc18 = row.getAsString(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18);
+					final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(
+							row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID));
+					final I_M_InOut inout = inoutTable.get(row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID));
+					return sscc18 + "|" + cfg.getId().getRepoId() + "|" + inout.getM_InOut_ID();
+				})
+				.sorted()
+				.collect(Collectors.toList());
+
+		final List<String> actual = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list()
+				.stream()
+				.map(r -> r.getSSCC18()
+						+ "|" + r.getExternalSystem_Config_ScriptedExportConversion_ID()
+						+ "|" + r.getM_InOut_ID())
+				.sorted()
+				.collect(Collectors.toList());
+
+		assertThat(actual)
+				.as("Active EDI_EPCIS_Transmitted_SSCC rows (SSCC18|config|M_InOut_ID) must be exactly the expected set")
+				.containsExactlyElementsOf(expected);
 	}
 }
