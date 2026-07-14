@@ -6,6 +6,7 @@ import de.metas.banking.api.IBPBankAccountDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.Check;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.einvoice.EInvoiceFormat;
@@ -355,6 +356,22 @@ public class CiiMapper
 			// The last line of the group absorbs the rounding delta so the group's BT-131 sum
 			// matches this tax's TaxBaseAmt (BT-116) EXACTLY — this is what satisfies BR-S-08/BR-CO-10.
 			final BigDecimal delta = targetTaxBaseAmt.subtract(sumOfNaturalNets);
+
+			// The delta is only ever the per-line rounding gap (sum-of-rounds vs. the breakdown's
+			// round-of-sum): each of the group's lines contributes at most one minor currency unit,
+			// so |delta| must stay within lineCount × oneMinorUnit. A delta beyond that means the
+			// per-line nets and TaxBaseAmt diverge by more than rounding (e.g. gross amounts fed into
+			// the reconciliation, or an inconsistent breakdown) — fail loudly rather than distort a
+			// line by an arbitrary amount.
+			final BigDecimal oneMinorUnit = BigDecimal.ONE.movePointLeft(amountPrecision.toInt());
+			final BigDecimal maxDelta = oneMinorUnit.multiply(BigDecimal.valueOf(groupLines.size()));
+			Check.assume(delta.abs().compareTo(maxDelta) <= 0,
+					"BT-131 reconciliation delta {} exceeds the max plausible per-line rounding bound {}"
+							+ " ({} line(s) × {}): C_InvoiceTax.TaxBaseAmt {} and the summed per-line nets {}"
+							+ " diverge by more than rounding [C_Tax_ID={}, C_Invoice_ID={}]",
+					delta, maxDelta, groupLines.size(), oneMinorUnit, targetTaxBaseAmt, sumOfNaturalNets,
+					taxId.getRepoId(), invoice.getC_Invoice_ID());
+
 			final I_C_InvoiceLine lastLine = groupLines.get(groupLines.size() - 1);
 			for (final I_C_InvoiceLine line : groupLines)
 			{
@@ -373,15 +390,14 @@ public class CiiMapper
 	 * sourced from the invoice currency's standard precision. Mirrors the currency-based precision
 	 * lookup pattern in {@code InvoiceCandBL.getPrecisionFromCurrency} rather than the
 	 * {@code M_PriceList_ID}-keyed {@code AbstractInvoiceBL.getAmountPrecision}, since a {@link I_C_Invoice}
-	 * reaching this mapper is not guaranteed to carry a price list reference.
+	 * reaching this mapper is not guaranteed to carry a price list reference. {@code C_Currency_ID} is
+	 * mandatory on {@code C_Invoice} (and required for BT-5 / BR-CO-15), so it is always present here.
 	 */
 	@NonNull
 	private CurrencyPrecision resolveAmountPrecision(@NonNull final I_C_Invoice invoice)
 	{
-		final CurrencyId currencyId = CurrencyId.ofRepoIdOrNull(invoice.getC_Currency_ID());
-		return currencyId != null
-				? currencyDAO.getStdPrecision(currencyId)
-				: CurrencyPrecision.TWO;
+		final CurrencyId currencyId = CurrencyId.ofRepoId(invoice.getC_Currency_ID());
+		return currencyDAO.getStdPrecision(currencyId);
 	}
 
 	// ===== BG-13 Delivery information =====

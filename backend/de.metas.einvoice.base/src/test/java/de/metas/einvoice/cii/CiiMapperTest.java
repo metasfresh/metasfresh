@@ -2889,6 +2889,129 @@ public class CiiMapperTest
 		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("84.03");
 	}
 
+	/**
+	 * Safety bound on the last-line reconciliation: the delta absorbed on a group's last line may only
+	 * ever be the per-line rounding gap (≤ lineCount × one minor currency unit). If the summed per-line
+	 * nets and {@code C_InvoiceTax.TaxBaseAmt} diverge by MORE than that (here {@code TaxBaseAmt=90.00}
+	 * vs. the derived net 84.03 for a single 19% line → delta 5.97 ≫ the 0.01 bound), the mapper must
+	 * fail loudly rather than silently distort the line by an arbitrary amount.
+	 */
+	@Test
+	void tax_included_reconciliationDeltaExceedsBound_throwsWithIds() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00705");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-705");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S' ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: TaxBaseAmt (90.00) diverges from the derived net (84.03) by 5.97 >> 0.01 bound ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("90.00"));
+		invoiceTax.setTaxAmt(new BigDecimal("10.00"));
+		saveRecord(invoiceTax);
+
+		// === Invoice line: LineNetAmt/PriceActual GROSS (100.00) → calculateBaseAmt = 84.03 ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
+				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
+	}
+
 	// ===== Shared helpers =====
 
 	private XmlAssert toXmlAssert(@NonNull final CrossIndustryInvoiceType cii) throws JAXBException
