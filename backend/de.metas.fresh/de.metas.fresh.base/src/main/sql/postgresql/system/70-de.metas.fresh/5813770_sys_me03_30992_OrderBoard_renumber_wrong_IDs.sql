@@ -382,30 +382,7 @@ UPDATE ad_element SET ad_element_id = 585098 WHERE ad_element_id = 581170 AND co
 UPDATE ad_accesslog SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_alertrule SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_archive SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_attachment SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_attachment_log SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_attachment_multiref SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_attachmententry SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_attribute SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_clientshare SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
+
 UPDATE ad_column SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
@@ -428,9 +405,6 @@ UPDATE ad_index_table SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
 UPDATE ad_infowindow SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE ad_migrationstep SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
 UPDATE ad_note SET ad_table_id = 542626
@@ -526,9 +500,7 @@ UPDATE ad_wf_process SET ad_table_id = 542626
 UPDATE ad_workflow SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE api_request_audit_log SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
+
 UPDATE c_bp_printformat SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
@@ -544,81 +516,7 @@ UPDATE c_doc_outbound_log_line SET ad_table_id = 542626
 UPDATE c_doc_responsible SET ad_table_id = 542626
   WHERE ad_table_id = 581144
     AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE cm_chat SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE cm_chattype SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE cm_templatetable SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE cm_wikitoken SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE dataentry_record SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE es_fts_config_sourcemodel SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE es_fts_filter SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE es_fts_index_queue SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE exp_format SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE exp_replicationtrxline SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE externalsystem_exportaudit SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE fact_acct SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE hr_allocationline SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE i_dataentry_record SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE k_index SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE m_hu_assignment SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE m_hu_trx_line SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE m_material_tracking_ref SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE m_shipment_constraint SET sourcedoc_table_id = 542626
-  WHERE sourcedoc_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE pa_measurecalc SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE pa_sla_measure SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE r_request SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE s_externalreference SET referenced_ad_table_id = 542626
-  WHERE referenced_ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE webui_board SET ad_table_id = 542626
-  WHERE ad_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
-UPDATE webui_kpi SET source_table_id = 542626
-  WHERE source_table_id = 581144
-    AND EXISTS (SELECT 1 FROM ad_table p WHERE p.ad_table_id = 581144 AND p.tablename = 'M_Picking_OrderBoard_Overview_v');
+
 UPDATE ad_table SET ad_table_id = 542626 WHERE ad_table_id = 581144 AND tablename = 'M_Picking_OrderBoard_Overview_v';
 
 -- ad_column 581149 -> 592940 : ad_table_id = 542626 AND columnname = 'M_Picking_OrderBoard_Overview_v_ID'
