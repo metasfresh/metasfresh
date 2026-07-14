@@ -89,10 +89,12 @@ public class C_AggregationItem_StepDef
 		aggregationItemRecord.setC_Aggregation_ID(aggregationRecord.getC_Aggregation_ID());
 
 		row.getAsOptionalIdentifier(I_C_AggregationItem.COLUMNNAME_Included_Aggregation_ID)
+				.filter(id -> !id.isNullPlaceholder())
 				.map(id -> id.lookupNotNullIn(aggregationTable))
 				.ifPresent(included -> aggregationItemRecord.setIncluded_Aggregation_ID(included.getC_Aggregation_ID()));
 
 		row.getAsOptionalIdentifier(I_C_AggregationItem.COLUMNNAME_C_Aggregation_Attribute_ID)
+				.filter(id -> !id.isNullPlaceholder())
 				.map(id -> id.lookupNotNullIn(aggregationAttributeTable))
 				.ifPresent(attribute -> aggregationItemRecord.setC_Aggregation_Attribute_ID(attribute.getC_Aggregation_Attribute_ID()));
 
