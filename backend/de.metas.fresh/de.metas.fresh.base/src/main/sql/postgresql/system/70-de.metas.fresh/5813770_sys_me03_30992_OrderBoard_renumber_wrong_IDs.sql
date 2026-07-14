@@ -3,29 +3,21 @@
 -- no-op (no OLD rows match).
 --
 -- Full-nuclear scope: every AD_* ID hand-picked in the 581036-581196 range is
--- renumbered to a fresh idserver.metas.de allocation:
---   AD_Window          -> 542168
---   AD_Tab             -> 549335-549338
---   AD_Element         -> 585090-585098
---   AD_Menu            -> 542344
---   AD_Field           -> 781382-781417
---   AD_UI_Section      -> 547844-547847
---   AD_UI_Column       -> 549585-549588
---   AD_UI_ElementGroup -> 555489-555492
---   AD_UI_Element      -> 652498-652533
---   AD_Table           -> 542626
---   AD_Column          -> 592940-592960
+-- renumbered to a fresh idserver.metas.de allocation.
 --
 -- Defensive matching: every renumbering requires BOTH the old numeric ID AND an
--- identifying column (ColumnName / InternalName / AD_Tab_ID+AD_Column_ID / …)
--- so an unrelated row that happens to carry the same numeric ID is NOT touched.
+-- identifying column (ColumnName / InternalName / AD_Tab_ID+AD_Column_ID / …) so
+-- an unrelated row that happens to carry the same numeric ID is NOT touched.
 --
 -- Two-phase design: all temp tables are populated + filtered against pristine
 -- row state BEFORE any UPDATE runs. Later filters would otherwise see already-
 -- renumbered FK values and fail to identify their rows.
 --
--- Wrapped in a single transaction with SET CONSTRAINTS ALL DEFERRED (metasfresh
--- AD FKs are DEFERRABLE INITIALLY DEFERRED); FK integrity is validated at COMMIT.
+-- Comprehensive FK cascade: every FK column pointing at a renumbered PK is
+-- explicitly updated BEFORE the PK is renamed. This survives environments
+-- where SET CONSTRAINTS ALL DEFERRED doesn't actually defer a given FK
+-- (observed on a customer instance for adwindow_adwindowaccess). The DEFERRED
+-- setting stays in place as a belt-and-braces guarantee.
 
 BEGIN;
 SET CONSTRAINTS ALL DEFERRED;
@@ -110,10 +102,10 @@ DELETE FROM _ob_col_map m
 CREATE TEMP TABLE _ob_tab_ad_map (old_id NUMERIC(10,0), new_id NUMERIC(10,0),
                                   ad_window_id NUMERIC(10,0), ad_element_id NUMERIC(10,0)) ON COMMIT DROP;
 INSERT INTO _ob_tab_ad_map VALUES
-    (581037, 549335, 581036, 581040),  -- Wartend
-    (581038, 549336, 581036, 581041),  -- In Kommissionierung
-    (581039, 549337, 581036, 581042),  -- Packen
-    (581171, 549338, 581036, 581170);  -- Overview
+    (581037, 549335, 581036, 581040),
+    (581038, 549336, 581036, 581041),
+    (581039, 549337, 581036, 581042),
+    (581171, 549338, 581036, 581170);
 DELETE FROM _ob_tab_ad_map m
  WHERE NOT EXISTS (SELECT 1 FROM AD_Tab t
                     WHERE t.AD_Tab_ID     = m.old_id
@@ -165,7 +157,7 @@ DELETE FROM _ob_field_map m
                       AND f.AD_Tab_ID    = m.ad_tab_id
                       AND f.AD_Column_ID = m.ad_column_id);
 
--- --- AD_UI_Section (identified by AD_Tab_ID + Name; uses ORIGINAL AD_Tab_ID) ---
+-- --- AD_UI_Section (identified by AD_Tab_ID; one per tab in this window) ---
 CREATE TEMP TABLE _ob_uisec_map (old_id NUMERIC(10,0), new_id NUMERIC(10,0),
                                  ad_tab_id NUMERIC(10,0)) ON COMMIT DROP;
 INSERT INTO _ob_uisec_map VALUES
@@ -178,7 +170,7 @@ DELETE FROM _ob_uisec_map m
                     WHERE s.AD_UI_Section_ID = m.old_id
                       AND s.AD_Tab_ID        = m.ad_tab_id);
 
--- --- AD_UI_Column (identified by AD_UI_Section_ID; uses ORIGINAL section id) ---
+-- --- AD_UI_Column (identified by AD_UI_Section_ID; one per section in this window) ---
 CREATE TEMP TABLE _ob_uicol_map (old_id NUMERIC(10,0), new_id NUMERIC(10,0),
                                  ad_ui_section_id NUMERIC(10,0)) ON COMMIT DROP;
 INSERT INTO _ob_uicol_map VALUES
@@ -191,7 +183,7 @@ DELETE FROM _ob_uicol_map m
                     WHERE c.AD_UI_Column_ID  = m.old_id
                       AND c.AD_UI_Section_ID = m.ad_ui_section_id);
 
--- --- AD_UI_ElementGroup (identified by AD_UI_Column_ID; uses ORIGINAL column id) ---
+-- --- AD_UI_ElementGroup (identified by AD_UI_Column_ID; one per column) ---
 CREATE TEMP TABLE _ob_uieg_map (old_id NUMERIC(10,0), new_id NUMERIC(10,0),
                                 ad_ui_column_id NUMERIC(10,0)) ON COMMIT DROP;
 INSERT INTO _ob_uieg_map VALUES
@@ -250,80 +242,231 @@ DELETE FROM _ob_uielem_map m
                       AND u.AD_Field_ID      = m.ad_field_id);
 
 -- ============================================================
--- Phase 2: apply UPDATEs using the settled mappings
--- Order: children -> parent PK, per type; types processed in dependency order.
+-- Phase 2: cascade every FK, then rename each PK
+-- Order: AD_Element -> AD_Window -> AD_Menu -> AD_Table -> AD_Column
+--     -> AD_Tab -> AD_Field -> AD_UI_Section -> AD_UI_Column
+--     -> AD_UI_ElementGroup -> AD_UI_Element
 -- ============================================================
 
--- --- AD_Element cascades + PK ---
-UPDATE AD_Element_Trl t SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE t.AD_Element_ID = m.old_id;
-UPDATE AD_Column      c SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE c.AD_Element_ID = m.old_id;
-UPDATE AD_Tab         t SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE t.AD_Element_ID = m.old_id;
-UPDATE AD_Window      w SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE w.AD_Element_ID = m.old_id;
-UPDATE AD_Menu        u SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE u.AD_Element_ID = m.old_id;
-UPDATE AD_Field       f SET AD_Name_ID    = m.new_id FROM _ob_elem_map m WHERE f.AD_Name_ID    = m.old_id;
-UPDATE AD_Element_Link l SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE l.AD_Element_ID = m.old_id;
-UPDATE AD_Element     e SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE e.AD_Element_ID = m.old_id;
+-- AD_Element cascades + PK
+UPDATE ad_column t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_element_link t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_element_trl t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_field t SET ad_name_id = m.new_id FROM _ob_elem_map m WHERE t.ad_name_id = m.old_id;
+UPDATE ad_infocolumn t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_menu t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_process_para t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_tab t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE ad_window t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE webui_kpi_field t SET ad_element_id = m.new_id FROM _ob_elem_map m WHERE t.ad_element_id = m.old_id;
+UPDATE AD_Element e SET AD_Element_ID = m.new_id FROM _ob_elem_map m WHERE e.AD_Element_ID = m.old_id;
 
--- --- AD_Window cascades + PK ---
-UPDATE AD_Window_Trl   t SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE t.AD_Window_ID = m.old_id;
-UPDATE AD_Tab          t SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE t.AD_Window_ID = m.old_id;
-UPDATE AD_Menu         u SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE u.AD_Window_ID = m.old_id;
-UPDATE AD_Table        t SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE t.AD_Window_ID = m.old_id;
-UPDATE AD_Table        t SET PO_Window_ID = m.new_id FROM _ob_win_map m WHERE t.PO_Window_ID = m.old_id;
-UPDATE AD_Element_Link l SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE l.AD_Window_ID = m.old_id;
-UPDATE AD_Window       w SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE w.AD_Window_ID = m.old_id;
+-- AD_Window cascades + PK
+UPDATE ad_element_link t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_issue t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_menu t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_note t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_pinstance t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_preference t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_ref_table t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_role_permrequest t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_searchdefinition t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_searchdefinition t SET po_window_id = m.new_id FROM _ob_win_map m WHERE t.po_window_id = m.old_id;
+UPDATE ad_tab t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_table t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_table t SET po_window_id = m.new_id FROM _ob_win_map m WHERE t.po_window_id = m.old_id;
+UPDATE ad_user_sortpref_hdr t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_userdef_win t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_wf_node t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_window t SET overrides_window_id = m.new_id FROM _ob_win_map m WHERE t.overrides_window_id = m.old_id;
+UPDATE ad_window_access t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_window_trl t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE ad_workbenchwindow t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE dataentry_tab t SET dataentry_targetwindow_id = m.new_id FROM _ob_win_map m WHERE t.dataentry_targetwindow_id = m.old_id;
+UPDATE i_dataentry_record t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE pa_dashboardcontent t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE webui_kpi t SET ad_window_id = m.new_id FROM _ob_win_map m WHERE t.ad_window_id = m.old_id;
+UPDATE AD_Window w SET AD_Window_ID = m.new_id FROM _ob_win_map m WHERE w.AD_Window_ID = m.old_id;
 
--- --- AD_Menu cascades + PK ---
-UPDATE AD_Menu_Trl   t SET AD_Menu_ID = m.new_id FROM _ob_menu_map m WHERE t.AD_Menu_ID = m.old_id;
-UPDATE AD_TreeNodeMM t SET Node_ID    = m.new_id FROM _ob_menu_map m WHERE t.Node_ID    = m.old_id;
-UPDATE AD_TreeNodeMM t SET Parent_ID  = m.new_id FROM _ob_menu_map m WHERE t.Parent_ID  = m.old_id;
+-- AD_Menu cascades + PK
+UPDATE ad_menu_trl t SET ad_menu_id = m.new_id FROM _ob_menu_map m WHERE t.ad_menu_id = m.old_id;
+UPDATE ad_role t SET root_menu_id = m.new_id FROM _ob_menu_map m WHERE t.root_menu_id = m.old_id;
+UPDATE AD_TreeNodeMM t SET Node_ID   = m.new_id FROM _ob_menu_map m WHERE t.Node_ID   = m.old_id;
+UPDATE AD_TreeNodeMM t SET Parent_ID = m.new_id FROM _ob_menu_map m WHERE t.Parent_ID = m.old_id;
 UPDATE AD_Menu       u SET AD_Menu_ID = m.new_id FROM _ob_menu_map m WHERE u.AD_Menu_ID = m.old_id;
 
--- --- AD_Table cascades + PK ---
-UPDATE AD_Table_Trl t SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE t.AD_Table_ID = m.old_id;
-UPDATE AD_Column    c SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE c.AD_Table_ID = m.old_id;
-UPDATE AD_Tab       t SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE t.AD_Table_ID = m.old_id;
-UPDATE AD_Ref_Table r SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE r.AD_Table_ID = m.old_id;
-UPDATE AD_Table     t SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE t.AD_Table_ID = m.old_id;
+-- AD_Table cascades + PK
+UPDATE ad_accesslog t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_alertrule t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_archive t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_attachment t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_attachment_log t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_attachment_multiref t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_attachmententry t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_attribute t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_clientshare t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_column t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_column_access t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_columncallout t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_field_contextmenu t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_housekeeping t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_impformat t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_index_table t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_infowindow t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_migrationstep t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_note t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_org_mapping t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_printerrouting t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_printformat t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_printlabel t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_private_access t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_ref_table t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_replicationdocument t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_replicationtable t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_reportview t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_role_record_access_config t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_searchdefinition t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_sequence_audit t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_sqlcolumn_sourcetablecolumn t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_sqlcolumn_sourcetablecolumn t SET source_table_id = m.new_id FROM _ob_tab_map m WHERE t.source_table_id = m.old_id;
+UPDATE ad_tab t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_access t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_attachmentlistener t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_mview t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_process t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_scriptvalidator t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_table_trl t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_tree t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_triggerui t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_user_record_access t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_userquery t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_val_rule_dep t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_wf_activity t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_wf_eventaudit t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_wf_process t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE ad_workflow t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE api_request_audit_log t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE c_bp_printformat t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE c_doc_outbound_config t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE c_doc_outbound_log t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE c_doc_outbound_log_line t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE c_doc_responsible t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE cm_chat t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE cm_chattype t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE cm_templatetable t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE cm_wikitoken t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE dataentry_record t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE es_fts_config_sourcemodel t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE es_fts_filter t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE es_fts_index_queue t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE exp_format t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE exp_replicationtrxline t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE externalsystem_exportaudit t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE fact_acct t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE hr_allocationline t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE i_dataentry_record t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE k_index t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE m_hu_assignment t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE m_hu_trx_line t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE m_material_tracking_ref t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE m_shipment_constraint t SET sourcedoc_table_id = m.new_id FROM _ob_tab_map m WHERE t.sourcedoc_table_id = m.old_id;
+UPDATE pa_measurecalc t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE pa_sla_measure t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE r_request t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE s_externalreference t SET referenced_ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.referenced_ad_table_id = m.old_id;
+UPDATE webui_board t SET ad_table_id = m.new_id FROM _ob_tab_map m WHERE t.ad_table_id = m.old_id;
+UPDATE webui_kpi t SET source_table_id = m.new_id FROM _ob_tab_map m WHERE t.source_table_id = m.old_id;
+UPDATE AD_Table t SET AD_Table_ID = m.new_id FROM _ob_tab_map m WHERE t.AD_Table_ID = m.old_id;
 
--- --- AD_Column cascades + PK ---
-UPDATE AD_Column_Trl t SET AD_Column_ID     = m.new_id FROM _ob_col_map m WHERE t.AD_Column_ID     = m.old_id;
-UPDATE AD_Field      f SET AD_Column_ID     = m.new_id FROM _ob_col_map m WHERE f.AD_Column_ID     = m.old_id;
-UPDATE AD_Tab        t SET AD_Column_ID     = m.new_id FROM _ob_col_map m WHERE t.AD_Column_ID     = m.old_id;
-UPDATE AD_Tab        t SET Parent_Column_ID = m.new_id FROM _ob_col_map m WHERE t.Parent_Column_ID = m.old_id;
-UPDATE AD_Column     c SET AD_Column_ID     = m.new_id FROM _ob_col_map m WHERE c.AD_Column_ID     = m.old_id;
+-- AD_Column cascades + PK
+UPDATE ad_accesslog t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_column_access t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_column_trl t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_columncallout t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_field t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_field_contextmenu t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_find t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_impformat_row t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_index_column t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_migrationdata t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_printformatitem t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_printlabelline t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_ref_table t SET ad_display = m.new_id FROM _ob_col_map m WHERE t.ad_display = m.old_id;
+UPDATE ad_ref_table t SET ad_key = m.new_id FROM _ob_col_map m WHERE t.ad_key = m.old_id;
+UPDATE ad_reportview_col t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_searchdefinition t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_sqlcolumn_sourcetablecolumn t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_sqlcolumn_sourcetablecolumn t SET link_column_id = m.new_id FROM _ob_col_map m WHERE t.link_column_id = m.old_id;
+UPDATE ad_sqlcolumn_sourcetablecolumn t SET source_column_id = m.new_id FROM _ob_col_map m WHERE t.source_column_id = m.old_id;
+UPDATE ad_tab t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_tab t SET ad_columnsortorder_id = m.new_id FROM _ob_col_map m WHERE t.ad_columnsortorder_id = m.old_id;
+UPDATE ad_tab t SET ad_columnsortyesno_id = m.new_id FROM _ob_col_map m WHERE t.ad_columnsortyesno_id = m.old_id;
+UPDATE ad_tab t SET parent_column_id = m.new_id FROM _ob_col_map m WHERE t.parent_column_id = m.old_id;
+UPDATE ad_triggerui_action t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_triggerui_criteria t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_wf_nextcondition t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_wf_node t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE ad_workbench t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE c_acctschema_element t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE c_advcommissionrelevantpo t SET bpartnercolumn_id = m.new_id FROM _ob_col_map m WHERE t.bpartnercolumn_id = m.old_id;
+UPDATE c_advcommissionrelevantpo t SET datedoccolumn_id = m.new_id FROM _ob_col_map m WHERE t.datedoccolumn_id = m.old_id;
+UPDATE c_aggregationitem t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE c_olcandaggandorder t SET ad_column_olcand_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_olcand_id = m.old_id;
+UPDATE datev_exportformatcolumn t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE dim_dimension_spec_assignment t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE dlm_partition_config_reference t SET dlm_referencing_column_id = m.new_id FROM _ob_col_map m WHERE t.dlm_referencing_column_id = m.old_id;
+UPDATE es_fts_config_sourcemodel t SET parent_column_id = m.new_id FROM _ob_col_map m WHERE t.parent_column_id = m.old_id;
+UPDATE es_fts_filter_joincolumn t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE exp_formatline t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE i_elementvalue t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE webui_board_cardfield t SET ad_column_id = m.new_id FROM _ob_col_map m WHERE t.ad_column_id = m.old_id;
+UPDATE AD_Column c SET AD_Column_ID = m.new_id FROM _ob_col_map m WHERE c.AD_Column_ID = m.old_id;
 
--- --- AD_Tab cascades + PK ---
-UPDATE AD_Field       f SET AD_Tab_ID       = m.new_id FROM _ob_tab_ad_map m WHERE f.AD_Tab_ID       = m.old_id;
-UPDATE AD_Field       f SET Included_Tab_ID = m.new_id FROM _ob_tab_ad_map m WHERE f.Included_Tab_ID = m.old_id;
-UPDATE AD_Tab         t SET Included_Tab_ID = m.new_id FROM _ob_tab_ad_map m WHERE t.Included_Tab_ID = m.old_id;
-UPDATE AD_UI_Element  u SET AD_Tab_ID       = m.new_id FROM _ob_tab_ad_map m WHERE u.AD_Tab_ID       = m.old_id;
-UPDATE AD_UI_Section  s SET AD_Tab_ID       = m.new_id FROM _ob_tab_ad_map m WHERE s.AD_Tab_ID       = m.old_id;
-UPDATE AD_Tab_Trl     t SET AD_Tab_ID       = m.new_id FROM _ob_tab_ad_map m WHERE t.AD_Tab_ID       = m.old_id;
-UPDATE AD_Element_Link l SET AD_Tab_ID      = m.new_id FROM _ob_tab_ad_map m WHERE l.AD_Tab_ID       = m.old_id;
-UPDATE AD_Tab         t SET AD_Tab_ID       = m.new_id FROM _ob_tab_ad_map m WHERE t.AD_Tab_ID       = m.old_id;
+-- AD_Tab cascades + PK
+UPDATE ad_element_link t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_field t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_field t SET included_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.included_tab_id = m.old_id;
+UPDATE ad_tab t SET included_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.included_tab_id = m.old_id;
+UPDATE ad_tab t SET template_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.template_tab_id = m.old_id;
+UPDATE ad_tab_callout t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_tab_trl t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_table_process t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_triggerui t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_ui_element t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_ui_element t SET inline_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.inline_tab_id = m.old_id;
+UPDATE ad_ui_element t SET labels_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.labels_tab_id = m.old_id;
+UPDATE ad_ui_section t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_user_sortpref_hdr t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_userdef_tab t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE ad_userquery t SET ad_tab_id = m.new_id FROM _ob_tab_ad_map m WHERE t.ad_tab_id = m.old_id;
+UPDATE AD_Tab t SET AD_Tab_ID = m.new_id FROM _ob_tab_ad_map m WHERE t.AD_Tab_ID = m.old_id;
 
--- --- AD_Field cascades + PK ---
-UPDATE AD_Field_Trl    t SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE t.AD_Field_ID              = m.old_id;
-UPDATE AD_UI_Element   u SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE u.AD_Field_ID              = m.old_id;
-UPDATE AD_UI_Element   u SET Labels_Selector_Field_ID = m.new_id FROM _ob_field_map m WHERE u.Labels_Selector_Field_ID = m.old_id;
-UPDATE AD_Element_Link l SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE l.AD_Field_ID              = m.old_id;
-UPDATE AD_Field        f SET AD_Field_ID              = m.new_id FROM _ob_field_map m WHERE f.AD_Field_ID              = m.old_id;
+-- AD_Field cascades + PK
+UPDATE ad_element_link t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_field_contextmenu t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_field_trl t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_ui_element t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_ui_element t SET labels_selector_field_id = m.new_id FROM _ob_field_map m WHERE t.labels_selector_field_id = m.old_id;
+UPDATE ad_ui_elementfield t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_user_sortpref_line t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE ad_userdef_field t SET ad_field_id = m.new_id FROM _ob_field_map m WHERE t.ad_field_id = m.old_id;
+UPDATE AD_Field f SET AD_Field_ID = m.new_id FROM _ob_field_map m WHERE f.AD_Field_ID = m.old_id;
 
--- --- AD_UI_Section cascades + PK ---
-UPDATE AD_UI_Section_Trl t SET AD_UI_Section_ID = m.new_id FROM _ob_uisec_map m WHERE t.AD_UI_Section_ID = m.old_id;
-UPDATE AD_UI_Column      c SET AD_UI_Section_ID = m.new_id FROM _ob_uisec_map m WHERE c.AD_UI_Section_ID = m.old_id;
-UPDATE AD_UI_Section     s SET AD_UI_Section_ID = m.new_id FROM _ob_uisec_map m WHERE s.AD_UI_Section_ID = m.old_id;
+-- AD_UI_Section cascades + PK
+UPDATE ad_ui_column t SET ad_ui_section_id = m.new_id FROM _ob_uisec_map m WHERE t.ad_ui_section_id = m.old_id;
+UPDATE ad_ui_section_trl t SET ad_ui_section_id = m.new_id FROM _ob_uisec_map m WHERE t.ad_ui_section_id = m.old_id;
+UPDATE AD_UI_Section s SET AD_UI_Section_ID = m.new_id FROM _ob_uisec_map m WHERE s.AD_UI_Section_ID = m.old_id;
 
--- --- AD_UI_Column cascades + PK ---
-UPDATE AD_UI_ElementGroup g SET AD_UI_Column_ID = m.new_id FROM _ob_uicol_map m WHERE g.AD_UI_Column_ID = m.old_id;
-UPDATE AD_UI_Column       c SET AD_UI_Column_ID = m.new_id FROM _ob_uicol_map m WHERE c.AD_UI_Column_ID = m.old_id;
+-- AD_UI_Column cascades + PK
+UPDATE ad_ui_elementgroup t SET ad_ui_column_id = m.new_id FROM _ob_uicol_map m WHERE t.ad_ui_column_id = m.old_id;
+UPDATE AD_UI_Column c SET AD_UI_Column_ID = m.new_id FROM _ob_uicol_map m WHERE c.AD_UI_Column_ID = m.old_id;
 
--- --- AD_UI_ElementGroup cascades + PK ---
-UPDATE AD_UI_Element      u SET AD_UI_ElementGroup_ID = m.new_id FROM _ob_uieg_map m WHERE u.AD_UI_ElementGroup_ID = m.old_id;
+-- AD_UI_ElementGroup cascades + PK
+UPDATE ad_ui_element t SET ad_ui_elementgroup_id = m.new_id FROM _ob_uieg_map m WHERE t.ad_ui_elementgroup_id = m.old_id;
 UPDATE AD_UI_ElementGroup g SET AD_UI_ElementGroup_ID = m.new_id FROM _ob_uieg_map m WHERE g.AD_UI_ElementGroup_ID = m.old_id;
 
--- --- AD_UI_Element PK (leaf, no _Trl table in metasfresh schema) ---
+-- AD_UI_Element cascades + PK
+UPDATE ad_ui_elementfield t SET ad_ui_element_id = m.new_id FROM _ob_uielem_map m WHERE t.ad_ui_element_id = m.old_id;
 UPDATE AD_UI_Element u SET AD_UI_Element_ID = m.new_id FROM _ob_uielem_map m WHERE u.AD_UI_Element_ID = m.old_id;
 
 COMMIT;
