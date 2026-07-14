@@ -83,10 +83,8 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * {@code RevaluationSource.CopyFromCostElement}: seed lines from the SOURCE element's own current cost
-	 * ({@code CopyFrom_M_CostElement_ID}), not from the header's own (target) element. A zero-on-hand source
-	 * {@code M_Cost} row still produces a line (qty = 0) — {@link ICurrentCostsRepository} already returns
-	 * whatever rows exist for the segment regardless of qty, so no extra qty-based filtering is needed here.
+	 * {@code CopyFromCostElement}: seeds lines from the SOURCE element's current cost ({@code CopyFrom_M_CostElement_ID}),
+	 * one per source {@code M_Cost} row including zero-on-hand.
 	 */
 	private void createLinesFromCopyFromCostElement(
 			@NonNull final CostRevaluationId costRevaluationId,
@@ -288,9 +286,8 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from one fresh read
-	 * of the source element's opening amounts and writes a single opening-anchor {@code M_CostDetail} (not the
-	 * {@code Calculated} history-replay). That one shared snapshot — seed plus anchor {@code Prev_*} — is the recompute-survival crux.
+	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from the source's
+	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of the {@code Calculated} history-replay.
 	 */
 	private void createDetailsForCopyFromCostElement(
 			@NonNull final CostRevaluation costRevaluation,

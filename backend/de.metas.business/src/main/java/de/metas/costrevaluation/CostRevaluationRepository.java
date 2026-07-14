@@ -84,10 +84,8 @@ public class CostRevaluationRepository
 	}
 
 	/**
-	 * Upserts one {@code M_CostRevaluationLine} per given {@link CurrentCost} (keyed by product + client/org),
-	 * skipping already-revaluated lines and deleting any pre-existing line no longer matched by the input.
-	 * The per-record field copy is delegated to {@code updateRecord}, which is the only difference between the
-	 * {@code Calculated} and {@code CopyFromCostElement} paths.
+	 * Upserts one {@code M_CostRevaluationLine} per given {@link CurrentCost} (skipping already-revaluated lines, deleting
+	 * unmatched ones); {@code updateRecord} does the per-record field copy that differs between the two revaluation sources.
 	 */
 	private void createLines(
 			@NonNull final CostRevaluationId costRevaluationId,
@@ -133,9 +131,7 @@ public class CostRevaluationRepository
 
 	/**
 	 * {@code CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}: one line per
-	 * source-element {@code CurrentCost} row (incl. zero-on-hand), copying {@code NewCostPrice}/{@code CurrentQty} unchanged
-	 * but setting the line's {@code M_CostElement_ID} to the document's own (target) element. Lower-level cost is
-	 * deliberately not persisted at line level (as in the {@code Calculated} path); it is re-read fresh at complete time.
+	 * source-element {@code CurrentCost} (incl. zero-on-hand), with the line's {@code M_CostElement_ID} set to the target element.
 	 */
 	public void createLinesForCopyFromCostElement(
 			@NonNull final CostRevaluationId costRevaluationId,

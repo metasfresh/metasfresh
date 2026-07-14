@@ -562,10 +562,8 @@ public class CostingService implements ICostingService
 	}
 
 	/**
-	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@link CurrentCost} ({@code M_Cost}) to
-	 * {@code opening} and writes one anchor {@code M_CostDetail} (dated {@code anchorDate}, {@code Qty=0}/{@code Amt=0},
-	 * {@code Prev_*} = the SAME {@code opening}). Sharing the one {@code opening} is the crux: a later
-	 * {@code product_costs_recreate_from_date} restores {@code M_Cost} from that anchor's {@code Prev_*}, reproducing this exact state.
+	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@code M_Cost} to {@code opening} and
+	 * writes one zero-delta anchor {@code M_CostDetail} carrying the same {@code opening} as its {@code Prev_*}.
 	 */
 	@Override
 	public void seedCurrentCostFromOpening(
@@ -580,6 +578,8 @@ public class CostingService implements ICostingService
 
 		final CostElement targetCostElement = getCostElementById(targetSegmentAndElement.getCostElementId());
 
+		// The anchor carries the SAME `opening` as its Prev_*, so a later product_costs_recreate_from_date restores
+		// M_Cost from it and reproduces exactly this state when there are no in-range transactions (recompute-survival).
 		utils.createCostDetailRecordWithChangedCosts(
 				CostDetailCreateRequest.builder()
 						.costSegment(targetSegmentAndElement.toCostSegment())
