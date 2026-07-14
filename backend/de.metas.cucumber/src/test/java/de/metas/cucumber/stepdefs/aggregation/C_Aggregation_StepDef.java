@@ -23,8 +23,9 @@
 package de.metas.cucumber.stepdefs.aggregation;
 
 import de.metas.aggregation.model.I_C_Aggregation;
+import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -53,11 +54,7 @@ public class C_Aggregation_StepDef
 	@Given("metasfresh contains C_Aggregations:")
 	public void metasfresh_contains_c_aggregation(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			createC_Aggregation(tableRow);
-		}
+		DataTableRows.of(dataTable).forEach(this::createC_Aggregation);
 	}
 
 	@Given("load C_Aggregations:")
@@ -79,28 +76,26 @@ public class C_Aggregation_StepDef
 		aggregationTable.putOrReplace(aggregationIdentifier, aggregationRecord);
 	}
 
-	private void createC_Aggregation(@NonNull final Map<String, String> tableRow)
+	private void createC_Aggregation(@NonNull final DataTableRow row)
 	{
-		final String name = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_Name);
-		final String tableName = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Table.COLUMNNAME_TableName);
+		final String tableName = row.getAsString(I_AD_Table.COLUMNNAME_TableName);
 		final AdTableId adTableId = tableDAO.retrieveAdTableId(tableName);
-		final String entityType = DataTableUtil.extractStringForColumnName(tableRow, I_C_Aggregation.COLUMNNAME_EntityType);
 
 		final I_C_Aggregation aggregationRecord = newInstanceOutOfTrx(I_C_Aggregation.class);
 
-		aggregationRecord.setName(name);
+		// Name has a unique DB index (C_Aggregation_UniqueName). When the test does not need a known Name,
+		// omit it and let suggestValueAndName() auto-generate a unique one, avoiding collisions across
+		// scenarios (which share one DB per executor) and across re-runs. An explicit Name is honored.
+		aggregationRecord.setName(row.getAsOptionalString(I_C_Aggregation.COLUMNNAME_Name)
+				.orElseGet(() -> row.suggestValueAndName().getName()));
 		aggregationRecord.setAD_Table_ID(AdTableId.toRepoId(adTableId));
-		aggregationRecord.setEntityType(entityType);
+		aggregationRecord.setEntityType(row.getAsString(I_C_Aggregation.COLUMNNAME_EntityType));
 
-		final String aggregationUsageLevel = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Aggregation.COLUMNNAME_AggregationUsageLevel);
-		if (Check.isNotBlank(aggregationUsageLevel))
-		{
-			aggregationRecord.setAggregationUsageLevel(aggregationUsageLevel);
-		}
+		row.getAsOptionalString(I_C_Aggregation.COLUMNNAME_AggregationUsageLevel)
+				.ifPresent(aggregationRecord::setAggregationUsageLevel);
 
 		InterfaceWrapperHelper.saveRecord(aggregationRecord);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_Aggregation");
-		aggregationTable.putOrReplace(recordIdentifier, aggregationRecord);
+		row.getAsOptionalIdentifier().ifPresent(identifier -> aggregationTable.putOrReplace(identifier, aggregationRecord));
 	}
 }
