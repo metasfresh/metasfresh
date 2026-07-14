@@ -141,7 +141,7 @@ class PPOrderCreateRequestBuilderTest
 
 		final AttributesKey actualAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId()).orElse(AttributesKey.NONE);
 
-		// Regression guard (AC2, locked decision): a genuine content conflict stays nulled to NONE, both now
+		// Regression guard: a genuine content conflict stays nulled to NONE, both now
 		// and after the content-aware fix — unlike the identical-content case above.
 		assertThat(actualAttributesKey)
 				.as("AttributeKeys")
