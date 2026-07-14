@@ -91,6 +91,7 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
+
   java:
     runs-on: ${{ vars.RUNNER_HEAVY }}
     needs: init
@@ -395,6 +396,39 @@ jobs:
           --target test \
           --tag metas-frontend:test \
           .
+      - name: extract results
+        run: |
+          docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
+      - name: upload jest junit results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results-jest
+          path: jest/frontend/*.xml
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Generate JUnit HTML for Jest
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: jest/frontend/*.xml
+          output-dir: junit-html-jest
+          artifact-name: junit-html-jest
+          report-title: 'JUnit (Jest Frontend)'
+          history-artifact-name: junit-html-history-jest
+      - name: Upload Jest JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-jest
+          report-type: junit/jest
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -1022,6 +1056,78 @@ jobs:
           command: |
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
+      - name: extract-results
+        run: |
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
+          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
+      - name: upload backend junit results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results-backend
+          path: |
+            junit/commons/**/*.xml
+            junit/backend/**/*.xml
+          retention-days: 30
+          if-no-files-found: warn
+      - name: upload camel junit results
+        uses: actions/upload-artifact@v6
+        if: always()
+        with:
+          name: junit-results-camel
+          path: junit/camel/**/*.xml
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Merge backend JUnit XML
+        if: always()
+        run: |
+          mkdir -p junit-merged-backend
+          find junit/commons junit/backend -name '*.xml' -type f -exec cp {} junit-merged-backend/ \;
+          echo "Merged $(ls junit-merged-backend/*.xml 2>/dev/null | wc -l) XML files"
+      - name: Generate JUnit HTML for Backend
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit-merged-backend/*.xml
+          output-dir: junit-html-backend
+          artifact-name: junit-html-backend
+          report-title: 'JUnit (Backend + Commons)'
+          history-artifact-name: junit-html-history-backend
+      - name: Upload Backend JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-backend
+          report-type: junit/backend
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+      - name: Generate JUnit HTML for Camel
+        if: always()
+        uses: ./.github/actions/generate-junit-html
+        with:
+          xml-path: junit/camel/**/*.xml
+          output-dir: junit-html-camel
+          artifact-name: junit-html-camel
+          report-title: 'JUnit (Camel)'
+          history-artifact-name: junit-html-history-camel
+      - name: Upload Camel JUnit HTML to server
+        if: always()
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: junit-html-camel
+          report-type: junit/camel
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1334,6 +1440,20 @@ jobs:
           retention-days: 30
           history-artifact-name: allure-history-cucumber
           report-title: 'Cucumber BDD'
+      - name: Upload Cucumber Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: cucumber-allure-report
+          report-type: allure/cucumber
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
+
 
   health_check:
     name: health check
@@ -1529,6 +1649,7 @@ jobs:
           docker compose --profile frontend logs --no-log-prefix db rabbitmq search app webapi webui > infra.log 2>&1 || true
           docker commit e2e-tests-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postfrontendtest-${{ matrix.shard_label }}
           docker compose --profile frontend down
+
       - name: Upload Allure results
         uses: actions/upload-artifact@v6
         if: always()
@@ -1609,7 +1730,24 @@ jobs:
           artifact-name: allure-report-frontend-webui
           history-artifact-name: allure-history-frontend-webui
           report-title: 'Playwright (Frontend WebUI)'
+      - name: Upload Frontend Allure report to server
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/upload-report-to-server
+        with:
+          report-dir: e2e/frontend-webui/allure-report
+          report-type: allure/frontend-webui
+          branch: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          version: ${{ needs.init.outputs.tag-fixed }}
+          ssh-key: ${{ secrets.REPORTS_SERVER_SSH_KEY }}
+          server-hostname: ${{ secrets.TESTREPORTS_HOSTNAME }}
+          server-user: ${{ secrets.TESTREPORTS_USER }}
+          server-ssh-port: ${{ secrets.TESTREPORTS_SSH_PORT }}
+          storagebox-base-path: ${{ secrets.TESTREPORTS_BASE_PATH }}
 
+
+  # =============================================================================
+  # Publish Allure HTML Reports to test-reports.metasfresh.com
+  # =============================================================================
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
