@@ -2358,16 +2358,15 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * Multi-line reuse proof for the tax-included fix: two lines, same 19% tax, {@code LineNetAmt}
-	 * 100.00 + 100.00 (gross), each with per-line {@code TaxAmt} 15.97. BT-131 REUSES the booked net
-	 * {@code LineNetAmt − TaxAmt} = 84.03 for each line. For a per-line (non-document-level) tax
-	 * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt − TaxAmt)}
-	 * = 168.06 (NOT 168.07 — metasfresh never books the round-of-sum here), so the two booked nets sum to
-	 * {@code TaxBaseAmt} EXACTLY with no rounding gap, satisfying KoSIT BR-S-08 / BR-CO-10. BT-106/BT-109
-	 * accordingly emit 168.06.
+	 * Multi-line rounding-reconciliation proof for the tax-included fix (see investigation brief §
+	 * "THE INVARIANTS"): two lines, same 19% tax, {@code LineNetAmt} 100.00 + 100.00 (gross). A NAIVE
+	 * per-line {@code calculateBaseAmt} conversion yields 84.03 + 84.03 = 168.06 — one cent short of
+	 * the tax breakdown's round-of-sum {@code TaxBaseAmt}=168.07 — which would still fail KoSIT
+	 * BR-S-08/BR-CO-10 (BT-131 sum must equal BT-116 exactly). The fix must reconcile the per-line
+	 * BT-131 values so they sum EXACTLY to 168.07 (e.g. 84.03 + 84.04).
 	 */
 	@Test
-	void tax_included_multiLine_bt131_reuses_booked_net() throws Exception
+	void tax_included_multiLine_bt131_reconciles_to_taxBaseAmt() throws Exception
 	{
 		// === Minimal seller org ===
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -2454,14 +2453,13 @@ public class CiiMapperTest
 		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		saveRecord(tax);
 
-		// === C_InvoiceTax: the values metasfresh actually books for a per-line tax —
-		// TaxBaseAmt = Σ(LineNetAmt − TaxAmt) = 84.03 + 84.03 = 168.06, TaxAmt = 15.97 + 15.97 = 31.94 ===
+		// === C_InvoiceTax: round-of-sum values (168.07 / 31.93), NOT the naive sum-of-rounds (168.06) ===
 		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
 		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
 		invoiceTax.setIsTaxIncluded(true);
-		invoiceTax.setTaxBaseAmt(new BigDecimal("168.06")); // BT-116
-		invoiceTax.setTaxAmt(new BigDecimal("31.94"));       // BT-117
+		invoiceTax.setTaxBaseAmt(new BigDecimal("168.07")); // BT-116
+		invoiceTax.setTaxAmt(new BigDecimal("31.93"));       // BT-117
 		saveRecord(invoiceTax);
 
 		// === Two invoice lines: LineNetAmt/PriceActual GROSS (100.00 each) ===
@@ -2503,20 +2501,20 @@ public class CiiMapperTest
 		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
 				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
 
-		// BT-131 line 1 net amount: booked net LineNetAmt − TaxAmt = 100.00 − 15.97 = 84.03.
+		// BT-131 line 1 net amount: natural net (84.03) — no delta absorbed (not the last line of the group).
 		xmlAssert.valueByXPath(line1Base + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
 				.isEqualTo("84.03");
 
-		// BT-131 line 2 net amount: same booked net = 84.03 (no per-line rounding fudge — the booked
-		// nets already sum to TaxBaseAmt exactly for a per-line tax).
+		// BT-131 line 2 net amount: natural net (84.03) PLUS the 0.01 rounding delta = 84.04 — this is
+		// the crux: a naive per-line conversion would emit 84.03 here too, summing to 168.06 (WRONG).
 		xmlAssert.valueByXPath(line2Base + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
-				.isEqualTo("84.03");
+				.isEqualTo("84.04");
 
-		// BT-106/BT-109: sum of line nets MUST equal SUM(TaxBaseAmt) = 168.06 EXACTLY (BR-CO-10/BR-S-08).
-		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.06");
-		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.06");
+		// BT-106/BT-109: sum of line nets MUST equal SUM(TaxBaseAmt) = 168.07 EXACTLY (BR-CO-10/BR-S-08).
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.07");
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.07");
 	}
 
 	/**
@@ -2757,19 +2755,15 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * Small-residual reconciliation. On a tax-INCLUDED invoice the booked per-line net is
-	 * {@code LineNetAmt − TaxAmt}. Because {@code C_InvoiceLine.TaxAmt} is booked at amount precision
-	 * while {@code C_InvoiceTax.TaxBaseAmt} is derived at tax precision (they differ e.g. for a
-	 * document-level tax, or a price list with {@code IsRoundNetAmountToCurrencyPrecision=N} and
-	 * {@code PricePrecision < currency precision}), a legitimate invoice's booked nets can miss
-	 * {@code TaxBaseAmt} by a rounding step. Here the two lines' booked net sums to 168.06 while the
-	 * breakdown carries 168.07 (a 1-cent residual, within the plausible-rounding cap of
-	 * {@code 2 × 0.01 = 0.02}). The mapper must ABSORB the residual on the group's LAST line so
-	 * {@code Σ BT-131 = TaxBaseAmt = 168.07} EXACTLY (satisfying KoSIT BR-S-08 / BR-CO-10): line 1 keeps
-	 * its booked 84.03, line 2 (the last line) becomes 84.04.
+	 * Regression guard for tax-included invoices whose tax is DOCUMENT-LEVEL
+	 * ({@code C_Tax.IsDocumentLevel=Y}): there the per-line {@code C_InvoiceLine.TaxAmt} is 0 (the tax
+	 * is computed on the document total, not per line), so {@code LineNetAmt − TaxAmt = 100.00 − 0 =
+	 * 100.00} is the GROSS amount, NOT the net. BT-131 must therefore be DERIVED via
+	 * {@link Tax#calculateBaseAmt} (→ 84.03), never taken as {@code LineNetAmt − TaxAmt}.
+	 * {@code C_InvoiceTax.TaxBaseAmt} carries the correct net (84.03).
 	 */
 	@Test
-	void tax_included_smallResidual_absorbedOnLastLine() throws Exception
+	void tax_included_documentLevelTax_lineTaxAmtZero_bt131_isNet_notGross() throws Exception
 	{
 		// === Minimal seller org ===
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -2817,7 +2811,7 @@ public class CiiMapperTest
 		docType.setDocBaseType("ARI");
 		saveRecord(docType);
 
-		// === Invoice: IsTaxIncluded=Y, two lines @19%, TotalLines/GrandTotal = 200.00 (gross) ===
+		// === Invoice: IsTaxIncluded=Y ===
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		invoice.setAD_Org_ID(org.getAD_Org_ID());
 		invoice.setDocumentNo("RE-2024-00704");
@@ -2827,69 +2821,53 @@ public class CiiMapperTest
 		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
 		invoice.setIsTaxIncluded(true);
-		invoice.setTotalLines(new BigDecimal("200.00"));
-		invoice.setGrandTotal(new BigDecimal("200.00"));
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
 		saveRecord(invoice);
 
-		// === UOM + Products ===
+		// === UOM + Product ===
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
 		uom.setName("Stück");
 		uom.setX12DE355("PCE");
 		saveRecord(uom);
-		final I_M_Product product1 = newInstance(I_M_Product.class);
-		product1.setName("Testprodukt A");
-		product1.setValue("TP-704-A");
-		saveRecord(product1);
-		final I_M_Product product2 = newInstance(I_M_Product.class);
-		product2.setName("Testprodukt B");
-		product2.setValue("TP-704-B");
-		saveRecord(product2);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-704");
+		saveRecord(product);
 
-		// === Tax: 19% standard 'S' ===
+		// === Tax: 19% standard 'S', DOCUMENT-LEVEL — NOT whole-tax ===
 		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
 		saveRecord(taxCategory);
 		final I_C_Tax tax = newInstance(I_C_Tax.class);
-		tax.setName("MWSt 19%");
+		tax.setName("Normaler Steuersatz 19% (DE)");
 		tax.setEN16931VATCategory("S");
 		tax.setRate(new BigDecimal("19"));
+		tax.setIsDocumentLevel(true);
 		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
 		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		saveRecord(tax);
 
-		// === C_InvoiceTax: TaxBaseAmt 168.07 (tax-precision round-of-sum) while the booked per-line
-		// net sums to only 168.06 — a 1-cent residual within the 2-line cap (0.02) that must be absorbed. ===
+		// === C_InvoiceTax: net base (BT-116) correctly booked at document level ===
 		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
 		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
 		invoiceTax.setIsTaxIncluded(true);
-		invoiceTax.setTaxBaseAmt(new BigDecimal("168.07")); // BT-116 — Σ(LineNetAmt−TaxAmt)=168.06 + 0.01 residual
-		invoiceTax.setTaxAmt(new BigDecimal("31.93"));       // BT-117
+		invoiceTax.setTaxBaseAmt(new BigDecimal("84.03"));
+		invoiceTax.setTaxAmt(new BigDecimal("15.97"));
 		saveRecord(invoiceTax);
 
-		// === Two lines: booked net = LineNetAmt−TaxAmt = 100.00−15.97 = 84.03 each → Σ = 168.06 ===
-		final I_C_InvoiceLine line1 = newInstance(I_C_InvoiceLine.class);
-		line1.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		line1.setLine(10);
-		line1.setM_Product_ID(product1.getM_Product_ID());
-		line1.setC_UOM_ID(uom.getC_UOM_ID());
-		line1.setC_Tax_ID(tax.getC_Tax_ID());
-		line1.setQtyInvoiced(new BigDecimal("1"));
-		line1.setPriceActual(new BigDecimal("100.00"));
-		line1.setLineNetAmt(new BigDecimal("100.00"));
-		line1.setTaxAmt(new BigDecimal("15.97"));
-		saveRecord(line1);
-
-		final I_C_InvoiceLine line2 = newInstance(I_C_InvoiceLine.class);
-		line2.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		line2.setLine(20);
-		line2.setM_Product_ID(product2.getM_Product_ID());
-		line2.setC_UOM_ID(uom.getC_UOM_ID());
-		line2.setC_Tax_ID(tax.getC_Tax_ID());
-		line2.setQtyInvoiced(new BigDecimal("1"));
-		line2.setPriceActual(new BigDecimal("100.00"));
-		line2.setLineNetAmt(new BigDecimal("100.00"));
-		line2.setTaxAmt(new BigDecimal("15.97"));
-		saveRecord(line2);
+		// === Invoice line: LineNetAmt/PriceActual GROSS (100.00), C_InvoiceLine.TaxAmt = 0 (document-level) ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(BigDecimal.ZERO); // document-level: per-line tax not booked — LineNetAmt−TaxAmt would be GROSS
+		saveRecord(line);
 
 		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
 				.format(EInvoiceFormat.ZUGFeRD)
@@ -2898,167 +2876,22 @@ public class CiiMapperTest
 		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
 		final XmlAssert xmlAssert = toXmlAssert(cii);
 
-		final String line1Base = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
 				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
-		final String line2Base = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
-				+ "/ram:IncludedSupplyChainTradeLineItem[2]";
 		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
 				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
 
-		// BT-131 line 1: booked net 84.03, kept as-is (not the last line).
-		xmlAssert.valueByXPath(line1Base + "/ram:SpecifiedLineTradeSettlement"
+		// BT-131 MUST be the derived net (84.03), NOT LineNetAmt−TaxAmt (=100.00 gross) — the regression
+		// that reusing the booked per-line net would introduce for a document-level tax.
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
 				.isEqualTo("84.03");
-
-		// BT-131 line 2 (the group's LAST line): booked 84.03 + absorbed residual 0.01 = 84.04.
-		xmlAssert.valueByXPath(line2Base + "/ram:SpecifiedLineTradeSettlement"
-						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
-				.isEqualTo("84.04");
-
-		// Σ BT-131 = 84.03 + 84.04 = 168.07 = C_InvoiceTax.TaxBaseAmt (BR-S-08 / BR-CO-10);
-		// BT-106/BT-109 emit SUM(TaxBaseAmt) = 168.07 accordingly.
-		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.07");
-		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.07");
-	}
-
-	/**
-	 * Sanity-cap fail-fast. The last-line residual absorption is only for plausible per-line rounding
-	 * (bounded by {@code n_lines × smallest currency unit}). Here the two lines' booked net sums to
-	 * 168.06 while the breakdown carries 170.00 — a residual of 1.94, far beyond the 2-line cap of
-	 * {@code 2 × 0.01 = 0.02}. That is a genuine tax-data error, not a rounding step, so the mapper must
-	 * REFUSE to silently adjust and throw with the offending {@code C_Tax_ID} + {@code C_Invoice_ID}.
-	 */
-	@Test
-	void tax_included_residualExceedsCap_throwsWithIds() throws Exception
-	{
-		// === Minimal seller org ===
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		saveRecord(org);
-		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
-		sellerCountry.setCountryCode("DE");
-		saveRecord(sellerCountry);
-		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
-		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
-		saveRecord(sellerLocation);
-		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
-		sellerBP.setName("Seller GmbH");
-		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
-		saveRecord(sellerBP);
-		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
-		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
-		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
-		saveRecord(sellerBPLoc);
-		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
-		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
-		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
-		saveRecord(orgInfo);
-
-		// === Minimal buyer ===
-		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
-		buyerCountry.setCountryCode("DE");
-		saveRecord(buyerCountry);
-		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
-		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
-		saveRecord(buyerLocation);
-		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
-		buyerBP.setName("Buyer AG");
-		saveRecord(buyerBP);
-		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
-		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
-		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
-		saveRecord(buyerBPLoc);
-
-		// === Currency + DocType ===
-		final I_C_Currency currency = newInstance(I_C_Currency.class);
-		currency.setISO_Code("EUR");
-		currency.setStdPrecision(2);
-		saveRecord(currency);
-		final I_C_DocType docType = newInstance(I_C_DocType.class);
-		docType.setDocBaseType("ARI");
-		saveRecord(docType);
-
-		// === Invoice: IsTaxIncluded=Y, two lines @19%, TotalLines/GrandTotal = 200.00 (gross) ===
-		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
-		invoice.setAD_Org_ID(org.getAD_Org_ID());
-		invoice.setDocumentNo("RE-2024-00704");
-		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
-		invoice.setC_Currency_ID(currency.getC_Currency_ID());
-		invoice.setC_DocType_ID(docType.getC_DocType_ID());
-		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
-		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
-		invoice.setIsTaxIncluded(true);
-		invoice.setTotalLines(new BigDecimal("200.00"));
-		invoice.setGrandTotal(new BigDecimal("200.00"));
-		saveRecord(invoice);
-
-		// === UOM + Products ===
-		final I_C_UOM uom = newInstance(I_C_UOM.class);
-		uom.setName("Stück");
-		uom.setX12DE355("PCE");
-		saveRecord(uom);
-		final I_M_Product product1 = newInstance(I_M_Product.class);
-		product1.setName("Testprodukt A");
-		product1.setValue("TP-704-A");
-		saveRecord(product1);
-		final I_M_Product product2 = newInstance(I_M_Product.class);
-		product2.setName("Testprodukt B");
-		product2.setValue("TP-704-B");
-		saveRecord(product2);
-
-		// === Tax: 19% standard 'S' ===
-		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
-		saveRecord(taxCategory);
-		final I_C_Tax tax = newInstance(I_C_Tax.class);
-		tax.setName("MWSt 19%");
-		tax.setEN16931VATCategory("S");
-		tax.setRate(new BigDecimal("19"));
-		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
-		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
-		saveRecord(tax);
-
-		// === C_InvoiceTax: TaxBaseAmt deliberately 170.00 while the booked per-line net sums to only
-		// 168.06 — a 1.94 residual, far beyond the 2-line cap (0.02); the guard must reject it. ===
-		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
-		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
-		invoiceTax.setIsTaxIncluded(true);
-		invoiceTax.setTaxBaseAmt(new BigDecimal("170.00")); // BT-116 — residual vs Σ(LineNetAmt−TaxAmt)=168.06 is 1.94 ≫ cap
-		invoiceTax.setTaxAmt(new BigDecimal("31.94"));       // BT-117
-		saveRecord(invoiceTax);
-
-		// === Two lines: booked net = LineNetAmt−TaxAmt = 100.00−15.97 = 84.03 each → Σ = 168.06 ===
-		final I_C_InvoiceLine line1 = newInstance(I_C_InvoiceLine.class);
-		line1.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		line1.setLine(10);
-		line1.setM_Product_ID(product1.getM_Product_ID());
-		line1.setC_UOM_ID(uom.getC_UOM_ID());
-		line1.setC_Tax_ID(tax.getC_Tax_ID());
-		line1.setQtyInvoiced(new BigDecimal("1"));
-		line1.setPriceActual(new BigDecimal("100.00"));
-		line1.setLineNetAmt(new BigDecimal("100.00"));
-		line1.setTaxAmt(new BigDecimal("15.97"));
-		saveRecord(line1);
-
-		final I_C_InvoiceLine line2 = newInstance(I_C_InvoiceLine.class);
-		line2.setC_Invoice_ID(invoice.getC_Invoice_ID());
-		line2.setLine(20);
-		line2.setM_Product_ID(product2.getM_Product_ID());
-		line2.setC_UOM_ID(uom.getC_UOM_ID());
-		line2.setC_Tax_ID(tax.getC_Tax_ID());
-		line2.setQtyInvoiced(new BigDecimal("1"));
-		line2.setPriceActual(new BigDecimal("100.00"));
-		line2.setLineNetAmt(new BigDecimal("100.00"));
-		line2.setTaxAmt(new BigDecimal("15.97"));
-		saveRecord(line2);
-
-		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
-				.format(EInvoiceFormat.ZUGFeRD)
-				.build();
-
-		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
-				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
-				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
-				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
+		// BT-146 item net price likewise net.
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("84.03");
+		// BT-106/BT-109 = SUM(TaxBaseAmt) = 84.03.
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("84.03");
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("84.03");
 	}
 
 	// ===== Shared helpers =====
