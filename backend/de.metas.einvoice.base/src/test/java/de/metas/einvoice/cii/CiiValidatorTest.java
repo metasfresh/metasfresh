@@ -299,11 +299,20 @@ public class CiiValidatorTest
 	 */
 	private FixtureResult buildXRechnungFixture()
 	{
+		return buildXRechnungFixture("991-1234512345-06");
+	}
+
+	/**
+	 * Builds a fixture identical to {@link #buildCompleteFixture()} but with XRechnung format
+	 * and the given BT-10 buyer reference.
+	 */
+	private FixtureResult buildXRechnungFixture(final String buyerReference)
+	{
 		// Reuse the full fixture; override format + buyer reference to XRechnung.
 		final FixtureResult base = buildCompleteFixture();
 		final EInvoiceRecipientConfig xrConfig = EInvoiceRecipientConfig.builder()
 				.format(EInvoiceFormat.XRECHNUNG)
-				.buyerReference("991-1234512345-06")
+				.buyerReference(buyerReference)
 				.build();
 		return new FixtureResult(base.invoice, xrConfig);
 	}
@@ -401,5 +410,31 @@ public class CiiValidatorTest
 		assertThat(en16931RuleIds)
 				.as("EN16931-only validation must not produce any BR-DE-* rule id. Actual: %s", en16931RuleIds)
 				.noneMatch(id -> id != null && id.startsWith("BR-DE-"));
+	}
+
+	/**
+	 * BR-DE-15 only requires the buyer reference (BT-10) to be non-empty; it does not enforce any
+	 * particular format (e.g. Leitweg-ID). An arbitrary, non-Leitweg-format buyer reference must
+	 * still satisfy BR-DE-15 on a valid XRechnung.
+	 */
+	@Test
+	void validate_xrechnung_arbitraryBuyerReference_passesBrDe15() throws Exception
+	{
+		final FixtureResult fixture = buildXRechnungFixture("KD-4711");
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(fixture.invoice, fixture.recipientConfig);
+		final String xml = marshalToXml(cii);
+
+		final CiiValidator validator = new CiiValidator();
+		final CiiValidationResult result = validator.validate(xml, EInvoiceFormat.XRECHNUNG);
+
+		final List<String> fatalErrors = result.getFatalAndErrorRuleIds();
+		assertThat(fatalErrors)
+				.as("Expected ZERO fatal/error KoSIT (BR-DE-*) rule violations for an arbitrary buyer reference. "
+						+ "Firing rules: " + fatalErrors)
+				.isEmpty();
+		assertThat(fatalErrors)
+				.as("BR-DE-15 must not fire for a non-empty, non-Leitweg-format buyer reference. Actual rule ids: %s", fatalErrors)
+				.doesNotContain("BR-DE-15");
 	}
 }
