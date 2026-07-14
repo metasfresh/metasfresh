@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page } from "../../common";
 import { test } from "../../../../playwright.config";
 import { expect } from "@playwright/test";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
@@ -19,14 +19,7 @@ export const WorkplaceManagerScreen = {
     }),
 
     scanWorkplace: async (qrCode) => await test.step(`${NAME} - Scan workplace QR '${qrCode}'`, async () => {
-        // Scanning into a just-mounted home screen can race the barcode reader's keydown listener,
-        // which attaches in a post-render effect slightly after its input is in the DOM — a scan fired
-        // in that window is silently dropped and never routes. Retry the scan until the workplace
-        // screen actually opens (a genuinely non-routing scan still fails once the outer timeout elapses).
-        await expect(async () => {
-            await BarcodeScannerComponent.type(qrCode);
-            await containerElement().waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
-        }).toPass({ timeout: SLOW_ACTION_TIMEOUT });
+        await BarcodeScannerComponent.type(qrCode);
         await WorkplaceManagerScreen.waitForScreen();
     }),
 
