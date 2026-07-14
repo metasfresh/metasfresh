@@ -124,18 +124,15 @@ public class PPOrderCreateRequestBuilder
 	}
 
 	/**
-	 * ASI aggregation across candidates merged into one PP_Order. {@link ValueAggregator} calls this ONLY when
-	 * the candidates hold more than one distinct {@link AttributeSetInstanceId} (repo-id) — metasfresh gives each
-	 * candidate its own copied ASI row, so candidates that mean the same thing still hold distinct ids. Compare by
-	 * STORAGE-RELEVANT content (the same {@link AttributesKey} used by the candidate/shipment paths and the DB
-	 * function GenerateASIStorageAttributesKey): all equal -> keep the first candidate's ASI id (a real row, so no
-	 * attribute is lost); content genuinely differs -> null (NONE), preserving prior behaviour for a real conflict.
+	 * Called by {@link ValueAggregator} only when candidates hold more than one distinct ASI repo-id. Compares by
+	 * storage-relevant {@link AttributesKey} (same identity as the candidate/shipment paths): all equal keeps the
+	 * first candidate's real ASI id; a genuine difference nulls it (NONE), preserving prior behaviour.
 	 */
 	@Nullable
 	private static AttributeSetInstanceId aggregateStorageRelevantAttributeSetInstanceId(@NonNull final List<AttributeSetInstanceId> asiIds)
 	{
 		final AttributesKey firstKey = toStorageRelevantAttributesKey(asiIds.get(0));
-		for (final AttributeSetInstanceId asiId : asiIds)
+		for (final AttributeSetInstanceId asiId : asiIds.subList(1, asiIds.size()))
 		{
 			if (!firstKey.equals(toStorageRelevantAttributesKey(asiId)))
 			{

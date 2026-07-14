@@ -108,10 +108,9 @@ class PPOrderCreateRequestBuilderTest
 		final AttributesKey expectedAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(asi1).orElse(AttributesKey.NONE);
 		final AttributesKey actualAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId()).orElse(AttributesKey.NONE);
 
-		// CURRENT (buggy) behaviour: PPOrderCreateRequestBuilder aggregates the ASI by repo-id (Objects.equals on
-		// AttributeSetInstanceId); asi1 != asi2 (distinct repo ids) -> nulled to AttributeSetInstanceId.NONE ->
-		// actualAttributesKey resolves to AttributesKey.NONE, while expectedAttributesKey is the real {Bio} key.
-		// This assertion therefore FAILS on current code (RED) and must PASS after the content-aware fix.
+		// asi1 and asi2 are distinct ASI rows carrying identical storage-relevant content ("Bio"). Aggregating by
+		// ASI repo-id alone would treat them as a conflict and null the attribute; comparing by storage-relevant
+		// AttributesKey recognizes the identical content and keeps a representative ASI id.
 		assertThat(actualAttributesKey)
 				.as("AttributeKeys")
 				.isEqualTo(expectedAttributesKey);
@@ -141,8 +140,8 @@ class PPOrderCreateRequestBuilderTest
 
 		final AttributesKey actualAttributesKey = AttributesKeys.createAttributesKeyFromASIStorageAttributes(request.getAttributeSetInstanceId()).orElse(AttributesKey.NONE);
 
-		// Regression guard: a genuine content conflict stays nulled to NONE, both now
-		// and after the content-aware fix — unlike the identical-content case above.
+		// asiBio and asiKonventionell carry genuinely different storage-relevant content, so the aggregated
+		// attribute is nulled to NONE — unlike the identical-content case above.
 		assertThat(actualAttributesKey)
 				.as("AttributeKeys")
 				.isEqualTo(AttributesKey.NONE);
