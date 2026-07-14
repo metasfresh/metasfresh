@@ -303,11 +303,8 @@ public class CostRevaluationService
 		final CostSegment targetSegment = targetSegmentAndElement.toCostSegment();
 		final CostSegmentAndElement sourceSegmentAndElement = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
-		final CurrentCost sourceCurrentCost = costingService.getCurrentCostOrNull(sourceSegmentAndElement);
-		if (sourceCurrentCost == null)
-		{
-			throw new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement);
-		}
+		final CurrentCost sourceCurrentCost = costingService.getCurrentCost(sourceSegmentAndElement)
+				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement));
 
 		// Value-neutral seed: snapshot own price + LL + qty together from a SINGLE fresh read of the source's M_Cost
 		// at complete time — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview

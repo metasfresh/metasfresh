@@ -51,7 +51,7 @@ public interface ICostingService
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
 
-	CurrentCost getCurrentCostOrNull(@NonNull CostSegmentAndElement costSegmentAndElement);
+	Optional<CurrentCost> getCurrentCost(@NonNull CostSegmentAndElement costSegmentAndElement);
 
 	void seedCurrentCostFromOpening(
 			@NonNull CostSegmentAndElement targetSegmentAndElement,

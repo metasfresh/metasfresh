@@ -135,9 +135,9 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
-	public CurrentCost getCurrentCostOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
+	public Optional<CurrentCost> getCurrentCost(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
-		return currentCostsRepo.getOrNull(costSegmentAndElement);
+		return Optional.ofNullable(currentCostsRepo.getOrNull(costSegmentAndElement));
 	}
 
 	@Override
