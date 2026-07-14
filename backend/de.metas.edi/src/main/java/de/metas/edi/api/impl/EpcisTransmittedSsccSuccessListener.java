@@ -23,7 +23,6 @@
 package de.metas.edi.api.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.edi.process.export.json.M_InOut_EPCIS_Export_JSON;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.IExternalSystemInvocationSuccessListener;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService;
@@ -32,10 +31,7 @@ import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedEx
 import de.metas.externalsystem.scriptedexportconversion.ScriptedExportConversionStatus;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
-import de.metas.process.AdProcessId;
-import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -44,7 +40,6 @@ import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-import java.util.Objects;
 
 /**
  * On a successful scripted-export invocation whose config is the EPCIS outbound export, records
@@ -69,10 +64,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 	@NonNull private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository;
 	@NonNull private final EpcisEventsJsonDAO epcisEventsJsonDAO;
 	@NonNull private final EpcisTransmittedSsccRepository transmittedSsccRepository;
-
-	// IADProcessDAO is an ISingletonService (obtained via Services.get), not a Spring bean — it must NOT be a
-	// constructor parameter, else this @Component fails to wire at context boot with NoSuchBeanDefinitionException.
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final EpcisExportProcess epcisExportProcess;
 
 	/**
 	 * Always returns {@code true} — this listener dispatches by {@code pInstanceId} and gates to
@@ -99,7 +91,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		}
 
 		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(status.getConfigId());
-		if (!isEpcisExportConfig(config))
+		if (!epcisExportProcess.isEpcisExportConfig(config))
 		{
 			logger.debug("configId={} is not the EPCIS outbound export - skipping", status.getConfigId());
 			return;
@@ -124,11 +116,5 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		{
 			transmittedSsccRepository.recordTransmittedIfAbsent(config.getId(), inOutId, sscc18);
 		}
-	}
-
-	private boolean isEpcisExportConfig(@NonNull final ExternalSystemScriptedExportConversionConfig config)
-	{
-		final AdProcessId epcisExportProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(M_InOut_EPCIS_Export_JSON.class);
-		return Objects.equals(epcisExportProcessId, config.getOutboundDataProcessId());
 	}
 }

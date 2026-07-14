@@ -57,7 +57,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Step definitions for {@code ExternalSystem_ScriptedExportConversion_Status} assertions,
  * scripted-export /ok callback simulation, {@code M_InOut.EPCIS_ExportStatus} roll-up checks,
- * and the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation.
+ * the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation, and deactivating a
+ * shipment's status row (the escape-hatch that releases a shipment blocked by an in-flight export).
  *
  * <p>The status table holds one row per (config, source-record) pair that is updated in place
  * as the export lifecycle progresses (Pending → Enqueued → Sent / Error / Invalid / DontSend).

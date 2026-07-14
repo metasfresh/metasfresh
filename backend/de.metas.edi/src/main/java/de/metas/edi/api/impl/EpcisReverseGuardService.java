@@ -22,15 +22,10 @@
 
 package de.metas.edi.api.impl;
 
-import de.metas.edi.process.export.json.M_InOut_EPCIS_Export_JSON;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemExportStatusService;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionRepository;
 import de.metas.inout.InOutId;
-import de.metas.process.AdProcessId;
-import de.metas.process.IADProcessDAO;
-import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -38,7 +33,6 @@ import org.compiere.model.I_M_InOut;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Answers "may this shipment's EPCIS SSCCs already be at the receiver?" — true iff the shipment
@@ -61,13 +55,14 @@ public class EpcisReverseGuardService
 	@NonNull private final EpcisTransmittedSsccRepository transmittedSsccRepository;
 	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 	@NonNull private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository;
-
-	// IADProcessDAO is an ISingletonService (obtained via Services.get), not a Spring bean — it must NOT be a
-	// constructor parameter, else this @Service fails to wire at context boot with NoSuchBeanDefinitionException.
-	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
+	@NonNull private final EpcisExportProcess epcisExportProcess;
 
 	public boolean isEpcisTransmittedOrInFlight(@NonNull final InOutId inOutId)
 	{
+		// Two non-atomic reads (ledger, then in-flight status). A theoretical TOCTOU exists if the
+		// async success-callback's commit (ledger write + status→Sent) lands exactly between them —
+		// but that window is two local SELECTs, dwarfed by the external-system round-trip that gates
+		// the callback, so it is negligible in practice and not worth a cross-module combined query.
 		return transmittedSsccRepository.hasActiveTransmittedForInOut(inOutId)
 				|| hasInflightEpcisExport(inOutId);
 	}
@@ -77,15 +72,8 @@ public class EpcisReverseGuardService
 		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inOutId.getRepoId());
 		final List<ExternalSystemScriptedExportConversionConfigId> inflightConfigIds =
 				exportStatusService.getInflightConfigsBySourceRecord(sourceRecord);
-		if (inflightConfigIds.isEmpty())
-		{
-			return false;
-		}
-
-		final AdProcessId epcisExportProcessId = adProcessDAO.retrieveProcessIdByClassIfUnique(M_InOut_EPCIS_Export_JSON.class);
 		return inflightConfigIds.stream()
 				.map(scriptedExportConversionRepository::getById)
-				.map(ExternalSystemScriptedExportConversionConfig::getOutboundDataProcessId)
-				.anyMatch(outboundProcessId -> Objects.equals(outboundProcessId, epcisExportProcessId));
+				.anyMatch(epcisExportProcess::isEpcisExportConfig);
 	}
 }
