@@ -52,4 +52,33 @@ public class RevaluationSourceTest
 		assertThatThrownBy(() -> RevaluationSource.ofCode("SomeUnknownCode"))
 				.isInstanceOf(AdempiereException.class);
 	}
+
+	@Test
+	public void ofNullableCode()
+	{
+		assertThat(RevaluationSource.ofNullableCode(null)).isNull();
+		assertThat(RevaluationSource.ofNullableCode("CopyFromCostElement")).isSameAs(RevaluationSource.CopyFromCostElement);
+	}
+
+	@Test
+	public void toCodeOrNull()
+	{
+		assertThat(RevaluationSource.toCodeOrNull(null)).isNull();
+		assertThat(RevaluationSource.toCodeOrNull(RevaluationSource.CopyFromCostElement)).isEqualTo("CopyFromCostElement");
+	}
+
+	@Test
+	public void isCopyFromCostElement()
+	{
+		assertThat(RevaluationSource.CopyFromCostElement.isCopyFromCostElement()).isTrue();
+		assertThat(RevaluationSource.Calculated.isCopyFromCostElement()).isFalse();
+	}
+
+	@Test
+	public void equals_nullsafe()
+	{
+		assertThat(RevaluationSource.equals(null, null)).isTrue();
+		assertThat(RevaluationSource.equals(RevaluationSource.Calculated, RevaluationSource.Calculated)).isTrue();
+		assertThat(RevaluationSource.equals(RevaluationSource.Calculated, RevaluationSource.CopyFromCostElement)).isFalse();
+	}
 }

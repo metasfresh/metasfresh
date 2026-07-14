@@ -6,6 +6,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_M_CostRevaluation;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
@@ -38,9 +39,9 @@ import java.util.Objects;
 public enum RevaluationSource implements ReferenceListAwareEnum
 {
 	/** Cost is recalculated for this revaluation (default, existing behaviour). */
-	Calculated("Calculated"), //
+	Calculated(X_M_CostRevaluation.REVALUATIONSOURCE_Calculated), //
 	/** Cost is copied unchanged from the cost element selected under CopyFrom_M_CostElement_ID (value-neutral). */
-	CopyFromCostElement("CopyFromCostElement") //
+	CopyFromCostElement(X_M_CostRevaluation.REVALUATIONSOURCE_CopyFromCostElement) //
 	;
 
 	@Getter
