@@ -2358,15 +2358,16 @@ public class CiiMapperTest
 	}
 
 	/**
-	 * Multi-line rounding-reconciliation proof for the tax-included fix (see investigation brief §
-	 * "THE INVARIANTS"): two lines, same 19% tax, {@code LineNetAmt} 100.00 + 100.00 (gross). A NAIVE
-	 * per-line {@code calculateBaseAmt} conversion yields 84.03 + 84.03 = 168.06 — one cent short of
-	 * the tax breakdown's round-of-sum {@code TaxBaseAmt}=168.07 — which would still fail KoSIT
-	 * BR-S-08/BR-CO-10 (BT-131 sum must equal BT-116 exactly). The fix must reconcile the per-line
-	 * BT-131 values so they sum EXACTLY to 168.07 (e.g. 84.03 + 84.04).
+	 * Multi-line reuse proof for the tax-included fix: two lines, same 19% tax, {@code LineNetAmt}
+	 * 100.00 + 100.00 (gross), each with per-line {@code TaxAmt} 15.97. BT-131 REUSES the booked net
+	 * {@code LineNetAmt − TaxAmt} = 84.03 for each line. For a per-line (non-document-level) tax
+	 * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt − TaxAmt)}
+	 * = 168.06 (NOT 168.07 — metasfresh never books the round-of-sum here), so the two booked nets sum to
+	 * {@code TaxBaseAmt} EXACTLY with no rounding gap, satisfying KoSIT BR-S-08 / BR-CO-10. BT-106/BT-109
+	 * accordingly emit 168.06.
 	 */
 	@Test
-	void tax_included_multiLine_bt131_reconciles_to_taxBaseAmt() throws Exception
+	void tax_included_multiLine_bt131_reuses_booked_net() throws Exception
 	{
 		// === Minimal seller org ===
 		final I_AD_Org org = newInstance(I_AD_Org.class);
@@ -2453,13 +2454,14 @@ public class CiiMapperTest
 		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		saveRecord(tax);
 
-		// === C_InvoiceTax: round-of-sum values (168.07 / 31.93), NOT the naive sum-of-rounds (168.06) ===
+		// === C_InvoiceTax: the values metasfresh actually books for a per-line tax —
+		// TaxBaseAmt = Σ(LineNetAmt − TaxAmt) = 84.03 + 84.03 = 168.06, TaxAmt = 15.97 + 15.97 = 31.94 ===
 		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
 		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
 		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
 		invoiceTax.setIsTaxIncluded(true);
-		invoiceTax.setTaxBaseAmt(new BigDecimal("168.07")); // BT-116
-		invoiceTax.setTaxAmt(new BigDecimal("31.93"));       // BT-117
+		invoiceTax.setTaxBaseAmt(new BigDecimal("168.06")); // BT-116
+		invoiceTax.setTaxAmt(new BigDecimal("31.94"));       // BT-117
 		saveRecord(invoiceTax);
 
 		// === Two invoice lines: LineNetAmt/PriceActual GROSS (100.00 each) ===
@@ -2501,20 +2503,20 @@ public class CiiMapperTest
 		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
 				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
 
-		// BT-131 line 1 net amount: natural net (84.03) — no delta absorbed (not the last line of the group).
+		// BT-131 line 1 net amount: booked net LineNetAmt − TaxAmt = 100.00 − 15.97 = 84.03.
 		xmlAssert.valueByXPath(line1Base + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
 				.isEqualTo("84.03");
 
-		// BT-131 line 2 net amount: natural net (84.03) PLUS the 0.01 rounding delta = 84.04 — this is
-		// the crux: a naive per-line conversion would emit 84.03 here too, summing to 168.06 (WRONG).
+		// BT-131 line 2 net amount: same booked net = 84.03 (no per-line rounding fudge — the booked
+		// nets already sum to TaxBaseAmt exactly for a per-line tax).
 		xmlAssert.valueByXPath(line2Base + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
-				.isEqualTo("84.04");
+				.isEqualTo("84.03");
 
-		// BT-106/BT-109: sum of line nets MUST equal SUM(TaxBaseAmt) = 168.07 EXACTLY (BR-CO-10/BR-S-08).
-		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.07");
-		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.07");
+		// BT-106/BT-109: sum of line nets MUST equal SUM(TaxBaseAmt) = 168.06 EXACTLY (BR-CO-10/BR-S-08).
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.06");
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.06");
 	}
 
 	/**
@@ -2743,6 +2745,149 @@ public class CiiMapperTest
 		line.setLineNetAmt(new BigDecimal("100.00"));
 		line.setTaxAmt(new BigDecimal("15.97"));
 		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
+				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
+	}
+
+	/**
+	 * Fail-fast on the document-level-tax case. On a tax-INCLUDED invoice the booked per-line net is
+	 * {@code LineNetAmt − TaxAmt}, and for a per-line (non-document-level) tax that sum equals the
+	 * breakdown's {@code C_InvoiceTax.TaxBaseAmt} EXACTLY. The ONLY case where they diverge is a
+	 * document-level tax ({@code C_Tax.IsDocumentLevel=Y}), where {@code TaxBaseAmt} is a round-of-sum
+	 * on the whole document total — which cannot be reconciled per line, so it is not supported for
+	 * e-invoicing. Here the two lines' booked net sums to 168.06 while the breakdown carries 168.07
+	 * (simulating the document-level round-of-sum), so the mapper must throw with the offending
+	 * {@code C_Tax_ID} + {@code C_Invoice_ID} rather than silently emit an XML that fails BR-S-08/BR-CO-10.
+	 */
+	@Test
+	void tax_included_documentLevelTax_bt131_mismatch_throwsWithIds() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y, two lines @19%, TotalLines/GrandTotal = 200.00 (gross) ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00704");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("200.00"));
+		invoice.setGrandTotal(new BigDecimal("200.00"));
+		saveRecord(invoice);
+
+		// === UOM + Products ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product1 = newInstance(I_M_Product.class);
+		product1.setName("Testprodukt A");
+		product1.setValue("TP-704-A");
+		saveRecord(product1);
+		final I_M_Product product2 = newInstance(I_M_Product.class);
+		product2.setName("Testprodukt B");
+		product2.setValue("TP-704-B");
+		saveRecord(product2);
+
+		// === Tax: 19% standard 'S' ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: TaxBaseAmt deliberately 168.07 (document-level round-of-sum) while the
+		// booked per-line net sums to only 168.06 — the exact mismatch the guard must reject. ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("168.07")); // BT-116 — does NOT match Σ(LineNetAmt−TaxAmt)=168.06
+		invoiceTax.setTaxAmt(new BigDecimal("31.94"));       // BT-117
+		saveRecord(invoiceTax);
+
+		// === Two lines: booked net = LineNetAmt−TaxAmt = 100.00−15.97 = 84.03 each → Σ = 168.06 ===
+		final I_C_InvoiceLine line1 = newInstance(I_C_InvoiceLine.class);
+		line1.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line1.setLine(10);
+		line1.setM_Product_ID(product1.getM_Product_ID());
+		line1.setC_UOM_ID(uom.getC_UOM_ID());
+		line1.setC_Tax_ID(tax.getC_Tax_ID());
+		line1.setQtyInvoiced(new BigDecimal("1"));
+		line1.setPriceActual(new BigDecimal("100.00"));
+		line1.setLineNetAmt(new BigDecimal("100.00"));
+		line1.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line1);
+
+		final I_C_InvoiceLine line2 = newInstance(I_C_InvoiceLine.class);
+		line2.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line2.setLine(20);
+		line2.setM_Product_ID(product2.getM_Product_ID());
+		line2.setC_UOM_ID(uom.getC_UOM_ID());
+		line2.setC_Tax_ID(tax.getC_Tax_ID());
+		line2.setQtyInvoiced(new BigDecimal("1"));
+		line2.setPriceActual(new BigDecimal("100.00"));
+		line2.setLineNetAmt(new BigDecimal("100.00"));
+		line2.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line2);
 
 		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
 				.format(EInvoiceFormat.ZUGFeRD)

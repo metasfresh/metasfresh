@@ -113,13 +113,16 @@ import java.util.Map;
  * (BT-126 through BT-152), BG-23 VAT breakdown, BG-22 monetary totals, and BG-16 payment means.
  *
  * <p><b>Tax-included investigation notes.</b> On a tax-INCLUDED invoice ({@code C_Invoice.IsTaxIncluded=Y})
- * the line-level amounts {@code C_InvoiceLine.LineNetAmt} / {@code PriceActual} are stored GROSS, whereas
- * the tax breakdown {@code C_InvoiceTax.TaxBaseAmt} / {@code TaxAmt} and {@code C_Invoice.GrandTotal} are
- * already net / tax / gross respectively. EN 16931 requires BT-131/BT-146/BT-106/BT-109 to be tax-exclusive,
- * so on the tax-included path they must be derived to net (they are NOT taken raw from the line). BT-131 is
- * additionally reconciled per {@code C_Tax} group to that group's {@code TaxBaseAmt} so the BT-131 sum equals
- * BT-116 exactly, satisfying KoSIT BR-S-08 / BR-CO-10. On the tax-EXCLUDED path all these values are emitted
- * unchanged.
+ * the line-level amounts {@code C_InvoiceLine.LineNetAmt} / {@code PriceActual} are stored GROSS, and
+ * {@code C_InvoiceLine.TaxAmt} carries the per-line VAT, whereas the tax breakdown
+ * {@code C_InvoiceTax.TaxBaseAmt} / {@code TaxAmt} and {@code C_Invoice.GrandTotal} are already
+ * net / tax / gross respectively. EN 16931 requires BT-131/BT-146/BT-106/BT-109 to be tax-exclusive,
+ * so on the tax-included path they must be net (they are NOT taken raw from the line). BT-131 REUSES the
+ * booked per-line net {@code LineNetAmt − TaxAmt}: for a per-line (non-document-level) tax
+ * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt_i − TaxAmt_i)},
+ * so the BT-131 sum equals BT-116 exactly, satisfying KoSIT BR-S-08 / BR-CO-10 with no rounding
+ * reconciliation. A group whose booked nets do not sum to its {@code TaxBaseAmt} (only possible for a
+ * document-level tax) is rejected fail-fast. On the tax-EXCLUDED path all these values are emitted unchanged.
  */
 public class CiiMapper
 {
@@ -262,7 +265,7 @@ public class CiiMapper
 	{
 		final SupplyChainTradeTransactionType tx = new SupplyChainTradeTransactionType();
 
-		// BG-23 VAT breakdown rows — fetched once and shared between the BT-131 reconciliation
+		// BG-23 VAT breakdown rows — fetched once and shared between the BT-131 net-amount
 		// pre-pass (below) and buildTradeSettlement/buildMonetarySummation (BT-106/BT-109/BT-110).
 		final List<I_C_InvoiceTax> invoiceTaxes = invoiceDAO.retrieveTaxes(invoice);
 
@@ -287,14 +290,23 @@ public class CiiMapper
 	 * <p><b>Tax-EXCLUDED invoices</b>: unchanged — the map holds {@code LineNetAmt} as-is, exactly
 	 * as before this fix (byte-identical behaviour).
 	 *
-	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount (see
-	 * class-level investigation notes), so the tax-exclusive net must be derived. A naive per-line
-	 * {@link Tax#calculateBaseAmt} can sum to a different total than the tax breakdown's
-	 * {@code C_InvoiceTax.TaxBaseAmt} (sum-of-rounds vs. the header's round-of-sum), which fails
-	 * KoSIT BR-S-08 (BT-131 sum must equal BT-116) / BR-CO-10. To guarantee an EXACT match, lines
-	 * are grouped by {@code C_Tax_ID}; within each group every line's natural net is computed, then
-	 * the LAST line of the group absorbs the rounding delta so the group sums exactly to that tax's
-	 * {@code TaxBaseAmt}.
+	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount and
+	 * {@code C_InvoiceLine.TaxAmt} the per-line VAT (see class-level investigation notes), so the
+	 * tax-exclusive net is simply the booked value {@code LineNetAmt − TaxAmt}. This value is REUSED
+	 * as-is — it is not recomputed. For a per-line (non-document-level) tax
+	 * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt_i − TaxAmt_i)},
+	 * so the booked per-line nets sum to that tax's {@code TaxBaseAmt} EXACTLY (no rounding gap),
+	 * which is what satisfies KoSIT BR-S-08 (Σ BT-131 = BT-116) / BR-CO-10.
+	 *
+	 * <p>Lines are still grouped by {@code C_Tax_ID} solely to assert that invariant per VAT group:
+	 * <ul>
+	 * <li>a missing {@code C_InvoiceTax} breakdown row for a used tax → fail fast; and</li>
+	 * <li>a group whose {@code Σ(LineNetAmt − TaxAmt)} does not equal that tax's {@code TaxBaseAmt}
+	 *     → fail fast. The only way that can happen is a DOCUMENT-LEVEL tax
+	 *     ({@code C_Tax.IsDocumentLevel=Y}), where {@code TaxBaseAmt} is a round-of-sum on the whole
+	 *     document total and therefore cannot be reconciled line by line — that case is not supported
+	 *     for e-invoicing, so we throw rather than silently emit XML that would fail BR-S-08/BR-CO-10.</li>
+	 * </ul>
 	 */
 	private Map<InvoiceLineId, BigDecimal> computeLineNetAmountsForBt131(
 			@NonNull final I_C_Invoice invoice,
@@ -324,44 +336,41 @@ public class CiiMapper
 			linesByTaxId.computeIfAbsent(TaxId.ofRepoId(line.getC_Tax_ID()), k -> new ArrayList<>()).add(line);
 		}
 
-		final CurrencyPrecision amountPrecision = resolveAmountPrecision(invoice);
-
 		for (final Map.Entry<TaxId, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
 		{
 			final TaxId taxId = groupEntry.getKey();
 			final List<I_C_InvoiceLine> groupLines = groupEntry.getValue();
-			final Tax tax = taxBL.getTaxById(taxId);
 
-			final Map<InvoiceLineId, BigDecimal> naturalNetByLineId = new LinkedHashMap<>();
-			BigDecimal sumOfNaturalNets = BigDecimal.ZERO;
-			for (final I_C_InvoiceLine line : groupLines)
-			{
-				final BigDecimal naturalNet = tax.calculateBaseAmt(line.getLineNetAmt(), true, amountPrecision.toInt());
-				naturalNetByLineId.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), naturalNet);
-				sumOfNaturalNets = sumOfNaturalNets.add(naturalNet);
-			}
-
-			final BigDecimal targetTaxBaseAmt = taxBaseAmtByTaxId.get(taxId);
-			if (targetTaxBaseAmt == null)
+			final BigDecimal taxBaseAmt = taxBaseAmtByTaxId.get(taxId);
+			if (taxBaseAmt == null)
 			{
 				// No C_InvoiceTax breakdown row for a tax used by an invoice line. On a completed
 				// tax-included invoice this is a genuine data error — without the TaxBaseAmt anchor
-				// the BT-131 reconciliation cannot satisfy BR-S-08/BR-CO-10, so fail fast rather
-				// than silently emit broken XML.
+				// the per-line BT-131 nets cannot be checked against BR-S-08/BR-CO-10, so fail fast
+				// rather than silently emit broken XML.
 				throw new AdempiereException("CII mapping: no C_InvoiceTax breakdown row for a tax used by an invoice line"
 						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
 			}
 
-			// The last line of the group absorbs the rounding delta so the group's BT-131 sum
-			// matches this tax's TaxBaseAmt (BT-116) EXACTLY — this is what satisfies BR-S-08/BR-CO-10.
-			final BigDecimal delta = targetTaxBaseAmt.subtract(sumOfNaturalNets);
-			final I_C_InvoiceLine lastLine = groupLines.get(groupLines.size() - 1);
+			// Reuse the booked per-line net (LineNetAmt − TaxAmt) as BT-131.
+			BigDecimal groupSum = BigDecimal.ZERO;
 			for (final I_C_InvoiceLine line : groupLines)
 			{
-				final InvoiceLineId lineId = InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID());
-				final BigDecimal naturalNet = naturalNetByLineId.get(lineId);
-				final BigDecimal net = line == lastLine ? naturalNet.add(delta) : naturalNet;
-				result.put(lineId, net);
+				final BigDecimal lineNet = line.getLineNetAmt().subtract(line.getTaxAmt());
+				result.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), lineNet);
+				groupSum = groupSum.add(lineNet);
+			}
+
+			// For a per-line tax the booked nets sum to TaxBaseAmt EXACTLY. A mismatch means a
+			// document-level tax (round-of-sum on the document total), which cannot be reconciled
+			// per line and is not supported for e-invoicing — fail fast rather than emit XML that
+			// would fail BR-S-08/BR-CO-10. compareTo (not equals) so trailing-zero scale never matters.
+			if (groupSum.compareTo(taxBaseAmt) != 0)
+			{
+				throw new AdempiereException("CII mapping: tax-included line net amounts (Σ LineNetAmt−TaxAmt=" + groupSum
+						+ ") do not reconcile to C_InvoiceTax.TaxBaseAmt=" + taxBaseAmt
+						+ " — likely a document-level tax, which is not supported for e-invoicing"
+						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
 			}
 		}
 
@@ -441,11 +450,14 @@ public class CiiMapper
 		// fetched separately and lazily so tax-excluded invoices never require C_Tax.ValidFrom).
 		final I_C_Tax tax = repo.getTax(line.getC_Tax_ID());
 
-		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount).
+		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount) — the DERIVED per-unit net.
 		// Tax-included invoices: PriceActual is GROSS (see class-level investigation notes) — convert
-		// to the tax-exclusive net unit price. Tax-excluded invoices: unchanged (byte-identical).
-		// The gate is the invoice-level IsTaxIncluded flag only — consistent with the BT-131
-		// reconciliation (computeLineNetAmountsForBt131) and BT-106/BT-109, which also key on it.
+		// to the tax-exclusive net unit price via calculateBaseAmt. Tax-excluded invoices: unchanged
+		// (byte-identical). The gate is the invoice-level IsTaxIncluded flag only — consistent with
+		// BT-131 (computeLineNetAmountsForBt131) and BT-106/BT-109, which also key on it.
+		// Note: BT-146 is a per-unit net, so BT-146 × BT-129 (qty) need NOT equal BT-131 (line net);
+		// EN16931 treats the unit price as informative and KoSIT enforces only the Σ BT-131 rules
+		// (BR-S-08 / BR-CO-10), not unit×qty = line total. Verified through the real KoSIT schematron.
 		final boolean lineIsTaxIncluded = invoice.isTaxIncluded();
 		final BigDecimal netUnitPrice;
 		if (lineIsTaxIncluded)
@@ -512,8 +524,8 @@ public class CiiMapper
 		}
 		settlement.setApplicableTradeTax(tradeTax);
 
-		// BT-131 Line net amount — reconciled to this tax's TaxBaseAmt (BT-116) on tax-included
-		// invoices (see computeLineNetAmountsForBt131); unchanged (LineNetAmt) otherwise.
+		// BT-131 Line net amount — on tax-included invoices this reuses the booked per-line net
+		// (LineNetAmt − TaxAmt); see computeLineNetAmountsForBt131. Unchanged (LineNetAmt) otherwise.
 		final TradeSettlementLineMonetarySummationType monetarySummation = new TradeSettlementLineMonetarySummationType();
 		final AmountType lineTotal = new AmountType();
 		lineTotal.setValue(lineNetAmountsForBt131.get(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID())));
@@ -1088,7 +1100,7 @@ public class CiiMapper
 		// Tax-included invoices: C_Invoice.TotalLines is the GROSS sum (see class-level investigation
 		// notes) — the tax-exclusive value is SUM(C_InvoiceTax.TaxBaseAmt), sourced directly from the
 		// already-fetched invoiceTaxes list (guaranteed consistent with BT-116 — same stored values —
-		// and with the per-line BT-131 reconciliation, since both are anchored on TaxBaseAmt).
+		// and with the per-line BT-131 nets, which reuse LineNetAmt − TaxAmt and sum to TaxBaseAmt).
 		// Tax-excluded invoices: unchanged — TotalLines exactly as before this fix.
 		final BigDecimal lineTotalNetAmt = invoice.isTaxIncluded()
 				? sumTaxBaseAmt(invoiceTaxes)
