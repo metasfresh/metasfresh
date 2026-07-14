@@ -1,6 +1,5 @@
 package de.metas.costrevaluation;
 
-import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,7 +49,8 @@ public class RevaluationSourceTest
 	public void ofCode_throws_for_unknown_code()
 	{
 		assertThatThrownBy(() -> RevaluationSource.ofCode("SomeUnknownCode"))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("No RevaluationSource found for code");
 	}
 
 	@Test

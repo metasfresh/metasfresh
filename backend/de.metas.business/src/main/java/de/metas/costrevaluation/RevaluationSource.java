@@ -1,5 +1,7 @@
 package de.metas.costrevaluation;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.AllArgsConstructor;
@@ -49,10 +51,14 @@ public enum RevaluationSource implements ReferenceListAwareEnum
 
 	private static final ReferenceListAwareEnums.ValuesIndex<RevaluationSource> index = ReferenceListAwareEnums.index(values());
 
+	@JsonCreator
 	public static RevaluationSource ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@Nullable
 	public static RevaluationSource ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
+
+	@JsonValue
+	public String toJson() {return code;}
 
 	@Nullable
 	public static String toCodeOrNull(@Nullable final RevaluationSource source) {return source != null ? source.getCode() : null;}
