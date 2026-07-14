@@ -2277,7 +2277,7 @@ public class CiiMapperTest
 		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
 		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
 		invoice.setIsTaxIncluded(true);
-		// BUG: TotalLines is SUM(LineNetAmt) raw = 100.00 (gross); correct tax-exclusive value is 84.03.
+		// On a tax-included invoice TotalLines is the gross sum (100.00); the tax-exclusive value is 84.03.
 		invoice.setTotalLines(new BigDecimal("100.00"));
 		invoice.setGrandTotal(new BigDecimal("100.00"));
 		saveRecord(invoice);
@@ -2337,23 +2337,19 @@ public class CiiMapperTest
 		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
 				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
 
-		// BT-146 Item net price MUST be tax-exclusive (84.03), NOT the gross PriceActual (100.00).
-		// Currently FAILS: mapper emits line.getPriceActual() raw = 100.00.
+		// BT-146 Item net price is the tax-exclusive net (84.03), not the gross PriceActual (100.00).
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
 				.isEqualTo("84.03");
 
-		// BT-131 Line net amount MUST equal the net (84.03), matching BT-116 (BR-S-08/BR-CO-10).
-		// Currently FAILS: mapper emits line.getLineNetAmt() raw = 100.00, mismatching BT-116=84.03.
+		// BT-131 Line net amount equals the net (84.03), matching BT-116 (BR-S-08/BR-CO-10).
 		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement"
 						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
 				.isEqualTo("84.03");
 
-		// BT-106 Sum of line net amounts MUST equal SUM(TaxBaseAmt) = 84.03, NOT invoice.TotalLines (100.00).
-		// Currently FAILS: mapper emits invoice.getTotalLines() raw = 100.00.
+		// BT-106 Sum of line net amounts equals SUM(TaxBaseAmt) = 84.03, not invoice.TotalLines (100.00).
 		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("84.03");
 
-		// BT-109 Tax basis total MUST equal 84.03 for the same reason.
-		// Currently FAILS: mapper emits invoice.getTotalLines() raw = 100.00.
+		// BT-109 Tax basis total equals 84.03 for the same reason.
 		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("84.03");
 	}
 
@@ -2524,8 +2520,7 @@ public class CiiMapperTest
 	 * {@code Tax.calculateBaseAmt} return {@code ZERO} regardless of the {@code taxIncluded} flag. If the
 	 * BT-146 gate keys on whole-tax (rather than on the invoice's {@code IsTaxIncluded} flag), a
 	 * tax-EXCLUDED invoice whose line uses a whole-tax {@code C_Tax} would emit BT-146 = 0.00 instead of
-	 * the raw {@code PriceActual} — a behavioural regression on the path the tax-included fix promised to
-	 * leave byte-identical. On the tax-excluded path BT-146 must be the raw {@code PriceActual}.
+	 * the raw {@code PriceActual}. On the tax-excluded path BT-146 must be the raw {@code PriceActual}.
 	 */
 	@Test
 	void tax_excluded_wholeTax_line_bt146_is_raw_priceActual_not_zero() throws Exception
@@ -2749,7 +2744,7 @@ public class CiiMapperTest
 				.build();
 
 		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
-				.isInstanceOf(org.adempiere.exceptions.AdempiereException.class)
+				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
 				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
 	}

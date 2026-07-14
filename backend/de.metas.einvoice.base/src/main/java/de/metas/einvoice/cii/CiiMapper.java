@@ -284,8 +284,8 @@ public class CiiMapper
 	/**
 	 * Computes the BT-131 (line net amount) value to emit for every invoice line.
 	 *
-	 * <p><b>Tax-EXCLUDED invoices</b>: unchanged — the map holds {@code LineNetAmt} as-is, exactly
-	 * as before this fix (byte-identical behaviour).
+	 * <p><b>Tax-EXCLUDED invoices</b>: the map holds {@code LineNetAmt} as-is — the tax-exclusive
+	 * net is already the line amount.
 	 *
 	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount (see
 	 * class-level investigation notes), so the tax-exclusive net must be derived. A naive per-line
@@ -443,12 +443,12 @@ public class CiiMapper
 
 		// BT-146 Item net price (NetPriceProductTradePrice.ChargeAmount).
 		// Tax-included invoices: PriceActual is GROSS (see class-level investigation notes) — convert
-		// to the tax-exclusive net unit price. Tax-excluded invoices: unchanged (byte-identical).
+		// to the tax-exclusive net unit price. Tax-excluded invoices: PriceActual is already net.
 		// The gate is the invoice-level IsTaxIncluded flag only — consistent with the BT-131
 		// reconciliation (computeLineNetAmountsForBt131) and BT-106/BT-109, which also key on it.
-		final boolean lineIsTaxIncluded = invoice.isTaxIncluded();
+		final boolean taxIncluded = invoice.isTaxIncluded();
 		final BigDecimal netUnitPrice;
-		if (lineIsTaxIncluded)
+		if (taxIncluded)
 		{
 			final Tax taxForLine = taxBL.getTaxById(TaxId.ofRepoId(line.getC_Tax_ID()));
 			final CurrencyPrecision pricePrecision = resolveAmountPrecision(invoice);
@@ -1089,7 +1089,7 @@ public class CiiMapper
 		// notes) — the tax-exclusive value is SUM(C_InvoiceTax.TaxBaseAmt), sourced directly from the
 		// already-fetched invoiceTaxes list (guaranteed consistent with BT-116 — same stored values —
 		// and with the per-line BT-131 reconciliation, since both are anchored on TaxBaseAmt).
-		// Tax-excluded invoices: unchanged — TotalLines exactly as before this fix.
+		// Tax-excluded invoices: TotalLines is already the net sum of line amounts.
 		final BigDecimal lineTotalNetAmt = invoice.isTaxIncluded()
 				? sumTaxBaseAmt(invoiceTaxes)
 				: invoice.getTotalLines();
