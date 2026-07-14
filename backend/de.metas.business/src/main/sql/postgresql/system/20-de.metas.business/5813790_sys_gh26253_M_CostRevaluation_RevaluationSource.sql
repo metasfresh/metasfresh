@@ -18,7 +18,7 @@
 -------------------------------------------------------------------
 
 INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ValidationType, Name, EntityType, IsOrderByValue)
-VALUES (0, 0, 542117, 'Y', TO_TIMESTAMP('2026-07-14 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'M_CostRevaluation RevaluationSource', 'D', 'N')
+VALUES (0, 0, 542117 /*From ID Server*/, 'Y', TO_TIMESTAMP('2026-07-14 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:00','YYYY-MM-DD HH24:MI:SS'), 100, 'L', 'M_CostRevaluation RevaluationSource', 'D', 'N')
 ;
 
 INSERT INTO AD_Reference_Trl (AD_Language, AD_Reference_ID, Help, Name, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
@@ -30,12 +30,12 @@ WHERE l.IsActive='Y' AND l.IsSystemLanguage='Y' AND t.AD_Reference_ID=542117
 
 -- AD_Ref_List: Calculated (default = existing behaviour)
 INSERT INTO AD_Ref_List (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Name, Description, Updated, UpdatedBy, AD_Ref_List_ID, ValueName, Value, EntityType)
-VALUES (542117, 0, 0, 'Y', TO_TIMESTAMP('2026-07-14 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100, 'Berechnet', 'Die Kosten werden für diese Neubewertung neu berechnet (Standardverhalten).', TO_TIMESTAMP('2026-07-14 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100, 544317, 'Calculated', 'Calculated', 'D')
+VALUES (542117, 0, 0, 'Y', TO_TIMESTAMP('2026-07-14 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100, 'Berechnet', 'Die Kosten werden für diese Neubewertung neu berechnet (Standardverhalten).', TO_TIMESTAMP('2026-07-14 14:00:01','YYYY-MM-DD HH24:MI:SS'), 100, 544317 /*From ID Server*/, 'Calculated', 'Calculated', 'D')
 ;
 
 -- AD_Ref_List: CopyFromCostElement (value-neutral copy from another cost element)
 INSERT INTO AD_Ref_List (AD_Reference_ID, AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, Name, Description, Updated, UpdatedBy, AD_Ref_List_ID, ValueName, Value, EntityType)
-VALUES (542117, 0, 0, 'Y', TO_TIMESTAMP('2026-07-14 14:00:02','YYYY-MM-DD HH24:MI:SS'), 100, 'Übernahme aus Kostenart', 'Die Kosten werden unverändert von der unter "Quell-Kostenart" gewählten Kostenart übernommen.', TO_TIMESTAMP('2026-07-14 14:00:02','YYYY-MM-DD HH24:MI:SS'), 100, 544318, 'CopyFromCostElement', 'CopyFromCostElement', 'D')
+VALUES (542117, 0, 0, 'Y', TO_TIMESTAMP('2026-07-14 14:00:02','YYYY-MM-DD HH24:MI:SS'), 100, 'Übernahme aus Kostenart', 'Die Kosten werden unverändert von der unter "Quell-Kostenart" gewählten Kostenart übernommen.', TO_TIMESTAMP('2026-07-14 14:00:02','YYYY-MM-DD HH24:MI:SS'), 100, 544318 /*From ID Server*/, 'CopyFromCostElement', 'CopyFromCostElement', 'D')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language, AD_Ref_List_ID, Name, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
@@ -60,7 +60,7 @@ WHERE AD_Language='en_US' AND AD_Ref_List_ID=544318
 -------------------------------------------------------------------
 
 INSERT INTO AD_Element (AD_Client_ID, AD_Org_ID, AD_Element_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ColumnName, Name, PrintName, Description, Help, EntityType)
-VALUES (0, 0, 585099, 'Y', TO_TIMESTAMP('2026-07-14 14:00:05','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:05','YYYY-MM-DD HH24:MI:SS'), 100,
+VALUES (0, 0, 585099 /*From ID Server*/, 'Y', TO_TIMESTAMP('2026-07-14 14:00:05','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:05','YYYY-MM-DD HH24:MI:SS'), 100,
   'RevaluationSource', 'Neubewertungsquelle', 'Neubewertungsquelle', 'Legt fest, wie die Kosten dieser Neubewertung ermittelt werden.',
   'Wählen Sie, ob die Kosten neu berechnet oder unverändert von einer anderen Kostenart übernommen werden.', 'D')
 ;
@@ -110,7 +110,7 @@ ALTER TABLE M_CostRevaluation ADD CONSTRAINT RevaluationSource_Check CHECK (Reva
 -------------------------------------------------------------------
 
 INSERT INTO AD_Reference (AD_Client_ID, AD_Org_ID, AD_Reference_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ValidationType, Name, EntityType, IsOrderByValue)
-VALUES (0, 0, 542118, 'Y', TO_TIMESTAMP('2026-07-14 14:00:09','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:09','YYYY-MM-DD HH24:MI:SS'), 100, 'T', 'M_CostElement (Trx)', 'D', 'N')
+VALUES (0, 0, 542118 /*From ID Server*/, 'Y', TO_TIMESTAMP('2026-07-14 14:00:09','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:09','YYYY-MM-DD HH24:MI:SS'), 100, 'T', 'M_CostElement (Trx)', 'D', 'N')
 ;
 
 INSERT INTO AD_Reference_Trl (AD_Language, AD_Reference_ID, Help, Name, Description, IsTranslated, AD_Client_ID, AD_Org_ID, Created, Createdby, Updated, UpdatedBy)
@@ -129,7 +129,7 @@ VALUES (542118, 0, 0, 'Y', TO_TIMESTAMP('2026-07-14 14:00:10','YYYY-MM-DD HH24:M
 -------------------------------------------------------------------
 
 INSERT INTO AD_Element (AD_Client_ID, AD_Org_ID, AD_Element_ID, IsActive, Created, CreatedBy, Updated, UpdatedBy, ColumnName, Name, PrintName, Description, Help, EntityType)
-VALUES (0, 0, 585100, 'Y', TO_TIMESTAMP('2026-07-14 14:00:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:11','YYYY-MM-DD HH24:MI:SS'), 100,
+VALUES (0, 0, 585100 /*From ID Server*/, 'Y', TO_TIMESTAMP('2026-07-14 14:00:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:00:11','YYYY-MM-DD HH24:MI:SS'), 100,
   'CopyFrom_M_CostElement_ID', 'Quell-Kostenart', 'Quell-Kostenart', 'Kostenart, aus der die Kosten wertneutral übernommen werden.',
   'Nur relevant, wenn als Neubewertungsquelle "Übernahme aus Kostenart" gewählt wurde: Kostenart, deren Kosten unverändert übernommen werden sollen.', 'D')
 ;
@@ -154,7 +154,7 @@ WHERE AD_Language IN ('de_DE','de_CH') AND AD_Element_ID=585100
 -- CopyFrom_M_CostElement_ID is a Table-reference FK (AD_Reference_ID=19), nullable → IsMandatory='N'.
 -- DDL_NoForeignKey='Y': the FK constraint is created explicitly below, so AD sync must not add a duplicate.
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, AD_Element_ID, AD_Table_ID, AD_Reference_ID, AD_Reference_Value_ID, ColumnName, Name, Description, FieldLength, IsMandatory, IsUpdateable, IsSyncDatabase, DDL_NoForeignKey, EntityType, PersonalDataCategory, Version, Created, CreatedBy, Updated, UpdatedBy)
-VALUES (592962 /*From ID Server*/, 0, 0, 585100, 542190, 19, 542118, 'CopyFrom_M_CostElement_ID', 'Quell-Kostenart', 'Kostenart, aus der die Kosten wertneutral übernommen werden.', 10, 'N', 'Y', 'Y', 'Y', 'D', 'NP', 0, TO_TIMESTAMP('2026-07-14 14:01:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:01:10','YYYY-MM-DD HH24:MI:SS'), 100)
+VALUES (592962 /*From ID Server*/, 0, 0, 585100, 542190, 18, 542118, 'CopyFrom_M_CostElement_ID', 'Quell-Kostenart', 'Kostenart, aus der die Kosten wertneutral übernommen werden.', 10, 'N', 'Y', 'Y', 'Y', 'D', 'NP', 0, TO_TIMESTAMP('2026-07-14 14:01:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-14 14:01:10','YYYY-MM-DD HH24:MI:SS'), 100)
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -180,7 +180,7 @@ ALTER TABLE M_CostRevaluation ADD CONSTRAINT CopyFromMCostElement_MCostRevaluati
 -------------------------------------------------------------------
 
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy)
-VALUES (0,592961,781420,0,546464,0,TO_TIMESTAMP('2026-07-14 14:00:15','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, wie die Kosten dieser Neubewertung ermittelt werden.',0,NULL,'D',0,'Y','Y','Y','N','N','N','N','N','Neubewertungsquelle',0,60,0,1,1,TO_TIMESTAMP('2026-07-14 14:00:15','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,592961,781420 /*From ID Server*/,0,546464,0,TO_TIMESTAMP('2026-07-14 14:00:15','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, wie die Kosten dieser Neubewertung ermittelt werden.',0,NULL,'D',0,'Y','Y','Y','N','N','N','N','N','Neubewertungsquelle',0,60,0,1,1,TO_TIMESTAMP('2026-07-14 14:00:15','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -200,12 +200,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781420
 ;
 
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,781420,0,546464,549560,652536,'F',TO_TIMESTAMP('2026-07-14 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, wie die Kosten dieser Neubewertung ermittelt werden.','Y','N','N','Y','Y','N','N',0,'Neubewertungsquelle',16,60,0,TO_TIMESTAMP('2026-07-14 14:00:16','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,781420,0,546464,549560,652536 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-14 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, wie die Kosten dieser Neubewertung ermittelt werden.','Y','N','N','Y','Y','N','N',0,'Neubewertungsquelle',16,60,0,TO_TIMESTAMP('2026-07-14 14:00:16','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- CopyFrom_M_CostElement_ID field: only shown when RevaluationSource='CopyFromCostElement'
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy)
-VALUES (0,592962,781421,0,546464,0,TO_TIMESTAMP('2026-07-14 14:00:17','YYYY-MM-DD HH24:MI:SS'),100,'Kostenart, aus der die Kosten wertneutral übernommen werden.',0,'@RevaluationSource@=CopyFromCostElement','D',0,'Y','Y','N','N','N','N','N','N','Quell-Kostenart',0,0,0,1,1,TO_TIMESTAMP('2026-07-14 14:00:17','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,592962,781421 /*From ID Server*/,0,546464,0,TO_TIMESTAMP('2026-07-14 14:00:17','YYYY-MM-DD HH24:MI:SS'),100,'Kostenart, aus der die Kosten wertneutral übernommen werden.',0,'@RevaluationSource@=CopyFromCostElement','D',0,'Y','Y','N','N','N','N','N','N','Quell-Kostenart',0,0,0,1,1,TO_TIMESTAMP('2026-07-14 14:00:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -225,5 +225,5 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781421
 ;
 
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,781421,0,546464,549560,652537,'F',TO_TIMESTAMP('2026-07-14 14:00:18','YYYY-MM-DD HH24:MI:SS'),100,'Kostenart, aus der die Kosten wertneutral übernommen werden.','Y','N','N','Y','N','N','N',0,'Quell-Kostenart',17,0,0,TO_TIMESTAMP('2026-07-14 14:00:18','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,781421,0,546464,549560,652537 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-14 14:00:18','YYYY-MM-DD HH24:MI:SS'),100,'Kostenart, aus der die Kosten wertneutral übernommen werden.','Y','N','N','Y','N','N','N',0,'Quell-Kostenart',17,0,0,TO_TIMESTAMP('2026-07-14 14:00:18','YYYY-MM-DD HH24:MI:SS'),100)
 ;
