@@ -307,14 +307,14 @@ public class CostRevaluationService
 			throw new AdempiereException("CopyFrom_M_CostElement_ID is not set for " + costRevaluation.getCostRevaluationId());
 		}
 
-		final CostSegmentAndElement targetSegAndElem = line.getCostSegmentAndElement();
-		final CostSegment targetSegment = targetSegAndElem.toCostSegment();
-		final CostSegmentAndElement sourceSegAndElem = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
+		final CostSegmentAndElement targetSegmentAndElement = line.getCostSegmentAndElement();
+		final CostSegment targetSegment = targetSegmentAndElement.toCostSegment();
+		final CostSegmentAndElement sourceSegmentAndElement = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
-		final CurrentCost sourceCurrentCost = costingService.getCurrentCostOrNull(sourceSegAndElem);
+		final CurrentCost sourceCurrentCost = costingService.getCurrentCostOrNull(sourceSegmentAndElement);
 		if (sourceCurrentCost == null)
 		{
-			throw new AdempiereException("No current cost found for source cost element " + sourceSegAndElem);
+			throw new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement);
 		}
 
 		// Value-neutral seed: snapshot own price + LL + qty together from a SINGLE fresh read of the source's M_Cost
@@ -334,7 +334,7 @@ public class CostRevaluationService
 				.build();
 
 		costingService.seedCurrentCostFromOpening(
-				targetSegAndElem,
+				targetSegmentAndElement,
 				opening,
 				costRevaluation.getEvaluationStartDate(),
 				line.getId());

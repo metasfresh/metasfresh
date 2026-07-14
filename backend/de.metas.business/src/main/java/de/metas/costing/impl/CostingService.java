@@ -572,20 +572,20 @@ public class CostingService implements ICostingService
 	 * first in-range cost detail's {@code Prev_*}) reproduces exactly this state when there are no later transactions.
 	 */
 	public void seedCurrentCostFromOpening(
-			@NonNull final CostSegmentAndElement targetSegAndElem,
+			@NonNull final CostSegmentAndElement targetSegmentAndElement,
 			@NonNull final CostDetailPreviousAmounts opening,
 			@NonNull final Instant anchorDate,
 			@NonNull final CostRevaluationLineId lineId)
 	{
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(targetSegAndElem);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(targetSegmentAndElement);
 		currentCost.setFrom(opening);
 		currentCostsRepo.save(currentCost);
 
-		final CostElement targetCostElement = getCostElementById(targetSegAndElem.getCostElementId());
+		final CostElement targetCostElement = getCostElementById(targetSegmentAndElement.getCostElementId());
 
 		utils.createCostDetailRecordWithChangedCosts(
 				CostDetailCreateRequest.builder()
-						.costSegment(targetSegAndElem.toCostSegment())
+						.costSegment(targetSegmentAndElement.toCostSegment())
 						.costElement(targetCostElement)
 						.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
 						.qty(opening.getQty().toZero())

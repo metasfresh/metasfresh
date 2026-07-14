@@ -1,11 +1,10 @@
 package de.metas.costrevaluation;
 
-import com.google.common.collect.ImmutableMap;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_M_CostRevaluation;
 
 import javax.annotation.Nullable;
@@ -36,50 +35,29 @@ import java.util.Objects;
 /**
  * NOTE to developers: Please keep in sync with list reference "M_CostRevaluation RevaluationSource" {@code AD_Reference_ID=542117}
  */
+@AllArgsConstructor
 public enum RevaluationSource implements ReferenceListAwareEnum
 {
 	/** Cost is recalculated for this revaluation (default, existing behaviour). */
-	Calculated(X_M_CostRevaluation.REVALUATIONSOURCE_Calculated), //
+	Calculated(X_M_CostRevaluation.REVALUATIONSOURCE_Calculated),
 	/** Cost is copied unchanged from the cost element selected under CopyFrom_M_CostElement_ID (value-neutral). */
-	CopyFromCostElement(X_M_CostRevaluation.REVALUATIONSOURCE_CopyFromCostElement) //
+	CopyFromCostElement(X_M_CostRevaluation.REVALUATIONSOURCE_CopyFromCostElement),
 	;
 
 	@Getter
-	private final String code;
+	@NonNull private final String code;
 
-	RevaluationSource(final String code)
-	{
-		this.code = code;
-	}
+	private static final ReferenceListAwareEnums.ValuesIndex<RevaluationSource> index = ReferenceListAwareEnums.index(values());
 
-	public static RevaluationSource ofCode(@NonNull final String code)
-	{
-		final RevaluationSource source = typesByCode.get(code);
-		if (source == null)
-		{
-			throw new AdempiereException("No " + RevaluationSource.class + " found for code: " + code);
-		}
-		return source;
-	}
+	public static RevaluationSource ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	@Nullable
-	public static RevaluationSource ofNullableCode(@Nullable final String code)
-	{
-		return code != null ? ofCode(code) : null;
-	}
+	public static RevaluationSource ofNullableCode(@Nullable final String code) {return index.ofNullableCode(code);}
 
 	@Nullable
-	public static String toCodeOrNull(@Nullable final RevaluationSource source)
-	{
-		return source != null ? source.getCode() : null;
-	}
+	public static String toCodeOrNull(@Nullable final RevaluationSource source) {return source != null ? source.getCode() : null;}
 
-	private static final ImmutableMap<String, RevaluationSource> typesByCode = ReferenceListAwareEnums.indexByCode(values());
-
-	public static boolean equals(@Nullable final RevaluationSource o1, @Nullable final RevaluationSource o2)
-	{
-		return Objects.equals(o1, o2);
-	}
+	public static boolean equals(@Nullable final RevaluationSource o1, @Nullable final RevaluationSource o2) {return Objects.equals(o1, o2);}
 
 	public boolean isCopyFromCostElement() {return this == CopyFromCostElement;}
 }
