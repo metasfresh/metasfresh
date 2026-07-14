@@ -5,10 +5,14 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.TaxCorrectionType;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
+import de.metas.costing.CostElement;
 import de.metas.costing.CostElementId;
 import de.metas.costing.CostElementType;
+import de.metas.costing.CostSegmentAndElement;
+import de.metas.costing.CostTypeId;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
+import de.metas.costing.CurrentCost;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -20,6 +24,7 @@ import de.metas.costrevaluation.CostRevaluationRepository;
 import de.metas.costrevaluation.CostRevaluationService;
 import de.metas.costrevaluation.RevaluationSource;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
@@ -46,9 +51,11 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -90,7 +97,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class M_CostRevaluationTest
 {
 	private static final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
-	private static final de.metas.costing.CostTypeId costTypeId = de.metas.costing.CostTypeId.ofRepoId(1);
+	private static final CostTypeId costTypeId = CostTypeId.ofRepoId(1);
 
 	private CostElementRepository costElementRepo;
 	private CurrentCostsRepository currentCostsRepo;
@@ -219,7 +226,7 @@ class M_CostRevaluationTest
 			@NonNull final String componentsCostPrice,
 			@NonNull final String qty)
 	{
-		final de.metas.costing.CostSegmentAndElement costSegmentAndElement = de.metas.costing.CostSegmentAndElement.builder()
+		final CostSegmentAndElement costSegmentAndElement = CostSegmentAndElement.builder()
 				.costingLevel(CostingLevel.Client)
 				.acctSchemaId(acctSchemaId)
 				.costTypeId(costTypeId)
@@ -230,17 +237,17 @@ class M_CostRevaluationTest
 				.costElementId(sourceCostElementId)
 				.build();
 
-		final de.metas.costing.CostElement sourceCostElement = costElementRepo.getById(sourceCostElementId);
+		final CostElement sourceCostElement = costElementRepo.getById(sourceCostElementId);
 
-		final de.metas.costing.CurrentCost currentCost = de.metas.costing.CurrentCost.builder()
+		final CurrentCost currentCost = CurrentCost.builder()
 				.costSegment(costSegmentAndElement.toCostSegment())
 				.costElement(sourceCostElement)
 				.currencyId(euroCurrencyId)
-				.precision(de.metas.currency.CurrencyPrecision.ofInt(2))
+				.precision(CurrencyPrecision.ofInt(2))
 				.uom(eachUOM)
-				.ownCostPrice(new java.math.BigDecimal(ownCostPrice))
-				.componentsCostPrice(new java.math.BigDecimal(componentsCostPrice))
-				.currentQty(new java.math.BigDecimal(qty))
+				.ownCostPrice(new BigDecimal(ownCostPrice))
+				.componentsCostPrice(new BigDecimal(componentsCostPrice))
+				.currentQty(new BigDecimal(qty))
 				.build();
 
 		currentCostsRepo.save(currentCost);
@@ -272,45 +279,49 @@ class M_CostRevaluationTest
 		return costRevaluationId;
 	}
 
-	@Test
-	void beforeChange_throws_whenCopyFromCostElementIdChanged_andActiveLinesExist()
+	@Nested
+	class BeforeChange
 	{
-		final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
-		assertThatCode(() -> {
-			if (!costRevaluationService.hasActiveLines(costRevaluationId))
-			{
-				throw new IllegalStateException("Expected active lines for " + costRevaluationId);
-			}
-		}).doesNotThrowAnyException();
+		@Test
+		void throws_whenCopyFromCostElementIdChanged_andActiveLinesExist()
+		{
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
+			assertThatCode(() -> {
+				if (!costRevaluationService.hasActiveLines(costRevaluationId))
+				{
+					throw new IllegalStateException("Expected active lines for " + costRevaluationId);
+				}
+			}).doesNotThrowAnyException();
 
-		final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
-		record.setCopyFrom_M_CostElement_ID(targetCostElementId.getRepoId());
+			final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+			record.setCopyFrom_M_CostElement_ID(targetCostElementId.getRepoId());
 
-		assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
-				.isInstanceOf(AdempiereException.class);
-	}
+			assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
+					.isInstanceOf(AdempiereException.class);
+		}
 
-	@Test
-	void beforeChange_throws_whenRevaluationSourceChanged_andActiveLinesExist()
-	{
-		final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
+		@Test
+		void throws_whenRevaluationSourceChanged_andActiveLinesExist()
+		{
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
 
-		final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
-		record.setRevaluationSource(RevaluationSource.Calculated.getCode());
+			final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+			record.setRevaluationSource(RevaluationSource.Calculated.getCode());
 
-		assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
-				.isInstanceOf(AdempiereException.class);
-	}
+			assertThatThrownBy(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
+					.isInstanceOf(AdempiereException.class);
+		}
 
-	@Test
-	void beforeChange_doesNotThrow_whenNonGuardedColumnChanged_andActiveLinesExist()
-	{
-		final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
+		@Test
+		void doesNotThrow_whenNonGuardedColumnChanged_andActiveLinesExist()
+		{
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithActiveLines();
 
-		final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
-		record.setDocumentNo("changed-document-no");
+			final I_M_CostRevaluation record = InterfaceWrapperHelper.load(costRevaluationId.getRepoId(), I_M_CostRevaluation.class);
+			record.setDocumentNo("changed-document-no");
 
-		assertThatCode(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
-				.doesNotThrowAnyException();
+			assertThatCode(() -> interceptor.beforeChange(record, ModelChangeType.BEFORE_CHANGE))
+					.doesNotThrowAnyException();
+		}
 	}
 }

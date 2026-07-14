@@ -288,7 +288,7 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * {@code RevaluationSource.CopyFromCostElement} complete-time path (concept §2-4): instead of the {@code Calculated}
+	 * {@code RevaluationSource.CopyFromCostElement} complete-time path: instead of the {@code Calculated}
 	 * history-replay ({@link CostingService#revaluateCosts}), directly set the TARGET element's {@code M_Cost} to the
 	 * SOURCE element's opening amounts and write ONE opening-anchor {@code M_CostDetail}.
 	 * <p>

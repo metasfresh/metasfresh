@@ -137,9 +137,9 @@ public class CostRevaluationRepository
 	 * copied unchanged from the source, but the line's {@code M_CostElement_ID} set to the document's own (target) element.
 	 * <p>
 	 * Lower-level (component/LL) cost is intentionally NOT persisted here: {@code M_CostRevaluationLine} has no LL column
-	 * (mirroring the existing {@code Calculated} path, which also doesn't carry LL at line level). Task 5 (complete-time
-	 * direct-set) re-reads the source element's {@code CurrentCost} fresh via {@code CopyFrom_M_CostElement_ID} to seed
-	 * the target {@code M_Cost.CurrentCostPriceLL}.
+	 * (mirroring the existing {@code Calculated} path, which also doesn't carry LL at line level). The complete-time
+	 * direct-set path re-reads the source element's {@code CurrentCost} fresh via {@code CopyFrom_M_CostElement_ID} to seed
+	 * the target {@code M_Cost.CurrentCostPriceLL} (see {@link CostRevaluationService}).
 	 */
 	public void createLinesForCopyFromCostElement(
 			@NonNull final CostRevaluationId costRevaluationId,
