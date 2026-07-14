@@ -64,16 +64,19 @@ public class EpcisEventsJsonDAO
 	{
 		final String sql = "SELECT \"de.metas.edi\".get_epcis_events_json_fn(?)::text";
 		final String json = DB.getSQLValueStringEx(ITrx.TRXNAME_None, sql, inOutId.getRepoId());
-		return extractPalletSscc18s(json);
+		return extractPalletSscc18s(json, inOutId);
 	}
 
 	/**
 	 * Extracts {@code pallets[].sscc} from an EPCIS events JSON string. Handles both the raw function
 	 * output ({@code {"pallets":[...]}}) and the attached/sent envelope
 	 * ({@code {"embedded_json":{"pallets":[...]}}}). Empty when there are no pallets.
+	 *
+	 * @param inOutId the shipment the JSON belongs to — used only to give a parse-failure a
+	 *                diagnosable message; never queried.
 	 */
 	@NonNull
-	public ImmutableList<String> extractPalletSscc18s(@NonNull final String json)
+	public ImmutableList<String> extractPalletSscc18s(@NonNull final String json, @NonNull final InOutId inOutId)
 	{
 		if (Check.isBlank(json))
 		{
@@ -87,7 +90,7 @@ public class EpcisEventsJsonDAO
 		}
 		catch (final Exception e)
 		{
-			throw new AdempiereException("Failed to parse EPCIS events JSON", e);
+			throw new AdempiereException("Failed to parse EPCIS events JSON for M_InOut_ID=" + inOutId.getRepoId(), e);
 		}
 
 		// the sent/attached payload wraps the function output as {"embedded_json": {...}}; unwrap if present

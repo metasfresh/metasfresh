@@ -158,7 +158,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		if (sentPayload.isPresent())
 		{
 			final String json = new String(attachmentEntryService.retrieveData(sentPayload.get().getId()), StandardCharsets.UTF_8);
-			return epcisEventsJsonDAO.extractPalletSscc18s(json);
+			return epcisEventsJsonDAO.extractPalletSscc18s(json, inOutId);
 		}
 
 		loggable.addLog("EPCIS ledger: no {} attachment on M_InOut_ID={} - recomputing the EPCIS events JSON via the export function",
