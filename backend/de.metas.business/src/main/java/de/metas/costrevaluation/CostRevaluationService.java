@@ -68,9 +68,18 @@ public class CostRevaluationService
 		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
 		{
 			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
-			return;
 		}
+		else
+		{
+			createLinesFromCalculated(costRevaluationId, costRevaluation);
+		}
+	}
 
+	/** {@code Calculated}: seeds lines from the document's own (target) cost element's current costs. */
+	private void createLinesFromCalculated(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CostRevaluation costRevaluation)
+	{
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
 		final ImmutableSet<ProductId> productIds = retrieveStockedProductIdsOrThrow(clientId);
@@ -182,9 +191,16 @@ public class CostRevaluationService
 		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
 		{
 			createDetailsForCopyFromCostElement(costRevaluation, line);
-			return;
 		}
+		else
+		{
+			createDetailsForCalculated(costRevaluation, line);
+		}
+	}
 
+	/** {@code Calculated}: history-replay revaluation writing the before / adjustment / after cost details. */
+	private void createDetailsForCalculated(@NonNull final CostRevaluation costRevaluation, @NonNull final CostRevaluationLine line)
+	{
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
