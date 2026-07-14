@@ -1083,3 +1083,147 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     Then the EPCIS transmission ledger contains exactly:
       | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    |
       | 987654321000031300 | scriptedCfg_S30916_130                            | io_S30916_130 |
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @ghActions:run_on_executor7
+  @Id:S30916_140
+  Scenario: S30916_140 — an IN-FLIGHT (Enqueued, unconfirmed) EPCIS export blocks reverse; deactivating the status row releases it
+  ## Closes the async race the ledger alone leaves open (Q2, second path). The transmission ledger
+  ## row is written only on the /ok success callback, so between dispatch-to-receiver and that
+  ## callback the export is in-flight (status Enqueued/SendingStarted) with NO ledger row yet — but
+  ## the SSCC may already be at the receiver. Reversing/reactivating in that window and re-completing
+  ## would re-transmit the same physical SSCC. The guard must therefore reject reverse/reactivate/void
+  ## while an EPCIS export is in-flight, not only after it is confirmed-and-ledgered.
+  ##
+  ## This scenario drives a standalone shipment to Enqueued (it does NOT post the /ok callback, so no
+  ## ledger row exists), then: (1) reverse is rejected purely on the in-flight status; (2) after the
+  ## stuck in-flight status row is deactivated (the WebUI escape-hatch, for the degenerate case where
+  ## the external system never calls back), reverse succeeds.
+
+    And the EPCIS transmission ledger is empty
+
+    And metasfresh contains M_Products:
+      | Identifier   | GTIN          |
+      | p_S30916_140 | 4060000001400 |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S30916_140 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S30916_140 | ps_S30916_140      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S30916_140 | pl_S30916_140  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30916_140         | p_S30916_140 | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S30916_140 | Y          | ps_S30916_140      | 9900000314000 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S30916_140 | true                 | 9900000314000         | edi_setting_S30916_140_bp |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID |
+      | bp_S30916_140 | p_S30916_140 |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | pi_LU_S30916_140  |
+      | pi_TU_S30916_140  |
+      | pi_VHU_S30916_140 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent |
+      | piv_LU_S30916_140  | pi_LU_S30916_140  | LU          | Y         |
+      | piv_TU_S30916_140  | pi_TU_S30916_140  | TU          | Y         |
+      | piv_VHU_S30916_140 | pi_VHU_S30916_140 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_S30916_140 | piv_LU_S30916_140  | 20  | HU       | pi_TU_S30916_140  |
+      | pii_TU_S30916_140 | piv_TU_S30916_140  | 0   | MI       |                   |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | piv_LU_S30916_140  | SSCC18            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID | Qty | ValidFrom  |
+      | pip_S30916_140          | pii_TU_S30916_140 | p_S30916_140 | 10  | 2020-01-01 |
+
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName | WhereClause                                  |
+      | esConfig_S30916_140      | scriptedCfg_S30916_140                            | M_InOut_EPCIS_Export_JSON        | M_InOut   | "de.metas.edi".epcis_has_events(m_inout_id) |
+
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S30916_140 | true    | bp_S30916_140 | 2026-06-10  | 1300000014  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID   | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S30916_140 | o_S30916_140 | p_S30916_140 | 10         | pip_S30916_140          |
+
+    When the order identified by o_S30916_140 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S30916_140 | ol_S30916_140  | N             |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_S30916_140            | 2026-06-10   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S30916_140            | invLine_S30916_140            | p_S30916_140            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S30916_140'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLine_S30916_140            | cu_S30916_140      |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cu_S30916_140       | 10    | pip_S30916_140                     | tu_S30916_140                 |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tu_S30916_140       | 1     | pii_LU_S30916_140          | lu_S30916_140             |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID       | M_Attribute_ID.Value | Value              |
+      | lu_S30916_140 | SSCC18               | 987654321000031400 |
+
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tu_S30916_140      | ss_S30916_140                    | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tu_S30916_140      | ss_S30916_140                    |
+
+    When 'generate shipments' process is invoked with QuantityType=PD, IsCompleteShipments=false and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S30916_140         |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S30916_140         | io_S30916_140 |
+
+    And the shipment identified by io_S30916_140 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # ─── In-flight: the export is Enqueued but NOT confirmed. No /ok is posted, so there is NO ledger
+    # row — the shipment is blockable only via the in-flight status, which is exactly what this proves.
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_S30916_140 | scriptedCfg_S30916_140                            | U            |
+
+    # Guard rejects reverse while the export is in-flight (SSCC may already be at the receiver).
+    And the shipment identified by io_S30916_140 is reversed expecting error
+      | AD_Message_ID |
+      |               |
+
+    # ─── Escape-hatch: deactivating the stuck in-flight status row releases the shipment ──────────
+    When the EPCIS scripted-export status row for shipment io_S30916_140 is deactivated
+
+    And the shipment identified by io_S30916_140 is reversed

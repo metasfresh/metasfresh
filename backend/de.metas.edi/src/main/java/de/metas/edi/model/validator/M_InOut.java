@@ -6,7 +6,7 @@ import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.impl.EDIDesadvInOutRepository;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.api.impl.DesadvBL;
-import de.metas.edi.api.impl.EpcisTransmittedSsccRepository;
+import de.metas.edi.api.impl.EpcisReverseGuardService;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.inout.InOutId;
@@ -28,7 +28,7 @@ public class M_InOut
 	@NonNull private final EDIDocumentBL ediDocumentBL;
 	@NonNull private final DesadvBL desadvBL;
 	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
-	@NonNull private final EpcisTransmittedSsccRepository epcisTransmittedSsccRepository;
+	@NonNull private final EpcisReverseGuardService epcisReverseGuardService;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_Order_ID, I_M_InOut.COLUMNNAME_POReference })
@@ -90,12 +90,16 @@ public class M_InOut
 	}
 
 	/**
-	 * Forbids reversing/reactivating/voiding a shipment whose EPCIS SSCC events were already
-	 * transmitted to the receiver: recreating the document (reverse-and-recreate) would re-run
-	 * shipment completion and transmit the same physical SSCCs again, duplicating the events at the
-	 * receiver. Deactivating the shipment's {@code EDI_EPCIS_Transmitted_SSCC} ledger rows (the WebUI
-	 * shipment-tab feature) is the sanctioned way to unblock the action, consistent with it also
-	 * unblocking re-sending the SSCC.
+	 * Forbids reversing/reactivating/voiding a shipment whose EPCIS SSCC events are already at — or
+	 * may already be at — the receiver: either a confirmed transmission (an active
+	 * {@code EDI_EPCIS_Transmitted_SSCC} ledger row) OR an in-flight export (a scripted-export status
+	 * row still {@code Enqueued}/{@code SendingStarted}). The in-flight case matters because the ledger
+	 * row is written only on the asynchronous success callback, so recreating the document
+	 * (reverse-and-recreate) in the dispatch→callback window would re-run shipment completion and
+	 * transmit the same physical SSCCs again, duplicating the events at the receiver. Deactivating the
+	 * blocking row on the shipment's EPCIS tabs (the transmitted-SSCC ledger row, or a stuck in-flight
+	 * status row) is the sanctioned way to unblock the action, consistent with it also unblocking
+	 * re-sending the SSCC.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
@@ -104,14 +108,15 @@ public class M_InOut
 	public void forbidReverseWhenEpcisTransmitted(final I_M_InOut inOut)
 	{
 		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
-		if (!epcisTransmittedSsccRepository.hasActiveTransmittedForInOut(inOutId))
+		if (!epcisReverseGuardService.isEpcisTransmittedOrInFlight(inOutId))
 		{
 			return;
 		}
 
-		throw new AdempiereException("This shipment's EPCIS SSCC events were already transmitted to the receiver;"
-				+ " reversing, reactivating or voiding it would duplicate those events at the receiver."
-				+ " Deactivate the transmitted-SSCC ledger rows on the shipment's EPCIS tab first if this is intentional.")
+		throw new AdempiereException("This shipment's EPCIS SSCC events were already transmitted (or are currently being"
+				+ " transmitted) to the receiver; reversing, reactivating or voiding it would duplicate those events at the"
+				+ " receiver. Deactivate the transmitted-SSCC ledger row (or a stuck in-flight export-status row) on the"
+				+ " shipment's EPCIS tab first if this is intentional.")
 				.appendParametersToMessage()
 				.setParameter("M_InOut_ID", inOut.getM_InOut_ID());
 	}

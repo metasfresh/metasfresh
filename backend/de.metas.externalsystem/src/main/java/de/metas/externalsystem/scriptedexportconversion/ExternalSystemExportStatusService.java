@@ -209,6 +209,19 @@ public class ExternalSystemExportStatusService
 		return repo.getLatestByPInstanceId(pInstanceId);
 	}
 
+	/**
+	 * Returns the distinct config IDs whose <b>active</b> status row for the source record is in-flight
+	 * (Enqueued or SendingStarted — dispatched but not yet confirmed/failed). Used to prevent
+	 * reversing/reactivating a source document whose export is still in-flight (it may already be at
+	 * the receiver). Only active rows count, so deactivating a stuck status row releases the document.
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getInflightConfigsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getInflightConfigsBySourceRecord(sourceRecord);
+	}
+
 	// ------------------------------------------------------------------
 	// Outcome transitions (pInstance)
 	// ------------------------------------------------------------------
