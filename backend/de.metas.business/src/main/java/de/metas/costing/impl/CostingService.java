@@ -14,8 +14,8 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
-import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailCreateResultsList;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostDetailVoidRequest;
@@ -39,9 +39,9 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
-import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.product.ProductId;
@@ -134,6 +134,7 @@ public class CostingService implements ICostingService
 		return costElementsRepo.getById(costElementId);
 	}
 
+	@Override
 	public CurrentCost getCurrentCostOrNull(@NonNull final CostSegmentAndElement costSegmentAndElement)
 	{
 		return currentCostsRepo.getOrNull(costSegmentAndElement);
@@ -566,6 +567,7 @@ public class CostingService implements ICostingService
 	 * {@code Prev_*} = the SAME {@code opening}). Sharing the one {@code opening} is the crux: a later
 	 * {@code product_costs_recreate_from_date} restores {@code M_Cost} from that anchor's {@code Prev_*}, reproducing this exact state.
 	 */
+	@Override
 	public void seedCurrentCostFromOpening(
 			@NonNull final CostSegmentAndElement targetSegmentAndElement,
 			@NonNull final CostDetailPreviousAmounts opening,

@@ -1,8 +1,10 @@
 package de.metas.costing;
 
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.Optional;
 
 /*
@@ -48,4 +50,12 @@ public interface ICostingService
 			CostingMethod costingMethod);
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
+
+	CurrentCost getCurrentCostOrNull(@NonNull CostSegmentAndElement costSegmentAndElement);
+
+	void seedCurrentCostFromOpening(
+			@NonNull CostSegmentAndElement targetSegmentAndElement,
+			@NonNull CostDetailPreviousAmounts opening,
+			@NonNull Instant anchorDate,
+			@NonNull CostRevaluationLineId lineId);
 }

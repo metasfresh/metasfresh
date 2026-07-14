@@ -14,8 +14,8 @@ import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.CurrentCostQuery;
+import de.metas.costing.ICostingService;
 import de.metas.costing.ICurrentCostsRepository;
-import de.metas.costing.impl.CostingService;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -32,13 +32,13 @@ public class CostRevaluationService
 {
 	private final CostRevaluationRepository costRevaluationRepository;
 	private final ICurrentCostsRepository currentCostsRepo;
-	private final CostingService costingService;
+	private final ICostingService costingService;
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	public CostRevaluationService(
 			@NonNull final CostRevaluationRepository costRevaluationRepository,
 			@NonNull final ICurrentCostsRepository currentCostsRepo,
-			@NonNull final CostingService costingService)
+			@NonNull final ICostingService costingService)
 	{
 		this.costRevaluationRepository = costRevaluationRepository;
 		this.currentCostsRepo = currentCostsRepo;
