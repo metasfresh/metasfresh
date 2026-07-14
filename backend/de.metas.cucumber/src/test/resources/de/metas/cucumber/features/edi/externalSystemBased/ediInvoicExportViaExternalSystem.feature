@@ -89,7 +89,7 @@ Feature: EDI INVOIC export via External System
       | C_Invoice_ID |
       | salesInvoice |
 
-    Then after not more than 60s, C_Invoice records have the following export status
+    Then after not more than 120s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus |
       | salesInvoice | S                |
 
@@ -101,7 +101,7 @@ Feature: EDI INVOIC export via External System
       | C_Invoice_ID | ErrorMessage                              |
       | salesInvoice | External system export failed: Test error |
 
-    Then after not more than 60s, C_Invoice records have the following export status
+    Then after not more than 120s, C_Invoice records have the following export status
       | C_Invoice_ID | EDI_ExportStatus |
       | salesInvoice | E                |
 

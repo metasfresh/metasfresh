@@ -54,11 +54,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | Identifier              | IsVendor | OPT.IsCustomer | M_PricingSystem_ID | GLN          |
       | endcustomer_1_S0317_010 | N        | Y              | ps_1_S0317_010     | location_gln |
     And metasfresh contains C_BPartner_EDI_Setting:
-      | C_BPartner_ID           | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | Identifier              |
-      | endcustomer_1_S0317_010 | true                 | bPartnerDesadvRecipientGLN | edi_setting_S0317_010_1 |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0317_010                   | endcustomer_1_S0317_010  | p_2_S0317_010           | 0575095404663 |
+      | C_BPartner_ID           | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | Identifier                  |
+      | endcustomer_1_S0317_010 | true                 | bPartnerDesadvRecipientGLN | edi_setting_S0317_010_1     |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_S0317_010_endcustomer_1_S0317_010 | p_2_S0317_010 | endcustomer_1_S0317_010 | 10 | 0575095404663 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name           |
       | pm_1_S0317_010                     | p_2_S0317_010               | name_S0317_010 |
@@ -249,11 +249,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | createdLU_S0317_020 | 1000017        | luLotNumber | S                  |
       | createdLU_S0317_020 | 540020         | 2021-04-20  | D                  |
 
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0317_020                   | endcustomer_1_S0317_020  | p_2_S0317_020           | 1101899104400 |
-      | bp_2_S0317_020                   | endcustomer_1_S0317_020  | p_3_S0317_020           | 4418546988533 |
-      | bp_3_S0317_020                   | endcustomer_1_S0317_020  | p_4_S0317_020           | 0575095404663 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_2_S0317_020_endcustomer_1_S0317_020 | p_2_S0317_020 | endcustomer_1_S0317_020 | 10 | 1101899104400 |
+      | asi_p_3_S0317_020_endcustomer_1_S0317_020 | p_3_S0317_020 | endcustomer_1_S0317_020 | 10 | 4418546988533 |
+      | asi_p_4_S0317_020_endcustomer_1_S0317_020 | p_4_S0317_020 | endcustomer_1_S0317_020 | 10 | 0575095404663 |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier  | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -359,9 +359,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
     And metasfresh contains C_BPartner_EDI_Setting:
       | C_BPartner_ID           | IsEdiDesadvRecipient | EdiDesadvRecipientGLN      | Identifier              |
       | endcustomer_1_S0317_030 | true                 | bPartnerDesadvRecipientGLN | edi_setting_S0317_030_1 |
-    And metasfresh contains C_BPartner_Product
-      | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN      |
-      | bp_1_S0317_030                   | endcustomer_1_S0317_030  | p_1_S0317_030           | 2234567890123 |
+    And metasfresh contains M_Product_ASI_Data:
+      | Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier | SeqNo | GTIN |
+      | asi_p_1_S0317_030_endcustomer_1_S0317_030 | p_1_S0317_030 | endcustomer_1_S0317_030 | 10 | 2234567890123 |
     And metasfresh contains M_HU_PackingMaterial:
       | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name           |
       | pm_1_S0317_030                     | p_1_S0317_030               | name_S0317_030 |
