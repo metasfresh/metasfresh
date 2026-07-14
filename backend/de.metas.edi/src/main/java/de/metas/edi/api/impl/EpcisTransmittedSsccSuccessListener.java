@@ -40,7 +40,6 @@ import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
-
 /**
  * On a successful scripted-export invocation whose config is the EPCIS outbound export, records
  * every physical SSCC18 the sent shipment carried in the {@code EDI_EPCIS_Transmitted_SSCC}
