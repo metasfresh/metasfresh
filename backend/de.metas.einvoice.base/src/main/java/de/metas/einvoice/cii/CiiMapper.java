@@ -118,11 +118,15 @@ import java.util.Map;
  * {@code C_InvoiceTax.TaxBaseAmt} / {@code TaxAmt} and {@code C_Invoice.GrandTotal} are already
  * net / tax / gross respectively. EN 16931 requires BT-131/BT-146/BT-106/BT-109 to be tax-exclusive,
  * so on the tax-included path they must be net (they are NOT taken raw from the line). BT-131 REUSES the
- * booked per-line net {@code LineNetAmt − TaxAmt}: for a per-line (non-document-level) tax
- * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt_i − TaxAmt_i)},
- * so the BT-131 sum equals BT-116 exactly, satisfying KoSIT BR-S-08 / BR-CO-10 with no rounding
- * reconciliation. A group whose booked nets do not sum to its {@code TaxBaseAmt} (only possible for a
- * document-level tax) is rejected fail-fast. On the tax-EXCLUDED path all these values are emitted unchanged.
+ * booked per-line net {@code LineNetAmt − TaxAmt}: for a per-line tax at equal precision this sums to
+ * {@code C_InvoiceTax.TaxBaseAmt} exactly, satisfying KoSIT BR-S-08 / BR-CO-10 with no adjustment. A small
+ * residual can still arise legitimately — {@code C_InvoiceLine.TaxAmt} is booked at
+ * {@code IInvoiceBL.getAmountPrecision} while {@code C_InvoiceTax.TaxBaseAmt} is derived at
+ * {@code getTaxPrecision}, and they round differently for a document-level tax OR for a price list with
+ * {@code IsRoundNetAmountToCurrencyPrecision=N} and {@code PricePrecision < currency precision}. Such a small
+ * residual is absorbed on the group's last line so {@code Σ BT-131 = BT-116}; a residual larger than a
+ * plausible per-line rounding bound ({@code n_lines × smallest currency unit}) is a data error and is
+ * rejected fail-fast. On the tax-EXCLUDED path all these values are emitted unchanged.
  */
 public class CiiMapper
 {
@@ -293,19 +297,22 @@ public class CiiMapper
 	 * <p><b>Tax-INCLUDED invoices</b>: {@code C_InvoiceLine.LineNetAmt} holds the GROSS amount and
 	 * {@code C_InvoiceLine.TaxAmt} the per-line VAT (see class-level investigation notes), so the
 	 * tax-exclusive net is simply the booked value {@code LineNetAmt − TaxAmt}. This value is REUSED
-	 * as-is — it is not recomputed. For a per-line (non-document-level) tax
-	 * {@code MInvoiceTax.calculateTaxFromLines} sets {@code C_InvoiceTax.TaxBaseAmt = Σ(LineNetAmt_i − TaxAmt_i)},
-	 * so the booked per-line nets sum to that tax's {@code TaxBaseAmt} EXACTLY (no rounding gap),
-	 * which is what satisfies KoSIT BR-S-08 (Σ BT-131 = BT-116) / BR-CO-10.
+	 * as-is — it is not recomputed. For a per-line tax at equal precision the booked nets sum to that
+	 * tax's {@code C_InvoiceTax.TaxBaseAmt} EXACTLY (no adjustment needed), which is what satisfies
+	 * KoSIT BR-S-08 (Σ BT-131 = BT-116) / BR-CO-10.
 	 *
-	 * <p>Lines are still grouped by {@code C_Tax_ID} solely to assert that invariant per VAT group:
+	 * <p>Lines are grouped by {@code C_Tax_ID} to reconcile each VAT group against its {@code TaxBaseAmt}:
 	 * <ul>
 	 * <li>a missing {@code C_InvoiceTax} breakdown row for a used tax → fail fast; and</li>
-	 * <li>a group whose {@code Σ(LineNetAmt − TaxAmt)} does not equal that tax's {@code TaxBaseAmt}
-	 *     → fail fast. The only way that can happen is a DOCUMENT-LEVEL tax
-	 *     ({@code C_Tax.IsDocumentLevel=Y}), where {@code TaxBaseAmt} is a round-of-sum on the whole
-	 *     document total and therefore cannot be reconciled line by line — that case is not supported
-	 *     for e-invoicing, so we throw rather than silently emit XML that would fail BR-S-08/BR-CO-10.</li>
+	 * <li>a group whose {@code Σ(LineNetAmt − TaxAmt)} does not equal its {@code TaxBaseAmt} has a
+	 *     residual. This is legitimate: {@code C_InvoiceLine.TaxAmt} is booked at
+	 *     {@code IInvoiceBL.getAmountPrecision} while {@code C_InvoiceTax.TaxBaseAmt} is derived at
+	 *     {@code getTaxPrecision}, and they round differently for a document-level tax OR for a price
+	 *     list with {@code IsRoundNetAmountToCurrencyPrecision=N} and {@code PricePrecision < currency
+	 *     precision}. A SMALL residual (≤ {@code n_lines × smallest currency unit}) is ABSORBED on the
+	 *     group's last line so {@code Σ BT-131 = TaxBaseAmt} exactly (keeping BR-S-08 / BR-CO-10
+	 *     satisfied); a residual LARGER than that plausible-rounding cap is a genuine data error, so we
+	 *     fail fast rather than silently misstate the taxable base.</li>
 	 * </ul>
 	 */
 	private Map<InvoiceLineId, BigDecimal> computeLineNetAmountsForBt131(
@@ -336,6 +343,10 @@ public class CiiMapper
 			linesByTaxId.computeIfAbsent(TaxId.ofRepoId(line.getC_Tax_ID()), k -> new ArrayList<>()).add(line);
 		}
 
+		// Smallest representable currency amount (e.g. 0.01 at std precision 2) — the unit of the
+		// per-line rounding cap used to distinguish a plausible residual from a genuine data error.
+		final BigDecimal oneMinorUnit = BigDecimal.ONE.movePointLeft(resolveAmountPrecision(invoice).toInt());
+
 		for (final Map.Entry<TaxId, List<I_C_InvoiceLine>> groupEntry : linesByTaxId.entrySet())
 		{
 			final TaxId taxId = groupEntry.getKey();
@@ -352,25 +363,44 @@ public class CiiMapper
 						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
 			}
 
-			// Reuse the booked per-line net (LineNetAmt − TaxAmt) as BT-131.
+			// Reuse the booked per-line net (LineNetAmt − TaxAmt) as BT-131, accumulating the group
+			// sum and remembering the group's LAST line (retrieveLines is ordered by ascending Line).
 			BigDecimal groupSum = BigDecimal.ZERO;
+			I_C_InvoiceLine lastLine = null;
 			for (final I_C_InvoiceLine line : groupLines)
 			{
 				final BigDecimal lineNet = line.getLineNetAmt().subtract(line.getTaxAmt());
 				result.put(InvoiceLineId.ofRepoId(line.getC_InvoiceLine_ID()), lineNet);
 				groupSum = groupSum.add(lineNet);
+				lastLine = line;
 			}
 
-			// For a per-line tax the booked nets sum to TaxBaseAmt EXACTLY. A mismatch means a
-			// document-level tax (round-of-sum on the document total), which cannot be reconciled
-			// per line and is not supported for e-invoicing — fail fast rather than emit XML that
-			// would fail BR-S-08/BR-CO-10. compareTo (not equals) so trailing-zero scale never matters.
-			if (groupSum.compareTo(taxBaseAmt) != 0)
+			// Residual between the booked per-line nets and the tax breakdown's TaxBaseAmt. For a
+			// per-line tax at equal precision this is exactly zero. It is non-zero when TaxAmt (booked
+			// at amount precision) and TaxBaseAmt (derived at tax precision) round differently — a
+			// document-level tax, or a price list with IsRoundNetAmountToCurrencyPrecision=N and
+			// PricePrecision < currency precision. signum(), not equals, ignores trailing-zero scale.
+			final BigDecimal residual = taxBaseAmt.subtract(groupSum);
+			if (residual.signum() != 0)
 			{
-				throw new AdempiereException("CII mapping: tax-included line net amounts (Σ LineNetAmt−TaxAmt=" + groupSum
-						+ ") do not reconcile to C_InvoiceTax.TaxBaseAmt=" + taxBaseAmt
-						+ " — likely a document-level tax, which is not supported for e-invoicing"
-						+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
+				// Sanity cap: a genuine per-line rounding residual cannot exceed one minor currency
+				// unit per line. Anything larger is a real tax-data error, not rounding — refuse to
+				// silently adjust and fail fast rather than emit XML that misstates the taxable base.
+				final BigDecimal maxResidual = oneMinorUnit.multiply(BigDecimal.valueOf(groupLines.size()));
+				if (residual.abs().compareTo(maxResidual) > 0)
+				{
+					throw new AdempiereException("CII mapping: tax-included line net amounts (Σ LineNetAmt−TaxAmt=" + groupSum
+							+ ") differ from C_InvoiceTax.TaxBaseAmt=" + taxBaseAmt
+							+ " by " + residual
+							+ ", exceeding the plausible per-line rounding bound (" + maxResidual + ")"
+							+ " — refusing to silently adjust; check the invoice's tax data"
+							+ " [C_Tax_ID=" + taxId.getRepoId() + ", C_Invoice_ID=" + invoice.getC_Invoice_ID() + "]");
+				}
+
+				// Within the bound: absorb the residual on the group's LAST line so Σ BT-131 =
+				// TaxBaseAmt EXACTLY, satisfying KoSIT BR-S-08 (Σ BT-131 = BT-116) / BR-CO-10.
+				final InvoiceLineId lastLineId = InvoiceLineId.ofRepoId(lastLine.getC_InvoiceLine_ID());
+				result.put(lastLineId, result.get(lastLineId).add(residual));
 			}
 		}
 
