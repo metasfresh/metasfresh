@@ -1,20 +1,20 @@
 merge_protections:
   - name: default
     if:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
     success_conditions:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
 
 queue_rules:
   - name: squash-queue
     merge_method: squash
     merge_conditions:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
 
   - name: merge-queue
     merge_method: merge
     merge_conditions:
-      - check-success=testspace-analytics
+      - check-success=Merge Gate
 
 pull_request_rules:
 
