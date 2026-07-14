@@ -120,6 +120,7 @@ FROM c_invoiceline il
 WHERE il.m_product_id IS NOT NULL
   AND il.isactive = 'Y'
   AND il.qtyentered <> 0
+  AND il.ispackagingmaterial = 'N'
 GROUP BY il.c_invoice_id,
          il.priceactual,
          il.pricelist,

@@ -21,6 +21,7 @@ import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.planning.event.MaterialPlanningContextHelper;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
+import de.metas.material.planning.pporder.PPOrderCandidateRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,7 +96,7 @@ public class ShipmentScheduleDeletedHandlerTests
 						stockCandidateService,
 						supplyCandidateHandler,
 						Mockito.mock(MaterialPlanningContextHelper.class),
-						new PPOrderCandidateDemandMatcher())));
+						new PPOrderCandidateDemandMatcher(), new PPOrderCandidateRepository())));
 
 		shipmentScheduleCreatedHandler = new ShipmentScheduleCreatedHandler(
 				candidateChangeHandler,
