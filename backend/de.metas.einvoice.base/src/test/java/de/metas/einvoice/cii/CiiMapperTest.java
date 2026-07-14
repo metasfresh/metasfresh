@@ -35,6 +35,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
@@ -2197,6 +2198,818 @@ public class CiiMapperTest
 		saveRecord(invoice);
 
 		return new FactoringFixture(org, sellerBP, invoice);
+	}
+
+	/**
+	 * REPRO for the KoSIT BR-S-08 tax-included bug (see investigation brief): on a tax-included
+	 * price list, {@code C_InvoiceLine.LineNetAmt} holds the GROSS line amount (confirmed by
+	 * {@code MInvoiceTax.calculateTaxFromLines}, which computes
+	 * {@code TaxBaseAmt = SUM(LineNetAmt) - SUM(TaxAmt)} whenever {@code IsTaxIncluded=Y} — i.e.
+	 * {@code LineNetAmt} is treated as the tax-inclusive total, not the net). {@link CiiMapper} has
+	 * NO {@code IsTaxIncluded} handling and emits {@code LineNetAmt} raw for BT-131/BT-146 and
+	 * {@code invoice.getTotalLines()} raw for BT-106/BT-109 — both tax-EXCLUSIVE per EN16931 — while
+	 * BT-116 ({@code C_InvoiceTax.TaxBaseAmt}) is correctly net. This mismatch is exactly what fails
+	 * KoSIT BR-S-08 in production (a real tax-included invoice: LineNetAmt=100.00 gross,
+	 * TaxBaseAmt=84.03 net, TaxAmt=15.97, 19%).
+	 *
+	 * <p>This test asserts the EN16931-CORRECT (tax-exclusive) values the mapper SHOULD emit once
+	 * fixed. It currently FAILS (RED) because the mapper emits the raw gross amounts instead.
+	 */
+	@Test
+	void tax_included_line_and_header_amounts_must_be_net_not_gross() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y, single line @19%, mirrors a real production tax-included invoice ===
+		// LineNetAmt=100.00 (GROSS, per current metasfresh semantics on a tax-included price list),
+		// TaxBaseAmt=84.03 (NET, correctly computed by MInvoiceTax.calculateTaxFromLines),
+		// TaxAmt=15.97, GrandTotal=100.00 (gross total is unaffected by the bug).
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00700");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		// On a tax-included invoice TotalLines is the gross sum (100.00); the tax-exclusive value is 84.03.
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-700");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S' ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: correctly net (BT-116/BT-117 are NOT part of the bug) ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("84.03")); // BT-116 — already correct (net)
+		invoiceTax.setTaxAmt(new BigDecimal("15.97"));     // BT-117 — already correct
+		saveRecord(invoiceTax);
+
+		// === Invoice line: LineNetAmt/PriceActual GROSS (100.00), as on a tax-included price list ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
+
+		// BT-146 Item net price is the tax-exclusive net (84.03), not the gross PriceActual (100.00).
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("84.03");
+
+		// BT-131 Line net amount equals the net (84.03), matching BT-116 (BR-S-08/BR-CO-10).
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement"
+						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
+				.isEqualTo("84.03");
+
+		// BT-106 Sum of line net amounts equals SUM(TaxBaseAmt) = 84.03, not invoice.TotalLines (100.00).
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("84.03");
+
+		// BT-109 Tax basis total equals 84.03 for the same reason.
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("84.03");
+	}
+
+	/**
+	 * Multi-line rounding-reconciliation proof for the tax-included fix (see investigation brief §
+	 * "THE INVARIANTS"): two lines, same 19% tax, {@code LineNetAmt} 100.00 + 100.00 (gross). A NAIVE
+	 * per-line {@code calculateBaseAmt} conversion yields 84.03 + 84.03 = 168.06 — one cent short of
+	 * the tax breakdown's round-of-sum {@code TaxBaseAmt}=168.07 — which would still fail KoSIT
+	 * BR-S-08/BR-CO-10 (BT-131 sum must equal BT-116 exactly). The fix must reconcile the per-line
+	 * BT-131 values so they sum EXACTLY to 168.07 (e.g. 84.03 + 84.04).
+	 */
+	@Test
+	void tax_included_multiLine_bt131_reconciles_to_taxBaseAmt() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y, two lines @19%, TotalLines/GrandTotal = 200.00 (gross) ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00701");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("200.00"));
+		invoice.setGrandTotal(new BigDecimal("200.00"));
+		saveRecord(invoice);
+
+		// === UOM + Products ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product1 = newInstance(I_M_Product.class);
+		product1.setName("Testprodukt A");
+		product1.setValue("TP-701-A");
+		saveRecord(product1);
+		final I_M_Product product2 = newInstance(I_M_Product.class);
+		product2.setName("Testprodukt B");
+		product2.setValue("TP-701-B");
+		saveRecord(product2);
+
+		// === Tax: 19% standard 'S' ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: round-of-sum values (168.07 / 31.93), NOT the naive sum-of-rounds (168.06) ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("168.07")); // BT-116
+		invoiceTax.setTaxAmt(new BigDecimal("31.93"));       // BT-117
+		saveRecord(invoiceTax);
+
+		// === Two invoice lines: LineNetAmt/PriceActual GROSS (100.00 each) ===
+		final I_C_InvoiceLine line1 = newInstance(I_C_InvoiceLine.class);
+		line1.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line1.setLine(10);
+		line1.setM_Product_ID(product1.getM_Product_ID());
+		line1.setC_UOM_ID(uom.getC_UOM_ID());
+		line1.setC_Tax_ID(tax.getC_Tax_ID());
+		line1.setQtyInvoiced(new BigDecimal("1"));
+		line1.setPriceActual(new BigDecimal("100.00"));
+		line1.setLineNetAmt(new BigDecimal("100.00"));
+		line1.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line1);
+
+		final I_C_InvoiceLine line2 = newInstance(I_C_InvoiceLine.class);
+		line2.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line2.setLine(20);
+		line2.setM_Product_ID(product2.getM_Product_ID());
+		line2.setC_UOM_ID(uom.getC_UOM_ID());
+		line2.setC_Tax_ID(tax.getC_Tax_ID());
+		line2.setQtyInvoiced(new BigDecimal("1"));
+		line2.setPriceActual(new BigDecimal("100.00"));
+		line2.setLineNetAmt(new BigDecimal("100.00"));
+		line2.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line2);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String line1Base = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+		final String line2Base = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[2]";
+		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
+
+		// BT-131 line 1 net amount: natural net (84.03) — no delta absorbed (not the last line of the group).
+		xmlAssert.valueByXPath(line1Base + "/ram:SpecifiedLineTradeSettlement"
+						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
+				.isEqualTo("84.03");
+
+		// BT-131 line 2 net amount: natural net (84.03) PLUS the 0.01 rounding delta = 84.04 — this is
+		// the crux: a naive per-line conversion would emit 84.03 here too, summing to 168.06 (WRONG).
+		xmlAssert.valueByXPath(line2Base + "/ram:SpecifiedLineTradeSettlement"
+						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
+				.isEqualTo("84.04");
+
+		// BT-106/BT-109: sum of line nets MUST equal SUM(TaxBaseAmt) = 168.07 EXACTLY (BR-CO-10/BR-S-08).
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("168.07");
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("168.07");
+	}
+
+	/**
+	 * Guards the BT-146 gate against a whole-tax regression on the tax-EXCLUDED path.
+	 *
+	 * <p>{@link org.compiere.model.I_C_Tax} with {@code IsWholeTax=Y} makes
+	 * {@code Tax.calculateBaseAmt} return {@code ZERO} regardless of the {@code taxIncluded} flag. If the
+	 * BT-146 gate keys on whole-tax (rather than on the invoice's {@code IsTaxIncluded} flag), a
+	 * tax-EXCLUDED invoice whose line uses a whole-tax {@code C_Tax} would emit BT-146 = 0.00 instead of
+	 * the raw {@code PriceActual}. On the tax-excluded path BT-146 must be the raw {@code PriceActual}.
+	 */
+	@Test
+	void tax_excluded_wholeTax_line_bt146_is_raw_priceActual_not_zero() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=N (tax-EXCLUDED) ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00702");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(false);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-702");
+		saveRecord(product);
+
+		// === Tax: whole-tax (IsWholeTax=Y). Tax.calculateBaseAmt returns ZERO for such a tax. ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("Whole tax");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setIsWholeTax(true);
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === Invoice line: PriceActual/LineNetAmt = 100.00 (tax-excluded: raw net) ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+
+		// BT-146 on a tax-EXCLUDED invoice MUST be the raw PriceActual (100.00), NOT 0.00 — even when
+		// the line's C_Tax is a whole-tax (which would make calculateBaseAmt return ZERO if wrongly gated).
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("100.00");
+	}
+
+	/**
+	 * Fail-fast on a tax-included invoice whose line references a {@code C_Tax} that has NO matching
+	 * {@code C_InvoiceTax} breakdown row. Without that row the BT-131 reconciliation has no
+	 * {@code TaxBaseAmt} anchor to satisfy BR-S-08/BR-CO-10, so the mapper must throw (with the
+	 * offending {@code C_Tax_ID} + {@code C_Invoice_ID}) rather than silently emit broken XML — matching
+	 * the fail-fast style of the other mandatory-data checks in this class.
+	 */
+	@Test
+	void tax_included_missingInvoiceTaxRow_throwsWithIds() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00703");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-703");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S' (NOT whole-tax) ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === Invoice line references the tax — but DELIBERATELY no C_InvoiceTax breakdown row exists ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
+				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
+	}
+
+	/**
+	 * Regression guard for tax-included invoices whose tax is DOCUMENT-LEVEL
+	 * ({@code C_Tax.IsDocumentLevel=Y}): there the per-line {@code C_InvoiceLine.TaxAmt} is 0 (the tax
+	 * is computed on the document total, not per line), so {@code LineNetAmt − TaxAmt = 100.00 − 0 =
+	 * 100.00} is the GROSS amount, NOT the net. BT-131 must therefore be DERIVED via
+	 * {@link Tax#calculateBaseAmt} (→ 84.03), never taken as {@code LineNetAmt − TaxAmt}.
+	 * {@code C_InvoiceTax.TaxBaseAmt} carries the correct net (84.03).
+	 */
+	@Test
+	void tax_included_documentLevelTax_lineTaxAmtZero_bt131_isNet_notGross() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00704");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-704");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S', DOCUMENT-LEVEL — NOT whole-tax ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("Normaler Steuersatz 19% (DE)");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setIsDocumentLevel(true);
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: net base (BT-116) correctly booked at document level ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("84.03"));
+		invoiceTax.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(invoiceTax);
+
+		// === Invoice line: LineNetAmt/PriceActual GROSS (100.00), C_InvoiceLine.TaxAmt = 0 (document-level) ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(BigDecimal.ZERO); // document-level: per-line tax not booked — LineNetAmt−TaxAmt would be GROSS
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+		final XmlAssert xmlAssert = toXmlAssert(cii);
+
+		final String lineBase = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:IncludedSupplyChainTradeLineItem[1]";
+		final String summation = "//rsm:CrossIndustryInvoice/rsm:SupplyChainTradeTransaction"
+				+ "/ram:ApplicableHeaderTradeSettlement/ram:SpecifiedTradeSettlementHeaderMonetarySummation";
+
+		// BT-131 MUST be the derived net (84.03), NOT LineNetAmt−TaxAmt (=100.00 gross) — the regression
+		// that reusing the booked per-line net would introduce for a document-level tax.
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeSettlement"
+						+ "/ram:SpecifiedTradeSettlementLineMonetarySummation/ram:LineTotalAmount")
+				.isEqualTo("84.03");
+		// BT-146 item net price likewise net.
+		xmlAssert.valueByXPath(lineBase + "/ram:SpecifiedLineTradeAgreement/ram:NetPriceProductTradePrice/ram:ChargeAmount")
+				.isEqualTo("84.03");
+		// BT-106/BT-109 = SUM(TaxBaseAmt) = 84.03.
+		xmlAssert.valueByXPath(summation + "/ram:LineTotalAmount").isEqualTo("84.03");
+		xmlAssert.valueByXPath(summation + "/ram:TaxBasisTotalAmount").isEqualTo("84.03");
+	}
+
+	/**
+	 * Safety bound on the last-line reconciliation: the delta absorbed on a group's last line may only
+	 * ever be the per-line rounding gap (≤ lineCount × one minor currency unit). If the summed per-line
+	 * nets and {@code C_InvoiceTax.TaxBaseAmt} diverge by MORE than that (here {@code TaxBaseAmt=90.00}
+	 * vs. the derived net 84.03 for a single 19% line → delta 5.97 ≫ the 0.01 bound), the mapper must
+	 * fail loudly rather than silently distort the line by an arbitrary amount.
+	 */
+	@Test
+	void tax_included_reconciliationDeltaExceedsBound_throwsWithIds() throws Exception
+	{
+		// === Minimal seller org ===
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+		final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+		sellerCountry.setCountryCode("DE");
+		saveRecord(sellerCountry);
+		final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+		sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+		saveRecord(sellerLocation);
+		final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+		sellerBP.setName("Seller GmbH");
+		sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+		saveRecord(sellerBP);
+		final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+		sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+		sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+		saveRecord(sellerBPLoc);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+		orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+		saveRecord(orgInfo);
+
+		// === Minimal buyer ===
+		final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+		buyerCountry.setCountryCode("DE");
+		saveRecord(buyerCountry);
+		final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+		buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+		saveRecord(buyerLocation);
+		final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+		buyerBP.setName("Buyer AG");
+		saveRecord(buyerBP);
+		final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+		buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+		saveRecord(buyerBPLoc);
+
+		// === Currency + DocType ===
+		final I_C_Currency currency = newInstance(I_C_Currency.class);
+		currency.setISO_Code("EUR");
+		currency.setStdPrecision(2);
+		saveRecord(currency);
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType("ARI");
+		saveRecord(docType);
+
+		// === Invoice: IsTaxIncluded=Y ===
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setAD_Org_ID(org.getAD_Org_ID());
+		invoice.setDocumentNo("RE-2024-00705");
+		invoice.setDateInvoiced(Timestamp.from(LocalDate.of(2024, 6, 15).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		invoice.setC_Currency_ID(currency.getC_Currency_ID());
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+		invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+		invoice.setIsTaxIncluded(true);
+		invoice.setTotalLines(new BigDecimal("100.00"));
+		invoice.setGrandTotal(new BigDecimal("100.00"));
+		saveRecord(invoice);
+
+		// === UOM + Product ===
+		final I_C_UOM uom = newInstance(I_C_UOM.class);
+		uom.setName("Stück");
+		uom.setX12DE355("PCE");
+		saveRecord(uom);
+		final I_M_Product product = newInstance(I_M_Product.class);
+		product.setName("Testprodukt");
+		product.setValue("TP-705");
+		saveRecord(product);
+
+		// === Tax: 19% standard 'S' ===
+		final I_C_TaxCategory taxCategory = newInstance(I_C_TaxCategory.class);
+		saveRecord(taxCategory);
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		tax.setName("MWSt 19%");
+		tax.setEN16931VATCategory("S");
+		tax.setRate(new BigDecimal("19"));
+		tax.setC_TaxCategory_ID(taxCategory.getC_TaxCategory_ID());
+		tax.setValidFrom(Timestamp.from(LocalDate.of(2000, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
+		saveRecord(tax);
+
+		// === C_InvoiceTax: TaxBaseAmt (90.00) diverges from the derived net (84.03) by 5.97 >> 0.01 bound ===
+		final I_C_InvoiceTax invoiceTax = newInstance(I_C_InvoiceTax.class);
+		invoiceTax.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		invoiceTax.setC_Tax_ID(tax.getC_Tax_ID());
+		invoiceTax.setIsTaxIncluded(true);
+		invoiceTax.setTaxBaseAmt(new BigDecimal("90.00"));
+		invoiceTax.setTaxAmt(new BigDecimal("10.00"));
+		saveRecord(invoiceTax);
+
+		// === Invoice line: LineNetAmt/PriceActual GROSS (100.00) → calculateBaseAmt = 84.03 ===
+		final I_C_InvoiceLine line = newInstance(I_C_InvoiceLine.class);
+		line.setC_Invoice_ID(invoice.getC_Invoice_ID());
+		line.setLine(10);
+		line.setM_Product_ID(product.getM_Product_ID());
+		line.setC_UOM_ID(uom.getC_UOM_ID());
+		line.setC_Tax_ID(tax.getC_Tax_ID());
+		line.setQtyInvoiced(new BigDecimal("1"));
+		line.setPriceActual(new BigDecimal("100.00"));
+		line.setLineNetAmt(new BigDecimal("100.00"));
+		line.setTaxAmt(new BigDecimal("15.97"));
+		saveRecord(line);
+
+		final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+				.format(EInvoiceFormat.ZUGFeRD)
+				.build();
+
+		assertThatThrownBy(() -> new CiiMapper().map(invoice, recipientConfig))
+				.isInstanceOf(RuntimeException.class)
+				.hasMessageContaining("C_Tax_ID=" + tax.getC_Tax_ID())
+				.hasMessageContaining("C_Invoice_ID=" + invoice.getC_Invoice_ID());
 	}
 
 	// ===== Shared helpers =====
