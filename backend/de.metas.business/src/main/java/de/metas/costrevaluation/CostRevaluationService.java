@@ -70,25 +70,11 @@ public class CostRevaluationService
 
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
-		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
-		if (productIds.isEmpty())
-		{
-			throw new AdempiereException("No stocked products found");
-		}
+		final ImmutableSet<ProductId> productIds = retrieveStockedProductIdsOrThrow(clientId);
 
 		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
 		final CostElementId costElementId = costRevaluation.getCostElementId();
-		final ImmutableList<CurrentCost> currentCosts = currentCostsRepo.stream(
-						CurrentCostQuery.builder()
-								.clientId(clientId)
-								// NOTE: don't filter by OrgId here because we don't know the costing level yet
-								.acctSchemaId(acctSchemaId)
-								.costElementId(costElementId)
-								.productIds(productIds)
-								.build()
-				)
-				.filter(currentCost -> isMatching(currentCost, orgId))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<CurrentCost> currentCosts = queryCurrentCosts(clientId, orgId, acctSchemaId, costElementId, productIds);
 
 		costRevaluationRepository.createLinesForCurrentCosts(costRevaluationId, currentCosts);
 	}
@@ -111,31 +97,47 @@ public class CostRevaluationService
 
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
-		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
-		if (productIds.isEmpty())
-		{
-			throw new AdempiereException("No stocked products found");
-		}
+		final ImmutableSet<ProductId> productIds = retrieveStockedProductIdsOrThrow(clientId);
 
 		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
 
-		final ImmutableList<CurrentCost> sourceCurrentCosts = currentCostsRepo.stream(
-						CurrentCostQuery.builder()
-								.clientId(clientId)
-								// NOTE: don't filter by OrgId here because we don't know the costing level yet
-								.acctSchemaId(acctSchemaId)
-								.costElementId(sourceCostElementId)
-								.productIds(productIds)
-								.build()
-				)
-				.filter(currentCost -> isMatching(currentCost, orgId))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<CurrentCost> sourceCurrentCosts = queryCurrentCosts(clientId, orgId, acctSchemaId, sourceCostElementId, productIds);
 		if (sourceCurrentCosts.isEmpty())
 		{
 			throw new AdempiereException("No current costs found for source cost element " + sourceCostElementId);
 		}
 
 		costRevaluationRepository.createLinesForCopyFromCostElement(costRevaluationId, costRevaluation.getCostElementId(), sourceCurrentCosts);
+	}
+
+	private ImmutableSet<ProductId> retrieveStockedProductIdsOrThrow(@NonNull final ClientId clientId)
+	{
+		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
+		if (productIds.isEmpty())
+		{
+			throw new AdempiereException("No stocked products found");
+		}
+		return productIds;
+	}
+
+	private ImmutableList<CurrentCost> queryCurrentCosts(
+			@NonNull final ClientId clientId,
+			@NonNull final OrgId orgId,
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final ImmutableSet<ProductId> productIds)
+	{
+		return currentCostsRepo.stream(
+						CurrentCostQuery.builder()
+								.clientId(clientId)
+								// NOTE: don't filter by OrgId here because we don't know the costing level yet
+								.acctSchemaId(acctSchemaId)
+								.costElementId(costElementId)
+								.productIds(productIds)
+								.build()
+				)
+				.filter(currentCost -> isMatching(currentCost, orgId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private static boolean isMatching(@NonNull CurrentCost currentCost, @NonNull OrgId orgId)

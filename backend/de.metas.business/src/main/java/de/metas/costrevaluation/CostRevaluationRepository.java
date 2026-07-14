@@ -39,6 +39,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 @Repository
@@ -79,6 +80,20 @@ public class CostRevaluationRepository
 			@NonNull final CostRevaluationId costRevaluationId,
 			@NonNull final List<CurrentCost> currentCosts)
 	{
+		createLines(costRevaluationId, currentCosts, CostRevaluationRepository::updateRecordFrom);
+	}
+
+	/**
+	 * Upserts one {@code M_CostRevaluationLine} per given {@link CurrentCost} (keyed by product + client/org),
+	 * skipping already-revaluated lines and deleting any pre-existing line no longer matched by the input.
+	 * The per-record field copy is delegated to {@code updateRecord}, which is the only difference between the
+	 * {@code Calculated} and {@code CopyFromCostElement} paths.
+	 */
+	private void createLines(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final List<CurrentCost> currentCosts,
+			@NonNull final BiConsumer<I_M_CostRevaluationLine, CurrentCost> updateRecord)
+	{
 		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = streamAllLineRecordsByCostRevaluationId(costRevaluationId)
 				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
 
@@ -100,7 +115,7 @@ public class CostRevaluationRepository
 				continue;
 			}
 
-			updateRecordFrom(existingRecord, currentCost);
+			updateRecord.accept(existingRecord, currentCost);
 			InterfaceWrapperHelper.save(existingRecord);
 		}
 
@@ -131,41 +146,8 @@ public class CostRevaluationRepository
 			@NonNull final CostElementId targetCostElementId,
 			@NonNull final List<CurrentCost> sourceCurrentCosts)
 	{
-		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = streamAllLineRecordsByCostRevaluationId(costRevaluationId)
-				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
-
-		for (final CurrentCost sourceCurrentCost : sourceCurrentCosts)
-		{
-			final CostRevaluationLineKey key = extractCostRevaluationLineKey(sourceCurrentCost);
-			I_M_CostRevaluationLine existingRecord = existingRecords.remove(key);
-			if (existingRecord == null)
-			{
-				existingRecord = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
-				existingRecord.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
-				existingRecord.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
-				existingRecord.setIsRevaluated(false);
-			}
-
-			// Skip evaluated lines
-			if (existingRecord.isRevaluated())
-			{
-				continue;
-			}
-
-			updateRecordFromCopySource(existingRecord, targetCostElementId, sourceCurrentCost);
-			InterfaceWrapperHelper.save(existingRecord);
-		}
-
-		final Collection<I_M_CostRevaluationLine> linesToDelete = existingRecords.values();
-		if (!linesToDelete.isEmpty())
-		{
-			final ImmutableSet<CostRevaluationLineId> lineIds = linesToDelete.stream()
-					.map(CostRevaluationRepository::extractCostRevaluationLineId)
-					.collect(ImmutableSet.toImmutableSet());
-
-			deleteDetailsByLineIds(lineIds);
-			InterfaceWrapperHelper.deleteAll(linesToDelete);
-		}
+		createLines(costRevaluationId, sourceCurrentCosts,
+				(record, sourceCurrentCost) -> updateRecordFromCopySource(record, targetCostElementId, sourceCurrentCost));
 	}
 
 	private static void updateRecordFromCopySource(
