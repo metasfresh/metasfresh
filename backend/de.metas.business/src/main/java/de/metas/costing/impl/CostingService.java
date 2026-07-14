@@ -561,15 +561,10 @@ public class CostingService implements ICostingService
 	}
 
 	/**
-	 * {@code RevaluationSource.CopyFromCostElement} complete-time seed: directly set the target element's
-	 * {@link CurrentCost} ({@code M_Cost}) to the given {@code opening} amounts (own + LL + qty + cumulated),
-	 * bypassing the {@code Calculated} history-replay of {@link #revaluateCosts(CostsRevaluationRequest)}, and
-	 * write ONE anchoring {@code M_CostDetail} dated {@code anchorDate} with {@code Qty=0}, {@code Amt=0},
-	 * {@code IsChangingCosts=Y} and {@code Prev_*} = the SAME {@code opening}.
-	 * <p>
-	 * The shared {@code opening} object is the correctness crux: the anchor's {@code Prev_*} snapshot equals the
-	 * seeded {@code M_Cost}, so {@code product_costs_recreate_from_date} (which restores {@code M_Cost} from the
-	 * first in-range cost detail's {@code Prev_*}) reproduces exactly this state when there are no later transactions.
+	 * {@code CopyFromCostElement} complete-time seed: sets the target element's {@link CurrentCost} ({@code M_Cost}) to
+	 * {@code opening} and writes one anchor {@code M_CostDetail} (dated {@code anchorDate}, {@code Qty=0}/{@code Amt=0},
+	 * {@code Prev_*} = the SAME {@code opening}). Sharing the one {@code opening} is the crux: a later
+	 * {@code product_costs_recreate_from_date} restores {@code M_Cost} from that anchor's {@code Prev_*}, reproducing this exact state.
 	 */
 	public void seedCurrentCostFromOpening(
 			@NonNull final CostSegmentAndElement targetSegmentAndElement,

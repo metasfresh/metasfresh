@@ -132,14 +132,10 @@ public class CostRevaluationRepository
 	}
 
 	/**
-	 * {@code RevaluationSource.CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}:
-	 * one line per SOURCE-element {@code CurrentCost} row (incl. zero-on-hand), with {@code NewCostPrice}/{@code CurrentQty}
-	 * copied unchanged from the source, but the line's {@code M_CostElement_ID} set to the document's own (target) element.
-	 * <p>
-	 * Lower-level (component/LL) cost is intentionally NOT persisted here: {@code M_CostRevaluationLine} has no LL column
-	 * (mirroring the existing {@code Calculated} path, which also doesn't carry LL at line level). The complete-time
-	 * direct-set path re-reads the source element's {@code CurrentCost} fresh via {@code CopyFrom_M_CostElement_ID} to seed
-	 * the target {@code M_Cost.CurrentCostPriceLL} (see {@link CostRevaluationService}).
+	 * {@code CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}: one line per
+	 * source-element {@code CurrentCost} row (incl. zero-on-hand), copying {@code NewCostPrice}/{@code CurrentQty} unchanged
+	 * but setting the line's {@code M_CostElement_ID} to the document's own (target) element. Lower-level cost is
+	 * deliberately not persisted at line level (as in the {@code Calculated} path); it is re-read fresh at complete time.
 	 */
 	public void createLinesForCopyFromCostElement(
 			@NonNull final CostRevaluationId costRevaluationId,

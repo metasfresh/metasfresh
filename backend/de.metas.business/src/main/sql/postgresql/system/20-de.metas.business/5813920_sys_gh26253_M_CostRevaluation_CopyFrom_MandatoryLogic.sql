@@ -11,6 +11,6 @@
 
 UPDATE AD_Column
 SET MandatoryLogic = '@RevaluationSource@=''CopyFromCostElement''',
-    Updated = now()
+    Updated = TO_TIMESTAMP('2026-07-14 14:02:00','YYYY-MM-DD HH24:MI:SS')
 WHERE AD_Column_ID = 592962   -- M_CostRevaluation.CopyFrom_M_CostElement_ID
 ;

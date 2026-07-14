@@ -288,14 +288,9 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * {@code RevaluationSource.CopyFromCostElement} complete-time path: instead of the {@code Calculated}
-	 * history-replay ({@link CostingService#revaluateCosts}), directly set the TARGET element's {@code M_Cost} to the
-	 * SOURCE element's opening amounts and write ONE opening-anchor {@code M_CostDetail}.
-	 * <p>
-	 * Builds ONE {@link CostDetailPreviousAmounts opening} object and reuses it for BOTH the {@code M_Cost} seed and the
-	 * anchor's {@code Prev_*} — that shared snapshot is the recompute-survival crux. Own price, LL and qty are all read
-	 * together from a SINGLE fresh read of the SOURCE element's {@code M_Cost} at complete time, so the seed is internally
-	 * consistent (value-neutral as of completion); the line's own/qty are only the drafted preview.
+	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from one fresh read
+	 * of the source element's opening amounts and writes a single opening-anchor {@code M_CostDetail} (not the
+	 * {@code Calculated} history-replay). That one shared snapshot — seed plus anchor {@code Prev_*} — is the recompute-survival crux.
 	 */
 	private void createDetailsForCopyFromCostElement(
 			@NonNull final CostRevaluation costRevaluation,
