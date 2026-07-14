@@ -14,6 +14,7 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailAdjustment;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostDetailReverseRequest;
@@ -38,6 +39,7 @@ import de.metas.costing.ICurrentCostsRepository;
 import de.metas.costing.IProductCostingBL;
 import de.metas.costing.MoveCostsRequest;
 import de.metas.costing.MoveCostsResult;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.costing.methods.CostingMethodHandler;
 import de.metas.costing.methods.CostingMethodHandlerUtils;
 import de.metas.i18n.ExplainedOptional;
@@ -551,5 +553,40 @@ public class CostingService implements ICostingService
 
 		//
 		return result.build();
+	}
+
+	/**
+	 * {@code RevaluationSource.CopyFromCostElement} complete-time seed: directly set the target element's
+	 * {@link CurrentCost} ({@code M_Cost}) to the given {@code opening} amounts (own + LL + qty + cumulated),
+	 * bypassing the {@code Calculated} history-replay of {@link #revaluateCosts(CostsRevaluationRequest)}, and
+	 * write ONE anchoring {@code M_CostDetail} dated {@code anchorDate} with {@code Qty=0}, {@code Amt=0},
+	 * {@code IsChangingCosts=Y} and {@code Prev_*} = the SAME {@code opening}.
+	 * <p>
+	 * The shared {@code opening} object is the correctness crux: the anchor's {@code Prev_*} snapshot equals the
+	 * seeded {@code M_Cost}, so {@code product_costs_recreate_from_date} (which restores {@code M_Cost} from the
+	 * first in-range cost detail's {@code Prev_*}) reproduces exactly this state when there are no later transactions.
+	 */
+	public void seedCurrentCostFromOpening(
+			@NonNull final CostSegmentAndElement targetSegAndElem,
+			@NonNull final CostDetailPreviousAmounts opening,
+			@NonNull final Instant anchorDate,
+			@NonNull final CostRevaluationLineId lineId)
+	{
+		final CurrentCost currentCost = currentCostsRepo.getOrCreate(targetSegAndElem);
+		currentCost.setFrom(opening);
+		currentCostsRepo.save(currentCost);
+
+		final CostElement targetCostElement = getCostElementById(targetSegAndElem.getCostElementId());
+
+		final CostDetailCreateRequest request = CostDetailCreateRequest.builder()
+				.costSegment(targetSegAndElem.toCostSegment())
+				.costElement(targetCostElement)
+				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(lineId))
+				.qty(opening.getQty().toZero())
+				.amt(opening.getCumulatedAmt().toZero())
+				.date(anchorDate)
+				.build();
+
+		utils.createCostDetailRecordWithChangedCosts(request, opening);
 	}
 }

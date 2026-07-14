@@ -5,7 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetailAdjustment;
+import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostElementId;
+import de.metas.costing.CostPrice;
+import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostsRevaluationRequest;
 import de.metas.costing.CostsRevaluationResult;
@@ -178,6 +181,12 @@ public class CostRevaluationService
 			throw new AdempiereException("Line already revaluated: " + line.getId());
 		}
 
+		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		{
+			createDetailsForCopyFromCostElement(costRevaluation, line);
+			return;
+		}
+
 		final CostSegmentAndElement costSegmentAndElement = line.getCostSegmentAndElement();
 		final CostsRevaluationResult result = costingService.revaluateCosts(CostsRevaluationRequest.builder()
 				.costSegmentAndElement(costSegmentAndElement)
@@ -276,5 +285,63 @@ public class CostRevaluationService
 		}
 
 		costRevaluationRepository.save(line.markingAsEvaluated(deltaAmountTotal));
+	}
+
+	/**
+	 * {@code RevaluationSource.CopyFromCostElement} complete-time path (concept §2-4): instead of the {@code Calculated}
+	 * history-replay ({@link CostingService#revaluateCosts}), directly set the TARGET element's {@code M_Cost} to the
+	 * SOURCE element's opening amounts and write ONE opening-anchor {@code M_CostDetail}.
+	 * <p>
+	 * Builds ONE {@link CostDetailPreviousAmounts opening} object and reuses it for BOTH the {@code M_Cost} seed and the
+	 * anchor's {@code Prev_*} — that shared snapshot is the recompute-survival crux. Own price and qty come from the line;
+	 * the lower-level (LL/component) price is re-read fresh from the SOURCE element's {@code M_Cost} (it is not carried on
+	 * the line, mirroring the {@code Calculated} path).
+	 */
+	private void createDetailsForCopyFromCostElement(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final CostRevaluationLine line)
+	{
+		final CostElementId sourceCostElementId = costRevaluation.getCopyFromCostElementId();
+		if (sourceCostElementId == null)
+		{
+			throw new AdempiereException("CopyFrom_M_CostElement_ID is not set for " + costRevaluation.getCostRevaluationId());
+		}
+
+		final CostSegmentAndElement targetSegAndElem = line.getCostSegmentAndElement();
+		final CostSegment targetSegment = targetSegAndElem.toCostSegment();
+		final CostSegmentAndElement sourceSegAndElem = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
+
+		final CurrentCost sourceCurrentCost = currentCostsRepo.getOrNull(sourceSegAndElem);
+		if (sourceCurrentCost == null)
+		{
+			throw new AdempiereException("No current cost found for source cost element " + sourceSegAndElem);
+		}
+		final CostPrice sourceCostPrice = sourceCurrentCost.getCostPrice();
+
+		// Own price = line's (value-neutral copy of the source's own); LL = re-read fresh from the source element.
+		final CostPrice openingCostPrice = CostPrice.builder()
+				.ownCostPrice(line.getNewCostPrice())
+				.componentsCostPrice(sourceCostPrice.getComponentsCostPrice())
+				.uomId(sourceCostPrice.getUomId())
+				.build();
+
+		final CostAmount cumulatedAmt = line.getNewCostPrice().multiply(line.getCurrentQty());
+
+		// ONE opening object, reused for both the M_Cost seed and the anchor's Prev_*.
+		final CostDetailPreviousAmounts opening = CostDetailPreviousAmounts.builder()
+				.costPrice(openingCostPrice)
+				.qty(line.getCurrentQty())
+				.cumulatedAmt(cumulatedAmt)
+				.cumulatedQty(line.getCurrentQty())
+				.build();
+
+		costingService.seedCurrentCostFromOpening(
+				targetSegAndElem,
+				opening,
+				costRevaluation.getEvaluationStartDate(),
+				line.getId());
+
+		// No GL delta at this stage (GL posting is a separate concern); mark the line evaluated with a zero delta.
+		costRevaluationRepository.save(line.markingAsEvaluated(CostAmount.zero(line.getNewCostPrice().getCurrencyId())));
 	}
 }

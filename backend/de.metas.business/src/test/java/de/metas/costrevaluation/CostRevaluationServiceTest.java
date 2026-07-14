@@ -332,4 +332,58 @@ public class CostRevaluationServiceTest
 		assertThat(lines).hasSize(1);
 		assertThat(lines.get(0).getNewCostPrice()).isEqualByComparingTo("5.00");
 	}
+
+	@Test
+	public void createDetails_copyFromCostElement_directSetsTargetMCost_andWritesOpeningAnchor()
+	{
+		final ProductId productWithStock = createProduct("productWithStock");
+		seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+		final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+		costRevaluationService.createLines(costRevaluationId);
+
+		costRevaluationService.createDetails(costRevaluationId);
+
+		final de.metas.costing.CostSegmentAndElement targetSeg = de.metas.costing.CostSegmentAndElement.builder()
+				.costingLevel(CostingLevel.Client)
+				.acctSchemaId(acctSchemaId)
+				.costTypeId(costTypeId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.productId(productWithStock)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.costElementId(targetCostElementId)
+				.build();
+
+		final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSeg);
+		assertThat(targetCurrentCost).isNotNull();
+		assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+		assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+		assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1250.00");
+		assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+
+		final List<de.metas.costing.CostDetail> anchorDetails = new CostDetailRepository()
+				.stream(de.metas.costing.CostDetailQuery.builder()
+						.acctSchemaId(acctSchemaId)
+						.costElementId(targetCostElementId)
+						.productId(productWithStock)
+						.build())
+				.collect(ImmutableList.toImmutableList());
+		assertThat(anchorDetails).hasSize(1);
+
+		final de.metas.costing.CostDetail anchor = anchorDetails.get(0);
+		assertThat(anchor.isChangingCosts()).isTrue();
+		assertThat(anchor.getQty().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(anchor.getAmt().toBigDecimal()).isEqualByComparingTo("0");
+		assertThat(anchor.getDateAcct()).isEqualTo(Instant.parse("2025-12-31T00:00:00Z"));
+
+		final de.metas.costing.CostDetailPreviousAmounts previousAmounts = anchor.getPreviousAmounts();
+		assertThat(previousAmounts).isNotNull();
+		assertThat(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("12.50");
+		assertThat(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("3.75");
+		assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("100");
+		assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1250.00");
+		assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+	}
 }
