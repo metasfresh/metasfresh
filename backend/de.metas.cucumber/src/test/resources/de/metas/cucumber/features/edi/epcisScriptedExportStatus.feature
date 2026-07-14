@@ -618,3 +618,66 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     # this config's WhereClause evaluates — must flip to false: a re-trigger of the same outbound
     # selection would no longer match this shipment, so it would not be re-sent.
     And the EPCIS export-relevance for M_InOut identified by io_S30916_100 is false
+
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @Id:S30916_110
+  Scenario: S30916_110 — a shipment whose EPCIS SSCCs were transmitted cannot be reversed/reactivated/voided
+  ## Reversal-recreate is the duplicate-transmission root cause this guard closes: once a shipment's
+  ## EPCIS SSCC events were transmitted to the receiver (an ACTIVE EDI_EPCIS_Transmitted_SSCC ledger
+  ## row exists for it), reversing/reactivating/voiding it — which would recreate the document and
+  ## re-run shipment completion — must be rejected, or the same physical SSCC would be re-transmitted
+  ## at the receiver. Deactivating the ledger row (the WebUI shipment-tab feature) is the sanctioned
+  ## way to unblock it, consistent with it also unblocking re-sending the SSCC (see S30916_040).
+  ## Control: a plain shipment with no transmitted SSCC reverses normally — already covered by the
+  ## existing materialDispo/reverseShipment.feature scenario, which this guard leaves unaffected
+  ## (no ledger row for that shipment, so hasActiveTransmittedForInOut is false).
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference          |
+      | o_110      | true    | bp_es         | 2026-06-09  | PO_S30916_110_@Date@ |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_110     | o_110      | product_es   | 10         | pip_es                  |
+    When the order identified by o_110 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute |
+      | ss_110     | ol_110         | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID | QuantityType | IsCompleteShipments | IsShipToday |
+      | ss_110                | D            | true                | false       |
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | ss_110                | io_110     |
+
+    # Drain async material/DESADV workpackages from shipment generation so they don't spill into
+    # the next scenario in this executor.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # Simulate a prior successful EPCIS send: an ACTIVE ledger row for this shipment's physical SSCC.
+    And metasfresh contains EDI_EPCIS_Transmitted_SSCC:
+      | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
+      | 987654321000031100 | scriptedCfg_es                                     | io_110     |
+
+    # ─── RED: reversing/reactivating/voiding a shipment whose EPCIS SSCCs were already transmitted
+    # must be rejected — reverse-and-recreate would re-run shipment completion and re-transmit the
+    # same physical SSCC (the Q2 duplicate-transmission root cause). Not implemented today, so these
+    # three actions succeed instead of throwing (intended RED).
+    And the shipment identified by io_110 is reversed expecting error
+      | AD_Message_ID |
+      |               |
+    And the shipment identified by io_110 is reactivated expecting error
+      | AD_Message_ID |
+      |               |
+    And the shipment identified by io_110 is voided expecting error
+      | AD_Message_ID |
+      |               |
+
+    # ─── Unblock: deactivating the ledger row (the WebUI shipment-tab feature) lifts the guard ────
+    And EDI_EPCIS_Transmitted_SSCC records are deactivated:
+      | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
+      | 987654321000031100 | scriptedCfg_es                                     | io_110     |
+
+    And the shipment identified by io_110 is reversed

@@ -40,6 +40,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_InOut;
 import de.metas.util.Services;
 
+import java.util.List;
+
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -159,5 +161,49 @@ public class EDI_EPCIS_Transmitted_SSCC_StepDef
 							.firstOptional(I_EDI_EPCIS_Transmitted_SSCC.class))
 					.execute();
 		}
+	}
+
+	/**
+	 * Deactivates the {@code EDI_EPCIS_Transmitted_SSCC} ledger row(s) matching the given
+	 * (SSCC18, config, shipment) triple — simulating support deactivating a ledger row via the WebUI
+	 * shipment tab (the sanctioned way to unblock both re-sending the SSCC and reversing/reactivating/
+	 * voiding the shipment).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>SSCC18</b> — (required) physical SSCC18 of the ledger row to deactivate<br>
+	 *   <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> — (required, identifier-ref) the receiver config<br>
+	 *   <b>M_InOut_ID</b> — (required, identifier-ref) the shipment the ledger row is on<br>
+	 * @cucumber.example
+	 * <pre>
+	 * And EDI_EPCIS_Transmitted_SSCC records are deactivated:
+	 *   | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
+	 *   | 987654321000030916 | scriptedCfg_020                                    | io_020     |
+	 * </pre>
+	 */
+	@Given("EDI_EPCIS_Transmitted_SSCC records are deactivated:")
+	public void epcis_transmitted_sscc_records_are_deactivated(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final String sscc18 = row.getAsString(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18);
+
+			final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(
+					row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID));
+
+			final I_M_InOut inout = inoutTable.get(row.getAsIdentifier(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID));
+
+			final List<I_EDI_EPCIS_Transmitted_SSCC> ledgerRecords = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
+					.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18, sscc18)
+					.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, cfg.getId().getRepoId())
+					.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID, inout.getM_InOut_ID())
+					.create()
+					.list();
+
+			ledgerRecords.forEach(ledgerRecord -> {
+				ledgerRecord.setIsActive(false);
+				saveRecord(ledgerRecord);
+			});
+		});
 	}
 }

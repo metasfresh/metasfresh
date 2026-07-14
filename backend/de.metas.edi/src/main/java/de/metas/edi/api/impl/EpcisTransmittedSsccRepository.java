@@ -71,4 +71,20 @@ public class EpcisTransmittedSsccRepository
 		record.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
+
+	/**
+	 * True iff the given shipment has at least one ACTIVE ledger row — i.e. at least one physical SSCC
+	 * of that shipment was already transmitted to a receiver and the ledger row was not since
+	 * deactivated. Active-only is intentional: deactivating the ledger row (the WebUI shipment-tab
+	 * feature) is the sanctioned way to unblock both re-sending the SSCC and reversing/reactivating/
+	 * voiding the shipment.
+	 */
+	public boolean hasActiveTransmittedForInOut(@NonNull final InOutId inOutId)
+	{
+		return queryBL.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
+				.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_M_InOut_ID, inOutId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
+	}
 }

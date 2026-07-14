@@ -6,6 +6,7 @@ import de.metas.edi.api.EDIExportStatus;
 import de.metas.edi.api.impl.EDIDesadvInOutRepository;
 import de.metas.edi.api.impl.EDIDocumentBL;
 import de.metas.edi.api.impl.DesadvBL;
+import de.metas.edi.api.impl.EpcisTransmittedSsccRepository;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.inout.InOutId;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +28,7 @@ public class M_InOut
 	@NonNull private final EDIDocumentBL ediDocumentBL;
 	@NonNull private final DesadvBL desadvBL;
 	@NonNull private final EDIDesadvInOutRepository ediDesadvInOutRepository;
+	@NonNull private final EpcisTransmittedSsccRepository epcisTransmittedSsccRepository;
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_M_InOut.COLUMNNAME_C_BPartner_ID, I_M_InOut.COLUMNNAME_C_Order_ID, I_M_InOut.COLUMNNAME_POReference })
@@ -84,6 +87,33 @@ public class M_InOut
 	public void updateEdiExportStatusOnReverse(final I_M_InOut inOut)
 	{
 		inOut.setEDI_ExportStatus(EDIExportStatus.DontSend.getCode());
+	}
+
+	/**
+	 * Forbids reversing/reactivating/voiding a shipment whose EPCIS SSCC events were already
+	 * transmitted to the receiver: recreating the document (reverse-and-recreate) would re-run
+	 * shipment completion and transmit the same physical SSCCs again, duplicating the events at the
+	 * receiver. Deactivating the shipment's {@code EDI_EPCIS_Transmitted_SSCC} ledger rows (the WebUI
+	 * shipment-tab feature) is the sanctioned way to unblock the action, consistent with it also
+	 * unblocking re-sending the SSCC.
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_VOID })
+	public void forbidReverseWhenEpcisTransmitted(final I_M_InOut inOut)
+	{
+		final InOutId inOutId = InOutId.ofRepoId(inOut.getM_InOut_ID());
+		if (!epcisTransmittedSsccRepository.hasActiveTransmittedForInOut(inOutId))
+		{
+			return;
+		}
+
+		throw new AdempiereException("This shipment's EPCIS SSCC events were already transmitted to the receiver;"
+				+ " reversing, reactivating or voiding it would duplicate those events at the receiver."
+				+ " Deactivate the transmitted-SSCC ledger rows on the shipment's EPCIS tab first if this is intentional.")
+				.appendParametersToMessage()
+				.setParameter("M_InOut_ID", inOut.getM_InOut_ID());
 	}
 
 	/**
