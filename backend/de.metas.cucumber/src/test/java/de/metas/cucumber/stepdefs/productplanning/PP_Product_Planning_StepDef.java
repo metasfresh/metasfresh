@@ -212,6 +212,7 @@ public class PP_Product_Planning_StepDef
 				.ifPresent(builder::maturingConfigLineId);
 
 		row.getAsOptionalIdentifier(I_PP_Product_Planning.COLUMNNAME_C_Manufacturing_Aggregation_ID)
+				.filter(StepDefDataIdentifier::isNotNullPlaceholder)
 				.map(aggregationTable::getId)
 				.ifPresent(aggregationId -> builder.manufacturingAggregationId(aggregationId.getRepoId()));
 
