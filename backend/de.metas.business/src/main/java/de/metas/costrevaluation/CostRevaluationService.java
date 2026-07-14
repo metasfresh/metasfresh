@@ -62,6 +62,12 @@ public class CostRevaluationService
 	{
 		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
 
+		if (costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		{
+			createLinesFromCopyFromCostElement(costRevaluationId, costRevaluation);
+			return;
+		}
+
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
 		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
@@ -85,6 +91,51 @@ public class CostRevaluationService
 				.collect(ImmutableList.toImmutableList());
 
 		costRevaluationRepository.createLinesForCurrentCosts(costRevaluationId, currentCosts);
+	}
+
+	/**
+	 * {@code RevaluationSource.CopyFromCostElement}: seed lines from the SOURCE element's own current cost
+	 * ({@code CopyFrom_M_CostElement_ID}), not from the header's own (target) element. A zero-on-hand source
+	 * {@code M_Cost} row still produces a line (qty = 0) — {@link ICurrentCostsRepository} already returns
+	 * whatever rows exist for the segment regardless of qty, so no extra qty-based filtering is needed here.
+	 */
+	private void createLinesFromCopyFromCostElement(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CostRevaluation costRevaluation)
+	{
+		final CostElementId sourceCostElementId = costRevaluation.getCopyFromCostElementId();
+		if (sourceCostElementId == null)
+		{
+			throw new AdempiereException("CopyFrom_M_CostElement_ID is not set for " + costRevaluation.getCostRevaluationId());
+		}
+
+		final ClientId clientId = costRevaluation.getClientId();
+		final OrgId orgId = costRevaluation.getOrgId();
+		final ImmutableSet<ProductId> productIds = productDAO.retrieveStockedProductIds(clientId);
+		if (productIds.isEmpty())
+		{
+			throw new AdempiereException("No stocked products found");
+		}
+
+		final AcctSchemaId acctSchemaId = costRevaluation.getAcctSchemaId();
+
+		final ImmutableList<CurrentCost> sourceCurrentCosts = currentCostsRepo.stream(
+						CurrentCostQuery.builder()
+								.clientId(clientId)
+								// NOTE: don't filter by OrgId here because we don't know the costing level yet
+								.acctSchemaId(acctSchemaId)
+								.costElementId(sourceCostElementId)
+								.productIds(productIds)
+								.build()
+				)
+				.filter(currentCost -> isMatching(currentCost, orgId))
+				.collect(ImmutableList.toImmutableList());
+		if (sourceCurrentCosts.isEmpty())
+		{
+			throw new AdempiereException("No current costs found for source cost element " + sourceCostElementId);
+		}
+
+		costRevaluationRepository.createLinesForCopyFromCostElement(costRevaluationId, costRevaluation.getCostElementId(), sourceCurrentCosts);
 	}
 
 	private static boolean isMatching(@NonNull CurrentCost currentCost, @NonNull OrgId orgId)

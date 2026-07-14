@@ -70,6 +70,8 @@ public class CostRevaluationRepository
 				.evaluationStartDate(record.getEvaluationStartDate().toInstant())
 				.dateAcct(InstantAndOrgId.ofTimestamp(record.getDateAcct(), orgId))
 				.docStatus(DocStatus.ofCode(record.getDocStatus()))
+				.revaluationSource(RevaluationSource.ofCode(record.getRevaluationSource()))
+				.copyFromCostElementId(CostElementId.ofRepoIdOrNull(record.getCopyFrom_M_CostElement_ID()))
 				.build();
 	}
 
@@ -112,6 +114,79 @@ public class CostRevaluationRepository
 			deleteDetailsByLineIds(lineIds);
 			InterfaceWrapperHelper.deleteAll(linesToDelete);
 		}
+	}
+
+	/**
+	 * {@code RevaluationSource.CopyFromCostElement} sibling of {@link #createLinesForCurrentCosts(CostRevaluationId, List)}:
+	 * one line per SOURCE-element {@code CurrentCost} row (incl. zero-on-hand), with {@code NewCostPrice}/{@code CurrentQty}
+	 * copied unchanged from the source, but the line's {@code M_CostElement_ID} set to the document's own (target) element.
+	 * <p>
+	 * Lower-level (component/LL) cost is intentionally NOT persisted here: {@code M_CostRevaluationLine} has no LL column
+	 * (mirroring the existing {@code Calculated} path, which also doesn't carry LL at line level). Task 5 (complete-time
+	 * direct-set) re-reads the source element's {@code CurrentCost} fresh via {@code CopyFrom_M_CostElement_ID} to seed
+	 * the target {@code M_Cost.CurrentCostPriceLL}.
+	 */
+	public void createLinesForCopyFromCostElement(
+			@NonNull final CostRevaluationId costRevaluationId,
+			@NonNull final CostElementId targetCostElementId,
+			@NonNull final List<CurrentCost> sourceCurrentCosts)
+	{
+		final HashMap<CostRevaluationLineKey, I_M_CostRevaluationLine> existingRecords = streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+				.collect(GuavaCollectors.toHashMapByKey(CostRevaluationRepository::extractCostRevaluationLineKey));
+
+		for (final CurrentCost sourceCurrentCost : sourceCurrentCosts)
+		{
+			final CostRevaluationLineKey key = extractCostRevaluationLineKey(sourceCurrentCost);
+			I_M_CostRevaluationLine existingRecord = existingRecords.remove(key);
+			if (existingRecord == null)
+			{
+				existingRecord = InterfaceWrapperHelper.newInstance(I_M_CostRevaluationLine.class);
+				existingRecord.setM_CostRevaluation_ID(costRevaluationId.getRepoId());
+				existingRecord.setAD_Org_ID(key.getClientAndOrgId().getOrgId().getRepoId());
+				existingRecord.setIsRevaluated(false);
+			}
+
+			// Skip evaluated lines
+			if (existingRecord.isRevaluated())
+			{
+				continue;
+			}
+
+			updateRecordFromCopySource(existingRecord, targetCostElementId, sourceCurrentCost);
+			InterfaceWrapperHelper.save(existingRecord);
+		}
+
+		final Collection<I_M_CostRevaluationLine> linesToDelete = existingRecords.values();
+		if (!linesToDelete.isEmpty())
+		{
+			final ImmutableSet<CostRevaluationLineId> lineIds = linesToDelete.stream()
+					.map(CostRevaluationRepository::extractCostRevaluationLineId)
+					.collect(ImmutableSet.toImmutableSet());
+
+			deleteDetailsByLineIds(lineIds);
+			InterfaceWrapperHelper.deleteAll(linesToDelete);
+		}
+	}
+
+	private static void updateRecordFromCopySource(
+			@NonNull final I_M_CostRevaluationLine record,
+			@NonNull final CostElementId targetCostElementId,
+			@NonNull final CurrentCost sourceCurrentCost)
+	{
+		record.setIsActive(true);
+
+		updateRecordFrom(record, sourceCurrentCost.getCostSegment());
+		// The line belongs to the document's own (target) cost element, NOT the source it was copied from.
+		record.setM_CostElement_ID(targetCostElementId.getRepoId());
+
+		final CostPrice costPrice = sourceCurrentCost.getCostPrice();
+		record.setCurrentCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
+		// Always mirror the source's own price (value-neutral copy, not a user-adjustable revaluation).
+		record.setNewCostPrice(costPrice.getOwnCostPrice().toBigDecimal());
+		record.setC_Currency_ID(costPrice.getCurrencyId().getRepoId());
+
+		record.setC_UOM_ID(costPrice.getUomId().getRepoId());
+		record.setCurrentQty(sourceCurrentCost.getCurrentQty().toBigDecimal());
 	}
 
 	@NonNull
