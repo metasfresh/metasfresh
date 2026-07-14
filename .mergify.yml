@@ -20,11 +20,11 @@ merge_protections:
     if:
       - or:
           - check-success=Merge Gate
-          - check-success=testspace-analytics
+          - check-success=Merge Gate
     success_conditions:
       - or:
           - check-success=Merge Gate
-          - check-success=testspace-analytics
+          - check-success=Merge Gate
 
 queue_rules:
   - name: squash-queue
@@ -32,14 +32,14 @@ queue_rules:
     merge_conditions:
       - or:
           - check-success=Merge Gate
-          - check-success=testspace-analytics
+          - check-success=Merge Gate
 
   - name: merge-queue
     merge_method: merge
     merge_conditions:
       - or:
           - check-success=Merge Gate
-          - check-success=testspace-analytics
+          - check-success=Merge Gate
 
 pull_request_rules:
 
