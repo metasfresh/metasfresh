@@ -451,8 +451,8 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   ## production outbound-selection gate ("de.metas.edi".epcis_has_events(m_inout_id)): a single order
   ## produces ONE standalone, fully-covered LU (one physical pallet, one SSCC18); the shipment
   ## completion enqueues the export; the /ok callback simulates the external system confirming
-  ## receipt. EDI_EPCIS_Transmitted_SSCC must then carry a ledger row for that SSCC18 — the RED
-  ## assertion, since no listener writes it today. Once the ledger holds that row,
+  ## receipt. EDI_EPCIS_Transmitted_SSCC must then carry a ledger row for that SSCC18 (the success
+  ## listener records it as the side-effect of a confirmed send). Once the ledger holds that row,
   ## epcis_has_events(...) for the SAME shipment must flip to false: the real outbound-selection
   ## WHERE-clause would no longer match this shipment, so a re-trigger of the same selection could
   ## not re-send it (exactly-once).
@@ -611,8 +611,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
       | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
       | io_S30916_100 | scriptedCfg_S30916_100                             | S            |
 
-    # ─── CORE ASSERTION (RED): the successful send must have recorded the transmitted SSCC ──
-    # No listener writes EDI_EPCIS_Transmitted_SSCC today, so this assertion FAILS (intended RED).
+    # ─── CORE ASSERTION: the successful send recorded the transmitted SSCC in the ledger ──
     Then after not more than 10s, EDI_EPCIS_Transmitted_SSCC is found:
       | SSCC18              | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    |
       | 987654321000031000  | scriptedCfg_S30916_100                             | io_S30916_100 |
@@ -665,10 +664,9 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
       | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID |
       | 987654321000031100 | scriptedCfg_es                                     | io_110     |
 
-    # ─── RED: reversing/reactivating/voiding a shipment whose EPCIS SSCCs were already transmitted
-    # must be rejected — reverse-and-recreate would re-run shipment completion and re-transmit the
-    # same physical SSCC (the Q2 duplicate-transmission root cause). Not implemented today, so these
-    # three actions succeed instead of throwing (intended RED).
+    # ─── Reversing/reactivating/voiding a shipment whose EPCIS SSCCs were already transmitted must
+    # be rejected — reverse-and-recreate would re-run shipment completion and re-transmit the same
+    # physical SSCC (the Q2 duplicate-transmission root cause).
     And the shipment identified by io_110 is reversed expecting error
       | AD_Message_ID |
       |               |

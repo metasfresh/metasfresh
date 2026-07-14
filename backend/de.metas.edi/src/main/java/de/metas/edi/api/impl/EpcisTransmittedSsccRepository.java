@@ -36,6 +36,9 @@ import org.springframework.stereotype.Repository;
  * Repository for {@code EDI_EPCIS_Transmitted_SSCC} — the per-SSCC EPCIS transmission ledger
  * that makes a resend idempotent: {@code get_epcis_events_json_fn} excludes any physical SSCC18
  * that already has an active ledger row for the given receiver config.
+ * <p>
+ * Repository Tables: EDI_EPCIS_Transmitted_SSCC
+ * Repository Cluster: EpcisTransmittedSsccRepository
  */
 @Repository
 public class EpcisTransmittedSsccRepository

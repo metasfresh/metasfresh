@@ -40,6 +40,9 @@ import org.springframework.stereotype.Repository;
  * <p>Used to determine, right after a successful EPCIS send, which physical SSCCs the sent
  * document actually carried, so that each one can be recorded in the
  * {@code EDI_EPCIS_Transmitted_SSCC} ledger (see {@link EpcisTransmittedSsccRepository}).
+ * <p>
+ * Repository Tables: (none — read-only via the {@code "de.metas.edi".get_epcis_events_json_fn} SQL function)
+ * Repository Cluster: EpcisEventsJsonDAO
  */
 @Repository
 public class EpcisEventsJsonDAO
