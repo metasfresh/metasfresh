@@ -1,12 +1,12 @@
--- me03#29557: Surface M_Product.DepositType in INVOIC JSON export.
--- Adds Product_DepositType column to edi_cctop_invoic_500_v (inner view)
--- and exposes it as 'Product_DepositType' JSON key in C_Invoice_Export_EDI_INVOIC_JSON_V (outer view).
+-- INVOIC JSON export view refresh.
+-- NOTE: the upstream "Product_DepositType" enhancement is intentionally EXCLUDED (it depends on
+-- M_Product.DepositType, a feature not adopted here), so this recreates the views without that column.
 
 -- Drop the outer JSON view first (it depends on the inner view)
 DROP VIEW IF EXISTS C_Invoice_Export_EDI_INVOIC_JSON_V
 ;
 
--- Recreate the inner view with the new Product_DepositType column
+-- Recreate the inner view
 DROP VIEW IF EXISTS edi_cctop_invoic_500_v$new;
 
 CREATE OR REPLACE VIEW edi_cctop_invoic_500_v$new AS
@@ -32,7 +32,6 @@ SELECT SUM(il.qtyEntered)                                                       
        REGEXP_REPLACE(asi_data.UPC, '\s+$', '')                                    AS UPC_CU,
        REGEXP_REPLACE(asi_data.EAN_CU, '\s+$', '')                               AS EAN_CU,
        REGEXP_REPLACE(p.value, '\s+$', '')                                       AS Value,
-       p.DepositType                                                             AS Product_DepositType,
        REGEXP_REPLACE(asi_data.productno, '\s+$', '')                              AS CustomerProductNo,
        SUBSTR(p.name, 1, 35)                                                     AS name,
        SUBSTR(p.name, 36, 70)                                                    AS name2,
@@ -111,7 +110,6 @@ GROUP BY il.c_invoice_id,
          asi_data.UPC,
          asi_data.EAN_CU,
          p.value,
-         p.DepositType,
          asi_data.productno,
          (SUBSTR(p.name, 1, 35)),
          (SUBSTR(p.name, 36, 70)),
@@ -163,7 +161,7 @@ task 09182: in OrderPOReference and OrderLine we show reference and line for the
 '
 ;
 
--- Recreate the outer JSON view, adding 'Product_DepositType' to the per-line JSON object
+-- Recreate the outer JSON view
 CREATE OR REPLACE VIEW C_Invoice_Export_EDI_INVOIC_JSON_V AS
 SELECT invoic_v.c_invoice_id,
        JSON_BUILD_OBJECT(
@@ -284,8 +282,7 @@ FROM edi_cctop_invoic_v invoic_v
                                             'Product_Buyer_TU_GTIN', v.Buyer_GTIN_TU,
                                             'Product_Buyer_ProductNo', v.CustomerProductNo,
                                             'Product_Supplier_TU_GTIN', v.Supplier_GTIN_CU,
-                                            'Product_Supplier_ProductNo', v.Value,
-                                            'Product_DepositType', v.Product_DepositType
+                                            'Product_Supplier_ProductNo', v.Value
                                         ) ORDER BY v.line) AS json_data
                     FROM edi_cctop_invoic_500_v v
                              LEFT JOIN c_uom uom ON uom.c_uom_id = v.C_UOM_BPartner_ID
