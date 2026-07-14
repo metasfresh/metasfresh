@@ -102,3 +102,7 @@ nul
 docker-builds/e2e-tests/.env
 *.stackdump
 tmp/
+# Claude-config links (created by install-claude-config.sh; must not be tracked)
+/REVIEW.md
+/docs/documentation-naming.md
+/docs/manual
