@@ -446,7 +446,6 @@ jobs:
           path: jest/frontend/*.xml
           retention-days: 1
           if-no-files-found: warn
-      # TODO: Upload jest JUnit XML to HTTP report server (source: jest/frontend/*.xml)
       - name: Generate JUnit HTML for Jest
         if: always()
         uses: ./.github/actions/generate-junit-html
@@ -1197,7 +1196,6 @@ jobs:
           path: junit/camel/**/*.xml
           retention-days: 1
           if-no-files-found: warn
-      # TODO: Upload backend+camel JUnit XML to HTTP report server (source: junit/backend/, junit/camel/)
       - name: Merge backend JUnit XML
         if: always()
         run: |
