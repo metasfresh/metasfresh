@@ -42,6 +42,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * State machine for the scripted-export-conversion status row.
@@ -191,6 +192,34 @@ public class ExternalSystemExportStatusService
 		repo.update(existing
 				.withStatus(ExternalSystemExportStatus.Invalid)
 				.withStatusMessage(message));
+	}
+
+	// ------------------------------------------------------------------
+	// Queries
+	// ------------------------------------------------------------------
+
+	/**
+	 * Returns the status row bound to the given {@code pInstanceId}, if any — the read-only
+	 * counterpart of the pInstance-keyed {@code markXxx} transitions below. Callers use this to
+	 * resolve the (config, sourceRecord) that a successful/failed invocation belongs to.
+	 */
+	@NonNull
+	public Optional<ScriptedExportConversionStatus> getLatestByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	{
+		return repo.getLatestByPInstanceId(pInstanceId);
+	}
+
+	/**
+	 * Returns the distinct config IDs whose <b>active</b> status row for the source record is in-flight
+	 * (Enqueued or SendingStarted — dispatched but not yet confirmed/failed). Used to prevent
+	 * reversing/reactivating a source document whose export is still in-flight (it may already be at
+	 * the receiver). Only active rows count, so deactivating a stuck status row releases the document.
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getInflightConfigsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getInflightConfigsBySourceRecord(sourceRecord);
 	}
 
 	// ------------------------------------------------------------------

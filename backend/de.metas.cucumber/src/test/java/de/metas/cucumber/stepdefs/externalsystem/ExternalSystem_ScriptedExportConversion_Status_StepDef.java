@@ -48,14 +48,17 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Step definitions for {@code ExternalSystem_ScriptedExportConversion_Status} assertions,
  * scripted-export /ok callback simulation, {@code M_InOut.EPCIS_ExportStatus} roll-up checks,
- * and the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation.
+ * the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation, and deactivating a
+ * shipment's status row (the escape-hatch that releases a shipment blocked by an in-flight export).
  *
  * <p>The status table holds one row per (config, source-record) pair that is updated in place
  * as the export lifecycle progresses (Pending → Enqueued → Sent / Error / Invalid / DontSend).
@@ -286,5 +289,39 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 				.buildAndPrepareExecution()
 				.executeSync();
 		executor.getResult().propagateErrorIfAny();
+	}
+
+	/**
+	 * Deactivates every active scripted-export status row for the given shipment — simulating support
+	 * deactivating a stuck in-flight export-status row via the WebUI shipment tab. This is the
+	 * sanctioned escape-hatch that releases a shipment the reverse/reactivate/void guard is blocking
+	 * because its EPCIS export is still in-flight (Enqueued/SendingStarted) and the external system
+	 * never called back.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData
+	 * @cucumber.example <pre>
+	 * When the EPCIS scripted-export status row for shipment io_140 is deactivated
+	 * </pre>
+	 */
+	@When("^the EPCIS scripted-export status row for shipment (.*) is deactivated$")
+	public void deactivateStatusRowForShipment(final String inoutIdentifierStr)
+	{
+		final org.compiere.model.I_M_InOut inout = inoutTable.get(StepDefDataIdentifier.ofString(inoutIdentifierStr));
+		assertThat(inout).isNotNull();
+		final int m_inout_table_id = tableDAO.retrieveTableId(org.compiere.model.I_M_InOut.Table_Name);
+
+		final List<I_ExternalSystem_ScriptedExportConversion_Status> statusRows = queryBL
+				.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, inout.getM_InOut_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+		statusRows.forEach(row -> {
+			row.setIsActive(false);
+			saveRecord(row);
+		});
 	}
 }
