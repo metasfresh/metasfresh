@@ -114,8 +114,10 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_C_Workplace;
 import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse_PickingGroup;
 import org.compiere.util.Env;
 import org.mockito.Mockito;
 
@@ -319,6 +321,55 @@ public class PickingJobTestHelper
 		return LocatorId.ofRepoId(warehouseId, locator.getM_Locator_ID());
 	}
 
+	/**
+	 * Creates a new {@code M_Warehouse_PickingGroup} and assigns the given warehouse to it
+	 * (sets {@code M_Warehouse.M_Warehouse_PickingGroup_ID}). Test-only helper, additive: does not
+	 * touch any warehouse that isn't explicitly passed in.
+	 */
+	public int createPickingGroupWithWarehouse(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse_PickingGroup pickingGroup = newInstance(I_M_Warehouse_PickingGroup.class);
+		pickingGroup.setName("pickingGroup");
+		saveRecord(pickingGroup);
+
+		assignWarehouseToPickingGroup(warehouseId, pickingGroup.getM_Warehouse_PickingGroup_ID());
+
+		return pickingGroup.getM_Warehouse_PickingGroup_ID();
+	}
+
+	/** Assigns (or re-assigns) the given warehouse to the given (already existing) picking group. */
+	public void assignWarehouseToPickingGroup(@NonNull final WarehouseId warehouseId, final int pickingGroupId)
+	{
+		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(warehouseId, I_M_Warehouse.class);
+		warehouse.setM_Warehouse_PickingGroup_ID(pickingGroupId);
+		saveRecord(warehouse);
+	}
+
+	/**
+	 * Creates a SECOND warehouse (+ its own locator), independent from the workplace's own
+	 * {@link #shipFromLocatorId}. Use together with {@link #createPickingGroupWithWarehouse(WarehouseId)}/
+	 * {@link #assignWarehouseToPickingGroup(WarehouseId, int)} to set up a "same picking group, different
+	 * warehouse" scenario.
+	 */
+	public LocatorId createWarehouseAndLocator(@NonNull final String warehouseName, @NonNull final String locatorValue)
+	{
+		final WarehouseId warehouseId = createWarehouseId(warehouseName);
+		return createLocatorId(warehouseId, locatorValue);
+	}
+
+	/**
+	 * Sets {@code C_Workplace.PickFrom_Locator_ID} on the (already created) {@link #workplace}. Test-only helper,
+	 * additive: mirrors how the workplace is created (via {@link WorkplaceCreateRequest#getPickFromLocatorId()}),
+	 * but applied after the fact so a test can opt in to a narrower pick-from locator without changing the
+	 * constructor's default workplace setup.
+	 */
+	public void setWorkplacePickFromLocator(@NonNull final LocatorId locatorId)
+	{
+		final I_C_Workplace record = InterfaceWrapperHelper.load(workplace.getId(), I_C_Workplace.class);
+		record.setPickFrom_Locator_ID(locatorId.getRepoId());
+		saveRecord(record);
+	}
+
 	public void updateMobileProfile(final UnaryOperator<MobileUIPickingUserProfile> updater)
 	{
 		configService.update(updater);
@@ -477,7 +528,13 @@ public class PickingJobTestHelper
 
 	public HuId createVHU(@NonNull final ProductId productId, @NonNull final String qtyStr)
 	{
-		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty(qtyStr, productId));
+		return createVHU(productId, qtyStr, shipFromLocatorId);
+	}
+
+	/** Same as {@link #createVHU(ProductId, String)} but places the HU at the given target locator (e.g. a different warehouse's locator). */
+	public HuId createVHU(@NonNull final ProductId productId, @NonNull final String qtyStr, @NonNull final LocatorId targetLocatorId)
+	{
+		return createHU(HuPackingInstructionsId.VIRTUAL, productId, qty(qtyStr, productId), targetLocatorId);
 	}
 
 	public Quantity qty(@NonNull final String qtyStr, @NonNull final ProductId productId)
@@ -486,6 +543,16 @@ public class PickingJobTestHelper
 	}
 
 	public HuId createHU(final HuPackingInstructionsId huPackingInstructionsId, final ProductId productId, final Quantity qty)
+	{
+		return createHU(huPackingInstructionsId, productId, qty, shipFromLocatorId);
+	}
+
+	/** Same as {@link #createHU(HuPackingInstructionsId, ProductId, Quantity)} but places the HU at the given target locator. */
+	public HuId createHU(
+			final HuPackingInstructionsId huPackingInstructionsId,
+			final ProductId productId,
+			final Quantity qty,
+			@NonNull final LocatorId targetLocatorId)
 	{
 		final IHUProducerAllocationDestination destination;
 		HULoader.builder()
@@ -497,7 +564,7 @@ public class PickingJobTestHelper
 				.destination(destination = HUProducerDestination.of(huPackingInstructionsId)
 						.setMaxHUsToCreate(1) // we want one HU
 						.setHUStatus(X_M_HU.HUSTATUS_Active)
-						.setLocatorId(shipFromLocatorId))
+						.setLocatorId(targetLocatorId))
 				.load(AllocationUtils.builder()
 						.setHUContext(huTestHelper.createMutableHUContextOutOfTransaction())
 						.setProduct(productId)
