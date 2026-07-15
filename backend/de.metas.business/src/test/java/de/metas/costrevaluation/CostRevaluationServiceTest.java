@@ -306,6 +306,26 @@ public class CostRevaluationServiceTest
 		return CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID());
 	}
 
+	/** Like {@link #createCopyFromCostElementHeader()} but leaves {@code CopyFrom_M_CostElement_ID} unset. */
+	private CostRevaluationId createCopyFromCostElementHeaderWithoutSource()
+	{
+		final I_M_CostRevaluation record = newInstance(I_M_CostRevaluation.class);
+		record.setAD_Org_ID(OrgId.ANY.getRepoId());
+		record.setC_AcctSchema_ID(acctSchemaId.getRepoId());
+		record.setM_CostElement_ID(targetCostElementId.getRepoId());
+		// CopyFrom_M_CostElement_ID intentionally left unset (null).
+		record.setRevaluationSource(RevaluationSource.CopyFromCostElement.getCode());
+		record.setDocStatus(DocStatus.Drafted.getCode());
+
+		final Timestamp cutoff = Timestamp.from(Instant.parse("2025-12-31T00:00:00Z"));
+		record.setDateAcct(cutoff);
+		record.setEvaluationStartDate(cutoff);
+
+		saveRecord(record);
+
+		return CostRevaluationId.ofRepoId(record.getM_CostRevaluation_ID());
+	}
+
 	private static I_M_CostRevaluationLine getLineForProduct(
 			@NonNull final List<I_M_CostRevaluationLine> lines,
 			@NonNull final ProductId productId)
@@ -382,6 +402,43 @@ public class CostRevaluationServiceTest
 					.collect(ImmutableList.toImmutableList());
 			assertThat(lines).hasSize(1);
 			assertThat(lines.get(0).getNewCostPrice()).isEqualByComparingTo("5.00");
+		}
+	}
+
+	@Nested
+	class CreateLines_CopyFromCostElement_Guards
+	{
+		/**
+		 * Guard: a {@code CopyFromCostElement} header whose {@code CopyFrom_M_CostElement_ID} is unset cannot resolve a
+		 * source element, so {@code createLines} refuses it up-front with a clear message rather than proceeding with a
+		 * null source. (The self-copy guard is covered by cucumber; this null-source guard is not.)
+		 */
+		@Test
+		public void throws_whenSourceElementNotSet()
+		{
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeaderWithoutSource();
+
+			assertThatThrownBy(() -> costRevaluationService.createLines(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("CopyFrom_M_CostElement_ID is not set");
+		}
+
+		/**
+		 * Guard: a {@code CopyFromCostElement} header with a valid source element but NO current costs on that source
+		 * (for any stocked product) has nothing to copy, so {@code createLines} refuses it. A stocked product exists
+		 * (so the earlier "No stocked products found" guard is not the one firing) but no source {@code M_Cost} is seeded.
+		 */
+		@Test
+		public void throws_whenSourceHasNoCurrentCosts()
+		{
+			// A stocked product exists, but its source element carries no current cost (nothing seeded).
+			createProduct("productWithoutSourceCost");
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+
+			assertThatThrownBy(() -> costRevaluationService.createLines(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("No current costs found for source cost element");
 		}
 	}
 

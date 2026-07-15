@@ -123,7 +123,7 @@ public class M_Cost_StepDef
 	 * <pre>
 	 * And update current costs
 	 *   | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
-	 *   | product       | AveragePO        | 12.50            |
+	 *   | product      | AveragePO        | 12.50            |
 	 * </pre>
 	 */
 	@And("^update current costs$")
