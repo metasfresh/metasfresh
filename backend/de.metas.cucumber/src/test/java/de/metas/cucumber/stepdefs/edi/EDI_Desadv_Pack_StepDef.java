@@ -143,6 +143,20 @@ public class EDI_Desadv_Pack_StepDef
 		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
 	}
 
+	/**
+	 * Polls until the {@link I_EDI_Desadv_Pack} matching one {@code EDI_Desadv_Pack records are found:}
+	 * DataTable row exists, then registers it under the row identifier.
+	 * <p>
+	 * Supports the optional filter column {@code EDI_Desadv_ID} — an identifier resolved via
+	 * {@link EDI_Desadv_StepDefData}; when present the fetch is scoped to that DESADV. This is required
+	 * for a consolidated shipment (N orders &rarr; one M_InOut &rarr; N DESADVs): without it the fetch
+	 * matches packs across all the shipment's DESADVs and fails with {@code Multiple valid items found}.
+	 * <pre>
+	 * Then after not more than 60s, EDI_Desadv_Pack records are found:
+	 *   | EDI_Desadv_ID | SeqNo | ... |
+	 *   | d_A           | 10    | ... |
+	 * </pre>
+	 */
 	private void packIsFound(
 			@NonNull final DataTableRow row,
 			final int timeoutSec) throws InterruptedException

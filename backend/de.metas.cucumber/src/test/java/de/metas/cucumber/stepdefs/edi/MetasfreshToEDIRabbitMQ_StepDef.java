@@ -22,12 +22,10 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
-import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
+import com.rabbitmq.client.GetResponse;
 import de.metas.CommandLineParser;
 import de.metas.ServerBoot;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -54,7 +52,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -145,70 +142,87 @@ public class MetasfreshToEDIRabbitMQ_StepDef
 		ediExpDesadvTable.put(ediExpDesadvIdentifier, export);
 	}
 
+	/**
+	 * Pulls the next EDI-export XML document off {@code queueName} and parses it, retrying until one
+	 * arrives or 60s elapse.
+	 * <p>
+	 * Uses a synchronous {@link Channel#basicGet} pull-loop on the test thread (one message at a time,
+	 * explicit ack) rather than an async push consumer — per {@code de.metas.cucumber} CLAUDE.md rule 15,
+	 * this avoids the prefetch-storm / {@code AlreadyClosedException} race that an unbounded
+	 * {@code basicConsume}/{@code DefaultConsumer} consumer causes when it closes the channel mid-dispatch.
+	 * A non-XML / foreign message is acked-and-skipped so it neither returns the wrong document nor
+	 * crashes the poll; any surplus messages (e.g. a second DESADV of a consolidated shipment) are left
+	 * on the queue for the next call.
+	 */
 	@NonNull
 	private Document pollDocumentFromQueue(@NonNull final String queueName) throws IOException, TimeoutException, InterruptedException, ParserConfigurationException, SAXException
 	{
 		final Connection connection = metasfreshToRabbitMQFactory.newConnection();
-		final Channel channel = connection.createChannel();
-
-		final CountDownLatch countDownLatch = new CountDownLatch(1);
-
-		final String[] messages = new String[1];
-
-		final DefaultConsumer consumer = new DefaultConsumer(channel)
-		{
-			@Override
-			public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws IOException
-			{
-				// Only accept the first delivery and ack it; cancel the consumer immediately so the
-				// broker requeues / leaves any remaining messages (e.g. a second DESADV pre-queued
-				// before this poll) for the next pollDocumentFromQueue call.
-				if (countDownLatch.getCount() == 0)
-				{
-					// Reject without requeue is wrong (would lose the message); nack with requeue=true
-					// keeps it in the queue for the next caller. With basicCancel below, this path is
-					// only hit if the broker dispatched extra messages before cancellation took effect.
-					channel.basicNack(envelope.getDeliveryTag(), false, true);
-					return;
-				}
-
-				messages[0] = new String(body, StandardCharsets.UTF_8);
-
-				logger.info("*** Queue: {}, received message: {}", queueName, messages[0]);
-
-				countDownLatch.countDown();
-
-				channel.basicAck(envelope.getDeliveryTag(), false);
-
-				try
-				{
-					channel.basicCancel(consumerTag);
-				}
-				catch (final Exception e)
-				{
-					// best-effort cancel; channel may already be in the process of closing
-					logger.warn("basicCancel failed (ignored): {}", e.getMessage());
-				}
-			}
-		};
-
 		try
 		{
-			// autoAck=false: we manually ack the first message and nack-with-requeue any extras the
-			// broker dispatched before basicCancel took effect, so a follow-up pollDocumentFromQueue
-			// call still finds those messages in the queue.
-			channel.basicConsume(queueName, false, consumer);
+			// createChannel() is inside the outer try so the connection is still closed if it throws.
+			final Channel channel = connection.createChannel();
+			try
+			{
+				final long deadlineMillis = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60);
 
-			final boolean messageReceivedWithinTimeout = countDownLatch.await(60, TimeUnit.SECONDS);
+				while (System.currentTimeMillis() < deadlineMillis)
+				{
+					// autoAck=false: pull exactly one message at a time on the test thread, then ack it
+					// explicitly once we have read its body. No prefetch storm, no consumer-callback thread.
+					final GetResponse getResponse = channel.basicGet(queueName, false);
+					if (getResponse == null)
+					{
+						// Queue currently empty (the export workpackage may not have published yet) -> wait
+						// briefly and retry until the deadline.
+						try
+						{
+							Thread.sleep(250);
+						}
+						catch (final InterruptedException interrupted)
+						{
+							Thread.currentThread().interrupt();
+							throw interrupted;
+						}
+						continue;
+					}
 
-			assertThat(messageReceivedWithinTimeout).isTrue();
+					final String message = new String(getResponse.getBody(), StandardCharsets.UTF_8);
+					channel.basicAck(getResponse.getEnvelope().getDeliveryTag(), false);
+
+					try
+					{
+						final Document document = parseXmlStringToDocument(message);
+						logger.info("*** Queue: {}, received message: {}", queueName, message);
+						return document;
+					}
+					catch (final SAXException | IOException foreignMessage)
+					{
+						// A leftover / foreign message that is not the expected EDI XML: it is already acked
+						// (removed) above, so just skip it and keep polling for the message we expect.
+						// ParserConfigurationException is intentionally NOT caught here: it signals a broken
+						// JAXP/JVM configuration, not a per-message condition, so it must propagate and fail
+						// the run loudly rather than be swallowed and masked by the 60s-timeout AssertionError.
+						logger.warn("*** Queue: {}, skipping non-XML/foreign message (body={}): {}", queueName, message, foreignMessage.getMessage());
+					}
+				}
+
+				throw new AssertionError("No EDI-export message received on queue '" + queueName + "' within 60s");
+			}
+			finally
+			{
+				// guard with isOpen(): if the broker already force-closed the channel, an unconditional
+				// close() would throw AlreadyClosedException in finally and suppress the real failure.
+				if (channel.isOpen())
+				{
+					channel.close();
+				}
+			}
 		}
 		finally
 		{
-			channel.close();
+			connection.close();
 		}
-
-		return parseXmlStringToDocument(messages[0]);
 	}
 
 	@NonNull
