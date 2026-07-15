@@ -6,7 +6,7 @@
 --
 -- Read-only-except-deactivate, exactly like the tab it replaces: rows are written only by the
 -- send-confirmation success listener, so IsInsertRecord='N' and the table's own IsDeleteable='N'
--- (set by 5813880) keep create + hard-delete unavailable. Every DATA field keeps AD_Field.IsReadOnly='Y';
+-- (set at table creation, 5813290) keep create + hard-delete unavailable. Every DATA field keeps AD_Field.IsReadOnly='Y';
 -- only IsActive is editable (tab-level IsReadOnly='N') — the escape hatch: deactivating a ledger row
 -- makes that physical SSCC eligible for re-transmission again (get_epcis_events_json_fn's
 -- ledger-exclusion only matches active rows).
