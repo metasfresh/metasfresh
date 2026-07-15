@@ -26,6 +26,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -48,11 +49,14 @@ class DD_Order_StepDef_ReconcileSettledTest
 	private static final LocatorId locatorA = LocatorId.ofRepoId(100, 10);
 	private static final LocatorId locatorB = LocatorId.ofRepoId(100, 20);
 
-	private static BigDecimal bd(final String v) {return new BigDecimal(v);}
+	private static BigDecimal bd(final String v)
+	{
+		return new BigDecimal(v);
+	}
 
 	private static Set<LocatorId> set(final LocatorId... ids)
 	{
-		return new LinkedHashSet<>(java.util.Arrays.asList(ids));
+		return new LinkedHashSet<>(Arrays.asList(ids));
 	}
 
 	/**
