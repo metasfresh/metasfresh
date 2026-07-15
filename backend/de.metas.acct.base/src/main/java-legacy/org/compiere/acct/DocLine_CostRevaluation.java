@@ -3,9 +3,12 @@ package org.compiere.acct;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostAmount;
+import de.metas.costing.CostAmountAndQty;
 import de.metas.costing.CostDetailCreateRequest;
+import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costrevaluation.CostRevaluationLine;
 import de.metas.costrevaluation.CostRevaluationRepository;
 import lombok.NonNull;
@@ -34,31 +37,41 @@ public class DocLine_CostRevaluation extends DocLine<Doc_CostRevaluation>
 
 		if (isReversalLine())
 		{
-			throw new UnsupportedOperationException(); // TODO impl
-			// return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-			// 				.acctSchemaId(as.getId())
-			// 				.reversalDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(get_ID()))
-			// 				.initialDocumentRef(CostingDocumentRef.ofCostRevaluationLineId(getReversalLine_ID()))
-			// 				.date(getDateAcctAsInstant())
-			// 				.build())
-			// 		.getTotalAmountToPost(as);
+			// Not reachable for this document type: M_CostRevaluationLine has no Reversal_ID, so no reversal line is
+			// ever posted. Reversal of a CopyFromCostElement switch is value-neutral and handled in-place by
+			// CostRevaluationDocumentHandler#reverseCorrectIt, not through posting. Fail fast if ever hit.
+			throw new UnsupportedOperationException("Posting a M_CostRevaluation reversal line is not supported");
 		}
 		else
 		{
-			return services.createCostDetail(
-							CostDetailCreateRequest.builder()
-									.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
-									.clientId(costSegmentAndElement.getClientId())
-									.orgId(costSegmentAndElement.getOrgId())
-									.productId(costSegmentAndElement.getProductId())
-									.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
-									.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
-									.qty(costRevaluationLine.getCurrentQty().toZero())
-									.amt(costRevaluationLine.getDeltaAmountToBook())
-									.explicitCostPrice(costRevaluationLine.getNewCostPrice())
-									.date(getDateAcctAsInstant())
-									.build())
-					.getMainAmountToPost(as);
+			final CostDetailCreateResultsList results = services.createCostDetail(
+					CostDetailCreateRequest.builder()
+							.acctSchemaId(costSegmentAndElement.getAcctSchemaId())
+							.clientId(costSegmentAndElement.getClientId())
+							.orgId(costSegmentAndElement.getOrgId())
+							.costElement(services.getCostElementById(costSegmentAndElement.getCostElementId()))
+							.productId(costSegmentAndElement.getProductId())
+							.attributeSetInstanceId(costSegmentAndElement.getAttributeSetInstanceId())
+							.documentRef(CostingDocumentRef.ofCostRevaluationLineId(costRevaluationLine.getId()))
+							.qty(costRevaluationLine.getCurrentQty().toZero())
+							.amt(costRevaluationLine.getDeltaAmountToBook())
+							.explicitCostPrice(costRevaluationLine.getNewCostPrice())
+							.date(getDateAcctAsInstant())
+							.build());
+
+			if (getDoc().isCopyFromCostElementSource())
+			{
+				// Value-neutral switch: the target element (e.g. MovingAverageInvoice) is intentionally not yet the
+				// acct-schema's accountable method (seed first, activate later), so there is no accountable amount to
+				// post and the copy books nothing. Tolerating the empty result is scoped to this source ONLY.
+				return results.getAmtAndQtyToPost(CostAmountType.MAIN, as)
+						.map(CostAmountAndQty::getAmt)
+						.orElseGet(() -> CostAmount.zero(as.getCurrencyId()));
+			}
+
+			// Calculated (history-replay): the target element must be the acct-schema's accountable method;
+			// fail loud (getMainAmountToPost throws) if it is not, rather than silently book zero to the GL.
+			return results.getMainAmountToPost(as);
 		}
 	}
 

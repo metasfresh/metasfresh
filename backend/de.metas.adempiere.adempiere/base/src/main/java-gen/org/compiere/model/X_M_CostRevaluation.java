@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_CostRevaluation
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_CostRevaluation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1661261975L;
+	private static final long serialVersionUID = -1081678187L;
 
     /** Standard Constructor */
     public X_M_CostRevaluation (final Properties ctx, final int M_CostRevaluation_ID, @Nullable final String trxName)
@@ -32,18 +32,6 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public org.compiere.model.I_C_AcctSchema getC_AcctSchema()
-	{
-		return get_ValueAsPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class);
-	}
-
-	@Override
-	public void setC_AcctSchema(final org.compiere.model.I_C_AcctSchema C_AcctSchema)
-	{
-		set_ValueFromPO(COLUMNNAME_C_AcctSchema_ID, org.compiere.model.I_C_AcctSchema.class, C_AcctSchema);
 	}
 
 	@Override
@@ -74,6 +62,21 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	public int getC_DocType_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_DocType_ID);
+	}
+
+	@Override
+	public void setCopyFrom_M_CostElement_ID (final int CopyFrom_M_CostElement_ID)
+	{
+		if (CopyFrom_M_CostElement_ID < 1) 
+			set_Value (COLUMNNAME_CopyFrom_M_CostElement_ID, null);
+		else 
+			set_Value (COLUMNNAME_CopyFrom_M_CostElement_ID, CopyFrom_M_CostElement_ID);
+	}
+
+	@Override
+	public int getCopyFrom_M_CostElement_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_CopyFrom_M_CostElement_ID);
 	}
 
 	@Override
@@ -201,18 +204,6 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	}
 
 	@Override
-	public org.compiere.model.I_M_CostElement getM_CostElement()
-	{
-		return get_ValueAsPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class);
-	}
-
-	@Override
-	public void setM_CostElement(final org.compiere.model.I_M_CostElement M_CostElement)
-	{
-		set_ValueFromPO(COLUMNNAME_M_CostElement_ID, org.compiere.model.I_M_CostElement.class, M_CostElement);
-	}
-
-	@Override
 	public void setM_CostElement_ID (final int M_CostElement_ID)
 	{
 		if (M_CostElement_ID < 1) 
@@ -291,5 +282,26 @@ public class X_M_CostRevaluation extends org.compiere.model.PO implements I_M_Co
 	public boolean isProcessing() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_Processing);
+	}
+
+	/** 
+	 * RevaluationSource AD_Reference_ID=542117
+	 * Reference name: M_CostRevaluation RevaluationSource
+	 */
+	public static final int REVALUATIONSOURCE_AD_Reference_ID=542117;
+	/** Calculated = Calculated */
+	public static final String REVALUATIONSOURCE_Calculated = "Calculated";
+	/** CopyFromCostElement = CopyFromCostElement */
+	public static final String REVALUATIONSOURCE_CopyFromCostElement = "CopyFromCostElement";
+	@Override
+	public void setRevaluationSource (final java.lang.String RevaluationSource)
+	{
+		set_Value (COLUMNNAME_RevaluationSource, RevaluationSource);
+	}
+
+	@Override
+	public java.lang.String getRevaluationSource() 
+	{
+		return get_ValueAsString(COLUMNNAME_RevaluationSource);
 	}
 }

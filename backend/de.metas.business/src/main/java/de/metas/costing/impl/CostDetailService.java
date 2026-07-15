@@ -1,5 +1,6 @@
 package de.metas.costing.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
@@ -11,6 +12,7 @@ import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailCreateResultsList;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
+import de.metas.costing.CostElementId;
 import de.metas.costing.CostSegment;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostSegmentAndElement.CostSegmentAndElementBuilder;
@@ -32,6 +34,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -117,6 +120,15 @@ public class CostDetailService implements ICostDetailService
 	public boolean hasCostDetailsForProductId(@NonNull final ProductId productId)
 	{
 		return costDetailsRepo.hasCostDetailsByProductId(productId);
+	}
+
+	@Override
+	public ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull final AcctSchemaId acctSchemaId,
+			@NonNull final CostElementId costElementId,
+			@NonNull final Set<ProductId> productIds)
+	{
+		return costDetailsRepo.retrieveProductIdsWithCostRevaluationSeed(acctSchemaId, costElementId, productIds);
 	}
 
 	@Override
@@ -265,6 +277,12 @@ public class CostDetailService implements ICostDetailService
 	public Stream<CostDetail> stream(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.stream(query);
+	}
+
+	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.hasCostDetails(query);
 	}
 
 	@Override

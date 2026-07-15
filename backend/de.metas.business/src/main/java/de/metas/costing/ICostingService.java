@@ -1,9 +1,15 @@
 package de.metas.costing;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.costrevaluation.CostRevaluationLineId;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.product.ProductId;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L
@@ -48,4 +54,28 @@ public interface ICostingService
 			CostingMethod costingMethod);
 
 	CostsRevaluationResult revaluateCosts(@NonNull CostsRevaluationRequest request);
+
+	Optional<CurrentCost> getCurrentCost(@NonNull CostSegmentAndElement costSegmentAndElement);
+
+	void seedCurrentCostFromOpening(
+			@NonNull CostSegmentAndElement targetSegmentAndElement,
+			@NonNull CostDetailPreviousAmounts opening,
+			@NonNull Instant anchorDate,
+			@NonNull CostRevaluationLineId lineId);
+
+	void reverseSeededCurrentCost(
+			@NonNull CostSegmentAndElement targetSegmentAndElement,
+			@NonNull Instant cutoffDate,
+			@NonNull CostRevaluationLineId lineId);
+
+	/**
+	 * @return the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on the target {@code (acctSchemaId, costElementId)} — regardless of {@code RevaluationSource}. This is a
+	 * broad, source-agnostic signal (a prior {@code CopyFromCostElement} switch OR any other completed cost-revaluation
+	 * line on that element/product), NOT restricted to a prior {@code CopyFromCostElement} switch.
+	 */
+	ImmutableSet<ProductId> retrieveProductIdsAlreadySeededOnCostElement(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
 }
