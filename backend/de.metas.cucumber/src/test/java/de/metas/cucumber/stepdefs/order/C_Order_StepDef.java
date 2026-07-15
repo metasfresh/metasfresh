@@ -230,6 +230,7 @@ public class C_Order_StepDef
 	 * <ul>
 	 *   <li>{@code C_PromotionCode_ID} (optional) — identifier referencing a {@code C_PromotionCode} record</li>
 	 *   <li>{@code C_PromotionCode2_ID} (optional) — identifier referencing a second {@code C_PromotionCode} record</li>
+	 *   <li>{@code HandOver_Location_ID} (optional) — identifier referencing the delivery/hand-over {@code C_BPartner_Location} (also sets {@code IsUseHandOver_Location})</li>
 	 * </ul>
 	 */
 	@Given("metasfresh contains C_Orders:")
@@ -281,6 +282,14 @@ public class C_Order_StepDef
 		tableRow.getAsOptionalIdentifier(COLUMNNAME_DropShip_Location_ID)
 				.map(bpartnerLocationTable::getId)
 				.ifPresent(id -> order.setDropShip_Location_ID(id.getRepoId()));
+
+		// handover (delivery) location — distinct from the bill/ship location
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_HandOver_Location_ID)
+				.map(bpartnerLocationTable::getId)
+				.ifPresent(id -> {
+					order.setHandOver_Location_ID(id.getRepoId());
+					order.setIsUseHandOver_Location(true);
+				});
 
 		final OrgId orgId = tableRow.getAsOptionalIdentifier(COLUMNNAME_AD_Org_ID)
 				.map(orgTable::getId)
@@ -787,6 +796,39 @@ public class C_Order_StepDef
 		}
 	}
 
+	/**
+	 * Validates a single {@link I_C_Order} row against expected values.
+	 * Called per row by {@link #validate_created_order(DataTable)}.
+	 *
+	 * <p>Supported DataTable columns (all optional unless noted):</p>
+	 * <ul>
+	 *   <li>{@code C_Order_ID} — required identifier; must have been registered in {@link C_Order_StepDefData}</li>
+	 *   <li>{@code C_BPartner_ID} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.C_BPartner_StepDefData}</li>
+	 *   <li>{@code C_BPartner_Location_ID} — optional identifier; resolved via C_BPartner_Location_StepDefData</li>
+	 *   <li>{@code DateOrdered} — optional date (yyyy-MM-dd)</li>
+	 *   <li>{@code DocBaseType} — optional string; matched against the order's document type</li>
+	 *   <li>{@code currencyCode} — optional ISO-4217 currency code</li>
+	 *   <li>{@code DeliveryRule} — optional string</li>
+	 *   <li>{@code DeliveryViaRule} — optional string</li>
+	 *   <li>{@code processed} — optional boolean</li>
+	 *   <li>{@code DocStatus} — optional string</li>
+	 *   <li>{@code poReference} — optional string</li>
+	 *   <li>{@code InvoiceRule} — optional string</li>
+	 *   <li>{@code PaymentRule} — optional string</li>
+	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
+	 *       when absent the warehouse is not validated</li>
+	 *   <li>(plus further optional columns: AD_User_ID, Bill_BPartner_ID, Bill_Location_ID, Bill_User_ID, EMail,
+	 *       ExternalId, ExternalSystem, AD_InputDataSource_ID, IsDropShip, DropShip_*, IsUseHandOver_Location,
+	 *       HandOver_*, C_Incoterms, IncotermLocation, C_PromotionCode_ID, C_PromotionCode2_ID, C_Project_ID, LC_Date)</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created orders:
+	 *   | C_Order_ID   | C_BPartner_ID | DateOrdered | DocBaseType | currencyCode | DeliveryRule | DeliveryViaRule | poReference | processed | DocStatus | OPT.M_Warehouse_ID.Identifier |
+	 *   | order_S30235 | bp_S30235     | 2021-04-16  | SOO         | EUR          | F            | S               | S30235_01   | true      | CO        | pickingWH                     |
+	 * </pre>
+	 */
 	private void validateOrder(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier identifier = row.getAsIdentifier();
@@ -989,6 +1031,13 @@ public class C_Order_StepDef
 								.isEqualTo(expectedDate);
 					}
 				});
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Warehouse_ID)
+				.map(warehouseIdentifier -> warehouseTable.getIdOptional(warehouseIdentifier)
+						.orElseGet(() -> warehouseIdentifier.getAsId(WarehouseId.class)))
+				.ifPresent(warehouseId -> softly.assertThat(order.getM_Warehouse_ID())
+						.as("M_Warehouse_ID for Identifier=%s", identifierStr)
+						.isEqualTo(warehouseId.getRepoId()));
 
 		softly.assertAll();
 	}

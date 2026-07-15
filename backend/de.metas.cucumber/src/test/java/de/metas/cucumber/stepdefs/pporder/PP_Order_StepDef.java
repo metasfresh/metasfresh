@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -138,6 +139,7 @@ public class PP_Order_StepDef
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -152,8 +154,10 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
 	{
+		this.rabbitMQStepDef = rabbitMQStepDef;
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
 		this.productPlanningTable = productPlanningTable;
@@ -169,11 +173,21 @@ public class PP_Order_StepDef
 		this.warehouseTable = warehouseTable;
 	}
 
+	/**
+	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order} record(s) matching the DataTable.
+	 * <p>
+	 * The rabbitMQ queues are drained first via {@link RabbitMQ_StepDef#wait_empty_all_queues()} (material-events
+	 * then async-batch) so the async candidate-to-order generation chain has fully settled before the poll asserts.
+	 * This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7 ("drain inside the
+	 * consuming step def, as late as possible, never as a bare step in the .feature file").
+	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order(timeoutSec, row));
 	}
 
