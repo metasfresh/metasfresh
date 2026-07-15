@@ -280,6 +280,12 @@ public class CostDetailService implements ICostDetailService
 	}
 
 	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return costDetailsRepo.hasCostDetails(query);
+	}
+
+	@Override
 	public Optional<CostDetail> firstOnly(@NonNull final CostDetailQuery query)
 	{
 		return costDetailsRepo.firstOnly(query);

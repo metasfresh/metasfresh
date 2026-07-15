@@ -1,7 +1,6 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1500_Costing
-@F1500
 @ghActions:run_on_executor6
 Feature: Switch to Moving Average Invoice
 ## F1500: Costing

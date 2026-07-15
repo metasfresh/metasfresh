@@ -80,5 +80,8 @@ public interface ICostDetailService
 
 	Stream<CostDetail> stream(@NonNull CostDetailQuery query);
 
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(@NonNull CostDetailQuery query);
+
 	Optional<CostDetail> firstOnly(@NonNull CostDetailQuery query);
 }

@@ -621,12 +621,10 @@ public class CostingService implements ICostingService
 			@NonNull final Instant cutoffDate,
 			@NonNull final CostRevaluationLineId lineId)
 	{
-		final boolean hasPostCutoffCostEvents = costDetailsService.stream(
-						CostDetailQuery.builderFrom(targetSegmentAndElement)
-								.dateAcctRage(Range.greaterThan(cutoffDate))
-								.build())
-				.findAny()
-				.isPresent();
+		final boolean hasPostCutoffCostEvents = costDetailsService.hasCostDetails(
+				CostDetailQuery.builderFrom(targetSegmentAndElement)
+						.dateAcctRage(Range.greaterThan(cutoffDate))
+						.build());
 		if (hasPostCutoffCostEvents)
 		{
 			throw new AdempiereException("Cost revaluation cannot be reversed: a cost event after the cut-off date has"

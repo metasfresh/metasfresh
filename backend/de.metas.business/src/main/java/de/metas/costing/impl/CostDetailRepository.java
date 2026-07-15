@@ -420,6 +420,12 @@ public class CostDetailRepository implements ICostDetailRepository
 	}
 
 	@Override
+	public boolean hasCostDetails(@NonNull final CostDetailQuery query)
+	{
+		return toSqlQuery(query).anyMatch();
+	}
+
+	@Override
 	public ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
 			@NonNull final AcctSchemaId acctSchemaId,
 			@NonNull final CostElementId costElementId,
@@ -430,16 +436,16 @@ public class CostDetailRepository implements ICostDetailRepository
 			return ImmutableSet.of();
 		}
 
-		// ONE batched, indexed query over the given product set (no per-product N+1). The M_CostRevaluationLine_ID is set
-		// ONLY on cost details written by a completed M_CostRevaluation line (see #updateRecordFromDocumentRef), so its
-		// presence for (acctSchema, cost element, product) means a completed cost-revaluation line has already written a
-		// detail here — regardless of RevaluationSource (this is the broad, source-agnostic signal, NOT restricted to a
-		// prior CopyFromCostElement switch).
+		// ONE batched, indexed query over the given product set (no per-product N+1). M_CostRevaluationLine_ID is a
+		// NULLABLE FK, set ONLY on cost details written by a completed M_CostRevaluation line (see
+		// #updateRecordFromDocumentRef) — NULL on every other detail. So "IS NOT NULL" means a completed
+		// cost-revaluation line has already written a detail here — regardless of RevaluationSource (broad,
+		// source-agnostic signal, NOT restricted to a prior CopyFromCostElement switch).
 		return queryBL.createQueryBuilder(I_M_CostDetail.class)
 				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
 				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostElement_ID, costElementId)
 				.addInArrayFilter(I_M_CostDetail.COLUMNNAME_M_Product_ID, productIds)
-				.addCompareFilter(I_M_CostDetail.COLUMNNAME_M_CostRevaluationLine_ID, Operator.GREATER, 0)
+				.addNotNull(I_M_CostDetail.COLUMNNAME_M_CostRevaluationLine_ID)
 				.create()
 				.listDistinctAsImmutableSet(I_M_CostDetail.COLUMNNAME_M_Product_ID, ProductId.class);
 	}

@@ -45,6 +45,9 @@ public interface ICostDetailRepository
 
 	Stream<CostDetail> stream(CostDetailQuery query);
 
+	/** @return true if at least one cost detail matches the query */
+	boolean hasCostDetails(CostDetailQuery query);
+
 	ImmutableList<CostDetail> list(@NonNull CostDetailQuery query);
 
 	default ImmutableList<CostDetail> listByDocumentRef(@NonNull final CostingDocumentRef documentRef)
