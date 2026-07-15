@@ -104,6 +104,7 @@ public class CostRevaluationService
 		{
 			throw new AdempiereException("CopyFrom_M_CostElement_ID is not set for " + costRevaluation.getCostRevaluationId());
 		}
+		assertSourceAndTargetElementDiffer(costRevaluation, sourceCostElementId);
 
 		final ClientId clientId = costRevaluation.getClientId();
 		final OrgId orgId = costRevaluation.getOrgId();
@@ -118,6 +119,22 @@ public class CostRevaluationService
 		}
 
 		costRevaluationRepository.createLinesForCopyFromCostElement(costRevaluationId, costRevaluation.getCostElementId(), sourceCurrentCosts);
+	}
+
+	/**
+	 * Refuses a self-copy: copying a cost element onto itself is a nonsensical no-op. Checked at create-lines
+	 * (validate) time — the earliest point the source element is resolved — so the user gets a clear message
+	 * instead of the confusing "no current costs for source" that the self-directed query would otherwise raise.
+	 */
+	private static void assertSourceAndTargetElementDiffer(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final CostElementId sourceCostElementId)
+	{
+		if (sourceCostElementId.equals(costRevaluation.getCostElementId()))
+		{
+			throw new AdempiereException("Cannot copy a cost element onto itself: CopyFrom_M_CostElement_ID equals"
+					+ " M_CostElement_ID (" + sourceCostElementId + ") for " + costRevaluation.getCostRevaluationId() + ".");
+		}
 	}
 
 	private ImmutableSet<ProductId> retrieveStockedProductIdsOrThrow(@NonNull final ClientId clientId)
@@ -175,9 +192,81 @@ public class CostRevaluationService
 		final ImmutableSet<CostRevaluationLineId> lineIds = linesToRevaluate.stream().map(CostRevaluationLine::getId).collect(ImmutableSet.toImmutableSet());
 		costRevaluationRepository.deleteDetailsByLineIds(lineIds);
 
+		// Idempotency / safety: snapshot — via ONE batch query, BEFORE any seed in this run — which of this run's products
+		// already carry a cost detail written by ANY completed M_CostRevaluation line on the target element. Re-seeding an
+		// already-seeded (possibly in-use) cost would be a value change requiring a GL adjustment (the separate, deferred
+		// feature), so here we skip it value-neutrally.
+		//
+		// DESIGN DECISION — the "already seeded" signal is deliberately BROAD (any completed cost-revaluation line on the
+		// element/product, not only a prior CopyFromCostElement switch), and that is the safer choice:
+		//  - In scope for this feature is the PRE-activation switch, which only ever writes cost details on the MAI
+		//    (target) element via CopyFromCostElement — so the broad signal and the narrow one coincide here.
+		//  - The only case where they diverge is a POST-activation Calculated-then-switch interleave (an ordinary
+		//    Calculated revaluation runs on the MAI element after the accounting method was activated, then a switch is
+		//    attempted). That method-activation is a separate, decoupled feature and is OUT OF SCOPE here; in that
+		//    interleave a broad silent skip (leave the existing history untouched) is safer than a narrow re-seed that
+		//    would silently overwrite an in-use cost with a fresh zero-GL opening.
+		final ImmutableSet<ProductId> alreadySeededProductIds = retrieveAlreadySeededProductIds(costRevaluation, linesToRevaluate);
+
 		for (final CostRevaluationLine line : linesToRevaluate)
 		{
+			if (alreadySeededProductIds.contains(line.getCostSegmentAndElement().getProductId()))
+			{
+				// Skip the seed and deactivate the line so THIS document owns only the products it freshly seeds
+				// (keeps each switch self-contained and its reversal symmetric — a redundant re-switch cannot later
+				// disturb the product the first switch still owns).
+				costRevaluationRepository.deactivateLine(line.getId());
+				continue;
+			}
 			createDetails(costRevaluation, line);
+		}
+	}
+
+	/**
+	 * Returns this run's products that MUST be skipped because the target element already carries a cost detail written by
+	 * a completed {@code M_CostRevaluation} line — a broad, source-agnostic signal (see the DESIGN DECISION note in
+	 * {@link #createDetails}); it fires for ANY completed cost-revaluation line, not only a prior {@code CopyFromCostElement}
+	 * switch. Empty for non-{@code CopyFromCostElement} sources (only the copy-seed path is value-neutral to skip).
+	 */
+	private ImmutableSet<ProductId> retrieveAlreadySeededProductIds(
+			@NonNull final CostRevaluation costRevaluation,
+			@NonNull final ImmutableList<CostRevaluationLine> linesToRevaluate)
+	{
+		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<ProductId> productIds = linesToRevaluate.stream()
+				.map(line -> line.getCostSegmentAndElement().getProductId())
+				.collect(ImmutableSet.toImmutableSet());
+
+		return costingService.retrieveProductIdsAlreadySeededOnCostElement(
+				costRevaluation.getAcctSchemaId(),
+				costRevaluation.getCostElementId(),
+				productIds);
+	}
+
+	/**
+	 * {@code CopyFromCostElement} reversal: value-neutral, symmetric undo of {@link #createDetailsForCopyFromCostElement}
+	 * for every line — removes each target element's opening anchor and resets its {@code M_Cost} to the pre-switch
+	 * (absent/zero) state. Refused (per line) if a cost event after the cut-off has already built on the seed.
+	 */
+	public void reverseDetails(@NonNull final CostRevaluationId costRevaluationId)
+	{
+		final CostRevaluation costRevaluation = costRevaluationRepository.getById(costRevaluationId);
+		if (!costRevaluation.getRevaluationSource().isCopyFromCostElement())
+		{
+			// Reversal for the history-replay (Calculated) source is not implemented yet.
+			throw new AdempiereException("Reversal is only implemented for the CopyFromCostElement source: " + costRevaluationId);
+		}
+
+		for (final CostRevaluationLine line : costRevaluationRepository.getLinesByCostRevaluationId(costRevaluationId))
+		{
+			costingService.reverseSeededCurrentCost(
+					line.getCostSegmentAndElement(),
+					costRevaluation.getEvaluationStartDate(),
+					line.getId());
 		}
 	}
 

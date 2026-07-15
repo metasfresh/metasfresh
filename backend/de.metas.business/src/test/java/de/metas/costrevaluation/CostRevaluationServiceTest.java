@@ -7,6 +7,7 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.business.BusinessTestHelper;
 import de.metas.costing.CostAmount;
 import de.metas.costing.CostDetail;
+import de.metas.costing.CostDetailId;
 import de.metas.costing.CostDetailPreviousAmounts;
 import de.metas.costing.CostDetailQuery;
 import de.metas.costing.CostElement;
@@ -15,9 +16,11 @@ import de.metas.costing.CostElementType;
 import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CostTypeId;
+import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.CostingLevel;
 import de.metas.costing.CostingMethod;
 import de.metas.costing.CurrentCost;
+import de.metas.costing.methods.CostAmountType;
 import de.metas.costing.impl.CostDetailRepository;
 import de.metas.costing.impl.CostDetailService;
 import de.metas.costing.impl.CostElementRepository;
@@ -37,6 +40,7 @@ import de.metas.product.ProductType;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -68,6 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -494,5 +499,192 @@ public class CostRevaluationServiceTest
 			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("4000.00");
 			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("200");
 		}
+	}
+
+	@Nested
+	class ReverseDetails_CopyFromCostElement
+	{
+		/**
+		 * Honest coverage of the reversal-refuse guard. The e2e trigger (a real forward-MAI movement dated after the
+		 * cut-off) is only possible once the out-of-scope method activation has happened, so it cannot be produced by a
+		 * cost-data cucumber. Here we construct that post-cut-off forward event directly on the target element — the
+		 * faithful stand-in — and assert the reversal is refused.
+		 */
+		@Test
+		public void refusesReversal_whenPostCutoffCostEventBuiltOnSeed()
+		{
+			final ProductId productWithStock = createProduct("productWithStock");
+			seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+			costRevaluationService.createLines(costRevaluationId);
+			costRevaluationService.createDetails(costRevaluationId); // seeds the MAI opening (anchor dated AT the cut-off)
+
+			// A forward-MAI movement dated strictly AFTER the cut-off has built on the seeded opening.
+			createPostCutoffCostEventOnTarget(productWithStock);
+
+			assertThatThrownBy(() -> costRevaluationService.reverseDetails(costRevaluationId))
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("already built on");
+		}
+	}
+
+	@Nested
+	class CreateDetails_SkipGuard
+	{
+		/**
+		 * Verifies the BROAD, source-agnostic skip signal (see the DESIGN DECISION note in
+		 * {@code CostRevaluationService#createDetails}): a product whose target element already carries a cost detail
+		 * written by ANY completed cost-revaluation line — here constructed directly, standing in for an unrelated prior
+		 * revaluation regardless of {@code RevaluationSource} — is SKIPPED by a subsequent {@code CopyFromCostElement}
+		 * switch: its line is deactivated, no fresh seed is written to the target {@code M_Cost}, and no error is raised.
+		 * <p>
+		 * This is load-bearing: were the skip-guard bypassed, {@code createDetails} would seed the target {@code M_Cost}
+		 * from the source (own=12.50, qty=100) and leave the line active — both asserted against here.
+		 */
+		@Test
+		public void skipsProduct_whenTargetElementAlreadyCarriesARevaluationDetail()
+		{
+			final ProductId productWithStock = createProduct("productWithStock");
+			seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+			// A prior completed cost-revaluation line already wrote a detail on the TARGET (MAI) element for this product.
+			seedExistingRevaluationDetailOnTarget(productWithStock);
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader();
+			costRevaluationService.createLines(costRevaluationId);
+
+			// Must skip value-neutrally (no throw).
+			costRevaluationService.createDetails(costRevaluationId);
+
+			// The line for the already-seeded product is deactivated (skipped), not marked evaluated.
+			final List<I_M_CostRevaluationLine> lines = costRevaluationRepository
+					.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+					.collect(ImmutableList.toImmutableList());
+			final I_M_CostRevaluationLine line = getLineForProduct(lines, productWithStock);
+			assertThat(line.isActive()).as("line deactivated by skip-guard").isFalse();
+
+			// No fresh seed written by THIS switch: the target element's M_Cost was never seeded from the source.
+			final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
+					.costingLevel(CostingLevel.Client)
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
+					.clientId(ClientId.METASFRESH)
+					.orgId(OrgId.ANY)
+					.productId(productWithStock)
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.costElementId(targetCostElementId)
+					.build();
+			assertThat(currentCostsRepo.getOrNull(targetSeg)).as("target M_Cost not seeded by the skipped switch").isNull();
+		}
+	}
+
+	@Nested
+	class CreateDetails_NoRetroCost
+	{
+		/**
+		 * AC6 (FR5) — no retro-cost. A cost detail dated BEFORE the cut-off (the already-issued/sold 2025 history,
+		 * costed on the SOURCE {@code AveragePO} element) is left byte-for-byte untouched by the
+		 * {@code CopyFromCostElement} switch: not deleted, not re-costed — same id, amt, qty, and dateAcct. The
+		 * value-neutral opening-balance approach was chosen precisely so this history is never replayed (unlike the
+		 * rejected {@code Calculated} history-replay path).
+		 * <p>
+		 * Load-bearing: the switch's only detail deletion ({@code deleteDetailsByLineIds}) is scoped to THIS
+		 * revaluation's own line ids, and its only write is the opening anchor on the TARGET element; it never
+		 * queries or mutates source-element details. This assertion locks that scoping in — it would fail if the
+		 * switch were ever broadened to re-cost / rebuild the source's pre-cut-off history.
+		 */
+		@Test
+		public void doesNotRecostPreCutoffHistory()
+		{
+			final ProductId productWithStock = createProduct("productWithStock");
+			seedSourceCurrentCost(productWithStock, "12.50", "3.75", "100");
+
+			// 2025 already-issued/sold history on the source (AveragePO) element, dated well before the cut-off.
+			final CostDetail preCutoff = createPreCutoffCostEventOnSource(productWithStock);
+			final CostDetailId preCutoffId = preCutoff.getId();
+			assertThat(preCutoffId).isNotNull();
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(); // cut-off = 2025-12-31
+			costRevaluationService.createLines(costRevaluationId);
+			costRevaluationService.createDetails(costRevaluationId);
+
+			// The pre-cut-off source detail is still present and unchanged (not deleted, not re-costed).
+			final List<CostDetail> sourceDetailsAfter = new CostDetailRepository()
+					.stream(CostDetailQuery.builder()
+							.acctSchemaId(acctSchemaId)
+							.costElementId(sourceCostElementId)
+							.productId(productWithStock)
+							.build())
+					.collect(ImmutableList.toImmutableList());
+			assertThat(sourceDetailsAfter).hasSize(1);
+
+			final CostDetail after = sourceDetailsAfter.get(0);
+			assertThat(after.getId()).isEqualTo(preCutoffId);
+			assertThat(after.getAmt().toBigDecimal()).isEqualByComparingTo("50.00");
+			assertThat(after.getQty().toBigDecimal()).isEqualByComparingTo("5");
+			assertThat(after.getDateAcct()).isEqualTo(Instant.parse("2025-06-15T00:00:00Z"));
+		}
+	}
+
+	/**
+	 * Directly writes a changing-costs {@code M_CostDetail} on the TARGET (MAI) element with {@code M_CostRevaluationLine_ID}
+	 * set — the broad "already seeded" anchor, standing in for a detail left by a prior completed cost-revaluation line of
+	 * any {@code RevaluationSource}. The referenced line id is a stand-in (nothing joins to it); the skip query only tests
+	 * {@code M_CostRevaluationLine_ID > 0} on the (acctSchema, cost element, product).
+	 */
+	private void seedExistingRevaluationDetailOnTarget(@NonNull final ProductId productId)
+	{
+		new CostDetailRepository().create(CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(targetCostElementId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of("100.00", euroCurrencyId))
+				.qty(Quantity.of("10", eachUOM))
+				.changingCosts(true)
+				.documentRef(CostingDocumentRef.ofCostRevaluationLineId(CostRevaluationLineId.ofRepoId(888888, 999999)))
+				.dateAcct(Instant.parse("2025-06-01T00:00:00Z")));
+	}
+
+	/** Directly writes a changing-costs {@code M_CostDetail} on the SOURCE (AveragePO) element, dated BEFORE the cut-off. */
+	private CostDetail createPreCutoffCostEventOnSource(@NonNull final ProductId productId)
+	{
+		return new CostDetailRepository().create(CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(sourceCostElementId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of("50.00", euroCurrencyId))
+				.qty(Quantity.of("5", eachUOM))
+				.changingCosts(true)
+				.documentRef(CostingDocumentRef.ofInventoryLineId(2))
+				.dateAcct(Instant.parse("2025-06-15T00:00:00Z"))
+				.description("pre-cut-off 2025 history (test stand-in)"));
+	}
+
+	/** Directly writes a changing-costs {@code M_CostDetail} on the TARGET (MAI) element, dated after the cut-off. */
+	private void createPostCutoffCostEventOnTarget(@NonNull final ProductId productId)
+	{
+		new CostDetailRepository().create(CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(targetCostElementId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of("50.00", euroCurrencyId))
+				.qty(Quantity.of("5", eachUOM))
+				.changingCosts(true)
+				.documentRef(CostingDocumentRef.ofInventoryLineId(1))
+				.dateAcct(Instant.parse("2026-01-02T00:00:00Z"))
+				.description("post-cut-off forward-MAI event (test stand-in)"));
 	}
 }

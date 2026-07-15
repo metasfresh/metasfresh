@@ -365,6 +365,14 @@ public class CostRevaluationRepository
 				.delete();
 	}
 
+	/** Deactivates a line (used to make a re-run switch self-contained by dropping already-seeded, skipped products). */
+	public void deactivateLine(@NonNull final CostRevaluationLineId lineId)
+	{
+		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(lineId, I_M_CostRevaluationLine.class);
+		record.setIsActive(false);
+		InterfaceWrapperHelper.save(record);
+	}
+
 	public void save(@NonNull final CostRevaluationLine line)
 	{
 		final I_M_CostRevaluationLine record = InterfaceWrapperHelper.load(line.getId(), I_M_CostRevaluationLine.class);

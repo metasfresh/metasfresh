@@ -1,12 +1,14 @@
 package de.metas.costing;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
 import java.time.Instant;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -65,4 +67,16 @@ public interface ICostDetailRepository
 	}
 
 	boolean hasCostDetailsByProductId(ProductId productId);
+
+	/**
+	 * @return the subset of {@code productIds} for which a completed {@code M_CostRevaluation} line has already written a
+	 * cost detail on this {@code (acctSchemaId, costElementId)} — i.e. carries an {@code M_CostDetail} with
+	 * {@code M_CostRevaluationLine_ID} set. This is a broad, source-agnostic signal: it fires for ANY completed
+	 * cost-revaluation line on that element/product, regardless of {@code RevaluationSource} — NOT only a prior
+	 * {@code CopyFromCostElement} switch.
+	 */
+	ImmutableSet<ProductId> retrieveProductIdsWithCostRevaluationSeed(
+			@NonNull AcctSchemaId acctSchemaId,
+			@NonNull CostElementId costElementId,
+			@NonNull Set<ProductId> productIds);
 }
