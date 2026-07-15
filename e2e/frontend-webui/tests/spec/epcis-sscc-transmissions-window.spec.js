@@ -64,7 +64,7 @@ Opens the dedicated ledger window (AD_Window ${EPCIS_SSCC_WINDOW_ID}) and verifi
       await page
         .locator('.document-list-wrapper, .document-list')
         .waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
-      await page.waitForTimeout(1000);
+      await page.waitForTimeout(1000); // let the grid finish its initial data fetch + paint
       const listVisible = await page
         .locator('.document-list-wrapper, .document-list')
         .isVisible()
@@ -98,8 +98,9 @@ Opens the dedicated ledger window (AD_Window ${EPCIS_SSCC_WINDOW_ID}) and verifi
     });
 
     await test.step('Read-only — no create-new action', async () => {
-      const newBtn = page.getByTestId('window-new-item');
-      const newCount = await newBtn.count().catch(() => 0);
+      // .btn-new-document is rendered only when layout.supportNewRecord is true; a read-only
+      // window (tab IsInsertRecord='N' → supportNewRecord false) must not show it, so count === 0.
+      const newCount = await page.locator('.btn-new-document').count().catch(() => 0);
       console.log(`[INFO] new-record buttons=${newCount}`);
       expect(newCount).toBe(0);
     });
