@@ -63,6 +63,7 @@ import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
+import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
@@ -90,6 +91,7 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersQuery;
 import de.metas.workflow.rest_api.service.WorkflowBasedMobileApplication;
 import de.metas.workflow.rest_api.service.WorkflowStartRequest;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
@@ -105,6 +107,7 @@ import java.util.function.UnaryOperator;
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
 
 @Component
+@RequiredArgsConstructor
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
 	@VisibleForTesting
@@ -119,22 +122,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static final AdMessageKey MSG_Caption_ScanPickingSlot = AdMessageKey.of("mobileui.picking.activity.scanPickingSlot");
 	private static final AdMessageKey MSG_Caption_PickLines = AdMessageKey.of("mobileui.picking.activity.pickLines");
 
-	private final MobileUIPickingUserProfileService profileService;
-	private final PickingJobRestService pickingJobRestService;
-	private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
-	private final DisplayValueProviderService displayValueProviderService;
-
-	public PickingMobileApplication(
-			@NonNull final MobileUIPickingUserProfileService profileService,
-			@NonNull final PickingJobRestService pickingJobRestService,
-			@NonNull final PickingWorkflowLaunchersProvider wfLaunchersProvider,
-			@NonNull final DisplayValueProviderService displayValueProviderService)
-	{
-		this.pickingJobRestService = pickingJobRestService;
-		this.wfLaunchersProvider = wfLaunchersProvider;
-		this.displayValueProviderService = displayValueProviderService;
-		this.profileService = profileService;
-	}
+	@NonNull private final MobileUIPickingUserProfileService profileService;
+	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final PickingWorkflowLaunchersProvider wfLaunchersProvider;
+	@NonNull private final DisplayValueProviderService displayValueProviderService;
+	@NonNull private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
 
 	@Override
 	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
@@ -638,6 +630,19 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 					return pickingJobRestService.closeLUAndTUPickingTargets(pickingJob, lineId);
 				});
 
+	}
+
+	public WFProcess advisePackedHU(
+			@NonNull final WFProcessId wfProcessId,
+			@Nullable final PickingJobLineId lineId,
+			@NonNull final UserId callerId)
+	{
+		return changeWFProcessById(
+				wfProcessId,
+				(wfProcess, pickingJob) -> {
+					wfProcess.assertHasAccess(callerId);
+					return packedHUCarrierAdviseService.advise(pickingJob, lineId);
+				});
 	}
 
 	public WFProcess closeTUPickingTarget(

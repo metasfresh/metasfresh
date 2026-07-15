@@ -67,6 +67,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.InOutId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.CarrierAdviseStatus;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -204,6 +205,9 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>Warehouse_ID</b> — (optional, identifier-ref) filter by warehouse<br>
 	 *   <b>QtyToDeliver</b> — (optional) filter by qty to deliver<br>
 	 *   <b>IsToRecompute</b> — (optional) expected recompute flag<br>
+	 *   <b>Carrier_Product_ID</b> — (optional, identifier-ref) filter by the advised carrier product<br>
+	 *   <b>Carrier_Goods_Type_ID</b> — (optional, identifier-ref) filter by carrier goods type<br>
+	 *   <b>Carrier_Advising_Status</b> — (optional) filter by advising status code (e.g. CO=Completed, MAN=Manual)<br>
 	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_ShipmentSchedule_StepDefData, M_Warehouse_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -323,12 +327,15 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
 	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
 	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
+	 *   <b>IsOnTheFlyPickToPackingInstructions</b> — (optional) true/false; default: false; when true, the on-the-fly-picked
+	 *     CUs are packed into TUs per the order line's M_HU_PI_Item_Product, mirroring the real shipper-transportation flow
+	 *     ({@code ShipmentService#generateShipmentOlCands} sets it true); default false keeps loose-CU generation<br>
 	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * And shipment is generated for the following shipment schedule
-	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
-	 *   | ss_product, ss_product2 | shipment_1 |
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID | IsOnTheFlyPickToPackingInstructions |
+	 *   | ss_product, ss_product2 | shipment_1 | true                                |
 	 * </pre>
 	 */
 	@And("shipment is generated for the following shipment schedule")
@@ -650,6 +657,10 @@ public class M_ShipmentSchedule_StepDef
 				.ifPresent(identifier ->
 						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Goods_Type_ID, identifier.lookupIdIn(carrierGoodsTypeTable))
 				);
+		row.getAsOptionalEnum(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, CarrierAdviseStatus.class)
+				.ifPresent(carrierAdvisingStatus ->
+						queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_Carrier_Advising_Status, carrierAdvisingStatus)
+				);
 
 		final IQuery<I_M_ShipmentSchedule> query = queryBuilder.create();
 
@@ -694,9 +705,14 @@ public class M_ShipmentSchedule_StepDef
 				.map(identifier -> identifier.lookupNotNullIdIn(pickingJobScheduleTable))
 				.orElse(null);
 
+		// OPT IsOnTheFlyPickToPackingInstructions: mirror the real shipper-transportation flow, where shipment
+		// generation packs the on-the-fly-picked CUs into TUs per the order line's M_HU_PI_Item_Product
+		// (ShipmentService#generateShipmentOlCands sets it true — "we might need to create a shipper transportation,
+		// so we need TUs"). Default false keeps the plain qty-to-deliver generation used by other features.
 		final GenerateShipmentsForSchedulesRequest.GenerateShipmentsForSchedulesRequestBuilder requestBuilder = GenerateShipmentsForSchedulesRequest.builder()
 				.quantityTypeToUse(qtyTypeToUse)
-				.isCompleteShipment(isCompleteShipment);
+				.isCompleteShipment(isCompleteShipment)
+				.onTheFlyPickToPackingInstructions(row.getAsOptionalBoolean("IsOnTheFlyPickToPackingInstructions").orElseFalse());
 
 		if (jobScheduleId != null)
 		{

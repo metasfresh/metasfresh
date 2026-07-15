@@ -59,11 +59,12 @@ public class M_ShipmentSchedule
 		}
 	}
 
+	// NOTE: QtyToDeliver / QtyToDeliver_Override are intentionally NOT triggers — the advise is per-unit
+	// (qty-independent), and QtyToDeliver recomputes on every availability recompute (DeliveryRule='A'), which
+	// would otherwise churn the advise on each recompute.
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = {
-			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver,
-			I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate,
 			I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID })

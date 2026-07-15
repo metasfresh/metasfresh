@@ -187,6 +187,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

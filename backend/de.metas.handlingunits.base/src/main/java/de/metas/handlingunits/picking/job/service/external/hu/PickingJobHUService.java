@@ -206,6 +206,39 @@ public class PickingJobHUService
 	public List<I_M_HU> getByIds(@NonNull final Collection<HuId> huIds) {return handlingUnitsBL.getByIds(huIds);}
 
 	/**
+	 * Returns the parent transport unit of the given CU, or {@code null} if the CU has no TU parent (e.g. it is a
+	 * standalone/top-level CU). Used to resolve, at unpick time, the TU a bare-TU pick recorded its
+	 * {@code M_ShipmentSchedule_QtyPicked} row against — the leaf CU carries no such reference and the TU can only
+	 * be resolved from its parent before extraction detaches it.
+	 */
+	@Nullable
+	public HuId getParentTransportUnitId(@NonNull final HuId cuId)
+	{
+		final I_M_HU cu = handlingUnitsBL.getById(cuId);
+		final I_M_HU tuHU = handlingUnitsBL.getTransportUnitHU(cu);
+		return tuHU != null ? HuId.ofRepoId(tuHU.getM_HU_ID()) : null;
+	}
+
+	/**
+	 * @return {@code true} if the given TU sits under a loading unit (LU). Used to discriminate, at unpick time,
+	 * a bare-TU pick (schedule row keyed to the TU) from a TU-under-LU pick (schedule row keyed to the leaf CU).
+	 */
+	public boolean hasLoadingUnit(@NonNull final HuId tuId)
+	{
+		final I_M_HU tuHU = handlingUnitsBL.getById(tuId);
+		return handlingUnitsBL.getLoadingUnitHU(tuHU) != null;
+	}
+
+	/**
+	 * @return the top-level HU id for the given HU — itself when it is already top-level, or its loading unit (LU)
+	 * when it is a TU nested under one.
+	 */
+	public HuId getTopLevelHuId(@NonNull final HuId huId)
+	{
+		return HuId.ofRepoId(handlingUnitsBL.getTopLevelParent(huId).getM_HU_ID());
+	}
+
+	/**
 	 * Returns all non-empty product storages on the given HU (e.g. an LU).
 	 */
 	@NonNull

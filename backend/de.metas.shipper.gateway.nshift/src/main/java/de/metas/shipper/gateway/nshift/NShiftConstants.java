@@ -7,4 +7,5 @@ import lombok.experimental.UtilityClass;
 public class NShiftConstants
 {
 	public static final ShipperGatewayId SHIPPER_GATEWAY_ID = ShipperGatewayId.ofString("nshift");
+	public static final String USE_SHIPPING_RULES = "UseShippingRules";
 }

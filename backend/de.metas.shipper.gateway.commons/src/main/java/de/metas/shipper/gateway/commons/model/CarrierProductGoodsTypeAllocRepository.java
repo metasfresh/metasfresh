@@ -33,6 +33,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_Carrier_Product_GoodsType_Alloc;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository Tables: Carrier_Product_GoodsType_Alloc
+ * Repository Cluster: CarrierProductGoodsTypeAllocRepository
+ */
 @Repository
 public class CarrierProductGoodsTypeAllocRepository
 {

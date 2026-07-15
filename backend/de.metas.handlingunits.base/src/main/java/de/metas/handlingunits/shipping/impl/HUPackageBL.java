@@ -1,5 +1,6 @@
 package de.metas.handlingunits.shipping.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutId;
@@ -39,8 +40,12 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_Package;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -136,14 +141,17 @@ public class HUPackageBL implements IHUPackageBL
 		mpackage.setC_BPartner_ID(hu.getC_BPartner_ID());
 		mpackage.setC_BPartner_Location_ID(hu.getC_BPartner_Location_ID());
 
-		getShipmentForHU(hu).ifPresent(inOut -> updateFromInOut(mpackage, inOut));
+		final Optional<I_M_InOut> shipmentForHU = getShipmentForHU(hu);
+		shipmentForHU.ifPresent(inOut -> updateFromInOut(mpackage, inOut));
 
 		if (request.getWeightInKg() != null)
 		{
 			mpackage.setPackageWeight(request.getWeightInKg());
 		}
 
-		final PackageDimensions packageDimensions = getPackageDimensions(hu);
+		final PackageDimensions packageDimensions = request.getPackageDimensions() != null
+				? request.getPackageDimensions()
+				: getPackageDimensions(hu);
 		mpackage.setLengthInCm(packageDimensions.getLengthInCM());
 		mpackage.setWidthInCm(packageDimensions.getWidthInCM());
 		mpackage.setHeightInCm(packageDimensions.getHeightInCM());
@@ -156,7 +164,90 @@ public class HUPackageBL implements IHUPackageBL
 		mpackageHU.setM_HU(hu);
 		save(mpackageHU);
 
+		// When the shipment already exists at package-creation time, record its line(s) now: the other
+		// M_InOut-assignment path (assignShipmentToPackages) skips a package that is already linked.
+		shipmentForHU.ifPresent(inOut -> createPackageLines(mpackage, inOut));
+
 		return mpackage;
+	}
+
+	@Override
+	public List<I_M_Package> createM_Packages(@NonNull final CreatePackageForHURequest request)
+	{
+		final I_M_HU hu = request.getHu();
+
+		// A loose CU (a top-level VIRTUAL HU) ships 1 label per unit: split a single-product, integer-quantity
+		// loose HU into N single-unit M_Packages (each linked to the same HU via M_Package_HU). Everything else
+		// — a carton (LU/TU), an aggregate HU, multi-product, or a non-integer quantity — yields exactly ONE
+		// M_Package (unchanged behaviour). NOTE: gate on isVirtual, NOT on "no packing material": a top-level LU
+		// can also have no packing-material row, and must stay one package.
+		if (!handlingUnitsBL.isVirtual(hu))
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
+		if (productStorages.size() != 1)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		final IHUProductStorage productStorage = productStorages.get(0);
+		final Quantity qty = productStorage.getQtyInStockingUOM();
+		final int parcelCount;
+		try
+		{
+			parcelCount = qty.toBigDecimal().intValueExact();
+		}
+		catch (final ArithmeticException nonIntegerLooseQty)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+		if (parcelCount <= 1)
+		{
+			return ImmutableList.of(createM_Package(request));
+		}
+
+		// One parcel per unit: split the HU weight evenly across the N identical units, and use the product's
+		// SINGLE-unit dimensions (self-packed → product's NAMED dims verbatim; else UNSPECIFIED).
+		final BigDecimal huWeightInKg = request.getWeightInKg();
+		final BigDecimal perUnitWeightInKg = huWeightInKg != null
+				? huWeightInKg.divide(BigDecimal.valueOf(parcelCount), 3, RoundingMode.HALF_UP)
+				: null;
+
+		final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
+		final Product product = productRepository.getById(productStorage.getProductId());
+		final PackageDimensions singleUnitDimensions = resolveSingleUnitDimensions(product);
+
+		final CreatePackageForHURequest perUnitRequest = request
+				.withWeightInKg(perUnitWeightInKg)
+				.withPackageDimensions(singleUnitDimensions);
+
+		final ImmutableList.Builder<I_M_Package> packages = ImmutableList.builder();
+		for (int i = 0; i < parcelCount; i++)
+		{
+			packages.add(createM_Package(perUnitRequest));
+		}
+		return packages.build();
+	}
+
+	/**
+	 * Single-unit dimensions: a self-packed CU is one label per unit, so each parcel carries the product's
+	 * named dimensions verbatim (no qty-based sort/scale). Same self-packed / no-dimensions guards as
+	 * {@code getPackageDimensions}.
+	 */
+	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
+	{
+		if (!product.isSelfPacked())
+		{
+			return PackageDimensions.UNSPECIFIED;
+		}
+		else if (product.getPackageDimensions().isUnspecified())
+		{
+			throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
+		}
+		else
+		{
+			return product.getPackageDimensions();
+		}
 	}
 
 	@Override
@@ -207,6 +298,10 @@ public class HUPackageBL implements IHUPackageBL
 			save(mpackage);
 
 			//
+			// Record which shipment line(s) this package actually contains (M_PackageLine).
+			createPackageLines(mpackage, inout);
+
+			//
 			// Update Shipping Packages (i.e. the link between M_Package and M_ShipperTransportation)
 			final List<I_M_ShippingPackage> shippingPackages = shipperTransportationDAO.retrieveShippingPackages(mpackage);
 			for (final I_M_ShippingPackage shippingPackage : shippingPackages)
@@ -221,6 +316,52 @@ public class HUPackageBL implements IHUPackageBL
 				save(shippingPackage);
 			}
 		}
+	}
+
+	/**
+	 * Record which shipment line(s) each of {@code mpackage}'s HUs was shipped as, as {@code M_PackageLine}
+	 * rows ({@code M_InOutLine_ID} + summed {@code Qty}). This gives the carrier-advise path an exact
+	 * package&rarr;shipment-line link, so it resolves a package to the schedules of the lines it actually holds
+	 * rather than to every line of the whole {@code M_InOut} (a mixed LU correctly yields one row per line).
+	 * <p>
+	 * Must run after {@code M_ShipmentSchedule_QtyPicked.M_InOutLine_ID} is set — hence the call from
+	 * {@link #assignShipmentToPackages} (via {@code ShipmentScheduleWithHU.setM_InOut}, after
+	 * {@code createUpdateShipmentLineAlloc}). Idempotent: clears existing lines first, so a reverse&rarr;re-ship
+	 * does not duplicate rows.
+	 */
+	private void createPackageLines(@NonNull final I_M_Package mpackage, @NonNull final I_M_InOut inout)
+	{
+		// Idempotency: drop any lines from a previous assignment (e.g. after a reverse&rarr;re-ship).
+		huPackageDAO.deletePackageLines(PackageId.ofRepoId(mpackage.getM_Package_ID()));
+
+		// This shipment's line ids, to scope the pick-ledger rows without a per-row relation-load.
+		final Set<InOutLineId> shipmentLineIds = inOutDAO.retrieveLines(inout).stream()
+				.map(line -> InOutLineId.ofRepoId(line.getM_InOutLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		// One M_PackageLine per shipment line, from the pick ledger. Every shipment line — including each line an
+		// attribute-mixed TU is split into — has its own M_ShipmentSchedule_QtyPicked row
+		// (HUShipmentScheduleBL.createCandidatesForQtyPicked splits a whole-TU pick per attribute group), so the
+		// ledger is line-complete; group its rows for the package's HUs by M_InOutLine and sum the picked qty.
+		final Map<InOutLineId, BigDecimal> qtyByInOutLineId = new LinkedHashMap<>();
+		for (final I_M_Package_HU packageHU : huPackageDAO.retrievePackageHUs(mpackage))
+		{
+			for (final I_M_ShipmentSchedule_QtyPicked qtyPicked : huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(packageHU.getM_HU()))
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoIdOrNull(qtyPicked.getM_InOutLine_ID());
+				// Scope to THIS shipment's lines (an HU's active picked rows should belong to it, but be defensive).
+				if (inOutLineId == null || !shipmentLineIds.contains(inOutLineId))
+				{
+					continue;
+				}
+				// BigDecimal (not Quantity): a group is one M_InOutLine → one product → one stock UOM, so there is no
+				// UOM to reconcile, and M_PackageLine.Qty is a bare NUMERIC column. Resolving a UOM for a Quantity
+				// would require a per-row M_ShipmentSchedule/product relation-traversal we deliberately avoid.
+				qtyByInOutLineId.merge(inOutLineId, qtyPicked.getQtyPicked(), BigDecimal::add);
+			}
+		}
+
+		qtyByInOutLineId.forEach((inOutLineId, qty) -> huPackageDAO.createPackageLine(mpackage, inOutLineId, qty));
 	}
 
 	@Override
@@ -258,6 +399,10 @@ public class HUPackageBL implements IHUPackageBL
 			mpackage.setPOReference(null);
 			mpackage.setProcessed(false);
 			save(mpackage);
+
+			// Drop the package's lines: they point at the now-void M_InOutLines. They are rebuilt from the current
+			// pick ledger when the package is re-assigned to a shipment (createPackageLines).
+			huPackageDAO.deletePackageLines(PackageId.ofRepoId(mpackage.getM_Package_ID()));
 		}
 	}
 
