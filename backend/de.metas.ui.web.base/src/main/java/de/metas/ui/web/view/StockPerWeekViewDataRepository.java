@@ -34,15 +34,25 @@ import javax.annotation.Nullable;
  * Data repository for the standalone "Bestand pro Woche" window (542159).
  * <p>
  * The row selection is built by {@link StockPerWeekSelectionFactory} from
- * {@code MD_Stock_PerWeek_fn(product, warehouse)}. The default page render joins the persisted selection back
- * to the fully materialized {@code MD_Stock_PerWeek_V} on its MD5-hash PK — which the planner cannot push
- * down, forcing a re-materialization of the entire (~785k row) view for every page. This repository instead
- * renders the page from the <b>same parameterized function</b>, aliased with the view's table name so the
- * generated column/display/key expressions (and therefore the output) are byte-identical to the view render,
- * while the product/warehouse filter reaches the indexed base {@code MD_Candidate} scan.
+ * {@code MD_Stock_PerWeek_fn(product, warehouse)} <b>only when a single-product {@code EQUAL} filter was
+ * applied</b> ({@link StockPerWeekSelectionFactory#readAppliedFilter} then resolves non-null). The default
+ * page render joins the persisted selection back to the fully materialized {@code MD_Stock_PerWeek_V} on its
+ * MD5-hash PK — which the planner cannot push down, forcing a re-materialization of the entire (~785k row)
+ * view for every page. For that single-product case this repository instead renders the page from the
+ * <b>same parameterized function</b>, aliased with the view's table name so the generated
+ * column/display/key expressions (and therefore the output) are byte-identical to the view render, while the
+ * product/warehouse filter reaches the indexed base {@code MD_Candidate} scan.
  * <p>
  * The applied product/warehouse are read back from the selection rows that the selection factory persisted
- * (IntKey2 / IntKey3). No other window is affected: only window 542159 is wired to this repository (see
+ * (IntKey2 / IntKey3). In every other case — no product filter, a multi-value/range ({@code IN_ARRAY} /
+ * {@code BETWEEN}) product filter (reachable via the window's multi-select product facet), or a
+ * warehouse/week-only filter — {@link StockPerWeekSelectionFactory#createOrderedSelection} itself falls back
+ * to the standard, view-based selection builder, which persists rows with null IntKey2/IntKey3. This
+ * repository mirrors that same fallback here: {@link #buildSelectByPage} / {@link #buildSelectRowIdsByPage}
+ * delegate to the standard view-join render ({@code super}) whenever {@code readAppliedFilter} resolves to
+ * {@code null}, so a genuinely empty selection still renders an empty (correct) page, and a populated
+ * delegate-built selection renders its correct (if slower) rows instead of silently going blank. No other
+ * window is affected: only window 542159 is wired to this repository (see
  * {@link StockPerWeekViewDataRepositoryFactory}).
  * <p>
  * Note: {@code retrieveById} (single-row zoom/refresh) is intentionally left on the standard view-based path.
@@ -74,17 +84,15 @@ public class StockPerWeekViewDataRepository extends SqlViewDataRepository
 		final AppliedFilter appliedFilter = StockPerWeekSelectionFactory.readAppliedFilter(viewId.getViewId());
 		if (appliedFilter == null)
 		{
-			// Empty selection (e.g. window opened without a product filter) => empty page.
-			return null;
+			// Not function-backed: either a genuinely empty selection (open-empty, no rows — the standard
+			// render then correctly returns 0 rows), or a selection that StockPerWeekSelectionFactory itself
+			// built via its standard-factory fallback (no product filter, a multi-value/range product filter,
+			// or a warehouse/week-only filter). Mirror that same fallback here instead of returning null,
+			// which would silently render an empty page for a selection that actually has rows.
+			return super.buildSelectByPage(viewEvalCtx, viewId, firstRow, pageLength);
 		}
 
-		return getSqlViewBinding().getSqlViewSelect().selectByPageFromSourceRelation(
-				viewEvalCtx,
-				FUNCTION_SOURCE_RELATION_SQL,
-				appliedFilter.toFunctionParams(),
-				viewId.getViewId(),
-				firstRow,
-				pageLength);
+		return buildFunctionSourcedSelectByPage(viewEvalCtx, viewId, firstRow, pageLength, appliedFilter);
 	}
 
 	@Override
@@ -95,9 +103,32 @@ public class StockPerWeekViewDataRepository extends SqlViewDataRepository
 			final int firstRow,
 			final int pageLength)
 	{
+		final AppliedFilter appliedFilter = StockPerWeekSelectionFactory.readAppliedFilter(viewId.getViewId());
+		if (appliedFilter == null)
+		{
+			// Not function-backed => fall back to the standard row-ids render. See buildSelectByPage.
+			return super.buildSelectRowIdsByPage(viewEvalCtx, viewId, firstRow, pageLength);
+		}
+
 		// Reuse the function-sourced page SQL; the row-ids loop reads only the key column, which is present.
 		// The extra projected columns are negligible — the cost is the single function evaluation, which is
 		// identical whether we project all columns or only the key.
-		return buildSelectByPage(viewEvalCtx, viewId, firstRow, pageLength);
+		return buildFunctionSourcedSelectByPage(viewEvalCtx, viewId, firstRow, pageLength, appliedFilter);
+	}
+
+	private SqlAndParams buildFunctionSourcedSelectByPage(
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final int firstRow,
+			final int pageLength,
+			@NonNull final AppliedFilter appliedFilter)
+	{
+		return getSqlViewBinding().getSqlViewSelect().selectByPageFromSourceRelation(
+				viewEvalCtx,
+				FUNCTION_SOURCE_RELATION_SQL,
+				appliedFilter.toFunctionParams(),
+				viewId.getViewId(),
+				firstRow,
+				pageLength);
 	}
 }
