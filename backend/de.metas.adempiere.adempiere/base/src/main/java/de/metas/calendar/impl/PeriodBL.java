@@ -23,7 +23,9 @@ package de.metas.calendar.impl;
  */
 
 import de.metas.calendar.IPeriodBL;
+import de.metas.calendar.IPeriodDAO;
 import de.metas.document.DocBaseType;
+import de.metas.util.Services;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,6 +41,7 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
@@ -166,4 +169,9 @@ public class PeriodBL implements IPeriodBL
 		return true;
 	}
 
+	@Override
+	public LocalDate getEndDateById(final int periodId)
+	{
+		return Services.get(IPeriodDAO.class).getEndDateById(periodId);
+	}
 }

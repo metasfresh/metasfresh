@@ -1,4 +1,5 @@
 import { test } from "../../../playwright.config";
+import { allure } from 'allure-playwright';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -57,8 +58,15 @@ const createMasterdata = async ({
 
 // noinspection JSUnusedLocalSymbols
 test('Pick less than a LU because ordered qty is less than an LU', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick from LUs - Partial LU');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({
-        salesOrdersQty: 76 // < 80 => less than a full LU 
+        salesOrdersQty: 76 // < 80 => less than a full LU
     });
     await Backend.expect({
         hus: {
@@ -90,7 +98,7 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
         },
         hus: {
             HU1: { huStatus: 'A', storages: { P1: '4 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '76 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '76 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -107,13 +115,20 @@ test('Pick less than a LU because ordered qty is less than an LU', async ({ page
         },
         hus: {
             HU1: { huStatus: 'A', storages: { P1: '4 PCE' } },
-            lu1: { huStatus: 'E', storages: { P1: '76 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '76 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });
 
 // noinspection JSUnusedLocalSymbols
 test('Pick entire LU which is exactly the qty that was ordered', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick from LUs - Exact LU qty');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({
         salesOrdersQty: 80 // exactly one LU
     });
@@ -169,6 +184,13 @@ test('Pick entire LU which is exactly the qty that was ordered', async ({ page }
 
 // noinspection JSUnusedLocalSymbols
 test('Pick entire LU but less then ordered', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick from LUs - Less than ordered');
+    allure.severity('normal');
+
     const masterdata = await createMasterdata({
         salesOrdersQty: 160 // exactly one LU
     });

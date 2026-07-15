@@ -1,6 +1,7 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProduct;
@@ -111,6 +112,7 @@ public class PackToHUsProducer
 		@NonNull TableRecordReference documentRef;
 		boolean checkIfAlreadyPacked;
 		boolean createInventoryForMissingQty;
+		@NonNull @Builder.Default ImmutableSet<HuId> allowedReservedVhuIds = ImmutableSet.of();
 	}
 
 	public LUTUResult packToHU(@NonNull final PackToHURequest request)
@@ -207,12 +209,18 @@ public class PackToHUsProducer
 		else if (packToInfo.getTu().isExistingTU())
 		{
 			final I_M_HU tuRecord = handlingUnitsBL.getById(packToInfo.getTu().getTuIdNotNull());
-			final HUTransformService huTransformService = HUTransformService.newInstance(huContext);
+			final ImmutableSet<HuId> allowedReservedVhuIds = request.getAllowedReservedVhuIds();
+			final HUTransformService huTransformService = HUTransformService.builderForHUcontext()
+					.huContext(huContext)
+					.allowedReservedVhuIds(allowedReservedVhuIds)
+					.build();
 			final I_M_HU cuRecord = huTransformService.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
 					.sourceHUs(pickFromHUs.toHUsList())
 					.productId(productId)
 					.qtyCU(qtyPicked)
-					.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+					.reservedVHUsPolicy(allowedReservedVhuIds.isEmpty()
+							? ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED
+							: ReservedHUsPolicy.onlyNotReservedExceptVhuIds(allowedReservedVhuIds))
 					.build());
 			huTransformService.addCUsToTU(ImmutableList.of(cuRecord), tuRecord);
 

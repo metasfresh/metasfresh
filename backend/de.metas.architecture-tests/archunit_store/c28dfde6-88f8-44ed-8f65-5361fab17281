@@ -1,0 +1,2 @@
+Field <de.metas.materialtracking.ch.lagerkonf.impl.HardCodedQualityBasedConfig.validToDate> has raw type java.sql.Timestamp in (HardCodedQualityBasedConfig.java:0)
+Field <de.metas.materialtracking.ch.lagerkonf.impl.RecordBackedQualityBasedConfig.validToDate> has raw type java.sql.Timestamp in (RecordBackedQualityBasedConfig.java:0)

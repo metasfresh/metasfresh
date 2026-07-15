@@ -25,6 +25,7 @@ package de.metas.rest_api.v1.payment;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.rest_api.v1.payment.JsonInboundPaymentInfo;
 import de.metas.currency.CurrencyCode;
@@ -32,7 +33,7 @@ import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.money.CurrencyId;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.organization.OrgId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -137,6 +138,7 @@ class PaymentRestEndpointTest
 
 		// run the "before_complete" interceptor
 		new C_Order(bpartnerBL,
+				BPartnerEffectiveBL.newInstanceForUnitTesting(),
 				new OrderLineDetailRepository(),
 				documentLocationBL,
 				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),

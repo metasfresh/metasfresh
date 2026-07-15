@@ -24,6 +24,7 @@ package de.metas.shipper.gateway.commons.model;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.StringUtils;
 import de.metas.i18n.AdMessageKey;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -72,6 +73,7 @@ public class ShipperConfigRepository
 	public ShipperConfig getByShipperId(@NonNull final ShipperId shipperId)
 	{
 		return queryBL.createQueryBuilder(I_Carrier_Config.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_Carrier_Config.COLUMNNAME_M_Shipper_ID, shipperId)
 				.create()
 				.firstOnlyOptional()
@@ -100,11 +102,20 @@ public class ShipperConfigRepository
 	{
 		final POInfo poInfo = POInfo.getPOInfo(I_Carrier_Config.Table_Name);
 		Check.assumeNotNull(poInfo, "POInfo for {} is not null", I_Carrier_Config.Table_Name);
-		return
-				poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
-						.map(POInfoColumn::getColumnName)
-						.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
-						.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName)));
+		return poInfo.streamColumns(poInfoColumn -> !COLUMNS_TO_EXCLUDE_FROM_MAPPING.contains(poInfoColumn.getColumnName()))
+				.map(POInfoColumn::getColumnName)
+				.filter(columnName -> InterfaceWrapperHelper.getValueOrNull(carrierConfig, columnName) != null)
+				.collect(ImmutableMap.toImmutableMap(Function.identity(), colName -> toPropertyString(InterfaceWrapperHelper.getValueOrNull(carrierConfig, colName))));
+	}
+
+	private static String toPropertyString(@NotNull final Object value)
+	{
+		// PO layer stores YesNo columns as Boolean; convert to "Y"/"N" for consistent string-based lookup
+		if (value instanceof Boolean)
+		{
+			return StringUtils.ofBooleanNonNull((Boolean) value);
+		}
+		return String.valueOf(value);
 	}
 
 }

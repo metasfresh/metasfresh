@@ -3,6 +3,9 @@ package de.metas.cucumber.stepdefs.allocation;
 import de.metas.allocation.api.C_AllocationHdr_Builder;
 import de.metas.allocation.api.C_AllocationLine_Builder;
 import de.metas.allocation.api.IAllocationBL;
+import de.metas.allocation.api.IAllocationDAO;
+import de.metas.allocation.api.PaymentAllocationId;
+import de.metas.allocation.api.WriteOffType;
 import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
@@ -10,6 +13,8 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -21,7 +26,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_AllocationHdr;
 import org.compiere.model.I_C_AllocationLine;
@@ -33,6 +37,8 @@ import java.util.List;
 public class C_AllocationHdr_StepDef
 {
 	@NonNull private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
+	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
+	@NonNull private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	@NonNull private final MoneyService moneyService = SpringContextHolder.instance.getBean(MoneyService.class);
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -109,6 +115,9 @@ public class C_AllocationHdr_StepDef
 				lineBuilder.overUnderAmt(overUnderAmt.toBigDecimal());
 			}
 
+			row.getAsOptionalEnum("WriteOffType", WriteOffType.class)
+					.ifPresent(lineBuilder::writeOffType);
+
 			row.getAsOptionalIdentifier("C_BPartner_ID")
 					.map(bpartnerTable::getId)
 					.ifPresent(lineBuilder::bpartnerId);
@@ -122,5 +131,23 @@ public class C_AllocationHdr_StepDef
 
 		final I_C_AllocationHdr allocationHdr = builder.createAndComplete();
 		allocationTable.putOrReplaceIfSameId(identifier, allocationHdr);
+	}
+
+	@And("^the allocation identified by (.*) is reversed$")
+	public void reverseAllocation(@NonNull final String allocationIdentifierStr)
+	{
+		final StepDefDataIdentifier allocationIdentifier = StepDefDataIdentifier.ofString(allocationIdentifierStr);
+		final I_C_AllocationHdr allocationHdr = allocationTable.get(allocationIdentifier);
+
+		allocationHdr.setDocAction(IDocument.ACTION_Reverse_Correct);
+		documentBL.processEx(allocationHdr, IDocument.ACTION_Reverse_Correct, IDocument.STATUS_Reversed);
+
+		final PaymentAllocationId reversalId = PaymentAllocationId.ofRepoIdOrNull(allocationHdr.getReversal_ID());
+		if (reversalId != null)
+		{
+			final I_C_AllocationHdr reversal = allocationDAO.getById(reversalId);
+			final StepDefDataIdentifier reversalIdentifier = StepDefDataIdentifier.ofString(allocationIdentifierStr + ".reversed");
+			allocationTable.putOrReplace(reversalIdentifier, reversal);
+		}
 	}
 }

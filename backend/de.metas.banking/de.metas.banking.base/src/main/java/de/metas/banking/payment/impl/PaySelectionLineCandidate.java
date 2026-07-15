@@ -26,8 +26,6 @@ import de.metas.banking.BankAccountId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.invoice.InvoiceId;
-import de.metas.order.OrderId;
-import de.metas.order.paymentschedule.OrderPayScheduleId;
 import de.metas.util.Check;
 import lombok.Getter;
 import org.adempiere.util.lang.ObjectUtils;
@@ -51,8 +49,6 @@ class PaySelectionLineCandidate
 	@Getter private final BigDecimal openAmt;
 	@Getter private final BigDecimal differenceAmt;
 	@Getter private final InvoiceId invoiceId;
-	@Getter private final OrderId orderId;
-	@Getter private final OrderPayScheduleId orderPayScheduleId;
 	@Getter private final boolean isSOTrx;
 	private final BPartnerId bpartnerId;
 	private final BankAccountId bpBankAccountId;
@@ -67,8 +63,6 @@ class PaySelectionLineCandidate
 		this.openAmt = builder.getOpenAmt();
 		this.differenceAmt = builder.getDifferenceAmt();
 		this.invoiceId = builder.getInvoiceId();
-		this.orderId = builder.getOrderId();
-		this.orderPayScheduleId = builder.getOrderPayScheduleId();
 		this.isSOTrx = builder.isSOTrx();
 		this.bpartnerId = builder.getBPartnerId();
 		this.bpBankAccountId = builder.getBPartnerBankAccountId();
@@ -99,8 +93,6 @@ class PaySelectionLineCandidate
 	{
 		private String paymentRule;
 		@Getter private @Nullable InvoiceId invoiceId;
-		@Getter private @Nullable OrderId orderId;
-		@Getter private @Nullable OrderPayScheduleId orderPayScheduleId;
 		private Boolean isSOTrx;
 		private BPartnerId bpartnerId;
 		private @Nullable BankAccountId bpBankAccountId;
@@ -128,18 +120,6 @@ class PaySelectionLineCandidate
 		public Builder setInvoiceId(final @Nullable InvoiceId invoiceId)
 		{
 			this.invoiceId = invoiceId;
-			return this;
-		}
-
-		public Builder setOrderPayScheduleId(final @Nullable OrderPayScheduleId orderPayScheduleId)
-		{
-			this.orderPayScheduleId = orderPayScheduleId;
-			return this;
-		}
-
-		public Builder setOrderId(final @Nullable OrderId orderId)
-		{
-			this.orderId = orderId;
 			return this;
 		}
 

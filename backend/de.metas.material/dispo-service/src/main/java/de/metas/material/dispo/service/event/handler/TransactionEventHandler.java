@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * metasfresh-material-dispo-service
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.material.dispo.service.event.handler;
 
 import ch.qos.logback.classic.Level;
@@ -39,6 +61,9 @@ import de.metas.util.InSetPredicate;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
+import de.metas.util.Services;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.slf4j.Logger;
@@ -58,33 +83,13 @@ import java.util.TreeSet;
 
 import static de.metas.util.Check.fail;
 
-/*
- * #%L
- * metasfresh-material-dispo
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 @Service
 @Profile(Profiles.PROFILE_MaterialDispo)
 public class TransactionEventHandler implements MaterialEventHandler<AbstractTransactionEvent>
 {
 	private static final Logger logger = LogManager.getLogger(TransactionEventHandler.class);
 
+	@NonNull private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final CandidateChangeService candidateChangeHandler;
 	private final CandidateRepositoryRetrieval candidateRepository;
 	private final PostMaterialEventService postMaterialEventService;
@@ -108,6 +113,16 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	@Override
 	public void handleEvent(@NonNull final AbstractTransactionEvent event)
 	{
+		final WarehouseId warehouseId = event.getMaterialDescriptor().getWarehouseId();
+		if (warehouseBL.isIgnoreInMaterialDispo(warehouseId))
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(
+					"Ignoring {} for M_Warehouse_ID={} (warehouse is excluded from material-dispo: MRP_Exclude or IsDropShipWarehouse)",
+					event.getClass().getSimpleName(),
+					WarehouseId.toRepoId(warehouseId));
+			return;
+		}
+
 		final List<Candidate> candidates = createCandidatesForTransactionEvent(event);
 		for (final Candidate candidate : candidates)
 		{
@@ -253,7 +268,26 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 
 		if (existingShipmentCandidate != null)
 		{
-			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(existingShipmentCandidate, changedTransactionDetail);
+			// When an M_Transaction is deleted (e.g., during shipment reactivation RA), the TransactionDeletedEvent
+			// replaces the existing TransactionDetail that has the same transactionId. In that case, the deleted
+			// transaction's contribution should be 0, not the event's negative delta.
+			// Without this, the stale negative detail (-15) from RA persists and cancels out the re-CO's
+			// positive detail (+15), leaving the candidate at qty=0 instead of the expected qty.
+			// For reversals (RC), the TransactionDeletedEvent uses a NEW transactionId (from the reversal
+			// M_Transaction), so it's added as a counter-contribution with the negative delta — which is correct.
+			final TransactionDetail effectiveTransactionDetail;
+			if (event instanceof TransactionDeletedEvent
+					&& existingShipmentCandidate.getTransactionDetails().stream()
+					.anyMatch(td -> td.getTransactionId() == changedTransactionDetail.getTransactionId()))
+			{
+				effectiveTransactionDetail = changedTransactionDetail.toBuilder().quantity(BigDecimal.ZERO).build();
+			}
+			else
+			{
+				effectiveTransactionDetail = changedTransactionDetail;
+			}
+
+			final TreeSet<TransactionDetail> newTransactionDetailsSet = extractAllTransactionDetails(existingShipmentCandidate, effectiveTransactionDetail);
 
 			final Instant firstTransactionDate = extractMinTransactionDate(newTransactionDetailsSet);
 

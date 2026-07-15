@@ -42,6 +42,7 @@ import lombok.Value;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.SHIPPER_IDENTIFIER_DOC;
@@ -266,7 +267,7 @@ public class JsonOLCandCreateRequest
 	BigDecimal qtyShipped;
 
 	@ApiModelProperty(position = 420, //
-			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capcity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
+			value = "Translates to C_OLCand.QtyItemCapacity. If given, it overrides the capacity set in the M_HU_PI_Item_Product that might be given via packingMaterialId or \"GTIN-..\" productIdentifier.")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
 
@@ -298,10 +299,45 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	Boolean isAutoInvoice;
 
-	@ApiModelProperty(position = 480)
+	@ApiModelProperty(position = 490)
 	@JsonInclude(Include.NON_NULL)
 	String invoiceRule;
 
+	@ApiModelProperty(position = 500)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsValue;
+
+	@ApiModelProperty(position = 510)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsLocation;
+
+	/**
+	 * Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y').
+	 * Keys are column names; values are the column values.
+	 * Unknown columns cause a user-validation error.
+	 * A null or missing map is treated as a no-op.
+	 */
+	@ApiModelProperty(position = 520, value = "Custom REST-API columns on C_OLCand (AD_Column.IsRestAPICustomColumn='Y'). "
+			+ "Keys are column names; values are the column values. Unknown columns cause a user-validation error. "
+			+ "A null or empty map is treated as a no-op.")
+	@JsonInclude(Include.NON_NULL)
+	Map<String, Object> extendedProps;
+
+	@ApiModelProperty(position = 530, value = "Translates to `C_PromotionCode.Value`. The looked up promotion code's ID is set to `C_OLCand.C_PromotionCode_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String promotionCode;
+
+	@ApiModelProperty(position = 540, value = "Translates to `C_PromotionCode.Value`. The looked up promotion code's ID is set to `C_OLCand.C_PromotionCode2_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String promotionCode2;
+
+	@ApiModelProperty(position = 550, value = "If true, the order line candidate will be created without charge. Translates to `C_OLCand.IsWithoutCharge`.")
+	@JsonInclude(Include.NON_NULL)
+	Boolean isWithoutCharge;
+
+	@ApiModelProperty(position = 560, value = "Free-text reason associated with the order line candidate. Translates to `C_OLCand.Reason`.")
+	@JsonInclude(Include.NON_NULL)
+	String reason;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -354,7 +390,14 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("email") final @Nullable String email,
 			@JsonProperty("phone") final @Nullable String phone,
 			@JsonProperty("isAutoInvoice") final @Nullable Boolean isAutoInvoice,
-			@JsonProperty("invoiceRule") final @Nullable String invoiceRule)
+			@JsonProperty("invoiceRule") final @Nullable String invoiceRule,
+			@JsonProperty("incotermsValue") final @Nullable String incotermsValue,
+			@JsonProperty("incotermsLocation") final @Nullable String incotermsLocation,
+			@JsonProperty("extendedProps") final @Nullable Map<String, Object> extendedProps,
+			@JsonProperty("promotionCode") final @Nullable String promotionCode,
+			@JsonProperty("promotionCode2") final @Nullable String promotionCode2,
+			@JsonProperty("isWithoutCharge") final @Nullable Boolean isWithoutCharge,
+			@JsonProperty("reason") final @Nullable String reason)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -407,6 +450,14 @@ public class JsonOLCandCreateRequest
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
 		this.isAutoInvoice = isAutoInvoice;
 		this.invoiceRule = invoiceRule;
+
+		this.incotermsValue = incotermsValue;
+		this.incotermsLocation = incotermsLocation;
+		this.extendedProps = extendedProps;
+		this.promotionCode = promotionCode;
+		this.promotionCode2 = promotionCode2;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 
 	/**

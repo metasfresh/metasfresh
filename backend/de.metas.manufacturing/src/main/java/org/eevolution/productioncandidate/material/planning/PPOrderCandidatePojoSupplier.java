@@ -46,6 +46,7 @@ import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -124,22 +125,9 @@ public class PPOrderCandidatePojoSupplier
 		//
 		// Calculate duration & Planning dates
 		final int durationDays = productPlanningService.calculateDurationDays(context.getProductPlanning(), qtyToSupply.toBigDecimal());
-
-		final Instant earliestDateStartSchedule = SystemTime.asInstant();
-
-		final Instant datePromised;
-		final Instant dateStartSchedule;
-
-		if (request.getDemandDate().minus(durationDays, ChronoUnit.DAYS).isBefore(earliestDateStartSchedule))
-		{
-			dateStartSchedule = earliestDateStartSchedule;
-			datePromised = dateStartSchedule.plus(durationDays, ChronoUnit.DAYS);
-		}
-		else
-		{
-			datePromised = request.getDemandDate();
-			dateStartSchedule = datePromised.minus(durationDays, ChronoUnit.DAYS);
-		}
+		final PlanningDates planningDates = computePlanningDates(request.getDemandDate(), durationDays, SystemTime.asInstant());
+		final Instant datePromised = planningDates.datePromised;
+		final Instant dateStartSchedule = planningDates.dateStartSchedule;
 
 		final ProductDescriptor productDescriptor = createPPOrderCandidateProductDescriptor(context);
 
@@ -195,5 +183,35 @@ public class PPOrderCandidatePojoSupplier
 				.map(orderLineRepository::getById)
 				.map(OrderLine::getHuPIItemProductId)
 				.orElse(null);
+	}
+
+	// `now` is truncated to day precision: durationDays is whole-day-granular, and
+	// sub-day wall-clock jitter otherwise leaks into C_Aggregation keys that include
+	// DateStartSchedule (or DatePromised, which in the overdue branch is today+durationDays),
+	// preventing same-day candidates from merging.
+	@NonNull
+	static PlanningDates computePlanningDates(@NonNull final Instant demandDate, final int durationDays, @NonNull final Instant now)
+	{
+		final Instant today = now.truncatedTo(ChronoUnit.DAYS);
+
+		if (demandDate.minus(durationDays, ChronoUnit.DAYS).isBefore(today))
+		{
+			final Instant dateStartSchedule = today;
+			final Instant datePromised = dateStartSchedule.plus(durationDays, ChronoUnit.DAYS);
+			return new PlanningDates(datePromised, dateStartSchedule);
+		}
+		else
+		{
+			final Instant datePromised = demandDate;
+			final Instant dateStartSchedule = datePromised.minus(durationDays, ChronoUnit.DAYS);
+			return new PlanningDates(datePromised, dateStartSchedule);
+		}
+	}
+
+	@Value
+	static class PlanningDates
+	{
+		@NonNull Instant datePromised;
+		@NonNull Instant dateStartSchedule;
 	}
 }

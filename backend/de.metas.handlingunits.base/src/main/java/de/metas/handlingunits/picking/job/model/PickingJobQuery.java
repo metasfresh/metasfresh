@@ -110,6 +110,7 @@ public class PickingJobQuery
 				.includeNotLocked(true)
 				.excludeLockedForProcessing(true)
 				.excludeShipmentScheduleIds(excludeScheduleIds.getShipmentScheduleIdsWithoutJobSchedules())
+				.excludeNothingToPick(true)
 				.scannedProductCodes(this.getScannedProductCodes())
 				.maximumFixedPreparationDate(currentTime)
 				.orderBys(ImmutableSet.of(
@@ -157,6 +158,7 @@ public class PickingJobQuery
 		return PickingJobScheduleQuery.builder()
 				.workplaceId(this.scheduledForWorkplaceId)
 				.excludeJobScheduleIds(this.excludeScheduleIds.getJobScheduleIds())
+				.isProcessed(false)
 				.build();
 	}
 

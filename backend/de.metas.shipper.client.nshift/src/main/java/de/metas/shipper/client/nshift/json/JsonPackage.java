@@ -21,12 +21,15 @@
  */
 package de.metas.shipper.client.nshift.json;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
+import javax.annotation.Nullable;
 import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -35,6 +38,8 @@ import java.util.List;
 @Jacksonized
 public class JsonPackage
 {
+	@JsonIgnore
+	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
 
 	@JsonProperty("ItemNo")
 	Integer itemNo;
@@ -50,4 +55,16 @@ public class JsonPackage
 
 	@JsonProperty("References")
 	List<JsonReference> references;
+
+	@Nullable
+	@JsonIgnore
+	public static String extractTrackingUrl(@NonNull final JsonPackage pkg) {
+		if (pkg.getReferences() == null) return null;
+
+		return pkg.getReferences().stream()
+				.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
+				.map(JsonReference::getValue)
+				.findFirst()
+				.orElse(null);
+	}
 }

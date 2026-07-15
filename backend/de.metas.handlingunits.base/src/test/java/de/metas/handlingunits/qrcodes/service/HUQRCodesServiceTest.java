@@ -37,6 +37,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
@@ -358,6 +359,50 @@ class HUQRCodesServiceTest
 			final IHUQRCode parsedHUQRCode = huQRCodesService.parse(tuId.toHUValue());
 			System.out.println("parsedHUQRCode: " + parsedHUQRCode + " (" + parsedHUQRCode.getClass() + ")");
 			assertThat(parsedHUQRCode).isInstanceOf(HUQRCode.class);
+		}
+
+		@Test
+		void locatorQRCode_throwsUserFriendlyError()
+		{
+			// LOC# prefix is a locator QR code, not an HU QR code
+			final String locatorQRCodeString = "LOC#1#{\"warehouseId\":1,\"locatorId\":2,\"caption\":\"Regal-01\"}";
+			assertThatThrownBy(() -> huQRCodesService.parse(locatorQRCodeString))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+
+		@Test
+		void unrecognized_throwsUserFriendlyError()
+		{
+			final String junkCode = "TOTALLY_UNKNOWN_FORMAT_XYZ";
+			assertThatThrownBy(() -> huQRCodesService.parse(junkCode))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+
+		@Test
+		void truncatedHuQRCodeHead_throwsUserFriendlyError()
+		{
+			// A long HU QR code can be split mid-stream on a slow scanner device: the head fragment keeps the
+			// valid "HU#<version>#" prefix but carries a truncated JSON payload. It must surface the SAME friendly
+			// "not recognized" message as any other bad code, not leak the raw "Failed converting payload" error.
+			final HuId tuId = createTU();
+			final String fullHuQRCode = huQRCodesService.generateForExistingHU(tuId).getSingleQRCode(tuId).getAsString();
+
+			// sanity: the full code is a valid, parseable HU QR code
+			assertThat(huQRCodesService.parse(fullHuQRCode)).isInstanceOf(HUQRCode.class);
+
+			// simulate the device split: keep the HU#<version># prefix, drop the tail so the JSON payload is incomplete
+			final String truncatedHead = fullHuQRCode.substring(0, fullHuQRCode.length() / 2);
+			assertThat(truncatedHead).startsWith("HU#");
+
+			assertThatThrownBy(() -> huQRCodesService.parse(truncatedHead))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException ae = (AdempiereException)ex;
+						assertThat(ae.isUserValidationError()).isTrue();
+						assertThat(ae.getErrorCode()).isEqualTo(MobileQRCodeMessages.NOT_RECOGNIZED.toAD_Message());
+					});
 		}
 	}
 }

@@ -42,6 +42,7 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE = "de.metas.order.C_Order_CreatePOFromSOs.PurchaseQtySource";
 	private static final String SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT = I_C_OrderLine.COLUMNNAME_QtyOrdered;
+	private static final String SYSCONFIG_COMPLETE_DROPSHIP_PO = "de.metas.order.C_Order_CreatePOFromSOs.CompleteDropshipPO";
 
 	private final ArrayList<IC_Order_CreatePOFromSOsListener> listeners = new ArrayList<>();
 
@@ -54,10 +55,10 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 	@Override
 	public IC_Order_CreatePOFromSOsListener getCompositeListener()
 	{
-		return (purchaseOrderLine, salesOrderLine) -> {
+		return (purchaseOrderLine, salesOrderLine, purchaseOrder) -> {
 			for (final IC_Order_CreatePOFromSOsListener actualListener : listeners)
 			{
-				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine);
+				actualListener.afterPurchaseOrderLineCreatedBeforeSave(purchaseOrderLine, salesOrderLine, purchaseOrder);
 			}
 		};
 	}
@@ -79,5 +80,11 @@ public class C_Order_CreatePOFromSOsBL implements IC_Order_CreatePOFromSOsBL
 			return SYSCONFIG_PURCHASE_QTY_SOURCE_DEFAULT;
 		}
 		return purchaseQtySource;
+	}
+
+	@Override
+	public boolean isCompleteDropshipPO()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_COMPLETE_DROPSHIP_PO, true);
 	}
 }

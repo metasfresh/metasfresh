@@ -36,6 +36,7 @@ import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.service.impl.BPartnerDAO;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.organization.OrgId;
@@ -73,7 +74,7 @@ public class BPartnerCompositeRepository
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
 
 	@VisibleForTesting
-	public static BPartnerCompositeRepository newInstanceForJUnitTesting(@NonNull final LogEntriesRepository logEntriesRepository)
+	public static BPartnerCompositeRepository newInstanceForUnitTesting(@NonNull final LogEntriesRepository logEntriesRepository)
 	{
 		return new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
@@ -258,6 +259,14 @@ public class BPartnerCompositeRepository
 		final ImmutableList<BPartnerComposite> byQuery = getByQuery(query);
 		if (byQuery.size() > 1)
 		{
+			if (query.getBpartnerValue() != null)
+			{
+				throw new AdempiereException(
+						BPartnerDAO.MSG_BPARTNER_VALUE_NOT_UNIQUE_REST,
+						query.getBpartnerValue(), byQuery.size())
+						.markAsUserValidationError()
+						.setParameter("query", query);
+			}
 			throw new AdempiereException("The given query needs to yield max one BPartnerComposite; items yielded instead: " + byQuery.size())
 					.appendParametersToMessage()
 					.setParameter("query", query);

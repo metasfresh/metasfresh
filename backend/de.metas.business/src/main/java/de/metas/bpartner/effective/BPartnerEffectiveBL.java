@@ -24,6 +24,7 @@ package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -38,18 +39,23 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BP_Relation;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -71,12 +77,40 @@ public class BPartnerEffectiveBL
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting());
+		return SpringContextHolder.getBeanOrSupply(BPartnerEffectiveBL.class, () -> new BPartnerEffectiveBL(IncotermsRepository.newInstanceForUnitTesting()));
 	}
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)
 	{
 		return getByRecord(bpartnerDAO.getById(bPartnerId));
+	}
+
+	/**
+	 * Returns the vendor-level default purchase transport days as configured on
+	 * {@code C_BPartner.PO_TransportDays}, preserving the "is set?" distinction.
+	 * <p>
+	 * Return-value semantics — required contract for callers that chain this with
+	 * a lower-priority fallback:
+	 * <ul>
+	 *   <li>{@code Optional.empty()} — the column is NULL on {@code C_BPartner}; the caller
+	 *       may fall through to a lower-priority source (e.g. {@code PP_Product_Planning}).</li>
+	 *   <li>{@code Optional.of(0)} — the vendor was <b>explicitly</b> set to 0 transport days.
+	 *       Callers <b>must</b> use this 0 and <b>must not</b> fall through to a lower tier;
+	 *       conflating "set to 0" with "not set" is a behavioural bug.</li>
+	 *   <li>{@code Optional.of(n)} for {@code n &gt; 0} — explicit configured value.</li>
+	 * </ul>
+	 *
+	 * @see de.metas.bpartner_product.BPartnerProductEffectiveBL#getPurchaseTransportDaysIfSet(BPartnerId, de.metas.product.ProductId, OrgId)
+	 *      for the higher-priority vendor-product variant that chains into this method.
+	 */
+	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
+	{
+		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+	}
+
+	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
+	{
+		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
 	}
 
 	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
@@ -177,7 +211,60 @@ public class BPartnerEffectiveBL
 				I_C_BP_Group::getPO_IncotermLocation,
 				bPartnerBuilder::poIncoterms);
 
+		bPartnerBuilder.purchaseTransportDays(
+				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+
+		bPartnerBuilder.salesRepId(UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID()));
+
 		return bPartnerBuilder.build();
+	}
+
+	/**
+	 * Resolves the effective bill-to partner for a given order partner.
+	 * Precedence: per-partner C_BP_Relation (IsBillTo=Y) → partner's association group Bill_BPartner → parent association group Bill_BPartner → null.
+	 */
+	@Nullable
+	public BillBPartnerResolution getEffectiveBillBPartner(@NonNull final BPartnerId bPartnerId)
+	{
+		final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(bPartnerId);
+
+		final I_C_BP_Relation billRelation = bpartnerDAO.retrieveBillToBPartnerRelationOrNull(bPartnerId);
+		if (billRelation != null)
+		{
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(billRelation.getC_BPartnerRelation_ID());
+			if (billBPartnerId != null)
+			{
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, billRelation.getC_BPartnerRelation_Location_ID());
+				// C_BP_Relation has no Bill_User_ID column → no bill user from this path
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, null);
+			}
+		}
+
+		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
+		if (bpGroup.isDeviatingBillBPartner())
+		{
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(bpGroup.getBill_BPartner_ID());
+			if (billBPartnerId != null)
+			{
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, bpGroup.getBill_Location_ID());
+				final UserId billUserId = UserId.ofRepoIdOrNull(bpGroup.getBill_User_ID());
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
+			}
+		}
+
+		final I_C_BP_Group parentGroup = getParentGroup(bpGroup);
+		if (parentGroup != null && parentGroup.isDeviatingBillBPartner())
+		{
+			final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(parentGroup.getBill_BPartner_ID());
+			if (billBPartnerId != null)
+			{
+				final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoIdOrNull(billBPartnerId, parentGroup.getBill_Location_ID());
+				final UserId billUserId = UserId.ofRepoIdOrNull(parentGroup.getBill_User_ID());
+				return BillBPartnerResolution.of(billBPartnerId, billLocationId, billUserId);
+			}
+		}
+
+		return null;
 	}
 
 	@Nullable
@@ -190,8 +277,6 @@ public class BPartnerEffectiveBL
 		final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpGroup.getParent_BP_Group_ID());
 		return parentGroupId != null ? bpGroupDAO.getById(parentGroupId) : null;
 	}
-
-
 
 	@Nullable
 	private <T, V> T getEffectiveValue(

@@ -25,16 +25,16 @@ package de.metas.cucumber.stepdefs.invoice;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.common.util.Check;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoice.InvoiceId;
@@ -109,6 +109,8 @@ public class C_InvoiceLine_StepDef
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 	private final C_Activity_StepDefData activityTable;
+	// for linking invoice lines back to order lines (C_OrderLine_ID FK, split-payment matching, etc.)
+	private final C_OrderLine_StepDefData orderLineTable;
 
 	@And("metasfresh contains C_InvoiceLines")
 	public void addC_InvoiceLines(@NonNull final DataTable dataTable)
@@ -124,7 +126,7 @@ public class C_InvoiceLine_StepDef
 		DataTableRows.of(table)
 				.setAdditionalRowIdentifierColumnName(I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID)
 				.forEach(row -> {
-					I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
+					final I_C_InvoiceLine invoiceLineRecord = findInvoiceLineRecord(row);
 					final I_C_Invoice invoice = row.getAsIdentifier(COLUMNNAME_C_Invoice_ID).lookupNotNullIn(invoiceTable);
 					validateInvoiceLine(invoiceLineRecord, invoice, row);
 				});
@@ -149,7 +151,10 @@ public class C_InvoiceLine_StepDef
 		final List<I_C_InvoiceLine> invoiceLineRecords = queryBuilder.create().list(I_C_InvoiceLine.class);
 		if (invoiceLineRecords.isEmpty())
 		{
-			throw new AdempiereException("No invoice line found for " + queryBuilder);
+			throw new AdempiereException("Not a single invoice line found")
+					.setParameter("query", queryBuilder.toString())
+					.setParameter("expected_qty", qtyInvoiced)
+					.setParameter("candidates", invoiceLineRecords.size());
 		}
 		else if (invoiceLineRecords.size() == 1)
 		{
@@ -165,9 +170,11 @@ public class C_InvoiceLine_StepDef
 		}
 		else
 		{
-			throw new AdempiereException("Not a single invoice line found for " + queryBuilder)
-					.setParameter("invoiceLineRecords", invoiceLineRecords)
-					.appendParametersToMessage();
+			throw new AdempiereException("Not a single invoice line found")
+					.setParameter("query", queryBuilder.toString())
+					.setParameter("expected_qty", qtyInvoiced)
+					.setParameter("candidates", invoiceLineRecords.size())
+					.setParameter("candidates_with_matching_qty", invoiceLineRecordsFiltered.size());
 		}
 	}
 
@@ -349,17 +356,20 @@ public class C_InvoiceLine_StepDef
 			softly.assertThat(invoiceLine.getDescription()).isEqualTo(description);
 		}
 
-		// final Boolean isHidePriceAndAmountOnPrint = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsHidePriceAndAmountOnPrint);
-		// if (isHidePriceAndAmountOnPrint != null)
-		// {
-		// 	softly.assertThat(invoiceLine.isHidePriceAndAmountOnPrint()).as(COLUMNNAME_IsHidePriceAndAmountOnPrint).isEqualTo(isHidePriceAndAmountOnPrint);
-		// }
-
 		row.getAsOptionalQuantity("QtyMatched", uomDAO::getByX12DE355)
 				.ifPresent(qtyMatchedExpected -> {
 					final Quantity qtyMatchedActual = getQtyMatched(invoiceLine, invoice);
 					assertThat(qtyMatchedActual).as("QtyMatched").isEqualTo(qtyMatchedExpected);
 				});
+
+		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_ExternalIds)
+				.ifPresent(externalIds -> softly.assertThat(invoiceLine.getExternalIds()).as(I_C_InvoiceLine.COLUMNNAME_ExternalIds).isEqualTo(externalIds));
+
+		row.getAsOptionalBoolean(I_C_InvoiceLine.COLUMNNAME_IsWithoutCharge)
+				.ifPresent(isWithoutCharge -> softly.assertThat(invoiceLine.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+		row.getAsOptionalString(I_C_InvoiceLine.COLUMNNAME_Reason)
+				.ifPresent(reason -> softly.assertThat(invoiceLine.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
 
 		softly.assertAll();
 
@@ -406,6 +416,22 @@ public class C_InvoiceLine_StepDef
 					invoiceLine.setIsManualPrice(true);
 					invoiceLine.setPriceEntered(price);
 					invoiceLine.setPriceActual(price);
+				});
+
+		// link the invoice line back to the order line so M_MatchInv → orderLine.C_Tax_ID
+		// traversal in DeliveryPrepaymentAllocationService works correctly.
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_C_OrderLine_ID)
+				.map(orderLineTable::getId)
+				.ifPresent(orderLineId -> invoiceLine.setC_OrderLine_ID(orderLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier(I_C_InvoiceLine.COLUMNNAME_M_InOutLine_ID)
+				.map(inOutLineTable::getId)
+				.ifPresent(inOutLineId -> invoiceLine.setM_InOutLine_ID(inOutLineId.getRepoId()));
+
+		row.getAsOptionalIdentifier("C_Tax_ID$set")
+				.ifPresent(taxIdentifier -> {
+					final TaxId taxId = taxTable.getId(taxIdentifier);
+					invoiceLine.setC_Tax_ID(taxId.getRepoId());
 				});
 
 		invoiceLineBL.updatePrices(invoiceLine);

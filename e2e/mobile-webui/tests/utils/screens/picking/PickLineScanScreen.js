@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, step } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
 import { test } from '../../../../playwright.config';
 import { GetQuantityDialog } from './GetQuantityDialog';
 import { PickingJobScreen } from './PickingJobScreen';
@@ -11,7 +11,7 @@ const containerElement = () => page.locator('#PickLineScanScreen');
 
 export const PickLineScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     typeQRCode: async (qrCode) => await test.step(`${NAME} - Type QR Code`, async () => {

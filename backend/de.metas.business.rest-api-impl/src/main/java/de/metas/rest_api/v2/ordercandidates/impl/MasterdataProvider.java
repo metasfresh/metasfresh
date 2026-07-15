@@ -47,6 +47,7 @@ import de.metas.impex.api.IInputDataSourceDAO;
 import de.metas.impex.api.impl.InputDataSourceQuery;
 import de.metas.impex.api.impl.InputDataSourceQuery.InputDataSourceQueryBuilder;
 import de.metas.impexp.InputDataSourceId;
+import de.metas.incoterms.Incoterms;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -86,21 +87,21 @@ import java.util.Optional;
 
 public final class MasterdataProvider
 {
-	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	@NonNull private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 
-	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
+	@NonNull private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
-	private final PermissionService permissionService;
-	private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
-	private final ProductMasterDataProvider productMasterDataProvider;
-	private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
+	@NonNull private final PermissionService permissionService;
+	@NonNull private final BPartnerEndpointAdapter bpartnerEndpointAdapter;
+	@NonNull private final ProductMasterDataProvider productMasterDataProvider;
+	@NonNull private final BPartnerMasterdataProvider bPartnerMasterdataProvider;
 
-	private final JsonRetrieverService jsonRetrieverService;
-	private final ExternalReferenceRestControllerService externalReferenceService;
-	private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final JsonRetrieverService jsonRetrieverService;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceService;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
 
 	private final Map<String, OrgId> orgIdsByCode = new HashMap<>();
 
@@ -129,6 +130,7 @@ public final class MasterdataProvider
 		permissionService.assertCanCreateOrUpdateRecord(orgId, I_C_OLCand.class);
 	}
 
+	@Nullable
 	public PricingSystemId getPricingSystemIdByValue(@Nullable final String pricingSystemCode)
 	{
 		if (Check.isEmpty(pricingSystemCode, true))
@@ -368,6 +370,7 @@ public final class MasterdataProvider
 		return bPartnerMasterdataProvider.isAutoInvoice(request, bpartnerId);
 	}
 
+	@Nullable
 	public PaymentRule getPaymentRule(final JsonOLCandCreateRequest request)
 	{
 		final JSONPaymentRule jsonPaymentRule = request.getPaymentRule();
@@ -439,5 +442,13 @@ public final class MasterdataProvider
 	public ExternalSystemId getExternalSystemId(@NonNull final ExternalSystemType type)
 	{
 		return externalSystemRepository.getIdByType(type);
+	}
+
+	@Nullable
+	public Incoterms getIncoterms(@NonNull final JsonOLCandCreateRequest request,
+									@NonNull final OrgId orgId,
+									@NonNull final BPartnerId bPartnerId)
+	{
+		return bPartnerMasterdataProvider.getIncoterms(request, orgId, bPartnerId);
 	}
 }

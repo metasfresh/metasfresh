@@ -31,10 +31,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.common.util.Check;
 import de.metas.common.util.time.SystemTime;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.apache.camel.RuntimeCamelException;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -43,7 +41,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
@@ -72,7 +69,7 @@ public class OAuthTokenManager
 	 * Return a cached access token or fetch one and assume that it's going to be valid for {@link #EXPIRING_DURATION}.
 	 * We can later use the actual validity-duration from the API response when we come across a case where that info is actually provided.
 	 */
-	public OAuthAccessToken getAccessToken(@NonNull OAuthAccessTokenRequest request)
+	public OAuthAccessToken getAccessToken(@NonNull final OAuthAccessTokenRequest request)
 	{
 		final OAuthAccessToken cachedToken = accessTokensCache.getIfPresent(request.getIdentity());
 		if (cachedToken != null && !cachedToken.isExpired(now()))
@@ -90,7 +87,7 @@ public class OAuthTokenManager
 	/**
 	 * If a token is known to be invalid, it can be removed from the cache with this method
 	 */
-	public void invalidateToken(@NonNull OAuthIdentity identity)
+	public void invalidateToken(@NonNull final OAuthIdentity identity)
 	{
 		accessTokensCache.invalidate(identity);
 		accessTokensCache.cleanUp();
@@ -142,14 +139,5 @@ public class OAuthTokenManager
 			formData.put("password", request.getPassword());
 		}
 		return formData;
-	}
-
-	@Value
-	@Builder
-	private static class CacheKey
-	{
-		@NonNull String tokenUrl;
-		@Nullable String clientId;
-		@Nullable String username;
 	}
 }

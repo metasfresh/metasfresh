@@ -1,5 +1,7 @@
 package de.metas.distribution.mobileui.config;
 
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -22,7 +24,10 @@ public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 	ProductValueAndName(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_ProductValueAndName),
 	SourceDoc(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_SourceDoc),
 	Priority(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_Priority),
+	PickingInstruction(X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_PickingInstruction),
 	;
+
+	public static final int AD_Reference_ID = X_MobileUI_UserProfile_DD_CaptionItem.FIELDNAME_AD_Reference_ID;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<DistributionJobCaptionField> index = ReferenceListAwareEnums.index(values());
 
@@ -31,4 +36,6 @@ public enum DistributionJobCaptionField implements ReferenceListAwareEnum
 	public static DistributionJobCaptionField ofCode(@NonNull final String code) {return index.ofCode(code);}
 
 	public static DistributionJobCaptionField ofCodeOrName(@NonNull final String code) {return index.ofCodeOrName(code);}
+
+	public ITranslatableString getCaption() {return TranslatableStrings.adRefList(AD_Reference_ID, code);}
 }

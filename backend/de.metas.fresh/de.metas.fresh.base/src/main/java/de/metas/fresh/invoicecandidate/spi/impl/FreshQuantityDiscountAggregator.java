@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IAggregationBL;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
@@ -51,6 +52,7 @@ import lombok.ToString;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -107,6 +109,16 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 	}
 
 	/**
+	 * Forward the engine-supplied shared map to the wrapped DefaultAggregator so that allocations
+	 * in this bucket reduce what subsequent buckets see.
+	 */
+	@Override
+	public void setSharedIc2QtyInvoiceable(@Nullable final Map<InvoiceCandidateId, StockQtyAndUOMQty> sharedMap)
+	{
+		this.defaultAggregator.setSharedIc2QtyInvoiceable(sharedMap);
+	}
+
+	/**
 	 * Invokes the {@link #defaultAggregator}'s <code>registerInvoiceCandidateInAggregationCtx</code> method.<br>
 	 * Additionally, if the given <code>candidate</code> has a quality discount, then it is recorded in an internal list of this aggregator.
 	 *
@@ -121,7 +133,7 @@ public class FreshQuantityDiscountAggregator implements IAggregator
 
 		// adding the list anyways, even if we won't ever add an icIol to it. That way we won't have to check for containsKey further down.
 		final List<I_C_InvoiceCandidate_InOutLine> list = ic2IndisputeIcIols.computeIfAbsent(
-				request.getC_Invoice_Candidate(), 
+				request.getC_Invoice_Candidate(),
 				k -> new ArrayList<>());
 
 		if (aggregationBL.isIolInDispute(request.getC_InvoiceCandidate_InOutLine()))

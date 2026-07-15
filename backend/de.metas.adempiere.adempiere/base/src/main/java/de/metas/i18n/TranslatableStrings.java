@@ -449,4 +449,8 @@ public class TranslatableStrings
 				.orElseGet(() -> anyLanguage(value));
 	}
 
+	public static ITranslatableString blankToEmpty(@Nullable final ITranslatableString trl)
+	{
+		return trl == null || isBlank(trl) ? empty() : trl;
+	}
 }

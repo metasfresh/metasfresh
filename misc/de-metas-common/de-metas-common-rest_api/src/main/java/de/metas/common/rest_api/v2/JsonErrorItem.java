@@ -81,6 +81,14 @@ public class JsonErrorItem
 	@Nullable String frontendUrl;
 
 	/**
+	 * Optional error context identifier (e.g., "EDI") for context-specific error handling.
+	 * Error listeners can use this to determine if they should handle errors from this invocation.
+	 */
+	@JsonInclude(Include.NON_EMPTY)
+	@Nullable
+	String errorContext;
+
+	/**
 	 * Local exception.
 	 * It won't be serialized. It's just used for local troubleshooting.
 	 */
@@ -92,7 +100,7 @@ public class JsonErrorItem
 	private JsonErrorItem(
 			@JsonProperty("message") @Nullable final String message,
 			@JsonProperty("errorCode") @Nullable final String errorCode,
-			@JsonProperty("userFriendlyError") boolean userFriendlyError,
+			@JsonProperty("userFriendlyError") final boolean userFriendlyError,
 			@JsonProperty("detail") @Nullable final String detail,
 			@JsonProperty("stackTrace") @Nullable final String stackTrace,
 			@JsonProperty("parameters") @Nullable @Singular final Map<String, Object> parameters,
@@ -101,7 +109,8 @@ public class JsonErrorItem
 			@JsonProperty("sourceClassName") @Nullable final String sourceClassName,
 			@JsonProperty("sourceMethodName") @Nullable final String sourceMethodName,
 			@JsonProperty("issueCategory") @Nullable final String issueCategory,
-			@JsonProperty("frontendUrl") @Nullable String frontendUrl,
+			@JsonProperty("frontendUrl") @Nullable final String frontendUrl,
+			@JsonProperty("errorContext") @Nullable final String errorContext,
 			@Nullable final Throwable throwable)
 	{
 		this.message = message;
@@ -116,6 +125,7 @@ public class JsonErrorItem
 		this.issueCategory = issueCategory;
 		this.orgCode = orgCode;
 		this.frontendUrl = frontendUrl;
+		this.errorContext = errorContext;
 		this.throwable = throwable;
 	}
 

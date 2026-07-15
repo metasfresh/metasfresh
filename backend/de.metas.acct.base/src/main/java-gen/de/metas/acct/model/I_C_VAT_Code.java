@@ -243,6 +243,29 @@ public interface I_C_VAT_Code
     public static final String COLUMNNAME_IsSOTrx = "IsSOTrx";
 
 	/**
+	 * Set Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public void setAmountType (java.lang.String AmountType);
+
+	/**
+	 * Get Amount Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	public java.lang.String getAmountType();
+
+    /** Column definition for AmountType */
+    public static final org.adempiere.model.ModelColumn<I_C_VAT_Code, Object> COLUMN_AmountType = new org.adempiere.model.ModelColumn<I_C_VAT_Code, Object>(I_C_VAT_Code.class, "AmountType", null);
+    /** Column name AmountType */
+    public static final String COLUMNNAME_AmountType = "AmountType";
+
+	/**
 	 * Get Aktualisiert.
 	 * Datum, an dem dieser Eintrag aktualisiert wurde
 	 *

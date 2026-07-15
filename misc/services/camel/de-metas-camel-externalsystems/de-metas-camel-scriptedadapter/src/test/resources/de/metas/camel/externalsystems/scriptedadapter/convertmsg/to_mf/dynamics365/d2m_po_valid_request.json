@@ -22,7 +22,7 @@
         "city": "city",
         "country": "DE"
       },
-      "Lines": [
+      "lines": [
         {
           "orderLineId": "1",
           "dateRequired": "2026-01-15",

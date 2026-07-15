@@ -441,6 +441,29 @@ public interface I_M_Product
 	String COLUMNNAME_DietType = "DietType";
 
 	/**
+	 * Set Pfandart.
+	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDepositType (@Nullable java.lang.String DepositType);
+
+	/**
+	 * Get Pfandart.
+	 * Einwegpfand / Mehrwegpfand classification used for EDIFACT IMD+C deposit segment emission.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDepositType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DepositType = new ModelColumn<>(I_M_Product.class, "DepositType", null);
+	String COLUMNNAME_DepositType = "DepositType";
+
+	/**
 	 * Set Discontinued.
 	 * This product is no longer available
 	 *
@@ -1315,6 +1338,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsSelfService = new ModelColumn<>(I_M_Product.class, "IsSelfService", null);
 	String COLUMNNAME_IsSelfService = "IsSelfService";
+
+	/**
+	 * Set Serial No Picked.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSerialNoPicked (boolean IsSerialNoPicked);
+
+	/**
+	 * Get Serial No Picked.
+	 * If enabled, picking this product into a handling unit requires the operator to scan the serial number.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSerialNoPicked();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsSerialNoPicked = new ModelColumn<>(I_M_Product.class, "IsSerialNoPicked", null);
+	String COLUMNNAME_IsSerialNoPicked = "IsSerialNoPicked";
 
 	/**
 	 * Set Sold.

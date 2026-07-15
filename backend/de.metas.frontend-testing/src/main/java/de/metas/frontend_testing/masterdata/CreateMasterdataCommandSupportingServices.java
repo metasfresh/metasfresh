@@ -10,6 +10,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.manufacturing.config.MobileUIManufacturingConfigRepository;
 import de.metas.mobile.MobileConfigService;
 import de.metas.product.ProductRepository;
@@ -33,6 +34,7 @@ public class CreateMasterdataCommandSupportingServices
 	@NonNull public final MobileUIManufacturingConfigRepository mobileManufacturingConfigRepository;
 	@NonNull public final InventoryService inventoryService;
 	@NonNull public final HUQRCodesService huQRCodesService;
+	@NonNull public final SourceHUsService sourceHUsService;
 	@NonNull public final CurrencyRepository currencyRepository;
 
 	@NonNull public final DDOrderService ddOrderService;

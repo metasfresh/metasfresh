@@ -70,34 +70,48 @@
 		</dependency>
 	</dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<!-- source for the response xsd: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceRequest_450.zip -->
-				<groupId>org.jvnet.jaxb2.maven2</groupId>
-				<artifactId>maven-jaxb2-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>generate-forum-datenaustausch_ch.invoice_450.request</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-						<configuration>
-							<args>
-								<!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
-								<arg>-XautoNameResolution</arg>
+	<profiles>
+		<profile>
+			<!--
+			    Regenerate JAXB sources from XSD schemas in src/main/resources/**/*.xsd.
+			    XSD source: http://www.forum-datenaustausch.ch/fileadmin/fda_documents/4.5/Rechnungen/XML/XML_Schema_generalInvoiceRequest_450.zip
+			    Run this profile whenever a schema file changes:
+			      mvn generate-sources -Pregenerate-jaxb-sources
+			    Or regenerate all JAXB modules at once:
+			      ./misc/dev-support/scripts/regenerate-jaxb-sources.sh
+			    After regeneration, commit the changed java-xjc files together with the XSD change.
+			-->
+			<id>regenerate-jaxb-sources</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.jvnet.jaxb2.maven2</groupId>
+						<artifactId>maven-jaxb2-plugin</artifactId>
+						<executions>
+							<execution>
+								<id>generate-forum-datenaustausch_ch.invoice_450.request</id>
+								<phase>generate-sources</phase>
+								<goals>
+									<goal>generate</goal>
+								</goals>
+								<configuration>
+									<args>
+										<arg>-no-header</arg>
+										<!-- needed to avoid java class name collisions, since the 3 xsds have some equal names -->
+										<arg>-XautoNameResolution</arg>
 
-								<!-- needed because we don't want jaxb to create a package-info.java; we have our own custom one -->
-								<arg>-npa</arg>
-							</args>
-							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/request</schemaDirectory>
-							<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request</generatePackage>
-							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+										<!-- needed because we don't want jaxb to create a package-info.java; we have our own custom one -->
+										<arg>-npa</arg>
+									</args>
+									<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_450/request</schemaDirectory>
+									<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_450.request</generatePackage>
+									<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

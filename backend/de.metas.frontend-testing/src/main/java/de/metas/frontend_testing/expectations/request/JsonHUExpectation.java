@@ -16,14 +16,34 @@ import java.util.Map;
 public class JsonHUExpectation
 {
 	@Nullable Identifier warehouse;
+	@Nullable Identifier locator;
+	@Nullable Identifier bpartner;
+	@Nullable Identifier bpartnerLocation;
 	@Nullable String huStatus;
+	/**
+	 * Expected HU unit type. Pass the DB code (the value of {@code M_HU_PI_Version.HU_UnitType}):
+	 * <ul>
+	 *   <li>{@code "V"} — Virtual PI / bare VHU/CU ({@code HUType.VirtualPI})</li>
+	 *   <li>{@code "TU"} — Transport Unit / box ({@code HUType.TransportUnit})</li>
+	 *   <li>{@code "LU"} — Load Unit / pallet ({@code HUType.LoadLogistiqueUnit})</li>
+	 * </ul>
+	 * Matched via {@code HUType.ofCode(huType)}.
+	 */
+	@Nullable String huType;
 	@Nullable Map<String, String> storages;
 	@Nullable Map<String, String> attributes;
 	@Nullable List<JsonHUExpectation> tus;
 	@Nullable List<CU> cus;
 	@Nullable Boolean isAggregatedTU;
 	@Nullable QtyTU qtyTUs;
-	
+	/**
+	 * When {@code true}, assert this HU is assigned to a shipment line
+	 * ({@code M_InOutLine} of a sales shipment, i.e. {@code M_InOut.IsSOTrx=Y}).
+	 * Polled, because shipment generation is async.
+	 * When {@code false}, assert this HU is NOT on any sales-shipment line (no poll).
+	 */
+	@Nullable Boolean shipped;
+
 	//
  	//
  	//

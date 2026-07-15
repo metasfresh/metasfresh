@@ -1,0 +1,22 @@
+{
+  "orgCode": "orgCode",
+  "externalSystemName": "ScriptedImportConversion",
+  "externalSystemChildConfigValue": "childValue",
+  "command": "ScriptedImportConversion-enableSftpPolling",
+  "adPInstanceId": 123,
+  "externalSystemConfigId": 100,
+  "traceId": "123",
+  "parameters": {
+    "endpointName": "sftpEndpoint",
+    "scriptIdentifier": "scriptIdentifier",
+    "sftpHost": "localhost",
+    "sftpPort": "22",
+    "sftpUsername": "testuser",
+    "sftpPassword": "testpass",
+    "sftpAuthType": "PASSWORD",
+    "sftpRemotePath": "/inbound",
+    "sftpPollingIntervalMs": "30000",
+    "sftpProcessedDirectory": ".done",
+    "sftpErrorDirectory": ".error"
+  }
+}

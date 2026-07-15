@@ -367,7 +367,7 @@ class ShipmentCandidateAPIService
 		final Product product = productId2Product.get(shipmentSchedule.getProductId());
 
 		final JsonProductBuilder productBuilder = JsonProduct.builder()
-				.productNo(product.getProductNo())
+				.productNo(product.getValue())
 				.name(product.getName().translate(adLanguage))
 				.documentNote(product.getDocumentNote().translate(adLanguage))
 				.packageSize(product.getPackageSize())

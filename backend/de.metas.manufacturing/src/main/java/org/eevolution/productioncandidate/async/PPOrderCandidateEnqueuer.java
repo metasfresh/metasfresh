@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
@@ -71,17 +72,13 @@ public class PPOrderCandidateEnqueuer
 			throw new AdempiereException("At least one candidateId must be specified");
 		}
 
-		final PInstanceId selectionId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+		return queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, candidateIds)
 				.create()
-				.createSelection();
-		if (candidateIds.isEmpty())
-		{
-			throw new AdempiereException("No candidates found");
-		}
-
-		return selectionId;
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElseThrow(() -> new AdempiereException("No candidates found"));
 	}
 
 	@NonNull

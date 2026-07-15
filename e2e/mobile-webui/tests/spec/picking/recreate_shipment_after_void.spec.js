@@ -1,0 +1,196 @@
+import { test } from "../../../playwright.config";
+import { expect } from '@playwright/test';
+import { allure } from 'allure-playwright';
+import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
+import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
+import { Backend } from "../../utils/screens/Backend";
+import { LoginScreen } from "../../utils/screens/LoginScreen";
+
+// Regression guard for the "can't recreate shipment after void" defect on aggregate-HU shipments.
+//
+// When a shipment whose allocation is an aggregate VHU (one M_HU representing N transport units) is
+// reversed, the HU-snapshot replay re-creates the picked qty one transport unit at a time. Without
+// consolidation, that leaves N identical, not-yet-shipped M_ShipmentSchedule_QtyPicked rows on the
+// SAME (VHU, TU, LU, QtyLU, QtyTU, QtyPicked) tuple; when the shipment is recreated they all take one
+// M_InOutLine_ID and collide on the partial unique index M_ShipmentSchedule_QtyPicked_UI — so the
+// shipment can no longer be recreated. The fix consolidates the replay into the single existing row.
+//
+// This drives the full stack: mobile-pick the whole aggregate, generate a completed shipment from the
+// picked qty, reverse it (document-engine Reverse-Correct = the "void"), and assert the reverse left
+// exactly ONE active un-shipped QtyPicked row per unique-index tuple (so recreation cannot collide).
+// createShipmentPolicy:'NO' keeps the mobile pick from auto-shipping; the shipment is generated via the
+// testing API so its M_InOut_ID is known and can be reversed.
+
+const createMasterdata = async () => {
+    return await Backend.createMasterdata({
+        language: 'en_US',
+        request: {
+            login: { user: { language: 'en_US' } },
+            mobileConfig: {
+                picking: {
+                    aggregationType: 'sales_order',
+                    allowPickingAnyCustomer: true,
+                    createShipmentPolicy: 'NO',
+                    allowPickingAnyHU: true,
+                    pickTo: ['LU_TU'],
+                }
+            },
+            bpartners: { 'BP1': {} },
+            warehouses: { 'wh': {} },
+            pickingSlots: { slot1: {} },
+            products: { 'P1': { prices: [{ price: 1 }] } },
+            packingInstructions: {
+                'PI': { lu: 'LU', qtyTUsPerLU: 20, tu: 'TU', product: 'P1', qtyCUsPerTU: 1 },
+            },
+            handlingUnits: {
+                'HU1': { product: 'P1', warehouse: 'wh', packingInstructions: 'PI' },
+            },
+            salesOrders: {
+                'SO1': {
+                    bpartner: 'BP1',
+                    warehouse: 'wh',
+                    datePromised: '2025-03-01T00:00:00.000+02:00',
+                    lines: [{ product: 'P1', qty: 6, piItemProduct: 'TU' }]
+                }
+            },
+        }
+    });
+};
+
+// noinspection JSUnusedLocalSymbols
+test('Reverse an aggregate-HU shipment then recreate it — no duplicate QtyPicked collision', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.story('Recreate shipment after void of an aggregate-HU shipment');
+    allure.severity('blocker');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await test.step('Pick the whole aggregate HU (6 TU) and complete', async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '6' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '6 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.closeTargetLU();
+        await PickingJobScreen.complete();
+    });
+
+    let shipmentId;
+    await test.step('Generate a COMPLETED shipment from the picked qty', async () => {
+        const ship = await Backend.createMasterdata({
+            request: { shipments: { FIRST_SHIPMENT: { salesOrder: 'SO1', quantityType: 'P', complete: true } } },
+        });
+        shipmentId = ship?.shipments?.FIRST_SHIPMENT?.id;
+        expect(shipmentId, 'Initial shipment was not created:\n' + JSON.stringify(ship, null, 2)).toBeTruthy();
+    });
+
+    await test.step('Reverse the completed shipment (the "void") — must not leave duplicate QtyPicked rows', async () => {
+        const reversed = await Backend.reverseShipment({ shipmentId });
+        expect(reversed?.docStatus, 'Shipment was not reversed (expected docStatus RE):\n' + JSON.stringify(reversed, null, 2)).toBe('RE');
+
+        // GREEN (fix): exactly 1 active un-shipped row survives per tuple, so recreation cannot collide.
+        // RED  (no fix): N identical rows survive (here 6) -> guaranteed unique-index collision on recreate.
+        const dup = reversed.maxIdenticalUnshippedQtyPickedRowsPerVhuTuple;
+        expect(dup, `Expected the reverse to leave exactly ONE active un-shipped QtyPicked row per unique-index tuple, but found ${dup} identical rows — they collide on M_ShipmentSchedule_QtyPicked_UI when the shipment is recreated. Full response:\n` + JSON.stringify(reversed, null, 2)).toBe(1);
+    });
+});
+
+// Regression guard for the me03#29561 UAT-demo finding: a SECOND void of an aggregate-HU shipment.
+//
+// The single-reverse case above is fixed by PR 24478 (the reverse leaves exactly ONE active un-shipped
+// QtyPicked row, so the shipment can be recreated). The UAT demo then exposed the next cycle: after the
+// shipment is recreated and reversed a SECOND time, the picked qty is no longer recreatable — the
+// M_ShipmentScheduleQueue workpackage (GenerateInOutFromShipmentSchedules) aborts with MSG_NoQtyPicked
+// ("Die Auswahl enthält keine Einträge mit kommissionierten Mengen"), i.e. the second reverse left ZERO
+// active un-shipped rows (the opposite extreme of the original duplicate-row defect).
+//
+// This drives pick -> ship -> reverse -> reship -> reverse -> reship and asserts the third shipment is
+// still created. RED today: the third shipment cannot be generated after the second void.
+//
+// noinspection JSUnusedLocalSymbols
+test('Reverse an aggregate-HU shipment TWICE then recreate it — picked qty must survive the second void', async ({ page }) => {
+    allure.epic('E0105: Picking');
+    allure.feature('F00230: MobileUI Picking');
+    allure.story('Recreate shipment after a second void of an aggregate-HU shipment');
+    allure.severity('blocker');
+
+    const masterdata = await createMasterdata();
+
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('picking');
+    await PickingJobsListScreen.waitForScreen();
+    await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+    await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+
+    await test.step('Pick the whole aggregate HU (6 TU) and complete', async () => {
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '6' });
+        await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '6 TU', qtyPicked: '6 TU', qtyPickedCatchWeight: '' });
+        await PickingJobScreen.closeTargetLU();
+        await PickingJobScreen.complete();
+    });
+
+    // Recreate the shipment via the REAL "Generate Shipments" process (qtyPicked) — the exact demo path,
+    // NOT the masterdata `shipments` shortcut (which diverges from the real process after a reverse).
+    // generateShipments returns the shipments NEWLY created by the call; an empty result == nothing shipped.
+    // createShipmentPolicy:'NO' keeps the mobile pick from auto-shipping.
+    //
+    // The reverse restores the picked qty via an async picking-job reopen that commits a moment after the
+    // reverse call returns, so we POLL Generate Shipments until it ships (or the window elapses). When the
+    // picked qty is genuinely gone (after the 2nd void) the poll never ships and returns null.
+    const generateShipmentWithin = async (timeoutMs = 60000) => {
+        const intervalMs = 2000;
+        const start = Date.now();
+        for (;;) {
+            const result = await Backend.generateShipments({ salesOrderId: masterdata.salesOrders.SO1.id, quantityType: 'P', complete: true });
+            if (result.newShipmentCount >= 1) {
+                return result.newShipmentIds[0];
+            }
+            if (Date.now() - start >= timeoutMs) {
+                return null;
+            }
+            await new Promise(r => setTimeout(r, intervalMs));
+        }
+    };
+
+    // Cycle 1 — Generate Shipments, then reverse. PR 24478 makes this reverse restore one active picked row.
+    let shipmentId1;
+    await test.step('Generate the first shipment (Generate Shipments, qtyPicked)', async () => {
+        shipmentId1 = await generateShipmentWithin();
+        expect(shipmentId1, 'First shipment was not created from the picked qty').toBeTruthy();
+    });
+    await test.step('Reverse the first shipment (first void)', async () => {
+        const reversed = await Backend.reverseShipment({ shipmentId: shipmentId1 });
+        expect(reversed?.docStatus, 'First reverse did not reach docStatus RE:\n' + JSON.stringify(reversed, null, 2)).toBe('RE');
+        expect(reversed.maxIdenticalUnshippedQtyPickedRowsPerVhuTuple, 'First reverse must leave exactly one active un-shipped row per tuple').toBe(1);
+    });
+
+    // Cycle 2 — recreate via Generate Shipments (this leaves the picking job in Drafted state), reverse AGAIN.
+    let shipmentId2;
+    await test.step('Recreate the shipment after the first void (Generate Shipments)', async () => {
+        shipmentId2 = await generateShipmentWithin();
+        expect(shipmentId2, 'Second shipment (recreate after the FIRST void) was not created — picked qty did not survive the first reverse').toBeTruthy();
+    });
+    await test.step('Reverse the second shipment (SECOND void)', async () => {
+        const reversed = await Backend.reverseShipment({ shipmentId: shipmentId2 });
+        expect(reversed?.docStatus, 'Second reverse did not reach docStatus RE:\n' + JSON.stringify(reversed, null, 2)).toBe('RE');
+    });
+
+    // The defect (me03#29561): after the SECOND void the picking job is already Drafted, so
+    // PickingJobReopenCommand (Completed-only) restores nothing -> zero active QtyPicked rows ->
+    // "Generate Shipments" produces no shipment (MSG_NoQtyPicked in the workpackage). This MUST still ship.
+    await test.step('Recreate the shipment after the SECOND void — must still succeed', async () => {
+        const shipmentId3 = await generateShipmentWithin();
+        expect(shipmentId3, 'Third shipment (recreate after the SECOND void) was NOT created — the picked qty did not survive the second reverse (MSG_NoQtyPicked / zero active QtyPicked rows).').toBeTruthy();
+    });
+});

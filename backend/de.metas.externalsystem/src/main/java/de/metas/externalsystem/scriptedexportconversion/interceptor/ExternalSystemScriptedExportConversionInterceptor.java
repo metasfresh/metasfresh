@@ -24,11 +24,7 @@ package de.metas.externalsystem.scriptedexportconversion.interceptor;
 
 import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
-import de.metas.logging.LogManager;
-import de.metas.process.ProcessInfo;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,21 +39,12 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-
-import static de.metas.common.externalsystem.ExternalSystemConstants.COMMAND_CONVERT_MESSAGE_FROM_METASFRESH;
-import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
-import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
-import static de.metas.externalsystem.process.InvokeScriptedExportConversionAction.PARAM_Record_ID;
-import static org.compiere.util.Env.getCtx;
 
 /**
  * Interceptor which listens to a table specified in {@link I_ExternalSystem_Config_ScriptedExportConversion}.
  */
 /* package */ class ExternalSystemScriptedExportConversionInterceptor implements ModelValidator
 {
-	private final Logger log = LogManager.getLogger(getClass());
-
 	private final transient IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final transient IClientDAO clientDAO = Services.get(IClientDAO.class);
 	private final transient IADTableDAO tableDAO = Services.get(IADTableDAO.class);
@@ -146,17 +133,20 @@ import static org.compiere.util.Env.getCtx;
 
 	@Nullable
 	@Override
-	public String docValidate(final PO po, final int timing) throws Exception
+	public String docValidate(final PO po, final int timing)
 	{
 		Check.assume(isDocument(), "PO '{}' is a document", po);
 
 		if (timing == ModelValidator.TIMING_AFTER_COMPLETE
 				&& !documentBL.isReversalDocument(po))
 		{
-			externalSystemScriptedExportConversionService
-					.retrieveBestMatchingConfig(AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()),
-							ClientId.ofRepoId(getAD_Client_ID())), po.get_ID())
-					.ifPresent(config -> executeInvokeScriptedExportConversionAction(config, po.get_ID()));
+			// Eligibility matching, status writes, and the export invocation all run after-commit: the
+			// eligibility WhereClause reads committed DocStatus, which isn't set yet at AFTER_COMPLETE
+			// (and a postgrest process may run the export, so the completed record must be visible in the db).
+			final int recordId = po.get_ID();
+			externalSystemScriptedExportConversionService.recordEligibilityAndInvokeAfterCommit(
+					AdTableAndClientId.of(AdTableId.ofRepoId(po.get_Table_ID()), ClientId.ofRepoId(getAD_Client_ID())),
+					recordId);
 		}
 
 		return null;
@@ -166,29 +156,6 @@ import static org.compiere.util.Env.getCtx;
 	public AdTableId getTableId()
 	{
 		return adTableId;
-	}
-
-	private void executeInvokeScriptedExportConversionAction(
-			@NonNull final ExternalSystemScriptedExportConversionConfig config,
-			final int recordId)
-	{
-		try
-		{
-			ProcessInfo.builder()
-					.setCtx(getCtx())
-					.setRecord(tableDAO.retrieveTableId(I_ExternalSystem_Config_ScriptedExportConversion.Table_Name), config.getId().getRepoId())
-					.setAD_ProcessByClassname(InvokeScriptedExportConversionAction.class.getName())
-					.addParameter(PARAM_EXTERNAL_REQUEST, COMMAND_CONVERT_MESSAGE_FROM_METASFRESH)
-					.addParameter(PARAM_CHILD_CONFIG_ID, config.getId().getRepoId())
-					.addParameter(PARAM_Record_ID, recordId)
-					.buildAndPrepareExecution()
-					.executeSync();
-		}
-		catch (final Exception e)
-		{
-			log.warn(InvokeScriptedExportConversionAction.class.getName() + " process failed for Config ID {}, Record ID: {}",
-					config.getId(), recordId, e);
-		}
 	}
 
 	private String getTableName()

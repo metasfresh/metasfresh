@@ -1,14 +1,15 @@
 package de.metas.payment.sepa.api;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.compiere.model.I_C_BPartner;
-
 import de.metas.payment.sepa.interfaces.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
+import de.metas.payment.sepa.model.I_SEPA_Export_Line_Ref;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+
+import java.util.List;
+import java.util.Properties;
 
 public interface ISEPADocumentDAO extends ISingletonService
 {
@@ -32,4 +33,6 @@ public interface ISEPADocumentDAO extends ISingletonService
 	 * @return
 	 */
 	List<I_SEPA_Export_Line> retrieveLinesChangeRule(Properties ctx, String trxName);
+
+	List<I_SEPA_Export_Line_Ref> retrieveLineReferences(@NonNull I_SEPA_Export_Line line);
 }

@@ -77,7 +77,7 @@ public interface I_C_Workplace
 
 	/**
 	 * Set Workplace.
-	 * The assignment applies to all users assigned to this workstation
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -87,7 +87,7 @@ public interface I_C_Workplace
 
 	/**
 	 * Get Workplace.
-	 * The assignment applies to all users assigned to this workstation
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -141,6 +141,48 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_IsActive = new ModelColumn<>(I_C_Workplace.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Is Packing Place.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPackingPlace (boolean IsPackingPlace);
+
+	/**
+	 * Get Is Packing Place.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPackingPlace();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_IsPackingPlace = new ModelColumn<>(I_C_Workplace.class, "IsPackingPlace", null);
+	String COLUMNNAME_IsPackingPlace = "IsPackingPlace";
+
+	/**
+	 * Set Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsWarnShelfLifeUndercut (boolean IsWarnShelfLifeUndercut);
+
+	/**
+	 * Get Warn when guaranteed remaining shelf life is undercut.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isWarnShelfLifeUndercut();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_IsWarnShelfLifeUndercut = new ModelColumn<>(I_C_Workplace.class, "IsWarnShelfLifeUndercut", null);
+	String COLUMNNAME_IsWarnShelfLifeUndercut = "IsWarnShelfLifeUndercut";
 
 	/**
 	 * Set Max. Picking Jobs.
@@ -294,6 +336,31 @@ public interface I_C_Workplace
 
 	ModelColumn<I_C_Workplace, Object> COLUMN_PriorityRule = new ModelColumn<>(I_C_Workplace.class, "PriorityRule", null);
 	String COLUMNNAME_PriorityRule = "PriorityRule";
+
+	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_C_Workplace, Object> COLUMN_SeqNo = new ModelColumn<>(I_C_Workplace.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Get Updated.

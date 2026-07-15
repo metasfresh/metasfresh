@@ -31,6 +31,7 @@ import de.metas.error.AdIssueId;
 import de.metas.externalsystem.ExternalSystemId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.incoterms.IncotermsId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
@@ -38,6 +39,7 @@ import de.metas.order.OrderLineGroup;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IProductPriceAware;
@@ -102,6 +104,10 @@ public final class OLCand implements IProductPriceAware
 	@Getter private final String email;
 	@Getter private final AdIssueId adIssueId;
 	@Getter private final String headerAggregationKey;
+	@Nullable @Getter private final PromotionCodeId promotionCodeId;
+	@Nullable @Getter private final PromotionCodeId promotionCode2Id;
+	@Getter private final boolean isWithoutCharge;
+	@Nullable @Getter private final String reason;
 
 	@Builder
 	private OLCand(
@@ -131,7 +137,11 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final String phone,
 			@Nullable final String email,
 			@Nullable final AdIssueId adIssueId,
-			@Nullable final String headerAggregationKey)
+			@Nullable final String headerAggregationKey,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			final boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -185,6 +195,11 @@ public final class OLCand implements IProductPriceAware
 		this.adIssueId = adIssueId;
 
 		this.headerAggregationKey = headerAggregationKey;
+
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 
 	@Override
@@ -351,6 +366,12 @@ public final class OLCand implements IProductPriceAware
 
 	public boolean isAutoInvoice() { return olCandRecord.isAutoInvoice(); }
 
+	@Nullable
+	public IncotermsId getIncotermsId() {return IncotermsId.ofRepoIdOrNull(olCandRecord.getC_Incoterms_ID());}
+
+	@Nullable
+	public String getIncotermLocation() {return olCandRecord.getIncotermLocation();}
+
 	// FIXME hardcoded (08691)
 	@Nullable
 	public Object getValueByColumn(@NonNull final OLCandAggregationColumn column)
@@ -387,6 +408,10 @@ public final class OLCand implements IProductPriceAware
 				return getPhone();
 			case I_C_OLCand.COLUMNNAME_IsAutoInvoice:
 				return isAutoInvoice();
+			case I_C_OLCand.COLUMNNAME_C_Incoterms_ID:
+				return getIncotermsId();
+			case I_C_OLCand.COLUMNNAME_IncotermLocation:
+				return getIncotermLocation();
 			default:
 				return InterfaceWrapperHelper.getValueByColumnId(olCandRecord, column.getAdColumnId());
 		}

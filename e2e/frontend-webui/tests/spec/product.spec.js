@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { test } from '../../playwright.config';
+import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
@@ -11,9 +12,26 @@ const PRODUCT_WINDOW_ID = 140;
 /**
  * Product window test suite.
  * Tests viewing and interacting with the Product master data window.
+ *
+ * Features tested (from Google Sheets):
+ * - F6000: Maintain Product Data
  */
 test.describe('Product Window', () => {
   test('View Product window', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0380: Masterdata Products');
+    allure.tag('F6000: Maintain Product Data');
+    allure.tag('F6000');  // Standalone tag for Tags section
+    allure.story('View product list');
+    allure.severity('normal');
+    allure.description(`
+## E0380: Masterdata Products
+## F6000: Maintain Product Data
+
+### Test Scenario
+View product list in master data window.
+    `);
+
     // Create test data: user and products
     const masterdata = await Backend.createMasterdata({
       request: {
@@ -21,11 +39,9 @@ test.describe('Product Window', () => {
         products: {
           PROD1: {
             name: 'Test Product 1',
-            value: 'TEST-PROD-001',
           },
           PROD2: {
             name: 'Test Product 2',
-            value: 'TEST-PROD-002',
           },
         },
       },
@@ -51,6 +67,13 @@ test.describe('Product Window', () => {
   });
 
   test('Open Product detail view', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0380: Masterdata Products');
+    allure.tag('F6000: Maintain Product Data');
+    allure.tag('F6000');  // Standalone tag for Tags section
+    allure.story('Open product detail view');
+    allure.severity('normal');
+
     // Create test data: user and a product
     const masterdata = await Backend.createMasterdata({
       request: {
@@ -58,7 +81,6 @@ test.describe('Product Window', () => {
         products: {
           PROD1: {
             name: 'Test Product Detail',
-            value: 'TEST-PROD-DETAIL',
           },
         },
       },

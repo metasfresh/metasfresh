@@ -23,68 +23,58 @@
 package de.metas.rest_api.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.request.JsonConfidentialType;
 import de.metas.common.rest_api.request.JsonRequestPriority;
-import de.metas.common.rest_api.v2.SwaggerDocConstants;
-import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import lombok.With;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 
 /**
- * A json object that maps to/from a R_Request record.
+ * A JSON object that represents a {@code R_Request}.
  */
 @Builder(toBuilder = true)
 @Jacksonized
 @Value
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class JsonRRequest
 {
-	@Nullable @With JsonMetasfreshId requestId;
+	@NonNull JsonMetasfreshId id;
 
-	@ApiModelProperty(value = SwaggerDocConstants.ORG_CODE_PARAMETER_DOC)
 	@NonNull String orgCode;
-
 	@NonNull String requestType;
-
-	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
-	@Nullable String bpartnerIdentifier;
-
-	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
-	@Nullable String userIdentifier;
+	@Nullable JsonMetasfreshId bpartnerId;
+	@Nullable JsonMetasfreshId userId;
 
 	@Nullable JsonRequestPriority priority;
-	@Nullable String dueType;
 	@NonNull String summary;
 	@Nullable JsonConfidentialType confidentialityLevel;
-	@Nullable Boolean isEscalated;
-	@Nullable Boolean isSelfService;
 
-	@Nullable String orderIdentifier;
-
-	@ApiModelProperty(value = SwaggerDocConstants.BPARTNER_VALUE_DOC)
-	@Nullable String vendorIdentifier;
+	@Nullable JsonMetasfreshId vendorId;
+	@Nullable JsonMetasfreshId salesRepId;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-	@NonNull LocalDate dateDelivered;
+	@Nullable LocalDate dateDelivered;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@Nullable LocalDate dateTrx;
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	@Nullable LocalDate reminderDate;
 
-	@ApiModelProperty(value = SwaggerDocConstants.PRODUCT_IDENTIFIER_DOC)
-	@Nullable String productIdentifier;
+	@Nullable JsonMetasfreshId projectId;
+	@Nullable JsonMetasfreshId productId;
 
+	@Nullable JsonMetasfreshId orderId;
 	@Nullable JsonMetasfreshId inOutId;
+	@Nullable JsonMetasfreshId invoiceId;
+	@Nullable JsonMetasfreshId paymentId;
 
-	@Nullable String qualityNote;
-	@Nullable String nextAction;
+	@Nullable String qualityNoteValue;
 
-	@ApiModelProperty(value = SwaggerDocConstants.CONTACT_IDENTIFIER_DOC)
-	@Nullable String salesRepIdentifier;
+	@Nullable String statusName;
 
-	@Nullable String result;
-
-	@Nullable String status;
 }
