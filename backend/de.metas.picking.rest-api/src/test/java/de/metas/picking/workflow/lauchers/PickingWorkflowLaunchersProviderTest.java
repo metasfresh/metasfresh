@@ -200,7 +200,6 @@ class PickingWorkflowLaunchersProviderTest
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 
 			assertThat(launchers).hasSize(1);
-			System.out.println(launchers);
 
 			final SoftAssertions softly = new SoftAssertions();
 			softly.assertThat(launchers.get(0).getQtyToDeliver()).as("job0 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
@@ -228,7 +227,6 @@ class PickingWorkflowLaunchersProviderTest
 			final List<PickingWFProcessStartParams> launchers = retrieveLaunchers();
 
 			assertThat(launchers).hasSize(1);
-			System.out.println(launchers);
 
 			final SoftAssertions softly = new SoftAssertions();
 			softly.assertThat(launchers.get(0).getQtyToDeliver()).as("job0 - qtyToDeliver").isEqualTo(helper.qty("50", p1_id));
