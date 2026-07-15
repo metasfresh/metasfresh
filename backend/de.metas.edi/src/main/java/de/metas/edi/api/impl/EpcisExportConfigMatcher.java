@@ -32,6 +32,7 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Objects;
 
 /**
@@ -41,9 +42,9 @@ import java.util.Objects;
  * cannot silently drift between them.
  */
 @Component
-public class EpcisExportProcess
+public class EpcisExportConfigMatcher
 {
-	private static final Logger logger = LogManager.getLogger(EpcisExportProcess.class);
+	private static final Logger logger = LogManager.getLogger(EpcisExportConfigMatcher.class);
 
 	// IADProcessDAO is an ISingletonService — must be obtained via Services.get, not a constructor param,
 	// else this @Component fails to wire at context boot with NoSuchBeanDefinitionException.
@@ -59,6 +60,7 @@ public class EpcisExportProcess
 				&& Objects.equals(config.getOutboundDataProcessId(), epcisExportProcessId);
 	}
 
+	@Nullable
 	private AdProcessId getProcessIdOrNull()
 	{
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(M_InOut_EPCIS_Export_JSON.class);

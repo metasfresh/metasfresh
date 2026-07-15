@@ -55,7 +55,7 @@ public class EpcisReverseGuardService
 	@NonNull private final EpcisTransmittedSsccRepository transmittedSsccRepository;
 	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 	@NonNull private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository;
-	@NonNull private final EpcisExportProcess epcisExportProcess;
+	@NonNull private final EpcisExportConfigMatcher epcisExportConfigMatcher;
 
 	public boolean isEpcisTransmittedOrInFlight(@NonNull final InOutId inOutId)
 	{
@@ -74,6 +74,6 @@ public class EpcisReverseGuardService
 				exportStatusService.getInflightConfigsBySourceRecord(sourceRecord);
 		return inflightConfigIds.stream()
 				.map(scriptedExportConversionRepository::getById)
-				.anyMatch(epcisExportProcess::isEpcisExportConfig);
+				.anyMatch(epcisExportConfigMatcher::isEpcisExportConfig);
 	}
 }

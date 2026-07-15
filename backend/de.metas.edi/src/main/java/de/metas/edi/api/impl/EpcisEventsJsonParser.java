@@ -28,49 +28,24 @@ import com.google.common.collect.ImmutableList;
 import de.metas.common.util.Check;
 import de.metas.inout.InOutId;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DB;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Component;
 
 /**
- * Extracts the physical SSCC18 values (one per pallet, {@code pallets[].sscc}) of the EPCIS events
- * payload for a shipment, so a successful EPCIS send can record each transmitted SSCC in the
- * {@code EDI_EPCIS_Transmitted_SSCC} ledger (see {@link EpcisTransmittedSsccRepository}).
- *
- * <p>Two entry points, both pure of any business decision (the "which source" decision lives in the
- * service-layer caller, {@code EpcisTransmittedSsccSuccessListener}):
- * <ul>
- *   <li>{@link #extractPalletSscc18s(String)} — parse an already-obtained EPCIS events JSON string
- *       (e.g. the payload the export actually attached to the shipment);</li>
- *   <li>{@link #getPalletSscc18sFromFunction(InOutId)} — recompute the JSON via the
- *       {@code "de.metas.edi".get_epcis_events_json_fn} SQL function and parse it.</li>
- * </ul>
- * <p>
- * Repository Tables: (none — read-only via the {@code "de.metas.edi".get_epcis_events_json_fn} SQL function)
- * Repository Cluster: EpcisEventsJsonDAO
+ * Parses an EPCIS events JSON payload and returns the physical SSCC18 of every pallet
+ * ({@code pallets[].sscc}) it carries. The payload is the one the EPCIS export process actually
+ * attached to the shipment (used by {@link EpcisTransmittedSsccSuccessListener} to record what was
+ * transmitted); this class does no DB access of its own.
  */
-@Repository
-public class EpcisEventsJsonDAO
+@Component
+public class EpcisEventsJsonParser
 {
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	/**
-	 * Recomputes the EPCIS events JSON for the shipment via the SQL function and returns the SSCC18 of
-	 * every pallet. Empty when the function yields no pallets (including the {@code '{}'} shape).
-	 */
-	@NonNull
-	public ImmutableList<String> getPalletSscc18sFromFunction(@NonNull final InOutId inOutId)
-	{
-		final String sql = "SELECT \"de.metas.edi\".get_epcis_events_json_fn(?)::text";
-		final String json = DB.getSQLValueStringEx(ITrx.TRXNAME_None, sql, inOutId.getRepoId());
-		return extractPalletSscc18s(json, inOutId);
-	}
-
-	/**
-	 * Extracts {@code pallets[].sscc} from an EPCIS events JSON string. Handles both the raw function
-	 * output ({@code {"pallets":[...]}}) and the attached/sent envelope
-	 * ({@code {"embedded_json":{"pallets":[...]}}}). Empty when there are no pallets.
+	 * Extracts {@code pallets[].sscc} from an EPCIS events JSON string. Handles both the raw
+	 * {@code get_epcis_events_json_fn} output ({@code {"pallets":[...]}}) and the attached/sent
+	 * envelope ({@code {"embedded_json":{"pallets":[...]}}}). Empty when there are no pallets.
 	 *
 	 * @param inOutId the shipment the JSON belongs to — used only to give a parse-failure a
 	 *                diagnosable message; never queried.

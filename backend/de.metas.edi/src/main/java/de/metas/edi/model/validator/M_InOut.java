@@ -93,16 +93,10 @@ public class M_InOut
 	}
 
 	/**
-	 * Forbids reversing/reactivating/voiding a shipment whose EPCIS SSCC events are already at — or
-	 * may already be at — the receiver: either a confirmed transmission (an active
-	 * {@code EDI_EPCIS_Transmitted_SSCC} ledger row) OR an in-flight export (a scripted-export status
-	 * row still {@code Enqueued}/{@code SendingStarted}). The in-flight case matters because the ledger
-	 * row is written only on the asynchronous success callback, so recreating the document
-	 * (reverse-and-recreate) in the dispatch→callback window would re-run shipment completion and
-	 * transmit the same physical SSCCs again, duplicating the events at the receiver. Deactivating the
-	 * blocking row on the shipment's EPCIS tabs (the transmitted-SSCC ledger row, or a stuck in-flight
-	 * status row) is the sanctioned way to unblock the action, consistent with it also unblocking
-	 * re-sending the SSCC.
+	 * Rejects reversing/reactivating/voiding a shipment whose EPCIS SSCCs were transmitted — or are
+	 * in-flight (an {@code Enqueued}/{@code SendingStarted} scripted-export status row) — to the
+	 * receiver, since recreating the document would re-transmit and duplicate them. Deactivate the
+	 * shipment's transmitted-SSCC ledger row (or a stuck in-flight status row) to unblock.
 	 */
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REACTIVATE,
 			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL,

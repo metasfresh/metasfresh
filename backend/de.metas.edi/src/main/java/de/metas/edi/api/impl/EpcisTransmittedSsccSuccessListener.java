@@ -25,6 +25,7 @@ package de.metas.edi.api.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.edi.process.export.json.M_InOut_EPCIS_Export_JSON;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
@@ -47,6 +48,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 import java.util.Optional;
 
 /**
@@ -70,9 +72,9 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 
 	@NonNull private final ExternalSystemExportStatusService exportStatusService;
 	@NonNull private final ExternalSystemScriptedExportConversionRepository scriptedExportConversionRepository;
-	@NonNull private final EpcisEventsJsonDAO epcisEventsJsonDAO;
+	@NonNull private final EpcisEventsJsonParser epcisEventsJsonParser;
 	@NonNull private final EpcisTransmittedSsccRepository transmittedSsccRepository;
-	@NonNull private final EpcisExportProcess epcisExportProcess;
+	@NonNull private final EpcisExportConfigMatcher epcisExportConfigMatcher;
 	@NonNull private final AttachmentEntryService attachmentEntryService;
 
 	/**
@@ -104,7 +106,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		}
 
 		final ExternalSystemScriptedExportConversionConfig config = scriptedExportConversionRepository.getById(status.getConfigId());
-		if (!epcisExportProcess.isEpcisExportConfig(config))
+		if (!epcisExportConfigMatcher.isEpcisExportConfig(config))
 		{
 			loggable.addLog("EPCIS ledger: configId={} is not the EPCIS outbound export - skipping", status.getConfigId());
 			return;
@@ -119,7 +121,7 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 		}
 
 		final InOutId inOutId = InOutId.ofRepoId(sourceRecord.getRecord_ID());
-		final ImmutableList<String> sscc18s = getTransmittedSscc18s(sourceRecord, inOutId, loggable);
+		final ImmutableList<String> sscc18s = getTransmittedSscc18s(sourceRecord, inOutId);
 		if (sscc18s.isEmpty())
 		{
 			loggable.addLog("EPCIS ledger: M_InOut_ID={} carries no EPCIS pallets - nothing to record", inOutId);
@@ -135,34 +137,36 @@ public class EpcisTransmittedSsccSuccessListener implements IExternalSystemInvoc
 	}
 
 	/**
-	 * The physical SSCC18s that were sent — read from the payload the EPCIS export actually attached
-	 * to the shipment ({@link M_InOut_EPCIS_Export_JSON} attaches its output as
-	 * {@code <process>_<M_InOut_ID>.json}). {@code getByReferencedRecord} returns youngest-first, so
-	 * the first matching attachment is the most recent send (a shipment can only have one EPCIS export
-	 * in flight at a time — see the at-most-one guard in {@code markEnqueued}). Falls back to
-	 * recomputing via the SQL function only when no such attachment exists, so the exactly-once ledger
-	 * is still written.
+	 * The physical SSCC18s that were sent — read from the payload the EPCIS export attached to the
+	 * shipment ({@link M_InOut_EPCIS_Export_JSON} attaches its output as {@code <process>_<M_InOut_ID>.json}).
+	 * On this success path the export always attached the payload, so a missing attachment means
+	 * nothing was actually sent — we then record nothing rather than fabricate a ledger entry.
 	 */
 	@NonNull
 	private ImmutableList<String> getTransmittedSscc18s(
 			@NonNull final TableRecordReference sourceRecord,
-			@NonNull final InOutId inOutId,
-			@NonNull final ILoggable loggable)
+			@NonNull final InOutId inOutId)
 	{
 		final String epcisFilenamePrefix = M_InOut_EPCIS_Export_JSON.class.getSimpleName();
+		// The LATEST EPCIS export attachment is this send's payload — pick it explicitly by the highest
+		// AttachmentEntry id (a later send has a higher id) rather than relying on the query's ordering.
 		final Optional<AttachmentEntry> sentPayload = attachmentEntryService.getByReferencedRecord(sourceRecord)
 				.stream()
 				.filter(entry -> entry.getFilename() != null && entry.getFilename().startsWith(epcisFilenamePrefix))
-				.findFirst();
+				.max(Comparator.comparingInt(entry -> AttachmentEntryId.getRepoId(entry.getId())));
 
-		if (sentPayload.isPresent())
+		if (!sentPayload.isPresent())
 		{
-			final String json = new String(attachmentEntryService.retrieveData(sentPayload.get().getId()), StandardCharsets.UTF_8);
-			return epcisEventsJsonDAO.extractPalletSscc18s(json, inOutId);
+			// Impossible on the success path (the export attaches its payload unconditionally): if there
+			// is no attachment, nothing was sent, so writing a ledger row would claim a transmission that
+			// never happened. Log it loudly and record nothing.
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"EPCIS ledger: success callback for M_InOut_ID={} but no {} attachment - nothing was sent, recording nothing",
+					inOutId.getRepoId(), epcisFilenamePrefix);
+			return ImmutableList.of();
 		}
 
-		loggable.addLog("EPCIS ledger: no {} attachment on M_InOut_ID={} - recomputing the EPCIS events JSON via the export function",
-				epcisFilenamePrefix, inOutId.getRepoId());
-		return epcisEventsJsonDAO.getPalletSscc18sFromFunction(inOutId);
+		final String json = new String(attachmentEntryService.retrieveData(sentPayload.get().getId()), StandardCharsets.UTF_8);
+		return epcisEventsJsonParser.extractPalletSscc18s(json, inOutId);
 	}
 }
