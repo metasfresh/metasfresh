@@ -187,3 +187,33 @@ Feature: Switch to Moving Average Invoice
       | Identifier   | C_AcctSchema_ID | M_CostElement_ID | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
       | selfCopy     | acctSchema      | AveragePO        | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
     Then create lines for cost revaluation selfCopy expecting error
+
+  @Id:S26253_TC6
+  Scenario: A single switch seeds every affected product's opening in one run, each at its own price
+    #
+    # The switch is company-wide: one CopyFromCostElement completion seeds the MovingAverageInvoice
+    # opening for every product that carries a source (AveragePO) cost — each at its OWN price — in a
+    # single run, not one product at a time. Two products with different source costs prove the batch
+    # seeds them independently and correctly in the same completion.
+    #
+    Given metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+      | product2   |
+    And update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | product1     | AveragePO        | 10 CHF           |
+      | product2     | AveragePO        | 20 CHF           |
+    When metasfresh contains M_CostRevaluation:
+      | Identifier | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | switch     | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation switch
+    And the cost revaluation identified by switch is completed
+    #
+    # Both products' MovingAverageInvoice openings are seeded in the one completion, each carrying its
+    # own source price (10 / 20) with qty 0 — a valid MA base per product.
+    #
+    Then validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product1     | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
+      | acctSchema      | product2     | MovingAverageInvoice | 20 CHF           | 0 PCE      | 0 CHF        |
