@@ -2,7 +2,9 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -83,7 +85,7 @@ final class ShipmentScheduleSegmentChangedProcessor
 		return processor;
 	}
 
-	private final List<IShipmentScheduleSegment> segments = new ArrayList<>();
+	private final Set<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
 	private ShipmentScheduleSegmentChangedProcessor(@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
