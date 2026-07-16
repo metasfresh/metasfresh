@@ -48,7 +48,8 @@ import static org.mockito.Mockito.verify;
  */
 class ShipmentScheduleSegmentChangedProcessorTest
 {
-	private static final int N = 1000;
+	private static final int REPEATED_ADD_COUNT = 1000;
+	private static final int DISTINCT_SEGMENT_COUNT = 1000;
 
 	@BeforeEach
 	void beforeEach()
@@ -57,20 +58,20 @@ class ShipmentScheduleSegmentChangedProcessorTest
 	}
 
 	/**
-	 * Adding the SAME segment value N times must be deduped down to a single distinct segment.
+	 * Adding {@value #REPEATED_ADD_COUNT} separately-constructed but value-equal segments must be deduped to a single
+	 * distinct segment.
 	 * <p>
-	 * FAILS on current ArrayList-based accumulator (retains all {@value #N}).
+	 * Each iteration builds a FRESH {@link ImmutableShipmentScheduleSegment} instance (not the same reference), so this
+	 * exercises the Lombok {@code @Value} equals/hashCode contract the Set-based accumulator relies on — mirroring the
+	 * real caller ({@code ShipmentScheduleInvalidateBL.notifySegmentsChanged}), which builds fresh equal instances per
+	 * invalidation event.
+	 * <p>
+	 * FAILS on the pre-fix ArrayList-based accumulator (retains all {@value #REPEATED_ADD_COUNT}).
 	 */
 	@Test
 	void sameSegmentAddedManyTimes_isDedupedToOne()
 	{
 		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
-
-		final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
-				.productId(1)
-				.bpartnerId(2)
-				.locatorId(3)
-				.build();
 
 		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
 			final ShipmentScheduleSegmentChangedProcessor processor =
@@ -79,9 +80,14 @@ class ShipmentScheduleSegmentChangedProcessorTest
 					.as("processor must be created inside a thread-inherited trx")
 					.isNotNull();
 
-			for (int i = 0; i < N; i++)
+			for (int i = 0; i < REPEATED_ADD_COUNT; i++)
 			{
-				processor.addSegment(segment);
+				// fresh, independently-built instance each time — value-equal, NOT the same reference
+				processor.addSegment(ImmutableShipmentScheduleSegment.builder()
+						.productId(1)
+						.bpartnerId(2)
+						.locatorId(3)
+						.build());
 			}
 		});
 
@@ -90,12 +96,12 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		verify(invalidator).flagSegmentForRecompute(captor.capture());
 
 		assertThat(captor.getValue())
-				.as("adding the same segment %d times must be deduped to a single distinct segment", N)
+				.as("adding %d value-equal segments must be deduped to a single distinct segment", REPEATED_ADD_COUNT)
 				.hasSize(1);
 	}
 
 	/**
-	 * N DISTINCT segment values must all be retained (proves dedupe, not truncation).
+	 * {@value #DISTINCT_SEGMENT_COUNT} DISTINCT segment values must all be retained (proves dedupe, not truncation).
 	 * <p>
 	 * PASSES on current code.
 	 */
@@ -105,7 +111,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
 
 		final List<IShipmentScheduleSegment> distinctSegments = new ArrayList<>();
-		for (int i = 0; i < N; i++)
+		for (int i = 0; i < DISTINCT_SEGMENT_COUNT; i++)
 		{
 			distinctSegments.add(ImmutableShipmentScheduleSegment.builder()
 					.productId(i)
@@ -129,7 +135,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		verify(invalidator).flagSegmentForRecompute(captor.capture());
 
 		assertThat(captor.getValue())
-				.as("all %d distinct segments must be retained", N)
-				.hasSize(N);
+				.as("all %d distinct segments must be retained", DISTINCT_SEGMENT_COUNT)
+				.hasSize(DISTINCT_SEGMENT_COUNT);
 	}
 }
