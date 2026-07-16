@@ -45,7 +45,7 @@ public interface IShipmentScheduleSegment
 
 	default boolean isInvalid()
 	{
-		return isNoProducts() || isNoLocators() || isNoBPartners();
+		return isNoProducts() || (isNoLocators() && isNoWarehouses()) || isNoBPartners();
 	}
 
 	Set<Integer> getProductIds();
@@ -102,6 +102,24 @@ public interface IShipmentScheduleSegment
 		return locatorIds != null
 				? locatorIds.contains(0) || locatorIds.contains(-1) || locatorIds.contains(ANY)
 				: false;
+	}
+
+	default Set<Integer> getWarehouseIds()
+	{
+		return java.util.Collections.emptySet();
+	}
+
+	default boolean isNoWarehouses()
+	{
+		final Set<Integer> warehouseIds = getWarehouseIds();
+		return warehouseIds == null || warehouseIds.isEmpty();
+	}
+
+	default boolean isAnyWarehouse()
+	{
+		final Set<Integer> warehouseIds = getWarehouseIds();
+		return warehouseIds == null || warehouseIds.isEmpty()
+				|| warehouseIds.contains(0) || warehouseIds.contains(-1) || warehouseIds.contains(ANY);
 	}
 
 	Set<ShipmentScheduleAttributeSegment> getAttributes();

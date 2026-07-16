@@ -23,17 +23,13 @@ package de.metas.inoutcandidate.invalidation.segments;
  */
 
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_M_Locator;
 
 import javax.annotation.Nullable;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public final class ShipmentScheduleSegmentBuilder
@@ -41,6 +37,7 @@ public final class ShipmentScheduleSegmentBuilder
 	private final Set<Integer> productIds = new HashSet<>();
 	private final Set<Integer> bpartnerIds = new HashSet<>();
 	private final Set<Integer> locatorIds = new HashSet<>();
+	private final Set<Integer> warehouseIds = new HashSet<>();
 	private final Set<ShipmentScheduleAttributeSegment> attributeSegments = new HashSet<>();
 
 	public ShipmentScheduleSegmentBuilder()
@@ -52,6 +49,7 @@ public final class ShipmentScheduleSegmentBuilder
 		return ImmutableShipmentScheduleSegment.builder()
 				.productIds(productIds)
 				.locatorIds(locatorIds)
+				.warehouseIds(warehouseIds)
 				.bpartnerIds(bpartnerIds)
 				.attributes(attributeSegments)
 				.build();
@@ -99,14 +97,7 @@ public final class ShipmentScheduleSegmentBuilder
 
 	public ShipmentScheduleSegmentBuilder warehouseId(@NonNull final WarehouseId warehouseId)
 	{
-		final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
-
-		final List<LocatorId> locatorIds = warehouseDAO.getLocatorIds(warehouseId);
-		for (final LocatorId locatorId : locatorIds)
-		{
-			locatorId(locatorId.getRepoId());
-		}
-
+		warehouseIds.add(warehouseId.getRepoId());
 		return this;
 	}
 
