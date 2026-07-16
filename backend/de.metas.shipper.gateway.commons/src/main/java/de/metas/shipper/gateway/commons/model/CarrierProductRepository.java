@@ -23,7 +23,7 @@
 package de.metas.shipper.gateway.commons.model;
 
 import de.metas.cache.CCache;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -74,7 +74,7 @@ public class CarrierProductRepository
 				queryBL.createQueryBuilder(I_Carrier_Product.class)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_M_Shipper_ID, shipperId)
 						.addEqualsFilter(I_Carrier_Product.COLUMNNAME_ExternalId, code)
-						.firstOptional()
+						.firstOnlyOptional()
 						.map(CarrierProductRepository::fromProductRecord)
 						.orElse(null));
 	}

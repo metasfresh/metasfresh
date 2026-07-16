@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/**
+ * Repository Tables: MobileUI_UserProfile_DD, MobileUI_UserProfile_DD_Sort, MobileUI_UserProfile_DD_CaptionItem
+ * Repository Cluster: MobileUIDistributionConfigRepository
+ */
 @Repository
 public class MobileUIDistributionConfigRepository
 {
@@ -26,10 +30,14 @@ public class MobileUIDistributionConfigRepository
 
 	private final CCache<Integer, MobileUIDistributionConfig> cache = CCache.<Integer, MobileUIDistributionConfig>builder()
 			.tableName(I_MobileUI_UserProfile_DD.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_Sort.Table_Name)
+			.additionalTableNameToResetFor(I_MobileUI_UserProfile_DD_CaptionItem.Table_Name)
 			.build();
 
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
 			.allowPickingAnyHU(false)
+			.isRequireTrolley(false)
+			.isPrintDDOrderOnComplete(true)
 			.captionFormat(DistributionJobCaptionFormat.ofNonEmptyList(ImmutableList.of(
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.SourceDoc).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseFrom).build(),
@@ -37,16 +45,19 @@ public class MobileUIDistributionConfigRepository
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.PickDate).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Plant).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.ProductValueAndName).build(),
-					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build()
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.Qty).build(),
+					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.PickingInstruction).build()
 			)))
 			.sorting(DistributionJobSorting.DEFAULT)
 			.build();
 
+	@NonNull
 	public MobileUIDistributionConfig getConfig()
 	{
-		return cache.getOrLoad(0, this::retrieveConfig);
+		return cache.getOrLoadNonNull(0, this::retrieveConfig);
 	}
 
+	@NonNull
 	private MobileUIDistributionConfig retrieveConfig()
 	{
 		final I_MobileUI_UserProfile_DD record = retrieveRecord().orElse(null);
@@ -56,8 +67,11 @@ public class MobileUIDistributionConfigRepository
 				.allowPickingAnyHU(record.isAllowPickingAnyHU())
 				.captionFormat(retrieveCaptionFormat(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getCaptionFormat()))
 				.sorting(retrieveSorting(record.getMobileUI_UserProfile_DD_ID()).orElse(DEFAULT_CONFIG.getSorting()))
+				.isRequireTrolley(record.isRequireTrolley())
 				.isRequireScanningProductCode(record.isRequireScanningProductCode())
+				.isNavigateToJobsListAfterPickFromComplete(record.isNavigateToJobsListAfterPickFromComplete())
 				.isCompleteJobAutomatically(record.isCompleteJobAutomatically())
+				.isPrintDDOrderOnComplete(record.isPrintDDOrderOnComplete())
 				.maxLaunchers(QueryLimit.ofInt(record.getMaxLaunchers()))
 				.maxStartedLaunchers(QueryLimit.ofInt(record.getMaxStartedLaunchers()))
 				.isAllowStartNextJobOnly(record.isAllowStartNextJobOnly())
@@ -87,7 +101,7 @@ public class MobileUIDistributionConfigRepository
 				.stream();
 	}
 
-	private static DistributionJobCaptionFormatItem fromRecord(I_MobileUI_UserProfile_DD_CaptionItem record)
+	private static DistributionJobCaptionFormatItem fromRecord(final I_MobileUI_UserProfile_DD_CaptionItem record)
 	{
 		return DistributionJobCaptionFormatItem.builder()
 				.field(extractField(record))
@@ -116,7 +130,7 @@ public class MobileUIDistributionConfigRepository
 				.stream();
 	}
 
-	private static DistributionJobSortingItem fromRecord(I_MobileUI_UserProfile_DD_Sort record)
+	private static DistributionJobSortingItem fromRecord(final I_MobileUI_UserProfile_DD_Sort record)
 	{
 		return DistributionJobSortingItem.of(
 				extractField(record),
@@ -210,8 +224,11 @@ public class MobileUIDistributionConfigRepository
 	{
 		record.setIsActive(true);
 		record.setIsAllowPickingAnyHU(from.isAllowPickingAnyHU());
+		record.setIsRequireTrolley(from.isRequireTrolley());
 		record.setIsRequireScanningProductCode(from.isRequireScanningProductCode());
+		record.setIsNavigateToJobsListAfterPickFromComplete(from.isNavigateToJobsListAfterPickFromComplete());
 		record.setIsCompleteJobAutomatically(from.isCompleteJobAutomatically());
+		record.setIsPrintDDOrderOnComplete(from.isPrintDDOrderOnComplete());
 
 		record.setMaxLaunchers(from.getMaxLaunchers().toIntOrZero());
 		record.setMaxStartedLaunchers(from.getMaxStartedLaunchers().toIntOrZero());

@@ -15,6 +15,7 @@ const containerElement = () => page.locator('#WFProcessScreen');
 export const ManufacturingJobScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
         await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {
@@ -52,8 +53,23 @@ export const ManufacturingJobScreen = {
 
     clickIssueButton: async ({ index }) => await test.step(`${NAME} - Click issue button ${index}`, async () => {
         await ManufacturingJobScreen.expectVisible();
-        await page.getByTestId(`issue-${index}-button`).tap();
+        await locateIssueButton({ index }).tap();
         await RawMaterialIssueLineScreen.waitForScreen();
+    }),
+
+    expectIssueButton: async ({ index, qtyToIssue, qtyIssued, noIndicators }) => await step(`${NAME} - Expect line button at index ${index}`, async () => {
+        const lineButton = locateIssueButton({ index });
+
+        if (qtyToIssue !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtytarget', value: qtyToIssue });
+        }
+        if (qtyIssued !== undefined) {
+            await expectButtonAttribute({ lineButton, attribute: 'data-qtycurrent', value: qtyIssued });
+        }
+        if (noIndicators) {
+            await expect(lineButton.getByTestId('indicator')).toHaveCount(0);
+            await expect(lineButton.getByTestId('indicator2')).toHaveCount(0);
+        }
     }),
 
     clickReceiveButton: async ({ index }) => await test.step(`${NAME} - Click receive button ${index}`, async () => {
@@ -83,6 +99,10 @@ export const ManufacturingJobScreen = {
         await YesNoDialog.clickYesButton();
         await ManufacturingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
+};
+
+const locateIssueButton = ({ index }) => {
+    return page.getByTestId(`issue-${index}-button`);
 };
 
 const locateReceiveButton = ({ index }) => {

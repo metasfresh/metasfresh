@@ -70,6 +70,7 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface IInvoiceBL extends ISingletonService
 {
@@ -132,6 +133,7 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	boolean isInvoice(@NonNull I_C_Invoice invoice);
 
+	@NonNull
 	InvoiceDocBaseType getInvoiceDocBaseType(@NonNull I_C_Invoice invoice);
 
 	/**
@@ -161,6 +163,8 @@ public interface IInvoiceBL extends ISingletonService
 	List<I_C_Invoice> getByIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	List<I_C_InvoiceLine> getLines(@NonNull InvoiceId invoiceId);
+
+	List<I_C_InvoiceLine> getLinesByInvoiceIds(Set<InvoiceId> invoiceIds);
 
 	List<InvoiceTax> getTaxes(@NonNull InvoiceId invoiceId);
 
@@ -246,10 +250,8 @@ public interface IInvoiceBL extends ISingletonService
 
 	/**
 	 * Sets Target Document Type and IsSOTrx.
-	 *
-	 * @return true if document type found and set
 	 */
-	boolean setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
+	void setDocTypeTargetId(I_C_Invoice invoice, InvoiceDocBaseType docBaseType);
 
 	/**
 	 * Set Target Document Type based on SO flag AP/AP Invoice
@@ -298,12 +300,18 @@ public interface IInvoiceBL extends ISingletonService
 	 */
 	void setTaxAmt(I_C_InvoiceLine invoiceLine);
 
+	@Nullable
 	I_C_DocType getC_DocType(I_C_Invoice invoice);
 
 	/**
 	 * @return true if invoice's DocStatus is COmpleted, CLosed or REversed.
 	 */
 	boolean isComplete(org.compiere.model.I_C_Invoice invoice);
+
+	/**
+	 * @return true if invoice's DocStatus is COmpleted or CLosed (but not REversed).
+	 */
+	boolean isCompletedOrClosed(@NonNull I_C_Invoice invoice);
 
 	CurrencyPrecision getPricePrecision(org.compiere.model.I_C_Invoice invoice);
 
@@ -321,10 +329,8 @@ public interface IInvoiceBL extends ISingletonService
 	 * Creates a copy of given Invoice with C_DocType "Nachbelastung" (Adjustment Charge). The button is active just for 'ARI' docbasetypes. There can be more types of Adjustment Charges, with
 	 * different DocSubTypes. For example we have: "Nachbelastung - Mengendifferenz" which copies the Invoice but sets the product prices readOnly. "Nachbelastung - Preisdifferenz" which copies the
 	 * Invoice but sets the quantity read only.
-	 *
-	 * @return adjustmentCharge {@link de.metas.adempiere.model.I_C_Invoice}
 	 */
-	de.metas.adempiere.model.I_C_Invoice adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
+	void adjustmentCharge(AdjustmentChargeCreateRequest adjustmentChargeCreateRequest);
 
 	/**
 	 * Updates {@link I_C_InvoiceLine}'s {@link I_C_InvoiceLine#COLUMNNAME_IsPriceReadOnly IsPriceReadOnly}, {@link I_C_InvoiceLine#COLUMNNAME_IsQtyReadOnly IsQtyReadOnly} and
@@ -390,6 +396,11 @@ public interface IInvoiceBL extends ISingletonService
 	 * Allocate parent invoice against it's credit memo
 	 */
 	void allocateCreditMemo(de.metas.adempiere.model.I_C_Invoice invoice, de.metas.adempiere.model.I_C_Invoice creditMemo, BigDecimal openAmt);
+
+	/**
+	 * Decide if the given invoice is a Purchase Proforma Invoice (APF)
+	 */
+	boolean isPurchaseProforma(@NonNull I_C_Invoice invoice);
 
 	/**
 	 * Decide if the given invoice is an Adjustment Charge

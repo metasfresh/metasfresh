@@ -86,7 +86,6 @@ public class MTax extends X_C_Tax
 		//	setC_TaxCategory_ID (0);	//	FK
 			setSOPOType (SOPOTYPE_Both);
 			setValidFrom (TimeUtil.getDay(1990,1,1));
-			setIsSalesTax(false);
 		}
 	}	//	MTax
 

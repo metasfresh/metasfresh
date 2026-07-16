@@ -1146,6 +1146,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	}
 
 	@Override
+	@Nullable
 	public I_M_HU_PI_Item retrieveDefaultParentPIItem(
 			@NonNull final I_M_HU_PI huPI,
 			@Nullable final String huUnitType,

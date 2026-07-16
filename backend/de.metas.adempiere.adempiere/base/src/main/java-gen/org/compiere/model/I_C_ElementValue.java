@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_ElementValue
  *  @author metasfresh (generated) 
@@ -162,6 +163,33 @@ public interface I_C_ElementValue
 	String COLUMNNAME_C_BP_BankAccount_ID = "C_BP_BankAccount_ID";
 
 	/**
+	 * Set Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CostClassification_ID (int C_CostClassification_ID);
+
+	/**
+	 * Get Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CostClassification_ID();
+
+	@Nullable org.compiere.model.I_C_CostClassification getC_CostClassification();
+
+	void setC_CostClassification(@Nullable org.compiere.model.I_C_CostClassification C_CostClassification);
+
+	ModelColumn<I_C_ElementValue, org.compiere.model.I_C_CostClassification> COLUMN_C_CostClassification_ID = new ModelColumn<>(I_C_ElementValue.class, "C_CostClassification_ID", org.compiere.model.I_C_CostClassification.class);
+	String COLUMNNAME_C_CostClassification_ID = "C_CostClassification_ID";
+
+	/**
 	 * Set Currency.
 	 * The Currency for this record
 	 *
@@ -229,6 +257,28 @@ public interface I_C_ElementValue
 	String COLUMNNAME_C_ElementValue_ID = "C_ElementValue_ID";
 
 	/**
+	 * Set Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Tax_ID (int C_Tax_ID);
+
+	/**
+	 * Get Tax.
+	 * Tax identifier
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Tax_ID();
+
+	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -252,28 +302,6 @@ public interface I_C_ElementValue
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Tax_ID (int C_Tax_ID);
-
-	/**
-	 * Get Tax.
-	 * Tax identifier
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Tax_ID();
-
-	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
 
 	/**
 	 * Set Default Account.

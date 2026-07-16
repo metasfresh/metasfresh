@@ -19,7 +19,6 @@ package org.compiere.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import de.metas.util.FileUtil;
@@ -107,7 +106,9 @@ public final class Ini
 	 * Language
 	 */
 	public static final String P_LANGUAGE = "Language";
-	private static final String DEFAULT_LANGUAGE = Language.getName(System.getProperty("user.language") + "_" + System.getProperty("user.country"));
+	// NOTE: we intentionally avoid calling Language.getName() here to prevent circular static initialization
+	// between Ini -> Language -> Env -> Ini which causes NoClassDefFoundError in some environments (e.g. WSL)
+	private static final String DEFAULT_LANGUAGE = System.getProperty("user.language", "en") + "_" + System.getProperty("user.country", "US");
 	/**
 	 * Ini File Name
 	 */

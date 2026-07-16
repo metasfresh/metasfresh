@@ -2,8 +2,10 @@ package de.metas.cucumber.stepdefs.accounting;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_VAT_Code_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
 import de.metas.money.MoneyService;
 import de.metas.tax.api.ITaxDAO;
@@ -28,7 +30,9 @@ public class Fact_Acct_StepDef
 			@NonNull final IdentifiersResolver identifiersResolver,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final M_Product_StepDefData productTable
+			@NonNull final C_VAT_Code_StepDefData vatCodeTable,
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Invoice_StepDefData invoiceTable
 	)
 	{
 		this.identifiersResolver = identifiersResolver;
@@ -43,7 +47,9 @@ public class Fact_Acct_StepDef
 				.identifiersResolver(identifiersResolver)
 				.bpartnerTable(bpartnerTable)
 				.taxTable(taxTable)
+				.vatCodeTable(vatCodeTable)
 				.productTable(productTable)
+				.invoiceTable(invoiceTable)
 				.build();
 		this.factAcctTabularStringConverter = FactAcctToTabularStringConverter.builder()
 				.uomDAO(uomDAO)

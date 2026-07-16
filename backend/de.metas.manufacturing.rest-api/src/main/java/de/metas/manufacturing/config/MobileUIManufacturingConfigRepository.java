@@ -12,6 +12,7 @@ import org.compiere.model.I_MobileUI_MFG_Config;
 import org.compiere.model.I_MobileUI_UserProfile_MFG;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Repository
@@ -22,6 +23,9 @@ public class MobileUIManufacturingConfigRepository
 	private static final MobileUIManufacturingConfig DEFAULT_CONFIG = MobileUIManufacturingConfig.builder()
 			.isScanResourceRequired(OptionalBoolean.FALSE)
 			.isAllowIssuingAnyHU(OptionalBoolean.FALSE)
+			.receiveUnitType(ReceiveUnitType.CU)
+			.isBestBeforeDateEditable(OptionalBoolean.TRUE)
+			.isLotNumberEditable(OptionalBoolean.TRUE)
 			.build();
 
 	private final CCache<UserId, Optional<MobileUIManufacturingConfig>> userConfigsCache = CCache.<UserId, Optional<MobileUIManufacturingConfig>>builder()
@@ -29,13 +33,14 @@ public class MobileUIManufacturingConfigRepository
 			.build();
 
 	private final CCache<ClientId, Optional<MobileUIManufacturingConfig>> globalConfigsCache = CCache.<ClientId, Optional<MobileUIManufacturingConfig>>builder()
-			.tableName(I_MobileUI_UserProfile_MFG.Table_Name)
+			.tableName(I_MobileUI_MFG_Config.Table_Name)
 			.build();
 
-	public MobileUIManufacturingConfig getConfig(@NonNull final UserId userId, @NonNull final ClientId clientId)
+	@NonNull
+	public MobileUIManufacturingConfig getConfig(@Nullable final UserId userId, @NonNull final ClientId clientId)
 	{
 		return MobileUIManufacturingConfig.merge(
-						getUserConfig(userId),
+						userId != null ? getUserConfig(userId) : null,
 						getGlobalConfig(clientId),
 						DEFAULT_CONFIG
 				)
@@ -63,8 +68,11 @@ public class MobileUIManufacturingConfigRepository
 
 	private Optional<I_MobileUI_UserProfile_MFG> retrieveUserConfigRecord(final @NonNull UserId userId)
 	{
+		// No active-records filter on purpose: this method is shared by the read path
+		// (retrieveUserConfig filters IsActive='N' out in Java, treating it as "no config")
+		// and the save path (saveUserConfig reactivates an existing inactive row instead of
+		// inserting a duplicate). Filtering here would break that save-path reactivation.
 		return queryBL.createQueryBuilder(I_MobileUI_UserProfile_MFG.class)
-				//.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_MobileUI_UserProfile_MFG.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.firstOnlyOptional(I_MobileUI_UserProfile_MFG.class);
@@ -75,6 +83,9 @@ public class MobileUIManufacturingConfigRepository
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.ofNullableString(record.getIsScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofNullableString(record.getIsAllowIssuingAnyHU()))
+				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofNullableString(record.getIsBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofNullableString(record.getIsLotNumberEditable()))
 				.build();
 	}
 
@@ -82,6 +93,9 @@ public class MobileUIManufacturingConfigRepository
 	{
 		record.setIsScanResourceRequired(from.getIsScanResourceRequired().toBooleanString());
 		record.setIsAllowIssuingAnyHU(from.getIsAllowIssuingAnyHU().toBooleanString());
+		record.setReceiveUnitType(from.getReceiveUnitType() != null ? from.getReceiveUnitType().getCode() : null);
+		record.setIsBestBeforeDateEditable(from.getIsBestBeforeDateEditable().toBooleanString());
+		record.setIsLotNumberEditable(from.getIsLotNumberEditable().toBooleanString());
 	}
 
 	private Optional<MobileUIManufacturingConfig> retrieveGlobalConfig(@NonNull final ClientId clientId)
@@ -99,6 +113,9 @@ public class MobileUIManufacturingConfigRepository
 		return MobileUIManufacturingConfig.builder()
 				.isScanResourceRequired(OptionalBoolean.ofBoolean(record.isScanResourceRequired()))
 				.isAllowIssuingAnyHU(OptionalBoolean.ofBoolean(record.isAllowIssuingAnyHU()))
+				.receiveUnitType(ReceiveUnitType.ofNullableCode(record.getReceiveUnitType()))
+				.isBestBeforeDateEditable(OptionalBoolean.ofBoolean(record.isBestBeforeDateEditable()))
+				.isLotNumberEditable(OptionalBoolean.ofBoolean(record.isLotNumberEditable()))
 				.build();
 	}
 

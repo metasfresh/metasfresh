@@ -24,7 +24,7 @@ package de.metas.cucumber.stepdefs.shipper;
 
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataGetIdAware;
-import de.metas.inoutcandidate.CarrierProductId;
+import de.metas.shipping.CarrierProductId;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 
 public class Carrier_Product_StepDefData extends StepDefData<CarrierProduct> implements StepDefDataGetIdAware<CarrierProductId, CarrierProduct>

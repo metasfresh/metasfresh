@@ -29,6 +29,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
@@ -176,6 +177,7 @@ class ShipmentScheduleRepositoryTest
 		record.setM_Product_ID(product.getM_Product_ID());
 		record.setQtyToDeliver(BigDecimal.ONE);
 		record.setCarrier_Advising_Status(CarrierAdviseStatus.NotRequested.getCode());
+		record.setM_Warehouse_ID(WarehouseId.MAIN.getRepoId());
 		saveRecord(record);
 
 		return record;

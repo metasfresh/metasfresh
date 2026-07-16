@@ -1,0 +1,51 @@
+# Docker Compose overlay for development mode
+#
+# This file extends the base compose.yml with volume mounts for hot-reload development.
+# Use with: docker compose -f compose.yml -f compose-dev.yml --profile <frontend|mobile> up
+#
+# Prerequisites:
+#   - Set METASFRESH_ROOT in .env to the metasfresh repository root path
+#   - Run `mf-docker.sh e2e-stack start --dev-mode` to auto-extract artifacts from CI images
+#
+# How it works:
+#   - On first dev-mode startup, artifacts are extracted from CI images to .dev-artifacts/
+#   - Volume mounts point to .dev-artifacts/ which is initially populated from CI images
+#   - Use `mf-docker.sh build <component>` to rebuild and update .dev-artifacts/
+#
+# Components supported:
+#   - webapi: Java JAR replacement (requires container restart)
+#   - app: Java JAR replacement (requires container restart)
+#   - webui: Static assets (refresh browser)
+#   - reports: JRXML files (requires container restart for Jasper)
+#
+# To refresh artifacts from CI images: rm -rf .dev-artifacts/ && start with --dev-mode
+
+services:
+  webapi:
+    volumes:
+      # Base config from compose.yml
+      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
+      # Development: Mount JAR from .dev-artifacts/ (extracted from CI images or locally built)
+      - ${METASFRESH_ROOT}/.dev-artifacts/webapi/metasfresh-webui-api.jar:/opt/metasfresh-webui-api/metasfresh-webui-api.jar:ro
+
+  app:
+    volumes:
+      # Base config from compose.yml
+      - ./metasfresh.properties:/opt/metasfresh/metasfresh.properties:ro
+      # Development: Mount JAR from .dev-artifacts/ (extracted from CI images or locally built)
+      - ${METASFRESH_ROOT}/.dev-artifacts/app/metasfresh_server.jar:/opt/metasfresh/metasfresh_server.jar:ro
+      # Development: Mount reports directory for Jasper report changes
+      - ${METASFRESH_ROOT}/.dev-artifacts/reports:/opt/metasfresh/reports:ro
+
+  # NOTE: webui is NOT overridden here because Docker Compose merges volumes,
+  # and the base compose.yml mounts config.js as a single file which conflicts
+  # with mounting the entire directory.
+  #
+  # For frontend development, use one of these approaches:
+  # 1. Run local yarn dev server: cd frontend && yarn start (recommended)
+  # 2. Build and copy: mf-docker.sh build webui && docker cp .dev-artifacts/webui/. mfstack-webui-1:/usr/share/nginx/html/
+  # 3. Rebuild the webui container image with local changes
+  #
+  # webui:
+  #   volumes:
+  #     - ${METASFRESH_ROOT}/.dev-artifacts/webui:/usr/share/nginx/html:ro

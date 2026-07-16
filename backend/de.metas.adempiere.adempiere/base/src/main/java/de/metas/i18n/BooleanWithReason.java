@@ -81,6 +81,11 @@ public final class BooleanWithReason
 		return falseBecause(AdempiereException.extractMessageTrl(exception));
 	}
 
+	public static BooleanWithReason falseIf(final boolean condition, @NonNull final String falseReason)
+	{
+		return condition ? falseBecause(falseReason) : TRUE;
+	}
+
 	private static ITranslatableString toTrl(@Nullable final String reasonStr)
 	{
 		if (reasonStr == null || Check.isBlank(reasonStr))

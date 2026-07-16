@@ -1,9 +1,14 @@
 package de.metas.request.api;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.inout.InOutId;
 import de.metas.inout.QualityNoteId;
+import de.metas.invoice.InvoiceId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.request.RequestConfidentialType;
 import de.metas.request.RequestPriority;
 import de.metas.request.RequestStatusId;
@@ -49,14 +54,21 @@ public class RequestCandidate
 	@Nullable BPartnerId partnerId;
 	@Nullable UserId userId;
 	@Nullable TableRecordReference recordRef;
-	@NonNull ZonedDateTime dateDelivered;
+	@Nullable ZonedDateTime dateDelivered;
 	@NonNull RequestConfidentialType confidentialType;
 	@NonNull String summary;
 	@Nullable QualityNoteId qualityNoteId;
 	@Nullable String performanceType;
-	@Nullable Boolean isEscalated;
-	@Nullable Boolean isSelfService;
-	@Nullable String result;
 	@Nullable RequestStatusId statusId;
 	@Nullable RequestPriority priority;
+	@Nullable ZonedDateTime dateTrx;
+	@Nullable ZonedDateTime reminderDate;
+
+	@Nullable BPartnerId vendorId;
+	@Nullable UserId salesRepId;
+	@Nullable ProjectId projectId;
+	@Nullable InOutId inOutId;
+	@Nullable OrderId orderId;
+	@Nullable PaymentId paymentId;
+	@Nullable InvoiceId invoiceId;
 }

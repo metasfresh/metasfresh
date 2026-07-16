@@ -9,6 +9,7 @@ import de.metas.handlingunits.inventory.InventoryLine;
 import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.inventory.InventoryLineId;
@@ -31,7 +32,7 @@ import org.adempiere.warehouse.LocatorId;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.Optional;
 
 import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_BestBeforeDate;
 import static org.adempiere.mm.attributes.api.AttributeConstants.ATTR_LotNumber;
@@ -49,6 +50,7 @@ public class ResolveHUCommand
 	// Params
 	@NonNull private final ScannedCode scannedCode;
 	@NonNull private final ImmutableList<InventoryLine> lines;
+	@NonNull private final ImmutableList<InventoryLine> allLinesForLocator;
 
 	private static final ImmutableSet<AttributeCode> ATTRIBUTE_CODES = ImmutableSet.of(ATTR_BestBeforeDate, ATTR_LotNumber);
 
@@ -69,9 +71,11 @@ public class ResolveHUCommand
 		this.asiCache = productService.newASILoadingCache();
 
 		this.scannedCode = scannedCode;
-		this.lines = inventory.streamLines(lineId)
-				.filter(InventoryLine::isEligibleForCounting)
+		this.allLinesForLocator = inventory.streamLines(lineId)
 				.filter(line -> LocatorId.equals(line.getLocatorId(), locatorId))
+				.collect(ImmutableList.toImmutableList());
+		this.lines = allLinesForLocator.stream()
+				.filter(InventoryLine::isEligibleForCounting)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -98,10 +102,10 @@ public class ResolveHUCommand
 			}
 			else
 			{
-				throw new AdempiereException("Unknown QR code type: " + parsedScannedCode); // TODO trl 
+				throw new AdempiereException(MobileQRCodeMessages.WRONG_TYPE, parsedScannedCode.getClass().getSimpleName());
 			}
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
 					.setParameter("parsedScannedCode", parsedScannedCode);
@@ -112,7 +116,7 @@ public class ResolveHUCommand
 	{
 		final HuId huId = huService.getHuIdByQRCode(huQRCode);
 		final I_M_HU hu = huCache.getHUById(huId);
-		final InventoryLine matchingLine = findFirstMatchingLine(line -> isLineMatchingHU(line, hu));
+		final InventoryLine matchingLine = findFirstUncountedMatchingLineForHU(hu);
 		final InventoryLineHU matchingLineHU = matchingLine.getInventoryLineHUByHUId(huId).orElse(null);
 		final AttributeSetInstanceId lineAsiId = (matchingLineHU != null ? matchingLineHU.getAsiId() : AttributeSetInstanceId.NONE)
 				.orElseIfNone(matchingLine.getAsiId());
@@ -161,7 +165,7 @@ public class ResolveHUCommand
 					.build();
 		}
 
-		throw new AdempiereException("No line found for the given HU QR code");
+		throw new AdempiereException(MobileQRCodeMessages.HU_NOT_IN_INVENTORY);
 	}
 
 	private Attributes getDefaultAttributes()
@@ -175,24 +179,40 @@ public class ResolveHUCommand
 	}
 
 	@Nullable
-	private Attribute getDefaultAttribute(@NonNull AttributeCode attributeCode)
+	private Attribute getDefaultAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return Attribute.of(productService.getAttribute(attributeCode));
 	}
 
 	@NonNull
-	private InventoryLine findFirstMatchingLine(final Predicate<InventoryLine> predicate)
+	private InventoryLine findFirstUncountedMatchingLineForHU(@NonNull final I_M_HU hu)
 	{
-		return lines.stream()
-				.filter(predicate)
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("No line found for the given HU QR code"));
+		final Optional<InventoryLine> uncountedLine = lines.stream()
+				.filter(line -> isLineMatchingHU(line, hu))
+				.findFirst();
+		if (uncountedLine.isPresent())
+		{
+			return uncountedLine.get();
+		}
+		// HU matches a line but it was already counted in this physical inventory
+		final boolean alreadyCounted = allLinesForLocator.stream()
+				.anyMatch(line -> isLineLocatorAndProductMatchingHU(line, hu));
+		if (alreadyCounted)
+		{
+			throw new AdempiereException(MobileQRCodeMessages.HU_ALREADY_COUNTED);
+		}
+		throw new AdempiereException(MobileQRCodeMessages.HU_NOT_IN_INVENTORY);
 	}
 
 	private boolean isLineMatchingHU(final InventoryLine line, final I_M_HU hu)
 	{
 		return !line.isCounted()
-				&& LocatorId.equals(line.getLocatorId(), huCache.getLocatorId(hu))
+				&& isLineLocatorAndProductMatchingHU(line, hu);
+	}
+
+	private boolean isLineLocatorAndProductMatchingHU(final InventoryLine line, final I_M_HU hu)
+	{
+		return LocatorId.equals(line.getLocatorId(), huCache.getLocatorId(hu))
 				&& huCache.getProductIds(hu).contains(line.getProductId());
 	}
 }

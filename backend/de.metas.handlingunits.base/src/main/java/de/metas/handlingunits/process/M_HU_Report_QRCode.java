@@ -48,9 +48,6 @@ public class M_HU_Report_QRCode extends JavaProcess
 	@Param(parameterName = PARAM_AD_Process_ID)
 	private int processId;
 
-	@Param(parameterName = "IsPrintPreview")
-	private boolean isPrintPreview;
-
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
@@ -65,17 +62,29 @@ public class M_HU_Report_QRCode extends JavaProcess
 		}
 		else
 		{
-			final PrintCopies printCopies = getParameters().stream()
-					.filter(processInfoParameter -> IMassPrintingService.PARAM_PrintCopies.equals(processInfoParameter.getParameterName()))
-					.findFirst()
-					.map(ProcessInfoParameter::getParameterAsInt)
-					.filter(nrOfCopies -> nrOfCopies > 0)
-					.map(PrintCopies::ofInt)
-					.orElse(PrintCopies.ONE);
-
-			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, printCopies);
+			huQRCodesService.printForSelectionOfHUIds(selectionId, qrCodeProcessId, getPrintCopies());
 		}
 
 		return MSG_OK;
+	}
+
+	/**
+	 * Reads the print-copies count from the runtime parameters.
+	 *
+	 * <p>Note: PrintCopies is intentionally NOT bound via {@code @Param} because it is NOT a formal
+	 * {@code AD_Process_Para} record in the database. Instead, it is a runtime parameter injected by
+	 * the HU report infrastructure ({@code HUReportProcessInstance.setCopies()}) before the process
+	 * executes. Adding a {@code @Param} binding without a matching {@code AD_Process_Para} would
+	 * cause a silent no-op at injection time and break the copy-count behaviour.
+	 */
+	private PrintCopies getPrintCopies()
+	{
+		return getParameters().stream()
+				.filter(p -> IMassPrintingService.PARAM_PrintCopies.equals(p.getParameterName()))
+				.findFirst()
+				.map(ProcessInfoParameter::getParameterAsInt)
+				.filter(nrOfCopies -> nrOfCopies > 0)
+				.map(PrintCopies::ofInt)
+				.orElse(PrintCopies.ONE);
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.shipper.client.nshift;
 
 import au.com.origin.snapshots.Expect;
+import lombok.NonNull;
 import au.com.origin.snapshots.junit5.SnapshotExtension;
 import de.metas.common.delivery.v1.json.JsonAddress;
 import de.metas.common.delivery.v1.json.JsonContact;
@@ -55,7 +56,8 @@ public class NShiftShipAdvisorServiceTest
 	private static final String ACTOR_ID = System.getProperty("nshift.test.actorId", "nShift portal actorId");
 	private static final String USERNAME = System.getProperty("nshift.test.username", "nShift portal username");
 	private static final String PASSWORD = System.getProperty("nshift.test.password", "nShift portal password");
-	private static final String SHIP_RULE_SERVICE_LEVEL = "Test";
+	private static final String URL = System.getProperty("nshift.test.url", "https://demo.shipmentserver.com:8080");
+	private static final String SHIP_RULE_SERVICE_LEVEL = System.getProperty("nshift.test.serviceLevel", "Test");
 
 	private static final JsonDeliveryAdvisorRequest ADVISOR_REQUEST = JsonDeliveryAdvisorRequest.builder()
 			.id("randomUUID")
@@ -70,6 +72,14 @@ public class NShiftShipAdvisorServiceTest
 					.street("Am Noßbacher Weg")
 					.additionalAddressInfo("")
 					.houseNo("2")
+					.attention("Attention Sender Test")
+					.build())
+			.pickupContact(JsonContact.builder()
+					.name("Test Pickup Contact Name")
+					.department("Test Department")
+					.language("de")
+					.phone("12345678")
+					.emailAddress("noreply@metasfresh.com")
 					.build())
 			.pickupDate("2025-10-02")
 			.pickupTimeFrom("08:00:00")
@@ -86,9 +96,11 @@ public class NShiftShipAdvisorServiceTest
 					.street("Alecsandri")
 					.additionalAddressInfo("")
 					.houseNo("3")
+					.attention("Attention Test")
 					.build())
 			.deliveryContact(JsonContact.builder()
-					.name("Test Contact Name")
+					.name("Test Delivery Contact Name")
+					.department("Test Department")
 					.language("de")
 					.phone("12341234")
 					.emailAddress("noreply@metasfresh.com")
@@ -101,6 +113,8 @@ public class NShiftShipAdvisorServiceTest
 			.item(JsonDeliveryAdvisorRequestItem.builder()
 					.numberOfItems(1)
 					.grossWeightKg(BigDecimal.TEN)
+					.productName("Test Product")
+					.productValue("Test Product Value")
 					.packageDimensions(JsonPackageDimensions.builder()
 							.lengthInCM(100)
 							.widthInCM(20)
@@ -108,16 +122,20 @@ public class NShiftShipAdvisorServiceTest
 							.build())
 					.build())
 			.shipperConfig(JsonShipperConfig.builder()
-					.url("https://demo.shipmentserver.com:8080")
+					.url(URL)
 					.password(PASSWORD)
 					.username(USERNAME)
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.SERVICE_LEVEL, SHIP_RULE_SERVICE_LEVEL)
 					.build())
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
 			.build();
 
 	@Autowired
+	@NonNull
 	private NShiftShipAdvisorService nShiftShipAdvisorService;
+
+	@SuppressWarnings("unused") // injected by SnapshotExtension via reflection
 	private Expect expect;
 
 	@Test

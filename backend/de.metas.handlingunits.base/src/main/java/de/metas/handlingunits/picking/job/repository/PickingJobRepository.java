@@ -17,6 +17,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
+import de.metas.product.ProductId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,10 +39,79 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Owns the picking-job aggregate persistence (M_Picking_Job header + its lines / steps / picked-HUs /
+ * HU-alternatives). Loading and saving of the aggregate is delegated to {@link PickingJobLoaderAndSaver}
+ * (and {@link PickingJobSaver} / {@link PickingJobCreateRepoHelper}); this class also exposes read-only
+ * existence / lookup queries over the same tables.
+ *
+ * Repository Tables: M_Picking_Job, M_Picking_Job_Line, M_Picking_Job_Step, M_Picking_Job_Step_HUAlternative, M_Picking_Job_Step_PickedHU, M_Picking_Job_HUAlternative
+ * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper
+ */
 @Repository
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
+	 * the given shipment schedule AND belongs to an in-progress (not voided/completed) picking job —
+	 * i.e. a picker is actively working on it.
+	 */
+	public boolean existsActivePickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
+	{
+		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotInArrayFilter(
+						I_M_Picking_Job.COLUMNNAME_DocStatus,
+						ImmutableList.of(PickingJobDocStatus.Voided.getCode(), PickingJobDocStatus.Completed.getCode()))
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
+				.create()
+				.anyMatch();
+	}
+
+	/**
+	 * Returns the IDs of all <b>Drafted</b> picking jobs that have a line for one of the given products AND
+	 * one of the given shipment schedules. Used by mass printing to locate pre-existing draft jobs covering the
+	 * demand it is about to pick, so they can be aborted (when abortable) before a new job is created.
+	 * <p>
+	 * The query is scoped to {@code Drafted} via an <i>inclusion</i> filter (rather than excluding
+	 * Voided/Completed): {@link PickingJobDocStatus} has only Drafted/Completed/Voided, so this is
+	 * behaviour-equivalent today but stays correct if a new doc-status is ever added.
+	 */
+	public ImmutableSet<PickingJobId> getDraftedPickingJobIdsByProductsAndSchedules(
+			@NonNull final Set<ProductId> productIds,
+			@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		if (productIds.isEmpty() || scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Product_ID, productIds)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
+				.create()
+				.stream()
+				.map(line -> PickingJobId.ofRepoId(line.getM_Picking_Job_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	public PickingJob createNewAndGet(
 			@NonNull final PickingJobCreateRepoRequest request,
@@ -90,6 +160,7 @@ public class PickingJobRepository
 	{
 		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode());
 
 		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);
@@ -103,6 +174,15 @@ public class PickingJobRepository
 	{
 		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
 				.loadById(pickingJobId);
+	}
+
+	/** Batch-loads the given picking jobs in a single pass. Used by mass-printing's pre-existing-job reconciliation ({@code PickingJobService.abortAbortablePickingJobsForSchedules}) to avoid a per-job load. */
+	public List<PickingJob> getByIds(
+			@NonNull final Set<PickingJobId> pickingJobIds,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices)
+				.loadByIds(pickingJobIds);
 	}
 
 	@NonNull

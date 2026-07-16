@@ -47,6 +47,8 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	RECEIVER_DEPARTMENT(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverDepartment),
 	RECEIVER_CONTACT_FIRSTNAME_AND_LASTNAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverContactLastnameAndFirstname),
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
+	RECEIVER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention),
+	SENDER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention),
 
 	// From parcel
 	PARCEL_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ParcelId),
@@ -55,11 +57,27 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	SHIPPED_QUANTITY(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShippedQuantity),
 	UOM_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UomCode),
 	PRODUCT_NAME(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductName),
+	PRODUCT_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ProductValue),
+	CUSTOMS_TARIFF(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CustomsTariff),
+	COUNTRY_OF_ORIGIN(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CountryOfOrigin),
 	SHIPMENT_ORDER_ITEM_ID(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipmentOrderItemId),
 	UNIT_PRICE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitPrice),
 	TOTAL_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalValue),
-	CURRENCY_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CurrencyCode)
-	;
+	CURRENCY_CODE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_CurrencyCode),
+	UNIT_WEIGHT_KG(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitWeightKg),
+	UNIT_WEIGHT_G(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_UnitWeightG),
+	TOTAL_WEIGHT_KG(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalWeightKg),
+	TOTAL_WEIGHT_G(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_TotalWeightG),
+
+	// From parcel
+	GROSS_WEIGHT_KG(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_GrossWeightKg),
+	GROSS_WEIGHT_G(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_GrossWeightG),
+	PACKAGE_LENGTH_CM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageLengthCm),
+	PACKAGE_LENGTH_MM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageLengthMm),
+	PACKAGE_WIDTH_CM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageWidthCm),
+	PACKAGE_WIDTH_MM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageWidthMm),
+	PACKAGE_HEIGHT_CM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageHeightCm),
+	PACKAGE_HEIGHT_MM(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_PackageHeightMm);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<AttributeValue> index = ReferenceListAwareEnums.index(values());
 

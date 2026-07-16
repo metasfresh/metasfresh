@@ -41,5 +41,7 @@ public class PaymentTermBreak
 	@NonNull SeqNo seqNo;
 
 	int offsetDays;
+
+	public boolean isLetterOfCredit() {return referenceDateType.isLetterOfCreditDate();}
 }
 

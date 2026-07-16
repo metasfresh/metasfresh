@@ -110,6 +110,14 @@ public class M_ShipmentSchedule
 		shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
 	}
 
+	@ModelChange(
+			timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID)
+	public void updateASIFromProjectId(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		shipmentScheduleBL.updateASIFromProjectId(shipmentSchedule);
+	}
+
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.

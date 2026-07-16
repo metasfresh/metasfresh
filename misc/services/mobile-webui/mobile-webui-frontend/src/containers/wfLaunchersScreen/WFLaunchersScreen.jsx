@@ -18,9 +18,13 @@ import { useMobileLocation } from '../../hooks/useMobileLocation';
 import { useLaunchers } from './useLaunchers';
 import { APPLICATION_ID_Distribution } from '../../apps/distribution/constants';
 import DistributionJobsListActions from '../../apps/distribution/containers/DistributionJobsListActions';
+import { APPLICATION_ID_Picking } from '../../apps/picking';
+import PickingJobsListActions from '../../apps/picking/containers/PickingJobsListActions';
+import { useCurrentTrolley } from '../../api/trolley';
+import { toastError } from '../../utils/toast';
 
 const WFLaunchersScreen = () => {
-  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/' });
+  const { history } = useScreenDefinition({ screenId: 'WFLaunchersScreen', back: '/', isHomeStop: true });
   const dispatch = useDispatch();
   const { url, applicationId } = useMobileLocation();
 
@@ -31,14 +35,17 @@ const WFLaunchersScreen = () => {
   const { isWorkplaceLoading, isWorkplaceRequired, workplace, setWorkplaceByQRCode } = useCurrentWorkplace({
     applicationId,
   });
+  const { isTrolleyRequired, isTrolleyLoading, trolley, setTrolleyByScannedCode, clearTrolley } = useCurrentTrolley({
+    applicationId,
+  });
   const filters = useFilters({ applicationId });
   const facets = useFacets({ applicationId });
-  const { isLaunchersLoading, launchers, filterByQRCode } = useLaunchers({
+  const { isLaunchersLoading, launchers, filterByQRCode, actions } = useLaunchers({
     applicationId,
     showFilterByQRCode,
     filters,
     facets,
-    isEnabled: !isWorkplaceLoading,
+    isEnabled: !isWorkplaceLoading && !isTrolleyLoading,
   });
 
   const workplaceName = workplace?.name;
@@ -77,7 +84,6 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkstationByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkstationPlaceholder')}
-          continuousRunning={true}
         />
       </div>
     );
@@ -97,7 +103,27 @@ const WFLaunchersScreen = () => {
         <BarcodeScannerComponent
           onResolvedResult={({ scannedBarcode }) => setWorkplaceByQRCode(scannedBarcode)}
           inputPlaceholderText={trl('components.BarcodeScannerComponent.scanWorkplacePlaceholder')}
-          continuousRunning={true}
+        />
+      </div>
+    );
+  }
+
+  //
+  // Trolley
+  if (isTrolleyLoading) {
+    return (
+      <div className="container launchers-container">
+        <Spinner />
+      </div>
+    );
+  } else if (isTrolleyRequired && !trolley) {
+    return (
+      <div className="container launchers-container">
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) =>
+            setTrolleyByScannedCode(scannedBarcode).catch((axiosError) => toastError({ axiosError }))
+          }
+          inputPlaceholderText={trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
         />
       </div>
     );
@@ -115,6 +141,15 @@ const WFLaunchersScreen = () => {
           testId="filterByQRCode-button"
         />
       )}
+      {isTrolleyRequired && (
+        <ButtonWithIndicator
+          additionalCssClass="action-button"
+          typeFASIconName="fa-solid fa-cart-shopping"
+          caption={trolley?.caption ?? trl('components.BarcodeScannerComponent.scanTrolleyPlaceholder')}
+          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
+          testId="scanTrolley-button"
+        />
+      )}
       {showFilters && (
         <WFLaunchersFilterButton
           filters={filters}
@@ -126,8 +161,9 @@ const WFLaunchersScreen = () => {
       )}
       <br />
       {applicationId === APPLICATION_ID_Distribution && (
-        <DistributionJobsListActions launchers={launchers} disabled={isLaunchersLoading} />
+        <DistributionJobsListActions actions={actions} disabled={isLaunchersLoading} />
       )}
+      {applicationId === APPLICATION_ID_Picking && <PickingJobsListActions />}
       {launchers &&
         launchers.map((launcher, index) => {
           const id = `launcher-${index}-button`;
@@ -146,6 +182,15 @@ const WFLaunchersScreen = () => {
           );
         })}
       {isLaunchersLoading && <Spinner />}
+      {isTrolleyRequired && trolley && (
+        <ButtonWithIndicator
+          captionKey="general.releaseTrolley.buttonCaption"
+          testId="release-trolley-button"
+          isDanger
+          onClick={() => clearTrolley().catch((axiosError) => toastError({ axiosError }))}
+          additionalCssClass="action-button"
+        />
+      )}
     </div>
   );
 };

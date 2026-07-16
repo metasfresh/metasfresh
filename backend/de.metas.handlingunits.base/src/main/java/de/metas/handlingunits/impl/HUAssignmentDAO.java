@@ -2,7 +2,9 @@ package de.metas.handlingunits.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import org.adempiere.ad.table.api.AdTableId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -246,6 +248,16 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 	}
 
 	@Override
+	public List<I_M_HU> retrieveDistinctAssignedTUsForModel(final Object model)
+	{
+		// andCollect uses IN(...) on M_TU_HU_ID, so duplicate TU IDs from sub-assignments are deduplicated naturally.
+		return retrieveTUHUAssignmentsForModelQuery(model)
+				.andCollect(I_M_HU_Assignment.COLUMN_M_TU_HU_ID)
+				.create()
+				.list();
+	}
+
+	@Override
 	public List<I_M_HU_Assignment> retrieveIncludedHUAssignments(final I_M_HU_Assignment assignment)
 	{
 		final IQueryBuilder<I_M_HU_Assignment> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Assignment.class, assignment);
@@ -298,6 +310,37 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
 				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, recordId)
+				.andCollect(I_M_HU_Assignment.COLUMN_M_HU_ID)
+				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Planning)
+				.create()
+				.anyMatch();
+	}
+
+	@Override
+	public boolean hasHUAssignmentsForAnyModel(@NonNull final Collection<?> models)
+	{
+		if (models.isEmpty())
+		{
+			return false;
+		}
+
+		final Object firstModel = models.iterator().next();
+
+		final ICompositeQueryFilter<I_M_HU_Assignment> orFilter = queryBL
+				.createCompositeQueryFilter(I_M_HU_Assignment.class)
+				.setJoinOr();
+		for (final Object model : models)
+		{
+			orFilter.addCompositeQueryFilter()
+					.setJoinAnd()
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, InterfaceWrapperHelper.getModelTableId(model))
+					.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_Record_ID, InterfaceWrapperHelper.getId(model));
+		}
+
+		return queryBL
+				.createQueryBuilder(I_M_HU_Assignment.class, firstModel)
+				.addOnlyActiveRecordsFilter()
+				.filter(orFilter)
 				.andCollect(I_M_HU_Assignment.COLUMN_M_HU_ID)
 				.addNotEqualsFilter(I_M_HU.COLUMNNAME_HUStatus, X_M_HU.HUSTATUS_Planning)
 				.create()
@@ -393,7 +436,7 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		final IQuery<I_M_HU_Assignment> huAssigmentQuery = createHUAssignmentQuery(hu, topLevel, -1);
 
 		final List<I_M_HU_Assignment> list = huAssigmentQuery.list();
-		
+
 		final LinkedHashSet<TableRecordReference> references = new LinkedHashSet<>();
 		for (final I_M_HU_Assignment huAssignment : list)
 		{
@@ -503,5 +546,23 @@ public class HUAssignmentDAO implements IHUAssignmentDAO
 		{
 			alreadySeenHuIds.add(id);
 		}
+	}
+
+	@Override
+	public List<I_M_HU_Assignment> retrieveAssignmentsForHUsAndTable(
+			@NonNull final ImmutableSet<HuId> huIds,
+			@NonNull final AdTableId adTableId)
+	{
+		if (huIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_M_HU_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_M_HU_Assignment.COLUMNNAME_M_HU_ID, huIds)
+				.addEqualsFilter(I_M_HU_Assignment.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.list(I_M_HU_Assignment.class);
 	}
 }

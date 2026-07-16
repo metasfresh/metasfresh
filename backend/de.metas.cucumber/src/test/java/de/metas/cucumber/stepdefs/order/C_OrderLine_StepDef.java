@@ -27,7 +27,7 @@ import de.metas.common.util.StringUtils;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -41,7 +41,8 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Conditions_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
-import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.tax.C_TaxCategory_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersEvaluatee;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
@@ -51,8 +52,12 @@ import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.IOrderLineBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
+import de.metas.project.service.ProjectRepository;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -69,6 +74,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.exceptions.AdempiereException;
@@ -78,9 +84,12 @@ import org.adempiere.mm.attributes.api.Attribute;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_Order_CompensationGroup;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_TaxCategory;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeInstance;
@@ -95,6 +104,7 @@ import org.junit.jupiter.api.Assertions;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -104,7 +114,8 @@ import static de.metas.cucumber.stepdefs.DataTableUtil.NULL_STRING;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.compiere.model.I_C_Order.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_DateOrdered;
 import static org.compiere.model.I_C_OrderLine.COLUMNNAME_M_AttributeSetInstance_ID;
@@ -119,6 +130,8 @@ public class C_OrderLine_StepDef
 	@NonNull private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final ProjectRepository projectsRepo = SpringContextHolder.instance.getBean(ProjectRepository.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final C_BPartner_StepDefData partnerTable;
@@ -134,7 +147,26 @@ public class C_OrderLine_StepDef
 	@NonNull private final M_Warehouse_StepDefData warehouseTable;
 	@NonNull private final IdentifierIds_StepDefData identifierIdsTable;
 	@NonNull private final TestContext restTestContext;
+	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final C_Order_CompensationGroup_StepDefData compGroupTable;
 
+	/**
+	 * Creates {@code C_OrderLine} records for an existing {@code C_Order}.
+	 * <p>
+	 * Required columns: {@code C_Order_ID} (identifier-ref), {@code M_Product_ID} (identifier-ref), {@code QtyEntered}.<br>
+	 * Selected optional columns:
+	 * <ul>
+	 *   <li>{@code DatePromised} (optional) — per-line promised/delivery date; when set, this line's delivery date
+	 *       (and therefore its derived {@code PreparationDate}) is taken from it instead of the order header's
+	 *       {@code DatePromised}. Parsed as a local date in the order line's org time zone.</li>
+	 *   <li>{@code PreparationDate} (optional) — normally NOT set here: the model interceptor derives it from the
+	 *       line's delivery date so the line always mirrors the shipment schedule's initial {@code PreparationDate}.
+	 *       A value set here is overwritten by that derivation whenever {@code DatePromised}/{@code PresetDateShipped}
+	 *       change. Preparation-date overrides belong on {@code M_ShipmentSchedule.PreparationDate_Override}. Parsed as
+	 *       a local date in the order line's org time zone.</li>
+	 *   <li>{@code Price} (optional) — sets a manual price on the line</li>
+	 * </ul>
+	 */
 	@Given("metasfresh contains C_OrderLines:")
 	public void metasfresh_contains_c_order_lines(@NonNull final DataTable dataTable)
 	{
@@ -166,6 +198,10 @@ public class C_OrderLine_StepDef
 		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_ID)
 				.map(partnerTable::getId)
 				.ifPresent(bpartnerId -> orderLine.setC_BPartner_ID(bpartnerId.getRepoId()));
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> orderLine.setC_BPartner_Vendor_ID(vendorBPartnerId.getRepoId()));
 
 		final String flatrateConditionsIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(flatrateConditionsIdentifier))
@@ -229,11 +265,35 @@ public class C_OrderLine_StepDef
 					orderLine.setPriceActual(price);
 				});
 
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setDatePromised(TimeUtil.asTimestamp(datePromised, orderLineZoneId));
+				});
+
+		tableRow.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId orderLineZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					orderLine.setPreparationDate(TimeUtil.asTimestamp(preparationDate, orderLineZoneId));
+				});
+
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Description)
 				.ifPresent(orderLine::setDescription);
 
 		tableRow.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
 				.ifPresent(orderLine::setExternalId);
+
+		tableRow.getAsOptionalIdentifier(COLUMNNAME_C_Project_ID)
+				.map(projectTable::get)
+				.map(projectTable::extractIdFromRecord)
+				.map(ProjectId::getRepoId)
+				.ifPresent(orderLine::setC_Project_ID);
+
+		tableRow.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID)
+				.ifPresent(compGroupIdentifier -> {
+					final I_C_Order_CompensationGroup compGroup = compGroupTable.get(compGroupIdentifier);
+					orderLine.setC_Order_CompensationGroup_ID(compGroup.getC_Order_CompensationGroup_ID());
+				});
 
 		saveRecord(orderLine);
 
@@ -304,6 +364,11 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates {@code C_OrderLine} records. The line is located by {@code (C_Order_ID, M_Product_ID, QtyOrdered)},
+	 * then every present column is asserted (each column is an optional assertion). The date columns
+	 * ({@code DateOrdered}, {@code DatePromised}) are compared as a start-of-day {@code Timestamp}.
+	 */
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
@@ -329,6 +394,8 @@ public class C_OrderLine_StepDef
 
 					validateOrderLine(orderLineRecord, row);
 
+					restTestContext.setIntVariableFromRow(row, orderLineRecord::getC_OrderLine_ID);
+
 					row.getAsOptionalIdentifier()
 							.ifPresent(identifier -> orderLineTable.putOrReplaceIfSameId(identifier, orderLineRecord));
 				});
@@ -345,6 +412,42 @@ public class C_OrderLine_StepDef
 					validateOrderLine(orderLine, row);
 
 				});
+	}
+
+	/**
+	 * Polling variant of {@code validate C_OrderLine:} — retries the same assertion loop until it
+	 * passes or {@code maxWaitSec} elapses. Useful when an async listener (e.g.
+	 * {@code UpdateSalesOrderFromPurchaseOrderProjectListener}) needs time to push a value onto the
+	 * SO line after the originating PO completes.
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And after not more than 30s, validate C_OrderLine:
+	 *   | C_OrderLine_ID | C_Project_ID |
+	 *   | sol_dw4_1      | proj1        |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, validate C_OrderLine:$")
+	public void validate_C_OrderLine_polling(final int maxWaitSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final long deadline = System.currentTimeMillis() + (long) maxWaitSec * 1000L;
+		while (true)
+		{
+			try
+			{
+				validate_C_OrderLine(dataTable);
+				return;
+			}
+			catch (final AssertionError e)
+			{
+				if (System.currentTimeMillis() >= deadline)
+				{
+					throw new AssertionError("Polling validate C_OrderLine still failing after " + maxWaitSec + "s. "
+							+ "Last assertion failure: " + e.getMessage(), e);
+				}
+				Thread.sleep(1000L);
+			}
+		}
 	}
 
 	@And("update C_OrderLine:")
@@ -415,6 +518,13 @@ public class C_OrderLine_StepDef
 				orderLine.setM_AttributeSetInstance_ID(asiId);
 			}
 
+			final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				orderLine.setC_Project_ID(project.getC_Project_ID());
+			}
+
 			saveRecord(orderLine);
 
 			orderLineTable.putOrReplace(olIdentifier, orderLine);
@@ -432,24 +542,80 @@ public class C_OrderLine_StepDef
 	@And("load C_Order from C_OrderLine")
 	public void loadC_Order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> table = dataTable.asMaps();
-		for (final Map<String, String> row : table)
-		{
-			loadC_Order(row);
-		}
+		DataTableRows.of(dataTable)
+						.forEach(this::loadC_Order);
+
 	}
 
-	private void loadC_Order(@NonNull final Map<String, String> row)
+	private void loadC_Order(@NonNull final DataTableRow row)
 	{
-		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
-		assertThat(orderLine).isNotNull();
+		final I_C_OrderLine orderLine = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID).lookupNotNullIn(orderLineTable);
 
 		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
 		assertThat(orderRecord).isNotNull();
 
-		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-		orderTable.putOrReplace(orderIdentifier, orderRecord);
+		orderTable.putOrReplace(row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID), orderRecord);
+	}
+
+	/**
+	 * Loads all {@link I_C_OrderLine} records that belong to the given order and registers each one
+	 * in {@link C_OrderLine_StepDefData} under the provided {@code C_OrderLine_ID.Identifier} value.
+	 * Useful when the order lines were auto-created (e.g. auto-PO from a dropship SO) and were not
+	 * explicitly set up in the feature file.
+	 *
+	 * <p>Each DataTable row must supply:</p>
+	 * <ul>
+	 *   <li>{@code C_Order_ID} (required) — identifier of the order whose lines to load
+	 *       (must have been registered previously in {@link C_Order_StepDefData})</li>
+	 *   <li>{@code C_OrderLine_ID} (required) — identifier under which the <em>first matching</em> line
+	 *       will be registered; when {@code M_Product_ID} is also provided only lines for that product
+	 *       are considered, otherwise the first line of the order is used</li>
+	 *   <li>{@code M_Product_ID} (optional) — restricts the search to lines with this product</li>
+	 * </ul>
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code C_Order_ID} — required, references a previously registered order</li>
+	 *     <li>{@code C_OrderLine_ID} — required, identifier under which the loaded line is registered</li>
+	 *     <li>{@code M_Product_ID} — optional, filter by product</li>
+	 *   </ul>
+	 * @cucumber.example
+	 * <pre>
+	 * And load C_OrderLines from C_Order:
+	 *   | C_Order_ID | C_OrderLine_ID | OPT.M_Product_ID |
+	 *   | po_dw9     | pol_dw9_1      | product_dw       |
+	 * </pre>
+	 */
+	@And("load C_OrderLines from C_Order:")
+	public void loadC_OrderLinesFromC_Order(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID)
+				.forEach(this::loadC_OrderLineFromC_Order);
+	}
+
+	private void loadC_OrderLineFromC_Order(@NonNull final DataTableRow row)
+	{
+		final I_C_Order order = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID).lookupNotNullIn(orderTable);
+
+		final IQueryBuilder<I_C_OrderLine> queryBuilder = queryBL.createQueryBuilderOutOfTrx(I_C_OrderLine.class)
+				.addEqualsFilter(I_C_OrderLine.COLUMNNAME_C_Order_ID, order.getC_Order_ID());
+
+		row.getAsOptionalIdentifier(COLUMNNAME_M_Product_ID)
+				.ifPresent(productIdentifier -> {
+					final ProductId productId = productTable.getIdOptional(productIdentifier)
+							.orElseGet(() -> productIdentifier.getAsId(ProductId.class));
+					queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, productId.getRepoId());
+				});
+
+		final List<I_C_OrderLine> lines = queryBuilder.create().list(I_C_OrderLine.class);
+		assertThat(lines).as("Expected at least one C_OrderLine for order %s", order.getC_Order_ID()).isNotEmpty();
+
+		// Register the first matching line under the given identifier
+		final I_C_OrderLine firstLine = lines.get(0);
+		final StepDefDataIdentifier lineIdentifier = row.getAsIdentifier(I_C_OrderLine.COLUMNNAME_C_OrderLine_ID);
+		orderLineTable.putOrReplace(lineIdentifier, firstLine);
 	}
 
 	@Given("metasfresh contains C_OrderLine expecting error:")
@@ -477,6 +643,7 @@ public class C_OrderLine_StepDef
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
+		final String identifierStr = row.getAsIdentifier().getAsString();
 		final SoftAssertions softly = new SoftAssertions();
 
 		final String uomBPartner355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_UOM_BPartner_ID + "." + X12DE355.class.getSimpleName());
@@ -529,6 +696,19 @@ public class C_OrderLine_StepDef
 		row.getAsOptionalLocalDateTimestamp(I_C_OrderLine.COLUMNNAME_DateOrdered)
 				.ifPresent(dateOrdered -> softly.assertThat(orderLine.getDateOrdered()).as(COLUMNNAME_DateOrdered).isEqualTo(dateOrdered));
 
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_DatePromised)
+				.ifPresent(datePromised -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getDatePromised(), zoneId)).as(I_C_OrderLine.COLUMNNAME_DatePromised).isEqualTo(datePromised);
+				});
+
+		// per-line picking-date override (null => derived from the delivery date)
+		row.getAsOptionalLocalDate(I_C_OrderLine.COLUMNNAME_PreparationDate)
+				.ifPresent(preparationDate -> {
+					final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(orderLine.getAD_Org_ID()));
+					softly.assertThat(TimeUtil.asLocalDate(orderLine.getPreparationDate(), zoneId)).as(I_C_OrderLine.COLUMNNAME_PreparationDate).isEqualTo(preparationDate);
+				});
+
 		final Optional<StepDefDataIdentifier> taxCategoryIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_C_TaxCategory_ID);
 		if (taxCategoryIdentifier.isPresent())
 		{
@@ -540,6 +720,12 @@ public class C_OrderLine_StepDef
 
 		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_Order_ID)
 				.ifPresent(orderIdentifier -> softly.assertThat(orderLine.getC_Order_ID()).as("C_Order_ID").isEqualTo(orderTable.get(orderIdentifier).getC_Order_ID()));
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_C_BPartner_Vendor_ID)
+				.map(partnerTable::getId)
+				.ifPresent(vendorBPartnerId -> softly.assertThat(orderLine.getC_BPartner_Vendor_ID())
+						.as("C_BPartner_Vendor_ID for Identifier=%s", identifierStr)
+						.isEqualTo(vendorBPartnerId.getRepoId()));
 
 		row.getAsOptionalBigDecimal("qtydelivered")
 				.ifPresent(qtyDelivered -> softly.assertThat(orderLine.getQtyDelivered()).as("QtyDelivered").isEqualByComparingTo(qtyDelivered));
@@ -644,6 +830,12 @@ public class C_OrderLine_StepDef
 			softly.assertThat(huPiItemProduct.getM_HU_PI_Item_Product_ID()).isEqualTo(orderLineHU.getM_HU_PI_Item_Product_ID());
 		}
 
+		row.getAsOptionalBigDecimal(de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU)
+				.ifPresent(qtyEnteredTU -> {
+					final de.metas.handlingunits.model.I_C_OrderLine orderLineHU = InterfaceWrapperHelper.load(orderLine.getC_OrderLine_ID(), de.metas.handlingunits.model.I_C_OrderLine.class);
+					softly.assertThat(orderLineHU.getQtyEnteredTU()).as("QtyEnteredTU").isEqualByComparingTo(qtyEnteredTU);
+				});
+
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_QtyReserved);
 		if (qtyReserved != null)
 		{
@@ -655,6 +847,38 @@ public class C_OrderLine_StepDef
 		{
 			final TaxId taxId = taxTable.getId(taxIdentifier);
 			softly.assertThat(orderLine.getC_Tax_ID()).isEqualTo(taxId.getRepoId());
+		}
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_ExternalId)
+				.ifPresent(externalId -> softly.assertThat(orderLine.getExternalId()).isEqualTo(externalId));
+
+		row.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsWithoutCharge)
+				.ifPresent(isWithoutCharge -> softly.assertThat(orderLine.isWithoutCharge()).as("IsWithoutCharge").isEqualTo(isWithoutCharge));
+
+		row.getAsOptionalString(I_C_OrderLine.COLUMNNAME_Reason)
+				.ifPresent(reason -> softly.assertThat(orderLine.getReason()).as("Reason").isEqualTo(DataTableUtil.nullToken2Null(reason)));
+
+		final StepDefDataIdentifier projectIdentifier = row.getAsIdentifierOrNull(COLUMNNAME_C_Project_ID);
+		if (projectIdentifier != null)
+		{
+			if (projectIdentifier.isNullPlaceholder())
+			{
+				softly.assertThat(orderLine.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isLessThanOrEqualTo(0);
+			}
+			else if (projectTable.isPresent(projectIdentifier))
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				softly.assertThat(orderLine.getC_Project_ID()).as("C_Project_ID for Identifier=%s", identifierStr).isEqualTo(project.getC_Project_ID());
+			}
+			else if (orderLine.getC_Project_ID() > 0)
+			{
+				final I_C_Project project = projectsRepo.getById(ProjectId.ofRepoId(orderLine.getC_Project_ID()));
+				projectTable.put(projectIdentifier, project);
+			}
+			else
+			{
+				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", orderLine.getC_Order_ID());
+			}
 		}
 
 		softly.assertAll();

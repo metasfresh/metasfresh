@@ -93,6 +93,12 @@ public class M_Inventory
 		}
 	}
 
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_COMPLETE)
+	public void setReceivedDateOnInventoryHUs(@NonNull final I_M_Inventory inventoryRecord)
+	{
+		inventoryService.setReceivedDateOnInventoryHUs(inventoryRecord);
+	}
+
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REVERSECORRECT)
 	public void beforeReverseCorrect(final I_M_Inventory inventoryRecord)
 	{

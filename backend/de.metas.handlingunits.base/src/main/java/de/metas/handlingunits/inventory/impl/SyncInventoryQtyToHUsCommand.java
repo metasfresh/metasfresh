@@ -32,12 +32,17 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InventoryLine;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
+import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.impl.PlainProductStorage;
 import de.metas.inventory.HUAggregationType;
 import de.metas.inventory.InventoryAndLineId;
 import de.metas.inventory.InventoryAndLineIdSet;
+import de.metas.inventory.InventoryDocSubType;
 import de.metas.inventory.InventoryId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -87,6 +92,7 @@ public class SyncInventoryQtyToHUsCommand
 	private final InventoryRepository inventoryRepository;
 	private final SourceHUsService sourceHUsService;
 	private final HUQRCodesService huQRCodesService;
+	private final HULabelService huLabelService;
 
 	private final Inventory inventory;
 
@@ -99,12 +105,14 @@ public class SyncInventoryQtyToHUsCommand
 			@NonNull final InventoryRepository inventoryRepository,
 			@NonNull final SourceHUsService sourceHUsService,
 			@NonNull final HUQRCodesService huQRCodesService,
+			@NonNull final HULabelService huLabelService,
 			//
 			@NonNull final Inventory inventory)
 	{
 		this.inventoryRepository = inventoryRepository;
 		this.sourceHUsService = sourceHUsService;
 		this.huQRCodesService = huQRCodesService;
+		this.huLabelService = huLabelService;
 		this.inventory = inventory;
 	}
 
@@ -358,10 +366,12 @@ public class SyncInventoryQtyToHUsCommand
 				huQRCodesService.assign(inventoryLineHU.getHuQRCode(), createdHUIds);
 			}
 
-			sourceHUsService.addSourceHUMarkerIfCarringComponents(
+			sourceHUsService.addSourceHUMarkerIfCarryingComponents(
 					createdHUIds,
 					inventoryLine.getProductId(),
 					inventoryLine.getLocatorId().getWarehouseId());
+
+			printHULabelsIfNeeded(createdHUs);
 
 			final ArrayList<InventoryLineHU> result = new ArrayList<>(createdHUs.size());
 			for (final I_M_HU createdHU : createdHUs)
@@ -383,6 +393,21 @@ public class SyncInventoryQtyToHUsCommand
 		{
 			return ImmutableList.of(inventoryLineHU);
 		}
+	}
+
+	private void printHULabelsIfNeeded(final List<I_M_HU> createdHUs)
+	{
+		final InventoryDocSubType inventoryDocSubType = InventoryDocSubType.of(inventory.getDocBaseAndSubType());
+		if (!inventoryDocSubType.isActualPhysicalInventory()) {return;}
+		
+		huLabelService.print(
+				HULabelPrintRequest.builder()
+						.sourceDocType(HULabelSourceDocType.Inventory)
+						.hus(HUToReportWrapper.ofList(createdHUs))
+						.onlyIfAutoPrint(true)
+						.failOnMissingLabelConfig(false)
+						.build()
+		);
 	}
 
 	private I_M_InventoryLine getInventoryLineRecordFor(final @NotNull InventoryLine inventoryLine)

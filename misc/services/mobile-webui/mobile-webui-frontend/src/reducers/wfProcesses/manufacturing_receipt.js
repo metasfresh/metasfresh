@@ -17,9 +17,6 @@ export const manufacturingReducer = ({ draftState, action }) => {
     case types.UPDATE_MANUFACTURING_TU_RECEIPT_TARGET: {
       return reduceOnUpdateTUReceiptTarget(draftState, action.payload);
     }
-    case types.UPDATE_MANUFACTURING_RECEIPT_QTY: {
-      return reduceOnUpdateQtyReceived(draftState, action.payload);
-    }
     default: {
       return draftState;
     }
@@ -92,28 +89,10 @@ const getAggregateToTU = ({ tuTarget }) => {
   };
 };
 
-const reduceOnUpdateQtyReceived = (draftState, { wfProcessId, activityId, lineId, qtyReceived }) => {
-  if (qtyReceived > 0) {
-    const draftWFProcess = draftState[wfProcessId];
-    const draftActivityLine = getLineByIdFromWFProcess(draftWFProcess, activityId, lineId);
-
-    draftActivityLine.qtyReceived = qtyReceived;
-
-    updateLineStatusAndRollup({
-      draftWFProcess,
-      activityId,
-      lineId,
-    });
-  }
-
-  return draftState;
-};
-
 const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftLine.completeStatus = computeLineStatus(draftLine);
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
@@ -194,6 +173,7 @@ registerHandler({
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
+    draftActivityDataStored.readAttributes = fromActivity.componentProps.readAttributes ?? [];
     return draftActivityDataStored;
   },
 });

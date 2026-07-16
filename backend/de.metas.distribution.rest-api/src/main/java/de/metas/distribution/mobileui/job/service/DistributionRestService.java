@@ -10,6 +10,8 @@ import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepositor
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
 import de.metas.distribution.mobileui.external_services.warehouse.DistributionWarehouseService;
+import de.metas.distribution.mobileui.external_services.warehouse.NextPickFromLocatorResolver;
+import de.metas.distribution.mobileui.job.service.commands.switch_pick_from_locator.DistributionJobSwitchPickFromLocatorCommand;
 import de.metas.distribution.mobileui.job.model.DistributionJob;
 import de.metas.distribution.mobileui.job.model.DistributionJobId;
 import de.metas.distribution.mobileui.job.model.DistributionJobLine;
@@ -23,8 +25,10 @@ import de.metas.distribution.mobileui.rest_api.json.JsonDistributionEvent;
 import de.metas.distribution.mobileui.rest_api.json.JsonDropAllRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineRequest;
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -33,9 +37,12 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.LocatorId;
+import org.adempiere.warehouse.qrcode.LocatorQRCode;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Service
@@ -51,6 +58,7 @@ public class DistributionRestService
 	@NonNull private final DistributionHUService huService;
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
+	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -122,6 +130,22 @@ public class DistributionRestService
 		return new DistributionJobLoader(loadingSupportServices);
 	}
 
+	public DistributionJob switchPickFromLocatorToNext(
+			@NonNull final DistributionJobId jobId,
+			@NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+
+		return DistributionJobSwitchPickFromLocatorCommand.builder()
+				.trxManager(trxManager)
+				.loadingSupportServices(loadingSupportServices)
+				.nextLocatorResolver(nextPickFromLocatorResolver)
+				.jobId(jobId)
+				.build()
+				.execute();
+	}
+
 	public DistributionJob processEvent(@NonNull final JsonDistributionEvent event, @NonNull final UserId callerId)
 	{
 		final DistributionJobId jobId = DistributionJobId.ofWFProcessId(WFProcessId.ofString(event.getWfProcessId()));
@@ -132,9 +156,11 @@ public class DistributionRestService
 		{
 			return DistributionJobPickFromCommand.builder()
 					.trxManager(trxManager)
+					.warehouseService(warehouseService)
 					.huService(huService)
 					.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
 					.loadingSupportServices(loadingSupportServices)
+					.userId(callerId)
 					.job(job)
 					.lineId(event.getLineId())
 					.stepId(event.getDistributionStepId())
@@ -145,7 +171,6 @@ public class DistributionRestService
 		{
 			return newDropToCommand()
 					.userId(callerId)
-					.onlyJobId(jobId)
 					.onlyJobId(jobId)
 					.onlyStepId(event.getDistributionStepId())
 					.dropToQRCode(event.getDropToNonNull().getQrCode())
@@ -172,8 +197,14 @@ public class DistributionRestService
 
 	public void dropAll(final JsonDropAllRequest request, final UserId callerId)
 	{
+		final MobileUIDistributionConfig config = getConfig();
+		final LocatorId inTransitLocatorId = config.isRequireTrolley()
+				? warehouseService.getTrolleyByUserId(callerId).map(LocatorQRCode::getLocatorId).orElse(null)
+				: null;
+
 		newDropToCommand()
 				.userId(callerId)
+				.inTransitLocatorId(inTransitLocatorId)
 				.dropToQRCode(request.getDropToQRCode())
 				.completeJobsIfFullyMoved(true)
 				.build().execute();
@@ -203,7 +234,11 @@ public class DistributionRestService
 
 		final DDOrderId ddOrderId = job.getDdOrderId();
 		ddOrderService.close(ddOrderId);
-		ddOrderService.print(ddOrderId);
+
+		if (configRepository.getConfig().isPrintDDOrderOnComplete())
+		{
+			ddOrderService.print(ddOrderId);
+		}
 
 		return getJobById(ddOrderId);
 	}
@@ -237,7 +272,7 @@ public class DistributionRestService
 		final DistributionJob job = getJobById(jobId);
 		job.assertCanEdit(callerId);
 
-		final HUQRCode huQRCode = HUQRCode.fromScannedCode(request.getHuQRCode()); // expect already valid HUQRCode
+		final HUQRCode huQRCode = huService.resolveHUQRCode(request.getHuQRCode());
 
 		final ProductId productId;
 		if (request.getProductScannedCode() != null)
@@ -261,9 +296,31 @@ public class DistributionRestService
 			nextEligiblePickFromLineId = job.getNextEligiblePickFromLineId(productId).orElse(null);
 		}
 
+		// Only needed when there's a line to pick into: the mobile UI caps the proposed move-qty to
+		// min(scanned-HU-available-qty, line-remaining). Skip the HU storage read for the no-line case.
+		BigDecimal qtyAvailableBD = null;
+		if (nextEligiblePickFromLineId != null)
+		{
+			final HuId huId = huService.getHuIdByQRCode(huQRCode);
+			qtyAvailableBD = huService.getProductQuantityIfAny(huId, productId)
+					.map(qty -> qty.toBigDecimal())
+					.orElse(null);
+		}
+
 		return JsonGetNextEligiblePickFromLineResponse.builder()
 				.lineId(nextEligiblePickFromLineId)
+				.qtyAvailable(qtyAvailableBD)
 				.build();
 	}
 
+	public void printMaterialInTransitReport(
+			@NonNull final UserId userId,
+			@NonNull final String adLanguage)
+	{
+		@NonNull final LocatorId inTransitLocatorId = warehouseService.getTrolleyByUserId(userId)
+				.map(LocatorQRCode::getLocatorId)
+				.orElseThrow(() -> new AdempiereException("No trolley found for user: " + userId));
+
+		ddOrderMoveScheduleService.printMaterialInTransitReport(inTransitLocatorId, adLanguage);
+	}
 }

@@ -433,6 +433,7 @@ public class ADWindowDAO implements IADWindowDAO
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_InternalName)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Description)
 				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_Help)
+				.addTargetColumnNameToSkip(I_AD_Window.COLUMNNAME_EntityType) // preserve the entity type set by user
 				.setFrom(sourceWindow)
 				.setTo(targetWindow)
 				.copy();
@@ -441,7 +442,8 @@ public class ADWindowDAO implements IADWindowDAO
 
 		save(targetWindow);
 
-		copyWindowTrl(targetWindowId, sourceWindowId);
+		// no need to copy translations, because we are using the AD_Window.AD_Element_ID so the right translations are already in place
+		// copyWindowTrl(targetWindowId, sourceWindowId);
 
 		copyTabs(targetWindow, sourceWindow);
 	}

@@ -1,14 +1,15 @@
 package de.metas.distribution.mobileui.job.model;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleId;
 import de.metas.distribution.mobileui.external_services.sourcedoc.ManufacturingOrderRef;
 import de.metas.distribution.mobileui.external_services.sourcedoc.PlantInfo;
 import de.metas.distribution.mobileui.external_services.sourcedoc.SalesOrderRef;
+import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.MixedQuantity;
 import de.metas.quantity.Quantity;
@@ -23,12 +24,10 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -51,6 +50,7 @@ public class DistributionJob
 	private final boolean isClosed;
 	@Nullable private final SalesOrderRef salesOrderRef;
 	@Nullable private final ManufacturingOrderRef manufacturingOrderRef;
+	@NonNull private final ITranslatableString pickingInstruction;
 	private final boolean allowPickingAnyHU;
 	@NonNull private final ImmutableList<DistributionJobLine> lines;
 
@@ -58,22 +58,23 @@ public class DistributionJob
 
 	@Builder(toBuilder = true)
 	private DistributionJob(
-			final @NonNull DistributionJobId id,
-			final @NonNull String documentNo,
-			final @NonNull SeqNo seqNo,
-			final @NonNull BPartnerId customerId,
-			final @NonNull ZonedDateTime dateRequired,
-			final @NonNull ZonedDateTime pickDate,
-			final @NonNull WarehouseInfo pickFromWarehouse,
-			final @NonNull WarehouseInfo dropToWarehouse,
-			final @Nullable PlantInfo plantInfo,
-			final @NonNull String priority,
-			final @Nullable UserId responsibleId,
+			@NonNull final DistributionJobId id,
+			@NonNull final String documentNo,
+			@NonNull final SeqNo seqNo,
+			@NonNull final BPartnerId customerId,
+			@NonNull final ZonedDateTime dateRequired,
+			@NonNull final ZonedDateTime pickDate,
+			@NonNull final WarehouseInfo pickFromWarehouse,
+			@NonNull final WarehouseInfo dropToWarehouse,
+			@Nullable final PlantInfo plantInfo,
+			@NonNull final String priority,
+			@Nullable final UserId responsibleId,
 			final boolean isClosed,
-			final @Nullable SalesOrderRef salesOrderRef,
-			final @Nullable ManufacturingOrderRef manufacturingOrderRef,
+			@Nullable final SalesOrderRef salesOrderRef,
+			@Nullable final ManufacturingOrderRef manufacturingOrderRef,
+			@Nullable final ITranslatableString pickingInstruction,
 			final boolean allowPickingAnyHU,
-			final @NonNull List<DistributionJobLine> lines)
+			@NonNull final List<DistributionJobLine> lines)
 	{
 		this.id = id;
 		this.documentNo = documentNo;
@@ -89,6 +90,7 @@ public class DistributionJob
 		this.isClosed = isClosed;
 		this.salesOrderRef = salesOrderRef;
 		this.manufacturingOrderRef = manufacturingOrderRef;
+		this.pickingInstruction = pickingInstruction != null ? pickingInstruction : TranslatableStrings.empty();
 		this.allowPickingAnyHU = allowPickingAnyHU;
 		this.lines = ImmutableList.copyOf(lines);
 
@@ -97,6 +99,11 @@ public class DistributionJob
 
 	public void assertCanEdit(final UserId userId)
 	{
+		// A closed job can no longer be edited, even by its responsible user (guards the in-flight-edit race).
+		if (isClosed)
+		{
+			throw new AdempiereException("Cannot edit " + this + " because it is closed");
+		}
 		if (!UserId.equals(this.responsibleId, userId))
 		{
 			throw new AdempiereException("Cannot edit " + this + " because it is not assigned to " + userId);
@@ -163,21 +170,6 @@ public class DistributionJob
 				.orElseThrow(() -> new AdempiereException("No line found for " + stepId));
 	}
 
-	public DistributionJobStep getStepById(@NonNull final DistributionJobStepId stepId)
-	{
-		return getStepByIdIfExists(stepId)
-				.orElseThrow(() -> new AdempiereException("No step found for " + stepId));
-	}
-
-	@NonNull
-	private Optional<DistributionJobStep> getStepByIdIfExists(final @NotNull DistributionJobStepId stepId)
-	{
-		return lines.stream()
-				.map(line -> line.getStepById(stepId).orElse(null))
-				.filter(Objects::nonNull)
-				.findFirst();
-	}
-
 	@Nullable
 	public String getPlantName()
 	{
@@ -187,14 +179,6 @@ public class DistributionJob
 	public Stream<DistributionJobStep> streamSteps()
 	{
 		return lines.stream().flatMap(line -> line.getSteps().stream());
-	}
-
-	public ImmutableSet<DDOrderMoveScheduleId> getInTransitScheduleIds()
-	{
-		return streamSteps()
-				.filter(DistributionJobStep::isInTransit)
-				.map(DistributionJobStep::getScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public boolean isFullyMoved()
@@ -216,6 +200,30 @@ public class DistributionJob
 				.collect(GuavaCollectors.singleElementOrNull());
 	}
 
+	@NonNull
+	public LocatorId getSinglePickFromLocatorId()
+	{
+		final LocatorId locatorId = getSinglePickFromLocatorIdOrNull();
+		if (locatorId == null)
+		{
+			throw new AdempiereException("No single pick-from locator for " + this);
+		}
+		return locatorId;
+	}
+
+	public Optional<LocatorInfo> getSinglePickFromLocator()
+	{
+		return lines.stream()
+				.map(DistributionJobLine::getPickFromLocator)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrEmpty());
+	}
+
+	public boolean canSwitchPickFromLocator()
+	{
+		return getSinglePickFromLocatorIdOrNull() != null;
+	}
+
 	@Nullable
 	public LocatorId getSingleDropToLocatorIdOrNull()
 	{
@@ -223,6 +231,14 @@ public class DistributionJob
 				.map(DistributionJobLine::getDropToLocatorId)
 				.distinct()
 				.collect(GuavaCollectors.singleElementOrNull());
+	}
+
+	public Optional<LocatorInfo> getSingleDropToLocator()
+	{
+		return lines.stream()
+				.map(DistributionJobLine::getDropToLocator)
+				.distinct()
+				.collect(GuavaCollectors.singleElementOrEmpty());
 	}
 
 	@Nullable
@@ -237,12 +253,15 @@ public class DistributionJob
 	@Nullable
 	public Quantity getSingleUnitQuantityOrNull()
 	{
+		// Sum every line's qty (no .distinct(): two lines with an equal qty+UOM must both count,
+		// otherwise the caption under-reports the total).
 		final MixedQuantity qty = lines.stream()
 				.map(DistributionJobLine::getQtyToMove)
-				.distinct()
 				.collect(MixedQuantity.collectAndSum());
 
-		return qty.toNoneOrSingleValue().orElse(null);
+		// A distribution job whose lines span multiple UOMs has no single caption quantity;
+		// resolve to null (rendered as blank) instead of throwing, so the launcher still loads.
+		return qty.toSingleValueOrNull();
 	}
 
 	public Optional<DistributionJobLineId> getNextEligiblePickFromLineId(@NonNull final ProductId productId)

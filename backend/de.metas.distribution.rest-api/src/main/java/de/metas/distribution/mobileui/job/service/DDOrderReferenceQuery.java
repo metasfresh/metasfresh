@@ -12,6 +12,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Value
 @Builder
@@ -20,7 +21,9 @@ public class DDOrderReferenceQuery
 	@NonNull UserId responsibleId;
 	@NonNull @Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
 	@NonNull @Default DistributionFacetIdsCollection activeFacetIds = DistributionFacetIdsCollection.EMPTY;
+	boolean excludeAlreadyStarted;
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;
-	@Nullable WarehouseId warehouseToId;
-	@Nullable LocatorId locatorToId;
+	@Nullable WarehouseId workplaceWarehouseId;
+	@Nullable LocatorId workplacePickFromLocatorId;
+	@Nullable Set<LocatorId> excludeLocatorToIds;
 }

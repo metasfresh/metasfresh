@@ -1,4 +1,4 @@
-import { page } from '../../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { BarcodeScannerComponent } from '../../../components/BarcodeScannerComponent';
@@ -9,7 +9,7 @@ const containerElement = () => page.locator('#RawMaterialIssueLineScanScreen');
 
 export const RawMaterialIssueLineScanScreen = {
     waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     expectVisible: async () => await test.step(`${NAME} - Expect screen to be displayed`, async () => {

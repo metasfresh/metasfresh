@@ -15,12 +15,14 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -160,9 +162,16 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	private static final String ATTRIBUTE_ASI = "asi";
 
 	private final boolean excludeBOMProducts;
+	private final boolean isFallbackToBasePricelist;
+	@Nullable
+	private final SOTrx restrictByOrderType;
 
 	@Getter
 	private final int searchStringMinLength;
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
@@ -173,7 +182,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final AvailableForSaleAdapter availableForSaleAdapter,
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist,
+			@Nullable final SOTrx restrictByOrderType)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -189,8 +200,10 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AvailableStockDate, param_M_Warehouse_ID, param_AD_Org_ID, param_AD_Client_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
+		this.restrictByOrderType = restrictByOrderType;
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -198,7 +211,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String bpartnerParamName,
 			@NonNull final String pricingDateParamName,
 			final boolean hideDiscontinued,
-			final boolean excludeBOMProducts)
+			final boolean excludeBOMProducts,
+			final Boolean isFallbackToBasePricelist,
+			@Nullable final SOTrx restrictByOrderType)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -213,8 +228,9 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
+		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
+		this.restrictByOrderType = restrictByOrderType;
 	}
 
 	@Override
@@ -525,12 +541,19 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			return;
 		}
 
-		final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
-		final List<PriceListVersionId> allPriceListVersionIds = priceListsRepo.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		final List<PriceListVersionId> relevantPriceListVersionIds;
+		if (isFallbackToBasePricelist)
+		{
+			relevantPriceListVersionIds = priceListDAO.getPriceListVersionIdsUpToBase(priceListVersionId, getEffectivePricingDate(evalCtx));
+		}
+		else
+		{
+			relevantPriceListVersionIds = ImmutableList.of(priceListVersionId);
+		}
 
 		sqlWhereClause.append("\n AND EXISTS (")
 				.append("SELECT 1 FROM " + I_M_ProductPrice.Table_Name + " pp WHERE pp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
-				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(allPriceListVersionIds, sqlWhereClauseParams::collectAll))
+				.append(" AND pp.").append(I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID).append(" IN ").append(DB.buildSqlList(relevantPriceListVersionIds, sqlWhereClauseParams::collectAll))
 				.append(" AND pp.IsActive=").append(sqlWhereClauseParams.placeholder(true))
 				.append(")");
 	}
@@ -665,6 +688,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
@@ -772,6 +796,29 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM + "=").append(sqlWhereClauseParams.placeholder(false));
 	}
 
+	private void appendFilterByOrderType(
+			@NonNull final StringBuilder sqlWhereClause,
+			@NonNull final SqlParamsCollector sqlWhereClauseParams,
+			@NonNull final LookupDataSourceContext evalCtx)
+	{
+		if (restrictByOrderType == null)
+		{
+			return;
+		}
+		final ClientId clientId = ClientId.ofRepoId(param_AD_Client_ID.getValueAsInteger(evalCtx));
+		final OrgId orgId = OrgId.ofRepoId(param_AD_Org_ID.getValueAsInteger(evalCtx));
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
+		final String flagColumn = restrictByOrderType.isSales() ? org.compiere.model.I_M_Product.COLUMNNAME_IsSold : org.compiere.model.I_M_Product.COLUMNNAME_IsPurchased;
+		sqlWhereClause.append("\n AND EXISTS (")
+				.append("SELECT 1 FROM " + org.compiere.model.I_M_Product.Table_Name + " mp")
+				.append(" WHERE mp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
+				.append(" AND mp.").append(flagColumn).append("=").append(sqlWhereClauseParams.placeholder(true))
+				.append(")");
+	}
+
 	@Nullable
 	private PriceListVersionId getPriceListVersionId(final LookupDataSourceContext evalCtx)
 	{
@@ -782,13 +829,13 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		final ZonedDateTime date = getEffectivePricingDate(evalCtx);
-		return Services.get(IPriceListDAO.class).retrievePriceListVersionIdOrNull(priceListId, date);
+		return priceListDAO.retrievePriceListVersionIdOrNull(priceListId, date);
 	}
 
-	@Nullable
+	@NonNull
 	private ZonedDateTime getEffectivePricingDate(@NonNull final LookupDataSourceContext evalCtx)
 	{
-		return CoalesceUtil.coalesceSuppliers(
+		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> param_PricingDate.getValueAsZonedDateTime(evalCtx),
 				SystemTime::asZonedDateTime);
 	}
@@ -886,7 +933,6 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private String getAvailableStockQueryActivatedInSysConfig()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final int clientId = Env.getAD_Client_ID(Env.getCtx());
 		final int orgId = Env.getAD_Org_ID(Env.getCtx());
 
@@ -927,7 +973,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 	{
 		final Properties ctx = Env.getCtx();
 
-		return Services.get(ISysConfigBL.class).getBooleanValue(
+		return sysConfigBL.getBooleanValue(
 				SYSCONFIG_DISPLAY_AVAILABILITY_INFO_ONLY_IF_POSITIVE,
 				true,
 				Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
@@ -973,7 +1019,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private boolean isFullTextSearchEnabled()
 	{
-		final boolean disabled = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
+		final boolean disabled = sysConfigBL.getBooleanValue(SYSCONFIG_DisableFullTextSearch, false);
 		return !disabled;
 	}
 

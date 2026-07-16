@@ -52,6 +52,8 @@ import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
+import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Goods_Type_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.Carrier_Product_StepDefData;
@@ -69,6 +71,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
@@ -76,14 +79,22 @@ import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
+import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
+
+import java.time.ZoneId;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
+import io.cucumber.java.en.When;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -105,12 +116,14 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
 
@@ -148,6 +161,7 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL = Services.get(IShipmentScheduleInvalidateBL.class);
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
 
 	@NonNull private final AD_User_StepDefData userTable;
@@ -165,6 +179,8 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
+	@NonNull private final C_Project_StepDefData projectTable;
+	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 
 	private final TestContext testContext;
 
@@ -176,6 +192,25 @@ public class M_ShipmentSchedule_StepDef
 
 	/**
 	 * Match the shipment scheds and load them with their identifier into the shipmentScheduleTable.
+	 */
+	/**
+	 * Poll for M_ShipmentSchedule records created via order completion. Waits up to N seconds.
+	 * Queries by C_OrderLine_ID and optional filters, stores found schedules in M_ShipmentSchedule_StepDefData.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias to store the found schedule under<br>
+	 *   <b>C_OrderLine_ID</b> — (required, identifier-ref) order line that created this schedule<br>
+	 *   <b>Warehouse_ID</b> — (optional, identifier-ref) filter by warehouse<br>
+	 *   <b>QtyToDeliver</b> — (optional) filter by qty to deliver<br>
+	 *   <b>IsToRecompute</b> — (optional) expected recompute flag<br>
+	 * @cucumber.depends StepDefData: C_OrderLine_StepDefData, M_ShipmentSchedule_StepDefData, M_Warehouse_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, M_ShipmentSchedules are found:
+	 *   | Identifier           | C_OrderLine_ID | IsToRecompute |
+	 *   | shipmentSchedule_1   | orderLine_1    | N             |
+	 * </pre>
 	 */
 	@Then("^after not more than (.*)s, M_ShipmentSchedules are found:$")
 	public void loadShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
@@ -275,6 +310,27 @@ public class M_ShipmentSchedule_StepDef
 				.isTrue();
 	}
 
+	/**
+	 * Generate shipment(s) synchronously for the given shipment schedule. Waits until the schedule is valid, then generates.
+	 * Stores the generated M_InOut under the M_InOut_ID identifier (if provided).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) schedule alias; comma-separated to combine multiple schedules into one shipment call<br>
+	 *   <b>M_Picking_Job_Schedule_ID</b> — (optional, identifier-ref) workstation assignment to ship via; when set, the shipment is
+	 *     generated for the (shipment-schedule, job-schedule) pair and the job schedule is closed out ({@code Processed=Y}),
+	 *     mirroring the production close-out where shipment generation closes the workstation assignment<br>
+	 *   <b>quantityTypeToUse</b> — (optional) D (delivery) or O (ordered); default: BOTH<br>
+	 *   <b>isCompleteShipment</b> — (optional) true/false; default: true<br>
+	 *   <b>M_InOut_ID</b> — (optional) alias to store the generated shipment; comma-separated for multiple<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, M_Picking_Job_Schedule_StepDefData, M_InOut_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And shipment is generated for the following shipment schedule
+	 *   | M_ShipmentSchedule_ID   | M_InOut_ID |
+	 *   | ss_product, ss_product2 | shipment_1 |
+	 * </pre>
+	 */
 	@And("shipment is generated for the following shipment schedule")
 	public void generateShipmentForSchedule(@NonNull final DataTable dataTable)
 	{
@@ -301,6 +357,34 @@ public class M_ShipmentSchedule_StepDef
 				.forEach(this::alterShipmentSchedule);
 	}
 
+	/**
+	 * Validate shipment schedule quantities after async recompute. Waits for the schedule to become valid (not in recompute queue).
+	 * Polls and re-reads the record, then validates quantities using SoftAssertions.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) alias from M_ShipmentSchedule_StepDefData<br>
+	 *   <b>QtyOrdered</b> — (optional) expected ordered quantity<br>
+	 *   <b>QtyReserved</b> — (optional) expected reserved quantity<br>
+	 *   <b>QtyToDeliver</b> — (optional) expected qty to deliver<br>
+	 *   <b>QtyToDeliver_Override</b> — (optional) expected override qty<br>
+	 *   <b>QtyPickList</b> — (optional) expected picked quantity<br>
+	 *   <b>QtyDelivered</b> — (optional) expected delivered quantity<br>
+	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
+	 *   <b>Processed</b> — (optional) true/false<br>
+	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>PreparationDate</b> — (optional) expected per-line base preparation date, as a plain calendar date
+	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
+	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
+	 *     as a plain calendar date compared in the order's time zone<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, validate shipment schedules:
+	 *   | M_ShipmentSchedule_ID | QtyOrdered | QtyDelivered | QtyToDeliver |
+	 *   | shipmentSchedule_1    | 100        | 0            | 100          |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, validate shipment schedules:$")
 	public void validateShipmentSchedules(final int timeoutSec, @NonNull final DataTable dataTable)
 	{
@@ -309,17 +393,25 @@ public class M_ShipmentSchedule_StepDef
 				.forEach(row -> validateShipmentSchedule(timeoutSec, row));
 	}
 
+	/**
+	 * Invalidates all listed shipment schedules in a single batch call so that the background processor
+	 * picks them all up in the same recompute run. This is important when scenarios depend on FIFO
+	 * allocation across multiple schedules competing for the same stock: if each schedule were
+	 * invalidated in a separate call the processor might recompute them in independent batches,
+	 * each refreshing available-stock from the DB and thus both seeing the full on-hand quantity.
+	 */
 	@And("recompute shipment schedules")
 	public void recompute_shipment_schedules(@NonNull final DataTable dataTable)
 	{
+		final ImmutableSet.Builder<ShipmentScheduleId> ids = ImmutableSet.builder();
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> row : tableRows)
 		{
 			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
-
-			shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ImmutableSet.of(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID())));
+			ids.add(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()));
 		}
+		shipmentScheduleInvalidateRepository.invalidateShipmentSchedules(ids.build());
 	}
 
 	@And("^after not more than (.*)s, shipment schedule is recomputed$")
@@ -505,6 +597,14 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
+	@When("^the M_ShipmentSchedule identified by (.*) is deactivated$")
+	public void deactivate_M_ShipmentSchedule(@NonNull final String shipmentScheduleIdentifier)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		schedule.setIsActive(false);
+		saveRecord(schedule);
+	}
+
 	private void validateNoShipmentScheduleCreatedForOrder(@NonNull final OrderId orderId)
 	{
 		final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
@@ -577,19 +677,40 @@ public class M_ShipmentSchedule_StepDef
 
 	public void generateShipmentForSchedule(@NonNull final DataTableRow row) throws InterruptedException
 	{
-		final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+		final ImmutableSet<ShipmentScheduleId> scheduleIds = row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.toCommaSeparatedList()
+				.stream()
+				.map(id -> id.lookupNotNullIdIn(shipmentScheduleTable))
+				.collect(ImmutableSet.toImmutableSet());
 		final M_ShipmentSchedule_QuantityTypeToUse qtyTypeToUse = row.getAsOptionalEnum("quantityTypeToUse", M_ShipmentSchedule_QuantityTypeToUse.class).orElse(M_ShipmentSchedule_QuantityTypeToUse.TYPE_BOTH);
 		final boolean isCompleteShipment = row.getAsOptionalBoolean("isCompleteShipment").orElseTrue();
 
-		waitUntilValid(60, ImmutableSet.of(shipmentScheduleId));
+		waitUntilValid(60, scheduleIds);
 
-		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(
-				GenerateShipmentsForSchedulesRequest.builder()
-						.shipmentScheduleIds(ImmutableSet.of(shipmentScheduleId))
-						.quantityTypeToUse(qtyTypeToUse)
-						.isCompleteShipment(isCompleteShipment)
-						.build()
-		);
+		// When a workstation assignment is given, ship via the (shipment-schedule, job-schedule) pair and close the
+		// assignment out — this is the production close-out: GenerateInOutFromShipmentSchedules.closeSchedules() marks
+		// the linked M_Picking_Job_Schedule as Processed=Y once the shipment is generated.
+		final PickingJobScheduleId jobScheduleId = row.getAsOptionalIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(pickingJobScheduleTable))
+				.orElse(null);
+
+		final GenerateShipmentsForSchedulesRequest.GenerateShipmentsForSchedulesRequestBuilder requestBuilder = GenerateShipmentsForSchedulesRequest.builder()
+				.quantityTypeToUse(qtyTypeToUse)
+				.isCompleteShipment(isCompleteShipment);
+
+		if (jobScheduleId != null)
+		{
+			final ShipmentScheduleId shipmentScheduleId = scheduleIds.iterator().next();
+			requestBuilder
+					.scheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(ShipmentScheduleAndJobScheduleId.of(shipmentScheduleId, jobScheduleId)))
+					.isCloseShipmentSchedules(true);
+		}
+		else
+		{
+			requestBuilder.shipmentScheduleIds(scheduleIds);
+		}
+
+		final Set<InOutId> inOutIds = shipmentService.generateShipmentsForScheduleIds(requestBuilder.build());
 
 		final List<StepDefDataIdentifier> shipmentIdentifiers = row.getAsOptionalIdentifier(I_M_InOut.COLUMNNAME_M_InOut_ID)
 				.map(StepDefDataIdentifier::toCommaSeparatedList)
@@ -607,15 +728,17 @@ public class M_ShipmentSchedule_StepDef
 		}
 	}
 
-	private void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
+	public void alterShipmentSchedule(@NonNull final DataTableRow tableRow)
 	{
 		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(tableRow.getAsIdentifier());
 
+		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override).ifPresent(shipmentScheduleRecord::setQtyOrdered_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliver_Override);
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliverCatch_Override).ifPresent(shipmentScheduleRecord::setQtyToDeliverCatch_Override);
 		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override).ifPresent(shipmentScheduleRecord::setPreparationDate_Override);
 		tableRow.getAsOptionalIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Shipper_ID)
 				.ifPresent(identifier -> shipmentScheduleRecord.setM_Shipper_ID(ShipperId.toRepoId(identifier.lookupIdIn(shipperTable))));
+		tableRow.getAsOptionalInstantTimestamp(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate_Override).ifPresent(shipmentScheduleRecord::setDeliveryDate_Override);
 
 		saveRecord(shipmentScheduleRecord);
 	}
@@ -832,6 +955,31 @@ public class M_ShipmentSchedule_StepDef
 		tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking)
 				.ifPresent(expected -> softly.assertThat(shipmentSchedule.getQtyScheduledForPicking()).as("QtyScheduledForPicking").isEqualTo(expected));
 
+		// Delivery stop flag propagated from M_Shipment_Constraint (gh#28631)
+		tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsDeliveryStop)
+				.ifPresent(expected -> softly.assertThat(shipmentSchedule.isDeliveryStop()).as("IsDeliveryStop for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(expected));
+
+		// Compare the schedule's per-line dates at DATE granularity in the order's time zone — these are date fields,
+		// and a plain date in the feature (e.g. 2022-08-10) means "that calendar day in the org tz", not UTC midnight.
+		final ZoneId scheduleZoneId = orgDAO.getTimeZone(OrgId.ofRepoId(shipmentSchedule.getAD_Org_ID()));
+
+		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_PreparationDate)
+				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getPreparationDate(), scheduleZoneId))
+						.as("PreparationDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(expected));
+
+		tableRow.getAsOptionalLocalDate(I_M_ShipmentSchedule.COLUMNNAME_DeliveryDate)
+				.ifPresent(expected -> softly.assertThat(TimeUtil.asLocalDate(shipmentSchedule.getDeliveryDate(), scheduleZoneId))
+						.as("DeliveryDate for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier)
+						.isEqualTo(expected));
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			softly.assertThat(shipmentSchedule.getC_Project_ID()).as("C_Project_ID for M_ShipmentSchedule_ID.Identifier=%s", shipmentScheduleIdentifier).isEqualTo(project.getC_Project_ID());
+		}
+
 		softly.assertAll();
 	}
 
@@ -934,7 +1082,9 @@ public class M_ShipmentSchedule_StepDef
 
 	private void logWorkPackageProgressForShipmentSchedule(@NonNull final DataTableRow row)
 	{
-		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).orElse(null);
+		final StepDefDataIdentifier shipmentScheduleIdentifier = row.getAsOptionalIdentifier(COLUMNNAME_M_ShipmentSchedule_ID)
+				.map(id -> id.toCommaSeparatedList().get(0)) // support comma-separated; use first for logging context
+				.orElse(null);
 		if (shipmentScheduleIdentifier == null)
 		{
 			logger.info("No shipment schedule identifier present --> Cannot log work package progress!");

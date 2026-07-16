@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.config.mobileui;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.util.OptionalBoolean;
 import lombok.Builder;
@@ -28,6 +29,9 @@ public class PickingJobOptions
 	boolean isAllowCompletingPartialPickingJob;
 	boolean isShowLastPickedBestBeforeDateForLines;
 	boolean isAnonymousPickHUsOnTheFly;
+	@NonNull OptionalBoolean pickingSlotRequired;
+	/** When {@code true}, the picker is warned before confirming a pick whose HU best-before date undercuts the delivery date threshold. */
+	boolean isWarnShelfLifeUndercut;
 	@NonNull OptionalBoolean displayPickingSlotSuggestions;
 	@NonNull CreateShipmentPolicy createShipmentPolicy;
 	@NonNull OptionalBoolean completeJobAutomatically;
@@ -49,6 +53,8 @@ public class PickingJobOptions
 			final boolean isAllowCompletingPartialPickingJob,
 			final boolean isShowLastPickedBestBeforeDateForLines,
 			final boolean isAnonymousPickHUsOnTheFly,
+			@Nullable final OptionalBoolean pickingSlotRequired,
+			final boolean isWarnShelfLifeUndercut,
 			@Nullable final OptionalBoolean displayPickingSlotSuggestions,
 			@NonNull final CreateShipmentPolicy createShipmentPolicy,
 			@Nullable final OptionalBoolean completeJobAutomatically,
@@ -68,6 +74,8 @@ public class PickingJobOptions
 		this.isAllowCompletingPartialPickingJob = isAllowCompletingPartialPickingJob;
 		this.isShowLastPickedBestBeforeDateForLines = isShowLastPickedBestBeforeDateForLines;
 		this.isAnonymousPickHUsOnTheFly = isAnonymousPickHUsOnTheFly;
+		this.pickingSlotRequired = pickingSlotRequired != null ? pickingSlotRequired : OptionalBoolean.UNKNOWN;
+		this.isWarnShelfLifeUndercut = isWarnShelfLifeUndercut;
 		this.displayPickingSlotSuggestions = displayPickingSlotSuggestions != null ? displayPickingSlotSuggestions : OptionalBoolean.FALSE;
 		this.createShipmentPolicy = createShipmentPolicy;
 		this.completeJobAutomatically = completeJobAutomatically != null ? completeJobAutomatically : OptionalBoolean.UNKNOWN;
@@ -84,10 +92,17 @@ public class PickingJobOptions
 		final PickingJobOptions newValue = toBuilder()
 				.allowedPickToStructures(this.allowedPickToStructures.fallbackTo(fallback.allowedPickToStructures))
 				.pickAttributes(this.pickAttributes.fallbackTo(fallback.pickAttributes))
+				.pickingSlotRequired(this.pickingSlotRequired.ifUnknown(fallback.getPickingSlotRequired()))
 				.displayPickingSlotSuggestions(this.displayPickingSlotSuggestions.ifUnknown(fallback.getDisplayPickingSlotSuggestions()))
 				.completeJobAutomatically(this.completeJobAutomatically.ifUnknown(fallback.getCompleteJobAutomatically()))
 				.build();
 
 		return Objects.equals(this, newValue) ? this : newValue;
+	}
+
+	@JsonIgnore
+	public boolean isPickingSlotRequired()
+	{
+		return getPickingSlotRequired().orElse(true);
 	}
 }

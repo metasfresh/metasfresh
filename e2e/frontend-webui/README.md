@@ -12,7 +12,7 @@ This test suite provides end-to-end testing for the metasfresh web UI, following
 - ✅ Automatic error detection (error toasts)
 - ✅ Backend API integration for test data
 - ✅ Trace recording and video capture
-- ✅ HTML and JUnit reporting
+- ✅ HTML, JUnit, and Allure reporting
 
 ## Prerequisites
 
@@ -25,15 +25,28 @@ Before running the tests, ensure you have:
 
 ### Enable Backend Test API
 
-Run this SQL to enable the test API:
+The backend needs to have the `frontend.testing` system property enabled. There are two ways to do this:
 
-```sql
-INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, Name, Value, Description)
-VALUES (0, 0, 'frontend.testing', 'Y', 'Enable frontend testing API')
-ON CONFLICT (Name) DO UPDATE SET Value = 'Y';
+**Option 1: Using mf-docker e2e-stack (Recommended)**
+
+If you're using the `mf-docker` skill's e2e-stack script, this is already configured for you:
+
+```bash
+# Start the E2E stack (frontend.testing is already enabled)
+./path/to/mf-docker-script start-e2e-stack
 ```
 
-Verify the endpoint is accessible:
+**Option 2: Manual Configuration**
+
+Start the app server with the system property:
+
+```bash
+java -Dfrontend.testing=Y -jar your-app-server.jar
+```
+
+Or add it to your application startup configuration.
+
+**Verify the endpoint is accessible:**
 
 ```bash
 curl -X POST http://localhost:8080/rest/api/v2/frontendTesting \
@@ -43,15 +56,22 @@ curl -X POST http://localhost:8080/rest/api/v2/frontendTesting \
 
 ## Installation
 
-```bash
-cd frontend-webui-testing
+First, navigate to the test directory and install all dependencies:
 
-# Install dependencies
+```bash
+cd e2e/frontend-webui
+
+# Install all dependencies including:
+# - Playwright test framework
+# - Allure CLI tool for viewing test reports
+# - Test utilities and helpers
 npm install
 
-# Install Chromium browser
+# Install Chromium browser for running tests
 npx playwright install chromium
 ```
+
+**Note:** The `npm install` command installs the Allure CLI tool automatically, so you don't need to install it separately.
 
 ## Running Tests
 
@@ -71,6 +91,41 @@ npm run test:debug
 # View HTML report
 npm run test:report
 ```
+
+## Viewing Test Results with Allure
+
+This test suite integrates with Allure reporting for enhanced test reports. After running tests, you can view results using Allure.
+
+**Prerequisites:** Make sure you've installed all dependencies with `npm install` (this includes the Allure CLI tool).
+
+```bash
+# Serve Allure report directly from test results (recommended)
+npm run allure:serve
+
+# Or generate a static HTML report and open it
+npm run allure:generate
+npm run allure:open
+```
+
+### Allure Report Features
+
+The Allure report provides:
+- **Test execution timeline** - See when tests ran and how long they took
+- **Test categorization** - Tests grouped by features and suites
+- **Detailed test steps** - Step-by-step breakdown of each test
+- **Failure analysis** - Stack traces, screenshots, and error details
+- **Trends and history** - Track test stability over time
+- **Attachments** - Screenshots, videos, and traces for failed tests
+
+### Allure Commands
+
+| Command | Description |
+|---------|-------------|
+| `npm run allure:serve` | Start local server and open report in browser (uses `allure-results/`) |
+| `npm run allure:generate` | Generate static HTML report to `allure-report/` directory |
+| `npm run allure:open` | Open previously generated report in browser |
+
+**Note:** `allure:serve` is the quickest way to view results as it doesn't require generating static files first.
 
 ## Configuration
 
@@ -282,11 +337,20 @@ The test suite is configured for CI/CD:
 
 ### Tests fail with "frontend.testing API not enabled"
 
-Ensure the backend system config is set:
+Ensure the backend is started with the `frontend.testing` system property enabled:
 
-```sql
-UPDATE AD_SysConfig SET Value = 'Y' WHERE Name = 'frontend.testing';
+```bash
+java -Dfrontend.testing=Y -jar your-app-server.jar
 ```
+
+Or use the mf-docker e2e-stack script which has this pre-configured.
+
+### Allure commands fail with "Command not found"
+
+If you get an error like "Unknown Syntax Error: Command not found" when running Allure commands:
+
+1. Make sure you've run `npm install` to install all dependencies (including the Allure CLI)
+2. Try running `npm install` again if you installed dependencies before the Allure CLI was added to package.json
 
 ### Tests fail with "Cannot find window.config"
 

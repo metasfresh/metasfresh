@@ -22,21 +22,26 @@
 
 package de.metas.inoutcandidate.api;
 
+import de.metas.externalsystem.ExternalSystemIdWithExternalIds;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
 public class ReceiptScheduleQuery
 {
-	@NonNull OrgId orgId;
-	@NonNull AttributesKey attributesKey;
-	@NonNull ProductId productId;
-	@NonNull WarehouseId warehouseId;
+	@Nullable OrgId orgId;
+	@Nullable AttributesKey attributesKey;
+	@Nullable ProductId productId;
+	@Nullable WarehouseId warehouseId;
+	@Nullable ExternalSystemIdWithExternalIds externalSystemIdWithExternalIds;
+	@Nullable OrderLineId orderLineId;
 	@Builder.Default boolean onlyNonZeroQty = false;
 }

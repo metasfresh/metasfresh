@@ -28,7 +28,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.X_AD_WF_Node;
-import org.eevolution.api.BOMIssueMethod;
+import org.eevolution.api.BOMComponentIssueMethod;
 
 import javax.annotation.Nullable;
 
@@ -41,14 +41,14 @@ public enum RawMaterialsIssueStrategy implements ReferenceListAwareEnum
 	@Getter
 	private final String code;
 
-	public boolean applies(@Nullable final BOMIssueMethod issueMethod)
+	public boolean applies(@Nullable final BOMComponentIssueMethod issueMethod)
 	{
 		switch (this)
 		{
 			case DEFAULT:
 				return true;
 			case AssignedHUsOnly:
-				return BOMIssueMethod.Planning == issueMethod;
+				return issueMethod != null && issueMethod.isIssueOnlyForReceived();
 			default:
 				throw new AdempiereException("RawMaterialsIssueStrategy not supported!")
 						.appendParametersToMessage()

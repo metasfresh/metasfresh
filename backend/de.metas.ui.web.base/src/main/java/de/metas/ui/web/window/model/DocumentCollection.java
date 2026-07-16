@@ -86,6 +86,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Component
@@ -599,6 +600,66 @@ public class DocumentCollection
 		}
 	}
 
+	/**
+	 * Decides whether the cached root document should be evicted when one of its children gets
+	 * invalidated.
+	 *
+	 * <p>Historically this was gated purely on {@link DocumentToInvalidate#isInvalidateDocument()},
+	 * which the dispatcher only sets for whole-table invalidations. For a specific child-record
+	 * invalidation (the common case when a single child row is inserted/updated/deleted
+	 * externally), the gate stays false and the cached parent keeps its in-memory state.
+	 *
+	 * <p>That is fine for a happy-path parent — the child collection is flagged stale and the
+	 * frontend refreshes it on its own. It is NOT fine when the cached parent is in error state,
+	 * because a child-state change is a strong signal that the condition that produced the error
+	 * may now be gone. Without this escape hatch, the sticky error (and its potentially huge
+	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
+	 * reset with {@code forgetNotSavedDocuments=true}.
+	 *
+	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
+	 * {@link Document} (which is final and has a non-trivial constructor).
+	 *
+	 * <p>The unsaved-new-included-document guard (evaluated last) takes precedence over
+	 * {@code callerRequestedFullInvalidation}: we never discard in-memory work-in-progress, even on an
+	 * explicit full-invalidation request — so this method can return {@code false} despite
+	 * {@code callerRequestedFullInvalidation == true}.
+	 *
+	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
+	 *                                          would lose it entirely
+	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
+	 *                                          included document whose work would be lost on eviction. Evaluated
+	 *                                          lazily — only when the root would otherwise be evicted — because it
+	 *                                          walks the included collections and is wasted on the happy path.
+	 */
+	static boolean shouldInvalidateRootOnChildInvalidation(
+			final boolean callerRequestedFullInvalidation,
+			final boolean rootHasSaveError,
+			final boolean rootValidStatusIsValid,
+			final boolean rootIsNew,
+			@NonNull final BooleanSupplier rootHasUnsavedNewIncludedDocument)
+	{
+		// Never evict a new (not-yet-persisted) root — we would lose it entirely and the user would
+		// get a 404 with the document vanished from his browser.
+		if (rootIsNew)
+		{
+			return false;
+		}
+
+		// Would we evict at all? (cheap checks)
+		final boolean wouldInvalidate = callerRequestedFullInvalidation
+				|| rootHasSaveError
+				|| !rootValidStatusIsValid;
+		if (!wouldInvalidate)
+		{
+			return false;
+		}
+
+		// We would evict — but never discard a root that still owns an unsaved, new, in-memory included
+		// document: that work would be lost and the next read-only load would 404. Checked last and
+		// lazily because it walks the included collections.
+		return !rootHasUnsavedNewIncludedDocument.getAsBoolean();
+	}
+
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -649,7 +710,12 @@ public class DocumentCollection
 				// Invalidate the root document
 				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
 				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
-				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
+				if (shouldInvalidateRootOnChildInvalidation(
+						documentToInvalidate.isInvalidateDocument(),
+						rootDocument.getSaveStatus().isError(),
+						rootDocument.getValidStatus().isValid(),
+						rootDocument.isNew(),
+						rootDocument::hasUnsavedNewIncludedDocuments))
 				{
 					rootDocuments.invalidate(rootDocumentKey);
 				}

@@ -407,6 +407,19 @@ public final class GuavaCollectors
 		return Collector.of(supplier, accumulator, combiner, finisher);
 	}
 
+	public static <T> Collector<T, ?, Optional<T>> singleElementOrEmpty()
+	{
+		final Supplier<List<T>> supplier = ArrayList::new;
+		final BiConsumer<List<T>, T> accumulator = List::add;
+		final BinaryOperator<List<T>> combiner = (l, r) -> {
+			l.addAll(r);
+			return l;
+		};
+		final Function<List<T>, Optional<T>> finisher = list -> Optional.ofNullable(list.size() == 1 ? list.get(0) : null);
+
+		return Collector.of(supplier, accumulator, combiner, finisher);
+	}
+
 	@Nullable
 	public static <T> Collector<T, ?, T> noneOrSingleElementOrThrow(@NonNull final Supplier<? extends RuntimeException> exceptionSupplier)
 	{

@@ -1,0 +1,1 @@
+Method <de.metas.document.refid.api.impl.ReferenceNoBL.linkReferenceNo(org.compiere.model.PO, de.metas.document.refid.api.IReferenceNoGeneratorInstance)> calls method <org.adempiere.model.InterfaceWrapperHelper.save(java.lang.Object)> in (ReferenceNoBL.java:79)

@@ -32,14 +32,13 @@ import de.metas.common.delivery.v1.json.request.JsonShipperConfig;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponseItem;
 import de.metas.common.util.Check;
-import de.metas.shipper.client.nshift.json.JsonAddress;
+import de.metas.common.util.StringUtils;
 import de.metas.shipper.client.nshift.json.JsonAddressKind;
 import de.metas.shipper.client.nshift.json.JsonDetail;
 import de.metas.shipper.client.nshift.json.JsonDetailGroup;
 import de.metas.shipper.client.nshift.json.JsonDetailRow;
 import de.metas.shipper.client.nshift.json.JsonLabelType;
 import de.metas.shipper.client.nshift.json.JsonLine;
-import de.metas.shipper.client.nshift.json.JsonReference;
 import de.metas.shipper.client.nshift.json.JsonPackage;
 import de.metas.shipper.client.nshift.json.JsonShipmentData;
 import de.metas.shipper.client.nshift.json.JsonShipmentOptions;
@@ -69,7 +68,7 @@ public class NShiftShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(NShiftShipmentService.class);
 	private static final String CREATE_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/Shipments";
-	private static final int LINE_REFERENCE_KIND_TRACKING_URL = 147;
+	private static final String DRAFT_SHIPMENT_ENDPOINT = "/ShipServer/{ID}/SaveShipment";
 
 	@NonNull private final NShiftRestClient restClient;
 
@@ -78,8 +77,10 @@ public class NShiftShipmentService
 		try
 		{
 			logger.debug("Creating shipment for request: {}", deliveryRequest);
+			final boolean isDraftShipmentOnly = StringUtils.toBoolean(deliveryRequest.getShipperConfig().getAdditionalPropertyNotNull(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY));
+			final String endpoint = isDraftShipmentOnly ? DRAFT_SHIPMENT_ENDPOINT : CREATE_SHIPMENT_ENDPOINT;
 			final JsonShipmentRequest requestBody = buildShipmentRequest(deliveryRequest);
-			final JsonShipmentResponse response = restClient.post(CREATE_SHIPMENT_ENDPOINT, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
+			final JsonShipmentResponse response = restClient.post(endpoint, requestBody, deliveryRequest.getShipperConfig(), JsonShipmentResponse.class);
 
 			logger.debug("Successfully received nShift response: {}", response);
 			return buildJsonDeliveryResponse(response, deliveryRequest);
@@ -99,8 +100,7 @@ public class NShiftShipmentService
 	{
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
-				//.requiredDeliveryDate()
-				.validatePostCode(true)
+				.trackingURL(true)
 				.build();
 
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
@@ -119,15 +119,11 @@ public class NShiftShipmentService
 		final NShiftMappingConfigs mappingConfigs = NShiftMappingConfigs.ofJson(deliveryRequest.getMappingConfigs());
 
 		// Add Addresses
-		dataBuilder.address(NShiftUtil.buildNShiftAddressBuilder(deliveryRequest.getPickupAddress(), JsonAddressKind.SENDER)
-				.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION, deliveryRequest::getValue))
-				.build());
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getPickupAddress(), deliveryRequest.getPickupContact(), JsonAddressKind.SENDER, mappingConfigs, deliveryRequest::getValue));
 
-		final JsonAddress.JsonAddressBuilder receiverAddressBuilder = NShiftUtil.buildNShiftReceiverAddress(
-				deliveryRequest.getDeliveryAddress(),
-				deliveryRequest.getDeliveryContact());
-		receiverAddressBuilder.attention(mappingConfigs.getSingleValue(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION, deliveryRequest::getValue));
-		dataBuilder.address(receiverAddressBuilder.build());
+		dataBuilder.address(NShiftUtil.buildAddressWithAttentionFromMappings(
+				deliveryRequest.getDeliveryAddress(), deliveryRequest.getDeliveryContact(), JsonAddressKind.RECEIVER, mappingConfigs, deliveryRequest::getValue));
 
 		dataBuilder.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE, deliveryRequest::getValue));
 
@@ -198,7 +194,7 @@ public class NShiftShipmentService
 		final JsonGoodsType goodsType = Check.assumeNotNull(deliveryRequest.getGoodsType(), "No Goods Type found for %s", deliveryRequest);
 
 		final Function<String, Optional<String>> valueProvider =
-				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
+				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 		final Function<String, String> finalValueProvider = attributeValue -> valueProvider.apply(attributeValue).orElse(null);
 
 		return JsonLine.builder()
@@ -224,13 +220,13 @@ public class NShiftShipmentService
 
 		// This provider is for evaluating mapping rules, which might depend on parcel or request data.
 		final Function<String, Optional<String>> parcelAndRequestProvider =
-				withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
+				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
 
 		for (final de.metas.common.delivery.v1.json.request.JsonDeliveryOrderLineContents content : deliveryLine.getContents())
 		{
 			// This full valueProviderChain is for resolving the detail values, which can come from content, parcel, or request.
 			final Function<String, Optional<String>> valueProviderChain =
-					withFallback(content::getValue, parcelAndRequestProvider);
+					NShiftUtil.withFallback(content::getValue, parcelAndRequestProvider);
 
 			final Function<String, String> finalValueProvider = attributeValue -> valueProviderChain.apply(attributeValue).orElse(null);
 
@@ -246,8 +242,16 @@ public class NShiftShipmentService
 
 				if (!details.isEmpty())
 				{
+					 // eDekGoodsLineNo
+					final JsonDetailRow.JsonDetailRowBuilder builder = JsonDetailRow.builder()
+							.lineNo(lineNo)
+							.details(details);
+					if(groupKey.equals("1"))
+					{
+						builder.detail(JsonDetail.builder().kindId(193).value(String.valueOf(lineNo)).build()); // lineNo
+					}
 					groupBuilders.computeIfAbsent(groupKey, k -> JsonDetailGroup.builder().groupID(k))
-							.row(JsonDetailRow.builder().lineNo(lineNo).details(details).build());
+							.row(builder.build());
 				}
 			}
 		}
@@ -255,16 +259,6 @@ public class NShiftShipmentService
 		return groupBuilders.values().stream()
 				.map(JsonDetailGroup.JsonDetailGroupBuilder::build)
 				.collect(Collectors.toList());
-	}
-
-	private static <T, R> Function<T, Optional<R>> withFallback(
-			@NonNull final Function<T, Optional<R>> primary,
-			@NonNull final Function<T, Optional<R>> fallback)
-	{
-		return t -> {
-			final Optional<R> value = primary.apply(t);
-			return value.isPresent() ? value : fallback.apply(t);
-		};
 	}
 
 	private static JsonDeliveryResponse buildJsonDeliveryResponse(@NonNull final JsonShipmentResponse response, @NonNull final JsonDeliveryRequest deliveryRequest)
@@ -286,25 +280,19 @@ public class NShiftShipmentService
 						requestParcels.stream(),
 						responseLines.stream(),
 						(requestParcel, responseLine) -> {
+							Check.assumeNotEmpty(responseLine.getPkgs(), "No packages found for line: {}", responseLine);
 							final JsonPackage pkg = responseLine.getPkgs().get(0);
 							final JsonShipmentResponseLabel label = labelsByPkgNo.get(pkg.getPkgNo());
-
-							final byte[] labelPdf = (label != null && label.getContent() != null)
-									? label.getContent().getBytes()
-									: null;
 
 							return JsonDeliveryResponseItem.builder()
 									.lineId(requestParcel.getId())
 									.awb(pkg.getPkgNo())
-									.trackingUrl(pkg.getReferences().stream()
-											.filter(ref -> ref.getKind() == LINE_REFERENCE_KIND_TRACKING_URL)
-											.map(JsonReference::getValue)
-											.findFirst()
-											.orElse(null))
-									.labelPdfBase64(labelPdf)
+									.trackingUrl(JsonPackage.extractTrackingUrl(pkg))
+									.labelPdfBase64(JsonShipmentResponseLabel.extractLabel(label))
 									.build();
 						})
 				.collect(Collectors.toList());
+		Check.assume(items.size() == requestParcels.size(), "Request and response parcel counts do not match. Request: %s, Response: %s", requestParcels.size(), items.size());
 
 		return JsonDeliveryResponse.builder()
 				.requestId(deliveryRequest.getId())

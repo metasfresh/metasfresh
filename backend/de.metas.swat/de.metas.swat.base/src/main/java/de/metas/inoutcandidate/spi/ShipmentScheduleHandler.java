@@ -17,6 +17,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import de.metas.organization.OrgId;
 import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.AttributeValueId;
@@ -67,6 +68,14 @@ public abstract class ShipmentScheduleHandler
 		AttributeId attributeId;
 
 		boolean onlyIfInReferencedRecordAsi;
+
+		/**
+		 * If {@code true} (default), the HU attribute value overwrites the schedule ASI value
+		 * on the shipment line during HU attribute transfer.
+		 * If {@code false}, the schedule ASI value (from the order line) takes precedence.
+		 */
+		@Builder.Default
+		boolean huAttributeOverridesASI = true;
 	}
 
 	private final static CCache<Integer, ImmutableList<AttributeConfig>> cache = CCache.newCache(
@@ -86,7 +95,9 @@ public abstract class ShipmentScheduleHandler
 						.attributeConfigId(attributeConfigRecord.getM_ShipmentSchedule_AttributeConfig_ID())
 						.orgId(attributeConfigRecord.getAD_Org_ID())
 						.attributeId(AttributeId.ofRepoIdOrNull(attributeConfigRecord.getM_Attribute_ID()))
-						.onlyIfInReferencedRecordAsi(attributeConfigRecord.isOnlyIfInReferencedASI()).build())
+						.onlyIfInReferencedRecordAsi(attributeConfigRecord.isOnlyIfInReferencedASI())
+						.huAttributeOverridesASI(attributeConfigRecord.isHUAttributeOverridesASI())
+						.build())
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -169,7 +180,7 @@ public abstract class ShipmentScheduleHandler
 	{
 		final Optional<AttributeConfig> attributeConfigIfPresent = findMatchingAttributeConfig(
 				shipmentSchedule.getAD_Org_ID(),
-				attribute);
+				AttributeId.ofRepoId(attribute.getM_Attribute_ID()));
 		if (!attributeConfigIfPresent.isPresent())
 		{
 			return false;
@@ -207,6 +218,20 @@ public abstract class ShipmentScheduleHandler
 		return hasNonNullAttributeListValue(attributeInstance);
 	}
 
+	/**
+	 * Returns {@code true} if the HU attribute value should overwrite the schedule ASI value
+	 * for the given attribute on the shipment line. Defaults to {@code true} (backward compatible)
+	 * if no config record is found.
+	 */
+	public final boolean isHUAttributeOverridesASI(
+			@NonNull final OrgId orgId,
+			@NonNull final AttributeId attributeId)
+	{
+		return findMatchingAttributeConfig(orgId.getRepoId(), attributeId)
+				.map(AttributeConfig::isHuAttributeOverridesASI)
+				.orElse(true); // default: HU wins (backward compatible)
+	}
+
 	private boolean hasNonNullAttributeListValue(final I_M_AttributeInstance attributeInstance)
 	{
 		final AttributeValueId attributeValueId = AttributeValueId.ofRepoIdOrNull(attributeInstance.getM_AttributeValue_ID());
@@ -223,7 +248,7 @@ public abstract class ShipmentScheduleHandler
 	@VisibleForTesting
 	Optional<AttributeConfig> findMatchingAttributeConfig(
 			final int orgId,
-			final I_M_Attribute m_Attribute)
+			@NonNull final AttributeId attributeId)
 	{
 		final ImmutableList<AttributeConfig> attributeConfigs = getAttributeConfigs();
 
@@ -233,7 +258,7 @@ public abstract class ShipmentScheduleHandler
 
 		final Optional<AttributeConfig> matchingConfigIfPresent = attributeConfigs
 				.stream()
-				.filter(c -> AttributeId.toRepoId(c.getAttributeId()) == m_Attribute.getM_Attribute_ID())
+				.filter(c -> AttributeId.equals(c.getAttributeId(), attributeId))
 				.sorted(orgComparator)
 				.findFirst();
 

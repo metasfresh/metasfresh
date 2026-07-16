@@ -4,6 +4,7 @@ import de.metas.frontend_testing.masterdata.Identifier;
 import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickToStructure;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobFieldType;
 import de.metas.handlingunits.picking.job.model.facets.PickingJobFacetGroup;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.mobile.MobileAuthMethod;
@@ -54,14 +55,20 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
 		@Nullable Boolean anonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 		@Nullable Boolean allowQuickPackAll;
+		@Nullable Boolean massPrinting;
+		@Nullable Boolean showPromptWhenOverPicking;
+		@Nullable Boolean warnShelfLifeUndercut;
 
 		@Nullable List<Customer> customers;
 		
 		@Nullable List<PickingJobFacetGroup> filters;
+		
+		@Nullable List<Field> fields;
 
 		@Value
 		@Builder
@@ -69,6 +76,17 @@ public class JsonMobileConfigRequest
 		public static class Customer
 		{
 			@NonNull Identifier customer;
+		}
+
+		@Value
+		@Builder
+		@Jacksonized
+		public static class Field
+		{
+			@NonNull PickingJobFieldType field;
+			@Nullable Boolean isShowInSummary;
+			@Nullable Boolean isShowInDetailed;
+			@Nullable String pattern;
 		}
 	}
 
@@ -85,7 +103,9 @@ public class JsonMobileConfigRequest
 		@Nullable String captionFormat;
 		@Nullable String orderBys;
 
+		@Nullable Boolean requireTrolley;
 		@Nullable Boolean requireScanningProductCode;
+		@Nullable Boolean navigateToJobsListAfterPickFromComplete;
 		@Nullable Boolean completeJobAutomatically;
 
 		@Nullable QueryLimit maxLaunchers;
@@ -105,5 +125,6 @@ public class JsonMobileConfigRequest
 	{
 		@Nullable Boolean isScanResourceRequired;
 		@Nullable Boolean isAllowIssuingAnyHU;
+		@Nullable String receiveUnitType;
 	}
 }

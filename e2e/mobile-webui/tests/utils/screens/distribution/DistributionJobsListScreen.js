@@ -1,11 +1,12 @@
 import { test } from "../../../../playwright.config";
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
+import { ID_BACK_BUTTON, page, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_FAST_ACTION_TIMEOUT } from "../../common";
 import { DistributionJobScreen } from "./DistributionJobScreen";
 import { DistributionJobsListFiltersScreen } from "./DistributionJobsListFiltersScreen";
 import { ApplicationsListScreen } from '../ApplicationsListScreen';
 import { expect } from '@playwright/test';
 import { expectClasses } from '../../expectations';
 import { DistributionJobsDropAllScreen } from './DistributionJobsDropAllScreen';
+import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 
 const NAME = 'DistributionJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -27,6 +28,18 @@ export const DistributionJobsListScreen = {
         await DistributionJobsListScreen.waitForScreen();
     }),
 
+    scanTrolley: async ({ scannedCode, expectHeader }) => await test.step(`${NAME} - Scan trolley`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: scannedCode });
+
+        if (expectHeader !== undefined) {
+            await DistributionJobsListScreen.expectTrolley({ value: expectHeader });
+        }
+    }),
+    expectTrolley: async ({ value }) => await test.step(`${NAME} - Expect trolley button contains "${value}"`, async () => {
+        const trolleyButton = page.getByTestId('scanTrolley-button');
+        await expect(trolleyButton).toContainText(value);
+    }),
+
     startJob: async ({ launcherTestId }) => {
         return await test.step(`${NAME} Start job for testId "${launcherTestId}"`, async () => {
             await page.getByTestId(launcherTestId).tap();
@@ -35,9 +48,11 @@ export const DistributionJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be attached`, async () => {
+        await test.step(`Wait for all expected buttons to be visible`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                // 'visible' (not merely 'attached'): assert the worker actually SEES the offered job,
+                // i.e. the launcher list has finished loading (spinner gone) and the button is painted.
+                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 
@@ -97,6 +112,25 @@ export const DistributionJobsListScreen = {
         await DistributionJobsDropAllScreen.waitForScreen();
         await DistributionJobsDropAllScreen.dropAll({ dropToQRCode })
     }),
+
+    clickReleaseTrolleyButton: async () => await test.step(`${NAME} - Click 'Release trolley' footer button`, async () => {
+        await page.getByTestId('release-trolley-button').tap();
+    }),
+
+    expectReleaseTrolleyButtonVisible: async ({ visible }) => await test.step(`${NAME} - Expect release-trolley-button visible=${visible}`, async () => {
+        const btn = page.getByTestId('release-trolley-button');
+        if (visible) {
+            await expect(btn).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(btn).not.toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    expectTrolleyScanScreen: async () => await test.step(`${NAME} - Expect trolley scan screen (no trolley held)`, async () => {
+        // After release, the screen returns to the trolley-scan state.
+        // The barcode scanner input (#input-text) should be attached, waiting for a trolley scan.
+        await page.locator('#input-text').waitFor({ state: 'attached', timeout: SLOW_ACTION_TIMEOUT });
+    }),
 };
 
 //
@@ -121,7 +155,7 @@ const locateJobButtons = ({ index, testId } = {}) => {
 };
 
 const expectJobButton = async ({ name, button, expectation }) => await test.step(`Expect job button ${name}`, async () => {
-    await button.waitFor({ state: 'attached', timeout: VERY_FAST_ACTION_TIMEOUT });
+    await button.waitFor({ state: 'visible', timeout: VERY_FAST_ACTION_TIMEOUT });
     await expect(button).toHaveCount(1);
 
     if (expectation.testId != null) {

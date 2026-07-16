@@ -10,7 +10,7 @@ services:
         mfversion: $mfversion
         dbqualifier: $dbqualifier
     ports:
-      - "15432:5432"
+      - "14432:5432"
     environment:
       # run the database on the initial data
       # so we can later commit it again to create the preloaded db with migrations applied

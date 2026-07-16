@@ -35,18 +35,26 @@ import org.compiere.model.X_M_Attribute;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
-import de.metas.handlingunits.model.X_M_HU_Item;
 import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.handlingunits.storage.IHUStorage;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+
+import javax.annotation.Nullable;
 
 public class WeightTareAttributeValueCallout
 		extends AbstractWeightAttributeValueCallout
@@ -92,7 +100,6 @@ public class WeightTareAttributeValueCallout
 	public static BigDecimal calculateWeightTare(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 
 		final BigDecimal weightTare;
@@ -100,12 +107,12 @@ public class WeightTareAttributeValueCallout
 		{
 			final BigDecimal qty = hu.getM_HU_Item_Parent().getQty();
 
-			weightTare = handlingUnitsDAO
+			weightTare = handlingUnitsBL
 					// only packing material items..
 					.retrieveItems(hu, HUItemType.PackingMaterial).stream()
 
 					// .. get their M_HU_PackingMaterial and Qty, if they have both
-					.map(item -> packingMaterialDAO.retrieveHUPackingMaterialOrNull(item))
+					.map(packingMaterialDAO::retrieveHUPackingMaterialOrNull)
 					.filter(Objects::nonNull)
 
 					// multiply their M_HU_PackingMaterial's weight
@@ -120,7 +127,69 @@ public class WeightTareAttributeValueCallout
 			weightTare = getWeightTare(piVersion);
 		}
 
-		return weightTare;
+		// In addition to the structural packing-material tare, include the per-CU packaging
+		// contribution from the product master (M_Product.GrossWeight − M_Product.Weight) × storage qty.
+		// Mirrors the incremental write done by WeightGenerateHUTrxListener so recompute paths
+		// (AggregateHUTrxListener, AbstractProducerDestination#loadFinished, attribute seed) stay consistent.
+		return weightTare.add(Quantitys.toBigDecimalOrZero(calculateProductPackagingDelta(hu)));
+	}
+
+	/**
+	 * Sums the per-CU packaging contribution {@code (gross − net) × qty} across the HU's product
+	 * storages, expressed in the net-weight UOM (KG). Returns null when the HU has no storage,
+	 * when no product on the storage maintains a real net weight (default 0), or when gross/net
+	 * are equal — i.e. there is nothing to add to the tare.
+	 */
+	@Nullable
+	private static Quantity calculateProductPackagingDelta(final I_M_HU hu)
+	{
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IProductBL productBL = Services.get(IProductBL.class);
+		final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+		final IHUStorage huStorage = handlingUnitsBL.getStorageFactory().getStorage(hu);
+
+		Quantity total = null;
+		for (final IHUProductStorage productStorage : huStorage.getProductStorages())
+		{
+			final Quantity storageQty = productStorage.getQty();
+			if (!storageQty.isPositive())
+			{
+				continue;
+			}
+
+			final ProductId productId = productStorage.getProductId();
+			final I_C_UOM storageUOM = storageQty.getUOM();
+
+			// Per-CU gross/net weights, scaled to the storage UOM.
+			final Quantity productGross = productBL.getGrossWeight(productId, storageUOM).orElse(null);
+			if (productGross == null || !productGross.isPositive())
+			{
+				continue;
+			}
+
+			final I_M_Product product = productBL.getById(productId);
+			final Quantity productNet = productBL.getNetWeight(product, storageUOM).orElse(null);
+			if (productNet == null || !productNet.isPositive())
+			{
+				continue;
+			}
+
+			// Convert gross to net's UOM before subtracting (net is hardcoded KG; gross may be e.g. grams).
+			// IUOMConversionBL.convertQuantityTo no-ops when source and target UOM already match.
+			final Quantity productGrossInNetUOM = uomConversionBL.convertQuantityTo(productGross, productId, productNet.getUOM());
+
+			final Quantity perUnitDelta = productGrossInNetUOM.subtract(productNet);
+			if (!perUnitDelta.isPositive())
+			{
+				continue;
+			}
+
+			final Quantity contribution = perUnitDelta.multiply(storageQty.toBigDecimal());
+			// Same UOM (productNet's UOM) across all contributions, so no conversion context needed.
+			total = Quantitys.addNullSafe(null, total, contribution);
+		}
+		return total;
 	}
 
 	/**
@@ -130,13 +199,13 @@ public class WeightTareAttributeValueCallout
 	 */
 	public static BigDecimal getWeightTare(final I_M_HU_PI_Version piVersion)
 	{
-		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 		BigDecimal weightTareTotal = BigDecimal.ZERO;
 
 		final BPartnerId partnerId = null; // FIXME: get context C_BPartner
 
-		for (final I_M_HU_PI_Item piItem : handlingUnitsDAO.retrievePIItems(piVersion, partnerId))
+		for (final I_M_HU_PI_Item piItem : handlingUnitsBL.retrievePIItems(piVersion, partnerId))
 		{
 			final String itemType = piItem.getItemType();
 			if (!X_M_HU_PI_Item.ITEMTYPE_PackingMaterial.equals(itemType))

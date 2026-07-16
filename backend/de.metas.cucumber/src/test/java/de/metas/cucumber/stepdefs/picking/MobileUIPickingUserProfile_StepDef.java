@@ -22,26 +22,86 @@
 
 package de.metas.cucumber.stepdefs.picking;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRow;
+import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfileService;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfig;
+import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsCollection;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
+import org.compiere.model.I_MobileUI_UserProfile_Picking_Job;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
+import java.util.List;
+
+@RequiredArgsConstructor
 public class MobileUIPickingUserProfile_StepDef
 {
 	private static final Logger logger = LogManager.getLogger(MobileUIPickingUserProfile_StepDef.class);
+	@NonNull private final C_BPartner_StepDefData bPartnerTable;
 	private final MobileUIPickingUserProfileService profileService = SpringContextHolder.instance.getBean(MobileUIPickingUserProfileService.class);
 
+	private MobileUIPickingUserProfile profileBeforeScenario = null;
+
+	@After
+	public void restoreProfile()
+	{
+		if (profileBeforeScenario != null)
+		{
+			profileService.update(ignored -> profileBeforeScenario);
+			profileBeforeScenario = null;
+		}
+	}
+
+	/**
+	 * Sets or updates fields on the (default) mobile UI picking profile in-memory (single-row DataTable).
+	 *
+	 * <p>All columns are optional; supply any subset:
+	 * <ul>
+	 *   <li>{@code IsAllowPickingAnyHU} — boolean</li>
+	 *   <li>{@code CreateShipmentPolicy} — policy code/name: DO_NOT_CREATE / CREATE_DRAFT / CREATE_AND_COMPLETE / CREATE_COMPLETE_CLOSE</li>
+	 *   <li>{@code IsAlwaysSplitHUsEnabled} — boolean</li>
+	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
+	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>
+	 *   <li>{@code IsMassPrinting} — boolean</li>
+	 *   <li>{@code IsConsideredOnlyScheduledJobs} — boolean (job-scheduled-to-workplace mode: only demand scheduled to the picker's workplace via a {@code M_Picking_Job_Schedule} is eligible)</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And set mobile UI picking profile
+	 *   | IsMassPrinting | CreateShipmentPolicy |
+	 *   | Y              | CREATE_DRAFT         |
+	 * </pre>
+	 *
+	 * @see #setPerCustomerShipmentPolicy(DataTable) for per-customer policy overrides
+	 */
 	@And("set mobile UI picking profile")
 	public void updateProfile(@NonNull final DataTable dataTable)
 	{
+		// Capture on first change so @After can restore the original value
+		if (profileBeforeScenario == null)
+		{
+			profileBeforeScenario = profileService.getProfile();
+		}
+
 		final DataTableRow row = DataTableRow.singleRow(dataTable);
 
 		profileService.update((profile) -> {
@@ -50,12 +110,112 @@ public class MobileUIPickingUserProfile_StepDef
 			row.getAsOptionalString("CreateShipmentPolicy").map(CreateShipmentPolicy::ofCodeOrName).ifPresent(defaultPickingJobOptionsBuilder::createShipmentPolicy);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAlwaysSplitHUsEnabled).ifPresent(defaultPickingJobOptionsBuilder::isAlwaysSplitHUsEnabled);
 			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsAllowCompletingPartialPickingJob).ifPresent(defaultPickingJobOptionsBuilder::isAllowCompletingPartialPickingJob);
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsCatchWeightTUPickingEnabled).ifPresent(defaultPickingJobOptionsBuilder::isCatchWeightTUPickingEnabled);
+			row.getAsOptionalEnum("PickingJobAggregationType", PickingJobAggregationType.class).ifPresent(defaultPickingJobOptionsBuilder::aggregationType);
 
-			return profile.toBuilder()
-					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build())
-					.build();
+			final MobileUIPickingUserProfile.MobileUIPickingUserProfileBuilder profileBuilder = profile.toBuilder()
+					.defaultPickingJobOptions(defaultPickingJobOptionsBuilder.build());
+
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsMassPrinting).ifPresent(profileBuilder::isMassPrinting);
+			row.getAsOptionalBoolean(I_MobileUI_UserProfile_Picking.COLUMNNAME_IsConsideredOnlyScheduledJobs).ifPresent(profileBuilder::isConsiderOnlyJobScheduledToWorkplace);
+
+			return profileBuilder.build();
 		});
 
 		logger.info("Profile updated: {}", profileService.getProfile());
+	}
+
+	/**
+	 * Sets a per-customer {@code CreateShipmentPolicy} override on the picking profile.
+	 * Creates a {@code MobileUI_UserProfile_Picking_Job} record for each row and links it to the
+	 * given customer via {@code MobileUI_UserProfile_Picking_BPartner}.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code C_BPartner_ID} — identifier of the customer</li>
+	 *   <li>{@code CreateShipmentPolicy} — policy code: DO_NOT_CREATE / CREATE_DRAFT / CREATE_AND_COMPLETE / CREATE_COMPLETE_CLOSE</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And set per-customer mobile UI shipment policy:
+	 *   | C_BPartner_ID | CreateShipmentPolicy |
+	 *   | customer1     | CREATE_DRAFT         |
+	 *   | customer2     | DO_NOT_CREATE        |
+	 * </pre>
+	 */
+	@And("set per-customer mobile UI shipment policy:")
+	public void setPerCustomerShipmentPolicy(@NonNull final DataTable dataTable)
+	{
+		// Capture on first change so @After restoreProfile() can restore the original profile.
+		// MUST mirror the guard in updateProfile(): this step also mutates the profile (adds
+		// per-customer configs), so without capturing here a scenario that calls only this step
+		// would leak its mutation into later scenarios.
+		if (profileBeforeScenario == null)
+		{
+			profileBeforeScenario = profileService.getProfile();
+		}
+
+		// Snapshot the profile's current default options before the loop — all per-customer
+		// job records copy the profile's boolean flags from here, overriding only CreateShipmentPolicy.
+		// This is necessary because PickingJobOptions.fallbackTo() only falls back for a few structured
+		// fields (allowedPickToStructures, pickAttributes, displayPickingSlotSuggestions,
+		// completeJobAutomatically) — primitive booleans in the per-customer DB record are read as-is,
+		// with no fallback to the profile default. Every mandatory NOT-NULL boolean must be set
+		// explicitly to avoid a DB constraint violation, and must mirror the profile's current value
+		// to preserve the expected picking behaviour in the test.
+		final PickingJobOptions profileDefaults = profileService.getProfile().getDefaultPickingJobOptions();
+
+		// Build per-customer PickingJobOptionsId entries, creating a MobileUI_UserProfile_Picking_Job
+		// record per row so the PickingJobOptionsCollection cache can load them from DB.
+		final List<PickingCustomerConfig> newConfigs = new ArrayList<>();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final BPartnerId customerId = bPartnerTable.getId(row.getAsIdentifier("C_BPartner_ID"));
+			final CreateShipmentPolicy policy = CreateShipmentPolicy.ofCodeOrName(row.getAsString("CreateShipmentPolicy"));
+
+			// Insert a MobileUI_UserProfile_Picking_Job record overriding only the shipment policy.
+			// All other boolean flags are copied from the profile's default PickingJobOptions so that
+			// the per-customer record does not silently disable capabilities that the profile enables
+			// (e.g. IsAllowPickingAnyHU=Y set by the test background).
+			final I_MobileUI_UserProfile_Picking_Job jobRecord = InterfaceWrapperHelper.newInstance(I_MobileUI_UserProfile_Picking_Job.class);
+			jobRecord.setIsActive(true);
+			jobRecord.setName("per-customer-" + customerId.getRepoId());
+			jobRecord.setCreateShipmentPolicy(policy.getCode());
+			jobRecord.setIsAllowCompletingPartialPickingJob(profileDefaults.isAllowCompletingPartialPickingJob());
+			jobRecord.setIsAllowPickingAnyHU(profileDefaults.isAllowPickingAnyHU());
+			jobRecord.setIsAllowSkippingRejectedReason(profileDefaults.isAllowSkippingRejectedReason());
+			jobRecord.setIsAlwaysSplitHUsEnabled(profileDefaults.isAlwaysSplitHUsEnabled());
+			jobRecord.setIsAnonymousHuPickedOnTheFly(profileDefaults.isAnonymousPickHUsOnTheFly());
+			jobRecord.setIsCatchWeightTUPickingEnabled(profileDefaults.isCatchWeightTUPickingEnabled());
+			jobRecord.setIsConsiderSalesOrderCapacity(profileDefaults.isConsiderSalesOrderCapacity());
+			jobRecord.setIsShipOnCloseLU(profileDefaults.isShipOnCloseLU());
+			jobRecord.setIsShowConfirmationPromptWhenOverPick(profileDefaults.isShowConfirmationPromptWhenOverPick());
+			jobRecord.setIsShowLastPickedBestBeforeDateForLines(profileDefaults.isShowLastPickedBestBeforeDateForLines());
+			InterfaceWrapperHelper.saveRecord(jobRecord);
+
+			final PickingJobOptionsId optionsId = PickingJobOptionsId.ofRepoId(jobRecord.getMobileUI_UserProfile_Picking_Job_ID());
+			newConfigs.add(PickingCustomerConfig.builder()
+					.customerId(customerId)
+					.pickingJobOptionsId(optionsId)
+					.build());
+		});
+
+		// Update the profile's customer configs (persists MobileUI_UserProfile_Picking_BPartner records).
+		// This invalidates the profileCache (backed on BPartner table) and the pickingJobOptionsCache
+		// (backed on MobileUI_UserProfile_Picking_Job) so both reload fresh on next access.
+		profileService.update(profile -> {
+			final List<PickingCustomerConfig> merged = new ArrayList<>(ImmutableList.copyOf(profile.getCustomerConfigs()));
+			// Replace or add entries for the customers defined in this step.
+			for (final PickingCustomerConfig newConfig : newConfigs)
+			{
+				merged.removeIf(existing -> existing.getCustomerId().equals(newConfig.getCustomerId()));
+				merged.add(newConfig);
+			}
+			return profile.toBuilder()
+					.customerConfigs(PickingCustomerConfigsCollection.ofCollection(merged))
+					.build();
+		});
+
+		logger.info("Per-customer shipment policies set: {}", newConfigs);
 	}
 }
