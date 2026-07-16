@@ -144,18 +144,12 @@ BEGIN
           AND iol.m_inout_id = p_m_inout_id
     ),
     shared_lu_inout AS MATERIALIZED (
-        -- (lu, m_inout) pairs: every CO/CL shipment that has goods physically assigned to an EMITTED
-        -- LU touched by THIS shipment. Voided/reversed/in-progress shipments are excluded.
+        -- (lu, m_inout) pairs: every CO/CL shipment that has goods physically assigned to an LU
+        -- touched by THIS shipment. Voided/reversed/in-progress shipments are excluded.
         -- Scoped to the LUs THIS shipment touches (this_inout_lu) so the m_lu_hu_id IN-list
         -- drives the m_hu_assignment_m_lu_hu_id index (a handful of LUs) instead of a full scan.
-        -- "Emitted" (mirrors pallet_list's own per-LU filter below, kept in sync intentionally):
-        -- every child TU of the LU is covered by a CO/CL sales shipment, AND the LU's SSCC18 is not
-        -- already recorded in the transmission ledger. Without this, a shipment whose OTHER touched
-        -- LU is still open (or already transmitted) would pull that sibling's DESADV/PO/shipment-doc
-        -- references into the header even though the corresponding pallet is absent from pallets[] —
-        -- the header would over-claim orders/DESADVs the emitted document does not actually carry.
-        -- Used to enumerate all sibling CO/CL shipments sharing an emitted LU — feeds DESADV/PO
-        -- reference aggregation (desadv_agg) and gives the full set of co-shippers for those LUs.
+        -- Used to enumerate all sibling CO/CL shipments sharing an LU — feeds DESADV/PO reference
+        -- aggregation (desadv_agg, po_agg, pallet_list) and gives the full set of co-shippers.
         SELECT DISTINCT ha.m_lu_hu_id AS lu_hu_id, iol.m_inout_id
         FROM m_hu_assignment ha
                  JOIN m_inoutline iol ON iol.m_inoutline_id = ha.record_id
@@ -165,34 +159,6 @@ BEGIN
           AND ha.isactive = 'Y'
           AND iol.isactive = 'Y'
           AND io.docstatus IN ('CO', 'CL')
-          -- emitted-LU predicate (1/2): every child TU of this LU is covered by a CO/CL sales shipment
-          AND NOT EXISTS (
-              SELECT 1
-              FROM m_hu_item hi
-                       JOIN m_hu tu ON tu.m_hu_item_parent_id = hi.m_hu_item_id
-              WHERE hi.m_hu_id = ha.m_lu_hu_id
-                AND hi.itemtype IN ('HU', 'HA')
-                AND NOT EXISTS (
-                    SELECT 1
-                    FROM m_hu_assignment ha2
-                             JOIN m_inoutline iol2 ON iol2.m_inoutline_id = ha2.record_id
-                             JOIN m_inout io2 ON io2.m_inout_id = iol2.m_inout_id and io2.issotrx='Y'
-                    WHERE ha2.ad_table_id = v_m_inoutline_table_id
-                      AND ha2.isactive = 'Y'
-                      AND iol2.isactive = 'Y'
-                      AND (ha2.m_tu_hu_id = tu.m_hu_id OR ha2.vhu_id = tu.m_hu_id)
-                      AND io2.docstatus IN ('CO', 'CL')
-                )
-          )
-          -- emitted-LU predicate (2/2): not already recorded in the EPCIS transmission ledger
-          AND NOT EXISTS (
-              SELECT 1
-              FROM edi_epcis_transmitted_sscc t
-                       JOIN m_hu_attribute sa ON sa.m_hu_id = ha.m_lu_hu_id
-                                             AND sa.m_attribute_id = v_sscc_attribute_id
-              WHERE t.isactive = 'Y'
-                AND t.sscc18 = sa.value
-          )
     ),
     inout_context AS (
         -- Materialize all context data ONCE to avoid correlated subqueries
@@ -329,22 +295,6 @@ BEGIN
                          AND ha2.isactive = 'Y'
                    )
              ) lwp
-             WHERE NOT EXISTS (
-                 -- Ledger-exclusion: drop any LU whose physical SSCC18 is already recorded in the
-                 -- EPCIS transmission ledger (EDI_EPCIS_Transmitted_SSCC), i.e. already sent to the
-                 -- EPCIS receiver — defense-in-depth against a re-export / duplicate trigger emitting
-                 -- the same physical SSCC twice. A row is only ever written after a successful send, so
-                 -- its mere presence means "already transmitted". Receiver-agnostic on purpose: this
-                 -- function only has p_m_inout_id (no receiver config) and there is a single EPCIS
-                 -- receiver in production, so matching on SSCC18 alone is correct here. (If multiple EPCIS
-                 -- receivers/configs are ever added, this needs the config threaded into the function.)
-                 SELECT 1
-                 FROM edi_epcis_transmitted_sscc t
-                          JOIN m_hu_attribute sa ON sa.m_hu_id = lwp.lu_hu_id
-                                                AND sa.m_attribute_id = v_sscc_attribute_id
-                 WHERE t.isactive = 'Y'
-                   AND t.sscc18 = sa.value
-             )
              GROUP BY lwp.lu_hu_id),
 
          individual_tu_ids AS MATERIALIZED (

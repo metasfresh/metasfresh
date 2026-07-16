@@ -189,6 +189,48 @@ public class ExternalSystemExportStatusRepository
 	}
 
 	/**
+	 * Returns the distinct config IDs whose <b>active</b> status row for the given source record is
+	 * in-flight — {@link ExternalSystemExportStatus#Enqueued} or
+	 * {@link ExternalSystemExportStatus#SendingStarted} (i.e. dispatched to the external system but
+	 * not yet confirmed/failed). Only ACTIVE rows are considered, so deactivating a status row
+	 * (e.g. via its WebUI tab) removes it from this result — the sanctioned way to release a shipment
+	 * whose in-flight export is stuck (the external system never called back).
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getInflightConfigsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
+				new LinkedHashMap<>();
+		for (final ScriptedExportConversionStatus entry : getActiveBySourceRecord(sourceRecord))
+		{
+			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
+		}
+
+		return latestPerConfig.entrySet().stream()
+				.filter(e -> e.getValue().getStatus().isProcessing())
+				.map(Map.Entry::getKey)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * Returns the ACTIVE status rows for the given source record, ordered newest-first.
+	 */
+	@NonNull
+	private List<ScriptedExportConversionStatus> getActiveBySourceRecord(@NonNull final TableRecordReference sourceRecord)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, sourceRecord.getAD_Table_ID())
+				.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, sourceRecord.getRecord_ID())
+				.addOnlyActiveRecordsFilter()
+				.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
+				.create()
+				.stream()
+				.map(ExternalSystemExportStatusRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
 	 * Returns all status rows for the given source record, ordered newest-first.
 	 */
 	@NonNull
