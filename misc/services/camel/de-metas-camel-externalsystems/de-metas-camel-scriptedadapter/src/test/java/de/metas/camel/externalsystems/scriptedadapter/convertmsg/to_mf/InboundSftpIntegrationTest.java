@@ -23,20 +23,23 @@
 package de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf;
 
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.scriptedadapter.sftp.EmbeddedSftpServer;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import lombok.NonNull;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.AdviceWith;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -47,6 +50,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
@@ -56,8 +60,20 @@ import static org.assertj.core.api.Assertions.assertThat;
  * waits for the file to be picked up and processed, then verifies it was moved to .done.
  * Finally disables the route and verifies clean shutdown.
  * <p>
- * Uses a real (trivial) JavaScript transform that returns an empty array, so no metasfresh API
- * dispatch is needed — the test focuses on verifying the SFTP file lifecycle (pick up + move to .done).
+ * Covers three scenarios:
+ * <ul>
+ *     <li>{@link #sftpFilePolledAndMovedToDone()} — a trivial (no-op) JavaScript transform that returns
+ *     an empty array, focused on verifying the plain SFTP file lifecycle (pick up + move to .done).</li>
+ *     <li>{@link #sftpFileWithOlCandTransformDispatchedToOlCandRouteAndMovedToDone()} — a real JavaScript
+ *     transform that parses the input file and emits an order-line-candidate item, verifying the item is
+ *     actually dispatched to the OLCand route and the source file is moved to .done.</li>
+ *     <li>{@link #malformedSftpFileMovedToError()} — a malformed input file that makes the same real
+ *     transform throw, verifying the file is moved to .error instead of being silently lost, and that
+ *     nothing is dispatched to the OLCand route.</li>
+ * </ul>
+ * The {@link ProducerTemplate} used by the routes under test is a real one (bound to this test's
+ * {@link #context}), so that a dispatch to the OLCand route id ({@value ExternalSystemCamelConstants#MF_PUSH_OL_CANDIDATES_ROUTE_ID})
+ * actually reaches the dummy destination route registered in {@link #registerOlCandMockRoute()}.
  */
 public class InboundSftpIntegrationTest extends CamelTestSupport
 {
@@ -65,8 +81,24 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	private static final String SFTP_PASSWORD = "testpass";
 	private static final String ENDPOINT_NAME = "sftpIntegrationTestEndpoint";
 	private static final String SCRIPT_IDENTIFIER = "inbound_sftp_test_noop";
+	private static final String SCRIPT_IDENTIFIER_OLCAND = "inbound_sftp_test_olcand";
 	private static final String TEST_FILE_NAME = "test_order.json";
 	private static final String TEST_FILE_CONTENT = "{\"orderId\": \"12345\", \"items\": [{\"sku\": \"ABC\", \"qty\": 10}]}";
+	private static final String MALFORMED_TEST_FILE_NAME = "malformed_order.json";
+	private static final String MALFORMED_TEST_FILE_CONTENT = "{ \"orderId\": \"12345\", this is not valid json !!";
+
+	private static final String OLCAND_MOCK_ROUTE_URI = "mock:olCandRoute";
+
+	/**
+	 * The requestBody the {@code inbound_sftp_test_olcand.js} script produces for {@link #TEST_FILE_CONTENT}.
+	 */
+	private static final String OLCAND_REQUEST_BODY_JSON = "{\"requests\": [{\"orgCode\": \"001\", \"externalHeaderId\": \"12345\", "
+			+ "\"externalLineId\": \"12345\", \"externalSystemCode\": \"Other\", \"dataSource\": \"int-Shopware\", "
+			+ "\"bpartner\": {\"bpartnerIdentifier\": \"2156425\", \"bpartnerLocationIdentifier\": \"2205175\"}, "
+			+ "\"dateRequired\": \"2022-12-12\", \"dateOrdered\": \"2022-12-12\", \"orderDocType\": \"SalesOrder\", "
+			+ "\"paymentTerm\": \"val-1000002\", \"productIdentifier\": \"2005577\", \"qty\": 1, \"currencyCode\": \"EUR\", "
+			+ "\"discount\": 0, \"poReference\": \"ref_12301\", \"deliveryViaRule\": \"S\", \"deliveryRule\": \"F\", "
+			+ "\"bpartnerName\": \"testName\"}]}";
 
 	@TempDir
 	Path sftpRootDir;
@@ -94,6 +126,37 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				+ "    return JSON.stringify([]);\n"
 				+ "}\n";
 		Files.writeString(scriptRepoDir.resolve(SCRIPT_IDENTIFIER + ".js"), noopScript, StandardCharsets.UTF_8);
+
+		// Create a real JS script that parses the incoming file and emits one OLCand create-bulk item.
+		// Used to genuinely exercise the OLCand dispatch (as opposed to the no-op script above),
+		// and to genuinely fail (JSON.parse throws) on malformed input.
+		final String olCandScript = "function transform(messageFromMetasfresh) {\n"
+				+ "    var order = JSON.parse(messageFromMetasfresh);\n"
+				+ "    var requestBody = JSON.stringify({\n"
+				+ "        requests: [{\n"
+				+ "            orgCode: \"001\",\n"
+				+ "            externalHeaderId: String(order.orderId),\n"
+				+ "            externalLineId: String(order.orderId),\n"
+				+ "            externalSystemCode: \"Other\",\n"
+				+ "            dataSource: \"int-Shopware\",\n"
+				+ "            bpartner: { bpartnerIdentifier: \"2156425\", bpartnerLocationIdentifier: \"2205175\" },\n"
+				+ "            dateRequired: \"2022-12-12\",\n"
+				+ "            dateOrdered: \"2022-12-12\",\n"
+				+ "            orderDocType: \"SalesOrder\",\n"
+				+ "            paymentTerm: \"val-1000002\",\n"
+				+ "            productIdentifier: \"2005577\",\n"
+				+ "            qty: 1,\n"
+				+ "            currencyCode: \"EUR\",\n"
+				+ "            discount: 0,\n"
+				+ "            poReference: \"ref_12301\",\n"
+				+ "            deliveryViaRule: \"S\",\n"
+				+ "            deliveryRule: \"F\",\n"
+				+ "            bpartnerName: \"testName\"\n"
+				+ "        }]\n"
+				+ "    });\n"
+				+ "    return JSON.stringify([{ camelServiceRouteID: \"" + MF_PUSH_OL_CANDIDATES_ROUTE_ID + "\", requestBody: requestBody }]);\n"
+				+ "}\n";
+		Files.writeString(scriptRepoDir.resolve(SCRIPT_IDENTIFIER_OLCAND + ".js"), olCandScript, StandardCharsets.UTF_8);
 
 		// Start embedded SFTP server
 		sftpServer = new EmbeddedSftpServer(sftpRootDir, SFTP_USERNAME, SFTP_PASSWORD);
@@ -125,7 +188,9 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		final ProducerTemplate producerTemplate = Mockito.mock(ProducerTemplate.class);
+		// A real (context-bound) producer template so that a dispatch to the OLCand route id actually
+		// reaches whatever destination route is registered for it in this test's context (see registerOlCandMockRoute()).
+		final ProducerTemplate producerTemplate = context.createProducerTemplate();
 		return new ScriptedImportConversionSftpRouteBuilder(producerTemplate);
 	}
 
@@ -156,27 +221,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	void sftpFilePolledAndMovedToDone() throws Exception
 	{
 		// Arrange: intercept the external status endpoint and the error route so they don't fail
-		AdviceWith.adviceWith(context, ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
-						.skipSendToOriginalEndpoint()
-						.process(exchange -> { /* no-op */ }));
-
-		AdviceWith.adviceWith(context, ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID,
-				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
-						.skipSendToOriginalEndpoint()
-						.process(exchange -> { /* no-op */ }));
-
-		// Register a dummy error route so onException doesn't fail
-		context.addRoutes(new RouteBuilder()
-		{
-			@Override
-			public void configure()
-			{
-				from("direct:" + MF_ERROR_ROUTE_ID)
-						.routeId(MF_ERROR_ROUTE_ID)
-						.log("Error route invoked (test): ${body}");
-			}
-		});
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
 
 		context.start();
 
@@ -186,7 +232,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(inboundFile).exists();
 
 		// Build the enable request
-		final JsonExternalSystemRequest enableRequest = buildEnableRequest();
+		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER);
 
 		// Act: fire the enable SFTP polling route
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
@@ -215,11 +261,149 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
 	}
 
-	private JsonExternalSystemRequest buildEnableRequest()
+	@Test
+	void sftpFileWithOlCandTransformDispatchedToOlCandRouteAndMovedToDone() throws Exception
+	{
+		// Arrange: intercept the external status endpoint, the error route, and register a dummy
+		// destination for the OLCand route id so the dispatch has somewhere real to land.
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+		registerOlCandMockRoute();
+
+		context.start();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(1);
+
+		// Place the test file in /inbound on the SFTP server
+		final Path inboundFile = sftpRootDir.resolve("inbound").resolve(TEST_FILE_NAME);
+		Files.writeString(inboundFile, TEST_FILE_CONTENT, StandardCharsets.UTF_8);
+		assertThat(inboundFile).exists();
+
+		// Act: fire the enable SFTP polling route, using the real (non-no-op) OLCand-producing transform
+		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND);
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
+		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
+
+		// Wait for the file to be polled and moved to .done (up to 10 seconds)
+		final Path doneFile = sftpRootDir.resolve("inbound/.done").resolve(TEST_FILE_NAME);
+		final boolean fileMovedToDone = waitForCondition(() -> Files.exists(doneFile), 10_000, 250);
+		assertThat(fileMovedToDone)
+				.as("File should be moved from /inbound to /inbound/.done within 10 seconds")
+				.isTrue();
+		assertThat(inboundFile).doesNotExist();
+
+		// Then: the item produced by the real transform was actually dispatched to the OLCand route
+		olCandMockEndpoint.assertIsSatisfied(10_000);
+		final JsonOLCandCreateBulkRequest actualDispatchedBody = olCandMockEndpoint.getExchanges().get(0).getIn().getBody(JsonOLCandCreateBulkRequest.class);
+		final JsonOLCandCreateBulkRequest expectedDispatchedBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+				.readValue(OLCAND_REQUEST_BODY_JSON, JsonOLCandCreateBulkRequest.class);
+		assertThat(actualDispatchedBody).isEqualTo(expectedDispatchedBody);
+
+		// Act: disable the polling route
+		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
+		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
+	}
+
+	@Test
+	void malformedSftpFileMovedToError() throws Exception
+	{
+		// Arrange: same setup as the successful OLCand-dispatch test, but the input file will make the
+		// real transform throw (JSON.parse on invalid JSON), so nothing should ever reach the OLCand route.
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+		registerOlCandMockRoute();
+
+		context.start();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(0);
+
+		// Place a malformed test file in /inbound on the SFTP server
+		final Path inboundFile = sftpRootDir.resolve("inbound").resolve(MALFORMED_TEST_FILE_NAME);
+		Files.writeString(inboundFile, MALFORMED_TEST_FILE_CONTENT, StandardCharsets.UTF_8);
+		assertThat(inboundFile).exists();
+
+		// Act: fire the enable SFTP polling route
+		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND);
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
+		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
+
+		// Wait for the file to be moved to .error (up to 10 seconds) — it must not be silently lost
+		final Path errorFile = sftpRootDir.resolve("inbound/.error").resolve(MALFORMED_TEST_FILE_NAME);
+		final boolean fileMovedToError = waitForCondition(() -> Files.exists(errorFile), 10_000, 250);
+		assertThat(fileMovedToError)
+				.as("Malformed file should be moved from /inbound to /inbound/.error within 10 seconds")
+				.isTrue();
+
+		// The original file should no longer be in /inbound, and it must not have ended up in .done
+		assertThat(inboundFile).doesNotExist();
+		final Path doneFile = sftpRootDir.resolve("inbound/.done").resolve(MALFORMED_TEST_FILE_NAME);
+		assertThat(doneFile).doesNotExist();
+
+		// Nothing should have been dispatched to the OLCand route
+		olCandMockEndpoint.assertIsSatisfied(2_000);
+
+		// Act: disable the polling route
+		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
+		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
+	}
+
+	private void interceptExternalStatusEndpoints() throws Exception
+	{
+		AdviceWith.adviceWith(context, ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+						.skipSendToOriginalEndpoint()
+						.process(exchange -> { /* no-op */ }));
+
+		AdviceWith.adviceWith(context, ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID,
+				advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+						.skipSendToOriginalEndpoint()
+						.process(exchange -> { /* no-op */ }));
+	}
+
+	private void registerDummyErrorRoute() throws Exception
+	{
+		// Register a dummy error route so onException doesn't fail
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_ERROR_ROUTE_ID)
+						.routeId(MF_ERROR_ROUTE_ID)
+						.log("Error route invoked (test): ${body}");
+			}
+		});
+	}
+
+	/**
+	 * Registers a dummy destination route for the OLCand route id, ending in a mock endpoint, so that a
+	 * dispatch to {@value ExternalSystemCamelConstants#MF_PUSH_OL_CANDIDATES_ROUTE_ID} (the production route
+	 * lives outside this module's Camel context) has somewhere to land and can be asserted on.
+	 */
+	private void registerOlCandMockRoute() throws Exception
+	{
+		context.addRoutes(new RouteBuilder()
+		{
+			@Override
+			public void configure()
+			{
+				from("direct:" + MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.routeId(MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+						.to(OLCAND_MOCK_ROUTE_URI)
+						.setBody(constant("{}"));
+			}
+		});
+	}
+
+	private JsonExternalSystemRequest buildEnableRequest(@NonNull final String scriptIdentifier)
 	{
 		final Map<String, String> params = new HashMap<>();
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, ENDPOINT_NAME);
-		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, SCRIPT_IDENTIFIER);
+		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, scriptIdentifier);
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST, "localhost");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(sftpServer.getPort()));
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME, SFTP_USERNAME);
