@@ -78,7 +78,7 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And the maturing candidates are created
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -151,7 +151,7 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And the maturing candidates are created
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -163,7 +163,7 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And the maturing candidates are created
 
     Then after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -206,7 +206,7 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And the maturing candidates are created
 
     And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised         | DateStartSchedule    | IsClosed | IsMaturing | M_Maturing_Configuration_ID | M_Maturing_Configuration_Line_ID | Issue_HU_ID   |
@@ -218,6 +218,6 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
-    And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_CreateMaturingCandidates' is ran once
+    And the maturing candidates are created
 
     Then after not more than 60s, no PP_Order_Candidates are found for Issue_HU_ID: 'rawgood_hu_30'
