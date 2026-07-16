@@ -126,7 +126,7 @@ runs:
         echo "Allure report generated at: $OUTPUT_DIR"
 
     - name: Upload Allure report artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v4
       if: success() || failure()
       with:
         name: ${{ inputs.artifact-name }}
@@ -136,7 +136,7 @@ runs:
     # Upload history for next build (enables trends over time)
     - name: Upload Allure history for trends
       if: inputs.history-artifact-name != '' && (success() || failure())
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.history-artifact-name }}
         path: ${{ inputs.output-dir }}/history

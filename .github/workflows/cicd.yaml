@@ -1126,8 +1126,8 @@ jobs:
       
           # Customer repos run from docker-builds/cucumber/
           for search_dir in \
-            "docker-builds/cucumber/cucumber/allure-results" \
-            "docker-builds/cucumber/cucumber/target/allure-results"; do
+            "cucumber/allure-results" \
+            "cucumber/target/allure-results"; do
             if [ -d "$search_dir" ]; then
               echo "Found results in $search_dir"
               cp -r "$search_dir"/. cucumber-allure-results/
@@ -1138,7 +1138,7 @@ jobs:
       
           if [ "$FOUND_RESULTS" != "true" ]; then
             echo "Searching for allure-results directory..."
-            ALLURE_DIR=$(find docker-builds/cucumber -name "allure-results" -type d 2>/dev/null | head -1)
+            ALLURE_DIR=$(find cucumber -name "allure-results" -type d 2>/dev/null | head -1)
             if [ -n "$ALLURE_DIR" ]; then
               echo "Found results in $ALLURE_DIR"
               cp -r "$ALLURE_DIR"/. cucumber-allure-results/
@@ -1156,7 +1156,7 @@ jobs:
           fi
       - name: Upload Cucumber Allure results
         if: always()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v4
         with:
           name: cucumber-allure-results-${{ matrix.profile }}
           path: cucumber-allure-results/
@@ -1352,16 +1352,6 @@ jobs:
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           docker commit mobiletest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose down
-      - name: Generate Allure Report for Mobile
-        if: always()
-        continue-on-error: true
-        uses: ./.github/actions/generate-allure-report
-        with:
-          results-dir: docker-builds/mobiletest/allure-results
-          output-dir: mobile-allure-report
-          artifact-name: allure-report-mobile-webui
-          history-artifact-name: allure-history-mobile-webui
-          report-title: 'Playwright (Mobile WebUI)'
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         uses: nick-fields/retry@v3
         with:
@@ -1394,10 +1384,10 @@ jobs:
       contents: read
       actions: read
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
 
       - name: Download all Cucumber Allure results
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v4
         with:
           pattern: cucumber-allure-results-*
           path: all-cucumber-results/
@@ -1428,7 +1418,7 @@ jobs:
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-run, mobile_test ]
+    needs: [ init, cucumber-run, mobile_test, cucumber-allure-report ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write    # trigger reports-cleanup workflow when disk space is low
