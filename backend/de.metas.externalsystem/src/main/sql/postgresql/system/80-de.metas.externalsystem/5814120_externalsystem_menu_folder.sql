@@ -76,7 +76,23 @@ WHERE AD_Menu_ID = 542347 AND AD_Language = 'en_US';
 
 -- ============================================================================
 -- 3. Place the new folder under the top-level "System" tree node (1000098),
---    then reparent the three external-system window nodes under the folder.
+--    then reparent ALL external-system window menu nodes under the folder.
+--    Covers every EntityType=de.metas.externalsystem window that has a menu node
+--    (menu node id in parens):
+--      541024 Externes System Konfiguration            (541585)
+--      541962 Skriptbasierte Importkonvertierung       (542263)
+--      541967 ExternalSystem Endpoint                  (542268)
+--      541040 Externes System Log                      (541600)
+--      541116 Externe System Konfiguration Shopware 6  (541702)
+--      541340 Externe System Service                   (541861)
+--      541341 Externe System Service Instanz           (541862)
+--      541540 External system config Leich + Mehl      (541966)
+--      541790 Externe System Konfiguration PCM         (542142)
+--      541944 Externes System                          (542246)
+--      541961 Skriptbasierte Exportkonvertierung       (542262)
+--      541751 PLU-Datei Konfiguration                  (542129)  -- was under "Einstellungen"
+--    A node id absent on a given instance (customer-specific window not installed)
+--    is simply not matched by the IN-list — safe no-op there.
 -- ============================================================================
 
 INSERT INTO AD_TreeNodeMM (AD_Tree_ID, Node_ID, Parent_ID, SeqNo, AD_Client_ID, AD_Org_ID,
@@ -88,4 +104,14 @@ VALUES (10, 542347, 1000098, 7, 0, 0, 'Y',
 UPDATE AD_TreeNodeMM
 SET Parent_ID = 542347,
 	Updated = TO_TIMESTAMP('2026-07-16 09:00:25', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
-WHERE AD_Tree_ID = 10 AND Node_ID IN (541585, 542263, 542268);
+WHERE AD_Tree_ID = 10 AND Node_ID IN (
+	541585, 542263, 542268,   -- config, scripted-import, endpoint (original three)
+	541600,                   -- Externes System Log
+	541702,                   -- Shopware 6
+	541861, 541862,           -- Service, Service Instanz
+	541966,                   -- Leich + Mehl
+	542142,                   -- PCM
+	542246,                   -- Externes System
+	542262,                   -- Skriptbasierte Exportkonvertierung
+	542129                    -- PLU-Datei Konfiguration (was under Einstellungen)
+);
