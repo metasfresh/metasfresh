@@ -1,20 +1,14 @@
-DROP FUNCTION IF EXISTS report.fresh_product_statistics_non0_report
-(
-    IN C_Period_ID               numeric,
-    IN issotrx                   character varying,
-    IN C_BPartner_ID             numeric,
-    IN C_BP_Group_ID             numeric,
-    IN C_Activity_ID             numeric,
-    IN M_Product_ID              numeric,
-    IN M_Product_Category_ID     numeric,
-    IN M_AttributeSetInstance_ID numeric,
-    IN AD_Org_ID                 numeric,
-    IN AD_Language               Character Varying(6)
-)
-;
+-- Source DDL: backend/de.metas.adempiere.adempiere/migration/src/main/sql/postgresql/ddl/public/functions/fresh_Product_Statistics_Non0_Report.sql
+-- Recreates report.fresh_product_statistics_non0_report(10 args) from the DDL source.
+--
+-- Also fixes a long-standing defect in the same body: the previous DDL read
+-- `FROM report.fresh_product_statistics_report x` (no argument list), which
+-- resolves to the empty backing TABLE rather than the SETOF-returning function
+-- of the same name — silently returning 0 rows and ignoring every parameter
+-- except C_BP_Group_ID. The parenthesised argument list below makes PostgreSQL
+-- call the function and honour all 9 upstream filters.
 
-
-
+DROP FUNCTION IF EXISTS report.fresh_product_statistics_non0_report(numeric, character varying, numeric, numeric, numeric, numeric, numeric, numeric, numeric, character varying);
 
 CREATE OR REPLACE FUNCTION report.fresh_product_statistics_non0_report(
     IN p_C_Period_ID               numeric,
