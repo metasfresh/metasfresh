@@ -25,6 +25,8 @@
 -- These feed the reverse/reactivate/void in-flight guard, run on every such document action. The
 -- existing UNIQUE index (config, AD_Table_ID, Record_ID) leads with the config id, so a predicate
 -- lacking it cannot seek that index — this index makes the source-record lookup an index seek.
+-- Record_ID leads: it is highly selective (one value per source document), whereas AD_Table_ID has
+-- only a handful of distinct values — so the more decisive column goes first.
 CREATE INDEX IF NOT EXISTS ExtSysScriptedExpConv_Status_Record
-    ON public.ExternalSystem_ScriptedExportConversion_Status (AD_Table_ID, Record_ID)
+    ON public.ExternalSystem_ScriptedExportConversion_Status (Record_ID, AD_Table_ID)
 ;
