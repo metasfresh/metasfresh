@@ -81,7 +81,6 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
@@ -129,8 +128,6 @@ public class PP_Order_Candidate_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	@NonNull
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull
 	private final M_Product_StepDefData productTable;
@@ -186,24 +183,6 @@ public class PP_Order_Candidate_StepDef
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
-	}
-
-	/**
-	 * Runs the maturing-candidate recompute <b>synchronously</b> in the calling thread's transaction.
-	 *
-	 * <p>Real-world trigger: the {@code PP_Order_Candidate_CreateMaturingCandidates} {@code AD_Process} is run
-	 * periodically by an {@code AD_Scheduler}; its {@code doIt} calls
-	 * {@link PPOrderCandidateService#recomputeMaturingCandidates()}. This step invokes that same service method
-	 * directly so the scenario is deterministic, instead of driving the async scheduler {@code RUN_ONCE}
-	 * event-bus path — that path lazily loads the scheduler's {@code AD_Process} on the async scheduler thread
-	 * via a PO bound to an already-closed {@code TrxRun} transaction, so it intermittently throws
-	 * "No transaction was found" in {@code Scheduler.doWork0}, leaves the maturing candidate uncreated, and
-	 * times out the poll below.</p>
-	 */
-	@When("the maturing candidates are created")
-	public void createMaturingCandidates()
-	{
-		trxManager.runInThreadInheritedTrx(() -> ppOrderCandidateService.recomputeMaturingCandidates());
 	}
 
 	/**
