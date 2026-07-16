@@ -80,3 +80,17 @@ UPDATE AD_UI_Element
 SET Name = 'HTTP-Endpunkt',
 	Updated = TO_TIMESTAMP('2026-07-16 10:00:20', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648567;
+
+-- ============================================================================
+-- 4. Propagate the new element's name/description down to AD_Column(_Trl) and the
+--    other element-derived AD_* tables. The endpoint column (591478) now points at
+--    element 585109; without this the column keeps the old "Ausgehender HTTP-Endpunkt"
+--    (outbound-only) text. update_TRL_Tables_On_AD_Element_TRL_Update propagates per
+--    language present on the element.
+-- ============================================================================
+
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_CH');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'en_US');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'fr_CH');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'it_CH');

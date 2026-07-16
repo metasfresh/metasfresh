@@ -58,5 +58,6 @@ DELETE FROM AD_Column    WHERE AD_Column_ID = 591365;
 DELETE FROM AD_Element_Trl WHERE AD_Element_ID = 584118;
 DELETE FROM AD_Element     WHERE AD_Element_ID = 584118;
 
+SELECT backup_table('ExternalSystem_Config_ScriptedImportConversion', '_5814290');
 SELECT public.db_alter_table('ExternalSystem_Config_ScriptedImportConversion',
 	'ALTER TABLE public.ExternalSystem_Config_ScriptedImportConversion DROP COLUMN IF EXISTS EndpointName');
