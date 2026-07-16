@@ -191,7 +191,7 @@ class ShipmentScheduleSegmentChangedProcessorTest
 	}
 
 	/**
-	 * Fix C — threshold flush. Adding {@value #OVER_THRESHOLD_DISTINCT_COUNT} DISTINCT segments while the flush
+	 * Threshold flush. Adding {@value #OVER_THRESHOLD_DISTINCT_COUNT} DISTINCT segments while the flush
 	 * threshold is {@value #FLUSH_THRESHOLD} must bound the accumulator: it flushes mid-batch when it reaches the
 	 * threshold, not only at AFTER_COMMIT. Asserts (a) MORE THAN ONE flush fired (≥1 mid-batch flush before commit),
 	 * (b) the UNION of all flushed segments equals the full distinct set (none lost, none duplicated), and (c) no

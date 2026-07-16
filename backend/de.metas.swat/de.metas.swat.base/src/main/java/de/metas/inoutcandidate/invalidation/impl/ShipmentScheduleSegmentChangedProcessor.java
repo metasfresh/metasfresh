@@ -77,7 +77,11 @@ final class ShipmentScheduleSegmentChangedProcessor
 		ShipmentScheduleSegmentChangedProcessor processor = trx.getProperty(TRX_PROPERTYNAME);
 		if (processor == null)
 		{
-			processor = new ShipmentScheduleSegmentChangedProcessor(shipmentScheduleInvalidator);
+			// Resolve the mid-batch flush threshold once here (the processor is created once per trx), so the
+			// constructor stays a pure value assignment and does not reach into the Services registry itself.
+			final int flushThreshold = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_FlushThreshold, DEFAULT_FlushThreshold);
+
+			processor = new ShipmentScheduleSegmentChangedProcessor(shipmentScheduleInvalidator, flushThreshold);
 			trx.setProperty(TRX_PROPERTYNAME, processor);
 
 			// register our listener: we will actually fire the storage segment changed when the transaction is commited
@@ -103,16 +107,18 @@ final class ShipmentScheduleSegmentChangedProcessor
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
 	/**
-	 * Mid-batch flush threshold, resolved once when this per-trx processor is created (the value is stable for the
-	 * lifetime of the batch, and reading it once bounds the per-{@link #addSegment} cost). A value {@code <= 0}
-	 * disables the mid-batch flush — only the AFTER_COMMIT listener flushes then.
+	 * Mid-batch flush threshold, resolved once by the factory when this per-trx processor is created (the value is
+	 * stable for the lifetime of the batch, and reading it once bounds the per-{@link #addSegment} cost). A value
+	 * {@code <= 0} disables the mid-batch flush — only the AFTER_COMMIT listener flushes then.
 	 */
 	private final int flushThreshold;
 
-	private ShipmentScheduleSegmentChangedProcessor(@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
+	private ShipmentScheduleSegmentChangedProcessor(
+			@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator,
+			final int flushThreshold)
 	{
 		this.shipmentScheduleInvalidator = shipmentScheduleInvalidator;
-		this.flushThreshold = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_FlushThreshold, DEFAULT_FlushThreshold);
+		this.flushThreshold = flushThreshold;
 	}
 
 	private void process()
