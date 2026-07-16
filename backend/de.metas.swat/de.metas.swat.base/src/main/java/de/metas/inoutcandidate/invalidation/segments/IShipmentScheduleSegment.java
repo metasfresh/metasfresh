@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.invalidation.segments;
 import de.metas.storage.IStorageQuery;
 import de.metas.storage.IStorageRecord;
 
+import java.util.Collections;
 import java.util.Set;
 
 /**
@@ -106,7 +107,7 @@ public interface IShipmentScheduleSegment
 
 	default Set<Integer> getWarehouseIds()
 	{
-		return java.util.Collections.emptySet();
+		return Collections.emptySet();
 	}
 
 	default boolean isNoWarehouses()
@@ -115,6 +116,13 @@ public interface IShipmentScheduleSegment
 		return warehouseIds == null || warehouseIds.isEmpty();
 	}
 
+	/**
+	 * NOTE the deliberate divergence from the sibling {@link #isAnyLocator()}/{@link #isAnyBPartner()}/
+	 * {@link #isAnyProduct()}: those treat an EMPTY set as "not any" (false), whereas this treats empty as "any"
+	 * (true, i.e. "do not add a warehouse predicate"). Reason: most segments carry no warehouse id at all, and such a
+	 * segment must NOT contribute a warehouse filter. The locator branch of the recompute WHERE clause needs an
+	 * explicit {@code !isNoLocators()} guard precisely because {@code isAnyLocator()} does NOT collapse empty to "any".
+	 */
 	default boolean isAnyWarehouse()
 	{
 		final Set<Integer> warehouseIds = getWarehouseIds();

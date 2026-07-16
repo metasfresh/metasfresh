@@ -95,6 +95,15 @@ public final class ShipmentScheduleSegmentBuilder
 		return this;
 	}
 
+	/**
+	 * Stores the warehouse identity (repo-id) on the segment. The recompute WHERE clause then matches by the
+	 * schedule's effective warehouse column directly, instead of enumerating every locator of the warehouse.
+	 * <p>
+	 * NOTE: {@code warehouseId(...)} and {@link #locatorId(int)}/{@link #locator(I_M_Locator)} are meant to be
+	 * MUTUALLY EXCLUSIVE on one builder. They populate independent fields that become two AND-ed branches in the
+	 * WHERE clause ({@code (warehouse IN ...) AND EXISTS(locator ...)}) — i.e. an intersection, which would
+	 * under-invalidate. Build a warehouse-scoped OR a locator-scoped segment, never both on the same builder.
+	 */
 	public ShipmentScheduleSegmentBuilder warehouseId(@NonNull final WarehouseId warehouseId)
 	{
 		warehouseIds.add(warehouseId.getRepoId());

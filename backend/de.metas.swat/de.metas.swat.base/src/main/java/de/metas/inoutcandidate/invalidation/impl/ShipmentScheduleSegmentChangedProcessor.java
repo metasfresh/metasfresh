@@ -11,9 +11,11 @@ import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.adempiere.service.ISysConfigBL;
+import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -43,6 +45,8 @@ import lombok.ToString;
 @ToString(of = "segments")
 final class ShipmentScheduleSegmentChangedProcessor
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleSegmentChangedProcessor.class);
+
 	private static final String TRX_PROPERTYNAME = ShipmentScheduleSegmentChangedProcessor.class.getName();
 
 	/**
@@ -119,9 +123,13 @@ final class ShipmentScheduleSegmentChangedProcessor
 		}
 
 		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
-		segments.clear();
 
+		// Flag FIRST, clear AFTER: if flagging throws (it runs on a separate TRXNAME_None connection), the segments
+		// stay accumulated and are retried by the next flush (the AFTER_COMMIT listener) instead of being lost.
+		// flagSegmentForRecompute is idempotent (it only marks schedules as "needs recompute"), so a retry that
+		// re-flags an already-flagged schedule is a harmless no-op.
 		shipmentScheduleInvalidator.flagSegmentForRecompute(segmentsCopy);
+		segments.clear();
 	}
 
 	public void addSegment(final IShipmentScheduleSegment segment)
@@ -138,14 +146,26 @@ final class ShipmentScheduleSegmentChangedProcessor
 		// (the same OOM this class guards against). copyOf is a no-op for already-immutable segments.
 		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
 
-		// Fix C — bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured
-		// threshold, so memory stays bounded regardless of batch size / dedupe effectiveness (not only at AFTER_COMMIT).
-		// A threshold <= 0 disables the mid-batch flush. Safe mid-batch because the flush's matching SQL runs on its own
-		// connection (TRXNAME_None) and matches only COMMITTED schedules; the batch's own new schedules are flagged
-		// directly on the batch trx elsewhere, so these already-committed-targeting segments lose no invalidations.
+		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold,
+		// so memory stays bounded regardless of batch size / dedupe effectiveness (not only at AFTER_COMMIT). A
+		// threshold <= 0 disables the mid-batch flush. Safe mid-batch because the flush's matching SQL runs on its own
+		// connection (TRXNAME_None) and matches only COMMITTED schedules; the batch's own new (uncommitted) schedules
+		// are flagged by id directly on the batch trx via ShipmentScheduleInvalidateBL.notifySegmentChangedForShipmentScheduleInclSched
+		// -> flagForRecompute, so these already-committed-targeting segments lose no invalidations.
+		//
+		// Best-effort: a mid-batch flush failure must NOT abort the enclosing business transaction (the AFTER_COMMIT
+		// flush historically ran post-commit and could never do so). process() flags-then-clears, so on failure the
+		// segments remain accumulated and are retried at commit.
 		if (flushThreshold > 0 && segments.size() >= flushThreshold)
 		{
-			process();
+			try
+			{
+				process();
+			}
+			catch (final RuntimeException ex)
+			{
+				logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT retry)", segments.size(), ex);
+			}
 		}
 	}
 
