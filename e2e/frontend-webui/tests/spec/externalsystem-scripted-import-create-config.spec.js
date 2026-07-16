@@ -7,24 +7,19 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
  * ExternalSystem scripted-import config — Endpoint picker parity.
  *
  * The scripted-import config (table ExternalSystem_Config_ScriptedImportConversion)
- * is reachable via TWO windows whose AD_UI_Element layouts disagree on which
- * fields are placed:
+ * is reachable via TWO windows, which must expose the same endpoint-binding UI:
  *
  * - Parent window 541024 ("Externes System Konfiguration"): the config lives on
  *   CHILD tab 548472 ("Skriptbasierte Importkonvertierung", TabLevel 1) under an
- *   ExternalSystem_Config root record. That tab places IsActive, ExternalSystemValue,
- *   AD_Client_ID, EndpointName (legacy free-text), AD_Org_ID, ScriptIdentifier,
- *   AD_User_Import_ID, Description — but NOT ExternalSystem_Endpoint_ID (the endpoint
- *   FK picker) and NO SFTP fields. So an endpoint cannot be selected from this window.
- *   THIS IS THE BUG this spec proves.
+ *   ExternalSystem_Config root record. This tab places the ExternalSystem_Endpoint_ID
+ *   FK picker + the SFTP fields, so an endpoint can be selected from this window.
  * - Dedicated window 541962 ("Skriptbasierte Importkonvertierung"): the same config
- *   is a ROOT tab (548473, TabLevel 0) that DOES place ExternalSystem_Endpoint_ID +
- *   the SFTP fields + the redundant EndpointName.
+ *   as a ROOT tab (548473, TabLevel 0), likewise placing ExternalSystem_Endpoint_ID +
+ *   the SFTP fields.
  *
- * This spec asserts the DESIRED post-fix behaviour, so the first test (parent window
- * 541024) FAILS (RED) against current code — the endpoint FK field is absent on the
- * child-tab form. The second test (dedicated window 541962) is parity coverage and
- * passes on current code.
+ * The legacy free-text EndpointName field is retired (dropped) — neither window shows
+ * it. This spec verifies the endpoint FK picker is present + selectable on BOTH windows
+ * (parity), which is the behaviour the AD migrations in this change establish.
  *
  * Login note: the shared `metasfresh` user has many roles; the default role
  * (roles[0]) lacks access to the ExternalSystem windows, so this spec explicitly
@@ -209,28 +204,26 @@ test.describe('ExternalSystem Scripted-Import Config — Endpoint picker parity'
     await loginAsWebUI(page);
   });
 
-  test('Parent window 541024 child tab must expose the Endpoint FK picker (BUG: currently absent)', async ({ page }) => {
+  test('Parent window 541024 child tab exposes the Endpoint FK picker (parity with 541962)', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00351: EDI ORDERS');
     allure.tag('F4550: Sales Order Candidate (REST API)');
-    allure.story('Scripted-Import Config — Endpoint picker missing on parent window');
+    allure.story('Scripted-Import Config — Endpoint picker present on parent window (parity)');
     allure.severity('critical');
 
     allure.description(`
 ## ExternalSystem_Config_ScriptedImportConversion — Endpoint picker (Parent window 541024)
 
-Bug: the parent "Externes System Konfiguration" window (541024) exposes the
+The parent "Externes System Konfiguration" window (541024) exposes the
 scripted-import config as a child tab (548472) under an ExternalSystem_Config
-root record, but that tab's AD_UI_Element layout does NOT place
-ExternalSystem_Endpoint_ID (the endpoint FK picker) — only the legacy
-free-text EndpointName. There is currently no way to bind an sFTP/REST
-endpoint from this window.
+root record. That tab places the ExternalSystem_Endpoint_ID FK picker (at parity
+with the dedicated window 541962) — so an sFTP/REST endpoint can be bound from
+either window, and the legacy free-text EndpointName is no longer shown.
 
 1. Create a fresh active parent ExternalSystem_Config record on window 541024
 2. Switch to the "Skriptbasierte Importkonvertierung" child tab (548472) and
    add a new row
-3. Assert the endpoint FK field is present in the new-row form — EXPECTED TO
-   FAIL on current code (this is the RED for this bugfix)
+3. Assert the endpoint FK field is present + selectable in the new-row form
     `);
 
     test.setTimeout(120000);
