@@ -26,11 +26,8 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +42,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Regression guard for {@link ShipmentScheduleSegmentChangedProcessor}'s segment accumulation.
@@ -203,14 +201,9 @@ class ShipmentScheduleSegmentChangedProcessorTest
 	@Test
 	void distinctSegmentsExceedingThreshold_areFlushedMidBatch_bounded()
 	{
-		// set a low, deterministic threshold at the SYSTEM level, which is what the 2-arg getIntValue(name, default) reads
-		Services.get(ISysConfigBL.class).setValue(
-				ShipmentScheduleSegmentChangedProcessor.SYSCONFIG_FlushThreshold,
-				FLUSH_THRESHOLD,
-				ClientId.SYSTEM,
-				OrgId.ANY);
-
 		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+		// The processor gets its flush threshold from the owning BL — stub a low, deterministic value directly on the mock.
+		when(invalidator.getSegmentFlushThreshold()).thenReturn(FLUSH_THRESHOLD);
 
 		final List<IShipmentScheduleSegment> distinctSegments = new ArrayList<>();
 		for (int i = 0; i < OVER_THRESHOLD_DISTINCT_COUNT; i++)

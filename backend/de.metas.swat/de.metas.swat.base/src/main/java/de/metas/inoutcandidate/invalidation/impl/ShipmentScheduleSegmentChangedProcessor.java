@@ -10,7 +10,6 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -49,14 +48,6 @@ final class ShipmentScheduleSegmentChangedProcessor
 
 	private static final String TRX_PROPERTYNAME = ShipmentScheduleSegmentChangedProcessor.class.getName();
 
-	/**
-	 * Int sysconfig bounding the invalidation-segment accumulator during a long-running batch: when the accumulator
-	 * reaches this size, it is flushed mid-batch (not only at AFTER_COMMIT). A value {@code <= 0} disables the
-	 * mid-batch flush (only the AFTER_COMMIT flush remains). Default {@value #DEFAULT_FlushThreshold}.
-	 */
-	static final String SYSCONFIG_FlushThreshold = "de.metas.inoutcandidate.ShipmentScheduleSegmentFlushThreshold";
-	private static final int DEFAULT_FlushThreshold = 1000;
-
 	public static ShipmentScheduleSegmentChangedProcessor getOrCreateIfThreadInheritedElseNull(
 			@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
 	{
@@ -77,9 +68,10 @@ final class ShipmentScheduleSegmentChangedProcessor
 		ShipmentScheduleSegmentChangedProcessor processor = trx.getProperty(TRX_PROPERTYNAME);
 		if (processor == null)
 		{
-			// Resolve the mid-batch flush threshold once here (the processor is created once per trx), so the
-			// constructor stays a pure value assignment and does not reach into the Services registry itself.
-			final int flushThreshold = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_FlushThreshold, DEFAULT_FlushThreshold);
+			// The mid-batch flush threshold is owned by the invalidation BL (which owns the sysconfig read); the
+			// processor obtains it from there instead of reaching into the Services registry itself. Resolved once,
+			// here, because the processor is created exactly once per transaction.
+			final int flushThreshold = shipmentScheduleInvalidator.getSegmentFlushThreshold();
 
 			processor = new ShipmentScheduleSegmentChangedProcessor(shipmentScheduleInvalidator, flushThreshold);
 			trx.setProperty(TRX_PROPERTYNAME, processor);
@@ -107,9 +99,10 @@ final class ShipmentScheduleSegmentChangedProcessor
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
 	/**
-	 * Mid-batch flush threshold, resolved once by the factory when this per-trx processor is created (the value is
-	 * stable for the lifetime of the batch, and reading it once bounds the per-{@link #addSegment} cost). A value
-	 * {@code <= 0} disables the mid-batch flush — only the AFTER_COMMIT listener flushes then.
+	 * Mid-batch flush threshold, obtained from the owning {@link ShipmentScheduleInvalidateBL} by the factory when
+	 * this per-trx processor is created (the value is stable for the lifetime of the batch, and reading it once
+	 * bounds the per-{@link #addSegment} cost). A value {@code <= 0} disables the mid-batch flush — only the
+	 * AFTER_COMMIT listener flushes then.
 	 */
 	private final int flushThreshold;
 
