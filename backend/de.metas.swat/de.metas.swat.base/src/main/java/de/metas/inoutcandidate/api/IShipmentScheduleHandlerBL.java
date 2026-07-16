@@ -54,7 +54,11 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
 	 * <p>
 	 * Unlimited variant of {@link #createMissingCandidates(Properties, QueryLimit)}; delegates with {@link QueryLimit#NO_LIMIT}.
+	 *
+	 * @deprecated unbounded: processes the whole backlog in one go and can OOM on a large backlog. Use the bounded
+	 * {@link #createMissingCandidates(Properties, QueryLimit)} overload instead.
 	 */
+	@Deprecated
 	Set<ShipmentScheduleId> createMissingCandidates(Properties ctx);
 
 	/**

@@ -142,6 +142,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		listeners.add(l);
 	}
 
+	/**
+	 * @deprecated unbounded: processes the whole backlog in one go and can OOM on a large backlog. Use the bounded
+	 * {@link #createMissingCandidates(Properties, QueryLimit)} overload instead.
+	 */
+	@Deprecated
 	@Override
 	public Set<ShipmentScheduleId> createMissingCandidates(@NonNull final Properties ctx)
 	{
