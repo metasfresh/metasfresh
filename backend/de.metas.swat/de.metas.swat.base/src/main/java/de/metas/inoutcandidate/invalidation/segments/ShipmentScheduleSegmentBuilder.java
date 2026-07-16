@@ -46,6 +46,9 @@ public final class ShipmentScheduleSegmentBuilder
 
 	public ImmutableShipmentScheduleSegment build()
 	{
+		// Note: the warehouse-vs-locator mutual-exclusivity invariant (see warehouseId(...) Javadoc) is
+		// enforced centrally in ImmutableShipmentScheduleSegment's constructor — the convergence point of
+		// every construction path — so it holds for direct ImmutableShipmentScheduleSegment.builder() callers too.
 		return ImmutableShipmentScheduleSegment.builder()
 				.productIds(productIds)
 				.locatorIds(locatorIds)
