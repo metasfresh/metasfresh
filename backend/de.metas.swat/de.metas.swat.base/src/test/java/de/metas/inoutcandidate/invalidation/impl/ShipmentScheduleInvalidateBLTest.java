@@ -56,6 +56,7 @@ class ShipmentScheduleInvalidateBLTest
 	private static final ProductId COMPONENT_PRODUCT_ID = ProductId.ofRepoId(1_000_001);
 	private static final ProductId BOM_PARENT_PRODUCT_ID = ProductId.ofRepoId(1_000_002);
 	private static final WarehouseId WAREHOUSE_ID = WarehouseId.ofRepoId(2_000_001);
+	private static final int LOCATOR_ID = 3_000_001;
 
 	private ShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 
@@ -101,5 +102,30 @@ class ShipmentScheduleInvalidateBLTest
 		assertThat(bomParentSegment.getWarehouseIds())
 				.as("BOM-parent segment must inherit the source segment's warehouse scope")
 				.containsExactly(WAREHOUSE_ID.getRepoId());
+	}
+
+	@Test
+	void explodeByPickingBOMs_locatorDerivedSegment_bomParentSegmentKeepsLocatorScope()
+	{
+		// Symmetrical guard for the locator-scoped branch (pre-existing behaviour): a locator-derived
+		// source segment must explode into a valid, locator-scoped BOM-parent segment.
+		final IShipmentScheduleSegment locatorSegment = ShipmentScheduleSegments.builder()
+				.bpartnerId(0)
+				.productId(COMPONENT_PRODUCT_ID)
+				.locatorId(LOCATOR_ID)
+				.attributeSetInstanceId(0)
+				.build();
+
+		final IShipmentScheduleSegment bomParentSegment = shipmentScheduleInvalidateBL
+				.explodeByPickingBOMs(locatorSegment)
+				.collect(Collectors.toList())
+				.stream()
+				.filter(s -> s.getProductIds().contains(BOM_PARENT_PRODUCT_ID.getRepoId()))
+				.findFirst()
+				.orElseThrow(() -> new AssertionError("expected an exploded segment for the picking-BOM parent product"));
+
+		assertThat(bomParentSegment.isInvalid()).isFalse();
+		assertThat(bomParentSegment.getLocatorIds()).containsExactly(LOCATOR_ID);
+		assertThat(bomParentSegment.getWarehouseIds()).isEmpty();
 	}
 }

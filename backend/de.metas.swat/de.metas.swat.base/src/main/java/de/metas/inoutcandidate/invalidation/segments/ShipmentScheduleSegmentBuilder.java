@@ -23,7 +23,6 @@ package de.metas.inoutcandidate.invalidation.segments;
  */
 
 import de.metas.product.ProductId;
-import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.warehouse.WarehouseId;
@@ -47,14 +46,9 @@ public final class ShipmentScheduleSegmentBuilder
 
 	public ImmutableShipmentScheduleSegment build()
 	{
-		// warehouseId(...) and locatorId(...)/locator(...) are mutually exclusive on one builder (see warehouseId javadoc):
-		// they populate independent fields that become two AND-ed branches in the recompute WHERE clause
-		// ((warehouse IN ...) AND EXISTS(locator ...)) — an intersection that would silently UNDER-invalidate.
-		Check.assume(warehouseIds.isEmpty() || locatorIds.isEmpty(),
-				"warehouseId(...) and locatorId(...) must not both be set on the same segment builder"
-						+ " (they AND into an under-invalidating intersection); warehouseIds={}, locatorIds={}",
-				warehouseIds, locatorIds);
-
+		// Note: the warehouse-vs-locator mutual-exclusivity invariant (see warehouseId(...) Javadoc) is
+		// enforced centrally in ImmutableShipmentScheduleSegment's constructor — the convergence point of
+		// every construction path — so it holds for direct ImmutableShipmentScheduleSegment.builder() callers too.
 		return ImmutableShipmentScheduleSegment.builder()
 				.productIds(productIds)
 				.locatorIds(locatorIds)

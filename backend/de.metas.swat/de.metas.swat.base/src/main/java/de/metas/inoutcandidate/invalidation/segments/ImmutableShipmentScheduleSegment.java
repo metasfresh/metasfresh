@@ -3,6 +3,7 @@ package de.metas.inoutcandidate.invalidation.segments;
 import java.util.Collections;
 import java.util.Set;
 
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -40,6 +41,14 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 			@NonNull @Singular final Set<Integer> warehouseIds,
 			@NonNull @Singular final Set<ShipmentScheduleAttributeSegment> attributes)
 	{
+		// Warehouse and locator scope are mutually exclusive: they become two AND-ed branches in the
+		// recompute WHERE clause ((warehouse IN ...) AND EXISTS(locator ...)) — an intersection that would
+		// silently UNDER-invalidate. Build a warehouse-scoped OR a locator-scoped segment, never both.
+		Check.assume(warehouseIds.isEmpty() || locatorIds.isEmpty(),
+				"warehouseIds and locatorIds must not both be set on a segment (they AND into an"
+						+ " under-invalidating intersection); warehouseIds={}, locatorIds={}",
+				warehouseIds, locatorIds);
+
 		this.productIds = Collections.unmodifiableSet(productIds);
 		this.bpartnerIds = Collections.unmodifiableSet(bpartnerIds);
 		this.billBPartnerIds = Collections.unmodifiableSet(billBPartnerIds);
