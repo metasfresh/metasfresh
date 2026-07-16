@@ -12,6 +12,7 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -113,7 +114,12 @@ final class ShipmentScheduleSegmentChangedProcessor
 			return;
 		}
 
-		this.segments.add(segment);
+		// Normalize to the value-based ImmutableShipmentScheduleSegment before adding, so the dedupe Set actually
+		// collapses logically-equal segments. Some IShipmentScheduleSegment implementations (e.g. the HU-derived
+		// ShipmentScheduleSegmentFromHU/-Storage/-Attribute) use identity equals/hashCode; without this copy each
+		// fresh instance would be retained as distinct and the Set would degrade to list-like unbounded growth
+		// (the same OOM this class guards against). copyOf is a no-op for already-immutable segments.
+		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
 	}
 
 	public void addSegments(final Collection<IShipmentScheduleSegment> segments)
@@ -123,6 +129,9 @@ final class ShipmentScheduleSegmentChangedProcessor
 			return;
 		}
 
-		this.segments.addAll(segments);
+		for (final IShipmentScheduleSegment segment : segments)
+		{
+			addSegment(segment);
+		}
 	}
 }

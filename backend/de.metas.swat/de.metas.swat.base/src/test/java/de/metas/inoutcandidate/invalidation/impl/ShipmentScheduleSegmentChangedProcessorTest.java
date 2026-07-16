@@ -22,8 +22,10 @@ package de.metas.inoutcandidate.invalidation.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.test.AdempiereTestHelper;
@@ -34,17 +36,20 @@ import org.mockito.ArgumentCaptor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 /**
- * RED test proving that {@link ShipmentScheduleSegmentChangedProcessor} does NOT dedupe accumulated segments.
+ * Regression guard for {@link ShipmentScheduleSegmentChangedProcessor}'s segment accumulation.
  * <p>
- * The processor accumulates segments into a plain {@code ArrayList} and, on trx commit (AFTER_COMMIT listener),
- * flushes the whole list to {@link ShipmentScheduleInvalidateBL#flagSegmentForRecompute(Collection)}.
- * Feeding the same value N times should collapse to a single distinct segment, but the ArrayList keeps all N.
+ * The processor accumulates segments into a dedup {@link java.util.LinkedHashSet} and, on trx commit (AFTER_COMMIT
+ * listener), flushes them to {@link ShipmentScheduleInvalidateBL#flagSegmentForRecompute(Collection)}. These tests
+ * assert that (a) value-equal segments collapse to one, (b) distinct segments are all retained (dedupe, not
+ * truncation), and (c) identity-equals implementations (e.g. the HU-derived segments) are also deduped because the
+ * accumulator normalizes every segment to the value-based {@link ImmutableShipmentScheduleSegment} before adding.
  */
 class ShipmentScheduleSegmentChangedProcessorTest
 {
@@ -137,5 +142,76 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		assertThat(captor.getValue())
 				.as("all %d distinct segments must be retained", DISTINCT_SEGMENT_COUNT)
 				.hasSize(DISTINCT_SEGMENT_COUNT);
+	}
+
+	/**
+	 * Identity-equals segment implementations must ALSO be deduped.
+	 * <p>
+	 * The HU-driven invalidation path ({@code M_HU_Storage}/{@code M_HU_Attribute}/{@code M_HU} changes) pushes
+	 * segment classes that use Object identity equals/hashCode straight into the accumulator (they do NOT go through
+	 * the value-based builder). The accumulator normalizes each segment to {@link ImmutableShipmentScheduleSegment}
+	 * before adding, so {@value #REPEATED_ADD_COUNT} freshly-constructed but value-equal identity segments must
+	 * collapse to one — otherwise this high-churn path would grow unbounded exactly like the pre-fix accumulator.
+	 */
+	@Test
+	void identityEqualsSegments_valueEqual_areDedupedToOne()
+	{
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			final ShipmentScheduleSegmentChangedProcessor processor =
+					ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor)
+					.as("processor must be created inside a thread-inherited trx")
+					.isNotNull();
+
+			for (int i = 0; i < REPEATED_ADD_COUNT; i++)
+			{
+				// fresh identity-equals instance each iteration, all value-equal
+				processor.addSegment(new IdentityEqualsSegment(1, 2, 3));
+			}
+		});
+
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator).flagSegmentForRecompute(captor.capture());
+
+		assertThat(captor.getValue())
+				.as("value-equal identity-based segments must be normalized and deduped to a single segment")
+				.hasSize(1);
+	}
+
+	/**
+	 * Minimal {@link IShipmentScheduleSegment} using Object (identity) equals/hashCode — models the HU-derived
+	 * segments ({@code ShipmentScheduleSegmentFromHU}/{@code -Storage}/{@code -Attribute}), none of which override
+	 * equals/hashCode.
+	 */
+	private static final class IdentityEqualsSegment implements IShipmentScheduleSegment
+	{
+		private final Set<Integer> productIds;
+		private final Set<Integer> bpartnerIds;
+		private final Set<Integer> locatorIds;
+
+		IdentityEqualsSegment(final int productId, final int bpartnerId, final int locatorId)
+		{
+			this.productIds = ImmutableSet.of(productId);
+			this.bpartnerIds = ImmutableSet.of(bpartnerId);
+			this.locatorIds = ImmutableSet.of(locatorId);
+		}
+
+		@Override
+		public Set<Integer> getProductIds() { return productIds; }
+
+		@Override
+		public Set<Integer> getBpartnerIds() { return bpartnerIds; }
+
+		@Override
+		public Set<Integer> getBillBPartnerIds() { return ImmutableSet.of(); }
+
+		@Override
+		public Set<Integer> getLocatorIds() { return locatorIds; }
+
+		@Override
+		public Set<ShipmentScheduleAttributeSegment> getAttributes() { return ImmutableSet.of(); }
 	}
 }
