@@ -196,7 +196,7 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	// 4. recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate)
 	// -----------------------------------------------------------------------
 	@Test
-	void recordPendingAsResend_flipsSingleRowToPendingResend_noDuplicate()
+	void recordPendingAsResend_addsNewPendingResendAttempt_keepingPriorError()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -220,14 +220,19 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 		// Call recordPendingAsResend
 		service.recordPendingAsResend(configId, ref);
 
-		// Single-row contract: STILL exactly 1 row — the row was flipped in place, not duplicated
+		// Per-attempt contract: a NEW attempt row is added; the prior Error attempt is KEPT as history —
+		// so two rows now coexist (was a single in-place flip under the former single-row design).
 		final List<ScriptedExportConversionStatus> rows = repo.getByConfigId(configId);
-		assertThat(rows).hasSize(1);
+		assertThat(rows).hasSize(2);
 
-		// The single row is now Pending + IsResend=Y
-		final ScriptedExportConversionStatus flippedRow = rows.get(0);
-		assertThat(flippedRow.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
-		assertThat(flippedRow.isResend()).isTrue();
+		// the prior Error attempt is preserved
+		assertThat(rows).anyMatch(r -> r.getStatus() == ExternalSystemExportStatus.Error);
+
+		// the LATEST attempt is the new Pending + IsResend=Y
+		final ScriptedExportConversionStatus latest = repo.getLatestByConfigAndRecord(configId, ref).orElse(null);
+		assertThat(latest).isNotNull();
+		assertThat(latest.getStatus()).isEqualTo(ExternalSystemExportStatus.Pending);
+		assertThat(latest.isResend()).isTrue();
 	}
 
 	// -----------------------------------------------------------------------
