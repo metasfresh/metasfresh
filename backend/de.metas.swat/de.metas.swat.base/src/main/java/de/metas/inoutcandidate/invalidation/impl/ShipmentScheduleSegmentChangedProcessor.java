@@ -10,6 +10,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.service.ISysConfigBL;
 
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
@@ -43,6 +44,14 @@ import lombok.ToString;
 final class ShipmentScheduleSegmentChangedProcessor
 {
 	private static final String TRX_PROPERTYNAME = ShipmentScheduleSegmentChangedProcessor.class.getName();
+
+	/**
+	 * Int sysconfig bounding the invalidation-segment accumulator during a long-running batch: when the accumulator
+	 * reaches this size, it is flushed mid-batch (not only at AFTER_COMMIT). A value {@code <= 0} disables the
+	 * mid-batch flush (only the AFTER_COMMIT flush remains). Default {@value #DEFAULT_FlushThreshold}.
+	 */
+	static final String SYSCONFIG_FlushThreshold = "de.metas.inoutcandidate.ShipmentScheduleSegmentFlushThreshold";
+	private static final int DEFAULT_FlushThreshold = 1000;
 
 	public static ShipmentScheduleSegmentChangedProcessor getOrCreateIfThreadInheritedElseNull(
 			@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
@@ -89,9 +98,17 @@ final class ShipmentScheduleSegmentChangedProcessor
 	private final Set<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
+	/**
+	 * Mid-batch flush threshold, resolved once when this per-trx processor is created (the value is stable for the
+	 * lifetime of the batch, and reading it once bounds the per-{@link #addSegment} cost). A value {@code <= 0}
+	 * disables the mid-batch flush — only the AFTER_COMMIT listener flushes then.
+	 */
+	private final int flushThreshold;
+
 	private ShipmentScheduleSegmentChangedProcessor(@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
 	{
 		this.shipmentScheduleInvalidator = shipmentScheduleInvalidator;
+		this.flushThreshold = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_FlushThreshold, DEFAULT_FlushThreshold);
 	}
 
 	private void process()
@@ -120,6 +137,16 @@ final class ShipmentScheduleSegmentChangedProcessor
 		// fresh instance would be retained as distinct and the Set would degrade to list-like unbounded growth
 		// (the same OOM this class guards against). copyOf is a no-op for already-immutable segments.
 		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
+
+		// Fix C — bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured
+		// threshold, so memory stays bounded regardless of batch size / dedupe effectiveness (not only at AFTER_COMMIT).
+		// A threshold <= 0 disables the mid-batch flush. Safe mid-batch because the flush's matching SQL runs on its own
+		// connection (TRXNAME_None) and matches only COMMITTED schedules; the batch's own new schedules are flagged
+		// directly on the batch trx elsewhere, so these already-committed-targeting segments lose no invalidations.
+		if (flushThreshold > 0 && segments.size() >= flushThreshold)
+		{
+			process();
+		}
 	}
 
 	public void addSegments(final Collection<IShipmentScheduleSegment> segments)

@@ -26,8 +26,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleAttributeSegment;
+import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -39,6 +42,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -55,6 +59,11 @@ class ShipmentScheduleSegmentChangedProcessorTest
 {
 	private static final int REPEATED_ADD_COUNT = 1000;
 	private static final int DISTINCT_SEGMENT_COUNT = 1000;
+
+	/** Low, deterministic threshold so the mid-batch-flush test is fast and does not depend on the 1000 default. */
+	private static final int FLUSH_THRESHOLD = 10;
+	/** Distinct segments to add: > FLUSH_THRESHOLD so at least one mid-batch flush must fire before the trx commit. */
+	private static final int OVER_THRESHOLD_DISTINCT_COUNT = 25;
 
 	@BeforeEach
 	void beforeEach()
@@ -179,6 +188,80 @@ class ShipmentScheduleSegmentChangedProcessorTest
 		assertThat(captor.getValue())
 				.as("value-equal identity-based segments must be normalized and deduped to a single segment")
 				.hasSize(1);
+	}
+
+	/**
+	 * Fix C — threshold flush. Adding {@value #OVER_THRESHOLD_DISTINCT_COUNT} DISTINCT segments while the flush
+	 * threshold is {@value #FLUSH_THRESHOLD} must bound the accumulator: it flushes mid-batch when it reaches the
+	 * threshold, not only at AFTER_COMMIT. Asserts (a) MORE THAN ONE flush fired (≥1 mid-batch flush before commit),
+	 * (b) the UNION of all flushed segments equals the full distinct set (none lost, none duplicated), and (c) no
+	 * single flush exceeded the threshold size (memory stayed bounded).
+	 * <p>
+	 * FAILS on the pre-fix code: only the AFTER_COMMIT listener flushes, so there is exactly ONE invocation carrying
+	 * all {@value #OVER_THRESHOLD_DISTINCT_COUNT} segments — assertion (a) "more than one flush" fails.
+	 */
+	@Test
+	void distinctSegmentsExceedingThreshold_areFlushedMidBatch_bounded()
+	{
+		// set a low, deterministic threshold at the SYSTEM level, which is what the 2-arg getIntValue(name, default) reads
+		Services.get(ISysConfigBL.class).setValue(
+				ShipmentScheduleSegmentChangedProcessor.SYSCONFIG_FlushThreshold,
+				FLUSH_THRESHOLD,
+				ClientId.SYSTEM,
+				OrgId.ANY);
+
+		final ShipmentScheduleInvalidateBL invalidator = mock(ShipmentScheduleInvalidateBL.class);
+
+		final List<IShipmentScheduleSegment> distinctSegments = new ArrayList<>();
+		for (int i = 0; i < OVER_THRESHOLD_DISTINCT_COUNT; i++)
+		{
+			distinctSegments.add(ImmutableShipmentScheduleSegment.builder()
+					.productId(i)
+					.bpartnerId(2)
+					.locatorId(3)
+					.build());
+		}
+
+		Services.get(ITrxManager.class).runInThreadInheritedTrx(() -> {
+			final ShipmentScheduleSegmentChangedProcessor processor =
+					ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(invalidator);
+			assertThat(processor)
+					.as("processor must be created inside a thread-inherited trx")
+					.isNotNull();
+
+			// add one at a time so the accumulator can cross the threshold mid-batch
+			for (final IShipmentScheduleSegment segment : distinctSegments)
+			{
+				processor.addSegment(segment);
+			}
+		});
+
+		// capture EVERY flush: the mid-batch threshold flushes AND the final AFTER_COMMIT flush of the remainder
+		@SuppressWarnings("unchecked")
+		final ArgumentCaptor<Collection<IShipmentScheduleSegment>> captor = ArgumentCaptor.forClass(Collection.class);
+		verify(invalidator, atLeastOnce()).flagSegmentForRecompute(captor.capture());
+		final List<Collection<IShipmentScheduleSegment>> flushes = captor.getAllValues();
+
+		// (a) more than one flush → at least one mid-batch flush fired before the trx commit
+		assertThat(flushes.size())
+				.as("adding %d distinct segments with threshold %d must flush mid-batch (>1 flush), not only at commit",
+						OVER_THRESHOLD_DISTINCT_COUNT, FLUSH_THRESHOLD)
+				.isGreaterThan(1);
+
+		// (c) no single flush's batch exceeded the threshold size → memory stayed bounded
+		for (final Collection<IShipmentScheduleSegment> flush : flushes)
+		{
+			assertThat(flush.size())
+					.as("no single flush may exceed the threshold size %d", FLUSH_THRESHOLD)
+					.isLessThanOrEqualTo(FLUSH_THRESHOLD);
+		}
+
+		// (b) union of all flushed segments == the full distinct set (none lost, none duplicated)
+		final List<IShipmentScheduleSegment> union = new ArrayList<>();
+		flushes.forEach(union::addAll);
+		assertThat(union)
+				.as("union of all flushed segments must equal the full distinct set — none lost, none duplicated")
+				.containsExactlyInAnyOrderElementsOf(distinctSegments);
 	}
 
 	/**
