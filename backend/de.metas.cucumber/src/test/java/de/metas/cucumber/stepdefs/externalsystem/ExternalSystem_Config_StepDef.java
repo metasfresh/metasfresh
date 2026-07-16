@@ -432,8 +432,8 @@ public class ExternalSystem_Config_StepDef
 		if (readStatusColumn)
 		{
 			// Status_AD_Column_ID was removed from the model when the per-record status design was
-			// consolidated into ExternalSystem_ScriptedExportConversion_Status (a single-row-upsert table
-			// that carries the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (one row per export
+			// attempt, carrying the export lifecycle).  IsTriggerOnComplete is still required to tell the
 			// complete-interceptor to start the export.
 			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
 

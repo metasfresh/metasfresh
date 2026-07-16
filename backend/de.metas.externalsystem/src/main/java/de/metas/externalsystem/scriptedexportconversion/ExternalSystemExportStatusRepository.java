@@ -52,8 +52,9 @@ import java.util.function.UnaryOperator;
  * <p>Repository Cluster: sole owner of {@code ExternalSystem_ScriptedExportConversion_Status}.
  * Service layer: {@link ExternalSystemExportStatusService}.
  *
- * <p>Grain: ONE row per (ExternalSystem_Config_ScriptedExportConversion_ID, AD_Table_ID, Record_ID).
- * All status transitions are done via in-place update on that single row (upsert).
+ * <p>Grain: ONE row per export ATTEMPT. Each enqueue / re-send inserts a fresh row (the per-attempt
+ * history for a given config + source record); lifecycle transitions then update the relevant attempt
+ * row in place (the pInstance-bound one, or the latest for the pre-enqueue Pending→Enqueued binding).
  */
 @Repository
 public class ExternalSystemExportStatusRepository

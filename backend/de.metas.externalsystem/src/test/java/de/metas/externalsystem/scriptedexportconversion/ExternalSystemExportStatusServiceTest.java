@@ -323,6 +323,27 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	/**
+	 * Per-attempt history: a config whose OLDER attempt errored but whose LATEST attempt succeeded
+	 * (a re-send that worked) must NOT be offered for re-send — otherwise the manual Re-send process
+	 * would re-trigger an export that already delivered successfully.
+	 */
+	@Test
+	void getResendableConfigs_excludesConfigWhoseLatestAttemptSucceeded()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt errored ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		// ... but the LATEST attempt (a successful re-send) is Sent
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
+	}
+
+	/**
 	 * A config with an Error status must be returned so the re-send process can retry it.
 	 */
 	@Test
