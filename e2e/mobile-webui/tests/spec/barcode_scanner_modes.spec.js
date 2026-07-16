@@ -406,12 +406,9 @@ test.describe('Modes', () => {
         await allure.story('Barcode scanning modes');
         await allure.severity('critical');
 
-        // Inject a deterministic blank-canvas camera double BEFORE the app loads, so the camera-mode
-        // panel never tears down: getUserMedia() resolves (no NotReadableError) and the flat grey feed
-        // gives ZXing nothing to false-positive on. Without this, Chromium's synthetic fake-media feed
-        // intermittently rejects/false-positives → onCancel → mode reverts to hardware → the
-        // `.camera-mode-panel` wrapper unmounts → expectCameraModeActive() flakes on a 20s timeout.
-        // (See BarcodeScannerComponent.stubCameraStream for the full mechanism.)
+        // Must run BEFORE login so the getUserMedia stub is installed before the app's first camera
+        // request. Stabilises this camera-toggle test against a flaky panel teardown — mechanism in
+        // BarcodeScannerComponent.stubCameraStream.
         await BarcodeScannerComponent.stubCameraStream();
 
         const masterdata = await createLoginMasterdata({

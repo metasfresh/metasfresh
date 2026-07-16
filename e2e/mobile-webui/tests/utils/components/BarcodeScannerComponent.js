@@ -302,11 +302,28 @@ export const BarcodeScannerComponent = {
     stubCameraStream: async () => await test.step(`${NAME} - Stub getUserMedia (blank deterministic stream)`, async () => {
         await page.addInitScript(() => {
             const makeBlankStream = () => {
-                const c = document.createElement('canvas'); c.width = 640; c.height = 480;
+                const c = document.createElement('canvas');
+                c.width = 640;
+                c.height = 480;
                 const ctx = c.getContext('2d');
-                const paint = () => { ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, c.width, c.height); };
-                paint(); setInterval(paint, 100);
-                return c.captureStream(10);
+                const paint = () => {
+                    ctx.fillStyle = '#808080';
+                    ctx.fillRect(0, 0, c.width, c.height);
+                };
+                paint();
+                const intervalId = setInterval(paint, 100);
+                const stream = c.captureStream(10);
+                // Stop the repaint loop when the video track is stopped (CameraModePanel's cleanup
+                // calls track.stop()), so a test that toggles the camera on/off repeatedly does not
+                // leak one live setInterval per toggle. captureStream tracks don't auto-clear it.
+                stream.getVideoTracks().forEach((track) => {
+                    const originalStop = track.stop.bind(track);
+                    track.stop = () => {
+                        clearInterval(intervalId);
+                        originalStop();
+                    };
+                });
+                return stream;
             };
             if (navigator.mediaDevices) {
                 navigator.mediaDevices.getUserMedia = () => Promise.resolve(makeBlankStream());
