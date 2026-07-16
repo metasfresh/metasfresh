@@ -64,51 +64,28 @@ import java.util.Set;
  */
 
 /**
- * Function-backed selection factory for the standalone "Bestand pro Woche" window (542159,
- * view {@link I_MD_Stock_PerWeek_V}).
- * <p>
- * When a product filter is applied, the row selection is built by scanning the parameterized function
- * {@code MD_Stock_PerWeek_fn(M_Product_ID, M_Warehouse_ID)} — which pushes the filter into the indexed
- * base {@code MD_Candidate} scan (partial index {@code md_candidate_perweek_pw_idx}) — instead of
- * materializing the entire {@link I_MD_Stock_PerWeek_V} (~785k rows) and filtering afterwards. The output
- * is byte-identical to the view for the same filter (same columns, same MD5 PK, same ATP semantics).
- * <p>
- * The applied product/warehouse are persisted alongside each selection row (IntKey2 / IntKey3) so that the
- * page render ({@code StockPerWeekViewDataRepository}) can re-parameterize the same function. Both
- * selection-creation entry points source from the function and carry these keys:
- * <ul>
- *   <li>{@link #createOrderedSelection} — initial selection when the user applies the product filter;</li>
- *   <li>{@link #createOrderedSelectionFromSelection} — re-sort (column header) and facet filtering, which
- *       derive a new selection from the current one. Without this, those interactions would fall back to the
- *       standard view-materializing builder AND drop IntKey2/IntKey3, leaving the render unable to
- *       re-parameterize the function (it would call the function with a null/zero product and render blank).</li>
- * </ul>
- * When no product filter is applied, {@link #createOrderedSelection} delegates to the standard factory, which
- * — together with the window's {@code queryIfNoFilters=false} binding customizer — keeps the "open empty /
- * please filter first" behavior intact.
- * <p>
- * The row add/remove operations are delegated unchanged: they are driven by change events on the view's own
- * table, and {@code MD_Stock_PerWeek_V} is a read-only computed view with no editable rows, so no such events
- * are ever published for this window and the path is not reachable here.
+ * Function-backed selection factory for window 542159 ("Bestand pro Woche", view {@link I_MD_Stock_PerWeek_V}).
+ * With a single-product filter it builds the selection from {@code MD_Stock_PerWeek_fn(product, warehouse)}
+ * (filter pushed into the indexed {@code MD_Candidate} scan) instead of materializing the ~785k-row view;
+ * output is byte-identical to the view. The applied product/warehouse are persisted in IntKey2/IntKey3 so the
+ * page render can re-parameterize the function. Without a single-product filter it delegates to the standard
+ * factory (preserving the {@code queryIfNoFilters=false} open-empty behavior).
  */
 public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionFactory
 {
 	public static final WindowId WINDOW_ID = WindowId.of(542159);
 
 	private static final String FUNCTION_NAME = "MD_Stock_PerWeek_fn";
-	/** Function relation aliased with the view's table name so all field/key/display expressions resolve unchanged. */
 	private static final String FUNCTION_SOURCE_RELATION_SQL = FUNCTION_NAME + "(?,?)";
 	private static final String KEY_COLUMN = I_MD_Stock_PerWeek_V.COLUMNNAME_MD_Stock_PerWeek_V_ID;
-	/** Alias used for the function relation in {@link #createOrderedSelection}'s hand-built SQL. */
 	private static final String FUNCTION_ALIAS = "fn";
-	/** Default row-numbering order (window's default sort), used when {@code orderBys} is empty. */
+	/** Window's default sort, used when {@code orderBys} is empty. */
 	private static final ImmutableList<String> DEFAULT_ORDER_FIELD_NAMES = ImmutableList.of(
 			I_MD_Stock_PerWeek_V.COLUMNNAME_WeekStartDate,
 			I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID,
 			I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID);
 
 	@NonNull private final SqlViewBinding sqlViewBinding;
-	/** Standard factory used for everything except building the (product-filtered) ordered selection. */
 	@NonNull private final ViewRowIdsOrderedSelectionFactory delegate;
 
 	public StockPerWeekSelectionFactory(@NonNull final SqlViewBinding sqlViewBinding)
@@ -129,9 +106,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 		final Integer productId = extractFilterValue(filters, I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID);
 		if (productId == null)
 		{
-			// No product filter, OR the product filter has more than one value / is a range (see
-			// extractFilterValue) => keep the standard behavior (incl. the queryIfNoFilters=false "please filter
-			// first" open-empty guard, and any warehouse/week-only filtering the standard path supports).
+			// no single-product filter (absent / multi-value / range) => standard path (open-empty guard + warehouse/week-only filtering)
 			return delegate.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, context);
 		}
 
@@ -153,7 +128,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 						+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID + "\n"
 						+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, productId, warehouseId)
 				.append("\n WHERE 1=1 ")
-				.wrap(securityRestrictionsWrapper(applySecurityRestrictions)); // security, same idiom as SqlViewSelectionQueryBuilder
+				.wrap(securityRestrictionsWrapper(applySecurityRestrictions));
 
 		final SqlAndParams sqlAndParams = sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee());
 		final long rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
@@ -167,13 +142,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 				.build();
 	}
 
-	/**
-	 * Mirrors {@code SqlViewSelectionQueryBuilder#securityRestrictionsWrapper} (same wrapper API, same
-	 * {@link Access#READ} semantics) so the function-sourced selection gets the identical per-row
-	 * client/org read-access filter the default view-selection path applies. The function output carries
-	 * {@code AD_Client_ID}/{@code AD_Org_ID} exactly like the view, so {@link AccessSqlStringExpression}
-	 * resolves against {@value #FUNCTION_ALIAS}'s columns unchanged.
-	 */
+	/** Same per-row client/org read-access filter the standard selection applies; the fn output carries AD_Client_ID/AD_Org_ID so it resolves against the fn alias. */
 	private static IStringExpressionWrapper securityRestrictionsWrapper(final boolean applySecurityRestrictions)
 	{
 		if (applySecurityRestrictions)
@@ -186,15 +155,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 		}
 	}
 
-	/**
-	 * Builds the {@code ORDER BY} clause used to number ({@code row_number()}) the function-sourced rows
-	 * before persisting them into {@code T_WEBUI_ViewSelection.Line}. Honors {@code orderBys} — the same
-	 * order carried in the returned selection's metadata — instead of a hardcoded tuple, so the persisted
-	 * row order never silently diverges from what the metadata advertises. Falls back to the window's
-	 * default tuple (WeekStartDate, Warehouse, Product) when {@code orderBys} is empty, and always appends
-	 * any of that default tuple's columns not already covered as tie-breakers, keeping the numbering fully
-	 * deterministic.
-	 */
+	/** ORDER BY for {@code row_number()}: honors {@code orderBys} (matching the selection metadata), falls back to the window default tuple, and appends any uncovered default columns as deterministic tie-breakers. */
 	private static String buildRowNumberOrderBySql(@NonNull final DocumentQueryOrderByList orderBys)
 	{
 		final LinkedHashSet<String> coveredFieldNames = new LinkedHashSet<>();
@@ -243,15 +204,13 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 		final AppliedFilter appliedFilter = readAppliedFilter(fromSelection.getSelectionId());
 		if (appliedFilter == null)
 		{
-			// Source selection is not function-backed (e.g. the open-empty selection has no rows) => standard behavior.
+			// source selection not function-backed (e.g. open-empty, no rows) => standard path
 			return delegate.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, filters, orderBys, filterConverterCtx);
 		}
 
 		final ViewId newViewId = ViewId.random(fromSelection.getWindowId());
 
-		// Re-sort / facet-filter the SAME product's rows, reading the sort/filter column values from the
-		// function (fast) rather than re-materializing the view. The function is aliased with the view's table
-		// name so the standard builder's field/order/filter SQL resolves unchanged.
+		// re-sort / facet-filter the same product's rows via the function (not the view); fn aliased as the view so the standard builder's SQL resolves unchanged
 		final SqlAndParams sqlCreateSelection = SqlViewSelectionQueryBuilder.newInstance(sqlViewBinding)
 				.buildSqlCreateSelectionFromSelection(
 						viewEvalCtx,
@@ -265,8 +224,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 		final long rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
 				sqlCreateSelection.getSql(), sqlCreateSelection.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 
-		// Carry the applied product/warehouse onto the new selection rows so the page render can
-		// re-parameterize the function (the standard builder only inserts UUID/Line/key columns).
+		// carry product/warehouse onto the new rows (the standard builder only inserts UUID/Line/key) so the render can re-parameterize the function
 		if (rowsCount > 0)
 		{
 			carryAppliedFilter(newViewId.getViewId(), appliedFilter);
@@ -280,14 +238,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 				.build();
 	}
 
-	/**
-	 * @return the single {@code EQUAL}-operator positive int value of {@code columnName} across the applied
-	 *         filters, or {@code null} if no such filter parameter is present <b>or</b> the parameter is a
-	 *         multi-value (e.g. {@code IN_ARRAY}, from a multi-select facet) or range ({@code BETWEEN})
-	 *         filter that a single function parameter cannot represent. In the latter case {@code null} is
-	 *         returned on purpose — never "the first value" — so the caller (createOrderedSelection) falls
-	 *         back to the standard delegate path, which does handle multi-value/range filters correctly.
-	 */
+	/** Single {@code EQUAL} positive int value of {@code columnName}, or {@code null} if absent / multi-value ({@code IN_ARRAY}) / range ({@code BETWEEN}) — null (never "the first value") makes the caller take the standard path, which a single fn param cannot. */
 	@Nullable
 	private static Integer extractFilterValue(@NonNull final DocumentFilterList filters, @NonNull final String columnName)
 	{
@@ -301,9 +252,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 
 			if (param.getOperator() != DocumentFilterParam.Operator.EQUAL)
 			{
-				// Multi-value or range filter on this column: MD_Stock_PerWeek_fn(product, warehouse) takes a
-				// single product id, so picking "the first" value would silently drop the others and render
-				// wrong/incomplete output. Bail out regardless of the window's actual filter cardinality.
+				// multi-value/range: fn takes one product; "the first" would silently drop the rest → bail to the standard path
 				return null;
 			}
 
@@ -372,12 +321,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 				ITrx.TRXNAME_ThreadInherited);
 	}
 
-	//
-	// The row add/remove operations are delegated unchanged (see class Javadoc: unreachable for this
-	// computed view). getSqlWhereClause / containsAnyOfRowIds / delete work purely on the persisted
-	// T_WEBUI_ViewSelection by UUID / IntKey1 and are source-agnostic.
-	//
-
+	// remaining operations are source-agnostic (persisted T_WEBUI_ViewSelection by UUID/IntKey1) => delegated unchanged
 	@Override
 	public SqlViewRowsWhereClause getSqlWhereClause(final ViewId viewId, final DocumentIdsSelection rowIds)
 	{
