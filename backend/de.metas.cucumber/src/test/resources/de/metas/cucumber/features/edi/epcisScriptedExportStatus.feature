@@ -160,7 +160,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30088_030
-  Scenario: S30088_030 — re-send of an errored shipment flips the single status row to Pending+IsResend=Y
+  Scenario: S30088_030 — re-send of an errored shipment adds a NEW attempt row (per-attempt history), keeping the errored one
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference                |
@@ -198,7 +198,8 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     # Run re-send process on the errored shipment
     When M_InOut_ReSend_ScriptedExportConversion process is run for shipment io_030
 
-    # The single status row is flipped to IsResend=Y (single-row upsert), reaching at minimum Enqueued
+    # The re-send inserts a NEW attempt row (IsResend=Y), reaching at minimum Enqueued — the errored
+    # first attempt is kept, so this is the LATEST row (newest-first), not a mutation of the old one.
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
       | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |
       | io_030     | scriptedCfg_es                                    | U            | Y        |
@@ -212,6 +213,10 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     And after not more than 10s, M_InOut EPCIS_ExportStatus is:
       | M_InOut_ID | EPCIS_ExportStatus |
       | io_030     | S                  |
+
+    # Per-attempt history: TWO rows now coexist for this shipment+config — the errored first attempt
+    # AND the Sent re-send attempt. (Under the former single-row upsert this count would be 1.)
+    And after not more than 10s, ExternalSystem_ScriptedExportConversion_Status row count for shipment io_030 and config scriptedCfg_es is 2
 
 
   @from:cucumber

@@ -82,7 +82,7 @@ public class ExternalSystemExportStatusService
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.DontSend)
@@ -97,7 +97,7 @@ public class ExternalSystemExportStatusService
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
@@ -105,16 +105,15 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Flips the (config, record) status row back to {@link ExternalSystemExportStatus#Pending} with
-	 * {@code IsResend=Y} using an in-place upsert — matching the single-row-per-key design.
-	 * Creates the row if somehow absent; otherwise updates the existing row so no duplicate key
-	 * can arise.
+	 * Records a re-send as a NEW attempt row in state {@link ExternalSystemExportStatus#Pending} with
+	 * {@code IsResend=Y}. Prior attempts (the original send + any earlier re-sends) remain as history;
+	 * the aggregated status and the lifecycle transitions then track this newest attempt.
 	 */
 	public void recordPendingAsResend(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)

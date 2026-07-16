@@ -60,8 +60,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation, and deactivating a
  * shipment's status row (the escape-hatch that releases a shipment blocked by an in-flight export).
  *
- * <p>The status table holds one row per (config, source-record) pair that is updated in place
- * as the export lifecycle progresses (Pending → Enqueued → Sent / Error / Invalid / DontSend).
+ * <p>The status table holds one row per export ATTEMPT: each enqueue / re-send inserts a fresh
+ * row (the per-attempt history), and the transitions of that attempt (Pending → Enqueued →
+ * Sent / Error / Invalid / DontSend) update its own row in place, correlated by AD_PInstance_ID.
  */
 @RequiredArgsConstructor
 public class ExternalSystem_ScriptedExportConversion_Status_StepDef
@@ -78,9 +79,10 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	// ------------------------------------------------------------------
 
 	/**
-	 * Polls until the single {@code ExternalSystem_ScriptedExportConversion_Status} row for the given
-	 * shipment + config combination reaches the expected {@code ExportStatus}, optionally asserting
-	 * {@code IsResend} and the presence of an {@code AD_Issue_ID}.
+	 * Polls until the LATEST {@code ExternalSystem_ScriptedExportConversion_Status} row (newest by
+	 * Status_ID) for the given shipment + config combination reaches the expected {@code ExportStatus},
+	 * optionally asserting {@code IsResend} and the presence of an {@code AD_Issue_ID}. With per-attempt
+	 * history several rows may coexist for the same shipment + config; this checks the most recent one.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -153,6 +155,53 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 					}
 
 					return Optional.of(statusRow);
+				})
+				.execute();
+	}
+
+	/**
+	 * Polls until the NUMBER of {@code ExternalSystem_ScriptedExportConversion_Status} rows for the
+	 * given shipment + config equals the expected count. Because each export ATTEMPT (the initial
+	 * enqueue and every re-send) is its own row (per-attempt history) rather than a single upserted
+	 * row, a re-send GROWS this count. This is the observable that distinguishes per-attempt history
+	 * from the former single-row upsert.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns none (all args inline)
+	 * @cucumber.depends StepDefData: M_InOut_StepDefData, ExternalSystem_Config_ScriptedExportConversion_StepDefData
+	 * @cucumber.example <pre>
+	 * Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status row count for shipment io_030 and config scriptedCfg_es is 2
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, ExternalSystem_ScriptedExportConversion_Status row count for shipment (.*) and config (.*) is (\\d+)$")
+	public void scriptedExportConversionStatusRowCountIs(
+			final int timeoutSec,
+			@NonNull final String inoutIdentifierStr,
+			@NonNull final String cfgIdentifierStr,
+			final int expectedCount) throws InterruptedException
+	{
+		final org.compiere.model.I_M_InOut inout = inoutTable.get(StepDefDataIdentifier.ofString(inoutIdentifierStr));
+		assertThat(inout).isNotNull();
+		final int inoutId = inout.getM_InOut_ID();
+
+		final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(StepDefDataIdentifier.ofString(cfgIdentifierStr));
+		assertThat(cfg).isNotNull();
+		final int cfgId = cfg.getId().getRepoId();
+
+		final int m_inout_table_id = tableDAO.retrieveTableId(org.compiere.model.I_M_InOut.Table_Name);
+
+		StepDefUtil.<Long>tryAndWaitForItem()
+				.maxWaitSeconds(timeoutSec)
+				.checkingIntervalMs(500L)
+				.workerFromOptionalSupplier(() -> {
+					final long actual = queryBL
+							.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
+							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, inoutId)
+							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, cfgId)
+							.create()
+							.count();
+					return actual == expectedCount ? Optional.of(actual) : Optional.empty();
 				})
 				.execute();
 	}

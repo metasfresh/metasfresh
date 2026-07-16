@@ -283,10 +283,10 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Upsert semantics: second transition on same key keeps a single row
+	// A transition (markEnqueued) updates the SAME attempt row — one enqueue, one row
 	// -----------------------------------------------------------------------
 	@Test
-	void upsert_sameRow_onSecondCall()
+	void transition_updatesSameAttemptRow()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
