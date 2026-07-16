@@ -86,6 +86,10 @@ Feature: Maturing scenarios
 
     And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
+    # Intentionally kept as the scheduler trigger (not the generic "AD_Process ... is run" step used
+    # for CreateMaturingCandidates above): running AlreadyMaturedForOrdering synchronously only enqueues
+    # its selection — its close chain needs the scheduler's own async dispatch, so a synchronous run
+    # leaves the candidate unclosed (IsClosed never flips). Do not convert this line.
     And AD_Scheduler for classname 'org.eevolution.productioncandidate.process.PP_Order_Candidate_AlreadyMaturedForOrdering' is ran once
 
     And after not more than 60s, PP_Order_Candidates are found
