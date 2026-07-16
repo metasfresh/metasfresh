@@ -198,12 +198,12 @@ Feature: Switch to Moving Average Invoice
     #
     Given metasfresh contains M_Products:
       | Identifier |
-      | productA   |
-      | productB   |
+      | product1   |
+      | product2   |
     And update current costs
       | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
-      | productA     | AveragePO        | 10 CHF           |
-      | productB     | AveragePO        | 20 CHF           |
+      | product1     | AveragePO        | 10 CHF           |
+      | product2     | AveragePO        | 20 CHF           |
     When metasfresh contains M_CostRevaluation:
       | Identifier | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
       | switch     | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
@@ -215,5 +215,5 @@ Feature: Switch to Moving Average Invoice
     #
     Then validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
-      | acctSchema      | productA     | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
-      | acctSchema      | productB     | MovingAverageInvoice | 20 CHF           | 0 PCE      | 0 CHF        |
+      | acctSchema      | product1     | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
+      | acctSchema      | product2     | MovingAverageInvoice | 20 CHF           | 0 PCE      | 0 CHF        |
