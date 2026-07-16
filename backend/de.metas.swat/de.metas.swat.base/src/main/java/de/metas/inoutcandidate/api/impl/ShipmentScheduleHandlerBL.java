@@ -164,14 +164,13 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		// re-enqueues follow-up work packages until nothing remains, so every handler is eventually served across
 		// successive runs. If strict per-run fairness across handlers is ever required, distribute the budget
 		// (e.g. round-robin) instead of draining in order.
-		final Budget budget = new Budget(maxToProcess.toIntOrInfinit());
+		final Budget budget = new Budget(maxToProcess);
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
 			if (budget.isLimitReached())
 			{
-				// Budget already exhausted by a previous handler and there is still work left (see Budget javadoc);
-				// don't even start the next handler's iterator.
+				// Budget already fully consumed by a previous handler; don't even start the next handler's iterator.
 				break;
 			}
 
@@ -198,13 +197,17 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 
 		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
 
-		final Iterator<?> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
+		// Retrieve only up to the CURRENT remaining budget: pushing the limit into the retrieve itself (instead of
+		// merely capping how many of an unlimited result we process) avoids materializing the whole missing-candidates
+		// backlog -- which OPTION_GuaranteedIteratorRequired otherwise selects in full, tens of thousands of rows on
+		// every batch run -- see OrderLineShipmentScheduleHandler#retrieveModelsWithMissingCandidates.
+		final Iterator<?> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited, budget.toQueryLimit());
 		while (missingCandidateModels.hasNext())
 		{
 			if (!budget.hasRemaining())
 			{
-				// the iterator still has a next model, but we ran out of budget => there is more work remaining
-				budget.setLimitReached();
+				// Defensive only: with the limited retrieve above, the iterator should never yield more than the
+				// budget that was passed to it.
 				break;
 			}
 
@@ -221,36 +224,57 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 
 	/**
 	 * Mutable budget of models (created-or-vetoed) still allowed to be processed, shared across all handlers invoked
-	 * by a single {@link #createMissingCandidates(Properties, QueryLimit)} call.
+	 * by a single {@link #createMissingCandidates(Properties, QueryLimit)} call. Also hands out the CURRENT remaining
+	 * budget as a {@link QueryLimit} so each handler's retrieve fetches only up to what this run can still process
+	 * (see {@link #invokeHandler(Properties, ShipmentScheduleHandler, Budget)}).
 	 */
 	private static final class Budget
 	{
+		private final boolean unlimited;
 		private int remaining;
-		private boolean limitReached;
 
-		private Budget(final int remaining)
+		private Budget(@NonNull final QueryLimit maxToProcess)
 		{
-			this.remaining = remaining;
+			this.unlimited = maxToProcess.isNoLimit();
+			this.remaining = maxToProcess.toIntOrInfinit();
 		}
 
 		private boolean hasRemaining()
 		{
-			return remaining > 0;
+			return unlimited || remaining > 0;
+		}
+
+		private QueryLimit toQueryLimit()
+		{
+			return unlimited ? QueryLimit.NO_LIMIT : QueryLimit.ofInt(remaining);
 		}
 
 		private void consumeOne()
 		{
-			remaining--;
+			if (!unlimited)
+			{
+				remaining--;
+			}
 		}
 
-		private void setLimitReached()
-		{
-			limitReached = true;
-		}
-
+		/**
+		 * {@code true} iff the combined budget was fully consumed across all handlers in this run (i.e. {@code remaining==0}).
+		 * <p>
+		 * With the per-handler retrieve now capped to the remaining budget (see {@link #toQueryLimit()}), an iterator can
+		 * no longer signal "more work exists" via a leftover {@code hasNext()} -- the query itself never returns more than
+		 * the budget allows. So budget-exhaustion is the only remaining signal that a follow-up run may be needed.
+		 * <p>
+		 * Never {@code true} for an unlimited budget ({@link QueryLimit#NO_LIMIT}) -- that variant always means
+		 * "process everything in one go".
+		 * <p>
+		 * Note: when the backlog is an exact multiple of {@code maxToProcess}, this causes exactly ONE extra follow-up
+		 * run that finds and processes 0 models (a fresh {@code Budget} whose {@code remaining} then stays at the full
+		 * {@code maxToProcess}) -- that run's own {@link #isLimitReached()} correctly reports {@code false}, so the
+		 * re-enqueue chain terminates.
+		 */
 		private boolean isLimitReached()
 		{
-			return limitReached;
+			return !unlimited && remaining <= 0;
 		}
 	}
 
