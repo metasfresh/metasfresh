@@ -6,6 +6,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_C_OrderLine;
 
 import java.util.Properties;
@@ -51,8 +52,19 @@ public interface IShipmentScheduleHandlerBL extends ISingletonService
 
 	/**
 	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates.
+	 * <p>
+	 * Unlimited variant of {@link #createMissingCandidates(Properties, QueryLimit)}; delegates with {@link QueryLimit#NO_LIMIT}.
 	 */
 	Set<ShipmentScheduleId> createMissingCandidates(Properties ctx);
+
+	/**
+	 * Invokes all registered {@link ShipmentScheduleHandler}s to create missing InOut candidates, processing at most
+	 * {@code maxToProcess} models (created-or-vetoed, not schedules created) across all handlers combined.
+	 *
+	 * @param maxToProcess budget of models to process; use {@link QueryLimit#NO_LIMIT} for unlimited.
+	 * @return the created shipment schedule ids, plus whether the budget was exhausted with more work remaining.
+	 */
+	CreateMissingCandidatesResult createMissingCandidates(Properties ctx, QueryLimit maxToProcess);
 
 	/**
 	 * Invokes the given <code>sched</code>'s {@link ShipmentScheduleHandler} to get a {@link IDeliverRequest} instance.

@@ -2,10 +2,12 @@ package de.metas.inoutcandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.CreateMissingCandidatesResult;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
@@ -21,6 +23,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -138,22 +141,40 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	@Override
 	public Set<ShipmentScheduleId> createMissingCandidates(@NonNull final Properties ctx)
 	{
+		return createMissingCandidates(ctx, QueryLimit.NO_LIMIT).getCreatedShipmentScheduleIds();
+	}
+
+	@Override
+	public CreateMissingCandidatesResult createMissingCandidates(@NonNull final Properties ctx, @NonNull final QueryLimit maxToProcess)
+	{
 		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
+
+		// Budget of models to process (created-or-vetoed), threaded across all handlers.
+		final Budget budget = new Budget(maxToProcess.toIntOr(Integer.MAX_VALUE));
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
+			if (budget.isLimitReached())
+			{
+				// Budget already exhausted by a previous handler and there is still work left (see Budget javadoc);
+				// don't even start the next handler's iterator.
+				break;
+			}
+
 			final ShipmentScheduleHandler handler = tableName2Handler.get(tableName);
 			try (final MDCCloseable ignored = MDC.putCloseable("ShipmentScheduleHandler.className", handler.getClass().getName()))
 			{
-				result.addAll(invokeHandler(ctx, handler));
+				result.addAll(invokeHandler(ctx, handler, budget));
 			}
 		}
-		return result;
+
+		return new CreateMissingCandidatesResult(ImmutableSet.copyOf(result), budget.isLimitReached());
 	}
 
 	private LinkedHashSet<ShipmentScheduleId> invokeHandler(
 			@NonNull final Properties ctx,
-			@NonNull final ShipmentScheduleHandler handler)
+			@NonNull final ShipmentScheduleHandler handler,
+			@NonNull final Budget budget)
 	{
 		final String handlerClassName = handler.getClass().getName();
 
@@ -166,14 +187,57 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 		final Iterator<?> missingCandidateModels = handler.retrieveModelsWithMissingCandidates(ctx, ITrx.TRXNAME_ThreadInherited);
 		while (missingCandidateModels.hasNext())
 		{
+			if (!budget.hasRemaining())
+			{
+				// the iterator still has a next model, but we ran out of budget => there is more work remaining
+				budget.setLimitReached();
+				break;
+			}
+
 			final Object model = missingCandidateModels.next();
 			try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(model))
 			{
 				result.addAll(invokeHandlerForModel(ctx, handler, handlerRecord, model));
 			}
+			budget.consumeOne();
 		}
 		Loggables.withLogger(logger, Level.DEBUG).addLog("ShipmentScheduleHandler {} created {} shipment schedules", handler, result.size());
 		return result;
+	}
+
+	/**
+	 * Mutable budget of models (created-or-vetoed) still allowed to be processed, shared across all handlers invoked
+	 * by a single {@link #createMissingCandidates(Properties, QueryLimit)} call.
+	 */
+	private static final class Budget
+	{
+		private int remaining;
+		private boolean limitReached;
+
+		private Budget(final int remaining)
+		{
+			this.remaining = remaining;
+		}
+
+		private boolean hasRemaining()
+		{
+			return remaining > 0;
+		}
+
+		private void consumeOne()
+		{
+			remaining--;
+		}
+
+		private void setLimitReached()
+		{
+			limitReached = true;
+		}
+
+		private boolean isLimitReached()
+		{
+			return limitReached;
+		}
 	}
 
 	private LinkedHashSet<ShipmentScheduleId> invokeHandlerForModel(
