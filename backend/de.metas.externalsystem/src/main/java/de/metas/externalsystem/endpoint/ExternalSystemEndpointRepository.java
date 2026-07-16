@@ -65,7 +65,7 @@ public class ExternalSystemEndpointRepository
 				.value(endpointRecord.getValue())
 				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
 				// HTTP transport fields (nullable — only set for HTTP transport)
-				.endpointUrl(endpointRecord.getOutboundHttpEP())
+				.endpointUrl(endpointRecord.getHttpEndPoint())
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
 				// HTTP authentication fields

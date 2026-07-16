@@ -91,7 +91,7 @@ public class ExternalSystem_Endpoint
 		}
 		else if (TransportType.SFTP.getCode().equals(newTransportType))
 		{
-			endpoint.setOutboundHttpEP(null);
+			endpoint.setHttpEndPoint(null);
 			endpoint.setOutboundHttpMethod(null);
 			endpoint.setContentType(null);
 			endpoint.setAuthType(null);
