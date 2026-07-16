@@ -59,8 +59,27 @@ SELECT public.db_alter_table('ExternalSystem_Endpoint',
 	'ALTER TABLE public.ExternalSystem_Endpoint RENAME COLUMN OutboundHttpEP TO HttpEndPoint');
 
 -- ============================================================================
--- 3. Relabel the endpoint field + UI element (AD_Field 755940, AD_UI_Element 648567)
---    to the new bidirectional element / name.
+-- 3. Propagate the new element's name/description down to AD_Column(_Trl) and the
+--    other element-derived AD_* tables. The endpoint column (591478) now points at
+--    element 585109; without this the column keeps the old "Ausgehender HTTP-Endpunkt"
+--    (outbound-only) text. update_TRL_Tables_On_AD_Element_TRL_Update propagates per
+--    language present on the element.
+--    RUN THIS BEFORE the explicit AD_Field/AD_UI_Element relabels in step 4, so those
+--    explicit values win last — propagation reads AD_Element_Trl (fr_CH/it_CH untranslated
+--    → IsTranslated='N') and, if run after step 4, would revert the field's fr_CH/it_CH
+--    IsTranslated flag set there.
+-- ============================================================================
+
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_DE');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_CH');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'en_US');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'fr_CH');
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'it_CH');
+
+-- ============================================================================
+-- 4. Relabel the endpoint field + UI element (AD_Field 755940, AD_UI_Element 648567)
+--    to the new bidirectional element / name. These explicit overrides run AFTER the
+--    step-3 propagation so they are the final word on the field/UI-element labels.
 -- ============================================================================
 
 UPDATE AD_Field
@@ -80,17 +99,3 @@ UPDATE AD_UI_Element
 SET Name = 'HTTP-Endpunkt',
 	Updated = TO_TIMESTAMP('2026-07-16 10:00:20', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
 WHERE AD_UI_Element_ID = 648567;
-
--- ============================================================================
--- 4. Propagate the new element's name/description down to AD_Column(_Trl) and the
---    other element-derived AD_* tables. The endpoint column (591478) now points at
---    element 585109; without this the column keeps the old "Ausgehender HTTP-Endpunkt"
---    (outbound-only) text. update_TRL_Tables_On_AD_Element_TRL_Update propagates per
---    language present on the element.
--- ============================================================================
-
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_DE');
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'de_CH');
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'en_US');
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'fr_CH');
-SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585109, 'it_CH');
