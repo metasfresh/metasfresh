@@ -286,6 +286,36 @@ export const BarcodeScannerComponent = {
         await expect(page.locator('.camera-mode-panel')).toHaveCount(1, { timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    // Injects a deterministic blank-canvas camera double so the camera-mode toggle test is stable.
+    // WHY: CameraModePanel.startCamera() calls getUserMedia()/codeReader.decodeFromVideoDevice(); when
+    // that rejects, onCancel fires → setActiveMode(defaultMode=hardware) → the `.camera-mode-panel`
+    // wrapper unmounts, so expectCameraModeActive() times out. Chromium's synthetic fake-media feed
+    // (--use-fake-device-for-media-stream) is decodable + flicker-prone, so ZXing intermittently
+    // false-positives a barcode (or a transient NotReadableError surfaces) → reject → mode reverts →
+    // 20s flake. This stub replaces getUserMedia with a constant grey 640x480 canvas stream: it never
+    // rejects (panel stays mounted) and, being a flat single colour, gives ZXing nothing to decode
+    // (no false-positive teardown). enumerateDevices is stubbed too so the camera enumerates cleanly.
+    // MUST be called BEFORE the app loads (before LoginScreen.login) — page.addInitScript runs on every
+    // document creation, so it is in place when the frontend first requests the camera.
+    // Keeps BOTH hardware and camera modes enabled — it makes the real camera path deterministic
+    // rather than disabling it, so the hw↔camera toggle under test is still exercised end to end.
+    stubCameraStream: async () => await test.step(`${NAME} - Stub getUserMedia (blank deterministic stream)`, async () => {
+        await page.addInitScript(() => {
+            const makeBlankStream = () => {
+                const c = document.createElement('canvas'); c.width = 640; c.height = 480;
+                const ctx = c.getContext('2d');
+                const paint = () => { ctx.fillStyle = '#808080'; ctx.fillRect(0, 0, c.width, c.height); };
+                paint(); setInterval(paint, 100);
+                return c.captureStream(10);
+            };
+            if (navigator.mediaDevices) {
+                navigator.mediaDevices.getUserMedia = () => Promise.resolve(makeBlankStream());
+                navigator.mediaDevices.enumerateDevices = () => Promise.resolve(
+                    [{ kind: 'videoinput', deviceId: 'fake-cam', label: 'Fake Camera', groupId: 'g', toJSON() { return this; } }]);
+            }
+        });
+    }),
+
     // Clicks a footer button by its testId (e.g. 'barcode-scanner-toggle-hw-camera',
     // 'barcode-scanner-enter-manually', 'barcode-scanner-back-to-scanner').
     clickFooterButton: async (testId) => await test.step(`${NAME} - Click footer button '${testId}'`, async () => {
