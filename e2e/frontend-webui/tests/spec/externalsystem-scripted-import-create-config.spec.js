@@ -228,34 +228,42 @@ either window, and the legacy free-text EndpointName is no longer shown.
 
     test.setTimeout(120000);
 
-    // Setup (must succeed): create an active parent so the child tab offers "Add new".
-    await createParentConfig(page);
-
-    // Switch to the scripted-import child tab and add a new row.
-    await page.getByTestId(`tab-AD_Tab-${SCRIPTED_IMPORT_CHILD_TAB_ID}`).click();
-    await page.waitForTimeout(1500);
-
-    const addNewButton = page.locator('button', { hasText: /^(Add new|Neu)$/i }).first();
-    await addNewButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await addNewButton.click();
-
     const modal = page.locator('.panel-modal');
-    await modal.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await page.waitForTimeout(1500);
 
-    // Sanity: the new-row form really is the scripted-import child row. ScriptIdentifier
-    // is a stable field on this tab. The legacy free-text EndpointName is RETIRED from
-    // this tab by the fix, so it must NOT be present here (proves the UI retirement).
-    await expect(modal.locator('.form-field-ScriptIdentifier')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await expect(modal.locator('.form-field-EndpointName')).toBeHidden();
+    await test.step('Create a scripted-import parent config on window 541024', async () => {
+      // Setup (must succeed): create an active parent so the child tab offers "Add new".
+      await createParentConfig(page);
+    });
 
-    // *** THE LOCKED ASSERTION ***
-    // The endpoint FK picker must be placed on window 541024 child tab 548472. This
-    // FAILED on pre-fix code (field absent) and passes once the D1 migration places it.
-    await expect(
-      modal.locator('.form-field-ExternalSystem_Endpoint_ID'),
-      'endpoint FK picker must be present on window 541024 child tab 548472'
-    ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('Open the Skriptbasierte Importkonvertierung child tab and add a new row', async () => {
+      await page.getByTestId(`tab-AD_Tab-${SCRIPTED_IMPORT_CHILD_TAB_ID}`).click();
+      await page.waitForTimeout(1500);
+
+      const addNewButton = page.locator('button', { hasText: /^(Add new|Neu)$/i }).first();
+      await addNewButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await addNewButton.click();
+
+      await modal.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.waitForTimeout(1500);
+    });
+
+    await test.step('Legacy free-text EndpointName is retired from the form', async () => {
+      // Sanity: the new-row form really is the scripted-import child row. ScriptIdentifier
+      // is a stable field on this tab. The legacy free-text EndpointName is RETIRED from
+      // this tab by the fix, so it must NOT be present here (proves the UI retirement).
+      await expect(modal.locator('.form-field-ScriptIdentifier')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+      await expect(modal.locator('.form-field-EndpointName')).toBeHidden();
+    });
+
+    await test.step('The "Endpunkt" endpoint FK picker is present on window 541024', async () => {
+      // *** THE LOCKED ASSERTION ***
+      // The endpoint FK picker must be placed on window 541024 child tab 548472. This
+      // FAILED on pre-fix code (field absent) and passes once the D1 migration places it.
+      await expect(
+        modal.locator('.form-field-ExternalSystem_Endpoint_ID'),
+        'endpoint FK picker must be present on window 541024 child tab 548472'
+      ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    });
   });
 
   test('Dedicated window 541962 already exposes and binds the Endpoint FK picker (parity)', async ({ page }) => {
@@ -281,27 +289,35 @@ must be brought in line with.
 
     test.setTimeout(120000);
 
-    const endpointValue = await createSftpEndpoint(page);
+    let endpointValue;
+    await test.step('Seed a fresh SFTP endpoint (window 541967)', async () => {
+      endpointValue = await createSftpEndpoint(page);
+    });
 
-    await page.goto(`${FRONTEND_BASE_URL}/window/${SCRIPTED_IMPORT_DEDICATED_WINDOW_ID}/NEW`);
-    await page.waitForTimeout(2000);
-    await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('Open the dedicated scripted-import window 541962 (new record)', async () => {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SCRIPTED_IMPORT_DEDICATED_WINDOW_ID}/NEW`);
+      await page.waitForTimeout(2000);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    });
 
-    // Present:
-    await expect(
-      page.locator('.form-field-ExternalSystem_Endpoint_ID'),
-      'endpoint FK picker must be present on window 541962 root tab 548473'
-    ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await test.step('The "Endpunkt" endpoint FK picker is present on window 541962', async () => {
+      await expect(
+        page.locator('.form-field-ExternalSystem_Endpoint_ID'),
+        'endpoint FK picker must be present on window 541962 root tab 548473'
+      ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    });
 
-    // Selectable + bound: the endpoint List is scoped to the config's external system,
-    // so set the (active) parent config first, then pick the seeded endpoint.
-    await selectListValue(page, 'ExternalSystem_Config_ID', ACTIVE_PARENT_CONFIG_NAME);
-    await selectListValue(page, 'ExternalSystem_Endpoint_ID', endpointValue, { exact: true });
+    await test.step('Select the parent config, then bind the seeded endpoint', async () => {
+      // The endpoint List is scoped to the config's external system, so set the
+      // (active) parent config first, then pick the seeded endpoint.
+      await selectListValue(page, 'ExternalSystem_Config_ID', ACTIVE_PARENT_CONFIG_NAME);
+      await selectListValue(page, 'ExternalSystem_Endpoint_ID', endpointValue, { exact: true });
 
-    const boundValue = await page
-      .locator('.form-field-ExternalSystem_Endpoint_ID input')
-      .first()
-      .inputValue();
-    expect(boundValue).toContain(endpointValue);
+      const boundValue = await page
+        .locator('.form-field-ExternalSystem_Endpoint_ID input')
+        .first()
+        .inputValue();
+      expect(boundValue).toContain(endpointValue);
+    });
   });
 });
