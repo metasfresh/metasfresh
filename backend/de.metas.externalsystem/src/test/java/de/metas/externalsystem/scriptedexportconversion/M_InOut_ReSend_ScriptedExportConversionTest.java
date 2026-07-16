@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Covers:
  * <ul>
  *   <li>repo.getConfigsWithNonSentAttemptBySourceRecord: returns distinct config(s) with a non-sent attempt (status not Sent/DontSend); the Error/Invalid-only narrowing for re-send is covered at the service layer in ExternalSystemExportStatusServiceTest</li>
- *   <li>recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate row)</li>
+ *   <li>recordPendingAsResend: appends a NEW Pending+IsResend=Y attempt row, keeping the prior attempt (per-attempt history)</li>
  *   <li>multi-config: both configs returned when both have Error or Invalid status</li>
  *   <li>sent-only: config not returned when latest attempt is Sent</li>
  *   <li>RESEND error context value: exists and returns non-null code</li>
@@ -193,7 +193,7 @@ public class M_InOut_ReSend_ScriptedExportConversionTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 4. recordPendingAsResend: flips the single row in place to Pending+IsResend=Y (no duplicate)
+	// 4. recordPendingAsResend: appends a NEW Pending+IsResend=Y attempt, keeping the prior attempt
 	// -----------------------------------------------------------------------
 	@Test
 	void recordPendingAsResend_addsNewPendingResendAttempt_keepingPriorError()
