@@ -31,6 +31,7 @@ import de.metas.product.ProductId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -73,59 +74,63 @@ class ShipmentScheduleInvalidateBLTest
 		shipmentScheduleInvalidateBL = new ShipmentScheduleInvalidateBL(pickingBOMService);
 	}
 
-	@Test
-	void explodeByPickingBOMs_warehouseDerivedSegment_bomParentSegmentKeepsWarehouseScope()
+	@Nested
+	class ExplodeByPickingBOMs
 	{
-		// A warehouse-derived source segment, exactly as createSegmentForShipmentSchedule builds it:
-		// warehouse identity set, no locators.
-		final IShipmentScheduleSegment warehouseSegment = ShipmentScheduleSegments.builder()
-				.bpartnerId(0)
-				.productId(COMPONENT_PRODUCT_ID)
-				.warehouseId(WAREHOUSE_ID)
-				.attributeSetInstanceId(0)
-				.build();
+		@Test
+		void warehouseDerivedSegment_bomParentSegmentKeepsWarehouseScope()
+		{
+			// A warehouse-derived source segment, exactly as createSegmentForShipmentSchedule builds it:
+			// warehouse identity set, no locators.
+			final IShipmentScheduleSegment warehouseSegment = ShipmentScheduleSegments.builder()
+					.bpartnerId(0)
+					.productId(COMPONENT_PRODUCT_ID)
+					.warehouseId(WAREHOUSE_ID)
+					.attributeSetInstanceId(0)
+					.build();
 
-		final List<IShipmentScheduleSegment> exploded = shipmentScheduleInvalidateBL
-				.explodeByPickingBOMs(warehouseSegment)
-				.collect(Collectors.toList());
+			final List<IShipmentScheduleSegment> exploded = shipmentScheduleInvalidateBL
+					.explodeByPickingBOMs(warehouseSegment)
+					.collect(Collectors.toList());
 
-		// The BOM-parent segment (the exploded one carrying the BOM-parent product) must remain a VALID,
-		// warehouse-scoped segment — otherwise it is silently dropped and the BOM parent is never invalidated.
-		final IShipmentScheduleSegment bomParentSegment = exploded.stream()
-				.filter(s -> s.getProductIds().contains(BOM_PARENT_PRODUCT_ID.getRepoId()))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("expected an exploded segment for the picking-BOM parent product"));
+			// The BOM-parent segment (the exploded one carrying the BOM-parent product) must remain a VALID,
+			// warehouse-scoped segment — otherwise it is silently dropped and the BOM parent is never invalidated.
+			final IShipmentScheduleSegment bomParentSegment = exploded.stream()
+					.filter(s -> s.getProductIds().contains(BOM_PARENT_PRODUCT_ID.getRepoId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("expected an exploded segment for the picking-BOM parent product"));
 
-		assertThat(bomParentSegment.isInvalid())
-				.as("BOM-parent segment must not be invalid (both locatorIds and warehouseIds empty ⇒ dropped)")
-				.isFalse();
-		assertThat(bomParentSegment.getWarehouseIds())
-				.as("BOM-parent segment must inherit the source segment's warehouse scope")
-				.containsExactly(WAREHOUSE_ID.getRepoId());
-	}
+			assertThat(bomParentSegment.isInvalid())
+					.as("BOM-parent segment must not be invalid (both locatorIds and warehouseIds empty ⇒ dropped)")
+					.isFalse();
+			assertThat(bomParentSegment.getWarehouseIds())
+					.as("BOM-parent segment must inherit the source segment's warehouse scope")
+					.containsExactly(WAREHOUSE_ID.getRepoId());
+		}
 
-	@Test
-	void explodeByPickingBOMs_locatorDerivedSegment_bomParentSegmentKeepsLocatorScope()
-	{
-		// Symmetrical guard for the locator-scoped branch (pre-existing behaviour): a locator-derived
-		// source segment must explode into a valid, locator-scoped BOM-parent segment.
-		final IShipmentScheduleSegment locatorSegment = ShipmentScheduleSegments.builder()
-				.bpartnerId(0)
-				.productId(COMPONENT_PRODUCT_ID)
-				.locatorId(LOCATOR_ID)
-				.attributeSetInstanceId(0)
-				.build();
+		@Test
+		void locatorDerivedSegment_bomParentSegmentKeepsLocatorScope()
+		{
+			// Symmetrical guard for the locator-scoped branch (pre-existing behaviour): a locator-derived
+			// source segment must explode into a valid, locator-scoped BOM-parent segment.
+			final IShipmentScheduleSegment locatorSegment = ShipmentScheduleSegments.builder()
+					.bpartnerId(0)
+					.productId(COMPONENT_PRODUCT_ID)
+					.locatorId(LOCATOR_ID)
+					.attributeSetInstanceId(0)
+					.build();
 
-		final IShipmentScheduleSegment bomParentSegment = shipmentScheduleInvalidateBL
-				.explodeByPickingBOMs(locatorSegment)
-				.collect(Collectors.toList())
-				.stream()
-				.filter(s -> s.getProductIds().contains(BOM_PARENT_PRODUCT_ID.getRepoId()))
-				.findFirst()
-				.orElseThrow(() -> new AssertionError("expected an exploded segment for the picking-BOM parent product"));
+			final IShipmentScheduleSegment bomParentSegment = shipmentScheduleInvalidateBL
+					.explodeByPickingBOMs(locatorSegment)
+					.collect(Collectors.toList())
+					.stream()
+					.filter(s -> s.getProductIds().contains(BOM_PARENT_PRODUCT_ID.getRepoId()))
+					.findFirst()
+					.orElseThrow(() -> new AssertionError("expected an exploded segment for the picking-BOM parent product"));
 
-		assertThat(bomParentSegment.isInvalid()).isFalse();
-		assertThat(bomParentSegment.getLocatorIds()).containsExactly(LOCATOR_ID);
-		assertThat(bomParentSegment.getWarehouseIds()).isEmpty();
+			assertThat(bomParentSegment.isInvalid()).isFalse();
+			assertThat(bomParentSegment.getLocatorIds()).containsExactly(LOCATOR_ID);
+			assertThat(bomParentSegment.getWarehouseIds()).isEmpty();
+		}
 	}
 }
