@@ -52,7 +52,6 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Workpackage used to create missing shipment schedules.
@@ -133,6 +132,8 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	private final transient IShipmentScheduleHandlerBL inOutCandHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final transient ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final transient IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final transient IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
 
 	@Override
 	public final boolean isRunInTransaction()
@@ -148,26 +149,30 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 		final QueryLimit maxToProcess = QueryLimit.ofInt(getMaxToProcess());
 
-		// Create+invalidate one bounded batch of missing shipment schedules in its own transaction. Justification for
-		// runInNewTrx (see the "runInNewTrx is a hack" gotcha): we deliberately want a SHORT, bounded transaction here
-		// instead of one unbounded transaction for the whole backlog (which OOMs on a large backlog) -- that is the
-		// whole point of this processor's batching.
-		final AtomicReference<CreateMissingCandidatesResult> resultHolder = new AtomicReference<>();
-		trxManager.runInNewTrx(() -> {
-			final CreateMissingCandidatesResult result = inOutCandHandlerBL.createMissingCandidates(ctx, maxToProcess);
-			resultHolder.set(result);
+		// Create+invalidate one bounded batch of missing shipment schedules in its own transaction.
+		// Why callInNewTrx here: this processor runs out-of-transaction (isRunInTransaction()==false), so there is NO
+		// ambient trx; we deliberately open ONE short, bounded transaction per batch instead of a single unbounded
+		// transaction for the whole backlog (which OOMs on a large backlog) -- that bounded batching is the whole point
+		// of this processor. The two effects (create + by-id invalidation) MUST share this one transaction (see the
+		// notifySegmentChangedForShipmentScheduleInclSched call below).
+		// This is NOT removable: the batching design requires exactly one bounded, atomic trx per batch; removing it
+		// would either restore the unbounded-single-trx OOM, or split creation and by-id flagging across transactions
+		// and break the same-trx invalidation invariant documented in de/metas/inoutcandidate/CLAUDE.md.
+		final CreateMissingCandidatesResult result = trxManager.callInNewTrx(() -> {
+			final CreateMissingCandidatesResult batchResult = inOutCandHandlerBL.createMissingCandidates(ctx, maxToProcess);
 
-			// After shipment schedules where created, invalidate them because we want to make sure they are up2date.
-			final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-			final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
-
-			final Collection<I_M_ShipmentSchedule> scheduleRecords = shipmentScheduleDAO.getByIds(result.getCreatedShipmentScheduleIds()).values();
+			// After shipment schedules were created, invalidate them (by id, in THIS same batch trx) because we want to
+			// make sure they are up2date. By-id flagging in the creating transaction is mandatory: the segment-based
+			// invalidation channel flushes on TRXNAME_None and cannot see this transaction's uncommitted inserts
+			// (invariant: de/metas/inoutcandidate/CLAUDE.md).
+			final Collection<I_M_ShipmentSchedule> scheduleRecords = shipmentScheduleDAO.getByIds(batchResult.getCreatedShipmentScheduleIds()).values();
 			for (final I_M_ShipmentSchedule scheduleRecord : scheduleRecords)
 			{
 				invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(scheduleRecord);
 			}
+
+			return batchResult;
 		});
-		final CreateMissingCandidatesResult result = resultHolder.get();
 
 		Loggables.addLog("Created " + result.getCreatedShipmentScheduleIds().size() + " candidates");
 
@@ -194,6 +199,9 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 	{
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(workpackage.getC_Async_Batch_ID());
 
+		// Deliberately NOT bound to any trx (unlike _scheduleIfNotPostponed, which does bindToTrxName): this run's batch
+		// already committed inside the callInNewTrx above, so there is nothing left to defer the follow-up's readiness to
+		// -- it must become ready-for-processing immediately.
 		final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
 		workPackageQueueFactory
 				.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)

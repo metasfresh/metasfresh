@@ -36,6 +36,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,10 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 
-	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new HashMap<>();
+	// LinkedHashMap (not HashMap): when a bounded budget is threaded across handlers (see createMissingCandidates),
+	// the budget is consumed in this map's iteration order, so that order must be deterministic (= handler registration
+	// order) rather than incidental hash-bucket order.
+	private final Map<String, ShipmentScheduleHandler> tableName2Handler = new LinkedHashMap<>();
 
 	private final Map<String, List<ModelWithoutShipmentScheduleVetoer>> tableName2Listeners = new HashMap<>();
 
@@ -149,8 +153,13 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 	{
 		final LinkedHashSet<ShipmentScheduleId> result = new LinkedHashSet<>();
 
-		// Budget of models to process (created-or-vetoed), threaded across all handlers.
-		final Budget budget = new Budget(maxToProcess.toIntOr(Integer.MAX_VALUE));
+		// Budget of models to process (created-or-vetoed), threaded across all handlers in registration order.
+		// NOTE: this drains handlers sequentially in that order; an earlier handler with a full backlog can therefore
+		// use up the whole budget before a later one gets a turn. That is acceptable here because the processor
+		// re-enqueues follow-up work packages until nothing remains, so every handler is eventually served across
+		// successive runs. If strict per-run fairness across handlers is ever required, distribute the budget
+		// (e.g. round-robin) instead of draining in order.
+		final Budget budget = new Budget(maxToProcess.toIntOrInfinit());
 
 		for (final String tableName : tableName2Handler.keySet())
 		{
