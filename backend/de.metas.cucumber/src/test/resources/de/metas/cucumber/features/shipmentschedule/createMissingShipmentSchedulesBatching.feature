@@ -40,9 +40,9 @@ Feature: create missing shipment schedules in bounded batches
   Scenario: one workpackage run creates a bounded batch and re-enqueues the rest
   _Given a sales order with 5 order lines is completed, enqueueing one CreateMissingShipmentSchedules workpackage
   _And the MaxToProcess sysconfig for that processor is 2
-  _When the next CreateMissingShipmentSchedules workpackage is processed once
+  _When the next CreateMissingShipmentSchedules workpackage is processed
   _Then exactly 2 shipment schedules exist for the order, and a follow-up workpackage is re-enqueued for the rest
-  _When the follow-up workpackage is processed until none remain
+  _When the two remaining follow-up workpackages are processed
   _Then all 5 shipment schedules exist for the order, and no CreateMissingShipmentSchedules workpackage is pending
 
     Given metasfresh contains C_Orders:

@@ -361,8 +361,10 @@ public class C_Queue_WorkPackage_StepDef
 	 * turn a {@code C_Queue_PackageProcessor.Classname} into a runnable instance) and invokes the workpackage
 	 * processor identified by its short name (e.g. {@code CreateMissingShipmentSchedules} for
 	 * {@code CreateMissingShipmentSchedulesWorkpackageProcessor}), processing the OLDEST pending
-	 * {@code C_Queue_WorkPackage} for that processor and marking it {@code Processed=Y} on success — mirroring
-	 * what {@code WorkpackageProcessorTask} does for a single run.
+	 * {@code C_Queue_WorkPackage} for that processor and marking it {@code Processed=Y} on success — the essential
+	 * effect of {@code WorkpackageProcessorTask} for a single run. (It deliberately does not replicate that task's
+	 * lock/error bookkeeping or lifecycle-event firing; this processor uses no queue-element locks, so for the
+	 * batching assertion only the created records and the {@code Processed} flag matter.)
 	 * <p>
 	 * In production, the background {@code QueueProcessorPlanner} thread polls for and runs due workpackages on
 	 * its own schedule; this step calls the processor directly, one workpackage at a time, so a scenario can
@@ -465,6 +467,7 @@ public class C_Queue_WorkPackage_StepDef
 		final String classnameSuffix = "." + processorSimpleClassName;
 
 		return queryBL.createQueryBuilder(I_C_Queue_PackageProcessor.class)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
 				.filter(packageProcessor -> packageProcessor.getClassname() != null && packageProcessor.getClassname().endsWith(classnameSuffix))
