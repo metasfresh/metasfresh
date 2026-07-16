@@ -28,6 +28,7 @@ import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
+import org.adempiere.exceptions.AdempiereException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -64,46 +65,48 @@ public class ExternalSystemScriptedImportConversionService
 	{
 		final Map<String, String> parameters = new HashMap<>();
 
-		final UserAuthToken token = userAuthTokenRepository.retrieveByUserId(config.getUserImportId(), RoleId.WEBUI);
+		final UserAuthToken token = userAuthTokenRepository.retrieveOptionalByUserAndRoleId(config.getUserImportId(), RoleId.WEBUI)
+				.orElseThrow(() -> new AdempiereException("The scripted-import Importeur has no WEBUI API auth token; the created order candidates cannot be authorised. Assign a valid WEBUI auth token to this user.")
+						.appendParametersToMessage()
+						.setParameter("AD_User_ID (Importeur)", config.getUserImportId().getRepoId())
+						.setParameter("AD_Role_ID", RoleId.WEBUI.getRepoId()));
 
-		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, config.getEndpointName());
+		final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
+
+		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpoint.getValue());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
 
-		// Add SFTP endpoint parameters if endpoint is configured
-		if (config.getExternalSystemEndpointId() != null)
+		// Add SFTP endpoint parameters if endpoint uses SFTP transport
+		if (endpoint.getTransportType() == TransportType.SFTP)
 		{
-			final ExternalSystemEndpoint endpoint = externalSystemEndpointRepository.getById(config.getExternalSystemEndpointId());
-			if (endpoint.getTransportType() == TransportType.SFTP)
+			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
+			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
+			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
+			parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
+			if (endpoint.getPassword() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_HOST, endpoint.getSftpHost());
-				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(endpoint.getSftpPort()));
-				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_USERNAME, endpoint.getSftpUsername());
-				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, endpoint.getSftpAuthType() != null ? endpoint.getSftpAuthType().getCode() : null);
-				if (endpoint.getPassword() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PASSWORD, endpoint.getPassword());
-				}
-				if (endpoint.getSshPrivateKey() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY, endpoint.getSshPrivateKey());
-				}
-				if (endpoint.getSftpRemotePath() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, endpoint.getSftpRemotePath());
-				}
-				if (config.getSftpPollingIntervalMs() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(config.getSftpPollingIntervalMs()));
-				}
-				if (config.getSftpProcessedDirectory() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, config.getSftpProcessedDirectory());
-				}
-				if (config.getSftpErrorDirectory() != null)
-				{
-					parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, config.getSftpErrorDirectory());
-				}
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PASSWORD, endpoint.getPassword());
+			}
+			if (endpoint.getSshPrivateKey() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY, endpoint.getSshPrivateKey());
+			}
+			if (endpoint.getSftpRemotePath() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, endpoint.getSftpRemotePath());
+			}
+			if (config.getSftpPollingIntervalMs() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(config.getSftpPollingIntervalMs()));
+			}
+			if (config.getSftpProcessedDirectory() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, config.getSftpProcessedDirectory());
+			}
+			if (config.getSftpErrorDirectory() != null)
+			{
+				parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, config.getSftpErrorDirectory());
 			}
 		}
 

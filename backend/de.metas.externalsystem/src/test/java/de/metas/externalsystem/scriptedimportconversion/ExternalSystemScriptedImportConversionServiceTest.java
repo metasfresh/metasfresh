@@ -1,0 +1,138 @@
+/*
+ * #%L
+ * de.metas.externalsystem
+ * %%
+ * Copyright (C) 2025 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.externalsystem.scriptedimportconversion;
+
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
+import de.metas.organization.OrgId;
+import de.metas.security.RoleId;
+import de.metas.security.UserAuthTokenRepository;
+import de.metas.security.requests.CreateUserAuthTokenRequest;
+import de.metas.user.UserId;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_User;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.Map;
+
+import org.adempiere.exceptions.AdempiereException;
+
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+class ExternalSystemScriptedImportConversionServiceTest
+{
+	private ExternalSystemScriptedImportConversionService service;
+	private UserAuthTokenRepository userAuthTokenRepository;
+
+	@BeforeEach
+	void beforeEach()
+	{
+		AdempiereTestHelper.get().init();
+
+		userAuthTokenRepository = new UserAuthTokenRepository();
+		service = new ExternalSystemScriptedImportConversionService(userAuthTokenRepository, new ExternalSystemEndpointRepository());
+	}
+
+	@Test
+	void getParameters_endpointNameParam_comesFromLinkedEndpointValue()
+	{
+		// given
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-orders");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+		endpointRecord.setAuthType(X_ExternalSystem_Endpoint.AUTHTYPE_Token);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then
+		assertThat(parameters.get(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME)).isEqualTo("eddyson-orders");
+	}
+
+	@Test
+	void getParameters_importeurWithoutWebuiToken_throwsClearError()
+	{
+		// given: an Importeur that has NO WEBUI auth token
+		final UserId userImportId = createUserId();
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-orders");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+		endpointRecord.setAuthType(X_ExternalSystem_Endpoint.AUTHTYPE_Token);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when / then: a clear, actionable error naming the Importeur + the missing WEBUI token
+		// (not the obscure "Invalid token (1)" the token repo would otherwise raise)
+		assertThatThrownBy(() -> service.getParameters(config))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("WEBUI")
+				.hasMessageContaining(String.valueOf(userImportId.getRepoId()));
+	}
+
+	private static UserId createUserId()
+	{
+		final I_AD_User record = InterfaceWrapperHelper.newInstance(I_AD_User.class);
+		record.setAD_Language("de_DE");
+		InterfaceWrapperHelper.save(record);
+		return UserId.ofRepoId(record.getAD_User_ID());
+	}
+}
