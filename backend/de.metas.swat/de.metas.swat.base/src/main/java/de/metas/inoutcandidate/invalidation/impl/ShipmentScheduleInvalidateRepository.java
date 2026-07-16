@@ -414,7 +414,10 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		//
 		// Locators
 		// NOTE: same as for bPartners if no particular locator is specified, it means "all of them"
-		if (!segment.isAnyLocator())
+		// NOTE: guard with !isNoLocators() because a warehouse-derived segment now has an EMPTY locatorIds set
+		// (isAnyLocator() returns false for an empty set); without this guard the branch would fire with an empty
+		// list and DB.buildSqlList would produce a never-true predicate -> the segment would match NO schedule.
+		if (!segment.isNoLocators() && !segment.isAnyLocator())
 		{
 			final Set<Integer> locatorIds = segment.getLocatorIds();
 
@@ -425,6 +428,20 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 					+ "\n\t\t loc." + I_M_Locator.COLUMNNAME_M_Warehouse_ID + "=" + warehouseColumnName
 					+ " AND " + DB.buildSqlList("loc." + I_M_Locator.COLUMNNAME_M_Locator_ID, locatorIds, sqlParams)
 					+ ")");
+		}
+
+		//
+		// Warehouses
+		// A warehouse-derived segment carries the warehouse identity directly (instead of enumerating all its
+		// locators). Matching by the schedule's effective warehouse column is equivalent to the old
+		// EXISTS(M_Locator WHERE M_Warehouse_ID = <sched wh> AND M_Locator_ID IN (all locators of wh)).
+		if (!segment.isAnyWarehouse())
+		{
+			final Set<Integer> warehouseIds = segment.getWarehouseIds();
+
+			final String warehouseColumnName = "COALESCE(" + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_Override_ID + ", " + ssAlias + I_M_ShipmentSchedule.COLUMNNAME_M_Warehouse_ID + ")";
+			whereClause.append("\n\t AND ");
+			whereClause.append("(").append(DB.buildSqlList(warehouseColumnName, warehouseIds, sqlParams)).append(")");
 		}
 
 		//

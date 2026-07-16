@@ -2,14 +2,19 @@ package de.metas.inoutcandidate.invalidation.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.slf4j.Logger;
 
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
+import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
@@ -39,6 +44,8 @@ import lombok.ToString;
 @ToString(of = "segments")
 final class ShipmentScheduleSegmentChangedProcessor
 {
+	private static final Logger logger = LogManager.getLogger(ShipmentScheduleSegmentChangedProcessor.class);
+
 	private static final String TRX_PROPERTYNAME = ShipmentScheduleSegmentChangedProcessor.class.getName();
 
 	public static ShipmentScheduleSegmentChangedProcessor getOrCreateIfThreadInheritedElseNull(
@@ -61,7 +68,12 @@ final class ShipmentScheduleSegmentChangedProcessor
 		ShipmentScheduleSegmentChangedProcessor processor = trx.getProperty(TRX_PROPERTYNAME);
 		if (processor == null)
 		{
-			processor = new ShipmentScheduleSegmentChangedProcessor(shipmentScheduleInvalidator);
+			// The mid-batch flush threshold is owned by the invalidation BL (which owns the sysconfig read); the
+			// processor obtains it from there instead of reaching into the Services registry itself. Resolved once,
+			// here, because the processor is created exactly once per transaction.
+			final int flushThreshold = shipmentScheduleInvalidator.getSegmentFlushThreshold();
+
+			processor = new ShipmentScheduleSegmentChangedProcessor(shipmentScheduleInvalidator, flushThreshold);
 			trx.setProperty(TRX_PROPERTYNAME, processor);
 
 			// register our listener: we will actually fire the storage segment changed when the transaction is commited
@@ -83,12 +95,23 @@ final class ShipmentScheduleSegmentChangedProcessor
 		return processor;
 	}
 
-	private final List<IShipmentScheduleSegment> segments = new ArrayList<>();
+	private final Set<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
 	private final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator;
 
-	private ShipmentScheduleSegmentChangedProcessor(@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator)
+	/**
+	 * Mid-batch flush threshold, obtained from the owning {@link ShipmentScheduleInvalidateBL} by the factory when
+	 * this per-trx processor is created (the value is stable for the lifetime of the batch, and reading it once
+	 * bounds the per-{@link #addSegment} cost). A value {@code <= 0} disables the mid-batch flush — only the
+	 * AFTER_COMMIT listener flushes then.
+	 */
+	private final int flushThreshold;
+
+	private ShipmentScheduleSegmentChangedProcessor(
+			@NonNull final ShipmentScheduleInvalidateBL shipmentScheduleInvalidator,
+			final int flushThreshold)
 	{
 		this.shipmentScheduleInvalidator = shipmentScheduleInvalidator;
+		this.flushThreshold = flushThreshold;
 	}
 
 	private void process()
@@ -99,9 +122,13 @@ final class ShipmentScheduleSegmentChangedProcessor
 		}
 
 		final List<IShipmentScheduleSegment> segmentsCopy = new ArrayList<>(segments);
-		segments.clear();
 
+		// Flag FIRST, clear AFTER: if flagging throws (it runs on a separate TRXNAME_None connection), the segments
+		// stay accumulated and are retried by the next flush (the AFTER_COMMIT listener) instead of being lost.
+		// flagSegmentForRecompute is idempotent (it only marks schedules as "needs recompute"), so a retry that
+		// re-flags an already-flagged schedule is a harmless no-op.
 		shipmentScheduleInvalidator.flagSegmentForRecompute(segmentsCopy);
+		segments.clear();
 	}
 
 	public void addSegment(final IShipmentScheduleSegment segment)
@@ -111,7 +138,34 @@ final class ShipmentScheduleSegmentChangedProcessor
 			return;
 		}
 
-		this.segments.add(segment);
+		// Normalize to the value-based ImmutableShipmentScheduleSegment before adding, so the dedupe Set actually
+		// collapses logically-equal segments. Some IShipmentScheduleSegment implementations (e.g. the HU-derived
+		// ShipmentScheduleSegmentFromHU/-Storage/-Attribute) use identity equals/hashCode; without this copy each
+		// fresh instance would be retained as distinct and the Set would degrade to list-like unbounded growth
+		// (the same OOM this class guards against). copyOf is a no-op for already-immutable segments.
+		this.segments.add(ImmutableShipmentScheduleSegment.copyOf(segment));
+
+		// Bound the accumulator during a long-running batch: flush mid-batch once it reaches the configured threshold,
+		// so memory stays bounded regardless of batch size / dedupe effectiveness (not only at AFTER_COMMIT). A
+		// threshold <= 0 disables the mid-batch flush. Safe mid-batch because the flush's matching SQL runs on its own
+		// connection (TRXNAME_None) and matches only COMMITTED schedules; the batch's own new (uncommitted) schedules
+		// are flagged by id directly on the batch trx via ShipmentScheduleInvalidateBL.notifySegmentChangedForShipmentScheduleInclSched
+		// -> flagForRecompute, so these already-committed-targeting segments lose no invalidations.
+		//
+		// Best-effort: a mid-batch flush failure must NOT abort the enclosing business transaction (the AFTER_COMMIT
+		// flush historically ran post-commit and could never do so). process() flags-then-clears, so on failure the
+		// segments remain accumulated and are retried at commit.
+		if (flushThreshold > 0 && segments.size() >= flushThreshold)
+		{
+			try
+			{
+				process();
+			}
+			catch (final RuntimeException ex)
+			{
+				logger.warn("Mid-batch invalidation-segment flush failed ({} segments retained for the AFTER_COMMIT retry)", segments.size(), ex);
+			}
+		}
 	}
 
 	public void addSegments(final Collection<IShipmentScheduleSegment> segments)
@@ -121,6 +175,9 @@ final class ShipmentScheduleSegmentChangedProcessor
 			return;
 		}
 
-		this.segments.addAll(segments);
+		for (final IShipmentScheduleSegment segment : segments)
+		{
+			addSegment(segment);
+		}
 	}
 }

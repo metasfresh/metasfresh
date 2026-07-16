@@ -28,6 +28,7 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 	Set<Integer> bpartnerIds;
 	Set<Integer> billBPartnerIds;
 	Set<Integer> locatorIds;
+	Set<Integer> warehouseIds;
 	Set<ShipmentScheduleAttributeSegment> attributes;
 
 	@Builder(toBuilder = true)
@@ -36,12 +37,14 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 			@NonNull @Singular final Set<Integer> bpartnerIds,
 			@NonNull @Singular final Set<Integer> billBPartnerIds,
 			@NonNull @Singular final Set<Integer> locatorIds,
+			@NonNull @Singular final Set<Integer> warehouseIds,
 			@NonNull @Singular final Set<ShipmentScheduleAttributeSegment> attributes)
 	{
 		this.productIds = Collections.unmodifiableSet(productIds);
 		this.bpartnerIds = Collections.unmodifiableSet(bpartnerIds);
 		this.billBPartnerIds = Collections.unmodifiableSet(billBPartnerIds);
 		this.locatorIds = Collections.unmodifiableSet(locatorIds);
+		this.warehouseIds = Collections.unmodifiableSet(warehouseIds);
 		this.attributes = Collections.unmodifiableSet(attributes);
 	}
 
@@ -51,6 +54,7 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 		this.bpartnerIds = Collections.unmodifiableSet(from.getBpartnerIds());
 		this.billBPartnerIds = Collections.unmodifiableSet(from.getBillBPartnerIds());
 		this.locatorIds = Collections.unmodifiableSet(from.getLocatorIds());
+		this.warehouseIds = Collections.unmodifiableSet(from.getWarehouseIds());
 		this.attributes = Collections.unmodifiableSet(from.getAttributes());
 	}
 
