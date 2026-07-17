@@ -24,6 +24,7 @@ import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
@@ -579,12 +580,40 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
-	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId)
+	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
+		final String sqlUpdate = buildMarkAllToRecomputeSql(pinstanceId, maxToProcess);
+		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
+		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
+	}
+
+	/**
+	 * Builds the SQL statement used by {@link #markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)}.
+	 * <p>
+	 * When {@code maxToProcess} is limited, bounds the tagging to at most {@code maxToProcess}
+	 * <b>distinct</b> {@code M_ShipmentSchedule_ID}s (deterministic lowest-id order, so a subsequent call
+	 * advances to the next batch), while still tagging <b>all</b> of each selected schedule's duplicate
+	 * recompute markers -- the outer WHERE matches on schedule id, not on recompute row id.
+	 */
+	private String buildMarkAllToRecomputeSql(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
+	{
+		if (maxToProcess.isLimited())
+		{
+			return " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
+					" WHERE sr.AD_PInstance_ID IS NULL " +
+					"   AND sr.M_ShipmentSchedule_ID IN ( " +
+					"     SELECT DISTINCT sr2.M_ShipmentSchedule_ID " +
+					"     FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr2 " +
+					"     JOIN M_ShipmentSchedule s ON s.M_ShipmentSchedule_ID = sr2.M_ShipmentSchedule_ID " +
+					"     WHERE sr2.AD_PInstance_ID IS NULL " +
+					"     ORDER BY sr2.M_ShipmentSchedule_ID " +
+					"     LIMIT " + maxToProcess.toInt() + " ) ";
+		}
+
+		return " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
 				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
 				" FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
@@ -596,8 +625,6 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
 				+ " AND AD_PInstance_ID IS NULL" // only those which were not already tagged
 				;
-		final int countTagged = DB.executeUpdateAndThrowExceptionOnFail(sqlUpdate, ITrx.TRXNAME_None);
-		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 
 	@Override

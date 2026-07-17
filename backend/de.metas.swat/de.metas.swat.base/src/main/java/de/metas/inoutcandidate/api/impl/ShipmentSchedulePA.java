@@ -31,6 +31,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -276,7 +277,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId);
+		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, QueryLimit.NO_LIMIT);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records

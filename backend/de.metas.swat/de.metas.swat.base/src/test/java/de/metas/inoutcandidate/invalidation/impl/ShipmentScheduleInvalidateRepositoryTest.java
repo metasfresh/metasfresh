@@ -4,6 +4,9 @@ import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegmentBuilder;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.process.PInstanceId;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,6 +60,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 
 	private ShipmentScheduleInvalidateRepository repository;
 	private Method buildShipmentScheduleWhereClause;
+	private Method buildMarkAllToRecomputeSql;
 
 	@BeforeEach
 	public void beforeEach() throws Exception
@@ -68,11 +72,20 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		buildShipmentScheduleWhereClause = ShipmentScheduleInvalidateRepository.class
 				.getDeclaredMethod("buildShipmentScheduleWhereClause", String.class, IShipmentScheduleSegment.class, List.class);
 		buildShipmentScheduleWhereClause.setAccessible(true);
+
+		buildMarkAllToRecomputeSql = ShipmentScheduleInvalidateRepository.class
+				.getDeclaredMethod("buildMarkAllToRecomputeSql", PInstanceId.class, QueryLimit.class);
+		buildMarkAllToRecomputeSql.setAccessible(true);
 	}
 
 	private String buildWhereClause(final IShipmentScheduleSegment segment, final List<Object> sqlParams) throws Exception
 	{
 		return (String)buildShipmentScheduleWhereClause.invoke(repository, SS_ALIAS, segment, sqlParams);
+	}
+
+	private String buildMarkAllToRecomputeSql(final PInstanceId pinstanceId, final QueryLimit maxToProcess) throws Exception
+	{
+		return (String)buildMarkAllToRecomputeSql.invoke(repository, pinstanceId, maxToProcess);
 	}
 
 	@Test
@@ -124,5 +137,60 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		assertThat(sqlParams)
 				.as("the locator repo-id must be collected as an SQL parameter")
 				.contains(555);
+	}
+
+	/**
+	 * Tests {@link ShipmentScheduleInvalidateRepository#buildMarkAllToRecomputeSql(PInstanceId, QueryLimit)},
+	 * the SQL-building seam behind {@code markAllToRecomputeOutOfTrx}. The method issues raw SQL via
+	 * {@code DB.executeUpdateAndThrowExceptionOnFail} on {@code TRXNAME_None}, which this module's JUnit
+	 * tests cannot exercise end-to-end (no real-DB harness; POJOWrapper does not back raw SQL) -- so
+	 * correctness is verified on the generated SQL shape, mirroring the existing
+	 * {@code buildShipmentScheduleWhereClause} tests above.
+	 */
+	@Test
+	public void markAllToRecomputeOutOfTrx_noLimit_keepsCurrentUnboundedStatementVerbatim() throws Exception
+	{
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(12345);
+
+		final String sql = buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.NO_LIMIT);
+
+		final String expectedSql = " UPDATE " + I_M_ShipmentSchedule_Recompute.Table_Name + " sr " +
+				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
+				" FROM (" +
+				"	SELECT s.M_ShipmentSchedule_ID " +
+				"	FROM M_ShipmentSchedule s " +
+				") data " +
+				" WHERE data.M_ShipmentSchedule_ID=sr.M_ShipmentSchedule_ID "
+				+ " AND AD_PInstance_ID IS NULL";
+
+		assertThat(sql)
+				.as("the NO_LIMIT branch must keep the current unbounded statement verbatim")
+				.isEqualTo(expectedSql);
+	}
+
+	@Test
+	public void markAllToRecomputeOutOfTrx_limited_boundsToNDistinctSchedulesInLowestIdOrder_andTagsAllTheirMarkerRows() throws Exception
+	{
+		final PInstanceId pinstanceId = PInstanceId.ofRepoId(777);
+		final int n = 3;
+
+		final String sql = buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n));
+
+		assertThat(sql)
+				.as("must tag by schedule id, so ALL duplicate recompute markers of a selected schedule get tagged "
+						+ "(not just the first N recompute rows)")
+				.contains("sr.M_ShipmentSchedule_ID IN (")
+				.as("must select only currently-untagged markers")
+				.contains("sr.AD_PInstance_ID IS NULL")
+				.as("must select DISTINCT schedule ids, so duplicated markers count once toward the N-schedule bound")
+				.contains("SELECT DISTINCT sr2.M_ShipmentSchedule_ID")
+				.as("must scope the candidate schedule ids to currently-untagged markers too")
+				.contains("sr2.AD_PInstance_ID IS NULL")
+				.as("must order deterministically by the lowest schedule id first, so a second call advances to the next N")
+				.contains("ORDER BY sr2.M_ShipmentSchedule_ID")
+				.as("must cap to exactly N distinct schedules")
+				.contains("LIMIT " + n)
+				.as("must tag with the given pinstance id")
+				.contains("SET AD_Pinstance_ID=" + pinstanceId.getRepoId());
 	}
 }

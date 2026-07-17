@@ -8,6 +8,7 @@ import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 
 import java.util.Collection;
@@ -76,7 +77,12 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 */
 	void invalidateAll(Properties ctx);
 
-	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId);
+	/**
+	 * @param maxToProcess if limited, bounds the tagging to at most this many <b>distinct</b> shipment schedules
+	 *                     (deterministic lowest-id order); all of each selected schedule's duplicate recompute
+	 *                     markers are still tagged. {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
+	 */
+	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId, QueryLimit maxToProcess);
 
 	/**
 	 * Delete M_ShipmentSchedule_Recompute records for given tag
