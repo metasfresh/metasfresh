@@ -314,6 +314,104 @@ public class CiiMapperTest
 	}
 
 	/**
+	 * Timezone regression (BT-2): {@code DateInvoiced} is a {@code timestamp without time zone},
+	 * which JDBC returns as wall-clock midnight in the JVM default zone. Under a positive-offset
+	 * zone (CI/prod run {@code TZ=Europe/Berlin}) a naive {@code toInstant().atOffset(UTC)}
+	 * conversion shifts the rendered issue date one calendar day early. The mapper must render the
+	 * invoice's calendar date unshifted.
+	 *
+	 * <p>The other tests here build dates as midnight-UTC, which bakes in the same false assumption
+	 * as the bug and therefore does NOT reproduce it. This test instead builds the date the way JDBC
+	 * actually returns it in production ({@code Timestamp.valueOf(LocalDateTime)} = JVM-local
+	 * wall-clock midnight -> instant 2026-07-12T22:00Z under Europe/Berlin).
+	 */
+	@Test
+	void map_issueDate_isNotShiftedByJvmTimezone_BT2() throws Exception
+	{
+		final java.util.TimeZone originalTz = java.util.TimeZone.getDefault();
+		try
+		{
+			java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("Europe/Berlin"));
+
+			// === Minimal seller org (must have a location so EN16931 BG-5 fail-fast does not trigger) ===
+			final I_AD_Org org = newInstance(I_AD_Org.class);
+			saveRecord(org);
+			final I_C_Country sellerCountry = newInstance(I_C_Country.class);
+			sellerCountry.setCountryCode("DE");
+			saveRecord(sellerCountry);
+			final I_C_Location sellerLocation = newInstance(I_C_Location.class);
+			sellerLocation.setC_Country_ID(sellerCountry.getC_Country_ID());
+			saveRecord(sellerLocation);
+			final I_C_BPartner sellerBP = newInstance(I_C_BPartner.class);
+			sellerBP.setName("Seller GmbH");
+			sellerBP.setAD_OrgBP_ID(org.getAD_Org_ID());
+			saveRecord(sellerBP);
+			final I_C_BPartner_Location sellerBPLoc = newInstance(I_C_BPartner_Location.class);
+			sellerBPLoc.setC_BPartner_ID(sellerBP.getC_BPartner_ID());
+			sellerBPLoc.setC_Location_ID(sellerLocation.getC_Location_ID());
+			saveRecord(sellerBPLoc);
+			final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+			orgInfo.setAD_Org_ID(org.getAD_Org_ID());
+			orgInfo.setOrg_BPartner_ID(sellerBP.getC_BPartner_ID());
+			saveRecord(orgInfo);
+
+			// === Minimal buyer ===
+			final I_C_Country buyerCountry = newInstance(I_C_Country.class);
+			buyerCountry.setCountryCode("DE");
+			saveRecord(buyerCountry);
+			final I_C_Location buyerLocation = newInstance(I_C_Location.class);
+			buyerLocation.setC_Country_ID(buyerCountry.getC_Country_ID());
+			saveRecord(buyerLocation);
+			final I_C_BPartner buyerBP = newInstance(I_C_BPartner.class);
+			buyerBP.setName("Buyer AG");
+			saveRecord(buyerBP);
+			final I_C_BPartner_Location buyerBPLoc = newInstance(I_C_BPartner_Location.class);
+			buyerBPLoc.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+			buyerBPLoc.setC_Location_ID(buyerLocation.getC_Location_ID());
+			saveRecord(buyerBPLoc);
+
+			// === Currency + DocType ===
+			final I_C_Currency currency = newInstance(I_C_Currency.class);
+			currency.setISO_Code("EUR");
+			saveRecord(currency);
+			final I_C_DocType docType = newInstance(I_C_DocType.class);
+			docType.setDocBaseType("ARI");
+			saveRecord(docType);
+
+			// === Invoice: DateInvoiced built the way JDBC returns a `timestamp without time zone`
+			//   column — wall-clock midnight in the JVM default zone (Europe/Berlin here).
+			//   Timestamp.valueOf(LocalDateTime) interprets in the JVM zone -> instant 2026-07-12T22:00Z,
+			//   exactly the production case that a naive UTC conversion renders one day early (20260712). ===
+			final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+			invoice.setAD_Org_ID(org.getAD_Org_ID());
+			invoice.setDocumentNo("RE-2026-00013");
+			invoice.setDateInvoiced(Timestamp.valueOf(LocalDate.of(2026, 7, 13).atStartOfDay()));
+			invoice.setC_Currency_ID(currency.getC_Currency_ID());
+			invoice.setC_DocType_ID(docType.getC_DocType_ID());
+			invoice.setC_BPartner_ID(buyerBP.getC_BPartner_ID());
+			invoice.setC_BPartner_Location_ID(buyerBPLoc.getC_BPartner_Location_ID());
+			saveRecord(invoice);
+
+			final EInvoiceRecipientConfig recipientConfig = EInvoiceRecipientConfig.builder()
+					.format(EInvoiceFormat.ZUGFeRD)
+					.build();
+
+			final CrossIndustryInvoiceType cii = new CiiMapper().map(invoice, recipientConfig);
+			final XmlAssert xmlAssert = toXmlAssert(cii);
+
+			// BT-2 issue date must reflect the stored calendar date (2026-07-13), NOT be shifted one day early.
+			xmlAssert.valueByXPath(
+							"//rsm:CrossIndustryInvoice/rsm:ExchangedDocument/ram:IssueDateTime/udt:DateTimeString")
+					.as("BT-2 issue date must render the stored calendar date unshifted by the JVM timezone")
+					.isEqualTo("20260713");
+		}
+		finally
+		{
+			java.util.TimeZone.setDefault(originalTz);
+		}
+	}
+
+	/**
 	 * Verifies BT-3 credit note type code (381) and BT-25/BT-26 preceding invoice reference.
 	 */
 	@Test
