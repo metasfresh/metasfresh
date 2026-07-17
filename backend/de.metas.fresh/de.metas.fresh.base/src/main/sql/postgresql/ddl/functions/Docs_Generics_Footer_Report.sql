@@ -102,9 +102,9 @@ SELECT COALESCE(org_bp.name, '')                    AS org_name,
        org_bp.url
 
 FROM ad_org org
-         INNER JOIN ad_orginfo org_info ON org.ad_org_id = org_info.ad_org_id
-         INNER JOIN c_bpartner org_bp ON org_info.org_bpartner_id = org_bp.c_bpartner_id
-         INNER JOIN c_bpartner_location org_bpl ON org_info.orgbp_location_id = org_bpl.c_bpartner_location_id
+         INNER JOIN c_bpartner org_bp ON org.ad_org_id = org_bp.ad_orgbp_id
+         LEFT OUTER JOIN ad_orginfo org_info ON org.ad_org_id = org_info.ad_org_id
+         INNER JOIN c_bpartner_location org_bpl ON org_bp.c_bpartner_id = org_bpl.c_bpartner_id
          INNER JOIN ad_user usr ON org_bp.c_bpartner_id = usr.c_bpartner_id AND usr.isdefaultcontact = 'Y'
          INNER JOIN LATERAL report.Fresh_Org_BankAccount(org.AD_Org_ID) org_ba ON TRUE
          LEFT OUTER JOIN c_location loc ON org_bpl.c_location_id = loc.c_location_id
@@ -120,7 +120,19 @@ FROM ad_org org
          LEFT OUTER JOIN C_Currency curf ON bpbf.C_Currency_ID = curf.C_Currency_ID
 
 WHERE org.ad_org_id = p_org_id
-ORDER BY bpb.isDefault DESC
+-- Prefer the location explicitly configured in AD_OrgInfo (OrgBP_Location_ID) when it is set
+-- and belongs to the org BPartner; otherwise fall back to the default bill-to / ship-to address.
+-- Kept as an ordering preference (not a restricting join) so a missing/foreign AD_OrgInfo
+-- location never leaves the footer empty.
+ORDER BY CASE
+             WHEN org_info.orgbp_location_id IS NOT NULL
+                 AND org_bpl.c_bpartner_location_id = org_info.orgbp_location_id
+                 THEN 0
+                 ELSE 1
+         END,
+         org_bpl.isbilltodefault DESC,
+         org_bpl.isshiptodefault DESC,
+         bpb.isDefault DESC
 LIMIT 1
 $$
 ;
