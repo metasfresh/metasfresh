@@ -91,6 +91,7 @@ import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 
 import java.time.ZoneId;
@@ -107,6 +108,7 @@ import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -126,6 +128,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.compiere.util.Trx;
@@ -344,6 +347,94 @@ public class M_ShipmentSchedule_StepDef
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
 				.deleteDirectly();
+	}
+
+	/**
+	 * Seeds the whole-product recompute-batching fixture DIRECTLY: each DataTable row inserts one minimal
+	 * {@code M_ShipmentSchedule} for the given product plus exactly one UNTAGGED
+	 * {@code M_ShipmentSchedule_Recompute} marker ({@code AD_PInstance_ID IS NULL}), and stores the schedule
+	 * under its identifier so the tagging assertions can reference it.
+	 * <p>
+	 * <b>Why a direct seed and not the real order&rarr;complete&rarr;CreateMissingShipmentSchedules&rarr;invalidate
+	 * pipeline:</b> {@code IShipmentScheduleInvalidateRepository#invalidateShipmentSchedules} inserts the markers
+	 * and then auto-enqueues the {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor} (which is NOT gated by
+	 * {@code SKIP_WP_PROCESSOR_FOR_AUTOMATION}). That processor tag-claims and drains markers CONCURRENTLY with the
+	 * assertions, so any scenario that counts untagged markers after driving the real pipeline is inherently racy
+	 * (the earlier version of this feature flaked "expected 6 but was 4"). The DB function under test
+	 * ({@code M_ShipmentSchedule_TagToRecompute}) operates purely on the marker rows and their schedules'
+	 * {@code M_Product_ID}, so seeding that exact state directly is the deterministic, faithful way to exercise the
+	 * whole-product batching -- mirroring the removed {@code ShipmentScheduleTagToRecomputeDbFunctionTest} JUnit that
+	 * set the markers up directly and proved the function. Creating a NEW schedule does not itself enqueue a recompute
+	 * (the invalidating {@code M_ShipmentSchedule} interceptors are all {@code TYPE_AFTER_CHANGE}, not on new), and
+	 * this step deliberately never enqueues one.
+	 * <p>
+	 * The raw INSERT (rather than the model layer) is intentional and scoped to this DB-function fixture: it fabricates
+	 * the minimal row without firing any before-save {@code M_ShipmentSchedule} interceptor, and keeps the keyless
+	 * {@code M_ShipmentSchedule_Recompute} insert (the table has no single-column PK) trivial. FK / NOT-NULL filler
+	 * columns that the function ignores use standard seed records from {@link StepDefConstants}; {@code AD_Table_ID} +
+	 * {@code Record_ID} are self-referential (the schedule's own table id + id) to satisfy the unique constraint.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias to store the seeded schedule under<br>
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the schedule's product; batching orders products ascending by M_Product_ID<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:
+	 *   | Identifier | M_Product_ID.Identifier |
+	 *   | schedA1    | productA                |
+	 * </pre>
+	 */
+	@And("the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:")
+	public void seedShipmentSchedulesWithUntaggedRecomputeMarker(@NonNull final DataTable dataTable)
+	{
+		final int shipmentScheduleTableId = InterfaceWrapperHelper.getTableId(I_M_ShipmentSchedule.class);
+
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int productId = row.getAsIdentifier(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID)
+					.lookupNotNullIn(productTable)
+					.getM_Product_ID();
+
+			final int shipmentScheduleId = DB.getNextID(StepDefConstants.CLIENT_ID.getRepoId(), I_M_ShipmentSchedule.Table_Name);
+
+			// Minimal schedule row: only the columns the tag DB function reads (M_ShipmentSchedule_ID, M_Product_ID)
+			// carry meaning; the rest are NOT-NULL/FK fillers pointed at standard seed records. Raw INSERT bypasses
+			// the before-save interceptors and never enqueues a recompute (see method javadoc).
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"INSERT INTO M_ShipmentSchedule ("
+							+ " M_ShipmentSchedule_ID, AD_Client_ID, AD_Org_ID, Created, CreatedBy, Updated, UpdatedBy,"
+							+ " M_Product_ID, M_Warehouse_ID, C_BPartner_ID, C_BPartner_Location_ID, Bill_BPartner_ID,"
+							+ " DeliveryRule, DeliveryViaRule, BPartnerAddress, AD_Table_ID, Record_ID)"
+							+ " VALUES (?, ?, ?, now(), ?, now(), ?, ?, ?, ?, ?, ?, 'F', 'D', '.', ?, ?)",
+					new Object[] {
+							shipmentScheduleId,
+							StepDefConstants.CLIENT_ID.getRepoId(),
+							StepDefConstants.ORG_ID.getRepoId(),
+							UserId.METASFRESH.getRepoId(),
+							UserId.METASFRESH.getRepoId(),
+							productId,
+							StepDefConstants.WAREHOUSE_ID.getRepoId(),
+							StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+							StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId(),
+							StepDefConstants.METASFRESH_AG_BPARTNER_ID.getRepoId(),
+							shipmentScheduleTableId,
+							shipmentScheduleId },
+					ITrx.TRXNAME_ThreadInherited);
+
+			// Keyless queue table: one untagged marker (AD_PInstance_ID stays NULL) for this schedule.
+			DB.executeUpdateAndThrowExceptionOnFail(
+					"INSERT INTO M_ShipmentSchedule_Recompute (M_ShipmentSchedule_ID) VALUES (?)",
+					new Object[] { shipmentScheduleId },
+					ITrx.TRXNAME_ThreadInherited);
+
+			final I_M_ShipmentSchedule schedule = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+					.addEqualsFilter(COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+					.create()
+					.firstOnlyNotNull(I_M_ShipmentSchedule.class);
+
+			shipmentScheduleTable.put(row.getAsIdentifier(), schedule);
+		});
 	}
 
 	/**

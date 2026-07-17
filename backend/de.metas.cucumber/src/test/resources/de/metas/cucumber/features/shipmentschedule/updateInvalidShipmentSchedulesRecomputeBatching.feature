@@ -15,58 +15,28 @@ Feature: tag invalid shipment schedules for a recompute pass in whole-product ba
   Background:
     Given infrastructure and metasfresh are running
     And all untagged M_ShipmentSchedule_Recompute markers are deleted
-    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2024-01-15T13:30:13+01:00[Europe/Berlin]
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh contains M_PricingSystems
-      | Identifier |
-      | ps_1       |
-    And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | SOTrx |
-      | pl_1       | ps_1                          | DE                        | EUR                 | true  |
-    And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier |
-      | plv_1      | pl_1                      |
     # productA, productB, productC are created in this order so their M_Product_IDs ascend --
-    # the batching orders candidate products ascending by M_Product_ID.
+    # the whole-product batching orders candidate products ascending by M_Product_ID.
     And metasfresh contains M_Products:
       | Identifier |
       | productA   |
       | productB   |
       | productC   |
-    And metasfresh contains M_ProductPrices
-      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
-      | ppA        | plv_1                             | productA                | 10.0     | PCE               | Normal                        |
-      | ppB        | plv_1                             | productB                | 10.0     | PCE               | Normal                        |
-      | ppC        | plv_1                             | productC                | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
-      | Identifier | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_1 | N            | Y              | ps_1                          |
-    # One sales order whose lines produce a known per-product distribution of shipment schedules:
-    # productA -> 2 schedules, productB -> 3 schedules, productC -> 1 schedule (6 total).
-    And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | order_1    | true    | bpartner_1               | 2024-01-15  |
-    And metasfresh contains C_OrderLines:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
-      | olA1       | order_1               | productA                | 10         |
-      | olA2       | order_1               | productA                | 10         |
-      | olB1       | order_1               | productB                | 10         |
-      | olB2       | order_1               | productB                | 10         |
-      | olB3       | order_1               | productB                | 10         |
-      | olC1       | order_1               | productC                | 10         |
-    When the order identified by order_1 is completed
-    And the next CreateMissingShipmentSchedules workpackage is processed
-    # The 6 schedules exist and are still flagged for recompute (their markers are untagged --
-    # no recompute pass has claimed them yet).
-    Then after not more than 30s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | schedA1    | olA1                      | Y             |
-      | schedA2    | olA2                      | Y             |
-      | schedB1    | olB1                      | Y             |
-      | schedB2    | olB2                      | Y             |
-      | schedB3    | olB3                      | Y             |
-      | schedC1    | olC1                      | Y             |
+    # Seed the recompute backlog DIRECTLY, NOT via the real order->complete->CreateMissingShipmentSchedules
+    # ->invalidate pipeline: that pipeline auto-enqueues the UpdateInvalidShipmentSchedulesWorkpackageProcessor
+    # (not gated by SKIP_WP_PROCESSOR_FOR_AUTOMATION), which drains/claims markers concurrently with the
+    # assertions and makes the untagged-marker counts race. The tag DB function operates purely on the marker
+    # rows and their schedules' M_Product_ID, so this seeds exactly that state. Per-product distribution:
+    # productA -> 2 schedules, productB -> 3 schedules, productC -> 1 schedule (6 total), each with one
+    # untagged M_ShipmentSchedule_Recompute marker.
+    And the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:
+      | Identifier | M_Product_ID.Identifier |
+      | schedA1    | productA                |
+      | schedA2    | productA                |
+      | schedB1    | productB                |
+      | schedB2    | productB                |
+      | schedB3    | productB                |
+      | schedC1    | productC                |
     And 6 M_ShipmentSchedule_Recompute markers remain untagged
 
   @from:cucumber
