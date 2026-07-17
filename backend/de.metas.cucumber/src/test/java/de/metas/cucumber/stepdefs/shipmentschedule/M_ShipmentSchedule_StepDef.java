@@ -83,6 +83,8 @@ import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.shipper.gateway.commons.process.CarrierAdviseProcessService;
 import de.metas.shipping.ShipperId;
@@ -104,6 +106,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.keys.AttributesKeys;
@@ -131,6 +134,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -163,7 +167,11 @@ public class M_ShipmentSchedule_StepDef
 	@NonNull private final IInputDataSourceDAO inputDataSourceDAO = Services.get(IInputDataSourceDAO.class);
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	@NonNull private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	@NonNull private final CarrierAdviseProcessService carrierAdviseProcessService = SpringContextHolder.instance.getBean(CarrierAdviseProcessService.class);
+
+	/** Recompute selection ids created by {@link #tagInvalidShipmentSchedulesForRecompute}, keyed by the scenario's selection identifier. */
+	private final Map<String, PInstanceId> recomputeSelectionsByIdentifier = new HashMap<>();
 
 	@NonNull private final AD_User_StepDefData userTable;
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
@@ -312,6 +320,134 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(noRecords.get())
 				.as("There are still records in M_ShipmentSchedules_Recompute after %s second timeout -- " + shipmentScheduleIds, timeoutSec)
 				.isTrue();
+	}
+
+	/**
+	 * Isolation cleanup: removes any leftover untagged {@code M_ShipmentSchedule_Recompute} markers
+	 * ({@code AD_PInstance_ID IS NULL}) that a prior scenario sharing this DB may have left behind, so a
+	 * whole-product recompute-batching scenario starts from a known, empty recompute backlog. Belongs at the
+	 * start of the Background.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Given all untagged M_ShipmentSchedule_Recompute markers are deleted
+	 * </pre>
+	 */
+	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
+	public void deleteAllUntaggedRecomputeMarkers()
+	{
+		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.delete();
+	}
+
+	/**
+	 * Runs the tagging step that begins every shipment-schedule recompute pass:
+	 * {@link IShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)}. In
+	 * production the {@code UpdateInvalidShipmentSchedulesWorkpackageProcessor} (via {@code ShipmentSchedulePA#retrieveInvalid})
+	 * generates a fresh selection id and calls exactly this method to claim one bounded batch of untagged
+	 * {@code M_ShipmentSchedule_Recompute} markers — bounded to whole products by the DB function
+	 * {@code M_ShipmentSchedule_TagToRecompute} — before recomputing them. This step invokes that same repository
+	 * method directly (generating the selection id the same way, {@link IADPInstanceDAO#createSelectionId()}) and
+	 * stores the selection under the given identifier, so a scenario can observe which markers the whole-product
+	 * batching claimed and how many, without the subsequent recompute deleting them.
+	 * <p>
+	 * A batch size {@code <= 0} maps to {@link QueryLimit#NO_LIMIT} — the DB function's unbounded ({@code p_batchsize <= 0})
+	 * branch that tags every untagged marker.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * When the invalid shipment schedules are tagged for recompute selection recomputePass and batch size 1
+	 * </pre>
+	 */
+	@When("^the invalid shipment schedules are tagged for recompute selection (.*) and batch size (.*)$")
+	public void tagInvalidShipmentSchedulesForRecompute(@NonNull final String selectionIdentifier, final int batchSize)
+	{
+		final PInstanceId selectionId = adPInstanceDAO.createSelectionId();
+		recomputeSelectionsByIdentifier.put(selectionIdentifier, selectionId);
+
+		shipmentScheduleInvalidateRepository.markAllToRecomputeOutOfTrx(selectionId, QueryLimit.ofInt(batchSize));
+	}
+
+	/**
+	 * Verifies which {@code M_ShipmentSchedule_Recompute} markers the given recompute selection claimed: the
+	 * DataTable lists the shipment schedules expected to be tagged (whole products, never split across the batch
+	 * boundary), and the leading count is the total number of marker rows tagged — the value the DB function
+	 * {@code M_ShipmentSchedule_TagToRecompute} returns.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) a shipment schedule expected to be tagged for the selection<br>
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then 2 M_ShipmentSchedule_Recompute markers are tagged for recompute selection recomputePass:
+	 *   | M_ShipmentSchedule_ID |
+	 *   | schedProductA_1       |
+	 *   | schedProductA_2       |
+	 * </pre>
+	 */
+	@Then("^(\\d+) M_ShipmentSchedule_Recompute markers are tagged for recompute selection (.*):$")
+	public void validateTaggedRecomputeMarkers(final int expectedCount, @NonNull final String selectionIdentifier, @NonNull final DataTable dataTable)
+	{
+		final PInstanceId selectionId = getRecomputeSelection(selectionIdentifier);
+
+		final List<I_M_ShipmentSchedule_Recompute> taggedMarkers = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, selectionId)
+				.create()
+				.list(I_M_ShipmentSchedule_Recompute.class);
+
+		assertThat(taggedMarkers)
+				.as("Number of M_ShipmentSchedule_Recompute markers tagged for selection %s (the count the DB function returns)", selectionIdentifier)
+				.hasSize(expectedCount);
+
+		final Set<Integer> actualTaggedScheduleIds = taggedMarkers.stream()
+				.map(I_M_ShipmentSchedule_Recompute::getM_ShipmentSchedule_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final Set<Integer> expectedTaggedScheduleIds = DataTableRows.of(dataTable).stream()
+				.map(row -> row.getAsIdentifier(COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIn(shipmentScheduleTable).getM_ShipmentSchedule_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		assertThat(actualTaggedScheduleIds)
+				.as("Distinct shipment schedules tagged for selection %s (whole products, never split)", selectionIdentifier)
+				.isEqualTo(expectedTaggedScheduleIds);
+	}
+
+	/**
+	 * Asserts how many {@code M_ShipmentSchedule_Recompute} markers are still untagged ({@code AD_PInstance_ID IS NULL})
+	 * — i.e. the backlog a bounded batch left behind for the next recompute pass.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.example
+	 * <pre>
+	 * Then 4 M_ShipmentSchedule_Recompute markers remain untagged
+	 * </pre>
+	 */
+	@Then("^(\\d+) M_ShipmentSchedule_Recompute markers remain untagged$")
+	public void validateUntaggedRecomputeMarkerCount(final int expectedCount)
+	{
+		final int actualCount = queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
+				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
+				.create()
+				.count();
+
+		assertThat(actualCount)
+				.as("Number of untagged M_ShipmentSchedule_Recompute markers remaining")
+				.isEqualTo(expectedCount);
+	}
+
+	@NonNull
+	private PInstanceId getRecomputeSelection(@NonNull final String selectionIdentifier)
+	{
+		final PInstanceId selectionId = recomputeSelectionsByIdentifier.get(selectionIdentifier);
+		assertThat(selectionId)
+				.as("No recompute selection was created for identifier %s -- call the tagging step first", selectionIdentifier)
+				.isNotNull();
+		return selectionId;
 	}
 
 	/**
