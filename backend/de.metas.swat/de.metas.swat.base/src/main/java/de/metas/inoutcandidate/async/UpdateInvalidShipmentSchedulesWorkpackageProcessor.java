@@ -117,7 +117,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
-		trxManager.assertTrxNameNull(localTrxName_NOTUSED);
+		trxManager.assertThreadInheritedTrxNotExists();
 
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
@@ -127,13 +127,12 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-			final QueryLimit maxToProcess = getMaxToProcess();
 
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
 					.ctx(ctx)
 					.selectionId(selectionId)
 					.createMissingShipmentSchedules(false) // don't create missing schedules; for that we have CreateMissingShipmentSchedulesWorkpackageProcessor
-					.maxToProcess(maxToProcess)
+					.maxToProcess(getMaxToProcess())
 					.build();
 			loggable.addLog("Starting revalidation for {}", request);
 
