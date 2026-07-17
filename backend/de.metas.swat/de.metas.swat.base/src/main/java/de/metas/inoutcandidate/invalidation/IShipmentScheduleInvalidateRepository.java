@@ -78,6 +78,7 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void invalidateAll(Properties ctx);
 
 	/**
+	 * @param pinstanceId the {@code AD_PInstance_ID} to tag the matched {@code M_ShipmentSchedule_Recompute} rows with
 	 * @param maxToProcess if limited, bounds the tagging to <b>whole products</b> (stock-coherent unit): products are
 	 *                     accumulated in ascending {@code M_Product_ID} order until their cumulative distinct
 	 *                     shipment-schedule count would reach {@code maxToProcess}; a product's schedules are

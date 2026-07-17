@@ -88,6 +88,13 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		return (String)buildMarkAllToRecomputeSql.invoke(repository, pinstanceId, maxToProcess);
 	}
 
+	/** Collapse runs of whitespace to a single space so {@code .contains()} can assert on CONJOINED fragments
+	 *  (the {@code AND} connector between two predicates) regardless of the builder's line breaks/indentation. */
+	private static String normalizeWhitespace(final String sql)
+	{
+		return sql.replaceAll("\\s+", " ").trim();
+	}
+
 	@Test
 	public void warehouseSegment_matchesByEffectiveWarehouseColumn_andNoLocatorSubselect() throws Exception
 	{
@@ -181,18 +188,17 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(777);
 		final int n = 3;
 
-		final String sql = buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n));
+		final String sql = normalizeWhitespace(buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n)));
 
 		assertThat(sql)
-				.as("must tag by schedule id, so ALL duplicate recompute markers of a selected schedule get tagged")
-				.contains("sr.M_ShipmentSchedule_ID IN (")
-				.as("must select only currently-untagged markers")
-				.contains("sr.AD_PInstance_ID IS NULL")
-				.as("the slicing unit is the WHOLE PRODUCT: candidate schedules are selected by M_Product_ID "
-						+ "membership, not by a schedule-id cutoff -- so a product's schedules are never split")
-				.contains("s2.M_Product_ID IN (")
-				.as("must scope the candidate schedule ids to currently-untagged markers too")
-				.contains("sr2.AD_PInstance_ID IS NULL")
+				.as("the outer UPDATE must tag by schedule id and only currently-untagged markers -- asserted "
+						+ "CONJOINED (AND, not OR) so ALL duplicate markers of a selected schedule get tagged but "
+						+ "already-tagged rows are never re-tagged")
+				.contains("WHERE sr.AD_PInstance_ID IS NULL AND sr.M_ShipmentSchedule_ID IN (")
+				.as("the slicing unit is the WHOLE PRODUCT: candidate schedules are scoped to currently-untagged "
+						+ "markers AND selected by M_Product_ID membership (asserted CONJOINED, not OR), not by a "
+						+ "schedule-id cutoff -- so a product's schedules are never split")
+				.contains("WHERE sr2.AD_PInstance_ID IS NULL AND s2.M_Product_ID IN (")
 				.as("must keep the existence join to M_ShipmentSchedule, preserving the old query's "
 						+ "\"only schedules that still exist\" filter")
 				.contains("JOIN M_ShipmentSchedule s2 ON s2.M_ShipmentSchedule_ID = sr2.M_ShipmentSchedule_ID")
@@ -211,9 +217,12 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(777);
 		final int n = 500;
 
-		final String sql = buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n));
+		final String sql = normalizeWhitespace(buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n)));
 
 		assertThat(sql)
+				.as("candidate counts must be grouped per product (without GROUP BY the ungrouped column + aggregate "
+						+ "is invalid SQL and the per-product accounting collapses)")
+				.contains("GROUP BY s3.M_Product_ID")
 				.as("products are ordered deterministically (ascending M_Product_ID) so a second call advances "
 						+ "to the next batch of products")
 				.contains("ORDER BY s3.M_Product_ID")
@@ -221,8 +230,8 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.contains("COUNT(DISTINCT sr3.M_ShipmentSchedule_ID) AS sched_count")
 				.as("... and accumulated as a running total ACROSS products in that same ascending order -- this is "
 						+ "what makes the cutoff track the CUMULATIVE distinct count, not a per-product count")
-				.contains("SUM(COUNT(DISTINCT sr3.M_ShipmentSchedule_ID))")
-				.contains("OVER (ORDER BY s3.M_Product_ID ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total")
+				.contains("SUM(COUNT(DISTINCT sr3.M_ShipmentSchedule_ID)) OVER (ORDER BY s3.M_Product_ID "
+						+ "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total")
 				.as("a product qualifies while the cumulative total BEFORE it (running_total - its own count) is "
 						+ "still under N -- i.e. whole products keep accumulating until the cumulative distinct "
 						+ "schedule count would reach N")
@@ -242,7 +251,7 @@ public class ShipmentScheduleInvalidateRepositoryTest
 		final PInstanceId pinstanceId = PInstanceId.ofRepoId(777);
 		final int n = 1;
 
-		final String sql = buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n));
+		final String sql = normalizeWhitespace(buildMarkAllToRecomputeSql(pinstanceId, QueryLimit.ofInt(n)));
 
 		assertThat(sql)
 				.as("the cutoff must be a strict '<' against N (not '<=') so the first product's zero "
