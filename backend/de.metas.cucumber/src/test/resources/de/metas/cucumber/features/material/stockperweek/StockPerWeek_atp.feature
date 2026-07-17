@@ -131,3 +131,4 @@ Feature: MD_Stock_PerWeek_V shows cumulative projected stock (QtyATP) and rolls 
     Then after not more than 10s, MD_Stock_PerWeek_V contains:
       | M_Product_ID        | M_Warehouse_ID | WeekOffset | QtyATPBegin | QtyExpectedShipments | QtyExpectedReceipts | QtyATP |
       | product_S30457_atp3 | wh_S25618_atp  | 0          | 0           | 0                    | 0                   | 60     |
+
