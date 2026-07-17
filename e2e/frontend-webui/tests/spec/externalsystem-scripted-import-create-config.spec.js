@@ -47,6 +47,12 @@ const ACTIVE_PARENT_CONFIG_NAME = 'print-to-remote-folder';
 const IMPORT_USER_SEARCH = 'Automatik';
 const ROLE_CAPTION_REGEX = /^WebUI, metasfresh, metasfresh AG$/;
 
+/** Escape regex metacharacters so a server-generated value (doc sequence) can be
+ * matched literally inside a toHaveValue(RegExp) substring assertion. */
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 /**
  * Select a value from a List dropdown widget (click the container to open, then
  * click the matching option). Works for Type / TransportType / SftpAuthType /
@@ -231,7 +237,9 @@ test.describe('ExternalSystem Scripted-Import Config — create + bind endpoint 
   test('Parent window 541024 child tab: create + SAVE a config binding an endpoint (persisted)', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00351: EDI ORDERS');
+    allure.tag('F00351');
     allure.tag('F4550: Sales Order Candidate (REST API)');
+    allure.tag('F4550');
     allure.story('Scripted-Import Config — create + bind endpoint on parent window 541024 (persisted)');
     allure.severity('critical');
 
@@ -308,9 +316,10 @@ asserts the endpoint persists bound after a reload.
         .inputValue();
       expect(boundInModal, 'seeded endpoint must be bound in the child-row form before save').toContain(endpointValue);
 
-      // Save/commit the child row. The WebUI auto-saves each field via PATCH; "Done"
-      // commits and closes the "Add new" overlay.
-      const doneButton = modal.locator('button', { hasText: /^Done$/i }).first();
+      // Save/commit the child row. The WebUI auto-saves each field via PATCH; the modal's
+      // Done button commits and closes the "Add new" overlay. Select it by its stable
+      // data-testid (Modal.js) — never the localized caption (language-independence rule).
+      const doneButton = modal.getByTestId('process-modal-cancel-button').first();
       await doneButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await doneButton.click();
       await page.waitForTimeout(2000);
@@ -341,14 +350,16 @@ asserts the endpoint persists bound after a reload.
       await expect(
         reopenedEndpoint,
         'the seeded endpoint must be persisted (bound) on the saved config after reload'
-      ).toHaveValue(new RegExp(endpointValue), { timeout: SLOW_ACTION_TIMEOUT });
+      ).toHaveValue(new RegExp(escapeRegExp(endpointValue)), { timeout: SLOW_ACTION_TIMEOUT });
     });
   });
 
   test('Dedicated window 541962: create + SAVE a config binding an endpoint (persisted)', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00351: EDI ORDERS');
+    allure.tag('F00351');
     allure.tag('F4550: Sales Order Candidate (REST API)');
+    allure.tag('F4550');
     allure.story('Scripted-Import Config — create + bind endpoint on dedicated window 541962 (persisted)');
     allure.severity('critical');
 
@@ -420,7 +431,7 @@ after a reload.
       await expect(
         page.locator('.form-field-ExternalSystem_Endpoint_ID input').first(),
         'the seeded endpoint must be persisted (bound) on the saved config after reload'
-      ).toHaveValue(new RegExp(endpointValue), { timeout: SLOW_ACTION_TIMEOUT });
+      ).toHaveValue(new RegExp(escapeRegExp(endpointValue)), { timeout: SLOW_ACTION_TIMEOUT });
       await expect(
         page.locator('.form-field-ExternalSystemValue input').first(),
         'the Suchschlüssel (ExternalSystemValue) must be persisted after reload'
