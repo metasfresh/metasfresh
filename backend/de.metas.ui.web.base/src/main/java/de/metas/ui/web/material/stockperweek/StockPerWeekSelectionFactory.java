@@ -1,5 +1,6 @@
 package de.metas.ui.web.material.stockperweek;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.material.dispo.model.I_MD_Stock_PerWeek_V;
 import de.metas.security.IUserRolePermissions;
@@ -9,7 +10,9 @@ import de.metas.ui.web.base.model.I_T_WEBUI_ViewSelection;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.DocumentFilterParam;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
+import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverters;
 import de.metas.ui.web.view.AddRemoveChangedRowIdsCollector;
 import de.metas.ui.web.view.SqlViewRowIdsOrderedSelectionFactory;
 import de.metas.ui.web.view.ViewEvaluationCtx;
@@ -25,6 +28,7 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
+import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.expression.api.IStringExpressionWrapper;
@@ -40,6 +44,8 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /*
  * #%L
@@ -79,6 +85,8 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 	private static final String FUNCTION_SOURCE_RELATION_SQL = FUNCTION_NAME + "(?,?)";
 	private static final String KEY_COLUMN = I_MD_Stock_PerWeek_V.COLUMNNAME_MD_Stock_PerWeek_V_ID;
 	private static final String FUNCTION_ALIAS = "fn";
+	/** The order-line zoom clause always leads with a literal {@code M_Product_ID = <int>} (see zoom-slowpath diagnosis). */
+	private static final Pattern PRODUCT_LITERAL_PATTERN = Pattern.compile("\\bM_Product_ID\\s*=\\s*(\\d+)\\b");
 	/** Window's default sort, used when {@code orderBys} is empty. */
 	private static final ImmutableList<String> DEFAULT_ORDER_FIELD_NAMES = ImmutableList.of(
 			I_MD_Stock_PerWeek_V.COLUMNNAME_WeekStartDate,
@@ -103,14 +111,68 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 			final boolean applySecurityRestrictions,
 			final SqlDocumentFilterConverterContext context)
 	{
-		final Integer productId = extractFilterValue(filters, I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID);
-		if (productId == null)
+		final SqlAndParams sqlInsert = buildCreateSelectionSql(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, context);
+		if (sqlInsert == null)
 		{
-			// no single-product filter (absent / multi-value / range) => standard path (open-empty guard + warehouse/week-only filtering)
+			// no single-product filter (absent / multi-value / range / unrecognized zoom clause) => standard path (open-empty guard + warehouse/week-only filtering)
 			return delegate.createOrderedSelection(viewEvalCtx, viewId, filters, orderBys, applySecurityRestrictions, context);
 		}
 
-		final Integer warehouseId = extractFilterValue(filters, I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID);
+		final long rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
+				sqlInsert.getSql(), sqlInsert.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+
+		return ViewRowIdsOrderedSelection.builder()
+				.viewId(viewId)
+				.size(rowsCount)
+				.orderBys(orderBys)
+				.queryLimit(QueryLimit.NO_LIMIT)
+				.build();
+	}
+
+	/**
+	 * Function-sourced INSERT into {@link I_T_WEBUI_ViewSelection} for a single-product view, or {@code null}
+	 * when no single product can be resolved (caller delegates to the standard path). Two fast paths feed one INSERT:
+	 * <ul>
+	 * <li><b>direct facet</b>: a top-level {@code M_Product_ID} (+ optional {@code M_Warehouse_ID}) {@code EQUAL}
+	 * param — both become {@code MD_Stock_PerWeek_fn} params, no residual WHERE.
+	 * <li><b>order-line zoom</b>: the product carried inside the zoom's opaque SQL-where filter (such params are
+	 * hidden from by-field-name lookup). The product parameterizes the function; that same clause's residual
+	 * {@code MD_getStockWarehouse(...)} warehouse-resolution and {@code WeekStartDate} floor — neither expressible
+	 * as a function param — are applied as the standard converted WHERE against the small function output.
+	 * </ul>
+	 */
+	@VisibleForTesting
+	@Nullable
+	SqlAndParams buildCreateSelectionSql(
+			final ViewEvaluationCtx viewEvalCtx,
+			final ViewId viewId,
+			final DocumentFilterList filters,
+			final DocumentQueryOrderByList orderBys,
+			final boolean applySecurityRestrictions,
+			final SqlDocumentFilterConverterContext context)
+	{
+		final int productId;
+		@Nullable final Integer warehouseFnParam;
+		@Nullable final SqlAndParams residualWhereClause;
+
+		final Integer directProductId = extractFilterValue(filters, I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID);
+		if (directProductId != null)
+		{
+			productId = directProductId;
+			warehouseFnParam = extractFilterValue(filters, I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID);
+			residualWhereClause = null;
+		}
+		else
+		{
+			final Integer zoomProductId = extractProductIdFromSqlFilter(filters);
+			if (zoomProductId == null)
+			{
+				return null;
+			}
+			productId = zoomProductId;
+			warehouseFnParam = null; // all warehouses for the product; the residual WHERE narrows to the resolved one
+			residualWhereClause = buildResidualWhereClause(filters, context);
+		}
 
 		final String rowNumberOrderBySql = buildRowNumberOrderBySql(orderBys);
 
@@ -121,25 +183,23 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey1
 						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey2
 						+ ", " + I_T_WEBUI_ViewSelection.COLUMNNAME_IntKey3 + ")\n")
-				.append("SELECT ?", viewId.getViewId())
-				.append(", row_number() OVER (ORDER BY " + rowNumberOrderBySql + ")"
-						+ ", " + FUNCTION_ALIAS + "." + KEY_COLUMN
-						+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID
-						+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID + "\n"
-						+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, productId, warehouseId)
-				.append("\n WHERE 1=1 ")
-				.wrap(securityRestrictionsWrapper(applySecurityRestrictions));
+				.append(SqlAndParamsExpression.builder()
+						.append("SELECT ?", viewId.getViewId())
+						.append(", row_number() OVER (ORDER BY " + rowNumberOrderBySql + ")"
+								+ ", " + FUNCTION_ALIAS + "." + KEY_COLUMN
+								+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID
+								+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID + "\n"
+								+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, productId, warehouseFnParam)
+						.append("\n WHERE 1=1 ")
+						.wrap(securityRestrictionsWrapper(applySecurityRestrictions)));
 
-		final SqlAndParams sqlAndParams = sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee());
-		final long rowsCount = DB.executeUpdateAndThrowExceptionOnFail(
-				sqlAndParams.getSql(), sqlAndParams.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
+		if (residualWhereClause != null && !residualWhereClause.isEmpty())
+		{
+			// zoom: apply the clause's residual warehouse-resolution + week floor against the small function output
+			sqlInsert.append("\n AND (\n").append(residualWhereClause).append("\n)");
+		}
 
-		return ViewRowIdsOrderedSelection.builder()
-				.viewId(viewId)
-				.size(rowsCount)
-				.orderBys(orderBys)
-				.queryLimit(QueryLimit.NO_LIMIT)
-				.build();
+		return sqlInsert.build().evaluate(viewEvalCtx.toEvaluatee());
 	}
 
 	/** Same per-row client/org read-access filter the standard selection applies; the fn output carries AD_Client_ID/AD_Org_ID so it resolves against the fn alias. */
@@ -263,6 +323,53 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * Product id of the order-line zoom, which delivers product/warehouse/week as one opaque SQL-where filter param
+	 * (hidden from {@link #extractFilterValue}'s by-field-name lookup). Scans the SQL-filter params for the
+	 * metas-controlled clause's leading literal {@code M_Product_ID = <int>}. Fail-closed — absent, non-literal
+	 * ({@code = ?}), or ambiguous (more than one distinct product) returns {@code null} so the caller keeps the safe
+	 * slow path (never guess a product).
+	 */
+	@Nullable
+	private static Integer extractProductIdFromSqlFilter(@NonNull final DocumentFilterList filters)
+	{
+		Integer found = null;
+		for (final DocumentFilter filter : filters.toList())
+		{
+			for (final DocumentFilterParam param : filter.getParameters())
+			{
+				final SqlAndParams sqlWhereClause = param.isSqlFilter() ? param.getSqlWhereClause() : null;
+				if (sqlWhereClause == null)
+				{
+					continue;
+				}
+				final Matcher matcher = PRODUCT_LITERAL_PATTERN.matcher(sqlWhereClause.getSql());
+				while (matcher.find())
+				{
+					final int productId = Integer.parseInt(matcher.group(1));
+					if (productId <= 0 || (found != null && found != productId))
+					{
+						return null; // malformed or ambiguous => slow path
+					}
+					found = productId;
+				}
+			}
+		}
+		return found;
+	}
+
+	/**
+	 * WHERE clause the standard (slow) path would apply for {@code filters}, aliased to the {@code MD_Stock_PerWeek_fn}
+	 * relation so the zoom clause's residual warehouse-resolution + week floor restrict the function output to exactly
+	 * the zoom's rows. Same converter the delegate uses, so the selection matches the view-filtered output.
+	 */
+	@Nullable
+	private SqlAndParams buildResidualWhereClause(@NonNull final DocumentFilterList filters, @NonNull final SqlDocumentFilterConverterContext context)
+	{
+		final SqlDocumentFilterConverter converter = SqlDocumentFilterConverters.createEntityBindingEffectiveConverter(sqlViewBinding);
+		return converter.getSql(filters, SqlOptions.usingTableAlias(FUNCTION_ALIAS), context).getWhereClause();
 	}
 
 	/**
