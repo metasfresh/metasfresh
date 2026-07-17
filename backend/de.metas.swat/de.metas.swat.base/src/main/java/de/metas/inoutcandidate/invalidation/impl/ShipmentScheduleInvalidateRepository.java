@@ -579,7 +579,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return whereClause.toString();
 	}
 
-	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(?, ?)";
+	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(p_selection_id => ?, p_batchsize => ?)";
 
 	@Override
 	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
@@ -591,7 +591,7 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// The tagging itself (incl. the whole-product batching logic, see M_ShipmentSchedule_TagToRecompute's
 		// comment) lives in the DB function so it can also be invoked directly from support/ops SQL.
 		final int batchSize = maxToProcess.isLimited() ? maxToProcess.toInt() : 0;
-		final int countTagged = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_TAG_TO_RECOMPUTE, pinstanceId.getRepoId(), batchSize);
+		final int countTagged = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_TAG_TO_RECOMPUTE, pinstanceId, batchSize);
 		logger.debug("Marked {} entries for {}", countTagged, pinstanceId);
 	}
 

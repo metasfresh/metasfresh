@@ -29,7 +29,7 @@ public final class M_ShipmentSchedule_Update extends JavaProcess
 				.ctx(getCtx())
 				.selectionId(getPinstanceId())
 				.createMissingShipmentSchedules(true)
-				// maxToProcess intentionally left at its NO_LIMIT default: this manual process stays single-shot (AC5)
+				// maxToProcess intentionally left at its NO_LIMIT default: this manual process stays single-shot
 				.build());
 
 		return "Updated " + result.getUpdatedCount() + " shipment schedule entries";

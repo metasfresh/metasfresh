@@ -50,7 +50,5 @@ public class ShipmentScheduleUpdateInvalidRequest
 	 * Defaults to {@link QueryLimit#NO_LIMIT}, preserving the previous single-shot, unbounded behavior
 	 * (e.g. for the manual {@code M_ShipmentSchedule_Update} process).
 	 */
-	@NonNull
-	@Builder.Default
-	QueryLimit maxToProcess = QueryLimit.NO_LIMIT;
+	@NonNull @Builder.Default QueryLimit maxToProcess = QueryLimit.NO_LIMIT;
 }

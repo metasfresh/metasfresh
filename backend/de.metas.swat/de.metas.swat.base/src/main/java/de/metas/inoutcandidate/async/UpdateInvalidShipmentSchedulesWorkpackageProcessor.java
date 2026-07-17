@@ -117,6 +117,8 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName_NOTUSED)
 	{
+		trxManager.assertTrxNameNull(localTrxName_NOTUSED);
+
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 
 		final PInstanceId selectionId = Services.get(IADPInstanceDAO.class).createSelectionId();
@@ -125,7 +127,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putRevalidationId(selectionId))
 		{
 			final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
-			final QueryLimit maxToProcess = QueryLimit.ofInt(getMaxToProcess());
+			final QueryLimit maxToProcess = getMaxToProcess();
 
 			final ShipmentScheduleUpdateInvalidRequest request = ShipmentScheduleUpdateInvalidRequest.builder()
 					.ctx(ctx)
@@ -139,7 +141,7 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 			// Why callInThreadInheritedTrx here: this processor runs out-of-transaction (isRunInTransaction()==false), so
 			// there is NO ambient trx; callInThreadInheritedTrx then starts a new trx (and commits/closes it) -- giving us
 			// ONE short, bounded transaction per batch instead of a single unbounded transaction for the whole backlog
-			// (which OOMs on a large backlog). Mirrors CreateMissingShipmentSchedulesWorkpackageProcessor#25194.
+			// (which OOMs on a large backlog). Mirrors CreateMissingShipmentSchedulesWorkpackageProcessor.
 			final ShipmentScheduleUpdateInvalidResult result = trxManager.callInThreadInheritedTrx(() -> shipmentScheduleUpdater.updateShipmentSchedules(request));
 
 			loggable.addLog("Updated {} shipment schedule entries for {}", result.getUpdatedCount(), request);
@@ -153,9 +155,9 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 		}
 	}
 
-	private int getMaxToProcess()
+	private QueryLimit getMaxToProcess()
 	{
-		return sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess);
+		return QueryLimit.ofInt(sysConfigBL.getIntValue(SYSCONFIG_MaxToProcess, DEFAULT_MaxToProcess));
 	}
 
 	/**
