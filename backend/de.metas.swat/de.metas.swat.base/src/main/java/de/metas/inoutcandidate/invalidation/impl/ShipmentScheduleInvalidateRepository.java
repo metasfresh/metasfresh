@@ -593,10 +593,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	/**
 	 * Builds the SQL statement used by {@link #markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)}.
 	 * <p>
-	 * When {@code maxToProcess} is limited, bounds the tagging to at most {@code maxToProcess}
-	 * <b>distinct</b> {@code M_ShipmentSchedule_ID}s (deterministic lowest-id order, so a subsequent call
-	 * advances to the next batch), while still tagging <b>all</b> of each selected schedule's duplicate
-	 * recompute markers -- the outer WHERE matches on schedule id, not on recompute row id.
+	 * When {@code maxToProcess} is limited, bounds the tagging to <b>whole products</b> (stock-coherent unit):
+	 * candidate products are ordered ascending by {@code M_Product_ID} and accumulate (via a running total of
+	 * their DISTINCT schedule counts) until the cumulative count would reach {@code maxToProcess} -- a product is
+	 * <b>never split</b> across the boundary, and the first product always qualifies (its running total so far is
+	 * zero), so at least one whole product is tagged even if it alone exceeds {@code maxToProcess}. All of the
+	 * qualifying products' recompute markers are tagged, including duplicates -- the outer WHERE matches on
+	 * schedule id, not on recompute row id.
 	 */
 	private String buildMarkAllToRecomputeSql(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
@@ -605,12 +608,21 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 			return " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
 					" WHERE sr.AD_PInstance_ID IS NULL " +
 					"   AND sr.M_ShipmentSchedule_ID IN ( " +
-					"     SELECT DISTINCT sr2.M_ShipmentSchedule_ID " +
+					"     SELECT sr2.M_ShipmentSchedule_ID " +
 					"     FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr2 " +
-					"     JOIN M_ShipmentSchedule s ON s.M_ShipmentSchedule_ID = sr2.M_ShipmentSchedule_ID " +
+					"     JOIN M_ShipmentSchedule s2 ON s2.M_ShipmentSchedule_ID = sr2.M_ShipmentSchedule_ID " +
 					"     WHERE sr2.AD_PInstance_ID IS NULL " +
-					"     ORDER BY sr2.M_ShipmentSchedule_ID " +
-					"     LIMIT " + maxToProcess.toInt() + " ) ";
+					"       AND s2.M_Product_ID IN ( " +
+					"           SELECT M_Product_ID FROM ( " +
+					"               SELECT s3.M_Product_ID, " +
+					"                      COUNT(DISTINCT sr3.M_ShipmentSchedule_ID) AS sched_count, " +
+					"                      SUM(COUNT(DISTINCT sr3.M_ShipmentSchedule_ID)) " +
+					"                          OVER (ORDER BY s3.M_Product_ID ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS running_total " +
+					"                 FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr3 " +
+					"                 JOIN M_ShipmentSchedule s3 ON s3.M_ShipmentSchedule_ID = sr3.M_ShipmentSchedule_ID " +
+					"                WHERE sr3.AD_PInstance_ID IS NULL " +
+					"                GROUP BY s3.M_Product_ID ) p " +
+					"            WHERE p.running_total - p.sched_count < " + maxToProcess.toInt() + " ) ) ";
 		}
 
 		return " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +

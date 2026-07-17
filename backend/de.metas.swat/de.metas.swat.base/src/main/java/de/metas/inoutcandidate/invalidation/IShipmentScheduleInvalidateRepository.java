@@ -78,9 +78,14 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void invalidateAll(Properties ctx);
 
 	/**
-	 * @param maxToProcess if limited, bounds the tagging to at most this many <b>distinct</b> shipment schedules
-	 *                     (deterministic lowest-id order); all of each selected schedule's duplicate recompute
-	 *                     markers are still tagged. {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
+	 * @param maxToProcess if limited, bounds the tagging to <b>whole products</b> (stock-coherent unit): products are
+	 *                     accumulated in ascending {@code M_Product_ID} order until their cumulative distinct
+	 *                     shipment-schedule count would reach {@code maxToProcess}; a product's schedules are
+	 *                     <b>never split</b> across the boundary (splitting would let {@code ShipmentScheduleUpdater}
+	 *                     recompute the same product's schedules against two different on-hand-stock snapshots,
+	 *                     double-allocating stock), and at least one whole product is always tagged even if it alone
+	 *                     exceeds {@code maxToProcess}. All of each selected product's duplicate recompute markers
+	 *                     are still tagged. {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
 	 */
 	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId, QueryLimit maxToProcess);
 
