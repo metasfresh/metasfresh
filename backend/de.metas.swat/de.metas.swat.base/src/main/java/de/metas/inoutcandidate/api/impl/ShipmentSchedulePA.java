@@ -267,7 +267,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
 	@Override
-	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId)
+	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
 		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
@@ -277,7 +277,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, QueryLimit.NO_LIMIT);
+		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
