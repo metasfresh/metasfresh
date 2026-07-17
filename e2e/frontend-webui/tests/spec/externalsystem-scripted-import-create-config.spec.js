@@ -4,10 +4,11 @@ import { allure } from 'allure-playwright';
 import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
 
 /**
- * ExternalSystem scripted-import config — Endpoint picker parity.
+ * ExternalSystem scripted-import config — create + SAVE a config that BINDS an endpoint.
  *
  * The scripted-import config (table ExternalSystem_Config_ScriptedImportConversion)
- * is reachable via TWO windows, which must expose the same endpoint-binding UI:
+ * is reachable via TWO windows, which must both let an operator create a config and
+ * bind an ExternalSystem_Endpoint to it:
  *
  * - Parent window 541024 ("Externes System Konfiguration"): the config lives on
  *   CHILD tab 548472 ("Skriptbasierte Importkonvertierung", TabLevel 1) under an
@@ -18,8 +19,12 @@ import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
  *   the SFTP fields.
  *
  * The legacy free-text EndpointName field is retired (dropped) — neither window shows
- * it. This spec verifies the endpoint FK picker is present + selectable on BOTH windows
- * (parity), which is the behaviour the AD migrations in this change establish.
+ * it. This spec drives the FULL create flow on BOTH windows: fill every mandatory
+ * field (Suchschlüssel / ExternalSystemValue, Skript-Kennung / ScriptIdentifier,
+ * Benutzerimport / AD_User_Import_ID) AND select an endpoint, SAVE the record, then
+ * RELOAD from the server and assert the endpoint is persisted (bound) on the saved
+ * config — i.e. it proves a real, persisted create-with-endpoint, not just that the
+ * picker is visible.
  *
  * Login note: the shared `metasfresh` user has many roles; the default role
  * (roles[0]) lacks access to the ExternalSystem windows, so this spec explicitly
@@ -34,9 +39,12 @@ const SCRIPTED_IMPORT_DEDICATED_WINDOW_ID = 541962; // dedicated window, root ta
 // The external-system type backing the scripted-import conversion (used when creating
 // a parent ExternalSystem_Config record for the child tab).
 const SCRIPTED_IMPORT_EXTERNAL_SYSTEM = 'ScriptedImportConversion';
-// An ACTIVE parent ExternalSystem_Config record used by the parity test to scope the
-// endpoint List (endpoints are filtered by the config's external system).
+// An ACTIVE parent ExternalSystem_Config record used by the dedicated-window test to
+// set the config on the root record before binding the endpoint.
 const ACTIVE_PARENT_CONFIG_NAME = 'print-to-remote-folder';
+// Search term for the mandatory "Benutzerimport" (AD_User_Import_ID) field — matches the
+// stable seeded WebUI system user "Admin, Automatik-Benutzer" (has a WebUI auth token).
+const IMPORT_USER_SEARCH = 'Automatik';
 const ROLE_CAPTION_REGEX = /^WebUI, metasfresh, metasfresh AG$/;
 
 /**
@@ -59,7 +67,8 @@ async function selectListValue(page, fieldName, optionText, { exact = false } = 
 
 /**
  * Select a value from a Lookup (typeahead) widget by typing a search string and
- * clicking the first matching dropdown option. Used for ExternalSystem_ID.
+ * clicking the first matching dropdown option. Used for ExternalSystem_ID and the
+ * mandatory Benutzerimport (AD_User_Import_ID) field.
  */
 async function selectLookupValue(page, fieldName, searchText) {
   const input = page
@@ -96,6 +105,19 @@ async function fillNumericField(page, fieldName, value) {
   await field.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await field.fill(value);
   await page.waitForTimeout(300);
+}
+
+/**
+ * Fill the mandatory scripted-import config fields (other than the endpoint + the
+ * parent config): Suchschlüssel (ExternalSystemValue), Skript-Kennung
+ * (ScriptIdentifier) and Benutzerimport (AD_User_Import_ID). Only one such form is
+ * open at a time (root form or the child-row "Add new" overlay), so the fields
+ * resolve uniquely from the page.
+ */
+async function fillMandatoryConfigFields(page, externalSystemValue) {
+  await fillTextField(page, 'ExternalSystemValue', externalSystemValue);
+  await fillTextField(page, 'ScriptIdentifier', 'e2e-scripted-import');
+  await selectLookupValue(page, 'AD_User_Import_ID', IMPORT_USER_SEARCH);
 }
 
 /**
@@ -177,8 +199,7 @@ async function createSftpEndpoint(page) {
 /**
  * Create and save a fresh (active) parent ExternalSystem_Config record on window
  * 541024, so its scripted-import child tab (548472) starts empty and offers the
- * "Add new" child-row action. Returns nothing — the page is left on the saved
- * parent record.
+ * "Add new" child-row action. Returns the saved parent record id (from the URL).
  */
 async function createParentConfig(page) {
   await page.goto(`${FRONTEND_BASE_URL}/window/${SCRIPTED_IMPORT_PARENT_WINDOW_ID}/NEW`);
@@ -197,42 +218,57 @@ async function createParentConfig(page) {
     },
     { timeout: SLOW_ACTION_TIMEOUT }
   );
+  const parentId = page.url().split(`/window/${SCRIPTED_IMPORT_PARENT_WINDOW_ID}/`)[1].split(/[/?#]/)[0];
+  expect(parentId, 'parent ExternalSystem_Config must have a persisted id').toMatch(/^\d+$/);
+  return parentId;
 }
 
-test.describe('ExternalSystem Scripted-Import Config — Endpoint picker parity', () => {
+test.describe('ExternalSystem Scripted-Import Config — create + bind endpoint (persisted)', () => {
   test.beforeEach(async ({ page }) => {
     await loginAsWebUI(page);
   });
 
-  test('Parent window 541024 child tab exposes the Endpoint FK picker (parity with 541962)', async ({ page }) => {
+  test('Parent window 541024 child tab: create + SAVE a config binding an endpoint (persisted)', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00351: EDI ORDERS');
     allure.tag('F4550: Sales Order Candidate (REST API)');
-    allure.story('Scripted-Import Config — Endpoint picker present on parent window (parity)');
+    allure.story('Scripted-Import Config — create + bind endpoint on parent window 541024 (persisted)');
     allure.severity('critical');
 
     allure.description(`
-## ExternalSystem_Config_ScriptedImportConversion — Endpoint picker (Parent window 541024)
+## ExternalSystem_Config_ScriptedImportConversion — create + bind endpoint (Parent window 541024)
 
 The parent "Externes System Konfiguration" window (541024) exposes the
 scripted-import config as a child tab (548472) under an ExternalSystem_Config
 root record. That tab places the ExternalSystem_Endpoint_ID FK picker (at parity
-with the dedicated window 541962) — so an sFTP/REST endpoint can be bound from
-either window, and the legacy free-text EndpointName is no longer shown.
+with the dedicated window 541962), and the legacy free-text EndpointName is no
+longer shown. This test creates and SAVES a real config from this window and
+asserts the endpoint persists bound after a reload.
 
-1. Create a fresh active parent ExternalSystem_Config record on window 541024
-2. Switch to the "Skriptbasierte Importkonvertierung" child tab (548472) and
-   add a new row
-3. Assert the endpoint FK field is present + selectable in the new-row form
+1. Seed a fresh SFTP ExternalSystem_Endpoint (window 541967)
+2. Create a fresh active parent ExternalSystem_Config record on window 541024
+3. Switch to the "Skriptbasierte Importkonvertierung" child tab (548472), add a
+   new row, and confirm the endpoint FK picker is present and the legacy
+   EndpointName is retired
+4. Fill all mandatory fields (Suchschlüssel, Skript-Kennung, Benutzerimport) and
+   select the seeded endpoint, then save the row (Done)
+5. Reload the parent from the server, reopen the child row, and assert the seeded
+   endpoint is still bound (persisted)
     `);
 
     test.setTimeout(120000);
 
     const modal = page.locator('.panel-modal');
+    const externalSystemValue = `e2e-541024-${Date.now()}`;
+    let endpointValue;
+    let parentId;
+
+    await test.step('Seed a fresh SFTP endpoint (window 541967)', async () => {
+      endpointValue = await createSftpEndpoint(page);
+    });
 
     await test.step('Create a scripted-import parent config on window 541024', async () => {
-      // Setup (must succeed): create an active parent so the child tab offers "Add new".
-      await createParentConfig(page);
+      parentId = await createParentConfig(page);
     });
 
     await test.step('Open the Skriptbasierte Importkonvertierung child tab and add a new row', async () => {
@@ -247,16 +283,12 @@ either window, and the legacy free-text EndpointName is no longer shown.
       await page.waitForTimeout(1500);
     });
 
-    await test.step('Legacy free-text EndpointName is retired from the form', async () => {
+    await test.step('Legacy free-text EndpointName is retired; the endpoint FK picker is present', async () => {
       // Sanity: the new-row form really is the scripted-import child row. ScriptIdentifier
       // is a stable field on this tab. The legacy free-text EndpointName is RETIRED from
       // this tab by the fix, so it must NOT be present here (proves the UI retirement).
       await expect(modal.locator('.form-field-ScriptIdentifier')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
       await expect(modal.locator('.form-field-EndpointName')).toBeHidden();
-    });
-
-    await test.step('The "Endpunkt" endpoint FK picker is present on window 541024', async () => {
-      // *** THE LOCKED ASSERTION ***
       // The endpoint FK picker must be placed on window 541024 child tab 548472. This
       // FAILED on pre-fix code (field absent) and passes once the D1 migration places it.
       await expect(
@@ -264,32 +296,84 @@ either window, and the legacy free-text EndpointName is no longer shown.
         'endpoint FK picker must be present on window 541024 child tab 548472'
       ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     });
+
+    await test.step('Fill all mandatory fields, bind the seeded endpoint, and save the row', async () => {
+      await selectListValue(page, 'ExternalSystem_Endpoint_ID', endpointValue, { exact: true });
+      await fillMandatoryConfigFields(page, externalSystemValue);
+
+      // The endpoint must be bound in the (still-open) modal before saving.
+      const boundInModal = await modal
+        .locator('.form-field-ExternalSystem_Endpoint_ID input')
+        .first()
+        .inputValue();
+      expect(boundInModal, 'seeded endpoint must be bound in the child-row form before save').toContain(endpointValue);
+
+      // Save/commit the child row. The WebUI auto-saves each field via PATCH; "Done"
+      // commits and closes the "Add new" overlay.
+      const doneButton = modal.locator('button', { hasText: /^Done$/i }).first();
+      await doneButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await doneButton.click();
+      await page.waitForTimeout(2000);
+    });
+
+    await test.step('Reload the parent and assert the endpoint persisted bound on the saved child row', async () => {
+      // Reload from the server (defeats the client-side document cache), then reopen the
+      // child row and re-read the bound endpoint — this is the persisted-save proof.
+      await page.goto(`${FRONTEND_BASE_URL}/window/${SCRIPTED_IMPORT_PARENT_WINDOW_ID}/${parentId}`);
+      await page.waitForTimeout(2500);
+      await page.getByTestId(`tab-AD_Tab-${SCRIPTED_IMPORT_CHILD_TAB_ID}`).click();
+      await page.waitForTimeout(2500);
+
+      const childRow = page.locator('.table-flex-wrapper tbody tr').first();
+      await expect(childRow, 'the saved scripted-import child row must survive a reload').toBeVisible({
+        timeout: SLOW_ACTION_TIMEOUT,
+      });
+      // The child grid's "Endpunkt" column shows the bound endpoint on the persisted row.
+      await expect(
+        childRow,
+        'the reloaded child grid row must show the bound endpoint (persisted)'
+      ).toContainText(endpointValue, { timeout: SLOW_ACTION_TIMEOUT });
+
+      // Reopen the row into its detail form (double-click) and re-read the bound endpoint —
+      // the explicit persisted-save proof (mirrors the reference save test's re-read).
+      await childRow.dblclick();
+      const reopenedEndpoint = page.locator('.form-field-ExternalSystem_Endpoint_ID input').first();
+      await expect(
+        reopenedEndpoint,
+        'the seeded endpoint must be persisted (bound) on the saved config after reload'
+      ).toHaveValue(new RegExp(endpointValue), { timeout: SLOW_ACTION_TIMEOUT });
+    });
   });
 
-  test('Dedicated window 541962 already exposes and binds the Endpoint FK picker (parity)', async ({ page }) => {
+  test('Dedicated window 541962: create + SAVE a config binding an endpoint (persisted)', async ({ page }) => {
     allure.epic('E0292: EDI');
     allure.tag('F00351: EDI ORDERS');
     allure.tag('F4550: Sales Order Candidate (REST API)');
-    allure.story('Scripted-Import Config — Endpoint picker on dedicated window');
+    allure.story('Scripted-Import Config — create + bind endpoint on dedicated window 541962 (persisted)');
     allure.severity('critical');
 
     allure.description(`
-## ExternalSystem_Config_ScriptedImportConversion — Endpoint picker (Dedicated window 541962)
+## ExternalSystem_Config_ScriptedImportConversion — create + bind endpoint (Dedicated window 541962)
 
 Parity coverage: the dedicated "Skriptbasierte Importkonvertierung" window
-(541962, root tab 548473) DOES place ExternalSystem_Endpoint_ID. This test
-passes on current code and documents the correct behaviour that window 541024
-must be brought in line with.
+(541962, root tab 548473) places ExternalSystem_Endpoint_ID. This test creates
+and SAVES a real config on that window and asserts the endpoint persists bound
+after a reload.
 
 1. Seed a fresh SFTP ExternalSystem_Endpoint (window 541967)
-2. Open window 541962, create a new root record
-3. Assert the endpoint FK field is present
-4. Set the parent config, then select the seeded endpoint and assert it is bound
+2. Open window 541962, create a new root record; confirm the endpoint FK picker
+   is present
+3. Set the parent config, select the seeded endpoint, and fill all mandatory
+   fields (Suchschlüssel, Skript-Kennung, Benutzerimport)
+4. Save the record (URL changes from /NEW to a record id)
+5. Reload from the server and assert the seeded endpoint is still bound (persisted)
     `);
 
     test.setTimeout(120000);
 
+    const externalSystemValue = `e2e-541962-${Date.now()}`;
     let endpointValue;
+
     await test.step('Seed a fresh SFTP endpoint (window 541967)', async () => {
       endpointValue = await createSftpEndpoint(page);
     });
@@ -307,17 +391,40 @@ must be brought in line with.
       ).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
     });
 
-    await test.step('Select the parent config, then bind the seeded endpoint', async () => {
-      // The endpoint List is scoped to the config's external system, so set the
-      // (active) parent config first, then pick the seeded endpoint.
+    await test.step('Set the parent config, bind the seeded endpoint, and fill all mandatory fields', async () => {
       await selectListValue(page, 'ExternalSystem_Config_ID', ACTIVE_PARENT_CONFIG_NAME);
       await selectListValue(page, 'ExternalSystem_Endpoint_ID', endpointValue, { exact: true });
+      await fillMandatoryConfigFields(page, externalSystemValue);
+    });
 
-      const boundValue = await page
-        .locator('.form-field-ExternalSystem_Endpoint_ID input')
-        .first()
-        .inputValue();
-      expect(boundValue).toContain(endpointValue);
+    await test.step('Save the record and assert the endpoint persisted bound after a reload', async () => {
+      // Tab out to trigger the final field commit / save.
+      await page.keyboard.press('Tab');
+      await page.waitForTimeout(2000);
+
+      // The record is created server-side: the URL changes from /NEW to a record id.
+      await page.waitForURL(
+        (url) => {
+          const urlStr = url.toString();
+          return urlStr.includes(`/window/${SCRIPTED_IMPORT_DEDICATED_WINDOW_ID}/`) && !urlStr.includes('/NEW');
+        },
+        { timeout: SLOW_ACTION_TIMEOUT }
+      );
+
+      // Reload from the server (defeats the client-side document cache) and re-read the
+      // bound endpoint + Suchschlüssel — this is the persisted-save proof.
+      await page.reload();
+      await page.waitForTimeout(2500);
+      await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      await expect(
+        page.locator('.form-field-ExternalSystem_Endpoint_ID input').first(),
+        'the seeded endpoint must be persisted (bound) on the saved config after reload'
+      ).toHaveValue(new RegExp(endpointValue), { timeout: SLOW_ACTION_TIMEOUT });
+      await expect(
+        page.locator('.form-field-ExternalSystemValue input').first(),
+        'the Suchschlüssel (ExternalSystemValue) must be persisted after reload'
+      ).toHaveValue(externalSystemValue, { timeout: SLOW_ACTION_TIMEOUT });
     });
   });
 });
