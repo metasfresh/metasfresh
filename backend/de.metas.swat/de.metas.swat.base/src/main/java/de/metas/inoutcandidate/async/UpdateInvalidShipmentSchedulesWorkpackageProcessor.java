@@ -29,6 +29,7 @@ import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
@@ -112,9 +113,9 @@ public class UpdateInvalidShipmentSchedulesWorkpackageProcessor extends Workpack
 					.build();
 			loggable.addLog("Starting revalidation for {}", request);
 
-			final int updatedCount = shipmentScheduleUpdater.updateShipmentSchedules(request);
+			final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(request);
 
-			loggable.addLog("Updated {} shipment schedule entries for {}", updatedCount, request);
+			loggable.addLog("Updated {} shipment schedule entries for {}", result.getUpdatedCount(), request);
 
 			return Result.SUCCESS;
 		}

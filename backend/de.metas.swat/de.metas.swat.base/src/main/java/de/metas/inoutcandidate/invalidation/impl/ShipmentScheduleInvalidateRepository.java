@@ -640,6 +640,13 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 	}
 
 	@Override
+	public boolean existsUntaggedRecomputeMarkers()
+	{
+		final String sql = "SELECT 1 FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_PInstance_ID IS NULL LIMIT 1";
+		return DB.getSQLValueEx(ITrx.TRXNAME_None, sql) == 1;
+	}
+
+	@Override
 	public void deleteRecomputeMarkersOutOfTrx(@NonNull final PInstanceId pinstanceId)
 	{
 		final String sql = "DELETE FROM " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " WHERE AD_Pinstance_ID=? RETURNING M_ShipmentSchedule_ID";

@@ -91,6 +91,16 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId, QueryLimit maxToProcess);
 
 	/**
+	 * @return {@code true} if at least one {@code M_ShipmentSchedule_Recompute} row is still untagged
+	 *         (i.e. {@code AD_PInstance_ID IS NULL}) -- i.e. there is more backlog pending a recompute pass.
+	 *         This is the correct signal for "should a follow-up bounded run be enqueued", as opposed to
+	 *         comparing a pass's recomputed count against its {@code maxToProcess} (which, because the tag
+	 *         unit is a whole product, is not reliable: a pass can recompute more or fewer schedules than
+	 *         {@code maxToProcess}).
+	 */
+	boolean existsUntaggedRecomputeMarkers();
+
+	/**
 	 * Delete M_ShipmentSchedule_Recompute records for given tag
 	 */
 	void deleteRecomputeMarkersOutOfTrx(PInstanceId adPInstanceId);

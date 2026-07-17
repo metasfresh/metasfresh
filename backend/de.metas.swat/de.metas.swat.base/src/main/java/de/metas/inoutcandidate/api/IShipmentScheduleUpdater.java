@@ -15,9 +15,10 @@ public interface IShipmentScheduleUpdater extends ISingletonService
 	void registerCandidateProcessor(IShipmentSchedulesAfterFirstPassUpdater processor);
 
 	/**
-	 * @return the number of updated schedule entries.
+	 * @return the number of updated schedule entries, and whether more work remains (see
+	 *         {@link ShipmentScheduleUpdateInvalidResult#isLimitReached()}).
 	 */
-	int updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest request);
+	ShipmentScheduleUpdateInvalidResult updateShipmentSchedules(ShipmentScheduleUpdateInvalidRequest request);
 
 	/**
 	 * @return true if updater is currently running in this thread
