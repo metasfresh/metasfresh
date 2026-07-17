@@ -19,8 +19,10 @@ const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
 
-// Bounded operator-mirroring recovery for the complete -> jobs-list seam (see settleCompleteToJobsList).
-const COMPLETE_CONFIRM_ATTEMPTS = 3;
+// Bounded operator-mirroring recovery for the complete -> jobs-list seam (see settleCompleteToJobsList):
+// the initial confirmation plus ONE retry — enough to ride out a single transient timeout, while a
+// second consecutive failure stays a hard, loud failure. Kept well within Playwright's 120s global cap.
+const COMPLETE_CONFIRM_ATTEMPTS = 2;
 const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
@@ -447,7 +449,7 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
 
 const pickAllButton = () => page.getByTestId('pickAll-button');
 
-const errorPanelLocator = () => page.locator('[data-testid="confirm-activity-error-panel"]');
+const launchersScreenLocator = () => page.locator('#WFLaunchersScreen');
 
 // Settle the complete -> jobs-list transition, recovering like a real operator from a slow or lost
 // confirmation response.
@@ -461,28 +463,30 @@ const errorPanelLocator = () => page.locator('[data-testid="confirm-activity-err
 // timed out on `#WFLaunchersScreen` that never appears — the observed complete->jobs-list flake.
 //
 // A real operator simply taps Retry, which re-posts the confirmation; the backend handles it idempotently
-// (verified: the re-post lands on the jobs list with no error toast) and the app navigates. Mirror that:
-// wait for EITHER the jobs list (success) or the retry panel (timed-out response); on the panel, tap Retry
-// and re-wait, bounded to a few attempts. This retries ONLY the completion navigation — it asserts nothing
-// about the feature under test, and the trailing full-settle waitForScreen still fails loud if the jobs
-// list never arrives (a genuinely broken completion is never swallowed). No fixed sleeps: every wait keys
-// off a real DOM signal (the jobs-list container, the retry panel, its dismissal on tap).
+// (PickingJobCompleteCommand returns the job unchanged when it is already Completed) and the app navigates.
+// Mirror that: wait for EITHER the jobs list (success) or the retry panel (timed-out response); on the
+// panel, tap Retry and re-wait — one retry, since the real fault is a single transient timeout and a
+// second consecutive one is a genuine backend problem that SHOULD fail. This retries ONLY the completion
+// navigation — it asserts nothing about the feature under test, and the trailing full-settle waitForScreen
+// still fails loud if the jobs list never arrives. A genuine server-side completion REJECTION never shows
+// the retry panel (ConfirmActivity toasts it — isNetworkFailure=false), so it is not masked here. No fixed
+// sleeps: every wait keys off a real DOM signal (jobs-list container, retry panel, its dismissal on tap).
 const settleCompleteToJobsList = async () => await step(`${NAME} - Settle complete to jobs list`, async () => {
     for (let attempt = 1; attempt <= COMPLETE_CONFIRM_ATTEMPTS; attempt++) {
         // Whichever appears first wins: the jobs-list container (navigated) or the confirmation retry panel.
-        await page.locator('#WFLaunchersScreen, [data-testid="confirm-activity-error-panel"]')
+        await launchersScreenLocator().or(ConfirmActivityErrorPanel.locator())
             .first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
 
-        if (await page.locator('#WFLaunchersScreen').isVisible()) {
+        if (await launchersScreenLocator().isVisible()) {
             break;
         }
 
         // Retry panel: the completion committed but its response was slow/lost. Re-post like an operator.
         if (attempt < COMPLETE_CONFIRM_ATTEMPTS) {
-            await page.getByTestId('confirm-activity-error-retry').tap();
+            await ConfirmActivityErrorPanel.clickRetry();
             // Retry clears the error synchronously (setErrorMessage(null) unmounts the panel); wait for that
             // so the next iteration does not observe the stale panel before the re-post resolves.
-            await errorPanelLocator().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+            await ConfirmActivityErrorPanel.waitForPanelDetached();
         }
     }
 
