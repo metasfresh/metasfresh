@@ -406,6 +406,11 @@ test.describe('Modes', () => {
         await allure.story('Barcode scanning modes');
         await allure.severity('critical');
 
+        // Must run BEFORE login so the getUserMedia stub is installed before the app's first camera
+        // request. Stabilises this camera-toggle test against a flaky panel teardown — mechanism in
+        // BarcodeScannerComponent.stubCameraStream.
+        await BarcodeScannerComponent.stubCameraStream();
+
         const masterdata = await createLoginMasterdata({
             extraSysconfigs: modeSysconfigs({
                 hardwareEnabled: 'Y',
