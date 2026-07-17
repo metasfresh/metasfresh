@@ -34,8 +34,8 @@ Feature: create missing shipment schedules in bounded batches
       | bpartner_1 | N            | Y              | ps_1                          |
 
   @from:cucumber
-@allure.label.epic:E0100_Sales
-@allure.label.feature:F00130_Shipment_Schedule
+  @allure.label.epic:E0100_Sales
+  @allure.label.feature:F00130_Shipment_Schedule
   @Id:S31050_TC1
   Scenario: one workpackage run creates a bounded batch and re-enqueues the rest
   _Given a sales order with 5 order lines is completed, enqueueing one CreateMissingShipmentSchedules workpackage
