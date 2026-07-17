@@ -6,7 +6,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
 ## Verifies the ExternalSystem_ScriptedExportConversion_Status lifecycle for the EPCIS export config:
 ## (a) shipment completed → invocation enqueued → /ok callback → status row Sent + roll-up M_InOut.EPCIS_ExportStatus=Sent
 ## (b) same path but /error callback → status row Error + AD_Issue_ID linked + roll-up Error
-## (c) re-send of an errored shipment → status row flipped to Pending+IsResend=Y (single-row upsert) → Sent via /ok
+## (c) re-send of an errored shipment → a NEW Pending+IsResend=Y attempt row (per-attempt history, prior attempt kept) → Sent via /ok
 
   Background:
     Given infrastructure and metasfresh are running
@@ -160,7 +160,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
   @allure.label.epic:E0292_EDI
   @allure.label.feature:F00353_EDI_DESADV_InOut_Link
   @Id:S30088_030
-  Scenario: S30088_030 — re-send of an errored shipment flips the single status row to Pending+IsResend=Y
+  Scenario: S30088_030 — re-send of an errored shipment adds a NEW attempt row (per-attempt history), keeping the errored one
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | POReference                |
@@ -198,7 +198,8 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     # Run re-send process on the errored shipment
     When M_InOut_ReSend_ScriptedExportConversion process is run for shipment io_030
 
-    # The single status row is flipped to IsResend=Y (single-row upsert), reaching at minimum Enqueued
+    # The re-send inserts a NEW attempt row (IsResend=Y), reaching at minimum Enqueued — the errored
+    # first attempt is kept, so this is the LATEST row (newest-first), not a mutation of the old one.
     Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
       | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |
       | io_030     | scriptedCfg_es                                    | U            | Y        |
@@ -212,6 +213,15 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     And after not more than 10s, M_InOut EPCIS_ExportStatus is:
       | M_InOut_ID | EPCIS_ExportStatus |
       | io_030     | S                  |
+
+    # Per-attempt history: the status tab's grid now shows TWO attempt rows (newest-first), each with
+    # its own data — the successful re-send on top (Sent, IsResend=Y, HTTP 200, no issue) and the
+    # errored first attempt beneath it (Error, IsResend=N, its AD_Issue retained). (Under the former
+    # single-row upsert there would be a single row.)
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend | HttpResponseCode | HasAD_Issue |
+      | io_030     | scriptedCfg_es                                    | S            | Y        | 200              | N           |
+      | io_030     | scriptedCfg_es                                    | E            | N        |                  | Y           |
 
 
   @from:cucumber
