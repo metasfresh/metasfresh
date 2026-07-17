@@ -22,20 +22,12 @@ jobs:
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
       base-version-matrix: ${{ steps.base-version-matrix.outputs.matrix }}
-      skip-testspace: ${{ steps.skip-checks.outputs.skip-testspace }}
       skip-publish-reports: ${{ steps.skip-checks.outputs.skip-publish-reports }}
+      branch-sanitized-gh-pages: ${{ steps.sanitize-branch-gh-pages.outputs.value }}
     steps:
       - name: Determine skip flags
         id: skip-checks
-        env:
-          SKIP_TESTSPACE_VAR: ${{ vars.SKIP_TESTSPACE }}
         run: |
-          # Skip testspace for tmp-mergify/ branches or when SKIP_TESTSPACE var is set
-          if [[ "${{ github.ref_name }}" == tmp-mergify/* ]] || [[ "$SKIP_TESTSPACE_VAR" == "true" ]]; then
-            echo "skip-testspace=true" >> $GITHUB_OUTPUT
-          else
-            echo "skip-testspace=false" >> $GITHUB_OUTPUT
-          fi
           # Skip publish-reports for tmp-mergify/ branches only
           if [[ "${{ github.ref_name }}" == tmp-mergify/* ]]; then
             echo "skip-publish-reports=true" >> $GITHUB_OUTPUT
@@ -43,18 +35,19 @@ jobs:
             echo "skip-publish-reports=false" >> $GITHUB_OUTPUT
           fi
       - uses: actions/checkout@v4
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: steps.skip-checks.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: sanitize-ref-name
         id: sanitize
         env:
           GIT_REF: ${{ github.ref_name }}
         run: |
           echo "refname=$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')" >> $GITHUB_OUTPUT
+      - name: sanitize-branch-for-gh-pages
+        id: sanitize-branch-gh-pages
+        env:
+          GIT_REF: ${{ github.ref_name }}
+        run: |
+          SANITIZED=$(echo "$GIT_REF" | tr '/' '-' | tr '_' '-' | tr -cd 'a-zA-Z0-9.-' | tr '[:upper:]' '[:lower:]' | sed 's/--*/-/g' | sed 's/^-*//' | sed 's/-*$//')
+          echo "value=${SANITIZED}" >> $GITHUB_OUTPUT
       - name: define-build-info-properties
         id: build-info-properties
         env:
@@ -98,16 +91,6 @@ jobs:
           echo '* find more information at https://github.com/metasfresh/metasfresh/tree/${{ github.ref_name }}/docker-builds/README.md' >> $GITHUB_STEP_SUMMARY
           echo '* artifacts will be created for tag `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}`' >> $GITHUB_STEP_SUMMARY
           echo '* BASE_VERSION for instances **without** customisations will be `${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}-compat`' >> $GITHUB_STEP_SUMMARY
-          echo '* test results can be found after completion at https://metasfresh.testspace.com/projects/metasfresh:metasfresh/spaces/${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
-      - name: testspace push build infos
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: steps.skip-checks.outputs.skip-testspace != 'true'
-        run: |
-          touch github_run.txt
-          echo ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} >> github_run.txt
-          echo pipeline $PIPELINE_VERSION >> github_run.txt
-          echo ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }} >> github_run.txt
-          testspace github_run.txt
 
   java:
     runs-on: ${{ vars.RUNNER_HEAVY }}
@@ -369,12 +352,6 @@ jobs:
     needs: [ init, frontend ]
     steps:
       - uses: actions/checkout@v4
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         run: |
           docker buildx build \
@@ -383,14 +360,6 @@ jobs:
           --target test \
           --tag metas-frontend:test \
           .
-      - name: publish results
-        continue-on-error: true  # testspace retired — never fail the build on it
-        run: |
-          docker run --rm --volume "$(pwd)/jest:/reports" metas-frontend:test                                       # extracting test results from docker image
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
-          find jest -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                # upload all jest xml's to testspace 
-          testspace "[jest/frontend]jest/frontend/jest.log{$(cat jest/frontend/jest.exit-code):webui jest tests}"   # upload webui log with exit code
-          fi
       - name: assert success
         run: |
           if [ $(cat jest/frontend/jest.exit-code) != 0 ]; then tail -1000 jest/frontend/jest.log && exit 1; fi     # print frontend log and exit if frontend failed
@@ -979,12 +948,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: prepare-settings
         env:
           METASFRESH_PACKAGES_READ_TOKEN: ${{ secrets.METASFRESH_PACKAGES_READ_TOKEN }}
@@ -1024,17 +987,6 @@ jobs:
           command: |
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
             docker push ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
-      - name: push-results
-        continue-on-error: true  # testspace retired — never fail the build on it
-        run: |
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}           # extracting java8 test results from docker image
-          docker run --rm --volume "$(pwd)/junit:/reports" ghcr.io/metasfresh/metas-junit:${{ needs.init.outputs.tag-fixed }}-j14       # extracting java14 test results from docker image
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
-          find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;                                                           # upload all junit xml's to testspace 
-          testspace "[junit/commons]junit/commons/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/commons/junit.exit-code junit/commons/junit.mvn.exit-code):java 8 commons junit tests}"     # upload commons log with combined exit code  
-          testspace "[junit/backend]junit/backend/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/backend/junit.exit-code junit/backend/junit.mvn.exit-code):java 8 backend junit tests}"     # upload backend log with combined exit code 
-          testspace "[junit/camel]junit/camel/junit.log{$(awk '{ sum += $1 } END { print sum }' junit/camel/junit.exit-code junit/camel/junit.mvn.exit-code):java 14 camel junit tests}"              # upload camel log with combined exit code       
-          fi
       - name: assert success
         run: |
           if [ $(cat junit/commons/junit.exit-code) != 0 ] || [ $(cat junit/commons/junit.mvn.exit-code) != 0 ]; then tail -1000 junit/commons/junit.log && exit 1; fi      # print commons log and exit if commons failed
@@ -1139,12 +1091,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run-tests
         env:
           mfversion: ${{ needs.init.outputs.tag-fixed }}
@@ -1169,14 +1115,53 @@ jobs:
           docker commit metasfresh-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
           docker compose down
           cat cucumber.log | grep -q "BUILD SUCCESS" && echo "$?" > cucumber.mvn.exit-code || echo "$?" > cucumber.mvn.exit-code
-      - name: push-results
-        continue-on-error: true  # testspace retired — never fail the build on it
+      - name: Extract Cucumber Allure results
+        if: always()
         run: |
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/**/*.xml"
-          testspace "[cucumber/${{ matrix.profile }}]cucumber/*.html"                                                                                                                                                       
-          testspace "[cucumber/${{ matrix.profile }}]cucumber.log{$(awk '{ sum += $1 } END { print sum }' cucumber.exit-code cucumber.mvn.exit-code):cucumber tests}"
+          echo "=== Searching for Allure results ==="
+          # Fix permissions (Docker may have created files as root)
+          sudo chown -R $(id -u):$(id -g) docker-builds/cucumber/cucumber/ 2>/dev/null || true
+          mkdir -p cucumber-allure-results
+          FOUND_RESULTS=false
+      
+          # Customer repos run from docker-builds/cucumber/
+          for search_dir in \
+            "cucumber/allure-results" \
+            "cucumber/target/allure-results"; do
+            if [ -d "$search_dir" ]; then
+              echo "Found results in $search_dir"
+              cp -r "$search_dir"/. cucumber-allure-results/
+              FOUND_RESULTS=true
+              break
+            fi
+          done
+      
+          if [ "$FOUND_RESULTS" != "true" ]; then
+            echo "Searching for allure-results directory..."
+            ALLURE_DIR=$(find cucumber -name "allure-results" -type d 2>/dev/null | head -1)
+            if [ -n "$ALLURE_DIR" ]; then
+              echo "Found results in $ALLURE_DIR"
+              cp -r "$ALLURE_DIR"/. cucumber-allure-results/
+              FOUND_RESULTS=true
+            fi
           fi
+      
+          if [ "$FOUND_RESULTS" = true ]; then
+            echo "branch=${{ github.ref_name }}" >> cucumber-allure-results/environment.properties
+            echo "build=${{ needs.init.outputs.tag-fixed }}" >> cucumber-allure-results/environment.properties
+            JSON_COUNT=$(find cucumber-allure-results -name '*.json' -type f | wc -l)
+            echo "Allure results extracted: $JSON_COUNT JSON files for profile ${{ matrix.profile }}"
+          else
+            echo "No Allure results found for profile ${{ matrix.profile }}"
+          fi
+      - name: Upload Cucumber Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-allure-results-${{ matrix.profile }}
+          path: cucumber-allure-results/
+          if-no-files-found: ignore
+          retention-days: 7
       - name: push-database-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postcucumber-${{ matrix.profile }}
         uses: nick-fields/retry@v3
         with:
@@ -1359,12 +1344,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: testspace-com/setup-testspace@v1
-        continue-on-error: true  # testspace retired — never fail the build on it
-        if: needs.init.outputs.skip-testspace != 'true'
-        with:
-          domain: metasfresh
-          token: ${{ secrets.TESTSPACE_TOKEN }}
       - name: run test
         working-directory: docker-builds/mobiletest/
         env:
@@ -1373,13 +1352,6 @@ jobs:
           docker compose up --abort-on-container-exit --exit-code-from playwright 2>&1 | tee playwright.log && echo "${PIPESTATUS[0]}" > playwright.exit-code
           docker commit mobiletest-db-1 metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
           docker compose down
-      - name: push-results
-        continue-on-error: true  # testspace retired — never fail the build on it
-        working-directory: docker-builds/mobiletest/
-        run: |
-          if [ "${{needs.init.outputs.skip-testspace}}" != "true" ]; then
-          testspace "[mobile/playwright]playwright-report/junit/results.xml"
-          fi
       - name: push-image metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-postmobiletest
         uses: nick-fields/retry@v3
         with:
@@ -1403,14 +1375,55 @@ jobs:
           retention-days: 30
 
 
+  cucumber-allure-report:
+    name: Generate Cucumber Allure Report
+    runs-on: ubuntu-latest
+    needs: [ init, cucumber-run ]
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all Cucumber Allure results
+        uses: actions/download-artifact@v4
+        with:
+          pattern: cucumber-allure-results-*
+          path: all-cucumber-results/
+          merge-multiple: true
+
+      - name: Check if results exist
+        id: check_results
+        run: |
+          if [ -d "all-cucumber-results" ] && [ "$(ls -A all-cucumber-results 2>/dev/null)" ]; then
+            echo "has_results=true" >> $GITHUB_OUTPUT
+            echo "JSON files: $(find all-cucumber-results -name '*.json' -type f | wc -l)"
+          else
+            echo "has_results=false" >> $GITHUB_OUTPUT
+            echo "No Allure results found - skipping report generation"
+          fi
+
+      - name: Generate combined Allure report
+        if: steps.check_results.outputs.has_results == 'true'
+        uses: ./.github/actions/generate-allure-report
+        with:
+          results-dir: all-cucumber-results
+          output-dir: cucumber-allure-report
+          artifact-name: allure-report-cucumber
+          retention-days: 30
+          history-artifact-name: allure-history-cucumber
+          report-title: 'Cucumber BDD'
+
   publish-test-reports:
     name: publish test reports
     runs-on: ${{ vars.RUNNER_LIGHT }}
-    needs: [ init, cucumber-run, mobile_test ]
+    needs: [ init, cucumber-run, mobile_test, cucumber-allure-report ]
     if: always() && needs.init.result == 'success' && needs.init.outputs.skip-publish-reports != 'true'
     permissions:
       actions: write    # trigger reports-cleanup workflow when disk space is low
       contents: read
+      pull-requests: write    # post Allure report links as a PR comment
     steps:
       - name: Check for report server secret
         id: check-secret
@@ -1781,6 +1794,47 @@ jobs:
           for report_type in ${{ steps.inventory.outputs.reports }}; do
             echo "| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |" >> $GITHUB_STEP_SUMMARY
           done
+
+      - name: Post report link on PR
+        if: steps.check-secret.outputs.available == 'true' && env.ACT != 'true' && steps.inventory.outputs.count != '0'
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH: ${{ needs.init.outputs.branch-sanitized-gh-pages }}
+          VERSION: ${{ needs.init.outputs.tag-fixed }}
+        run: |
+          PR=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "${{ github.ref_name }}" --json number --jq '.[0].number')
+          if [ -z "$PR" ]; then
+            echo "No open PR for branch ${{ github.ref_name }} — skipping comment"
+            exit 0
+          fi
+
+          BASE_URL="https://test-reports.metasfresh.com/branches/${BRANCH}/builds/${VERSION}/allure"
+          REPORT_LINKS=""
+          for report_type in ${{ steps.inventory.outputs.reports }}; do
+            REPORT_LINKS="${REPORT_LINKS}| ${report_type} | [Open report](${BASE_URL}/${report_type}/) |"$'\n'
+          done
+
+          MARKER="<!-- allure-reports -->"
+          BODY="${MARKER}
+          ### 📊 Test Reports
+
+          **Build:** \`${VERSION}\`
+
+          | Report | Link |
+          |--------|------|
+          ${REPORT_LINKS}
+          _Updated: $(date -u '+%Y-%m-%d %H:%M UTC')_"
+
+          # Find existing comment with the marker, update in place or create
+          COMMENT_ID=$(gh api "repos/${GITHUB_REPOSITORY}/issues/${PR}/comments" --paginate --jq ".[] | select(.body | startswith(\"${MARKER}\")) | .id" | head -1)
+          if [ -n "$COMMENT_ID" ]; then
+            gh api "repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID}" -X PATCH -f body="$BODY" --silent
+            echo "Updated existing comment ${COMMENT_ID} on PR #${PR}"
+          else
+            gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$BODY"
+            echo "Posted new comment on PR #${PR}"
+          fi
 
       - name: Cleanup SSH
         if: always() && steps.check-secret.outputs.available == 'true'
