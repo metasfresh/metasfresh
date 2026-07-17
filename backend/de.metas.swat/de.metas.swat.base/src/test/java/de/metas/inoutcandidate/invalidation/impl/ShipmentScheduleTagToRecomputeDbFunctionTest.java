@@ -66,7 +66,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 class ShipmentScheduleTagToRecomputeDbFunctionTest
 {
-	private static final String DB_URL = System.getProperty("de.metas.test.db.url", "jdbc:postgresql://localhost:35991/metasfresh");
+	// Default to the project-wide default.env port (5432); point at a specific local stack via
+	// -Dde.metas.test.db.url=jdbc:postgresql://localhost:<DB_PORT>/metasfresh (e.g. a workspace stack).
+	// When no such DB is reachable (CI, or a local run without the property), the whole class skips.
+	private static final String DB_URL = System.getProperty("de.metas.test.db.url", "jdbc:postgresql://localhost:5432/metasfresh");
 	private static final String DB_USER = System.getProperty("de.metas.test.db.user", "metasfresh");
 	private static final String DB_PASSWORD = System.getProperty("de.metas.test.db.password", "metasfresh");
 
@@ -302,6 +305,34 @@ class ShipmentScheduleTagToRecomputeDbFunctionTest
 
 		assertThat(tagged).as("all 6 distinct schedules + 1 duplicate marker = 7 rows").isEqualTo(7);
 		assertThat(countUntagged()).as("the whole backlog is drained in one bounded pass once N covers it").isZero();
+	}
+
+	@Test
+	void orphanMarker_withNoMatchingShipmentSchedule_isNeverTagged() throws SQLException
+	{
+		// defensively clear pre-existing untagged markers so the count is deterministic (never committed)
+		try (final PreparedStatement ps = connection.prepareStatement(
+				"DELETE FROM M_ShipmentSchedule_Recompute WHERE AD_PInstance_ID IS NULL"))
+		{
+			ps.executeUpdate();
+		}
+
+		// one real schedule + one ORPHAN marker (no matching M_ShipmentSchedule row)
+		insertShipmentSchedule(SCHED_ID_BASE + 1, PRODUCT_ID_BASE + 1);
+		insertRecomputeMarker(SCHED_ID_BASE + 1);
+		insertRecomputeMarker(SCHED_ID_BASE + 999); // orphan: no M_ShipmentSchedule with this id
+
+		// unbounded path (batchsize<=0): must tag only the marker whose schedule still exists, mirroring
+		// the original Java NO_LIMIT branch's existence filter -- the orphan is left untagged.
+		final int taggedUnbounded = callTagToRecompute(1, 0);
+		assertThat(taggedUnbounded).as("only the real-schedule marker is tagged; the orphan is skipped").isEqualTo(1);
+		assertThat(fetchDistinctTaggedScheduleIds(1)).containsExactly(SCHED_ID_BASE + 1);
+		assertThat(countUntagged()).as("the orphan marker remains untagged").isEqualTo(1);
+
+		// bounded path already excludes orphans via its inner JOIN -- confirm the orphan still isn't picked up
+		final int taggedBounded = callTagToRecompute(2, 100);
+		assertThat(taggedBounded).as("bounded path also never tags the orphan (no product to group it under)").isZero();
+		assertThat(countUntagged()).as("the orphan marker still remains untagged").isEqualTo(1);
 	}
 
 	@Test

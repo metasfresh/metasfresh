@@ -10,10 +10,12 @@ DECLARE
     v_tagged integer;
 BEGIN
     IF p_batchsize IS NULL OR p_batchsize <= 0 THEN
-        -- Unbounded: tag every untagged marker (the manual, single-shot path).
+        -- Unbounded: tag every untagged marker (the manual, single-shot path). The EXISTS keeps the
+        -- original Java NO_LIMIT branch's "only markers whose M_ShipmentSchedule still exists" filter.
         UPDATE M_ShipmentSchedule_Recompute sr
            SET AD_PInstance_ID = p_selection_id
-         WHERE sr.AD_PInstance_ID IS NULL;
+         WHERE sr.AD_PInstance_ID IS NULL
+           AND EXISTS (SELECT 1 FROM M_ShipmentSchedule s WHERE s.M_ShipmentSchedule_ID = sr.M_ShipmentSchedule_ID);
     ELSE
         -- Bounded to WHOLE PRODUCTS (stock-coherent unit): ShipmentScheduleUpdater loads one
         -- shared on-hand stock pool per recompute pass, so splitting a product's schedules across
