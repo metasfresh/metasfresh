@@ -6,7 +6,7 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
 ## Verifies the ExternalSystem_ScriptedExportConversion_Status lifecycle for the EPCIS export config:
 ## (a) shipment completed → invocation enqueued → /ok callback → status row Sent + roll-up M_InOut.EPCIS_ExportStatus=Sent
 ## (b) same path but /error callback → status row Error + AD_Issue_ID linked + roll-up Error
-## (c) re-send of an errored shipment → status row flipped to Pending+IsResend=Y (single-row upsert) → Sent via /ok
+## (c) re-send of an errored shipment → a NEW Pending+IsResend=Y attempt row (per-attempt history, prior attempt kept) → Sent via /ok
 
   Background:
     Given infrastructure and metasfresh are running
