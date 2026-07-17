@@ -160,25 +160,33 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	}
 
 	/**
-	 * Polls until the NUMBER of {@code ExternalSystem_ScriptedExportConversion_Status} rows for the
-	 * given shipment + config equals the expected count. Because each export ATTEMPT (the initial
-	 * enqueue and every re-send) is its own row (per-attempt history) rather than a single upserted
-	 * row, a re-send GROWS this count. This is the observable that distinguishes per-attempt history
-	 * from the former single-row upsert.
+	 * Polls until the {@code ExternalSystem_ScriptedExportConversion_Status} rows for the given shipment
+	 * + config, ordered NEWEST-FIRST (exactly as the status tab's grid shows them), match the expected
+	 * data table row-for-row — count AND the actual per-row data. Because each export ATTEMPT (the
+	 * initial enqueue and every re-send) is its own row (per-attempt history) rather than a single
+	 * upserted row, this verifies the grid shows a faithful attempt log: e.g. after a re-send, the
+	 * Sent re-send attempt on top and the errored first attempt beneath it, each retaining its own data.
 	 *
 	 * @cucumber.stepdef
-	 * @cucumber.columns none (all args inline)
+	 * @cucumber.columns
+	 *   <b>ExportStatus</b> — (required) expected status code (P/U/D/S/E/I/N)<br>
+	 *   <b>IsResend</b> — (optional) expected IsResend flag (Y/N)<br>
+	 *   <b>HttpResponseCode</b> — (optional) expected HTTP response code; empty cell asserts none (0)<br>
+	 *   <b>HasAD_Issue</b> — (optional) Y if AD_Issue_ID must be &gt; 0, N if it must be 0<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, ExternalSystem_Config_ScriptedExportConversion_StepDefData
 	 * @cucumber.example <pre>
-	 * Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status row count for shipment io_030 and config scriptedCfg_es is 2
+	 * And after not more than 10s, ExternalSystem_ScriptedExportConversion_Status rows for shipment io_030 and config scriptedCfg_es are (newest first):
+	 *   | ExportStatus | IsResend | HttpResponseCode | HasAD_Issue |
+	 *   | S            | Y        | 200              | N           |
+	 *   | E            | N        |                  | Y           |
 	 * </pre>
 	 */
-	@And("^after not more than (.*)s, ExternalSystem_ScriptedExportConversion_Status row count for shipment (.*) and config (.*) is (\\d+)$")
-	public void scriptedExportConversionStatusRowCountIs(
+	@And("^after not more than (.*)s, ExternalSystem_ScriptedExportConversion_Status rows for shipment (.*) and config (.*) are \\(newest first\\):$")
+	public void scriptedExportConversionStatusRowsAre(
 			final int timeoutSec,
 			@NonNull final String inoutIdentifierStr,
 			@NonNull final String cfgIdentifierStr,
-			final int expectedCount) throws InterruptedException
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final org.compiere.model.I_M_InOut inout = inoutTable.get(StepDefDataIdentifier.ofString(inoutIdentifierStr));
 		assertThat(inout).isNotNull();
@@ -189,19 +197,59 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 		final int cfgId = cfg.getId().getRepoId();
 
 		final int m_inout_table_id = tableDAO.retrieveTableId(org.compiere.model.I_M_InOut.Table_Name);
+		final List<DataTableRow> expectedRows = DataTableRows.of(dataTable).toList();
 
-		StepDefUtil.<Long>tryAndWaitForItem()
+		StepDefUtil.<List<I_ExternalSystem_ScriptedExportConversion_Status>>tryAndWaitForItem()
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(500L)
 				.workerFromOptionalSupplier(() -> {
-					final long actual = queryBL
+					// newest-first — same ordering the status tab's grid uses (Updated/Status_ID DESC)
+					final List<I_ExternalSystem_ScriptedExportConversion_Status> actualRows = queryBL
 							.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
 							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
 							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, inoutId)
 							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, cfgId)
+							.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
 							.create()
-							.count();
-					return actual == expectedCount ? Optional.of(actual) : Optional.empty();
+							.list(I_ExternalSystem_ScriptedExportConversion_Status.class);
+
+					if (actualRows.size() != expectedRows.size())
+					{
+						return Optional.empty();
+					}
+
+					for (int i = 0; i < expectedRows.size(); i++)
+					{
+						final DataTableRow expected = expectedRows.get(i);
+						final I_ExternalSystem_ScriptedExportConversion_Status actual = actualRows.get(i);
+
+						if (!expected.getAsString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExportStatus)
+								.equals(actual.getExportStatus()))
+						{
+							return Optional.empty();
+						}
+
+						// empty/blank cell for an optional column ⇒ that column is not asserted for this row
+						final String expectedIsResend = expected.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_IsResend).map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
+						if (expectedIsResend != null && "Y".equals(expectedIsResend) != actual.isResend())
+						{
+							return Optional.empty();
+						}
+
+						final String expectedHttpCode = expected.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_HttpResponseCode).map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
+						if (expectedHttpCode != null && Integer.parseInt(expectedHttpCode) != actual.getHttpResponseCode())
+						{
+							return Optional.empty();
+						}
+
+						final String expectedHasIssue = expected.getAsOptionalString("HasAD_Issue").map(String::trim).filter(s -> !s.isEmpty()).orElse(null);
+						if (expectedHasIssue != null && "Y".equals(expectedHasIssue) != (actual.getAD_Issue_ID() > 0))
+						{
+							return Optional.empty();
+						}
+					}
+
+					return Optional.of(actualRows);
 				})
 				.execute();
 	}
