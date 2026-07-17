@@ -85,8 +85,8 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 	private static final String FUNCTION_SOURCE_RELATION_SQL = FUNCTION_NAME + "(?,?)";
 	private static final String KEY_COLUMN = I_MD_Stock_PerWeek_V.COLUMNNAME_MD_Stock_PerWeek_V_ID;
 	private static final String FUNCTION_ALIAS = "fn";
-	/** The order-line zoom clause always leads with a literal {@code M_Product_ID = <int>} (see zoom-slowpath diagnosis). */
-	private static final Pattern PRODUCT_LITERAL_PATTERN = Pattern.compile("\\bM_Product_ID\\s*=\\s*(\\d+)\\b");
+	/** The order-line zoom clause carries an unqualified literal {@code M_Product_ID = <int>}; the negative lookbehind rejects table/alias-qualified references (e.g. {@code o.M_Product_ID}) so an incidental join predicate is never mistaken for the zoom's product. */
+	private static final Pattern PRODUCT_LITERAL_PATTERN = Pattern.compile("(?<![.\\w])M_Product_ID\\s*=\\s*(\\d+)\\b");
 	/** Window's default sort, used when {@code orderBys} is empty. */
 	private static final ImmutableList<String> DEFAULT_ORDER_FIELD_NAMES = ImmutableList.of(
 			I_MD_Stock_PerWeek_V.COLUMNNAME_WeekStartDate,
@@ -136,9 +136,10 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 	 * <li><b>direct facet</b>: a top-level {@code M_Product_ID} (+ optional {@code M_Warehouse_ID}) {@code EQUAL}
 	 * param — both become {@code MD_Stock_PerWeek_fn} params, no residual WHERE.
 	 * <li><b>order-line zoom</b>: the product carried inside the zoom's opaque SQL-where filter (such params are
-	 * hidden from by-field-name lookup). The product parameterizes the function; that same clause's residual
-	 * {@code MD_getStockWarehouse(...)} warehouse-resolution and {@code WeekStartDate} floor — neither expressible
-	 * as a function param — are applied as the standard converted WHERE against the small function output.
+	 * hidden from by-field-name lookup). The product parameterizes the function; the full clause is then applied as
+	 * the standard converted WHERE against the small function output — its {@code MD_getStockWarehouse(...)}
+	 * warehouse-resolution and {@code WeekStartDate} floor (neither expressible as a function param) do the narrowing,
+	 * while the clause's own {@code M_Product_ID} predicate is a harmless tautology against the product-scoped output.
 	 * </ul>
 	 */
 	@VisibleForTesting
@@ -195,7 +196,7 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 
 		if (residualWhereClause != null && !residualWhereClause.isEmpty())
 		{
-			// zoom: apply the clause's residual warehouse-resolution + week floor against the small function output
+			// zoom: apply the converted clause (warehouse-resolution + week floor; the product predicate is a redundant tautology) against the small function output
 			sqlInsert.append("\n AND (\n").append(residualWhereClause).append("\n)");
 		}
 
@@ -361,9 +362,10 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 	}
 
 	/**
-	 * WHERE clause the standard (slow) path would apply for {@code filters}, aliased to the {@code MD_Stock_PerWeek_fn}
-	 * relation so the zoom clause's residual warehouse-resolution + week floor restrict the function output to exactly
-	 * the zoom's rows. Same converter the delegate uses, so the selection matches the view-filtered output.
+	 * The full WHERE the standard (slow) path would apply for {@code filters}, converted against the
+	 * {@code MD_Stock_PerWeek_fn} relation (aliased as the view) so the zoom clause's warehouse-resolution + week floor
+	 * restrict the function output to exactly the zoom's rows. The product predicate is reapplied too but is a tautology
+	 * against the product-scoped function output. Same converter the delegate uses, so the selection matches the view.
 	 */
 	@Nullable
 	private SqlAndParams buildResidualWhereClause(@NonNull final DocumentFilterList filters, @NonNull final SqlDocumentFilterConverterContext context)

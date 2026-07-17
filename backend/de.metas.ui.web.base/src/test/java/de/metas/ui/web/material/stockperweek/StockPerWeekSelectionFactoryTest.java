@@ -53,13 +53,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers {@link StockPerWeekSelectionFactory#buildCreateSelectionSql} — the layer that decides fast-vs-slow and
- * builds the fast-path SQL, without executing it (no DB). This is the faithful RED→GREEN layer for me03 #30457:
- * a full RelationType-driven zoom is not triggerable here (de.metas.cucumber, the only Postgres-backed suite,
- * has no ui.web.base classes; ui.web.base unit tests run on the in-memory POJO map with no SQL engine), so we
- * feed the <b>exact {@code DocumentFilterParam.ofSqlWhereClause(...)} the zoom provider emits</b> (see
- * {@code ai-work/30457/lifecycle/zoom-slowpath-diagnosis.md} §2) and assert the factory takes the
- * {@code MD_Stock_PerWeek_fn} fast path. Row-equivalence against the slow view output + the index-scan EXPLAIN
- * are verified separately against the live GDPR-scrambled stack (see the fix report).
+ * builds the fast-path SQL, without executing it (no DB). A full RelationType-driven zoom is not triggerable here
+ * (de.metas.cucumber, the only Postgres-backed suite, has no ui.web.base classes; ui.web.base unit tests run on the
+ * in-memory POJO map with no SQL engine), so we feed the <b>exact {@code DocumentFilterParam.ofSqlWhereClause(...)}
+ * the order-line zoom provider emits</b> and assert the factory takes the {@code MD_Stock_PerWeek_fn} fast path.
+ * Row-equivalence against the slow view output and the index-scan EXPLAIN are verified separately against a live
+ * stack, not here.
  * <p>
  * RED (before the fix): the zoom's SQL-where param is hidden from by-field-name lookup, so no product is
  * resolved and {@code buildCreateSelectionSql} returns {@code null} (slow delegate path) — the fast-path
@@ -91,7 +90,7 @@ class StockPerWeekSelectionFactoryTest
 		factory = new StockPerWeekSelectionFactory(minimalBinding());
 	}
 
-	/** The exact single opaque SQL-where param the order-line RelationType zoom pushes in (diagnosis §2). */
+	/** The exact single opaque SQL-where param the order-line RelationType zoom pushes in. */
 	private static DocumentFilterList zoomFilter()
 	{
 		final String sqlWhere = "M_Product_ID = " + PRODUCT_ID
@@ -132,6 +131,21 @@ class StockPerWeekSelectionFactoryTest
 		assertThat(sql.getSql()).contains("MD_Stock_PerWeek_fn(?, ?) fn");
 		assertThat(sql.getSql()).doesNotContain("MD_getStockWarehouse");
 		assertThat(sql.getSql()).doesNotContain("\n AND (\n"); // no residual WHERE appended
+	}
+
+	@Test
+	void directProductAndWarehouseFacet_bothBecomeFunctionParams()
+	{
+		// product + warehouse EQUAL facets => both carried as the two fn params (warehouse non-null), no residual WHERE
+		final int warehouseId = 1_000_110;
+		final SqlAndParams sql = buildSql(DocumentFilterList.of(
+				DocumentFilter.equalsFilter("M_Product_ID", PRODUCT_ID),
+				DocumentFilter.equalsFilter("M_Warehouse_ID", warehouseId)));
+
+		assertThat(sql).isNotNull();
+		assertThat(sql.getSql()).contains("MD_Stock_PerWeek_fn(?, ?) fn");
+		assertThat(sql.getSqlParams()).containsSubsequence(PRODUCT_ID, warehouseId);
+		assertThat(sql.getSql()).doesNotContain("\n AND (\n"); // direct facet => no residual WHERE
 	}
 
 	@Test
