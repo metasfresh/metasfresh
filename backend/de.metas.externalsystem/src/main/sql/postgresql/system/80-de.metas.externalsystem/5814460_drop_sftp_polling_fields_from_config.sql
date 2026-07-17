@@ -27,7 +27,13 @@ DELETE FROM AD_Column_Trl WHERE AD_Column_ID IN (592251, 592252, 592253);
 DELETE FROM AD_Column     WHERE AD_Column_ID IN (592251, 592252, 592253);
 
 -- 4. Drop the physical columns.
-SELECT backup_table('ExternalSystem_Config_ScriptedImportConversion', '_5814460');
+--    No backup_table() here: this table name (46 chars) makes backup_table's generated
+--    name exceed PostgreSQL's 63-char identifier limit, truncating to a minute-granular
+--    prefix (..._bkp_YYYYMMDD_HH1) that COLLIDES with 5814290's backup of this same table
+--    on a fresh apply (both run in the same minute) -> "relation already exists". A backup
+--    is unnecessary anyway: the 3 columns carry no data (moved to the endpoint, no configs
+--    populate them) and 5814290 (applied immediately before) already backs up this exact
+--    table as the recovery point.
 SELECT public.db_alter_table('ExternalSystem_Config_ScriptedImportConversion',
 	'ALTER TABLE public.ExternalSystem_Config_ScriptedImportConversion
 	   DROP COLUMN IF EXISTS SftpPollingIntervalMs,
