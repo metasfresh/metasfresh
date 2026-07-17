@@ -579,11 +579,34 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		return whereClause.toString();
 	}
 
+	// ::int: the DB function RETURNS bigint; getSQLValueEx reads via ResultSet.getInt. The explicit narrowing
+	// documents that dedup counts stay within int range (bounded by the recompute-table size).
+	private static final String SQL_DEDUP_RECOMPUTE = "SELECT m_shipmentschedule_recompute_dedup()::int";
 	private static final String SQL_TAG_TO_RECOMPUTE = "SELECT M_ShipmentSchedule_TagToRecompute(p_selection_id => ?, p_batchsize => ?)";
 
 	@Override
 	public void markAllToRecomputeOutOfTrx(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
+		// Dedup the untagged (unclaimed) recompute markers first: multiple untagged rows for the same
+		// M_ShipmentSchedule_ID would skew the distinct-schedule batch counting in the whole-product batching
+		// performed by M_ShipmentSchedule_TagToRecompute below. m_shipmentschedule_recompute_dedup keeps one
+		// unclaimed marker per schedule; it is idempotent and a no-op when there are no duplicates. Runs out-of-trx
+		// (TRXNAME_None), matching the tag call.
+		//
+		// Dedup is a best-effort optimization only: the DB function sets a 5s lock_timeout and is designed to
+		// fail fast rather than block behind a concurrent recompute batch's bulk UPDATE. Such a failure (e.g. a
+		// lock timeout under load) must NOT abort the mandatory tagging below -- duplicates merely skew the batch
+		// counting, they never break correctness -- so on any error we warn and fall through to the tag call.
+		try
+		{
+			final int countDeduped = DB.getSQLValueEx(ITrx.TRXNAME_None, SQL_DEDUP_RECOMPUTE);
+			logger.debug("Deduped {} duplicate untagged recompute marker(s) before tagging for {}", countDeduped, pinstanceId);
+		}
+		catch (final Exception ex)
+		{
+			logger.warn("Failed to dedup untagged recompute markers before tagging for {}; proceeding with tagging anyway", pinstanceId, ex);
+		}
+
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
