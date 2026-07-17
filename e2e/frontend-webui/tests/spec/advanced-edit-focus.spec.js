@@ -57,40 +57,59 @@ async function loginAsMetasfresh(page) {
 async function openSingleRecord(page, windowId) {
   // The list *container* (`.document-list-wrapper`) mounts before its rows
   // arrive: the row set is fetched by a separate REST call
-  // (GET /documentView/<win>/<viewId>?firstRow=...). Reading the row count
-  // before that fetch resolves would momentarily see 0 rows for a row-bearing
-  // window (e.g. Product 140), wrongly take the empty-list ALT+N branch below,
-  // create a NEW draft that never persists to a numeric id, and hang the
-  // `waitForURL(/\d+\/\d+/)` that follows for the full timeout. So await that
-  // specific row-data response before counting. The listener is armed BEFORE
-  // navigating so the response can never be missed. (networkidle is not usable
-  // here — the dashboard's STOMP/KPI traffic keeps the network permanently
-  // busy, per e2e/frontend-webui skill guidance.)
-  const rowDataFetched = page
+  // (GET /documentView/<win>/<viewId>?firstRow=...). Deciding empty-vs-populated
+  // from a DOM row count races that fetch — a row-bearing window (e.g. Product
+  // 140) can momentarily read 0 rows, wrongly take the empty-list ALT+N branch
+  // below, create a NEW draft that never persists to a numeric id, and hang the
+  // `waitForURL(/\d+\/\d+/)` that follows for the full timeout. So take the
+  // decision from that response's own payload — `size`/`result` on the
+  // JSONViewResult is the server's ground truth — rather than from a DOM read
+  // that may precede React's commit. The listener is armed BEFORE navigating so
+  // the response can never be missed. (networkidle is not usable here — the
+  // dashboard's STOMP/KPI traffic keeps the network permanently busy, per
+  // e2e/frontend-webui skill guidance.)
+  const rowDataResponse = page
     .waitForResponse(
       (resp) =>
         resp.url().includes(`/documentView/${windowId}/`) &&
         resp.url().includes('firstRow='),
       { timeout: SLOW_ACTION_TIMEOUT }
     )
-    .catch(() => {});
+    .catch(() => null);
 
   await page.goto(`/window/${windowId}`, { waitUntil: 'load' });
   await page
     .locator('.document-list-wrapper')
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-  await rowDataFetched;
-  // Let React paint the fetched rows (or the empty-list panel) before counting.
-  await page
-    .locator('.table-flex-wrapper tbody tr, .empty-info-text')
-    .first()
-    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
-    .catch(() => {});
+
+  const resp = await rowDataResponse;
+  // Only trust a 2xx body as ground truth — a non-2xx error response can carry
+  // a JSON body (e.g. Spring's {timestamp,status,error,path}) that parses fine
+  // but has no `size`/`result`, which would otherwise be misread as a confirmed
+  // empty view (wrong ALT+N branch) instead of falling through to the DOM check.
+  const body = resp && resp.ok() ? await resp.json().catch(() => null) : null;
+  // true = has rows, false = empty, null = payload unreadable (fall back to DOM).
+  const serverHasRows = body
+    ? (typeof body.size === 'number' ? body.size : body.result?.length ?? 0) > 0
+    : null;
 
   const rows = page.locator('.table-flex-wrapper tbody tr');
-  const rowCount = await rows.count();
+  let createNewRecord;
+  if (serverHasRows === true) {
+    // Row-bearing window: wait for the fetched row to actually commit to the
+    // DOM before opening it — deterministic, no race with React's render.
+    await rows
+      .first()
+      .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    createNewRecord = false;
+  } else if (serverHasRows === false) {
+    createNewRecord = true;
+  } else {
+    // Payload unreadable — best-effort DOM count after the fetch resolved.
+    createNewRecord = (await rows.count()) === 0;
+  }
 
-  if (rowCount === 0) {
+  if (createNewRecord) {
     // Create a new record — ALT+N navigates to `/window/<id>/NEW` and persists
     // it, ending up on `/window/<id>/<new-id>` with a Drafted document.
     await page.keyboard.press('Alt+n');
