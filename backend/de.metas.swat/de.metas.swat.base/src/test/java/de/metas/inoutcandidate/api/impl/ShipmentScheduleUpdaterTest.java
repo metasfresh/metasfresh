@@ -137,7 +137,7 @@ public class ShipmentScheduleUpdaterTest
 	/**
 	 * NO_LIMIT (the manual {@code M_ShipmentSchedule_Update} process path) must NEVER report limitReached=true,
 	 * even if the "more untagged markers remain" signal is (incorrectly, e.g. due to a race with a concurrent
-	 * invalidation) true -- this hardcodes AC5 (manual path stays single-shot, no regression) instead of relying
+	 * invalidation) true -- this hardcodes the manual-path-stays-single-shot invariant instead of relying
 	 * on the repository signal alone.
 	 */
 	@Test

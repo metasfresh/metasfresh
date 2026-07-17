@@ -41,12 +41,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Tests {@link ShipmentScheduleInvalidateRepository#buildShipmentScheduleWhereClause(String, IShipmentScheduleSegment, List)}
  * for the warehouse-derived segment support (warehouse branch + empty-locator guard).
  * <p>
- * The whole-product batching logic that used to live in {@code buildMarkAllToRecomputeSql} (a
- * Java-built SQL string) was moved into the {@code M_ShipmentSchedule_TagToRecompute(numeric, integer)}
- * DB function (migration {@code 5814390_sys_M_ShipmentSchedule_TagToRecompute_function.sql}) -- see
- * {@link ShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(de.metas.process.PInstanceId, org.adempiere.ad.dao.QueryLimit)}.
- * That logic is now covered by {@link ShipmentScheduleTagToRecomputeDbFunctionTest}, which exercises
- * the real DB function against a real local stack instead of asserting on a Java-built SQL string.
+ * The whole-product batching is performed by the {@code M_ShipmentSchedule_TagToRecompute(numeric, integer)}
+ * DB function, invoked via
+ * {@link ShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(de.metas.process.PInstanceId, org.adempiere.ad.dao.QueryLimit)};
+ * that batching is covered end-to-end by the {@code updateInvalidShipmentSchedulesRecomputeBatching} Cucumber scenario.
  */
 public class ShipmentScheduleInvalidateRepositoryTest
 {
