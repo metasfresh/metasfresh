@@ -27,6 +27,25 @@ export const PickingJobScreen = {
         await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
     }),
 
+    expectVisible: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to be displayed`, async () => {
+        await expect(containerElement()).toBeVisible({ timeout });
+    }),
+
+    // Assert the WF-process (job) screen is NOT displayed — used to prove a redirect away from the job
+    // (e.g. the redirect-home guard sending a dead deep-link back to the menu).
+    expectNotDisplayed: async () => await step(`${NAME} - Expect NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
+    // Assert the job screen is STILL displayed after a settle window — used to prove the operator was
+    // NOT bounced away by a delayed/asynchronous event (e.g. a stale launchers refresh landing after
+    // the job started). There is no natural "visible" event to await for a non-event, so this settles
+    // for `settleTimeout` before asserting.
+    expectRemainsDisplayed: async ({ settleTimeout = FAST_ACTION_TIMEOUT } = {}) => await step(`${NAME} - Expect to remain displayed after ${settleTimeout}ms`, async () => {
+        await page.waitForTimeout(settleTimeout);
+        await expect(containerElement()).toBeVisible();
+    }),
+
     getPickingJobId: async () => {
         const currentUrl = await page.url();
 

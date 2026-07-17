@@ -14,10 +14,14 @@
  *     within the tick — so a real start no longer bounces, while a genuinely-absent process still
  *     redirects.
  *
- * The three scenarios below are the end-to-end guard for that behaviour:
- *   1. No-bounce on workflow start — the key regression guard. Covers BOTH a picking launcher and a
- *      distribution launcher (the two launcher paths Race B protects). Goes RED if Race B (the
- *      synchronous goHome) regresses.
+ * The scenarios below:
+ *   1. No-bounce on workflow start — the observable contract. Starting from a picking launcher and
+ *      from a distribution launcher lands on the WF-process screen and does NOT bounce to the home
+ *      menu. NOTE: this does NOT reliably reproduce the Race-B ordering hazard on a fast local stack
+ *      (verified: reverting the ApplicationLayout goHome-deferral alone did NOT turn this scenario
+ *      RED — that store-vs-router timing does not manifest in a plain launcher-start under test). So
+ *      scenario 1 is a contract guard, not a deterministic Race-B guard; the deterministic race
+ *      guard is scenario 4 (Race A). Race B's preserved behaviour is covered by scenarios 2 and 3(b).
  *   2. Dead deep-link (cold navigate to a WF-process URL whose process is not in the store) still
  *      redirects home — proves the deferred goHome still fires for a genuinely-absent process.
  *   3. Reload while a job is open. Two real behaviours, one test:
@@ -29,12 +33,6 @@
  *          mode / a fresh browser opening a bookmarked deep-link — the auth cookie still carries the
  *          session), the boot-time guard still redirects home rather than hanging on a blank job
  *          frame. This is the same dead-deep-link class as scenario 2, reached via the cold-boot path.
- *
- * NOTE on 3(a): a plain reload does NOT redirect home in this app (verified) because wfProcesses is
- * persisted+re-hydrated. Forcing a redirect on a plain reload would require fabricating a state the
- * real reload cannot produce; instead 3(b) clears the persisted store to model the genuine
- * absent-process boot the guard actually protects.
- *
  *   4. Stale launchers refresh after start (Race A, deterministic) — reproduces the PRIMARY production
  *      trigger with real network timing: a launchers-query issued before the start (so its snapshot
  *      does not list the just-started process) whose response is delivered AFTER the start. Without
@@ -42,14 +40,16 @@
  *      home; with the fix the process is kept (its local update is newer than the request that fetched
  *      the snapshot). The pre-start request timing is forced deterministically by holding the query's
  *      response (Playwright route interception) — a faithful model of a slow/reordered response, not a
- *      fabricated state. Scenarios 1–3 exercise the observable contract but do NOT reliably reproduce
- *      this timing on a fast local stack (the natural race window rarely opens); scenario 4 is the
- *      deterministic RED-provable guard of the reducer fix.
+ *      fabricated state. This is the RED-provable guard of the reducer fix (revert it → RED).
  *
- * Scenario 1 is the assertion that must NOT be weakened: land on #WFProcessScreen and NOT bounce to
- * #ApplicationsListScreen. Scenarios 2 & 3(b) assert the preserved redirect-home behaviour survives
- * the goHome deferral (the guard's genuine purpose); 3(a) locks in the job-survives-F5 resilience;
- * scenario 4 deterministically guards the stale-launchers prune.
+ * NOTE on 3(a): a plain reload does NOT redirect home in this app (verified) because wfProcesses is
+ * persisted+re-hydrated. Forcing a redirect on a plain reload would require fabricating a state the
+ * real reload cannot produce; instead 3(b) clears the persisted store to model the genuine
+ * absent-process boot the guard actually protects.
+ *
+ * No assertion here is to be weakened: scenario 1 must land on the WF-process screen AND not bounce
+ * to the home menu; scenarios 2 & 3(b) must redirect home; scenario 4 must keep the process on the
+ * job screen after the stale snapshot arrives.
  */
 
 import { test } from "../../playwright.config";
@@ -59,15 +59,10 @@ import { Backend } from "../utils/screens/Backend";
 import { LoginScreen } from "../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../utils/screens/picking/PickingJobsListScreen";
+import { PickingJobScreen } from "../utils/screens/picking/PickingJobScreen";
 import { PickingJobsListFiltersScreen } from "../utils/screens/picking/PickingJobsListFiltersScreen";
 import { DistributionJobsListScreen } from "../utils/screens/distribution/DistributionJobsListScreen";
-import { FRONTEND_BASE_URL, FAST_ACTION_TIMEOUT, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../utils/common";
-
-// Container ids of the three screens this guard distinguishes. These mirror the private
-// containerElement() ids in the screen page objects (ApplicationsListScreen / PickingJobScreen /
-// DistributionJobScreen / *JobsListScreen) — keep in sync if a screen id ever changes.
-const HOME_MENU = '#ApplicationsListScreen';
-const WF_PROCESS_SCREEN = '#WFProcessScreen';
+import { FRONTEND_BASE_URL, VERY_SLOW_ACTION_TIMEOUT } from "../utils/common";
 
 const createPickingMasterdata = async () => Backend.createMasterdata({
     language: "en_US",
@@ -146,16 +141,12 @@ test('Workflow start from a PICKING launcher lands on the job screen and does NO
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
 
-    // Tap the launcher DIRECTLY (not via PickingJobsListScreen.startJob, whose tap-and-recover helper
-    // re-taps the launcher if the job screen does not appear — that recovery would paper over a
-    // bounce-to-home). We want the raw first-tap outcome so a Race-B regression is observed as-is.
-    const launcher = page.locator('.wflauncher-button').filter({ hasText: masterdata.salesOrders.SO1.documentNo });
-    await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await launcher.tap();
-
-    // The behaviour under guard: we land on the WF-process (job) screen and are NOT bounced to home.
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await expect(page.locator(HOME_MENU)).toHaveCount(0);
+    // startJob({documentNo}) is a single launcher tap + PickingJobScreen.waitForScreen() (no retry),
+    // so a bounce-to-home surfaces as the job screen never arriving. It then leaves us on the job
+    // screen; assert we did NOT bounce to the home menu.
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectVisible();
+    await ApplicationsListScreen.expectNotDisplayed();
     expect(page.url()).toContain('/picking/wf/');
 });
 
@@ -175,13 +166,10 @@ test('Workflow start from a DISTRIBUTION launcher lands on the job screen and do
     await DistributionJobsListScreen.waitForScreen();
     await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
 
-    // Tap the launcher directly — same rationale as the picking scenario above.
-    const launcher = page.getByTestId(masterdata.distributionOrders.DD1.launcherTestId);
-    await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await launcher.tap();
-
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await expect(page.locator(HOME_MENU)).toHaveCount(0);
+    // startJob({launcherTestId}) is a single launcher tap + DistributionJobScreen.waitForScreen()
+    // (no retry) — same rationale as the picking scenario.
+    await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+    await ApplicationsListScreen.expectNotDisplayed();
     expect(page.url()).toContain('/distribution/wf/');
 });
 
@@ -204,8 +192,8 @@ test('Dead deep-link to a WF-process URL (no loaded process) redirects to the ho
     await page.goto(deadDeepLink, { waitUntil: 'load' });
 
     // The guard must redirect to the home menu (the deferred goHome still fires) — not hang on a blank frame.
-    await expect(page.locator(HOME_MENU)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
-    await expect(page.locator(WF_PROCESS_SCREEN)).toHaveCount(0);
+    await ApplicationsListScreen.expectVisible();
+    await PickingJobScreen.expectNotDisplayed();
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -223,10 +211,8 @@ test('Reload while a job is open: plain reload keeps the job; a re-hydrated stor
     await ApplicationsListScreen.startApplication('picking');
     await PickingJobsListScreen.waitForScreen();
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
-    const launcher = page.locator('.wflauncher-button').filter({ hasText: masterdata.salesOrders.SO1.documentNo });
-    await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await launcher.tap();
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+    await PickingJobScreen.expectVisible();
     const jobUrl = page.url();
     expect(jobUrl).toContain('/picking/wf/');
 
@@ -235,8 +221,8 @@ test('Reload while a job is open: plain reload keeps the job; a re-hydrated stor
     // does not fire. Locking this in protects the operator against losing their job on an accidental
     // refresh.
     await page.reload({ waitUntil: 'load' });
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-    await expect(page.locator(HOME_MENU)).toHaveCount(0);
+    await PickingJobScreen.expectVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    await ApplicationsListScreen.expectNotDisplayed();
     expect(page.url()).toBe(jobUrl);
 
     // 3(b) — now model a cold boot where the re-hydrated store does NOT contain the process
@@ -246,8 +232,8 @@ test('Reload while a job is open: plain reload keeps the job; a re-hydrated stor
     // — not hang on a blank job frame.
     await page.evaluate(() => window.localStorage.clear());
     await page.reload({ waitUntil: 'load' });
-    await expect(page.locator(HOME_MENU)).toBeVisible({ timeout: VERY_SLOW_ACTION_TIMEOUT });
-    await expect(page.locator(WF_PROCESS_SCREEN)).toHaveCount(0);
+    await ApplicationsListScreen.expectVisible();
+    await PickingJobScreen.expectNotDisplayed();
 });
 
 // noinspection JSUnusedLocalSymbols
@@ -299,25 +285,20 @@ test('Stale launchers refresh after start does not prune the just-started proces
     await PickingJobsListFiltersScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await staleCaptured;
 
-    // The SO1 launcher is still rendered (from the pre-filter query); start the job while the stale
-    // refresh is still in flight. We dispatch the click directly on the button rather than tap(): a
-    // foreground query shows a `.loading` overlay that would intercept a hit-tested tap, but that
-    // overlay is an artifact of using a filter query as the stale-refresh trigger — the production
-    // race is driven by a background refresh with no such overlay. The reducer path exercised
-    // (POPULATE_LAUNCHERS_COMPLETE pruning) is identical either way, so dispatching the click reaches
-    // the exact documented state (job started while a stale launchers snapshot is pending).
-    const launcher = page.locator('.wflauncher-button').filter({ hasText: masterdata.salesOrders.SO1.documentNo });
-    await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-    await launcher.dispatchEvent('click');
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+    // Start the job while the stale refresh is still in flight. A foreground query shows a `.loading`
+    // overlay that would intercept a hit-tested tap, but that overlay is an artifact of using a filter
+    // query as the stale-refresh trigger — the production race is driven by a background refresh with
+    // no such overlay. The reducer path exercised (POPULATE_LAUNCHERS_COMPLETE pruning) is identical
+    // either way, so a dispatched click reaches the exact documented state (job started while a stale
+    // launchers snapshot is pending).
+    await PickingJobsListScreen.startJobByDispatchClick({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
     // Now deliver the stale snapshot. Its POPULATE_LAUNCHERS_COMPLETE must NOT delete the just-started
     // process (its local update is newer than the request that fetched the snapshot), so we stay on
     // the job screen and do not bounce home. Without the reducer fix this prunes the process and the
     // redirect-home guard fires.
     releaseHeld();
-    await page.waitForTimeout(FAST_ACTION_TIMEOUT);
-    await expect(page.locator(WF_PROCESS_SCREEN)).toBeVisible();
-    await expect(page.locator(HOME_MENU)).toHaveCount(0);
+    await PickingJobScreen.expectRemainsDisplayed();
+    await ApplicationsListScreen.expectNotDisplayed();
     await page.unroute('**/userWorkflows/launchers/query');
 });
