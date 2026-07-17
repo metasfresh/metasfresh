@@ -1444,7 +1444,7 @@ public class CiiMapper
 	/**
 	 * Formats a timestamp as yyyyMMdd, using the JVM-local calendar date via
 	 * {@link TimeUtil#asLocalDate(Timestamp)} — matching how JDBC reads a
-	 * {@code timestamp without time zone} column (see {@code docs/coding-rules/java-time.md} §3.4).
+	 * {@code timestamp without time zone} column (see {@code docs/coding-rules/java-time.md}).
 	 */
 	private String formatDate(@NonNull final Timestamp timestamp)
 	{
