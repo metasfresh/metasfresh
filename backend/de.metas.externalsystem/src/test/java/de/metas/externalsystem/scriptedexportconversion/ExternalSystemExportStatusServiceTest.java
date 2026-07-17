@@ -283,10 +283,10 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Upsert semantics: second transition on same key keeps a single row
+	// A transition (markEnqueued) updates the SAME attempt row — one enqueue, one row
 	// -----------------------------------------------------------------------
 	@Test
-	void upsert_sameRow_onSecondCall()
+	void transition_updatesSameAttemptRow()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -320,6 +320,27 @@ public class ExternalSystemExportStatusServiceTest
 				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * Per-attempt history: a config whose OLDER attempt errored but whose LATEST attempt succeeded
+	 * (a re-send that worked) must NOT be offered for re-send — otherwise the manual Re-send process
+	 * would re-trigger an export that already delivered successfully.
+	 */
+	@Test
+	void getResendableConfigs_excludesConfigWhoseLatestAttemptSucceeded()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt errored ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		// ... but the LATEST attempt (a successful re-send) is Sent
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
 	}
 
 	/**
