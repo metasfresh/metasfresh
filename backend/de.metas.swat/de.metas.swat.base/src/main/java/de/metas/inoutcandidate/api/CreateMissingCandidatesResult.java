@@ -37,8 +37,11 @@ public class CreateMissingCandidatesResult
 	@NonNull Set<ShipmentScheduleId> createdShipmentScheduleIds;
 
 	/**
-	 * {@code true} if the given budget was exhausted while at least one more model was still available to process
-	 * (i.e. there is more work remaining and a follow-up run is needed to finish it).
+	 * {@code true} if the given budget was fully consumed (all handlers combined processed exactly {@code maxToProcess}
+	 * models), signalling that a follow-up run should be enqueued. Note this can be {@code true} with zero actual work
+	 * remaining in the rare case the backlog was an exact multiple of the budget — that follow-up run then finds and
+	 * processes nothing and reports {@code false}, so the re-enqueue chain terminates. Always {@code false} for an
+	 * unlimited ({@link org.adempiere.ad.dao.QueryLimit#NO_LIMIT}) budget.
 	 */
 	boolean limitReached;
 }

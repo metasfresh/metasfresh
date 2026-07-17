@@ -246,6 +246,11 @@ public class ShipmentScheduleHandlerBL implements IShipmentScheduleHandlerBL
 
 		private QueryLimit toQueryLimit()
 		{
+			// Guard the load-bearing invariant of the batching perf fix: QueryLimit.ofInt(<=0) silently resolves to
+			// NO_LIMIT (unbounded), which would reintroduce the whole-backlog OOM this class exists to prevent. Today
+			// invokeHandler is only reached while remaining>0 (createMissingCandidates breaks the loop on
+			// isLimitReached()), so this only fails loudly if a future change violates that.
+			Check.assume(unlimited || remaining > 0, "remaining budget must be > 0 when limited; remaining={}", remaining);
 			return unlimited ? QueryLimit.NO_LIMIT : QueryLimit.ofInt(remaining);
 		}
 
