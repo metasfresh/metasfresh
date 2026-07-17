@@ -295,8 +295,8 @@ public class DebugRestController
 				KPIDataProvider.class.getPackage().getName()
 		),
 		elasticsearch(
-				"de.metas.fulltextsearch",
-				de.metas.ui.web.document.filter.provider.fullTextSearch.FTSDocumentFilterConverter.class.getPackage().getName()
+				"de.metas.elasticsearch",
+				de.metas.ui.web.document.filter.provider.fullTextSearch.PostgresFTSDocumentFilterConverter.class.getPackage().getName()
 		),
 		;
 

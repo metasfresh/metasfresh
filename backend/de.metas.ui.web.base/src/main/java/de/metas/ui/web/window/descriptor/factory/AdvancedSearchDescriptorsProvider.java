@@ -1,16 +1,11 @@
 package de.metas.ui.web.window.descriptor.factory;
 
 import de.metas.logging.LogManager;
-import de.metas.ui.web.view.SqlViewFactory;
 import de.metas.ui.web.window.datatypes.WindowId;
-import de.metas.ui.web.window.descriptor.AdvancedSearchBPartnerProcessor;
 import de.metas.ui.web.window.descriptor.AdvancedSearchDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
@@ -43,22 +38,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AdvancedSearchDescriptorsProvider
 {
 	private static final Logger logger = LogManager.getLogger(AdvancedSearchDescriptorsProvider.class);
-	private static final String SYSCONFIG_BPARTNER_SEARCH_WINDOW_ID = "BPartner_Search_Window_ID";
-	private static final int DEFAULT_B_PARTNER_SEARCH_WINDOW_ID = 541045;
 
 	private final DocumentDescriptorFactory documentDescriptors;
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final ConcurrentHashMap<String, AdvancedSearchDescriptor> advSearchDescriptorsByTableName = new ConcurrentHashMap<>();
 
 	AdvancedSearchDescriptorsProvider(
-			@NonNull final DocumentDescriptorFactory documentDescriptors,
-			@NonNull final SqlViewFactory sqlViewFactory)
+			@NonNull final DocumentDescriptorFactory documentDescriptors)
 	{
 		this.documentDescriptors = documentDescriptors;
-		// FIXME: hardcoded AdvancedSearchDescriptor for C_BPartner_Adv_Search_v
-		final WindowId searchAssistantId = WindowId.of(sysConfigBL.getIntValue(SYSCONFIG_BPARTNER_SEARCH_WINDOW_ID, DEFAULT_B_PARTNER_SEARCH_WINDOW_ID));
-		addAdvancedSearchDescriptor(AdvancedSearchDescriptor.of(I_C_BPartner.Table_Name, searchAssistantId, new AdvancedSearchBPartnerProcessor(sqlViewFactory)));
 	}
 
 	public void addAdvancedSearchDescriptor(final AdvancedSearchDescriptor searchDescriptor)
