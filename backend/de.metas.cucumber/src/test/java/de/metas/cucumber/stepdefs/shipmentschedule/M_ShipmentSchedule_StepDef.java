@@ -382,8 +382,8 @@ public class M_ShipmentSchedule_StepDef
 	 * @cucumber.example
 	 * <pre>
 	 * And the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:
-	 *   | Identifier | M_Product_ID.Identifier |
-	 *   | schedA1    | productA                |
+	 *   | Identifier | M_Product_ID |
+	 *   | schedA1    | productA     |
 	 * </pre>
 	 */
 	@And("the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:")

@@ -22,21 +22,21 @@ Feature: tag invalid shipment schedules for a recompute pass in whole-product ba
       | productA   |
       | productB   |
       | productC   |
-    # Seed the recompute backlog DIRECTLY, NOT via the real order->complete->CreateMissingShipmentSchedules
-    # ->invalidate pipeline: that pipeline auto-enqueues the UpdateInvalidShipmentSchedulesWorkpackageProcessor
-    # (not gated by SKIP_WP_PROCESSOR_FOR_AUTOMATION), which drains/claims markers concurrently with the
-    # assertions and makes the untagged-marker counts race. The tag DB function operates purely on the marker
-    # rows and their schedules' M_Product_ID, so this seeds exactly that state. Per-product distribution:
-    # productA -> 2 schedules, productB -> 3 schedules, productC -> 1 schedule (6 total), each with one
-    # untagged M_ShipmentSchedule_Recompute marker.
+    # Seed the recompute backlog DIRECTLY, not via the real order->complete->CreateMissingShipmentSchedules
+    # ->invalidate pipeline. Reasons:
+    # - that pipeline auto-enqueues UpdateInvalidShipmentSchedulesWorkpackageProcessor (NOT gated by
+    #   SKIP_WP_PROCESSOR_FOR_AUTOMATION), which claims/drains markers concurrently and races the counts.
+    # - the tag DB function reads only the marker rows + their schedules' M_Product_ID, so this seeds
+    #   exactly that state.
+    # Distribution: productA -> 2 schedules, productB -> 3, productC -> 1 (6 total), each with one marker.
     And the following M_ShipmentSchedules are seeded, each with one untagged recompute marker:
-      | Identifier | M_Product_ID.Identifier |
-      | schedA1    | productA                |
-      | schedA2    | productA                |
-      | schedB1    | productB                |
-      | schedB2    | productB                |
-      | schedB3    | productB                |
-      | schedC1    | productC                |
+      | Identifier | M_Product_ID |
+      | schedA1    | productA     |
+      | schedA2    | productA     |
+      | schedB1    | productB     |
+      | schedB2    | productB     |
+      | schedB3    | productB     |
+      | schedC1    | productC     |
     And 6 M_ShipmentSchedule_Recompute markers remain untagged
 
   @from:cucumber
