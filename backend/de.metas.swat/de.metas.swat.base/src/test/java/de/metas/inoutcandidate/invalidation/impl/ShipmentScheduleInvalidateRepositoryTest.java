@@ -184,6 +184,9 @@ public class ShipmentScheduleInvalidateRepositoryTest
 				.contains("sr.AD_PInstance_ID IS NULL")
 				.as("must select DISTINCT schedule ids, so duplicated markers count once toward the N-schedule bound")
 				.contains("SELECT DISTINCT sr2.M_ShipmentSchedule_ID")
+				.as("must keep the existence join to M_ShipmentSchedule, preserving the old query's "
+						+ "\"only schedules that still exist\" filter")
+				.contains("JOIN M_ShipmentSchedule s ON s.M_ShipmentSchedule_ID = sr2.M_ShipmentSchedule_ID")
 				.as("must scope the candidate schedule ids to currently-untagged markers too")
 				.contains("sr2.AD_PInstance_ID IS NULL")
 				.as("must order deterministically by the lowest schedule id first, so a second call advances to the next N")
