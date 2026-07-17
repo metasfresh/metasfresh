@@ -1090,9 +1090,6 @@ public class ExternalSystemConfigRepo
 				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
 				.description(config.getDescription())
 				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(config.getExternalSystem_Endpoint_ID()))
-				.sftpPollingIntervalMs(config.getSftpPollingIntervalMs() > 0 ? config.getSftpPollingIntervalMs() : null)
-				.sftpProcessedDirectory(config.getSftpProcessedDirectory())
-				.sftpErrorDirectory(config.getSftpErrorDirectory())
 				.build();
 	}
 

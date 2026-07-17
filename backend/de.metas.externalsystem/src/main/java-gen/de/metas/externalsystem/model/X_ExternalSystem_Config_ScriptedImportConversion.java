@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_ScriptedImportConversion extends org.compiere.model.PO implements I_ExternalSystem_Config_ScriptedImportConversion, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1373536828L;
+	private static final long serialVersionUID = -1432582525L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_ScriptedImportConversion (final Properties ctx, final int ExternalSystem_Config_ScriptedImportConversion_ID, @Nullable final String trxName)
@@ -128,41 +128,5 @@ public class X_ExternalSystem_Config_ScriptedImportConversion extends org.compie
 	public java.lang.String getScriptIdentifier() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScriptIdentifier);
-	}
-
-	@Override
-	public void setSftpErrorDirectory (final @Nullable java.lang.String SftpErrorDirectory)
-	{
-		set_Value (COLUMNNAME_SftpErrorDirectory, SftpErrorDirectory);
-	}
-
-	@Override
-	public java.lang.String getSftpErrorDirectory() 
-	{
-		return get_ValueAsString(COLUMNNAME_SftpErrorDirectory);
-	}
-
-	@Override
-	public void setSftpPollingIntervalMs (final int SftpPollingIntervalMs)
-	{
-		set_Value (COLUMNNAME_SftpPollingIntervalMs, SftpPollingIntervalMs);
-	}
-
-	@Override
-	public int getSftpPollingIntervalMs() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SftpPollingIntervalMs);
-	}
-
-	@Override
-	public void setSftpProcessedDirectory (final @Nullable java.lang.String SftpProcessedDirectory)
-	{
-		set_Value (COLUMNNAME_SftpProcessedDirectory, SftpProcessedDirectory);
-	}
-
-	@Override
-	public java.lang.String getSftpProcessedDirectory() 
-	{
-		return get_ValueAsString(COLUMNNAME_SftpProcessedDirectory);
 	}
 }

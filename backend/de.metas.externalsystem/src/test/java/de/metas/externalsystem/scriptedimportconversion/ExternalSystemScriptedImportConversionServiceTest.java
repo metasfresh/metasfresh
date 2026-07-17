@@ -44,6 +44,9 @@ import java.util.Map;
 import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,6 +99,45 @@ class ExternalSystemScriptedImportConversionServiceTest
 
 		// then
 		assertThat(parameters.get(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME)).isEqualTo("eddyson-orders");
+	}
+
+	@Test
+	void getParameters_sftpPollingSettings_comeFromLinkedEndpoint()
+	{
+		// given: the SFTP polling settings live on the ENDPOINT (moved off the config)
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-sftp");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		endpointRecord.setSftpPollingIntervalMs(30000);
+		endpointRecord.setSftpProcessedDirectory("/inbound/processed");
+		endpointRecord.setSftpErrorDirectory("/inbound/error");
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the poll interval + processed/error directories are sourced from the endpoint
+		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_PROCESSED_DIR)).isEqualTo("/inbound/processed");
+		assertThat(parameters.get(PARAM_SFTP_POLLING_ERROR_DIR)).isEqualTo("/inbound/error");
 	}
 
 	@Test

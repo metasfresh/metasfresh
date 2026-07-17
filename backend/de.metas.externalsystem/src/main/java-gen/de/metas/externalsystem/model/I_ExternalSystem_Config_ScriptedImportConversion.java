@@ -51,7 +51,8 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Importer.
+	 * Set Import User.
+	 * The metasfresh user whose WebUI API access token authorises the order candidates created by this import. This user needs a valid WebUI auth token.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -60,7 +61,8 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 	void setAD_User_Import_ID (int AD_User_Import_ID);
 
 	/**
-	 * Get Importer.
+	 * Get Import User.
+	 * The metasfresh user whose WebUI API access token authorises the order candidates created by this import. This user needs a valid WebUI auth token.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -245,75 +247,6 @@ public interface I_ExternalSystem_Config_ScriptedImportConversion
 
 	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_ScriptIdentifier = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "ScriptIdentifier", null);
 	String COLUMNNAME_ScriptIdentifier = "ScriptIdentifier";
-
-	/**
-	 * Set SFTP Error Directory.
-	 * Remote directory to move files that failed processing to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpErrorDirectory (@Nullable java.lang.String SftpErrorDirectory);
-
-	/**
-	 * Get SFTP Error Directory.
-	 * Remote directory to move files that failed processing to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpErrorDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_SftpErrorDirectory = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "SftpErrorDirectory", null);
-	String COLUMNNAME_SftpErrorDirectory = "SftpErrorDirectory";
-
-	/**
-	 * Set SFTP Polling Interval (ms).
-	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpPollingIntervalMs (int SftpPollingIntervalMs);
-
-	/**
-	 * Get SFTP Polling Interval (ms).
-	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSftpPollingIntervalMs();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_SftpPollingIntervalMs = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "SftpPollingIntervalMs", null);
-	String COLUMNNAME_SftpPollingIntervalMs = "SftpPollingIntervalMs";
-
-	/**
-	 * Set SFTP Processed Directory.
-	 * Remote directory to move successfully processed files to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpProcessedDirectory (@Nullable java.lang.String SftpProcessedDirectory);
-
-	/**
-	 * Get SFTP Processed Directory.
-	 * Remote directory to move successfully processed files to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpProcessedDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_ScriptedImportConversion, Object> COLUMN_SftpProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Config_ScriptedImportConversion.class, "SftpProcessedDirectory", null);
-	String COLUMNNAME_SftpProcessedDirectory = "SftpProcessedDirectory";
 
 	/**
 	 * Get Updated.

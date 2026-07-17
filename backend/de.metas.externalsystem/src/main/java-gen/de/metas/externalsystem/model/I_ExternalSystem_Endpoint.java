@@ -403,6 +403,29 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_SftpAuthType = "SftpAuthType";
 
 	/**
+	 * Set SFTP Error Directory.
+	 * Remote directory to move files that failed processing to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpErrorDirectory (@Nullable java.lang.String SftpErrorDirectory);
+
+	/**
+	 * Get SFTP Error Directory.
+	 * Remote directory to move files that failed processing to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpErrorDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpErrorDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpErrorDirectory", null);
+	String COLUMNNAME_SftpErrorDirectory = "SftpErrorDirectory";
+
+	/**
 	 * Set SFTP Filename Pattern.
 	 * Pattern for outbound filenames. Placeholders: 
 {
@@ -485,6 +508,29 @@ timestamp}
 	String COLUMNNAME_SftpHost = "SftpHost";
 
 	/**
+	 * Set SFTP Polling Interval (ms).
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpPollingIntervalMs (int SftpPollingIntervalMs);
+
+	/**
+	 * Get SFTP Polling Interval (ms).
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSftpPollingIntervalMs();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPollingIntervalMs = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPollingIntervalMs", null);
+	String COLUMNNAME_SftpPollingIntervalMs = "SftpPollingIntervalMs";
+
+	/**
 	 * Set SFTP Port.
 	 * Port number for SFTP connection (default: 22)
 	 *
@@ -506,6 +552,29 @@ timestamp}
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPort = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPort", null);
 	String COLUMNNAME_SftpPort = "SftpPort";
+
+	/**
+	 * Set SFTP Processed Directory.
+	 * Remote directory to move successfully processed files to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSftpProcessedDirectory (@Nullable java.lang.String SftpProcessedDirectory);
+
+	/**
+	 * Get SFTP Processed Directory.
+	 * Remote directory to move successfully processed files to
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSftpProcessedDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpProcessedDirectory", null);
+	String COLUMNNAME_SftpProcessedDirectory = "SftpProcessedDirectory";
 
 	/**
 	 * Set SFTP Remote Path.

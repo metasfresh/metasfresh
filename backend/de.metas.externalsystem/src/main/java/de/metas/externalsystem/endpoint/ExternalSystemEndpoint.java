@@ -79,6 +79,13 @@ public class ExternalSystemEndpoint
 
 	@Nullable String sftpFilenamePattern;
 
+	// SFTP inbound-polling settings (poll interval + processed/error directories).
+	@Nullable Integer sftpPollingIntervalMs;
+
+	@Nullable String sftpProcessedDirectory;
+
+	@Nullable String sftpErrorDirectory;
+
 	/**
 	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream
 	 * Camel route dispatches one HTTP/SFTP request per array element. Default FALSE — endpoint

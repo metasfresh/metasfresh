@@ -235,6 +235,11 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     // Fill optional filename pattern
     await fillTextField(page, 'SftpFilenamePattern', 'export_{timestamp}.json');
 
+    // SFTP inbound-polling settings now live on the endpoint (moved off the scripted-import config).
+    await fillNumericField(page, 'SftpPollingIntervalMs', '30000');
+    await fillTextField(page, 'SftpProcessedDirectory', '/inbound/processed');
+    await fillTextField(page, 'SftpErrorDirectory', '/inbound/error');
+
     // Tab out to trigger save
     await page.keyboard.press('Tab');
     await page.waitForTimeout(2000);
@@ -258,5 +263,11 @@ Creates a complete SFTP endpoint with all mandatory fields filled:
     await expect(sftpUsernameField).toHaveValue('testuser');
     await expect(remotePathField).toHaveValue('/outbound/edi');
     await expect(filenamePatternField).toHaveValue('export_{timestamp}.json');
+
+    // The SFTP inbound-polling settings persist on the endpoint too.
+    // (integer field — tolerate any locale grouping separator between "30" and "000")
+    await expect(page.locator('.form-field-SftpPollingIntervalMs input')).toHaveValue(/^30[.,\s ]?000$/);
+    await expect(page.locator('.form-field-SftpProcessedDirectory input[type="text"]')).toHaveValue('/inbound/processed');
+    await expect(page.locator('.form-field-SftpErrorDirectory input[type="text"]')).toHaveValue('/inbound/error');
   });
 });

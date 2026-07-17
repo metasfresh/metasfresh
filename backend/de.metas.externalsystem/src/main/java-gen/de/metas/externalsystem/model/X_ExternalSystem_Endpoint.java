@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -311469441L;
+	private static final long serialVersionUID = 5897252L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Endpoint (final Properties ctx, final int ExternalSystem_Endpoint_ID, @Nullable final String trxName)
@@ -262,6 +262,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setSftpErrorDirectory (final @Nullable java.lang.String SftpErrorDirectory)
+	{
+		set_Value (COLUMNNAME_SftpErrorDirectory, SftpErrorDirectory);
+	}
+
+	@Override
+	public java.lang.String getSftpErrorDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SftpErrorDirectory);
+	}
+
+	@Override
 	public void setSftpFilenamePattern (final @Nullable java.lang.String SftpFilenamePattern)
 	{
 		set_Value (COLUMNNAME_SftpFilenamePattern, SftpFilenamePattern);
@@ -286,6 +298,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setSftpPollingIntervalMs (final int SftpPollingIntervalMs)
+	{
+		set_Value (COLUMNNAME_SftpPollingIntervalMs, SftpPollingIntervalMs);
+	}
+
+	@Override
+	public int getSftpPollingIntervalMs() 
+	{
+		return get_ValueAsInt(COLUMNNAME_SftpPollingIntervalMs);
+	}
+
+	@Override
 	public void setSftpPort (final int SftpPort)
 	{
 		set_Value (COLUMNNAME_SftpPort, SftpPort);
@@ -295,6 +319,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	public int getSftpPort() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SftpPort);
+	}
+
+	@Override
+	public void setSftpProcessedDirectory (final @Nullable java.lang.String SftpProcessedDirectory)
+	{
+		set_Value (COLUMNNAME_SftpProcessedDirectory, SftpProcessedDirectory);
+	}
+
+	@Override
+	public java.lang.String getSftpProcessedDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SftpProcessedDirectory);
 	}
 
 	@Override

@@ -96,17 +96,17 @@ public class ExternalSystemScriptedImportConversionService
 			{
 				parameters.put(PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, endpoint.getSftpRemotePath());
 			}
-			if (config.getSftpPollingIntervalMs() != null)
+			if (endpoint.getSftpPollingIntervalMs() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(config.getSftpPollingIntervalMs()));
+				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(endpoint.getSftpPollingIntervalMs()));
 			}
-			if (config.getSftpProcessedDirectory() != null)
+			if (endpoint.getSftpProcessedDirectory() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, config.getSftpProcessedDirectory());
+				parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, endpoint.getSftpProcessedDirectory());
 			}
-			if (config.getSftpErrorDirectory() != null)
+			if (endpoint.getSftpErrorDirectory() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, config.getSftpErrorDirectory());
+				parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, endpoint.getSftpErrorDirectory());
 			}
 		}
 
