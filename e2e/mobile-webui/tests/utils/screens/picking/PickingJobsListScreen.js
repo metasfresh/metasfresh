@@ -116,6 +116,17 @@ export const PickingJobsListScreen = {
         }
     },
 
+    // Start a job by dispatching the click event directly on the launcher (by document number),
+    // bypassing hit-testing. Use ONLY when a foreground `.loading` overlay would intercept a normal
+    // tap yet the launcher itself is the intended target — e.g. a test that deliberately holds a
+    // launchers refresh in flight while starting the job. Waits for the job (WF-process) screen.
+    startJobByDispatchClick: async ({ documentNo }) => await test.step(`${NAME} - Start job by dispatched click (documentNo ${documentNo})`, async () => {
+        const launcher = locateJobButtons({ documentNo });
+        await launcher.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await launcher.dispatchEvent('click');
+        await PickingJobScreen.waitForScreen();
+    }),
+
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
         await test.step(`Wait for all expected buttons to be attached`, async () => {
             for (const expectation of expectationsArray) {
