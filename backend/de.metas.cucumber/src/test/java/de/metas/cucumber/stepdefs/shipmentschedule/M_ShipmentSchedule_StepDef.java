@@ -337,10 +337,13 @@ public class M_ShipmentSchedule_StepDef
 	@And("all untagged M_ShipmentSchedule_Recompute markers are deleted")
 	public void deleteAllUntaggedRecomputeMarkers()
 	{
+		// deleteDirectly (bulk filter-based DELETE), NOT delete(): M_ShipmentSchedule_Recompute is a keyless
+		// queue table (no single-column PK), so the PO-by-PO delete() builds an empty WHERE and fails with a
+		// SQL syntax error. deleteDirectly() issues one DELETE FROM ... WHERE AD_PInstance_ID IS NULL.
 		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Recompute.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Recompute.COLUMNNAME_AD_PInstance_ID, null)
 				.create()
-				.delete();
+				.deleteDirectly();
 	}
 
 	/**
