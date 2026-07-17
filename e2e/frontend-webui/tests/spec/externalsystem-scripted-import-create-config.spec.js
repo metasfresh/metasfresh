@@ -64,7 +64,7 @@ async function selectListValue(page, fieldName, optionText, { exact = false } = 
   await container.locator('input').first().click();
   await page.waitForTimeout(300);
 
-  const filter = exact ? { hasText: new RegExp(`^${optionText}$`) } : { hasText: optionText };
+  const filter = exact ? { hasText: new RegExp(`^${escapeRegExp(optionText)}$`) } : { hasText: optionText };
   const option = page.locator('.input-dropdown-list-option').filter(filter).first();
   await option.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
   await option.click();
