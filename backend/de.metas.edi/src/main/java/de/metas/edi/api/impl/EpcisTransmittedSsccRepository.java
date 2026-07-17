@@ -47,21 +47,26 @@ public class EpcisTransmittedSsccRepository
 
 	/**
 	 * Records that the given physical SSCC18 was transmitted to the given receiver config via the
-	 * given shipment. Idempotent: does nothing if a ledger row already exists for the
-	 * {@code (configId, sscc18)} pair — the pair the table's unique index is keyed on — regardless
-	 * of that row's {@code IsActive} state, since re-inserting would violate the unique index anyway.
+	 * given shipment. Idempotent per ACTIVE transmission: does nothing if an <b>active</b> ledger row
+	 * already exists for the {@code (configId, sscc18)} pair (that SSCC is currently transmitted).
+	 * Otherwise inserts a fresh active row — so after the deactivate-escape-hatch + a confirmed
+	 * re-send, a new active row is written (restoring the exactly-once guard), while the previously
+	 * deactivated rows remain as a per-transmission history. The table's partial unique index
+	 * (active-only) guarantees at most one active row per {@code (configId, sscc18)}.
 	 */
 	public void recordTransmittedIfAbsent(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final InOutId inOutId,
 			@NonNull final String sscc18)
 	{
-		final int existingId = queryBL.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
+		// ACTIVE-only: a deactivated (historical) row must NOT block recording a fresh transmission
+		final int existingActiveId = queryBL.createQueryBuilder(I_EDI_EPCIS_Transmitted_SSCC.class)
 				.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, configId.getRepoId())
 				.addEqualsFilter(I_EDI_EPCIS_Transmitted_SSCC.COLUMNNAME_SSCC18, sscc18)
+				.addOnlyActiveRecordsFilter()
 				.create()
 				.firstIdOnly();
-		if (existingId > 0)
+		if (existingActiveId > 0)
 		{
 			return;
 		}
