@@ -93,12 +93,12 @@ import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1442,15 +1442,13 @@ public class CiiMapper
 	}
 
 	/**
-	 * Formats a timestamp as yyyyMMdd.
-	 *
-	 * <p>Metasfresh date columns (DateInvoiced, DateAcct, …) are stored as midnight UTC in the DB.
-	 * Reading them via {@code Timestamp.toInstant().atOffset(ZoneOffset.UTC)} is therefore correct
-	 * and avoids any JVM-timezone-dependent shift.
+	 * Formats a timestamp as yyyyMMdd, using the JVM-local calendar date via
+	 * {@link TimeUtil#asLocalDate(Timestamp)} — matching how JDBC reads a
+	 * {@code timestamp without time zone} column (see {@code docs/coding-rules/java-time.md} §3.4).
 	 */
 	private String formatDate(@NonNull final Timestamp timestamp)
 	{
-		final LocalDate date = timestamp.toInstant().atOffset(ZoneOffset.UTC).toLocalDate();
+		final LocalDate date = TimeUtil.asLocalDate(timestamp);
 		return date.format(DateTimeFormatter.BASIC_ISO_DATE);
 	}
 
