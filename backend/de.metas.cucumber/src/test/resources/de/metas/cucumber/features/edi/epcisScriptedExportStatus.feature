@@ -218,10 +218,10 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     # its own data — the successful re-send on top (Sent, IsResend=Y, HTTP 200, no issue) and the
     # errored first attempt beneath it (Error, IsResend=N, its AD_Issue retained). (Under the former
     # single-row upsert there would be a single row.)
-    And after not more than 10s, ExternalSystem_ScriptedExportConversion_Status rows for shipment io_030 and config scriptedCfg_es are (newest first):
-      | ExportStatus | IsResend | HttpResponseCode | HasAD_Issue |
-      | S            | Y        | 200              | N           |
-      | E            | N        |                  | Y           |
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend | HttpResponseCode | HasAD_Issue |
+      | io_030     | scriptedCfg_es                                    | S            | Y        | 200              | N           |
+      | io_030     | scriptedCfg_es                                    | E            | N        |                  | Y           |
 
 
   @from:cucumber
