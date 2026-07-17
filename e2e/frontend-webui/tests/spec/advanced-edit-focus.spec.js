@@ -55,10 +55,37 @@ async function loginAsMetasfresh(page) {
  * row.
  */
 async function openSingleRecord(page, windowId) {
+  // The list *container* (`.document-list-wrapper`) mounts before its rows
+  // arrive: the row set is fetched by a separate REST call
+  // (GET /documentView/<win>/<viewId>?firstRow=...). Reading the row count
+  // before that fetch resolves would momentarily see 0 rows for a row-bearing
+  // window (e.g. Product 140), wrongly take the empty-list ALT+N branch below,
+  // create a NEW draft that never persists to a numeric id, and hang the
+  // `waitForURL(/\d+\/\d+/)` that follows for the full timeout. So await that
+  // specific row-data response before counting. The listener is armed BEFORE
+  // navigating so the response can never be missed. (networkidle is not usable
+  // here — the dashboard's STOMP/KPI traffic keeps the network permanently
+  // busy, per e2e/frontend-webui skill guidance.)
+  const rowDataFetched = page
+    .waitForResponse(
+      (resp) =>
+        resp.url().includes(`/documentView/${windowId}/`) &&
+        resp.url().includes('firstRow='),
+      { timeout: SLOW_ACTION_TIMEOUT }
+    )
+    .catch(() => {});
+
   await page.goto(`/window/${windowId}`, { waitUntil: 'load' });
   await page
     .locator('.document-list-wrapper')
     .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+  await rowDataFetched;
+  // Let React paint the fetched rows (or the empty-list panel) before counting.
+  await page
+    .locator('.table-flex-wrapper tbody tr, .empty-info-text')
+    .first()
+    .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT })
+    .catch(() => {});
 
   const rows = page.locator('.table-flex-wrapper tbody tr');
   const rowCount = await rows.count();
@@ -412,9 +439,14 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
 
     // --- Phase 3: Esc closes modal ---
     await page.keyboard.press('Escape');
+    // Closing the advanced-edit modal commits the focused field and can involve
+    // a document PATCH/refresh round-trip before the modal unmounts and its CSS
+    // transition completes; under CI load that exceeds the 5s FAST budget. The
+    // condition is correct — only the budget was too tight — so use the slow
+    // (server-round-trip) budget.
     await page
       .locator('.panel-modal')
-      .waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+      .waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
     await page.waitForTimeout(300);
 
     // --- Phase 4: Tab in main window (after modal close) ---
@@ -537,7 +569,9 @@ test.describe('Advanced Edit modal — focus placement & Tab navigation (me03#27
       expect(info.isEditable).toBe(true);
 
       await page.keyboard.press('Escape');
-      await modal.waitFor({ state: 'hidden', timeout: FAST_ACTION_TIMEOUT });
+      // Same server-round-trip-gated close as Phase 3 of the round-trip test —
+      // use the slow budget so a CI-load-slow close does not flake at 5s.
+      await modal.waitFor({ state: 'hidden', timeout: SLOW_ACTION_TIMEOUT });
       await page.waitForTimeout(300);
     }
   });
