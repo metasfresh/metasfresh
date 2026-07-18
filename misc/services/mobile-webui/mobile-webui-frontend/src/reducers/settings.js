@@ -43,7 +43,7 @@ export const useSetting = (name) => {
 // component tell "settings not fetched yet" (all values undefined → hook defaults) apart from
 // "settings loaded, this key is genuinely absent" — needed to adopt a settings-derived default
 // exactly once, when settings first arrive.
-export const useAreSettingsLoaded = () => {
+export const useIsSettingsLoaded = () => {
   return useSelector((state) => state?.settings?.backend != null);
 };
 
