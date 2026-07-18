@@ -380,6 +380,10 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
 	 *   <b>Processed</b> — (optional) true/false<br>
 	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>IsScheduledForPicking</b> — (optional) true/false; also gates the readiness poll, so the step waits
+	 *     for the async picking-job-schedule reconcile to write this value before asserting<br>
+	 *   <b>QtyScheduledForPicking</b> — (optional) expected qty scheduled for picking; also gates the readiness
+	 *     poll (see IsScheduledForPicking)<br>
 	 *   <b>PreparationDate</b> — (optional) expected per-line base preparation date, as a plain calendar date
 	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import lombok.Value;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -100,15 +101,10 @@ class M_ShipmentSchedule_ScheduledForPickingSettleTest
 				.isInstanceOf(AssertionError.class);
 	}
 
-	private static final class PickingState
+	@Value
+	private static class PickingState
 	{
-		private final boolean isScheduledForPicking;
-		private final BigDecimal qtyScheduledForPicking;
-
-		private PickingState(final boolean isScheduledForPicking, final BigDecimal qtyScheduledForPicking)
-		{
-			this.isScheduledForPicking = isScheduledForPicking;
-			this.qtyScheduledForPicking = qtyScheduledForPicking;
-		}
+		boolean isScheduledForPicking;
+		BigDecimal qtyScheduledForPicking;
 	}
 }
