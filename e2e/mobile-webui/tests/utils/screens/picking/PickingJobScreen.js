@@ -18,6 +18,11 @@ import { ConfirmActivityErrorPanel } from '../../components/ConfirmActivityError
 const NAME = 'PickingJobScreen';
 /** @returns {import('@playwright/test').Locator} */
 const containerElement = () => page.locator('#WFProcessScreen');
+
+// Bounded operator-mirroring recovery for the complete -> jobs-list seam (see settleCompleteToJobsList):
+// the initial confirmation plus ONE retry — enough to ride out a single transient timeout, while a
+// second consecutive failure stays a hard, loud failure. Kept well within Playwright's 120s global cap.
+const COMPLETE_CONFIRM_ATTEMPTS = 2;
 const ACTIVITY_ID_ScanPickFromHU = 'scanPickFromHU'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickFromHU
 const ACTIVITY_ID_ScanPickingSlot = 'scanPickingSlot'; // keep in sync with PickingMobileApplication.ACTIVITY_ID_ScanPickingSlot
 
@@ -276,7 +281,7 @@ export const PickingJobScreen = {
         await page.locator('#last-confirm-button').tap();
         await YesNoDialog.waitForDialog();
         await YesNoDialog.clickYesButton();
-        await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+        await settleCompleteToJobsList();
     }),
 
     completeExpectingNetworkError: async () => await step(`${NAME} - Complete, expect network-error retry panel`, async () => {
@@ -443,3 +448,48 @@ const expectLineButtonAttribute = async ({ lineButton, attribute, value }) => aw
 });
 
 const pickAllButton = () => page.getByTestId('pickAll-button');
+
+const launchersScreenLocator = () => page.locator('#WFLaunchersScreen');
+
+// Settle the complete -> jobs-list transition, recovering like a real operator from a slow or lost
+// confirmation response.
+//
+// After the final activity is confirmed, ConfirmActivity POSTs the completion (an async commit) and only
+// navigates to the jobs list once that POST's response returns (its `.then`). The POST carries an
+// explicit client timeout — AD_SysConfig `mobileui.frontend.api.completeConfirmation.timeoutMillis`,
+// default 20s — so on flaky wifi or under heavy load the response can arrive late (or not at all) even
+// though the completion already committed server-side; axios then rejects and the app shows the inline
+// retry panel instead of navigating. The old wait (a single PickingJobsListScreen.waitForScreen) then
+// timed out on `#WFLaunchersScreen` that never appears — the observed complete->jobs-list flake.
+//
+// A real operator simply taps Retry, which re-posts the confirmation; the backend handles it idempotently
+// (PickingJobCompleteCommand returns the job unchanged when it is already Completed) and the app navigates.
+// Mirror that: wait for EITHER the jobs list (success) or the retry panel (timed-out response); on the
+// panel, tap Retry and re-wait — one retry, since the real fault is a single transient timeout and a
+// second consecutive one is a genuine backend problem that SHOULD fail. This retries ONLY the completion
+// navigation — it asserts nothing about the feature under test, and the trailing full-settle waitForScreen
+// still fails loud if the jobs list never arrives. A genuine server-side completion REJECTION never shows
+// the retry panel (ConfirmActivity toasts it — isNetworkFailure=false), so it is not masked here. No fixed
+// sleeps: every wait keys off a real DOM signal (jobs-list container, retry panel, its dismissal on tap).
+const settleCompleteToJobsList = async () => await step(`${NAME} - Settle complete to jobs list`, async () => {
+    for (let attempt = 1; attempt <= COMPLETE_CONFIRM_ATTEMPTS; attempt++) {
+        // Whichever appears first wins: the jobs-list container (navigated) or the confirmation retry panel.
+        await launchersScreenLocator().or(ConfirmActivityErrorPanel.locator())
+            .first().waitFor({ state: 'visible', timeout: VERY_SLOW_ACTION_TIMEOUT });
+
+        if (await launchersScreenLocator().isVisible()) {
+            break;
+        }
+
+        // Retry panel: the completion committed but its response was slow/lost. Re-post like an operator.
+        if (attempt < COMPLETE_CONFIRM_ATTEMPTS) {
+            await ConfirmActivityErrorPanel.clickRetry();
+            // Retry clears the error synchronously (setErrorMessage(null) unmounts the panel); wait for that
+            // so the next iteration does not observe the stale panel before the re-post resolves.
+            await ConfirmActivityErrorPanel.waitForPanelDetached();
+        }
+    }
+
+    // Final settle assertion (unchanged): jobs-list container present + launchers loading spinner gone.
+    await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+});
