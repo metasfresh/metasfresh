@@ -88,4 +88,28 @@ describe('BarcodeScannerComponent — async settings race (flaky case 19)', () =
     });
     expect(screen.getByTestId('manual-entry-input')).toBeInTheDocument();
   });
+
+  it('does NOT override the operator even when they return to a mode equal to the pre-settings default', () => {
+    // Edge the flag guards but a value-equality check could not: operator goes manual and back to
+    // hardware (which equals the mount-time default) during the load window, then settings arrive
+    // with a DIFFERENT default (manual). The operator explicitly chose hardware — it must stick.
+    const store = renderWithEmptySettings();
+
+    act(() => {
+      fireEvent.click(screen.getByTestId('barcode-scanner-enter-manually'));
+    });
+    expect(screen.getByTestId('manual-entry-input')).toBeInTheDocument();
+
+    act(() => {
+      fireEvent.click(screen.getByTestId('barcode-scanner-back-to-scanner'));
+    });
+    expect(screen.queryByTestId('manual-entry-input')).not.toBeInTheDocument();
+
+    // Settings arrive with defaultMode=manual — but the operator deliberately went back to
+    // hardware, so no auto-switch to manual may happen.
+    act(() => {
+      store.dispatch(putSettingsAction(MANUAL_MODE_SETTINGS));
+    });
+    expect(screen.queryByTestId('manual-entry-input')).not.toBeInTheDocument();
+  });
 });

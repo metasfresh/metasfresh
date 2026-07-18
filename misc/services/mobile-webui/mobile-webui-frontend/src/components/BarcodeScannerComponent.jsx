@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
 import { useIsSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
@@ -26,6 +26,17 @@ const BarcodeScannerComponent = ({
 
   const [activeMode, setActiveMode] = useState(defaultMode);
 
+  // Set true the moment the operator explicitly picks a mode (footer HW/CAM toggle, footer
+  // "enter manually", or the ManualModePanel "back to scanner" button). Read by the async-settings
+  // adoption below so a deliberate operator choice made during the settings-load window is never
+  // overridden. NOT set by the internal auto-returns to the default mode (post-scan / camera
+  // cancel) — those are not operator mode selections.
+  const hasOperatorSelectedModeRef = useRef(false);
+  const selectMode = useCallback((mode) => {
+    hasOperatorSelectedModeRef.current = true;
+    setActiveMode(mode);
+  }, []);
+
   // ── Async-settings default adoption ─────────────────────────────────────────────────────────
   // Settings load asynchronously (ApplicationRoot fetches them fire-and-forget after login). If
   // this scanner mounts BEFORE they arrive, useBarcodeScannerModes returns its hook defaults so
@@ -39,16 +50,14 @@ const BarcodeScannerComponent = ({
   // avoids a one-frame flash of the wrong-mode scanner UI. Guarded so it fires exactly once, on
   // the not-loaded→loaded transition.
   //
-  // Adopt the configured default ONLY if the operator has NOT already picked a mode during the
-  // load window: activeMode must still equal the pre-settings default captured at mount. The
-  // footer's "enter manually" / mode buttons are live before settings load, so without this guard
-  // a late settings arrival would silently revert the operator's own selection.
+  // Adopt the configured default ONLY if the operator has NOT explicitly picked a mode during the
+  // load window (the footer's "enter manually" / toggle buttons are live before settings load) —
+  // otherwise a late settings arrival would silently revert the operator's own selection.
   const isSettingsLoaded = useIsSettingsLoaded();
-  const initialDefaultModeRef = useRef(defaultMode);
   const [didAdoptSettingsDefault, setDidAdoptSettingsDefault] = useState(false);
   if (isSettingsLoaded && !didAdoptSettingsDefault) {
     setDidAdoptSettingsDefault(true);
-    if (activeMode === initialDefaultModeRef.current && activeMode !== defaultMode) {
+    if (!hasOperatorSelectedModeRef.current && activeMode !== defaultMode) {
       setActiveMode(defaultMode);
     }
   }
@@ -157,7 +166,7 @@ const BarcodeScannerComponent = ({
         <ManualModePanel
           isProcessing={isProcessing}
           enabledModes={enabledModes}
-          onModeSelected={setActiveMode}
+          onModeSelected={selectMode}
           onBarcodeScanned={({ scannedBarcode, onSuccess, onError }) =>
             validateScannedBarcodeAndForward({
               scannedBarcode,
@@ -178,7 +187,7 @@ const BarcodeScannerComponent = ({
         />
       )}
       {!invisible && (
-        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={setActiveMode} />
+        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={selectMode} />
       )}
     </div>
   );
