@@ -8,6 +8,7 @@ import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.IQuery;
 
 import java.util.Collection;
@@ -76,7 +77,28 @@ public interface IShipmentScheduleInvalidateRepository extends ISingletonService
 	 */
 	void invalidateAll(Properties ctx);
 
-	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId);
+	/**
+	 * @param pinstanceId the {@code AD_PInstance_ID} to tag the matched {@code M_ShipmentSchedule_Recompute} rows with
+	 * @param maxToProcess if limited, bounds the tagging to <b>whole products</b> (stock-coherent unit): products are
+	 *                     accumulated in ascending {@code M_Product_ID} order until their cumulative distinct
+	 *                     shipment-schedule count would reach {@code maxToProcess}; a product's schedules are
+	 *                     <b>never split</b> across the boundary (splitting would let {@code ShipmentScheduleUpdater}
+	 *                     recompute the same product's schedules against two different on-hand-stock snapshots,
+	 *                     double-allocating stock), and at least one whole product is always tagged even if it alone
+	 *                     exceeds {@code maxToProcess}. All of each selected product's duplicate recompute markers
+	 *                     are still tagged. {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
+	 */
+	void markAllToRecomputeOutOfTrx(PInstanceId pinstanceId, QueryLimit maxToProcess);
+
+	/**
+	 * @return {@code true} if at least one {@code M_ShipmentSchedule_Recompute} row is still untagged
+	 *         (i.e. {@code AD_PInstance_ID IS NULL}) -- i.e. there is more backlog pending a recompute pass.
+	 *         This is the correct signal for "should a follow-up bounded run be enqueued", as opposed to
+	 *         comparing a pass's recomputed count against its {@code maxToProcess} (which, because the tag
+	 *         unit is a whole product, is not reliable: a pass can recompute more or fewer schedules than
+	 *         {@code maxToProcess}).
+	 */
+	boolean existsUntaggedRecomputeMarkers();
 
 	/**
 	 * Delete M_ShipmentSchedule_Recompute records for given tag
