@@ -104,7 +104,7 @@ class M_ShipmentSchedule_ScheduledForPickingSettleTest
 	@Test
 	void prePickingExpectation_isNotGated_soUnsettledValidateDoesNotTimeOut()
 	{
-		// Line-61 style: the FIRST validate step expects the initial unsettled state (IsScheduledForPicking=N /
+		// A pre-picking validate step expects the initial unsettled state (IsScheduledForPicking=N /
 		// QtyScheduledForPicking=0). QtyScheduledForPicking is nullable with no default, so pre-picking it is
 		// NULL in the DB; gating the poll on it would emit SQL `QtyScheduledForPicking = 0`, which never matches
 		// NULL, so the poll would time out even though nothing async is pending. The gate MUST NOT apply to the
@@ -122,7 +122,7 @@ class M_ShipmentSchedule_ScheduledForPickingSettleTest
 	@Test
 	void postPickingExpectation_isGatedOnSettledColumns()
 	{
-		// Line-68 style: the SECOND validate step expects the settled Y/3 state, so the poll must wait for the
+		// A post-picking validate step expects the settled Y/3 state, so the poll must wait for the
 		// async reconcile to write it (this is the de-flake).
 		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnScheduledForPicking(true))
 				.as("gate on expected IsScheduledForPicking=Y").isTrue();

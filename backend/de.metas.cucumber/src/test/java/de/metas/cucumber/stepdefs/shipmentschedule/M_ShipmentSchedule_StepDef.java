@@ -824,12 +824,7 @@ public class M_ShipmentSchedule_StepDef
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
 			}
-			// Only gate the poll on the picking columns once the async picking-job-schedule reconcile is
-			// expected to have SETTLED them (IsScheduledForPicking=Y / QtyScheduledForPicking>0). The initial
-			// pre-picking state is IsScheduledForPicking=N (the column default) with QtyScheduledForPicking NULL
-			// (the column is nullable, no default); gating on that unsettled N/0 expectation would never match
-			// (SQL `QtyScheduledForPicking = 0` does not match a NULL value) and the poll would time out even
-			// though nothing async is pending.
+			// Gate only on the SETTLED picking state; see shouldGateOn* for why the unsettled N/0 must not gate.
 			if (shouldGateOnScheduledForPicking(isScheduledForPicking))
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking, true);
