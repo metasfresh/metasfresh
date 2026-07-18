@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
-import { useNumber, usePositiveNumberSetting } from '../reducers/settings';
+import { useAreSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
@@ -25,6 +25,24 @@ const BarcodeScannerComponent = ({
   });
 
   const [activeMode, setActiveMode] = useState(defaultMode);
+
+  // Settings load asynchronously (ApplicationRoot fetches them fire-and-forget after login). If
+  // this scanner mounts BEFORE they arrive, useBarcodeScannerModes returns its hook defaults so
+  // defaultMode resolves to HARDWARE, and the useState initializer above freezes activeMode there
+  // — it would NOT pick up the configured default once settings resolve (e.g. defaultMode=manual),
+  // leaving the operator stuck in hardware mode with no visible manual input (flaky e2e case:
+  // barcode_scanner_modes.spec.js "manual mode — visible editable input rendered…"). Adopt
+  // defaultMode ONCE, when settings first load, so a late arrival still lands on the configured
+  // mode. One-shot (guarded by the ref, not a plain [defaultMode] sync) so a subsequent operator
+  // mode toggle is never stomped by a settings re-emit.
+  const settingsLoaded = useAreSettingsLoaded();
+  const adoptedSettingsDefaultRef = useRef(false);
+  useEffect(() => {
+    if (settingsLoaded && !adoptedSettingsDefaultRef.current) {
+      adoptedSettingsDefaultRef.current = true;
+      setActiveMode(defaultMode);
+    }
+  }, [settingsLoaded, defaultMode]);
 
   const scanningStatusRef = useRef({ running: false, done: false });
   const [isProcessing, setProcessing] = useState(false);
