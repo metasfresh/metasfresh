@@ -380,6 +380,10 @@ public class M_ShipmentSchedule_StepDef
 	 *   <b>QtyOnHand</b> — (optional) expected on-hand quantity<br>
 	 *   <b>Processed</b> — (optional) true/false<br>
 	 *   <b>IsClosed</b> — (optional) true/false<br>
+	 *   <b>IsScheduledForPicking</b> — (optional) true/false; also gates the readiness poll, so the step waits
+	 *     for the async picking-job-schedule reconcile to write this value before asserting<br>
+	 *   <b>QtyScheduledForPicking</b> — (optional) expected qty scheduled for picking; also gates the readiness
+	 *     poll (see IsScheduledForPicking)<br>
 	 *   <b>PreparationDate</b> — (optional) expected per-line base preparation date, as a plain calendar date
 	 *     (e.g. {@code 2022-08-10}) compared in the order's time zone<br>
 	 *   <b>DeliveryDate</b> — (optional) expected per-line delivery date (the line's promised delivery date),
@@ -759,6 +763,28 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(shipmentScheduleRecord);
 	}
 
+	/**
+	 * Whether the readiness poll should wait for {@code IsScheduledForPicking} to reach the expected value.
+	 * Only the settled state ({@code Y}) is awaited: the pre-picking {@code N} is the column default and is
+	 * present from the start, so gating on it would add no readiness value (and, paired with the nullable
+	 * {@code QtyScheduledForPicking}, would break the poll — see {@link #shouldGateOnQtyScheduledForPicking}).
+	 */
+	static boolean shouldGateOnScheduledForPicking(final Boolean expectedIsScheduledForPicking)
+	{
+		return Boolean.TRUE.equals(expectedIsScheduledForPicking);
+	}
+
+	/**
+	 * Whether the readiness poll should wait for {@code QtyScheduledForPicking} to reach the expected value.
+	 * Only a settled non-zero qty is awaited: {@code QtyScheduledForPicking} is nullable with no default, so
+	 * pre-picking it is NULL in the DB; gating on the expected {@code 0} would emit SQL
+	 * {@code QtyScheduledForPicking = 0}, which never matches NULL, so the poll would time out.
+	 */
+	static boolean shouldGateOnQtyScheduledForPicking(final BigDecimal expectedQtyScheduledForPicking)
+	{
+		return expectedQtyScheduledForPicking != null && expectedQtyScheduledForPicking.signum() != 0;
+	}
+
 	private void validateShipmentSchedule(final int timeoutSec, @NonNull final DataTableRow tableRow) throws InterruptedException
 	{
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
@@ -768,6 +794,10 @@ public class M_ShipmentSchedule_StepDef
 		final BigDecimal qtyPicked = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyDelivered);
 		final BigDecimal qtyOnHand = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand);
+		// Picking-reconcile columns: gate the poll on these so the assertion below reads them only once the
+		// async picking-job-schedule reconcile has settled (they are written after the schedule already exists).
+		final Boolean isScheduledForPicking = tableRow.getAsOptionalBoolean(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking).toBooleanOrNull();
+		final BigDecimal qtyScheduledForPicking = tableRow.getAsOptionalBigDecimal(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking).orElse(null);
 		final Boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_Processed, null);
 		final Boolean isClosed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_IsClosed, null);
 
@@ -793,6 +823,15 @@ public class M_ShipmentSchedule_StepDef
 			if (qtyOnHand != null)
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
+			}
+			// Gate only on the SETTLED picking state; see shouldGateOn* for why the unsettled N/0 must not gate.
+			if (shouldGateOnScheduledForPicking(isScheduledForPicking))
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking, true);
+			}
+			if (shouldGateOnQtyScheduledForPicking(qtyScheduledForPicking))
+			{
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking, qtyScheduledForPicking);
 			}
 			return queryBuilder
 					.create()
