@@ -33,25 +33,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Deterministic seam reproduction for flaky registry case 17
- * ({@code invoicePaymentAllocation.feature:1569}).
+ * Guards the payment-reverse step's status check against a transient stale read of the
+ * just-committed {@code DocStatus}.
  * <p>
- * Symptom (observed in CI, run 29507058082 / job 87657009594, profile5): the step
- * {@code C_Payment_StepDef.reversePayment} calls
- * {@code documentBL.processEx(payment, ACTION_Reverse_Correct, STATUS_Reversed)}, whose internal
- * status check reads the payment's {@code DocStatus} exactly once (a single immediate refresh) and
- * throws {@code DocumentProcessingException: Document does not have expected status (Expected=RE,
- * actual=CO)}. The reversal doc-action itself succeeds and commits {@code DocStatus=Reversed}; the
- * just-committed status is only intermittently read back as {@code Completed} on that first read.
- * <p>
- * The stack is configured synchronously in this feature ({@code SKIP_WP_PROCESSOR_FOR_AUTOMATION=true},
- * "documents are accounted immediately"), so the fix does NOT add an async settle for a queue: it
- * tolerates a transient stale read of the just-committed status via a bounded refresh poll, while
- * still failing loud if the payment is genuinely stuck at {@code Completed} (a real reversal failure).
- * <p>
- * This test models the post-reverse status observation as {@link StatusReadSource}: it returns
- * {@code Completed} for the first {@code staleReads} reads (mirroring the transient stale refresh),
- * then {@code Reversed}. It exercises the real {@link StepDefUtil#tryAndWait} that the fix uses.
+ * A payment reversal commits {@code DocStatus=Reversed}, but a single immediate read of that status
+ * can occasionally still observe {@code Completed}. Asserting from one read therefore fails
+ * spuriously; a bounded refresh poll settles on the committed {@code Reversed}, while a payment that
+ * never leaves {@code Completed} (a genuine reversal failure) still fails loud. These tests model
+ * the status observation as {@link #statusReadSource(int)} and exercise the real
+ * {@link StepDefUtil#tryAndWait(long, long, java.util.function.Supplier)} used by the step.
  */
 class C_Payment_ReversePaymentSettleTest
 {
@@ -70,31 +60,32 @@ class C_Payment_ReversePaymentSettleTest
 	}
 
 	@Test
-	void preFix_singleImmediateRead_throwsWhenJustCommittedStatusIsReadStale()
+	void singleImmediateRead_throwsOnTransientStaleCompletedRead()
 	{
-		// Reproduces the pre-fix behaviour: processEx asserts the target status from ONE immediate read.
+		// A single immediate read of the just-committed status asserts Reversed but observes the
+		// transient Completed => AssertionError ("expected RE, actual CO"), the spurious failure.
 		final Supplier<String> statusSource = statusReadSource(1); // one transient stale read, then RE
 		assertThatThrownBy(() ->
-				assertThat(statusSource.get()) // the single immediate read the pre-fix code relied on
-						.as("pre-fix single read of just-committed DocStatus")
+				assertThat(statusSource.get())
+						.as("single read of just-committed DocStatus")
 						.isEqualTo(RE))
-				.isInstanceOf(AssertionError.class); // == the CI "Expected=RE, actual=CO" failure
+				.isInstanceOf(AssertionError.class);
 	}
 
 	@Test
-	void fix_boundedPoll_settlesToReversed() throws InterruptedException
+	void boundedPoll_settlesOnEventualReversedStatus() throws InterruptedException
 	{
-		// The fix: bounded refresh poll on the just-committed status. Tolerates the transient stale read.
+		// The bounded refresh poll tolerates the transient stale reads and settles on Reversed.
 		final Supplier<String> statusSource = statusReadSource(3); // a few stale reads, then RE
 		StepDefUtil.tryAndWait(10, 20, () -> RE.equals(statusSource.get()));
 		// no exception => the poll observed the committed Reversed status
 	}
 
 	@Test
-	void fix_boundedPoll_stillFailsLoudWhenPaymentIsGenuinelyStuckCompleted()
+	void boundedPoll_failsLoudWhenStuckAtCompleted()
 	{
 		// Non-masking guarantee: a payment that never reaches Reversed (a real reversal failure)
-		// still fails the step on timeout rather than being silently swallowed.
+		// still fails on timeout rather than being silently swallowed.
 		final Supplier<String> statusSource = statusReadSource(Integer.MAX_VALUE); // always Completed
 		assertThatThrownBy(() -> StepDefUtil.tryAndWait(1, 100, () -> RE.equals(statusSource.get())))
 				.isInstanceOf(AssertionError.class);

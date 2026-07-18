@@ -145,6 +145,12 @@ public class C_Payment_StepDef
 				.forEach(this::createPayment);
 	}
 
+	/**
+	 * Completes or reverses the payment referenced by {@code paymentIdentifier}.
+	 * For {@code reversed}, the reversal is stored under {@code <identifier>^}.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is (completed|reversed)$")
 	public void payment_action(@NonNull final String paymentIdentifier, @NonNull final String action) throws InterruptedException
 	{
@@ -171,26 +177,31 @@ public class C_Payment_StepDef
 		}
 	}
 
+	/**
+	 * Reverses the payment referenced by {@code paymentIdentifierStr} and, if
+	 * {@code reversalIdentifierStr} is given, stores the created reversal under it.
+	 *
+	 * @see #reversePayment(StepDefDataIdentifier, StepDefDataIdentifier)
+	 */
 	@And("^the payment identified by (.*) is reversed with a reversal identified by (.*)")
 	public void reversePayment(@NonNull final String paymentIdentifierStr, @Nullable final String reversalIdentifierStr) throws InterruptedException
 	{
 		reversePayment(StepDefDataIdentifier.ofString(paymentIdentifierStr), StepDefDataIdentifier.ofNullableString(reversalIdentifierStr));
 	}
 
+	/**
+	 * Fires {@code ACTION_Reverse_Correct} and then asserts {@code DocStatus=Reversed} via a bounded
+	 * refresh poll (tolerant of a transient stale read of the just-committed status; still fails loud
+	 * if the payment stays {@code Completed}).
+	 */
 	private void reversePayment(@NonNull final StepDefDataIdentifier paymentIdentifier, @Nullable final StepDefDataIdentifier reversalIdentifier) throws InterruptedException
 	{
 		final I_C_Payment payment = paymentTable.get(paymentIdentifier);
 		payment.setDocAction(IDocument.ACTION_Reverse_Correct);
 
-		// Fire the reversal. We deliberately pass expectedDocStatus=null so that processEx does NOT
-		// assert the resulting status from a single immediate read. The reversal doc-action itself
-		// succeeds and commits DocStatus=Reversed (processEx still throws loudly if the doc-action
-		// fails), but that just-committed status is intermittently read back as Completed by the
-		// immediate refresh, making processEx throw "expected RE, actual CO" (flaky registry case 17,
-		// stale-read-of-just-committed-status family). We instead assert the target status below via a
-		// bounded refresh poll: a transient stale read settles to Reversed, while a genuinely stuck
-		// Completed payment (a real reversal failure) still fails loud on timeout, so nothing is masked.
-		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct, null);
+		// expectedDocStatus is left unchecked here (2-arg overload); the reversal's committed status is
+		// asserted below via a bounded poll, tolerant of a transient stale read of that status.
+		documentBL.processEx(payment, IDocument.ACTION_Reverse_Correct);
 
 		StepDefUtil.tryAndWait(30, 500, () -> {
 			InterfaceWrapperHelper.refresh(payment);
