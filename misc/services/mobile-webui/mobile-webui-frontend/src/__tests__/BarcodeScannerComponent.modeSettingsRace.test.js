@@ -16,8 +16,8 @@ jest.mock('../utils/ui_trace', () => ({
   traceFunction: (fn) => fn,
 }));
 
-// Reproduces the async-settings race behind flaky-test case 19
-// (barcode_scanner_modes.spec.js "manual mode — visible editable input rendered…").
+// Reproduces the async-settings race exercised by barcode_scanner_modes.spec.js
+// ("manual mode — visible editable input rendered…").
 //
 // ApplicationRoot fetches the backend settings fire-and-forget in a useEffect AFTER login
 // (getSettings().then(putSettingsAction)); there is NO ordering guarantee that this resolves
@@ -52,7 +52,7 @@ const renderWithEmptySettings = () => {
   return store;
 };
 
-describe('BarcodeScannerComponent — async settings race (flaky case 19)', () => {
+describe('BarcodeScannerComponent — activeMode adoption on async settings load', () => {
   it('adopts the configured manual defaultMode when settings arrive AFTER mount', () => {
     const store = renderWithEmptySettings();
 
