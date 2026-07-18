@@ -763,6 +763,28 @@ public class M_ShipmentSchedule_StepDef
 		saveRecord(shipmentScheduleRecord);
 	}
 
+	/**
+	 * Whether the readiness poll should wait for {@code IsScheduledForPicking} to reach the expected value.
+	 * Only the settled state ({@code Y}) is awaited: the pre-picking {@code N} is the column default and is
+	 * present from the start, so gating on it would add no readiness value (and, paired with the nullable
+	 * {@code QtyScheduledForPicking}, would break the poll — see {@link #shouldGateOnQtyScheduledForPicking}).
+	 */
+	static boolean shouldGateOnScheduledForPicking(final Boolean expectedIsScheduledForPicking)
+	{
+		return Boolean.TRUE.equals(expectedIsScheduledForPicking);
+	}
+
+	/**
+	 * Whether the readiness poll should wait for {@code QtyScheduledForPicking} to reach the expected value.
+	 * Only a settled non-zero qty is awaited: {@code QtyScheduledForPicking} is nullable with no default, so
+	 * pre-picking it is NULL in the DB; gating on the expected {@code 0} would emit SQL
+	 * {@code QtyScheduledForPicking = 0}, which never matches NULL, so the poll would time out.
+	 */
+	static boolean shouldGateOnQtyScheduledForPicking(final BigDecimal expectedQtyScheduledForPicking)
+	{
+		return expectedQtyScheduledForPicking != null && expectedQtyScheduledForPicking.signum() != 0;
+	}
+
 	private void validateShipmentSchedule(final int timeoutSec, @NonNull final DataTableRow tableRow) throws InterruptedException
 	{
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered);
@@ -802,11 +824,17 @@ public class M_ShipmentSchedule_StepDef
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyOnHand, qtyOnHand);
 			}
-			if (isScheduledForPicking != null)
+			// Only gate the poll on the picking columns once the async picking-job-schedule reconcile is
+			// expected to have SETTLED them (IsScheduledForPicking=Y / QtyScheduledForPicking>0). The initial
+			// pre-picking state is IsScheduledForPicking=N (the column default) with QtyScheduledForPicking NULL
+			// (the column is nullable, no default); gating on that unsettled N/0 expectation would never match
+			// (SQL `QtyScheduledForPicking = 0` does not match a NULL value) and the poll would time out even
+			// though nothing async is pending.
+			if (shouldGateOnScheduledForPicking(isScheduledForPicking))
 			{
-				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking, isScheduledForPicking);
+				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking, true);
 			}
-			if (qtyScheduledForPicking != null)
+			if (shouldGateOnQtyScheduledForPicking(qtyScheduledForPicking))
 			{
 				queryBuilder.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyScheduledForPicking, qtyScheduledForPicking);
 			}

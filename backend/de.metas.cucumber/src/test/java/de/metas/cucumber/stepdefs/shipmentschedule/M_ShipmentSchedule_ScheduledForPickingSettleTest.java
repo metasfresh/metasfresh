@@ -101,6 +101,35 @@ class M_ShipmentSchedule_ScheduledForPickingSettleTest
 				.isInstanceOf(AssertionError.class);
 	}
 
+	@Test
+	void prePickingExpectation_isNotGated_soUnsettledValidateDoesNotTimeOut()
+	{
+		// Line-61 style: the FIRST validate step expects the initial unsettled state (IsScheduledForPicking=N /
+		// QtyScheduledForPicking=0). QtyScheduledForPicking is nullable with no default, so pre-picking it is
+		// NULL in the DB; gating the poll on it would emit SQL `QtyScheduledForPicking = 0`, which never matches
+		// NULL, so the poll would time out even though nothing async is pending. The gate MUST NOT apply to the
+		// unsettled expectation. This locks the regression the first cut of the fix introduced.
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnScheduledForPicking(false))
+				.as("gate on expected IsScheduledForPicking=N").isFalse();
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnScheduledForPicking(null))
+				.as("gate on absent IsScheduledForPicking").isFalse();
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnQtyScheduledForPicking(BigDecimal.ZERO))
+				.as("gate on expected QtyScheduledForPicking=0").isFalse();
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnQtyScheduledForPicking(null))
+				.as("gate on absent QtyScheduledForPicking").isFalse();
+	}
+
+	@Test
+	void postPickingExpectation_isGatedOnSettledColumns()
+	{
+		// Line-68 style: the SECOND validate step expects the settled Y/3 state, so the poll must wait for the
+		// async reconcile to write it (this is the de-flake).
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnScheduledForPicking(true))
+				.as("gate on expected IsScheduledForPicking=Y").isTrue();
+		assertThat(M_ShipmentSchedule_StepDef.shouldGateOnQtyScheduledForPicking(EXPECTED_QTY))
+				.as("gate on expected QtyScheduledForPicking=3").isTrue();
+	}
+
 	@Value
 	private static class PickingState
 	{
