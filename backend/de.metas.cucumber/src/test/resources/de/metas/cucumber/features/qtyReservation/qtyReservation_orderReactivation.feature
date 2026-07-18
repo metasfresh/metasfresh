@@ -114,6 +114,18 @@ Feature: Qty Reservation — reconcile reservation to ordered qty on order react
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered | OPT.QtyOrdered |
       | orderLine                 | 75             | 75             |
+
+    # Let the reactivation's + line-reduction's async processing settle before re-completing:
+    # drain the material queue and wait for the shipment-schedule recompute to finish, so the
+    # completion's synchronous reservation-reconcile (BEFORE_COMPLETE) does not race — and deadlock
+    # against — a still-in-flight shipment-schedule recompute. Without this gate the re-completion's
+    # `UPDATE C_OrderLine` deadlocks with the async worker's `UPDATE M_ShipmentSchedule` on the same
+    # order line; the completion transaction is rolled back and the reservation is left un-shrunk at 100.
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And after not more than 60s, shipment schedule is recomputed
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
     And the order identified by order is completed
 
     # Reconcile assertion: the reservation is shrunk to the new ordered qty,
