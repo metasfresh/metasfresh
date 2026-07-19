@@ -383,6 +383,24 @@ public class ExternalSystemExportStatusServiceTest
 		assertThat(result).containsExactly(configId);
 	}
 
+	/**
+	 * A config whose latest attempt is DontSend ("shall not be sent" — e.g. suppressed because
+	 * everything was already in the ledger) must ALSO be resendable, so a re-send can re-evaluate it.
+	 */
+	@Test
+	void getResendableConfigs_includes_dontSendConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordDontSend(configId, ref);
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getResendableConfigsBySourceRecord(ref);
+
+		assertThat(result).containsExactly(configId);
+	}
+
 	private int getM_InOutTableId()
 	{
 		return Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);

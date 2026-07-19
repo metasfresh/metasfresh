@@ -41,6 +41,7 @@ import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -319,11 +320,13 @@ public class ExternalSystemScriptedExportConversionService
 			// nothing left to export (e.g. every SSCC already in the EPCIS ledger) — record DontSend and
 			// do NOT invoke the adapter, so a re-send with nothing new never fires an empty EPCIS event
 			exportStatusService.recordDontSend(configId, sourceRecord);
+			Loggables.addLog("Re-send: config {} record {} → skipped (nothing to export / WhereClause no longer matches)", configId, sourceRecord);
 			return false;
 		}
 
 		exportStatusService.recordPendingAsResend(configId, sourceRecord);
 		executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.RESEND);
+		Loggables.addLog("Re-send: config {} record {} → invoked", configId, sourceRecord);
 		return true;
 	}
 
