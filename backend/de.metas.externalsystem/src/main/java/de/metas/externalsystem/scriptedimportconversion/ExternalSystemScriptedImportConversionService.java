@@ -22,17 +22,22 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.security.RoleId;
 import de.metas.security.UserAuthToken;
 import de.metas.security.UserAuthTokenRepository;
-import org.adempiere.exceptions.AdempiereException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -59,6 +64,52 @@ public class ExternalSystemScriptedImportConversionService
 
 	@NonNull
 	private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
+
+	@NonNull
+	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+
+	/**
+	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving REST vs SFTP
+	 * from each child's own endpoint transport.
+	 *
+	 * @param parentId    the parent config whose active children to iterate (used when {@code childConfigId} is null)
+	 * @param childConfigId when non-null, resolve only this single child (parentId is ignored)
+	 */
+	@NonNull
+	public ImmutableList<ResolvedChildCommand> resolveCommands(
+			@Nullable final ExternalSystemParentConfigId parentId,
+			@Nullable final ExternalSystemScriptedImportConversionConfigId childConfigId,
+			@NonNull final ScriptedImportConversionIntent intent)
+	{
+		final ImmutableList<ExternalSystemScriptedImportConversionConfig> children;
+		if (childConfigId != null)
+		{
+			children = ImmutableList.of(externalSystemConfigRepo.getScriptedImportConversionChildById(childConfigId));
+		}
+		else if (parentId != null)
+		{
+			children = externalSystemConfigRepo.getScriptedImportConversionChildrenByParentId(parentId);
+		}
+		else
+		{
+			throw new AdempiereException("resolveCommands requires either parentId or childConfigId");
+		}
+
+		return children.stream()
+				.map(child -> {
+					final TransportType transportType = externalSystemEndpointRepository.getById(child.getExternalSystemEndpointId()).getTransportType();
+					final ScriptedImportConversionCommand command = ScriptedImportConversionCommand.ofIntentAndTransport(intent, transportType);
+					return new ResolvedChildCommand(child, command);
+				})
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Value
+	public static class ResolvedChildCommand
+	{
+		@NonNull ExternalSystemScriptedImportConversionConfig config;
+		@NonNull ScriptedImportConversionCommand command;
+	}
 
 	@NonNull
 	public Map<String, String> getParameters(@NonNull final ExternalSystemScriptedImportConversionConfig config)

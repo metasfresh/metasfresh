@@ -22,56 +22,168 @@
 
 package de.metas.externalsystem.process;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.common.externalsystem.JsonExternalSystemName;
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.externalsystem.ExternalSystemConfigService;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.externalservice.ExternalServices;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
+import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfig;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfigId;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService;
+import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService.ResolvedChildCommand;
+import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionIntent;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.PInstanceId;
+import de.metas.process.ProcessPreconditionsResolution;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 
+import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * "Call" process for scripted-import conversion ({@code AD_Process 585512}, attached at the parent
+ * {@code ExternalSystem_Config} and the child {@code ExternalSystem_Config_ScriptedImportConversion}).
+ * <p>
+ * The {@code External_Request} parameter is a Start/Stop <i>intent</i>; the concrete camel command
+ * (REST vs SFTP) is derived per child from that child's endpoint transport, because a parent may
+ * have several import children with different transports. Run on the parent it iterates all active
+ * children; run on a child (or via {@code childConfigId}) it targets that single child.
+ */
 public class InvokeScriptedImportConversionAction extends AlterExternalSystemServiceStatusAction
 {
 	private final ExternalSystemScriptedImportConversionService externalSystemScriptedImportConversionService = SpringContextHolder.instance
 			.getBean(ExternalSystemScriptedImportConversionService.class);
+	private final ExternalServices externalServices = SpringContextHolder.instance.getBean(ExternalServices.class);
+	private final ExternalSystemConfigService externalSystemConfigService = SpringContextHolder.instance.getBean(ExternalSystemConfigService.class);
+	private final ExternalSystemMessageSender externalSystemMessageSender = SpringContextHolder.instance.getBean(ExternalSystemMessageSender.class);
+
+	@Override
+	protected String doIt() throws Exception
+	{
+		final ScriptedImportConversionIntent intent = ScriptedImportConversionIntent.ofCode(externalRequest);
+
+		final ImmutableList<ResolvedChildCommand> resolvedCommands = resolveChildCommands(intent);
+		if (resolvedCommands.isEmpty())
+		{
+			addLog("No active ScriptedImportConversion child config found; nothing to " + intent.getCode());
+			return MSG_OK;
+		}
+
+		for (final ResolvedChildCommand resolved : resolvedCommands)
+		{
+			final ExternalSystemScriptedImportConversionConfig child = resolved.getConfig();
+			final String command = resolved.getCommand().getValue();
+
+			// mark the expected status (Active/Inactive) for this child's service so the reconciler + status endpoint agree
+			externalServices.handleStatusUpdateIfRequired(child.getParentId(), command);
+
+			// trigger the concrete route now (enable/disable REST or SFTP polling)
+			final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(child.getId());
+			externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
+
+			addLog("Sent '" + command + "' for ScriptedImportConversion child " + child.getId().getRepoId() + " (" + child.getValue() + ")");
+		}
+
+		return MSG_OK;
+	}
+
+	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)
+	{
+		if (this.childConfigId > 0)
+		{
+			return externalSystemScriptedImportConversionService.resolveCommands(
+					null, ExternalSystemScriptedImportConversionConfigId.ofRepoId(this.childConfigId), intent);
+		}
+		if (I_ExternalSystem_Config_ScriptedImportConversion.Table_Name.equals(getTableName()))
+		{
+			// invoked from the scripted-import child tab/window: the selected record IS the child
+			return externalSystemScriptedImportConversionService.resolveCommands(
+					null, ExternalSystemScriptedImportConversionConfigId.ofRepoId(getRecord_ID()), intent);
+		}
+		// invoked from the parent ExternalSystem_Config: iterate all active children
+		return externalSystemScriptedImportConversionService.resolveCommands(
+				ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), null, intent);
+	}
+
+	private JsonExternalSystemRequest buildRequest(
+			final ExternalSystemParentConfig parentConfig,
+			final ExternalSystemScriptedImportConversionConfig child,
+			final String command)
+	{
+		final Map<String, String> parameters = new HashMap<>(externalSystemScriptedImportConversionService.getParameters(child));
+		runtimeParametersRepository.getByConfigIdAndRequest(parentConfig.getId(), command)
+				.forEach(runtimeParameter -> parameters.put(runtimeParameter.getName(), runtimeParameter.getValue()));
+
+		return JsonExternalSystemRequest.builder()
+				.externalSystemConfigId(JsonMetasfreshId.of(parentConfig.getId().getRepoId()))
+				.externalSystemName(JsonExternalSystemName.of(parentConfig.getType().getValue()))
+				.parameters(parameters)
+				.orgCode(orgDAO.getById(getOrgId()).getValue())
+				.command(command)
+				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
+				.traceId(externalSystemConfigService.getTraceId())
+				.writeAuditEndpoint(parentConfig.getAuditEndpointIfEnabled())
+				.externalSystemChildConfigValue(child.getValue())
+				.build();
+	}
+
+	@Override
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	{
+		if (childConfigId > 0)
+		{
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		if (I_ExternalSystem_Config_ScriptedImportConversion.Table_Name.equals(context.getTableName()))
+		{
+			// child tab/window: applies to the selected child config
+			return ProcessPreconditionsResolution.accept();
+		}
+
+		// parent ExternalSystem_Config: applicable only if it has >=1 active scripted-import child
+		final ExternalSystemParentConfigId parentId = ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId());
+		if (externalSystemConfigDAO.getScriptedImportConversionChildrenByParentId(parentId).isEmpty())
+		{
+			return ProcessPreconditionsResolution.reject(MSG_ERR_NO_EXTERNAL_SELECTION, getTabName());
+		}
+		return ProcessPreconditionsResolution.accept();
+	}
 
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
-		final int id;
-
+		// retained for the abstract contract; the doIt()/checkPreconditions overrides no longer route
+		// through this single-child accessor (a parent may have several children).
 		if (this.childConfigId > 0)
 		{
-			id = this.childConfigId;
+			return ExternalSystemScriptedImportConversionConfigId.ofRepoId(this.childConfigId);
 		}
-		else
-		{
-			final IExternalSystemChildConfig childConfig = externalSystemConfigDAO.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
-					.orElseThrow(() -> new AdempiereException("No childConfig found for type Invoke Scripted Import Conversion and parent config")
-							.appendParametersToMessage()
-							.setParameter("externalSystemParentConfigId", getRecord_ID()));
-
-			id = childConfig.getId().getRepoId();
-		}
-
-		return ExternalSystemScriptedImportConversionConfigId.ofRepoId(id);
+		final IExternalSystemChildConfig childConfig = externalSystemConfigDAO
+				.getChildByParentIdAndType(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()), getExternalSystemType())
+				.orElseThrow(() -> new AdempiereException("No childConfig found for type Invoke Scripted Import Conversion and parent config")
+						.appendParametersToMessage()
+						.setParameter("externalSystemParentConfigId", getRecord_ID()));
+		return childConfig.getId();
 	}
 
 	@Override
 	protected Map<String, String> extractExternalSystemParameters(final ExternalSystemParentConfig externalSystemParentConfig)
 	{
-		final ExternalSystemScriptedImportConversionConfig externalSystemScriptedImportConversionConfig = ExternalSystemScriptedImportConversionConfig
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig
 				.cast(externalSystemParentConfig.getChildConfig());
 
-		return externalSystemScriptedImportConversionService.getParameters(externalSystemScriptedImportConversionConfig);
+		return externalSystemScriptedImportConversionService.getParameters(config);
 	}
 
 	@Override

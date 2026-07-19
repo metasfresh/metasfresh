@@ -22,9 +22,13 @@
 
 package de.metas.externalsystem.scriptedimportconversion;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
 import de.metas.organization.OrgId;
@@ -56,6 +60,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 {
 	private ExternalSystemScriptedImportConversionService service;
 	private UserAuthTokenRepository userAuthTokenRepository;
+	private ExternalSystemConfigRepo externalSystemConfigRepo;
 
 	@BeforeEach
 	void beforeEach()
@@ -63,7 +68,54 @@ class ExternalSystemScriptedImportConversionServiceTest
 		AdempiereTestHelper.get().init();
 
 		userAuthTokenRepository = new UserAuthTokenRepository();
-		service = new ExternalSystemScriptedImportConversionService(userAuthTokenRepository, new ExternalSystemEndpointRepository());
+		externalSystemConfigRepo = ExternalSystemConfigRepo.newInstanceForUnitTesting();
+		service = new ExternalSystemScriptedImportConversionService(userAuthTokenRepository, new ExternalSystemEndpointRepository(), externalSystemConfigRepo);
+	}
+
+	@Test
+	void resolveCommands_parentWithSftpAndHttpChildren_derivesCommandPerEndpoint()
+	{
+		// given a parent with two active children: one bound to an SFTP endpoint, one to an HTTP endpoint
+		final ExternalSystemParentConfigId parentId = ExternalSystemParentConfigId.ofRepoId(1);
+		final UserId userImportId = createUserId();
+
+		final ExternalSystemEndpointId sftpEndpointId = createEndpoint("eddyson-sftp", X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		final ExternalSystemEndpointId httpEndpointId = createEndpoint("eddyson-rest", X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+
+		final ExternalSystemScriptedImportConversionConfigId sftpChildId = createChild(parentId, "ORDERS-SFTP", sftpEndpointId, userImportId);
+		final ExternalSystemScriptedImportConversionConfigId httpChildId = createChild(parentId, "ORDERS-REST", httpEndpointId, userImportId);
+
+		// when: a single Start run on the parent
+		final Map<Integer, ScriptedImportConversionCommand> started = service.resolveCommands(parentId, null, ScriptedImportConversionIntent.Start)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(rc -> rc.getConfig().getId().getRepoId(), ExternalSystemScriptedImportConversionService.ResolvedChildCommand::getCommand));
+
+		// then: transport is derived per child from its own endpoint
+		assertThat(started).hasSize(2);
+		assertThat(started.get(sftpChildId.getRepoId())).isEqualTo(ScriptedImportConversionCommand.EnableSftpPolling);
+		assertThat(started.get(httpChildId.getRepoId())).isEqualTo(ScriptedImportConversionCommand.EnableRestAPI);
+
+		// and Stop yields the disable variants
+		final Map<Integer, ScriptedImportConversionCommand> stopped = service.resolveCommands(parentId, null, ScriptedImportConversionIntent.Stop)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(rc -> rc.getConfig().getId().getRepoId(), ExternalSystemScriptedImportConversionService.ResolvedChildCommand::getCommand));
+		assertThat(stopped.get(sftpChildId.getRepoId())).isEqualTo(ScriptedImportConversionCommand.DisableSftpPolling);
+		assertThat(stopped.get(httpChildId.getRepoId())).isEqualTo(ScriptedImportConversionCommand.DisableRestAPI);
+	}
+
+	@Test
+	void resolveCommands_singleChildById_derivesFromThatChildEndpoint()
+	{
+		final ExternalSystemParentConfigId parentId = ExternalSystemParentConfigId.ofRepoId(1);
+		final UserId userImportId = createUserId();
+		final ExternalSystemEndpointId sftpEndpointId = createEndpoint("eddyson-sftp", X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
+		final ExternalSystemScriptedImportConversionConfigId sftpChildId = createChild(parentId, "ORDERS-SFTP", sftpEndpointId, userImportId);
+
+		final ImmutableList<ExternalSystemScriptedImportConversionService.ResolvedChildCommand> resolved =
+				service.resolveCommands(null, sftpChildId, ScriptedImportConversionIntent.Start);
+
+		assertThat(resolved).hasSize(1);
+		assertThat(resolved.get(0).getCommand()).isEqualTo(ScriptedImportConversionCommand.EnableSftpPolling);
 	}
 
 	@Test
@@ -176,5 +228,32 @@ class ExternalSystemScriptedImportConversionServiceTest
 		record.setAD_Language("de_DE");
 		InterfaceWrapperHelper.save(record);
 		return UserId.ofRepoId(record.getAD_User_ID());
+	}
+
+	private static ExternalSystemEndpointId createEndpoint(final String value, final String transportType)
+	{
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue(value);
+		endpointRecord.setTransportType(transportType);
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+		return ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID());
+	}
+
+	private static ExternalSystemScriptedImportConversionConfigId createChild(
+			final ExternalSystemParentConfigId parentId,
+			final String value,
+			final ExternalSystemEndpointId endpointId,
+			final UserId userImportId)
+	{
+		final I_ExternalSystem_Config_ScriptedImportConversion childRecord = newInstance(I_ExternalSystem_Config_ScriptedImportConversion.class);
+		childRecord.setExternalSystem_Config_ID(parentId.getRepoId());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setScriptIdentifier("echo");
+		childRecord.setAD_User_Import_ID(userImportId.getRepoId());
+		childRecord.setExternalSystem_Endpoint_ID(endpointId.getRepoId());
+		childRecord.setIsActive(true);
+		saveRecord(childRecord);
+		return ExternalSystemScriptedImportConversionConfigId.ofRepoId(childRecord.getExternalSystem_Config_ScriptedImportConversion_ID());
 	}
 }
