@@ -291,28 +291,39 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs) and, only on
-	 * success, creates a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y}.
+	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs).
 	 *
-	 * <p>The getById-before-recordPendingAsResend ordering is intentional: if the config is
-	 * inactive or missing, getById throws <em>before</em> any Pending row is created, preventing
-	 * an orphan log row with no subsequent invocation.
-	 *
-	 * @return the resolved config, ready for the follow-up
-	 *         {@link #executeInvokeScriptedExportConversionActionAndGetResult} call
+	 * <p>Callers resolve the config <em>before</em> any status-row write, so an inactive/missing config
+	 * throws before a Pending/DontSend row is created (preventing an orphan log row with no invocation).
 	 */
 	@NonNull
-	public ExternalSystemScriptedExportConversionConfig resolveConfigAndRecordPendingAsResend(
+	public ExternalSystemScriptedExportConversionConfig getConfigById(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId)
+	{
+		return externalSystemScriptedExportConversionRepository.getById(configId);
+	}
+
+	/**
+	 * Records a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y} for a re-send.
+	 */
+	public void recordPendingAsResend(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		// Resolve config first — throws for inactive/missing configs (fail-fast, no orphan Pending row)
-		final ExternalSystemScriptedExportConversionConfig config =
-				externalSystemScriptedExportConversionRepository.getById(configId);
-
 		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+	}
 
-		return config;
+	/**
+	 * Records a terminal {@link ExternalSystemExportStatus#DontSend} row for a re-send that is no longer
+	 * relevant — the config's WhereClause no longer matches the record (e.g. every SSCC of the shipment is
+	 * already in the EPCIS transmission ledger). Used by the re-send gate to suppress an empty export
+	 * instead of invoking the adapter with nothing to send.
+	 */
+	public void recordResendDontSend(
+			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		exportStatusService.recordDontSend(configId, sourceRecord);
 	}
 
 	@NonNull

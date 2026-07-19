@@ -45,6 +45,11 @@
 --   - cuGTIN resolved ASI-aware from m_product_asi_data via LEFT JOIN LATERAL (buyer-or-wildcard + IsASIAttributesKeySubset, lowest SeqNo)
 --   - Scalar variables for buyer_bpartner_id and poreference (vs scalar subqueries per row)
 
+-- This version: suppress an empty transmission. When no coverable LU exists, or the ledger-exclusion
+-- drops every LU because all SSCCs were already transmitted, the 'pallets' array is empty; the
+-- function now returns '{}' (the close-gate's no-send output) instead of a full envelope with
+-- 'pallets': [], so a re-send with nothing new does not emit an empty EPCIS event.
+
 CREATE OR REPLACE FUNCTION "de.metas.edi".get_epcis_events_json_fn(p_m_inout_id NUMERIC)
     RETURNS JSONB
 AS

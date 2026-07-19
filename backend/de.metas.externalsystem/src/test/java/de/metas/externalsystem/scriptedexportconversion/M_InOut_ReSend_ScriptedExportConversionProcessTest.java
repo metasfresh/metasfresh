@@ -71,14 +71,14 @@ import static org.mockito.Mockito.when;
  *
  * <p>Verifies:
  * <ul>
- *   <li>When the status service returns qualifying config IDs, the process calls
- *       {@code resolveConfigAndRecordPendingAsResend} and then
- *       {@code executeInvokeScriptedExportConversionActionAndGetResult} with RESEND
- *       once per config.</li>
- *   <li>The IsResend=Y Pending row is created (via {@code resolveConfigAndRecordPendingAsResend})
- *       before the invocation call.</li>
+ *   <li>When the status service returns qualifying config IDs whose WhereClause still matches, the
+ *       process records an IsResend=Y Pending row and then calls
+ *       {@code executeInvokeScriptedExportConversionActionAndGetResult} with RESEND once per config.</li>
+ *   <li>Re-send gate: a config whose {@code isConfigMatchingRecord} is false (nothing left to export —
+ *       e.g. all SSCCs already in the EPCIS ledger) is recorded {@code DontSend} and NOT invoked, and is
+ *       excluded from the processed count — so no empty event is sent.</li>
  *   <li>When no qualifying configs exist the process returns a zero-count result ({@code @Processed@ #0})
- *       and neither service method is called.</li>
+ *       and no service invocation is made.</li>
  * </ul>
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -100,7 +100,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	}
 
 	// -----------------------------------------------------------------------
-	// 1. Happy path: two qualifying configs → each gets resolveConfig+recordPending + invoke
+	// 1. Happy path: two qualifying configs that still match → each records Pending + invoke
 	// -----------------------------------------------------------------------
 	@Test
 	void doIt_twoQualifyingConfigs_invokeCalledOncePerConfig()
@@ -124,11 +124,13 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
 				.thenReturn(qualifyingConfigIds);
 
-		// resolveConfigAndRecordPendingAsResend returns the resolved config for each
-		when(scriptedExportServiceMock.resolveConfigAndRecordPendingAsResend(eq(configIdA), any()))
-				.thenReturn(configA);
-		when(scriptedExportServiceMock.resolveConfigAndRecordPendingAsResend(eq(configIdB), any()))
-				.thenReturn(configB);
+		// getConfigById resolves each config
+		when(scriptedExportServiceMock.getConfigById(configIdA)).thenReturn(configA);
+		when(scriptedExportServiceMock.getConfigById(configIdB)).thenReturn(configB);
+
+		// both still match their WhereClause (something left to export)
+		when(scriptedExportServiceMock.isConfigMatchingRecord(eq(configA), any(Integer.class))).thenReturn(true);
+		when(scriptedExportServiceMock.isConfigMatchingRecord(eq(configB), any(Integer.class))).thenReturn(true);
 
 		// executeInvokeScriptedExportConversionActionAndGetResult returns a result for both (process ignores the return value)
 		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
@@ -137,9 +139,10 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		// Run the process
 		final String result = runProcess(inoutId, tableId);
 
-		// Assert: resolveConfigAndRecordPendingAsResend called once per config
-		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdA), any());
-		verify(scriptedExportServiceMock, times(1)).resolveConfigAndRecordPendingAsResend(eq(configIdB), any());
+		// Assert: a Pending IsResend row recorded once per config, none skipped as DontSend
+		verify(scriptedExportServiceMock, times(1)).recordPendingAsResend(eq(configIdA), any());
+		verify(scriptedExportServiceMock, times(1)).recordPendingAsResend(eq(configIdB), any());
+		verify(scriptedExportServiceMock, times(0)).recordResendDontSend(any(), any());
 
 		// Assert: executeInvokeScriptedExportConversionActionAndGetResult called once per config with RESEND
 		verify(scriptedExportServiceMock, times(1))
@@ -167,8 +170,56 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final String result = runProcess(inoutId, tableId);
 
 		assertThat(result).contains("#0");
-		verify(scriptedExportServiceMock, times(0)).resolveConfigAndRecordPendingAsResend(any(), any());
+		verify(scriptedExportServiceMock, times(0)).getConfigById(any());
 		verify(scriptedExportServiceMock, times(0)).executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), any());
+	}
+
+	// -----------------------------------------------------------------------
+	// 3. Re-send gate: a config whose WhereClause no longer matches (nothing new — e.g. all SSCCs
+	//    already in the EPCIS ledger) is recorded DontSend and NOT invoked → no empty event sent.
+	// -----------------------------------------------------------------------
+	@Test
+	void doIt_configNoLongerMatching_recordsDontSend_andDoesNotInvoke()
+	{
+		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+		InterfaceWrapperHelper.saveRecord(inout);
+		final int inoutId = inout.getM_InOut_ID();
+		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
+		final TableRecordReference sourceRecord = TableRecordReference.of(I_M_InOut.Table_Name, inoutId);
+
+		final ExternalSystemScriptedExportConversionConfigId configIdMatch = ExternalSystemScriptedExportConversionConfigId.ofRepoId(201);
+		final ExternalSystemScriptedExportConversionConfigId configIdStale = ExternalSystemScriptedExportConversionConfigId.ofRepoId(202);
+
+		final ExternalSystemScriptedExportConversionConfig configMatch = buildDummyConfig(configIdMatch, tableId);
+		final ExternalSystemScriptedExportConversionConfig configStale = buildDummyConfig(configIdStale, tableId);
+
+		when(scriptedExportServiceMock.getResendableConfigsBySourceRecord(sourceRecord))
+				.thenReturn(Arrays.asList(configIdMatch, configIdStale));
+		when(scriptedExportServiceMock.getConfigById(configIdMatch)).thenReturn(configMatch);
+		when(scriptedExportServiceMock.getConfigById(configIdStale)).thenReturn(configStale);
+
+		// configMatch still has something to export; configStale does NOT (nothing new)
+		when(scriptedExportServiceMock.isConfigMatchingRecord(eq(configMatch), any(Integer.class))).thenReturn(true);
+		when(scriptedExportServiceMock.isConfigMatchingRecord(eq(configStale), any(Integer.class))).thenReturn(false);
+
+		when(scriptedExportServiceMock.executeInvokeScriptedExportConversionActionAndGetResult(any(), any(Integer.class), eq(ExternalSystemInvocationContext.RESEND)))
+				.thenReturn(ExternalSystemInvocationResult.error(new RuntimeException("mocked")));
+
+		final String result = runProcess(inoutId, tableId);
+
+		// matching config → Pending + invoke
+		verify(scriptedExportServiceMock, times(1)).recordPendingAsResend(eq(configIdMatch), any());
+		verify(scriptedExportServiceMock, times(1))
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configMatch), eq(inoutId), eq(ExternalSystemInvocationContext.RESEND));
+
+		// stale config → DontSend, NEVER invoked, NEVER a Pending row
+		verify(scriptedExportServiceMock, times(1)).recordResendDontSend(eq(configIdStale), any());
+		verify(scriptedExportServiceMock, times(0)).recordPendingAsResend(eq(configIdStale), any());
+		verify(scriptedExportServiceMock, times(0))
+				.executeInvokeScriptedExportConversionActionAndGetResult(eq(configStale), any(Integer.class), any());
+
+		// only the matching config counts toward the processed total
+		assertThat(result).contains("1");
 	}
 
 	// -----------------------------------------------------------------------

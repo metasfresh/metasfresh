@@ -67,8 +67,22 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 		{
+			// Resolve first (fail-fast on inactive/missing config, before any status-row write).
 			final ExternalSystemScriptedExportConversionConfig config =
-					scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
+					scriptedExportService.getConfigById(configId);
+
+			// Re-send gate: only invoke if the config's WhereClause still matches the record — i.e. there
+			// is still something to export. For the EPCIS config the WhereClause is epcis_has_events(...),
+			// which is false once every SSCC of the shipment is already in the transmission ledger. Without
+			// this gate a re-send of a shipment with nothing new would fire an empty EPCIS event (the auto
+			// complete path already applies the same relevance gate).
+			if (!scriptedExportService.isConfigMatchingRecord(config, m_inout_id))
+			{
+				scriptedExportService.recordResendDontSend(configId, sourceRecord);
+				continue;
+			}
+
+			scriptedExportService.recordPendingAsResend(configId, sourceRecord);
 
 			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
 					config,
