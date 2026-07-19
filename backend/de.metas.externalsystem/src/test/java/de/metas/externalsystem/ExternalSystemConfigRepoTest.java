@@ -34,6 +34,8 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
@@ -917,6 +919,39 @@ class ExternalSystemConfigRepoTest
 		// then: no child of that type -> empty (must NOT throw "Unsupported type", which would
 		// crash the ExternalSystem_Config type-change interceptor).
 		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void getChildByParentIdAndType_scriptedExportConversion_withChild_returnsPresent()
+	{
+		// Regression guard: ScriptedExportConversion DOES have a per-parent child table (modelled
+		// 0..many), so the lookup must find its child rather than fall through to the empty
+		// catch-all — otherwise the type-change interceptor would let a scripted-export parent be
+		// re-typed and silently orphan its child rows.
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.ScriptedExportConversion.getValue())
+				.build();
+
+		final I_ExternalSystem_Endpoint endpoint = newInstance(I_ExternalSystem_Endpoint.class);
+		endpoint.setValue("export-endpoint");
+		saveRecord(endpoint);
+
+		final I_ExternalSystem_Config_ScriptedExportConversion child = newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		child.setExternalSystem_Endpoint_ID(endpoint.getExternalSystem_Endpoint_ID());
+		child.setExternalSystemValue("export-orders");
+		child.setScriptIdentifier("echo");
+		child.setAD_Table_ID(318);
+		child.setWhereClause("1=1");
+		saveRecord(child);
+
+		// when
+		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepo.getChildByParentIdAndType(
+				ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()),
+				ExternalSystemType.ScriptedExportConversion);
+
+		// then
+		assertThat(result).isPresent();
 	}
 
 	@Test

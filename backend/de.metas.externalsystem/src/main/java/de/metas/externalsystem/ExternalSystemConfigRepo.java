@@ -274,6 +274,18 @@ public class ExternalSystemConfigRepo
 		{
 			return getScriptedImportConversionConfigByParentId(id);
 		}
+		else if (externalSystemType.isScriptedExportConversion())
+		{
+			// ScriptedExportConversion is modelled 0..many per parent (not a single Optional),
+			// so it has no getXxxByParentId branch above; resolve it explicitly here. Returning
+			// the first child (if any) is enough for every caller — the type-change interceptor
+			// only needs "does a child of this type still exist?" (must NOT fall through to the
+			// empty catch-all below, which would let the parent be re-typed and orphan the rows).
+			return externalSystemScriptedExportConversionRepository.getByParentConfigId(id)
+					.stream()
+					.findFirst()
+					.map(child -> (IExternalSystemChildConfig)child);
+		}
 		// No per-parent child-config table for this type (e.g. a custom/other external-system
 		// type). Return empty rather than throwing: callers ask "is there a child of this type
 		// under this parent?" and the honest answer is "no". Throwing here made the
@@ -1198,6 +1210,8 @@ public class ExternalSystemConfigRepo
 		final I_ExternalSystem_Config parent = InterfaceWrapperHelper.load(externalSystemConfigId, I_ExternalSystem_Config.class);
 		if (parent == null)
 		{
+			logger.warn("Skipping {} config whose parent ExternalSystem_Config_ID={} no longer exists (orphaned child)",
+					expectedType, externalSystemConfigId);
 			return false;
 		}
 
