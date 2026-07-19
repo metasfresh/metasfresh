@@ -41,11 +41,13 @@ import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedIm
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService.ResolvedChildCommand;
 import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionIntent;
+import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,6 +63,8 @@ import java.util.Map;
  */
 public class InvokeScriptedImportConversionAction extends AlterExternalSystemServiceStatusAction
 {
+	private static final Logger logger = LogManager.getLogger(InvokeScriptedImportConversionAction.class);
+
 	private final ExternalSystemScriptedImportConversionService externalSystemScriptedImportConversionService = SpringContextHolder.instance
 			.getBean(ExternalSystemScriptedImportConversionService.class);
 	private final ExternalServices externalServices = SpringContextHolder.instance.getBean(ExternalServices.class);
@@ -79,22 +83,37 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 			return MSG_OK;
 		}
 
+		// All resolved children belong to the same parent; load it once (type + audit endpoint are parent-level).
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(resolvedCommands.get(0).getConfig().getId());
+		final ExternalSystemParentConfigId parentId = parentConfig.getId();
+
+		int succeeded = 0;
 		for (final ResolvedChildCommand resolved : resolvedCommands)
 		{
 			final ExternalSystemScriptedImportConversionConfig child = resolved.getConfig();
 			final String command = resolved.getCommand().getValue();
+			try
+			{
+				// Record the expected status (Active/Inactive) FIRST -- it is the source of truth the startup
+				// reconciler acts on -- then trigger the concrete route (enable/disable REST or SFTP polling).
+				externalServices.handleStatusUpdateIfRequired(parentId, command);
+				externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
 
-			// mark the expected status (Active/Inactive) for this child's service so the reconciler + status endpoint agree
-			externalServices.handleStatusUpdateIfRequired(child.getParentId(), command);
-
-			// trigger the concrete route now (enable/disable REST or SFTP polling)
-			final ExternalSystemParentConfig parentConfig = externalSystemConfigDAO.getById(child.getId());
-			externalSystemMessageSender.send(buildRequest(parentConfig, child, command));
-
-			addLog("Sent '" + command + "' for ScriptedImportConversion child " + child.getId().getRepoId() + " (" + child.getValue() + ")");
+				addLog("Sent '" + command + "' for ScriptedImportConversion child " + child.getId().getRepoId() + " (" + child.getValue() + ")");
+				succeeded++;
+			}
+			catch (final Exception e)
+			{
+				// Isolate per-child failures: one bad child must not abort (and roll back) the others. The
+				// already-sent messages are not transactional, so we keep going; the recorded expected status
+				// lets the startup reconciler self-heal a child whose send did not go through.
+				logger.warn("Failed to {} ScriptedImportConversion child {} ({}) -- continuing",
+						intent.getCode(), child.getId().getRepoId(), child.getValue(), e);
+				addLog("FAILED to '" + command + "' child " + child.getId().getRepoId() + " (" + child.getValue() + "): " + e.getMessage());
+			}
 		}
 
-		return MSG_OK;
+		return MSG_OK + " (" + succeeded + "/" + resolvedCommands.size() + ")";
 	}
 
 	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)
@@ -143,6 +162,12 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 		if (childConfigId > 0)
 		{
 			return ProcessPreconditionsResolution.accept();
+		}
+
+		// preserve the base contract: reject a multi-row selection with a clean, translated message
+		if (getSelectedRecordCount(context) > 1)
+		{
+			return ProcessPreconditionsResolution.reject(MSG_ERR_MULTIPLE_EXTERNAL_SELECTION, getTabName());
 		}
 
 		if (I_ExternalSystem_Config_ScriptedImportConversion.Table_Name.equals(context.getTableName()))
