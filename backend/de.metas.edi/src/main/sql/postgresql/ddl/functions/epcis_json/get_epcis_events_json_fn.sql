@@ -744,16 +744,7 @@ BEGIN
     WHERE ctx.isactive = 'Y'
       AND ctx.docstatus IN ('CO', 'CL');
 
-    -- Nothing left to transmit — no coverable LU, or the ledger-exclusion dropped every LU because all
-    -- SSCCs were already transmitted — yields an empty 'pallets' array. Return '{}' (the same no-send
-    -- output as the close-gate above) instead of a full envelope with 'pallets': [], so a consumer never
-    -- emits an empty EPCIS event.
-    IF v_result IS NULL OR COALESCE(jsonb_array_length(v_result -> 'pallets'), 0) = 0
-    THEN
-        RETURN '{}'::jsonb;
-    END IF;
-
-    RETURN v_result;
+    RETURN COALESCE(v_result, '{}'::jsonb);
 END;
 $$
     LANGUAGE plpgsql STABLE
