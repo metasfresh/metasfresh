@@ -649,7 +649,6 @@ public class ExternalSystemConfigRepo
 				.create()
 				.stream()
 				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.Alberta))
-				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.RabbitMQ))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -908,6 +907,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.RabbitMQ))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}

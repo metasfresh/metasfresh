@@ -955,6 +955,48 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
+	void getActiveByType_alberta_returnsValidConfig()
+	{
+		// Guard against the resilience filter using the wrong expected type (which would filter
+		// out every valid config for that reader): a correctly-parented Alberta config must be returned.
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_Alberta child = newInstance(I_ExternalSystem_Config_Alberta.class);
+		child.setApiKey("apiKey");
+		child.setBaseURL("baseUrl");
+		child.setTenant("tenant");
+		child.setExternalSystemValue("alberta-value");
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		// when / then
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(Alberta);
+		assertThat(result)
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(parentRecord.getExternalSystem_Config_ID());
+	}
+
+	@Test
+	void getActiveByType_rabbitMQ_skipsConfigWithMismatchedParentType()
+	{
+		// Guard that the RabbitMQ reader also filters (it was missing the filter): a RabbitMQ child
+		// under a wrong-typed parent must be skipped, not 500 the status endpoint.
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(eddysonParent.getExternalSystem_Config_ID())
+				.value("rabbit-value")
+				.isSyncBPartnerToRabbitMQ(false)
+				.build();
+
+		// when / then: skipped (not returned), no throw
+		assertThat(externalSystemConfigRepo.getActiveByType(RabbitMQ)).isEmpty();
+	}
+
+	@Test
 	void getActiveByType_scriptedImportConversion_skipsConfigWithMismatchedParentType()
 	{
 		// given: a VALID scripted-import config under a scripted-import-typed parent ...
