@@ -1387,11 +1387,11 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
 
     And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
 
-    # The latest status is DontSend (D) — no Enqueued/Sent re-send attempt was produced, so no empty
+    # The latest status is DontSend (N) — no Enqueued/Sent re-send attempt was produced, so no empty
     # EPCIS event was transmitted; the ledger still holds EXACTLY ONE row (no duplicate).
     Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
       | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
-      | io_S30916_150 | scriptedCfg_S30916_150                            | D            |
+      | io_S30916_150 | scriptedCfg_S30916_150                            | N            |
     Then the EPCIS transmission ledger contains exactly:
       | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    |
       | 987654321000031500 | scriptedCfg_S30916_150                            | io_S30916_150 |
