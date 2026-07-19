@@ -97,10 +97,15 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
+
 @Repository
 @RequiredArgsConstructor
 public class ExternalSystemConfigRepo
 {
+	private static final Logger logger = LogManager.getLogger(ExternalSystemConfigRepo.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final TaxCategoryDAO taxCategoryDAO;
@@ -269,7 +274,13 @@ public class ExternalSystemConfigRepo
 		{
 			return getScriptedImportConversionConfigByParentId(id);
 		}
-		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		// No per-parent child-config table for this type (e.g. a custom/other external-system
+		// type). Return empty rather than throwing: callers ask "is there a child of this type
+		// under this parent?" and the honest answer is "no". Throwing here made the
+		// ExternalSystem_Config type-change interceptor crash on such a parent instead of
+		// letting the user correct the data.
+		logger.debug("getChildByParentIdAndType: no child-config lookup for type={}, id={} -> empty", externalSystemType, id);
+		return Optional.empty();
 	}
 
 	@NonNull
@@ -1168,7 +1179,35 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.ScriptedImportConversion))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * True if the parent {@code ExternalSystem_Config}'s type equals {@code expectedType}.
+	 * Guards the whole-table status readers ({@link #getActiveByType(ExternalSystemType)}): a
+	 * child config whose parent was re-typed, or that was created under a wrong-typed parent
+	 * (e.g. a scripted-import config placed under a custom external system), is inconsistent
+	 * data. Skipping it (logged) keeps one bad row from throwing out of
+	 * {@link ExternalSystemParentConfig}'s constructor and 500-ing the entire external-system
+	 * status endpoint.
+	 */
+	private boolean isParentConfigOfType(final int externalSystemConfigId, @NonNull final ExternalSystemType expectedType)
+	{
+		final I_ExternalSystem_Config parent = InterfaceWrapperHelper.load(externalSystemConfigId, I_ExternalSystem_Config.class);
+		if (parent == null)
+		{
+			return false;
+		}
+
+		final ExternalSystemType parentType = externalSystemRepository.getById(ExternalSystemId.ofRepoId(parent.getExternalSystem_ID())).getType();
+		final boolean matches = expectedType.equals(parentType);
+		if (!matches)
+		{
+			logger.warn("Skipping inconsistent {} config under ExternalSystem_Config_ID={} whose parent is of type {} (expected {})",
+					expectedType, externalSystemConfigId, parentType, expectedType);
+		}
+		return matches;
 	}
 }
