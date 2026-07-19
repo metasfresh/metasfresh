@@ -48,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.IADTableDAO;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,8 +61,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  * the {@code M_InOut_ReSend_ScriptedExportConversion} process invocation, and deactivating a
  * shipment's status row (the escape-hatch that releases a shipment blocked by an in-flight export).
  *
- * <p>The status table holds one row per (config, source-record) pair that is updated in place
- * as the export lifecycle progresses (Pending → Enqueued → Sent / Error / Invalid / DontSend).
+ * <p>The status table holds one row per export ATTEMPT: each enqueue / re-send inserts a fresh
+ * row (the per-attempt history), and the transitions of that attempt (Pending → Enqueued →
+ * Sent / Error / Invalid / DontSend) update its own row in place, correlated by AD_PInstance_ID.
  */
 @RequiredArgsConstructor
 public class ExternalSystem_ScriptedExportConversion_Status_StepDef
@@ -78,9 +80,11 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	// ------------------------------------------------------------------
 
 	/**
-	 * Polls until the single {@code ExternalSystem_ScriptedExportConversion_Status} row for the given
-	 * shipment + config combination reaches the expected {@code ExportStatus}, optionally asserting
-	 * {@code IsResend} and the presence of an {@code AD_Issue_ID}.
+	 * Polls until every expected {@code ExternalSystem_ScriptedExportConversion_Status} row is found.
+	 * Each data-table row describes ONE expected status row, matched NEWEST-FIRST by its {@code ExportStatus}
+	 * (the status tab's grid order). A single data row asserts the latest attempt; several data rows assert
+	 * that each attempt's data coexists — e.g. after a re-send, the Sent re-send attempt AND the retained
+	 * errored first attempt, each with its own {@code IsResend} / {@code HttpResponseCode} / {@code AD_Issue}.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
@@ -88,73 +92,113 @@ public class ExternalSystem_ScriptedExportConversion_Status_StepDef
 	 *   <b>ExternalSystem_Config_ScriptedExportConversion_ID</b> — (required, identifier-ref) config identifier<br>
 	 *   <b>ExportStatus</b> — (required) expected status code (P/U/D/S/E/I/N)<br>
 	 *   <b>IsResend</b> — (optional) expected IsResend flag (Y/N)<br>
-	 *   <b>HasAD_Issue</b> — (optional) Y if AD_Issue_ID must be &gt; 0<br>
+	 *   <b>HttpResponseCode</b> — (optional) expected HTTP response code; blank cell = not asserted<br>
+	 *   <b>HasAD_Issue</b> — (optional) Y if AD_Issue_ID must be &gt; 0, N if it must be 0<br>
 	 * @cucumber.depends StepDefData: M_InOut_StepDefData, ExternalSystem_Config_ScriptedExportConversion_StepDefData
 	 * @cucumber.example <pre>
 	 * Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
 	 *   | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend |
 	 *   | io_010     | scriptedCfg_es                                    | S            | N        |
+	 *
+	 * # several rows — the two attempts of a re-send coexist (newest-first):
+	 * Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+	 *   | M_InOut_ID | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus | IsResend | HttpResponseCode | HasAD_Issue |
+	 *   | io_030     | scriptedCfg_es                                    | S            | Y        | 200              | N           |
+	 *   | io_030     | scriptedCfg_es                                    | E            | N        |                  | Y           |
 	 * </pre>
 	 */
 	@And("^after not more than (.*)s, ExternalSystem_ScriptedExportConversion_Status is found:$")
 	public void scriptedExportConversionStatusIsFound(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
-		final DataTableRow firstRow = DataTableRows.of(dataTable).getFirstRow();
-
-		final org.compiere.model.I_M_InOut inoutRecord = inoutTable.get(
-				firstRow.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID));
-		assertThat(inoutRecord).isNotNull();
-		final int inoutId = inoutRecord.getM_InOut_ID();
-
-		final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(
-				firstRow.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID));
-		assertThat(cfg).isNotNull();
-		final int cfgId = cfg.getId().getRepoId();
-
-		final String expectedStatus = firstRow.getAsString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExportStatus);
-		final String expectedIsResend = firstRow.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_IsResend).orElse(null);
-		final String expectedHasIssue = firstRow.getAsOptionalString("HasAD_Issue").orElse(null);
-
 		final int m_inout_table_id = tableDAO.retrieveTableId(org.compiere.model.I_M_InOut.Table_Name);
 
-		StepDefUtil.<I_ExternalSystem_ScriptedExportConversion_Status>tryAndWaitForItem()
+		// Resolve each data-table row to an expected status row (identifiers resolved once, up front).
+		final List<ExpectedStatusRow> expectedRows = new ArrayList<>();
+		for (final DataTableRow row : DataTableRows.of(dataTable).toList())
+		{
+			final org.compiere.model.I_M_InOut inoutRecord = inoutTable.get(
+					row.getAsIdentifier(org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID));
+			assertThat(inoutRecord).isNotNull();
+
+			final ExternalSystemScriptedExportConversionConfig cfg = scriptedCfgTable.get(
+					row.getAsIdentifier(I_ExternalSystem_Config_ScriptedExportConversion.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID));
+			assertThat(cfg).isNotNull();
+
+			expectedRows.add(new ExpectedStatusRow(
+					inoutRecord.getM_InOut_ID(),
+					cfg.getId().getRepoId(),
+					row.getAsString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExportStatus),
+					// blank cell for an optional column ⇒ that column is not asserted
+					row.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_IsResend).map(String::trim).filter(s -> !s.isEmpty()).orElse(null),
+					row.getAsOptionalString(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_HttpResponseCode).map(String::trim).filter(s -> !s.isEmpty()).orElse(null),
+					row.getAsOptionalString("HasAD_Issue").map(String::trim).filter(s -> !s.isEmpty()).orElse(null)));
+		}
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(500L)
 				.workerFromOptionalSupplier(() -> {
-					final I_ExternalSystem_ScriptedExportConversion_Status statusRow = queryBL
-							.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
-							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
-							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, inoutId)
-							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, cfgId)
-							.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExportStatus, expectedStatus)
-							.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
-							.create()
-							.first(I_ExternalSystem_ScriptedExportConversion_Status.class);
-
-					if (statusRow == null)
+					for (final ExpectedStatusRow expected : expectedRows)
 					{
-						return Optional.empty();
-					}
+						// newest-first by Status_ID (the grid order); match this expected attempt by its
+						// ExportStatus, so several coexisting attempts are each verified independently
+						final I_ExternalSystem_ScriptedExportConversion_Status statusRow = queryBL
+								.createQueryBuilder(I_ExternalSystem_ScriptedExportConversion_Status.class)
+								.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_AD_Table_ID, m_inout_table_id)
+								.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_Record_ID, expected.inoutId)
+								.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_Config_ScriptedExportConversion_ID, expected.cfgId)
+								.addEqualsFilter(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExportStatus, expected.exportStatus)
+								.orderByDescending(I_ExternalSystem_ScriptedExportConversion_Status.COLUMNNAME_ExternalSystem_ScriptedExportConversion_Status_ID)
+								.create()
+								.first(I_ExternalSystem_ScriptedExportConversion_Status.class);
 
-					// optional IsResend assertion
-					if (expectedIsResend != null)
-					{
-						final boolean expectedIsResendBool = "Y".equals(expectedIsResend);
-						if (statusRow.isResend() != expectedIsResendBool)
+						if (statusRow == null)
+						{
+							return Optional.empty();
+						}
+						if (expected.isResend != null && "Y".equals(expected.isResend) != statusRow.isResend())
+						{
+							return Optional.empty();
+						}
+						if (expected.httpResponseCode != null && Integer.parseInt(expected.httpResponseCode) != statusRow.getHttpResponseCode())
+						{
+							return Optional.empty();
+						}
+						if (expected.hasIssue != null && "Y".equals(expected.hasIssue) != (statusRow.getAD_Issue_ID() > 0))
 						{
 							return Optional.empty();
 						}
 					}
-
-					// optional HasAD_Issue assertion
-					if ("Y".equals(expectedHasIssue) && statusRow.getAD_Issue_ID() <= 0)
-					{
-						return Optional.empty();
-					}
-
-					return Optional.of(statusRow);
+					return Optional.of(Boolean.TRUE);
 				})
 				.execute();
+	}
+
+	/** One expected status row, resolved from a data-table row (identifiers already resolved to repo ids). */
+	private static final class ExpectedStatusRow
+	{
+		private final int inoutId;
+		private final int cfgId;
+		private final String exportStatus;
+		private final String isResend;
+		private final String httpResponseCode;
+		private final String hasIssue;
+
+		private ExpectedStatusRow(
+				final int inoutId,
+				final int cfgId,
+				@NonNull final String exportStatus,
+				final String isResend,
+				final String httpResponseCode,
+				final String hasIssue)
+		{
+			this.inoutId = inoutId;
+			this.cfgId = cfgId;
+			this.exportStatus = exportStatus;
+			this.isResend = isResend;
+			this.httpResponseCode = httpResponseCode;
+			this.hasIssue = hasIssue;
+		}
 	}
 
 	// ------------------------------------------------------------------

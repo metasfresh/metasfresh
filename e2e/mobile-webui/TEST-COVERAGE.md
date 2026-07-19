@@ -8,7 +8,7 @@
 |---|---|---|---|
 | Login / Home | 8 | 11 | 73% |
 | Barcode Scanner Modes | 7 | 12 | 58% |
-| Picking | 69 | 72 | 96% |
+| Picking | 65 | 68 | 96% |
 | Distribution | 34 | 37 | 92% |
 | Manufacturing | 25 | 31 | 81% |
 | HU Manager | 14 | 16 | 88% |
@@ -199,10 +199,9 @@
 | Resolved TU has no capacity for product → GRAINoCapacityForProduct error | `picking/picking-grai-scan.spec.js` |
 | BPartner GRAIRequired=No → no GRAI scanner shown | `picking/picking-grai-scan.spec.js` |
 | Scan one GRAI into a top-level TU (no LU) → GRAI stamped on the top-level TU and persists through complete | `picking/picking-grai-scan.spec.js` |
-| Migros returnable-asset GRAI matching the order's PO reference → accepted, TU resolved, GRAI stamped on the picked TU | `picking/picking-grai-poreference-match.spec.js` |
-| Migros returnable-asset GRAI belonging to another order's PO reference → refused before TU resolution | `picking/picking-grai-poreference-mismatch.spec.js` |
+| Scan a Migros GRAI derived from a PO reference different from the order's → accepted (PO-reference match removed), TU resolved and created carrying the GRAI | `picking/picking-grai-poreference-accepted.spec.js` |
 
-**10/10 — 100%**
+**9/9 — 100%**
 
 ### Inline GRAI capture in Flow Through (LU_TU) picking
 

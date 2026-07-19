@@ -1,13 +1,22 @@
 /**
- * Playwright E2E — a Migros returnable-asset GRAI whose PO-reference-derived serial matches the
- * current sales order's PO reference is ACCEPTED by the target-selection GRAI scanner: the TU type
- * is resolved as usual and the pick proceeds to a genuine capture, with the GRAI stamped on the
- * picked TU.
+ * Playwright E2E — a Migros returnable-asset GRAI whose PO-reference-derived serial does NOT match
+ * the current sales order's PO reference is now ACCEPTED by the target-selection GRAI scanner: the
+ * TU type is resolved as usual and the pick proceeds to a genuine capture, with the GRAI stamped on
+ * the picked TU. This is the CORRECTED behaviour after the scan-time PO-reference ownership match was
+ * removed: previously such a GRAI was refused ("belongs to another order"); that gate is gone, so the
+ * mismatch no longer blocks the pick.
  *
- * This exercises the GRAI-scan (target-selection) flow — `PickingGraiScanPanel` +
- * `SelectPickTargetTUScreen` (see `picking-grai-scan.spec.js`) — the ONLY flow that runs the
- * PO-reference-ownership gate (`PickingJobGraiTargetService.resolveTuTypeAndCapacity`); the inline
- * mass-capture flow (`PickGraiScreen`) never hits this gate.
+ * This is the ACCEPT mirror of the (removed) refusal spec `picking-grai-poreference-mismatch.spec.js`:
+ * same navigation (`navigateToTUTargetScreen`, `PickingGraiScanPanel`, product aggregation, per-line
+ * TU-target screen) and the same mismatched Migros GRAI, but the scan is asserted ACCEPTED (no error
+ * toast, TU resolved, GRAI stamped) instead of refused.
+ *
+ * The GRAI-scan (target-selection) flow — `PickingGraiScanPanel` + `SelectPickTargetTUScreen` (see
+ * `picking-grai-scan.spec.js`) — is the ONLY flow that ran the removed PO-reference gate
+ * (`PickingJobGraiTargetService.resolveTuTypeAndCapacity`); the inline mass-capture flow
+ * (`PickGraiScreen`) never hit it. TU resolution is by the scanned GRAI's (companyPrefix, assetType)
+ * pair via its `M_HU_PI_GRAI` mapping — NOT by PO reference — so the mismatched Migros GRAI still
+ * resolves to the mapped TU; only the removed ownership gate ever cared about the PO reference.
  *
  * Migros GRAI structure (see de.metas.handlingunits.grai.DummyGRAITemplate):
  *   "{MIGROS_COMPANY_PREFIX}.{MIGROS_ASSET_TYPE}.{PO reference, zero-padded to 10}{2-digit counter}"
@@ -25,20 +34,22 @@ import { PickingJobLineScreen } from '../../utils/screens/picking/PickingJobLine
 import { PickLineScanScreen } from '../../utils/screens/picking/PickLineScanScreen';
 import { GetQuantityDialog } from '../../utils/screens/picking/GetQuantityDialog';
 import { PickingGraiScanPanel } from '../../utils/screens/picking/PickingGraiScanPanel';
+import { ErrorToast } from '../../utils/dialogs/ErrorToast';
 
 const MIGROS_COMPANY_PREFIX = '7613204';
 const MIGROS_ASSET_TYPE = '00307';
-const PO_REFERENCE = '12345';
+const ORDER_PO_REFERENCE = '12345';
+const OTHER_PO_REFERENCE = '99999';
 
 /** Builds a canonical Migros dummy-GRAI: see de.metas.handlingunits.grai.DummyGRAITemplate.migros(poReference).buildGRAI(counter). */
 const buildMigrosGrai = (poReference, counter) =>
     `${MIGROS_COMPANY_PREFIX}.${MIGROS_ASSET_TYPE}.${poReference.padStart(10, '0')}${String(counter).padStart(2, '0')}`;
 
 /**
- * A GRAIRequired customer whose sales order carries the PO reference that the scanned Migros GRAI
- * is derived from, and whose TU packing instruction is mapped to the FIXED Migros (companyPrefix,
- * assetType) pair — so the scanned GRAI resolves to a real TU type and the pick can complete.
- * Product aggregation is required for the line-level TU-target screen (see picking-grai-scan.spec.js).
+ * A GRAIRequired customer whose sales order carries a PO reference, and whose TU packing instruction
+ * is mapped to the FIXED Migros (companyPrefix, assetType) pair — so the scanned Migros GRAI resolves
+ * to a real TU type regardless of which PO reference it was derived from. Product aggregation is
+ * required for the line-level TU-target screen (see picking-grai-scan.spec.js).
  */
 const createMasterdata = async () => {
     return await Backend.createMasterdata({
@@ -82,7 +93,7 @@ const createMasterdata = async () => {
                     bpartner: 'BP1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
-                    poReference: PO_REFERENCE,
+                    poReference: ORDER_PO_REFERENCE,
                     lines: [{ product: 'P1', qty: 4, piItemProduct: 'TU_MAPPED' }],
                 },
             },
@@ -106,14 +117,16 @@ const navigateToTUTargetScreen = async (masterdata) => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Migros GRAI matching the order\'s PO reference is accepted, TU created with the GRAI attribute', async ({ page }) => {
+test('Migros GRAI not matching the order\'s PO reference is accepted, TU created with the GRAI attribute (PO-reference match removed)', async ({ page }) => {
     await allure.epic('E0105: Picking');
     await allure.feature('F5230: GRAI on Returnable Assets');
-    await allure.story('GRAI scan picking — Migros GRAI matching the order\'s PO reference is accepted');
+    await allure.story('GRAI scan picking — a Migros GRAI not matching the order\'s PO reference is accepted (PO-reference match removed)');
     await allure.severity('critical');
 
     const masterdata = await createMasterdata();
-    const matchingGrai = buildMigrosGrai(PO_REFERENCE, 1);
+    // Migros-structured (matches companyPrefix/assetType, so it resolves to the mapped TU) but derived
+    // from a DIFFERENT PO reference than the current order's — formerly refused, now accepted.
+    const mismatchedGrai = buildMigrosGrai(OTHER_PO_REFERENCE, 1);
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -128,9 +141,13 @@ test('Migros GRAI matching the order\'s PO reference is accepted, TU created wit
     await navigateToTUTargetScreen(masterdata);
     await PickingGraiScanPanel.expectScannerVisible();
 
-    // The Migros GRAI matches the order's PO reference -> accepted, no mismatch toast, TU resolved.
-    await PickingGraiScanPanel.scanGrai({ graiString: matchingGrai });
+    // CORRECTED behaviour: the mismatched Migros GRAI is accepted -> the TU type resolves and the flow
+    // advances back to the line screen (formerly a 'belongs to another order' error toast blocked here).
+    await PickingGraiScanPanel.scanGrai({ graiString: mismatchedGrai });
     await PickingJobLineScreen.waitForScreen();
+    // No refusal toast: the removed PO-reference gate no longer fires (waitForScreen above already
+    // waited out the scanner debounce + REST round-trip, so any error toast would be present by now).
+    await ErrorToast.expectNoErrorToast();
 
     // Pick the HU from the line scan screen — proceeds to a genuine capture (not just gate-passed).
     await PickingJobLineScreen.clickScanButton();
@@ -141,9 +158,10 @@ test('Migros GRAI matching the order\'s PO reference is accepted, TU created wit
     await PickingJobLineScreen.goBack();
     await PickingJobScreen.complete();
 
-    // Real end result: the picked TU carries the Migros GRAI as an attribute.
+    // Real end result: the picked TU carries the mismatched Migros GRAI as an attribute — the scan was
+    // accepted end-to-end despite deriving from a different PO reference than the order's.
     await Backend.expect({
-        title: 'PO-reference match: TU carries the matching Migros GRAI attribute',
+        title: 'PO-reference mismatch now accepted: TU carries the mismatched Migros GRAI attribute',
         pickings: {
             [pickingJobId]: {
                 shipmentSchedules: {
@@ -155,7 +173,7 @@ test('Migros GRAI matching the order\'s PO reference is accepted, TU created wit
         },
         hus: {
             tu1: {
-                attributes: { GRAI: matchingGrai },
+                attributes: { GRAI: mismatchedGrai },
                 bpartner: 'BP1',
                 bpartnerLocation: 'BP1',
             },
