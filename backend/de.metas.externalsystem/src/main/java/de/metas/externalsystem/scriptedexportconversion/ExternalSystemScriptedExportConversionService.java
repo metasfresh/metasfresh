@@ -291,39 +291,40 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs).
+	 * Re-sends the scripted export for one config + record, but ONLY if the config's WhereClause still
+	 * matches the record — i.e. there is still something to export. For the EPCIS config the WhereClause
+	 * is {@code epcis_has_events(m_inout_id)}, which is false once every SSCC of the shipment is already
+	 * in the transmission ledger. When nothing is left to export the re-send records a terminal
+	 * {@link ExternalSystemExportStatus#DontSend} and does NOT invoke the adapter, so an empty EPCIS event
+	 * is never sent (mirroring the relevance gate the auto-complete path applies in
+	 * {@link #recordEligibilityAndInvoke}).
 	 *
-	 * <p>Callers resolve the config <em>before</em> any status-row write, so an inactive/missing config
-	 * throws before a Pending/DontSend row is created (preventing an orphan log row with no invocation).
+	 * <p>The config is resolved (getById, fail-fast — throws for inactive/missing) <em>before</em> any
+	 * status-row write, so a bad config throws before a Pending/DontSend row is created (no orphan row).
+	 *
+	 * @return {@code true} if the conversion was invoked (something to send), {@code false} if suppressed
+	 *         because nothing was left to export.
 	 */
-	@NonNull
-	public ExternalSystemScriptedExportConversionConfig getConfigById(
-			@NonNull final ExternalSystemScriptedExportConversionConfigId configId)
-	{
-		return externalSystemScriptedExportConversionRepository.getById(configId);
-	}
-
-	/**
-	 * Records a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y} for a re-send.
-	 */
-	public void recordPendingAsResend(
+	public boolean resendConfigIfRelevant(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
-			@NonNull final TableRecordReference sourceRecord)
+			@NonNull final TableRecordReference sourceRecord,
+			final int recordId)
 	{
+		// Resolve config first — throws for inactive/missing configs (fail-fast, before any status-row write)
+		final ExternalSystemScriptedExportConversionConfig config =
+				externalSystemScriptedExportConversionRepository.getById(configId);
+
+		if (!isConfigMatchingRecord(config, recordId))
+		{
+			// nothing left to export (e.g. every SSCC already in the EPCIS ledger) — record DontSend and
+			// do NOT invoke the adapter, so a re-send with nothing new never fires an empty EPCIS event
+			exportStatusService.recordDontSend(configId, sourceRecord);
+			return false;
+		}
+
 		exportStatusService.recordPendingAsResend(configId, sourceRecord);
-	}
-
-	/**
-	 * Records a terminal {@link ExternalSystemExportStatus#DontSend} row for a re-send that is no longer
-	 * relevant — the config's WhereClause no longer matches the record (e.g. every SSCC of the shipment is
-	 * already in the EPCIS transmission ledger). Used by the re-send gate to suppress an empty export
-	 * instead of invoking the adapter with nothing to send.
-	 */
-	public void recordResendDontSend(
-			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
-			@NonNull final TableRecordReference sourceRecord)
-	{
-		exportStatusService.recordDontSend(configId, sourceRecord);
+		executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.RESEND);
+		return true;
 	}
 
 	@NonNull

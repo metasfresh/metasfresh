@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.scriptedexportconversion.process;
 
-import de.metas.externalsystem.ExternalSystemInvocationContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
@@ -67,29 +65,12 @@ public class M_InOut_ReSend_ScriptedExportConversion extends JavaProcess impleme
 		int triggered = 0;
 		for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 		{
-			// Resolve first (fail-fast on inactive/missing config, before any status-row write).
-			final ExternalSystemScriptedExportConversionConfig config =
-					scriptedExportService.getConfigById(configId);
-
-			// Re-send gate: only invoke if the config's WhereClause still matches the record — i.e. there
-			// is still something to export. For the EPCIS config the WhereClause is epcis_has_events(...),
-			// which is false once every SSCC of the shipment is already in the transmission ledger. Without
-			// this gate a re-send of a shipment with nothing new would fire an empty EPCIS event (the auto
-			// complete path already applies the same relevance gate).
-			if (!scriptedExportService.isConfigMatchingRecord(config, m_inout_id))
+			// The service gates the re-send on the config's WhereClause: nothing left to export
+			// (e.g. every SSCC already in the EPCIS ledger) → DontSend, no adapter invocation.
+			if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, m_inout_id))
 			{
-				scriptedExportService.recordResendDontSend(configId, sourceRecord);
-				continue;
+				triggered++;
 			}
-
-			scriptedExportService.recordPendingAsResend(configId, sourceRecord);
-
-			scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
-					config,
-					m_inout_id,
-					ExternalSystemInvocationContext.RESEND);
-
-			triggered++;
 		}
 
 		return "@Processed@ #" + triggered;
