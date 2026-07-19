@@ -301,7 +301,7 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid-only filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
 	// -----------------------------------------------------------------------
 
 	/**
@@ -376,6 +376,24 @@ public class ExternalSystemExportStatusServiceTest
 		service.recordPending(configId, ref);
 		service.markEnqueued(configId, ref, pInstanceId);
 		service.markInvalid(pInstanceId, "bad data");
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getResendableConfigsBySourceRecord(ref);
+
+		assertThat(result).containsExactly(configId);
+	}
+
+	/**
+	 * A config whose latest attempt is DontSend ("shall not be sent" — e.g. suppressed because
+	 * everything was already in the ledger) must ALSO be resendable, so a re-send can re-evaluate it.
+	 */
+	@Test
+	void getResendableConfigs_includes_dontSendConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordDontSend(configId, ref);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
 				service.getResendableConfigsBySourceRecord(ref);

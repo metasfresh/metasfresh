@@ -41,6 +41,7 @@ import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -291,28 +292,42 @@ public class ExternalSystemScriptedExportConversionService
 	}
 
 	/**
-	 * Resolves the config by ID (fail-fast — throws for inactive/missing configs) and, only on
-	 * success, creates a new {@link ExternalSystemExportStatus#Pending} row with {@code IsResend=Y}.
+	 * Re-sends the scripted export for one config + record, but ONLY if the config's WhereClause still
+	 * matches the record — i.e. there is still something to export. For the EPCIS config the WhereClause
+	 * is {@code epcis_has_events(m_inout_id)}, which is false once every SSCC of the shipment is already
+	 * in the transmission ledger. When nothing is left to export the re-send records a terminal
+	 * {@link ExternalSystemExportStatus#DontSend} and does NOT invoke the adapter, so an empty EPCIS event
+	 * is never sent (mirroring the relevance gate the auto-complete path applies in
+	 * {@link #recordEligibilityAndInvoke}).
 	 *
-	 * <p>The getById-before-recordPendingAsResend ordering is intentional: if the config is
-	 * inactive or missing, getById throws <em>before</em> any Pending row is created, preventing
-	 * an orphan log row with no subsequent invocation.
+	 * <p>The config is resolved (getById, fail-fast — throws for inactive/missing) <em>before</em> any
+	 * status-row write, so a bad config throws before a Pending/DontSend row is created (no orphan row).
 	 *
-	 * @return the resolved config, ready for the follow-up
-	 *         {@link #executeInvokeScriptedExportConversionActionAndGetResult} call
+	 * @return {@code true} if the conversion was invoked (something to send), {@code false} if suppressed
+	 *         because nothing was left to export.
 	 */
-	@NonNull
-	public ExternalSystemScriptedExportConversionConfig resolveConfigAndRecordPendingAsResend(
+	public boolean resendConfigIfRelevant(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
-			@NonNull final TableRecordReference sourceRecord)
+			@NonNull final TableRecordReference sourceRecord,
+			final int recordId)
 	{
-		// Resolve config first — throws for inactive/missing configs (fail-fast, no orphan Pending row)
+		// Resolve config first — throws for inactive/missing configs (fail-fast, before any status-row write)
 		final ExternalSystemScriptedExportConversionConfig config =
 				externalSystemScriptedExportConversionRepository.getById(configId);
 
-		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+		if (!isConfigMatchingRecord(config, recordId))
+		{
+			// nothing left to export (e.g. every SSCC already in the EPCIS ledger) — record DontSend and
+			// do NOT invoke the adapter, so a re-send with nothing new never fires an empty EPCIS event
+			exportStatusService.recordDontSend(configId, sourceRecord);
+			Loggables.addLog("Re-send: config {} record {} → skipped (nothing to export / WhereClause no longer matches)", configId, sourceRecord);
+			return false;
+		}
 
-		return config;
+		exportStatusService.recordPendingAsResend(configId, sourceRecord);
+		executeInvokeScriptedExportConversionActionAndGetResult(config, recordId, ExternalSystemInvocationContext.RESEND);
+		Loggables.addLog("Re-send: config {} record {} → invoked", configId, sourceRecord);
+		return true;
 	}
 
 	@NonNull

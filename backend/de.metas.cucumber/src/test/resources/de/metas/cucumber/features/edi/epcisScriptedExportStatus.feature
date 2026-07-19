@@ -1237,3 +1237,162 @@ Feature: EPCIS scripted-export status — success, error and re-send flows
     When the EPCIS scripted-export status row for shipment io_S30916_140 is deactivated
 
     And the shipment identified by io_S30916_140 is reversed
+
+  @from:cucumber
+  @allure.label.epic:E0292_EDI
+  @allure.label.feature:F00353_EDI_DESADV_InOut_Link
+  @ghActions:run_on_executor7
+  @Id:S30916_150
+  Scenario: S30916_150 — re-send of an errored shipment whose SSCCs are all already in the ledger sends NOTHING (DontSend), not an empty event
+  ## Re-send gate (nothing-new → no empty event). A shipment is completed and Enqueued, then its
+  ## EPCIS send ERRORS (so the config becomes re-sendable). Its physical SSCC is then recorded in
+  ## the transmission ledger (a prior confirmed send of the same physical pallet). The production
+  ## "Re-send" action is invoked: because epcis_has_events(...) is now false, the re-send must NOT
+  ## invoke the adapter (which would emit an empty EPCIS event) — it records DontSend instead, and
+  ## the ledger stays at exactly one row.
+
+    And the EPCIS transmission ledger is empty
+
+    And metasfresh contains M_Products:
+      | Identifier   | GTIN          |
+      | p_S30916_150 | 4060000001500 |
+    And metasfresh contains M_PricingSystems
+      | Identifier    |
+      | ps_S30916_150 |
+    And metasfresh contains M_PriceLists
+      | Identifier    | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_S30916_150 | ps_S30916_150      | DE           | EUR           | true  | false         | 2              |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier     | M_PriceList_ID |
+      | plv_S30916_150 | pl_S30916_150  |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID | C_TaxCategory_ID |
+      | plv_S30916_150         | p_S30916_150 | 10.0     | PCE      | Normal           |
+
+    And metasfresh contains C_BPartners:
+      | Identifier    | IsCustomer | M_PricingSystem_ID | GLN           |
+      | bp_S30916_150 | Y          | ps_S30916_150      | 9900000315000 |
+    And metasfresh contains C_BPartner_EDI_Setting:
+      | C_BPartner_ID | IsEdiDesadvRecipient | EdiDesadvRecipientGLN | Identifier                |
+      | bp_S30916_150 | true                 | 9900000315000         | edi_setting_S30916_150_bp |
+
+    And metasfresh contains C_BPartner_Product
+      | C_BPartner_ID | M_Product_ID |
+      | bp_S30916_150 | p_S30916_150 |
+
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID        |
+      | pi_LU_S30916_150  |
+      | pi_TU_S30916_150  |
+      | pi_VHU_S30916_150 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID | M_HU_PI_ID        | HU_UnitType | IsCurrent |
+      | piv_LU_S30916_150  | pi_LU_S30916_150  | LU          | Y         |
+      | piv_TU_S30916_150  | pi_TU_S30916_150  | TU          | Y         |
+      | piv_VHU_S30916_150 | pi_VHU_S30916_150 | V           | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID   | M_HU_PI_Version_ID | Qty | ItemType | Included_HU_PI_ID |
+      | pii_LU_S30916_150 | piv_LU_S30916_150  | 20  | HU       | pi_TU_S30916_150  |
+      | pii_TU_S30916_150 | piv_TU_S30916_150  | 0   | MI       |                   |
+    And metasfresh contains M_HU_PI_Attribute:
+      | M_HU_PI_Version_ID | M_Attribute.Value |
+      | piv_LU_S30916_150  | SSCC18            |
+    And metasfresh contains M_HU_PI_Item_Product:
+      | M_HU_PI_Item_Product_ID | M_HU_PI_Item_ID   | M_Product_ID | Qty | ValidFrom  |
+      | pip_S30916_150          | pii_TU_S30916_150 | p_S30916_150 | 10  | 2020-01-01 |
+
+    And metasfresh contains ExternalSystem_Config with ScriptedExportConversion and StatusColumn:
+      | ExternalSystem_Config_ID | ExternalSystem_Config_ScriptedExportConversion_ID | AD_Process_OutboundData_ID.Value | TableName | WhereClause                                  |
+      | esConfig_S30916_150      | scriptedCfg_S30916_150                            | M_InOut_EPCIS_Export_JSON        | M_InOut   | "de.metas.edi".epcis_has_events(m_inout_id) |
+
+    # Sales order: 10 PCE = 1 TU, one standalone pallet
+    And metasfresh contains C_Orders:
+      | Identifier   | IsSOTrx | C_BPartner_ID | DateOrdered | POReference |
+      | o_S30916_150 | true    | bp_S30916_150 | 2026-06-10  | 1300000015  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID   | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | ol_S30916_150 | o_S30916_150 | p_S30916_150 | 10         | pip_S30916_150          |
+
+    When the order identified by o_S30916_150 is completed
+
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID | IsToRecompute |
+      | ss_S30916_150 | ol_S30916_150  | N             |
+
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inv_S30916_150            | 2026-06-10   | warehouseStd   |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inv_S30916_150            | invLine_S30916_150            | p_S30916_150            | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'inv_S30916_150'
+    And after not more than 30s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | invLine_S30916_150            | cu_S30916_150      |
+
+    And transform CU to new TUs
+      | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | OPT.resultedNewTUs.Identifier |
+      | cu_S30916_150       | 10    | pip_S30916_150                     | tu_S30916_150                 |
+
+    And transform TU to new LUs
+      | sourceTU.Identifier | tuQty | M_HU_PI_Item_ID.Identifier | resultedNewLUs.Identifier |
+      | tu_S30916_150       | 1     | pii_LU_S30916_150          | lu_S30916_150             |
+
+    And M_HU_Attribute is changed
+      | M_HU_ID       | M_Attribute_ID.Value | Value              |
+      | lu_S30916_150 | SSCC18               | 987654321000031500 |
+
+    When create M_PickingCandidate for M_HU
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | QtyPicked | Status | PickStatus | ApprovalStatus |
+      | tu_S30916_150      | ss_S30916_150                    | 10        | IP     | P          | ?              |
+    And process picking
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier |
+      | tu_S30916_150      | ss_S30916_150                    |
+
+    When 'generate shipments' process is invoked with QuantityType=PD, IsCompleteShipments=false and IsShipToday=false
+      | M_ShipmentSchedule_ID |
+      | ss_S30916_150         |
+
+    Then after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID | M_InOut_ID    |
+      | ss_S30916_150         | io_S30916_150 |
+
+    And the shipment identified by io_S30916_150 is completed
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # ─── First send attempt reaches Enqueued (ledger still empty → export-relevant) ─────
+    Then the EPCIS export-relevance for M_InOut identified by io_S30916_150 is true
+    Then after not more than 30s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_S30916_150 | scriptedCfg_S30916_150                            | U            |
+
+    # ─── The send ERRORS → the config becomes re-sendable (latest attempt Error) ────────
+    And the external system sends an error response for the shipment
+      | M_InOut_ID    | ErrorMessage        |
+      | io_S30916_150 | EPCIS_error_nosend  |
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_S30916_150 | scriptedCfg_S30916_150                            | E            |
+
+    # ─── The shipment's physical SSCC is already in the ledger (prior confirmed send of the shared
+    # pallet) → the outbound-selection gate epcis_has_events(...) flips to false. ──────────
+    And metasfresh contains EDI_EPCIS_Transmitted_SSCC:
+      | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    |
+      | 987654321000031500 | scriptedCfg_S30916_150                            | io_S30916_150 |
+    And the EPCIS export-relevance for M_InOut identified by io_S30916_150 is false
+
+    # ─── Re-send with nothing new: the gate records DontSend and does NOT invoke the adapter ──
+    When M_InOut_ReSend_ScriptedExportConversion process is run for shipment io_S30916_150
+
+    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+
+    # The latest status is DontSend (N) — no Enqueued/Sent re-send attempt was produced, so no empty
+    # EPCIS event was transmitted; the ledger still holds EXACTLY ONE row (no duplicate).
+    Then after not more than 10s, ExternalSystem_ScriptedExportConversion_Status is found:
+      | M_InOut_ID    | ExternalSystem_Config_ScriptedExportConversion_ID | ExportStatus |
+      | io_S30916_150 | scriptedCfg_S30916_150                            | N            |
+    Then the EPCIS transmission ledger contains exactly:
+      | SSCC18             | ExternalSystem_Config_ScriptedExportConversion_ID | M_InOut_ID    |
+      | 987654321000031500 | scriptedCfg_S30916_150                            | io_S30916_150 |
+
