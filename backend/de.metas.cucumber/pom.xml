@@ -208,6 +208,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Allure reporting for Cucumber tests -->
+        <dependency>
+            <groupId>io.qameta.allure</groupId>
+            <artifactId>allure-cucumber7-jvm</artifactId>
+            <version>2.25.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
