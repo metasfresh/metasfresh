@@ -38,7 +38,6 @@ import org.compiere.model.I_M_InOut;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 
 import java.util.Optional;
 
