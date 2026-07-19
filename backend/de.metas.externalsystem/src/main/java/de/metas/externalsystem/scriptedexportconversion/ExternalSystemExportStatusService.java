@@ -124,9 +124,11 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Returns the config IDs whose status row for the given source record is in a terminal-failure
-	 * state ({@link ExternalSystemExportStatus#Error} or {@link ExternalSystemExportStatus#Invalid}).
-	 * In-flight rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
+	 * Returns the config IDs whose latest status row for the given source record is re-sendable
+	 * ({@link ExternalSystemExportStatus#isResendable()} — {@link ExternalSystemExportStatus#Error},
+	 * {@link ExternalSystemExportStatus#Invalid} or {@link ExternalSystemExportStatus#DontSend}). A
+	 * DontSend row is included so a suppressed record can be re-evaluated on re-send. Sent and in-flight
+	 * rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(

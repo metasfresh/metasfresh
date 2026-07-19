@@ -301,7 +301,7 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid-only filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
 	// -----------------------------------------------------------------------
 
 	/**
