@@ -40,6 +40,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Tests {@link ShipmentScheduleInvalidateRepository#buildShipmentScheduleWhereClause(String, IShipmentScheduleSegment, List)}
  * for the warehouse-derived segment support (warehouse branch + empty-locator guard).
+ * <p>
+ * The whole-product batching is performed by the {@code M_ShipmentSchedule_TagToRecompute(numeric, integer)}
+ * DB function, invoked via
+ * {@link ShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(de.metas.process.PInstanceId, org.adempiere.ad.dao.QueryLimit)};
+ * that batching is covered end-to-end by the {@code updateInvalidShipmentSchedulesRecomputeBatching} Cucumber scenario.
  */
 public class ShipmentScheduleInvalidateRepositoryTest
 {
