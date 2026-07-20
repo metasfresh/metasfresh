@@ -88,27 +88,39 @@ testCases.forEach(({ language, label }) => {
       // relying on the spinner-detached heuristic alone, which can false-pass before
       // the spinner mounts. Mirrors PurchaseOrderPage.reactivate().
       await test.step('reactivate order', async () => {
-        for (let attempt = 1; attempt <= 3; attempt++) {
+        const maxAttempts = 3;
+        let reactivated = false;
+        for (let attempt = 1; attempt <= maxAttempts && !reactivated; attempt++) {
           if (!(await page.getByTestId('status-RE').isVisible().catch(() => false))) {
             await page.getByTestId('status-button').click();
             await page.waitForTimeout(500);
           }
           const re = page.getByTestId('status-RE');
-          await re.waitFor({ state: 'visible', timeout: 10000 });
+          const reVisible = await re
+            .waitFor({ state: 'visible', timeout: 10000 })
+            .then(() => true)
+            .catch(() => false);
+          if (!reVisible) {
+            await page.keyboard.press('Escape').catch(() => {});
+            await page.waitForTimeout(1500);
+            continue;
+          }
           await re.click();
           await page
             .locator('.rotating, .indicator-pending')
             .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
             .catch(() => {});
-          // confirm the document is now completable again (Drafted)
+          // confirm the document is completable again (back to Drafted)
           await page.getByTestId('status-button').click();
           await page.waitForTimeout(500);
-          const backToDrafted = await page.getByTestId('status-CO').isVisible().catch(() => false);
+          reactivated = await page.getByTestId('status-CO').isVisible().catch(() => false);
           await page.keyboard.press('Escape');
-          if (backToDrafted) break;
-          expect(attempt, 'order should reactivate to a Drafted (completable) state').toBeLessThan(3);
-          await page.waitForTimeout(1500);
+          if (!reactivated) await page.waitForTimeout(1500);
         }
+        expect(
+          reactivated,
+          `order did not reactivate to a Drafted (completable) state after ${maxAttempts} attempts`
+        ).toBe(true);
       });
 
       const qtyCell = () =>
