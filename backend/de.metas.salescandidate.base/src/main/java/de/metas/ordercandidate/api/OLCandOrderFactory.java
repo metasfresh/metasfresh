@@ -31,6 +31,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.contracts.ConditionsId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
@@ -58,7 +59,6 @@ import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationType;
-import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -88,6 +88,7 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -680,17 +681,49 @@ class OLCandOrderFactory
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
 		// The ordered number of cartons scales the schema's template-line quantities.
+		// M5: cartonQty is passed as the pure group qty-multiplier with NO UOM conversion, matching
+		// OrderLineQuickInputProcessor. This assumes candidate.getQty() is already expressed in the schema
+		// product's own counting UOM (i.e. a count of cartons); a UOM other than that would scale wrongly.
 		final BigDecimal cartonQty = candidate.getQty().toBigDecimal();
+
+		// C2: thread the carton candidate's flatrate/contract conditions into createGroup. This is how the
+		// exploded component lines get their C_Flatrate_Conditions_ID: OrderGroupRepository.createRegularLineFromTemplate
+		// sets it from the request's newContractConditionsId (and the same id also drives which template regular
+		// lines match). This is the Quick-Input mechanism; the OLCand listener path (FlatrateOLCandListener) is
+		// deliberately NOT used for generated lines (see below).
+		final ConditionsId flatrateConditionsId = ConditionsId.ofRepoIdOrNull(candidate.getFlatrateConditionsId());
 
 		final Group group = orderGroupsRepository.prepareNewGroup()
 				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
 				.qty(cartonQty)
-				.createGroup(orderId, /* C_Flatrate_Conditions_ID */ null);
+				.createGroup(orderId, flatrateConditionsId);
 
-		// Preserve the OLCand -> order traceability: allocate the carton candidate to each generated regular component line.
-		for (final GroupRegularLine regularLine : group.getRegularLines())
+		// H3: we deliberately do NOT fire olCandListeners.onOrderLineCreated for the generated component lines.
+		// HU packing-instruction (OLCandPIIPListener) is product-specific and must not be copied from the carton
+		// candidate onto its differing-product component lines; flatrate conditions are instead threaded via
+		// createGroup's conditions parameter (above).
+		//
+		// C1: createGroup persists real C_OrderLine rows for BOTH the regular AND the compensation lines of the
+		// group. Track every one of them in `orderLines` (and allocate the candidate to each) so that a later
+		// rollback in onCompensationGroupFailure (deleteAll(orderLines) + delete(order)) does not leave an
+		// untracked compensation line still FK-referencing C_Order and make delete(order) fail.
+		final List<RepoIdAware> generatedLineIds = new ArrayList<>();
+		group.getRegularLines().forEach(regularLine -> generatedLineIds.add(regularLine.getRepoId()));
+		group.getCompensationLines().forEach(compensationLine -> generatedLineIds.add(compensationLine.getRepoId()));
+
+		for (final RepoIdAware generatedLineId : generatedLineIds)
 		{
-			final I_C_OrderLine componentOrderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), I_C_OrderLine.class);
+			final I_C_OrderLine componentOrderLine = InterfaceWrapperHelper.load(generatedLineId, I_C_OrderLine.class);
+
+			// H4: the generated group lines otherwise inherit warehouse/org from the order header only. Mirror the
+			// plain path (see addOLCand0) and align them with THIS candidate, so a later Mischkarton candidate
+			// aggregated into the same order (different warehouse/org) does not silently diverge from its own values.
+			componentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
+			componentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
+			componentOrderLine.setAD_Org_ID(candidate.getAD_Org_ID());
+			InterfaceWrapperHelper.save(componentOrderLine);
+
+			// Preserve the OLCand -> order traceability and cover the line for rollback.
 			createOla(candidate, componentOrderLine);
 			orderLines.put(componentOrderLine.getC_OrderLine_ID(), componentOrderLine);
 		}
