@@ -139,6 +139,8 @@ import static de.metas.util.Check.isBlank;
 public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
+	private static final AdMessageKey MSG_BPartnerCompositeOrgMismatch = AdMessageKey.of("BPartnerCompositeOrgMismatch");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
@@ -189,8 +191,6 @@ public class JsonPersisterService
 	{
 		return trxManager.callInNewTrx(() -> persistWithinTrx(orgCode, requestItem, parentSyncAdvise));
 	}
-
-	private static final AdMessageKey MSG_BPartnerCompositeOrgMismatch = AdMessageKey.of("BPartnerCompositeOrgMismatch");
 
 	/**
 	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question (path parameter). If {@code null}, the system will fall back to the current context-OrgId.
@@ -255,9 +255,7 @@ public class JsonPersisterService
 			resultBuilder.setNewBPartner(true);
 		}
 
-		// Pre-set the effective org on the composite so that syncJsonToOrg preserves it
-		// when the body orgCode is absent (path-only case). syncJsonToOrg returns early
-		// when orgId is already set and body orgCode is blank — exactly what we want.
+		// Establish the effective org before sync so the path-only case (no body orgCode) is correctly preserved.
 		bpartnerComposite.setOrgId(orgId);
 
 		syncJsonToBPartnerComposite(

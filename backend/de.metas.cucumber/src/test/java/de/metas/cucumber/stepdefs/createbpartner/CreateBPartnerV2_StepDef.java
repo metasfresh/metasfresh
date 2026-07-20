@@ -41,6 +41,7 @@ import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Services;
+import java.util.Optional;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -263,7 +264,7 @@ public class CreateBPartnerV2_StepDef
 			row.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID)
 					.ifPresent(orgIdentifier ->
 					{
-						final I_C_BPartner_Location locationRecord = InterfaceWrapperHelper.load(location.getMetasfreshId().getValue(), I_C_BPartner_Location.class);
+						final I_C_BPartner_Location locationRecord = InterfaceWrapperHelper.loadOutOfTrx(location.getMetasfreshId().getValue(), I_C_BPartner_Location.class);
 						softly.assertThat(locationRecord.getAD_Org_ID())
 								.as(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID)
 								.isEqualTo(orgTable.getIdAsInt(orgIdentifier));
@@ -343,7 +344,7 @@ public class CreateBPartnerV2_StepDef
 			row.getAsOptionalIdentifier(I_AD_User.COLUMNNAME_AD_Org_ID)
 					.ifPresent(orgIdentifier ->
 					{
-						final I_AD_User userRecord = InterfaceWrapperHelper.load(contact.getMetasfreshId().getValue(), I_AD_User.class);
+						final I_AD_User userRecord = InterfaceWrapperHelper.loadOutOfTrx(contact.getMetasfreshId().getValue(), I_AD_User.class);
 						softly.assertThat(userRecord.getAD_Org_ID())
 								.as(I_AD_User.COLUMNNAME_AD_Org_ID)
 								.isEqualTo(orgTable.getIdAsInt(orgIdentifier));
@@ -365,7 +366,7 @@ public class CreateBPartnerV2_StepDef
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_REFERENCE:
-				final java.util.Optional<MetasfreshId> metasfreshId =
+				final Optional<MetasfreshId> metasfreshId =
 						jsonRetrieverService.resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
 				return metasfreshId.isPresent() &&
 						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonContact.getMetasfreshId()));
