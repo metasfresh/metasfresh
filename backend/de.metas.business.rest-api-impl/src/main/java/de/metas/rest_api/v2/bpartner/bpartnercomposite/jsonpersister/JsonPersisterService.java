@@ -83,10 +83,10 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
@@ -206,7 +206,6 @@ public class JsonPersisterService
 		final JsonRequestComposite jsonRequestComposite = requestItem.getBpartnerComposite();
 		final String bodyOrgCode = jsonRequestComposite.getOrgCode();
 
-		// AC3: if both path and body orgCode are present and resolve to different orgs, reject immediately.
 		if (!isBlank(orgCode) && !isBlank(bodyOrgCode))
 		{
 			final OrgId pathOrgId = retrieveOrgIdOrDefault(orgCode);
@@ -217,7 +216,7 @@ public class JsonPersisterService
 			}
 		}
 
-		// AC4: resolve one effective orgCode — body takes precedence over path (both resolve to same org after AC3 check).
+		// body takes precedence over path; when both are present they already resolved to the same org (checked above).
 		final String effectiveOrgCode = !isBlank(bodyOrgCode) ? bodyOrgCode : orgCode;
 		final OrgId orgId = retrieveOrgIdOrDefault(effectiveOrgCode);
 

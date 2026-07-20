@@ -114,7 +114,6 @@ Feature: BPartner v2 upsert places records in the path org
   Scenario: PUT api/v2/bpartner/002 with body orgCode 001 is rejected (org mismatch)
     # When the body orgCode contradicts the path org, the API must reject with 4xx and return
     # a user-friendly JsonErrorItem whose message names the org conflict.
-    # Currently (bug): the code silently accepts and returns 201 — so this assertion fails RED.
     When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error code 'BPartnerCompositeOrgMismatch':
     """
 {
@@ -160,8 +159,7 @@ Feature: BPartner v2 upsert places records in the path org
   }
 }
 """
-    # GET by path org 002 should find the partner (currently fails: record lands under MAIN, not org002)
+    # GET by path org 002 should find the partner (org isolation: only the correct org returns it)
     Then the metasfresh REST-API endpoint path 'api/v2/bpartner/002/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='200'
     # GET by path org 001 should return not-found (org isolation)
-    # Currently (bug): the code finds the partner across orgs — this assertion fails RED.
     Then the metasfresh REST-API endpoint path 'api/v2/bpartner/001/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='404'
