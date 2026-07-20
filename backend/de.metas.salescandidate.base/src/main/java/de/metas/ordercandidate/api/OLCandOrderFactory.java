@@ -52,12 +52,17 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineGroup;
 import de.metas.order.OrderLineId;
+import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupRegularLine;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
+import de.metas.order.compensationGroup.GroupTemplateId;
+import de.metas.order.compensationGroup.GroupTemplateRepository;
 import de.metas.order.compensationGroup.OrderGroupRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.ordercandidate.model.I_C_OLCand;
@@ -154,6 +159,7 @@ class OLCandOrderFactory
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
+	private final GroupTemplateRepository groupTemplateRepository = SpringContextHolder.instance.getBean(GroupTemplateRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
@@ -507,6 +513,14 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
+		// If the candidate's product carries a compensation-group schema ("Mischkarton" / trading-BOM),
+		// explode it into the schema's component order lines instead of creating a single carton line
+		// (mirrors what the sales-order window / Quick-Input does).
+		if (tryExplodeCompensationGroupSchema(candidate))
+		{
+			return;
+		}
+
 		final boolean isNewOrderLine;
 		if (currentOrderLine == null)
 		{
@@ -625,6 +639,64 @@ class OLCandOrderFactory
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
 		candidates.add(candidate);
+	}
+
+	/**
+	 * If the candidate's product has a compensation-group schema (a "Mischkarton" / trading-BOM) and the candidate is
+	 * NOT already part of an explicit OLCand group, explode the ordered carton qty into the schema's component order
+	 * lines (regular + compensation) using the same business API the sales-order window / Quick-Input uses, and link
+	 * the carton candidate to each generated regular line via {@code C_Order_Line_Alloc}.
+	 *
+	 * @return {@code true} if the candidate was handled by schema explosion (caller must NOT create a plain carton
+	 * line); {@code false} otherwise (caller proceeds with the plain-line flow).
+	 */
+	private boolean tryExplodeCompensationGroupSchema(@NonNull final OLCand candidate)
+	{
+		// Guard (b): leave candidates that already belong to an explicit CompensationGroupKey group to the existing grouping path.
+		final OrderLineGroup orderLineGroup = candidate.getOrderLineGroup();
+		if (orderLineGroup != null && !Check.isBlank(orderLineGroup.getGroupKey()))
+		{
+			return false;
+		}
+
+		// Guard (a): the product must carry a compensation-group schema.
+		final int productRepoId = candidate.getM_Product_ID();
+		if (productRepoId <= 0)
+		{
+			return false;
+		}
+		final ProductId productId = ProductId.ofRepoId(productRepoId);
+		final GroupTemplateId groupTemplateId = productDAO.getGroupTemplateIdByProductId(productId).orElse(null);
+		if (groupTemplateId == null)
+		{
+			return false;
+		}
+
+		// Make sure the order exists (without creating a stray carton order line).
+		if (order == null)
+		{
+			order = newOrder(candidate);
+		}
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		// The ordered number of cartons scales the schema's template-line quantities.
+		final BigDecimal cartonQty = candidate.getQty().toBigDecimal();
+
+		final Group group = orderGroupsRepository.prepareNewGroup()
+				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
+				.qty(cartonQty)
+				.createGroup(orderId, /* C_Flatrate_Conditions_ID */ null);
+
+		// Preserve the OLCand -> order traceability: allocate the carton candidate to each generated regular component line.
+		for (final GroupRegularLine regularLine : group.getRegularLines())
+		{
+			final I_C_OrderLine componentOrderLine = InterfaceWrapperHelper.load(regularLine.getRepoId(), I_C_OrderLine.class);
+			createOla(candidate, componentOrderLine);
+			orderLines.put(componentOrderLine.getC_OrderLine_ID(), componentOrderLine);
+		}
+
+		candidates.add(candidate);
+		return true;
 	}
 
 	private I_C_OrderLine newOrderLine(@NonNull final OLCand candToProcess)
