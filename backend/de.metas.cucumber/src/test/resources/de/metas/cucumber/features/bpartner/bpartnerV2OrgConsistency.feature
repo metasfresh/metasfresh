@@ -58,7 +58,7 @@ Feature: BPartner v2 upsert places records in the path org
 }
 """
     Then verify that bPartner was created for externalIdentifier
-      | C_BPartner_ID.Identifier | externalIdentifier  | name                   | AD_Org_ID |
+      | C_BPartner_ID.Identifier | externalIdentifier  | name                 | AD_Org_ID |
       | bpartner_org002          | ext-Test_System-001 | Org Consistency Test | org002    |
     And verify that location was created for bpartner
       | bpartnerIdentifier  | locationIdentifier       | address1       | countryCode | AD_Org_ID |
