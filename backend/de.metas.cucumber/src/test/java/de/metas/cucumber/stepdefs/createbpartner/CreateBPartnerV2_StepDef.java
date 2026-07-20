@@ -313,7 +313,7 @@ public class CreateBPartnerV2_StepDef
 				contact = jsonRetrieverService
 						.getJsonBPartnerComposite(orgId, ExternalIdentifier.of(bpartnerIdentifier))
 						.flatMap(composite -> composite.getContacts().stream()
-								.filter(c -> isContactMatches(orgId, c, contactExtId))
+								.filter(contactCandidate -> isContactMatches(orgId, contactCandidate, contactExtId))
 								.findAny())
 						.orElseThrow(() -> new AdempiereException("Contact not found under org " + orgId + ": bpartner=" + bpartnerIdentifier + " contact=" + contactIdentifier));
 			}
