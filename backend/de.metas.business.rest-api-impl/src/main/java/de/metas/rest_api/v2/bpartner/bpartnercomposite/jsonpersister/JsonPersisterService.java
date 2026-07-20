@@ -210,7 +210,7 @@ public class JsonPersisterService
 		{
 			final OrgId pathOrgId = retrieveOrgIdOrDefault(orgCode);
 			final OrgId bodyOrgId = retrieveOrgIdOrDefault(bodyOrgCode);
-			if (!pathOrgId.equals(bodyOrgId))
+			if (!OrgId.equals(pathOrgId, bodyOrgId))
 			{
 				throw new AdempiereException(MSG_BPartnerCompositeOrgMismatch, orgCode, bodyOrgCode);
 			}
