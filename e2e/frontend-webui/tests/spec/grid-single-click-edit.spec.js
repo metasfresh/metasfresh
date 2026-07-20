@@ -25,9 +25,9 @@ const testCases = [
 testCases.forEach(({ language, label }) => {
   test.describe('Grid single-click inline edit', () => {
     test(`single-click + type + Tab persists the value (${label})`, async ({ page }) => {
-      allure.epic('E0193: User Interface');
-      allure.tag('F14160: Grid Edit');
-      allure.tag('F14160');
+      allure.epic('E0294: Frontend WebUI');
+      allure.tag('F50000: Frontend WebUI');
+      allure.tag('F50000');
       allure.story('Single-click inline cell editing');
       allure.severity('critical');
 
@@ -72,10 +72,13 @@ testCases.forEach(({ language, label }) => {
       await LoginPage.login(masterdata.login.user);
       await DashboardPage.expectVisible();
 
+      // Open the record and wait on a concrete document-header control (not networkidle —
+      // metasfresh keeps the network busy with STOMP/KPI polling, so networkidle never settles).
       const openRecord = async () => {
         await page.goto(`${FRONTEND_BASE_URL}/window/${SALES_ORDER_WINDOW_ID}/${orderId}`);
-        await page.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-        await page.waitForTimeout(2000);
+        await page
+          .getByTestId('status-button')
+          .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       };
 
       await openRecord();
@@ -87,7 +90,6 @@ testCases.forEach(({ language, label }) => {
         const re = page.getByTestId('status-RE');
         await re.waitFor({ state: 'visible', timeout: 10000 });
         await re.click();
-        await page.waitForTimeout(3500);
         await page
           .locator('.rotating, .indicator-pending')
           .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
@@ -117,16 +119,32 @@ testCases.forEach(({ language, label }) => {
         // sanity: the typed value is actually in the cell input before we leave it
         const typed = await qtyCell().locator('input.js-input-field').first().inputValue();
         expect(typed, 'typed value present in the cell input').toBe('3');
+
+        // Await the actual PATCH round-trip on blur (not a blind sleep). On the buggy path
+        // no PATCH is sent, so this resolves null after the timeout and the assertion below fails.
+        const patchSettled = page
+          .waitForResponse(
+            (resp) =>
+              resp.request().method() === 'PATCH' &&
+              resp.url().includes('/window/') &&
+              (resp.request().postData() || '').includes('QtyEntered'),
+            { timeout: 10000 }
+          )
+          .catch(() => null);
         await page.keyboard.press('Tab');
-        await page.waitForTimeout(2500);
+        await patchSettled;
       });
 
       // the edit must have been PATCHed to the server
-      expect(qtyPatches, 'a PATCH with the new QtyEntered must be sent on single-click edit').not.toHaveLength(0);
+      expect(
+        qtyPatches,
+        'a PATCH with the new QtyEntered must be sent on single-click edit'
+      ).not.toHaveLength(0);
 
       // end result: the new quantity must persist across a reload
       await test.step('reload and verify the quantity persisted', async () => {
         await openRecord();
+        await qtyCell().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
         const cellText = (await qtyCell().innerText()).trim();
         // language-independent numeric check: normalise decimal comma -> dot, parse
         const numeric = parseFloat(cellText.replace(/\s/g, '').replace(',', '.').replace(/[^0-9.]/g, ''));
