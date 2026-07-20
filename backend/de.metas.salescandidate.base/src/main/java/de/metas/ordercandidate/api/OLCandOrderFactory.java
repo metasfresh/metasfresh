@@ -59,6 +59,7 @@ import de.metas.order.OrderLineId;
 import de.metas.order.compensationGroup.Group;
 import de.metas.order.compensationGroup.GroupCompensationAmtType;
 import de.metas.order.compensationGroup.GroupCompensationType;
+import de.metas.order.compensationGroup.GroupId;
 import de.metas.order.compensationGroup.GroupRepository;
 import de.metas.order.compensationGroup.GroupTemplate;
 import de.metas.order.compensationGroup.GroupTemplateId;
@@ -183,6 +184,8 @@ class OLCandOrderFactory
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
 	private final List<OLCand> candidates = new ArrayList<>();
+	// Compensation-group headers created via schema explosion (tryExplodeCompensationGroupSchema); rolled back in onCompensationGroupFailure.
+	private final List<GroupId> compensationGroupIds = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
 
@@ -394,6 +397,13 @@ class OLCandOrderFactory
 	{
 		deleteAll(allocations);
 		deleteAll(orderLines.values());
+		// Delete any compensation-group headers created by schema explosion BEFORE delete(order): their order lines are
+		// already gone (above), so each header is the last, FK-orphaned row and its deferred C_Order FK would abort the
+		// transaction at COMMIT otherwise. deleteGroupById is idempotent, so a header already removed elsewhere is fine.
+		for (final GroupId compensationGroupId : compensationGroupIds)
+		{
+			orderGroupsRepository.deleteGroupById(compensationGroupId);
+		}
 		delete(order);
 
 		for (final OLCand candidate : candidates)
@@ -711,6 +721,11 @@ class OLCandOrderFactory
 				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
 				.qty(cartonQty)
 				.createGroup(orderId, flatrateConditionsId);
+
+		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.
+		// Its C_Order_CompensationGroup->C_Order FK is DEFERRABLE INITIALLY DEFERRED: an orphaned header (left after
+		// the order+lines are deleted) would otherwise abort the whole transaction at COMMIT.
+		compensationGroupIds.add(group.getGroupId());
 
 		// H3: we deliberately do NOT fire olCandListeners.onOrderLineCreated for the generated component lines.
 		// HU packing-instruction (OLCandPIIPListener) is product-specific and must not be copied from the carton
