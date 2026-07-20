@@ -219,11 +219,9 @@ public class PickingJobTestHelper
 				inventoryService,
 				new HUGraiService(new HUPIGraiRepository()));
 
-		final PickingJobSalesOrderService salesOrderService = new PickingJobSalesOrderService();
-
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
-				salesOrderService,
+				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
 				productService,
@@ -246,8 +244,7 @@ public class PickingJobTestHelper
 				configService,
 				pickingJobScheduleService,
 				huService,
-				new PickingJobGraiTargetService(huService),
-				salesOrderService
+				new PickingJobGraiTargetService(huService)
 		);
 
 		huTracer = new HUTracerInstance()
