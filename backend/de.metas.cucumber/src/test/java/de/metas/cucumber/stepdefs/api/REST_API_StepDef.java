@@ -336,13 +336,13 @@ public class REST_API_StepDef
 
 	/**
 	 * Sends a PUT request to the given endpoint with the payload from the doc-string, asserts the HTTP status code,
-	 * and validates the {@code JsonErrorItem} returned in the response body.
+	 * and validates the {@code JsonErrorItem} returned in the response body using a machine-readable error code.
 	 *
 	 * <p>All assertions are passed as inline Gherkin parameters so this step takes a single doc-string argument
 	 * (the JSON payload) — Gherkin grammar forbids a step from taking both a DataTable and a DocString.
 	 *
-	 * <p>The {@code expectErrorUserFriendly} and {@code expectErrorContaining} parameters are wired directly
-	 * to {@link APIRequest#expectErrorUserFriendly} and {@link APIRequest#expectedErrorMessageContaining},
+	 * <p>The {@code expectErrorUserFriendly} and {@code expectErrorCode} parameters are wired directly
+	 * to {@link APIRequest#expectErrorUserFriendly} and {@link APIRequest#expectedErrorCode},
 	 * which are validated by {@link RESTUtil#validateAPIResponse} — no new assertion machinery is introduced.
 	 *
 	 * <p>Parameters (all inline Gherkin expressions):
@@ -351,25 +351,26 @@ public class REST_API_StepDef
 	 *   <li>{@code expectedStatusCode} – HTTP status code the server must return, e.g. {@code 422}</li>
 	 *   <li>{@code expectErrorUserFriendly} – {@code true} or {@code false}; expected value of
 	 *       {@code JsonErrorItem.isUserFriendlyError}</li>
-	 *   <li>{@code expectErrorContaining} – substring that must appear in {@code JsonErrorItem.message}</li>
+	 *   <li>{@code expectErrorCode} – exact AD_Message key that must appear in {@code JsonErrorItem.errorCode},
+	 *       e.g. {@code BPartnerCompositeOrgMismatch}</li>
 	 * </ul>
 	 *
 	 * <p>The doc-string (the step's single argument) is the JSON request body.
 	 *
 	 * <p>Example:
 	 * <pre>
-	 * When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error containing 'org':
+	 * When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error code 'BPartnerCompositeOrgMismatch':
 	 *   """
 	 *   { "requestItems": [ { "bpartnerComposite": { "orgCode": "001" } } ] }
 	 *   """
 	 * </pre>
 	 */
-	@When("a PUT request with below payload is sent to metasfresh REST-API {string} expecting status {string} user-friendly {string} error containing {string}:")
+	@When("a PUT request with below payload is sent to metasfresh REST-API {string} expecting status {string} user-friendly {string} error code {string}:")
 	public void put_request_with_payload_and_error_assertions(
 			@NonNull final String endpointPath,
 			@NonNull final String expectedStatusCode,
 			@NonNull final String expectErrorUserFriendly,
-			@NonNull final String expectErrorContaining,
+			@NonNull final String expectErrorCode,
 			@NonNull final String payload) throws IOException
 	{
 		final String payloadResolved = resolveContextVariables(payload);
@@ -381,7 +382,7 @@ public class REST_API_StepDef
 						.method("PUT")
 						.payload(payloadResolved)
 						.expectedStatusCode(Integer.parseInt(expectedStatusCode))
-						.expectedErrorMessageContaining(StringUtils.trimBlankToNull(expectErrorContaining))
+						.expectedErrorCode(StringUtils.trimBlankToNull(expectErrorCode))
 						.expectErrorUserFriendly(Boolean.parseBoolean(expectErrorUserFriendly))
 						.build()
 		);

@@ -108,7 +108,7 @@ Feature: BPartner v2 upsert places records in the path org
     # When the body orgCode contradicts the path org, the API must reject with 4xx and return
     # a user-friendly JsonErrorItem whose message names the org conflict.
     # Currently (bug): the code silently accepts and returns 201 — so this assertion fails RED.
-    When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error containing 'org':
+    When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error code 'BPartnerCompositeOrgMismatch':
     """
 {
   "requestItems": [

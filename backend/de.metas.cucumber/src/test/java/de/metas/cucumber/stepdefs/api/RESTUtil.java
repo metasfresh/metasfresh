@@ -267,8 +267,9 @@ public class RESTUtil
 		}
 
 		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final String expectErrorCode = apiRequest.getExpectedErrorCode();
 		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
-		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final boolean isExpectError = expectErrorContaining != null || expectErrorCode != null || expectErrorUserFriendly != null;
 		if (isExpectError)
 		{
 			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
@@ -279,6 +280,12 @@ public class RESTUtil
 				assertThat(jsonErrorItem.getMessage())
 						.as(() -> "Error Message of " + jsonError)
 						.contains(expectErrorContaining);
+			}
+			if (expectErrorCode != null)
+			{
+				assertThat(jsonErrorItem.getErrorCode())
+						.as(() -> "ErrorCode of " + jsonError)
+						.isEqualTo(expectErrorCode);
 			}
 			if (expectErrorUserFriendly != null)
 			{
