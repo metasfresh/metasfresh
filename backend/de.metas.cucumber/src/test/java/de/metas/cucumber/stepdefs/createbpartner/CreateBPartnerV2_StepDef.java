@@ -24,15 +24,22 @@ package de.metas.cucumber.stepdefs.createbpartner;
 
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.externalreference.ExternalUserReferenceType;
+import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -52,6 +59,7 @@ import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 public class CreateBPartnerV2_StepDef
 {
 	private final BPartnerEndpointService bpartnerEndpointService;
+	private final JsonRetrieverService jsonRetrieverService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
 	private final AD_Org_StepDefData orgTable;
@@ -67,6 +75,7 @@ public class CreateBPartnerV2_StepDef
 		this.userTable = userTable;
 		this.orgTable = orgTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
+		this.jsonRetrieverService = SpringContextHolder.instance.getBean(JsonServiceFactory.class).createRetriever();
 	}
 
 	/**
@@ -98,10 +107,27 @@ public class CreateBPartnerV2_StepDef
 		DataTableRows.of(dataTable).forEach(row ->
 		{
 			final String externalIdentifier = row.getAsString("externalIdentifier");
-			final JsonResponseBPartner bpartner = bpartnerEndpointService
-					.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier))
-					.orElseThrow(() -> new AdempiereException("BPartner not found: " + externalIdentifier))
-					.getBpartner();
+			// When AD_Org_ID is present in the DataTable, retrieve the bPartner under that specific org so
+			// the subsequent AD_Org_ID assertion is meaningful (option 2 from the design brief: org-aware retrieval).
+			// We use jsonRetrieverService directly with OrgId to avoid a secondary DB org-lookup via RestUtils
+			// (which can fail when the test org was freshly created and the query context differs).
+			// When AD_Org_ID is absent (all pre-existing callers), fall back to BPartnerEndpointService (unchanged behaviour).
+			final JsonResponseComposite composite;
+			final StepDefDataIdentifier orgIdIdentifier = row.getAsOptionalIdentifier(I_C_BPartner.COLUMNNAME_AD_Org_ID).orElse(null);
+			if (orgIdIdentifier != null)
+			{
+				final OrgId orgId = orgTable.getId(orgIdIdentifier);
+				composite = jsonRetrieverService
+						.getJsonBPartnerComposite(orgId, ExternalIdentifier.of(externalIdentifier))
+						.orElseThrow(() -> new AdempiereException("BPartner not found under org " + orgId + ": " + externalIdentifier));
+			}
+			else
+			{
+				composite = bpartnerEndpointService
+						.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier))
+						.orElseThrow(() -> new AdempiereException("BPartner not found: " + externalIdentifier));
+			}
+			final JsonResponseBPartner bpartner = composite.getBpartner();
 
 			final SoftAssertions softly = new SoftAssertions();
 
@@ -193,9 +219,23 @@ public class CreateBPartnerV2_StepDef
 			final String bpartnerIdentifier = row.getAsString("bpartnerIdentifier");
 			final String locationIdentifier = row.getAsString("locationIdentifier");
 
-			final JsonResponseLocation location = bpartnerEndpointService
-					.retrieveBPartnerLocation(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier))
-					.orElseThrow(() -> new AdempiereException("Location not found: bpartner=" + bpartnerIdentifier + " location=" + locationIdentifier));
+			// When AD_Org_ID is present, use OrgId directly to avoid secondary DB org-lookup failures (same fix as bPartner verify).
+			// When AD_Org_ID is absent, fall back to BPartnerEndpointService (unchanged behaviour).
+			final JsonResponseLocation location;
+			final StepDefDataIdentifier locationOrgIdIdentifier = row.getAsOptionalIdentifier(I_C_BPartner_Location.COLUMNNAME_AD_Org_ID).orElse(null);
+			if (locationOrgIdIdentifier != null)
+			{
+				final OrgId orgId = orgTable.getId(locationOrgIdIdentifier);
+				location = jsonRetrieverService
+						.resolveExternalBPartnerLocationId(orgId, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier))
+						.orElseThrow(() -> new AdempiereException("Location not found under org " + orgId + ": bpartner=" + bpartnerIdentifier + " location=" + locationIdentifier));
+			}
+			else
+			{
+				location = bpartnerEndpointService
+						.retrieveBPartnerLocation(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier))
+						.orElseThrow(() -> new AdempiereException("Location not found: bpartner=" + bpartnerIdentifier + " location=" + locationIdentifier));
+			}
 
 			row.getAsOptionalString(JsonResponseLocation.ADDRESS_1).map(DataTableUtil::nullToken2Null)
 					.ifPresent(address1 -> softly.assertThat(location.getAddress1()).as(JsonResponseLocation.ADDRESS_1).isEqualTo(address1));
@@ -262,9 +302,27 @@ public class CreateBPartnerV2_StepDef
 			final String bpartnerIdentifier = row.getAsString("bpartnerIdentifier");
 			final String contactIdentifier = row.getAsString("contactIdentifier");
 
-			final JsonResponseContact contact = bpartnerEndpointService
-					.retrieveBPartnerContact(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(contactIdentifier))
-					.orElseThrow(() -> new AdempiereException("Contact not found: bpartner=" + bpartnerIdentifier + " contact=" + contactIdentifier));
+			// When AD_Org_ID is present, use OrgId directly to avoid secondary DB org-lookup failures (same fix as bPartner / location verify).
+			// When AD_Org_ID is absent, fall back to BPartnerEndpointService (unchanged behaviour).
+			final JsonResponseContact contact;
+			final StepDefDataIdentifier contactOrgIdIdentifier = row.getAsOptionalIdentifier(I_AD_User.COLUMNNAME_AD_Org_ID).orElse(null);
+			if (contactOrgIdIdentifier != null)
+			{
+				final OrgId orgId = orgTable.getId(contactOrgIdIdentifier);
+				final ExternalIdentifier contactExtId = ExternalIdentifier.of(contactIdentifier);
+				contact = jsonRetrieverService
+						.getJsonBPartnerComposite(orgId, ExternalIdentifier.of(bpartnerIdentifier))
+						.flatMap(composite -> composite.getContacts().stream()
+								.filter(c -> isContactMatches(orgId, c, contactExtId))
+								.findAny())
+						.orElseThrow(() -> new AdempiereException("Contact not found under org " + orgId + ": bpartner=" + bpartnerIdentifier + " contact=" + contactIdentifier));
+			}
+			else
+			{
+				contact = bpartnerEndpointService
+						.retrieveBPartnerContact(null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(contactIdentifier))
+						.orElseThrow(() -> new AdempiereException("Contact not found: bpartner=" + bpartnerIdentifier + " contact=" + contactIdentifier));
+			}
 
 			final SoftAssertions softly = new SoftAssertions();
 
@@ -293,6 +351,29 @@ public class CreateBPartnerV2_StepDef
 
 			softly.assertAll();
 		});
+	}
+
+	/**
+	 * Mirrors {@code BPartnerEndpointService#isJsonContactMatches} for use in this step def when we have an {@link OrgId} directly
+	 * (to avoid the secondary org-code DB lookup that the service performs via {@code RestUtils.retrieveOrgIdOrDefault}).
+	 */
+	private boolean isContactMatches(
+			@NonNull final OrgId orgId,
+			@NonNull final JsonResponseContact jsonContact,
+			@NonNull final ExternalIdentifier contactIdentifier)
+	{
+		switch (contactIdentifier.getType())
+		{
+			case EXTERNAL_REFERENCE:
+				final java.util.Optional<MetasfreshId> metasfreshId =
+						jsonRetrieverService.resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
+				return metasfreshId.isPresent() &&
+						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonContact.getMetasfreshId()));
+			case METASFRESH_ID:
+				return MetasfreshId.equals(contactIdentifier.asMetasfreshId(), MetasfreshId.of(jsonContact.getMetasfreshId()));
+			default:
+				throw new AdempiereException("Unexpected contact identifier type=" + contactIdentifier.getType());
+		}
 	}
 
 }
