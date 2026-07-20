@@ -124,18 +124,21 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Returns the config IDs whose status row for the given source record is in a terminal-failure
-	 * state ({@link ExternalSystemExportStatus#Error} or {@link ExternalSystemExportStatus#Invalid}).
-	 * In-flight rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
+	 * Returns the config IDs whose latest status row for the given source record is re-sendable
+	 * ({@link ExternalSystemExportStatus#isResendable()} — {@link ExternalSystemExportStatus#Error},
+	 * {@link ExternalSystemExportStatus#Invalid} or {@link ExternalSystemExportStatus#DontSend}). A
+	 * DontSend row is included so a suppressed record can be re-evaluated on re-send. Sent and in-flight
+	 * rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
 		// Reduce the per-attempt history to the LATEST attempt per config (getLatestBySourceRecord
-		// returns ALL rows newest-first, so putIfAbsent keeps the newest), then offer only configs
-		// whose latest attempt is Error/Invalid. Without this a config whose latest attempt already
-		// SUCCEEDED would still be offered for re-send because an OLDER attempt errored — re-triggering
+		// returns ALL rows newest-first, so putIfAbsent keeps the newest), then offer only configs whose
+		// latest attempt is resendable — Error/Invalid OR DontSend (a suppressed attempt is re-offered so
+		// a re-send can re-evaluate relevance). Without the latest-per-config dedup a config whose latest
+		// attempt already SUCCEEDED would still be offered because an OLDER attempt errored — re-triggering
 		// an already-delivered export. Mirrors getConfigsWithNonSentAttemptBySourceRecord's dedup.
 		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
 				new LinkedHashMap<>();
@@ -145,7 +148,7 @@ public class ExternalSystemExportStatusService
 		}
 
 		return latestPerConfig.values().stream()
-				.filter(s -> s.getStatus().isErrorOrInvalid())
+				.filter(s -> s.getStatus().isResendable())
 				.map(ScriptedExportConversionStatus::getConfigId)
 				.collect(ImmutableList.toImmutableList());
 	}
