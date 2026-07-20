@@ -13,6 +13,12 @@ Feature: BPartner v2 upsert places records in the path org
     And metasfresh contains External System
       | Name        | Value       |
       | Test System | Test_System |
+    And remove external reference if exists:
+      | ExternalReference | ExternalSystem | Type             |
+      | 001               | Test_System    | BPartner         |
+      | 002               | Test_System    | BPartner         |
+      | 001-loc1          | Test_System    | BPartnerLocation |
+      | 001-con1          | Test_System    | UserID           |
 
   @Id:S30934_TC1
   Scenario: PUT api/v2/bpartner/002 places C_BPartner and S_ExternalReference under org 002
@@ -99,9 +105,10 @@ Feature: BPartner v2 upsert places records in the path org
 
   @Id:S30934_TC2
   Scenario: PUT api/v2/bpartner/002 with body orgCode 001 is rejected (org mismatch)
-    # When the body orgCode contradicts the path org, the API must reject with 4xx.
+    # When the body orgCode contradicts the path org, the API must reject with 4xx and return
+    # a user-friendly JsonErrorItem whose message names the org conflict.
     # Currently (bug): the code silently accepts and returns 201 — so this assertion fails RED.
-    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/002' and fulfills with '422' status code
+    When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error containing 'org':
     """
 {
   "requestItems": [

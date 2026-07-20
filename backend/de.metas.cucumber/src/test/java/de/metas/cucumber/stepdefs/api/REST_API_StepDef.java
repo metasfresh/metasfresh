@@ -336,61 +336,53 @@ public class REST_API_StepDef
 
 	/**
 	 * Sends a PUT request to the given endpoint with the payload from the doc-string, asserts the HTTP status code,
-	 * and optionally validates the {@code JsonErrorItem} returned in the response body.
+	 * and validates the {@code JsonErrorItem} returned in the response body.
 	 *
-	 * <p>The error-assertion columns ({@code ExpectErrorContaining} and {@code ExpectErrorUserFriendly}) are
-	 * wired directly to {@link APIRequest#expectedErrorMessageContaining} and
-	 * {@link APIRequest#expectErrorUserFriendly}, which are validated by {@link RESTUtil#validateAPIResponse}
-	 * — no new assertion machinery is introduced.
+	 * <p>All assertions are passed as inline Gherkin parameters so this step takes a single doc-string argument
+	 * (the JSON payload) — Gherkin grammar forbids a step from taking both a DataTable and a DocString.
 	 *
-	 * <p>When either error column is present the expected status code should be set to the appropriate
-	 * 4xx/5xx value (e.g. {@code 422}).
+	 * <p>The {@code expectErrorUserFriendly} and {@code expectErrorContaining} parameters are wired directly
+	 * to {@link APIRequest#expectErrorUserFriendly} and {@link APIRequest#expectedErrorMessageContaining},
+	 * which are validated by {@link RESTUtil#validateAPIResponse} — no new assertion machinery is introduced.
 	 *
-	 * <p>Required columns:
+	 * <p>Parameters (all inline Gherkin expressions):
 	 * <ul>
-	 *   <li>{@code EndpointPath} – REST endpoint path (e.g. {@code api/v2/bpartner/001/001})</li>
-	 *   <li>{@code ExpectedStatusCode} – HTTP status code the server must return</li>
+	 *   <li>{@code endpointPath} – REST endpoint path, e.g. {@code api/v2/bpartner/002}</li>
+	 *   <li>{@code expectedStatusCode} – HTTP status code the server must return, e.g. {@code 422}</li>
+	 *   <li>{@code expectErrorUserFriendly} – {@code true} or {@code false}; expected value of
+	 *       {@code JsonErrorItem.isUserFriendlyError}</li>
+	 *   <li>{@code expectErrorContaining} – substring that must appear in {@code JsonErrorItem.message}</li>
 	 * </ul>
 	 *
-	 * <p>Optional columns (absent cell = not asserted):
-	 * <ul>
-	 *   <li>{@code ExpectErrorContaining} – substring that must appear in {@code JsonErrorItem.message}</li>
-	 *   <li>{@code ExpectErrorUserFriendly} – {@code true}/{@code false} expected value of {@code JsonErrorItem.isUserFriendlyError}</li>
-	 * </ul>
+	 * <p>The doc-string (the step's single argument) is the JSON request body.
 	 *
 	 * <p>Example:
 	 * <pre>
-	 * When a PUT request with below payload is sent to metasfresh REST-API and fulfills with error:
-	 *   | EndpointPath             | ExpectedStatusCode | ExpectErrorContaining | ExpectErrorUserFriendly |
-	 *   | api/v2/bpartner/001/001  | 422                | Org mismatch          | true                    |
+	 * When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error containing 'org':
 	 *   """
-	 *   { "bpartner": { "orgCode": "other" } }
+	 *   { "requestItems": [ { "bpartnerComposite": { "orgCode": "001" } } ] }
 	 *   """
 	 * </pre>
 	 */
-	@When("a PUT request with below payload is sent to metasfresh REST-API and fulfills with error:")
+	@When("a PUT request with below payload is sent to metasfresh REST-API {string} expecting status {string} user-friendly {string} error containing {string}:")
 	public void put_request_with_payload_and_error_assertions(
-			@NonNull final DataTable dataTable,
+			@NonNull final String endpointPath,
+			@NonNull final String expectedStatusCode,
+			@NonNull final String expectErrorUserFriendly,
+			@NonNull final String expectErrorContaining,
 			@NonNull final String payload) throws IOException
 	{
-		final DataTableRow row = DataTableRow.singleRow(dataTable);
-
-		final String endpointPath = resolveContextVariables(row.getAsString("EndpointPath"));
-		final int expectedStatusCode = Integer.parseInt(row.getAsString("ExpectedStatusCode"));
-		final String expectErrorContaining = row.getAsOptionalString("ExpectErrorContaining").map(StringUtils::trimBlankToNull).orElse(null);
-		final Boolean expectErrorUserFriendly = row.getAsOptionalBoolean("ExpectErrorUserFriendly").toBooleanOrNull();
-
 		final String payloadResolved = resolveContextVariables(payload);
 		testContext.setRequestPayload(payloadResolved);
 
 		performHTTPRequest(
 				newAPIRequest()
-						.endpointPath(endpointPath)
+						.endpointPath(resolveContextVariables(endpointPath))
 						.method("PUT")
 						.payload(payloadResolved)
-						.expectedStatusCode(expectedStatusCode)
-						.expectedErrorMessageContaining(expectErrorContaining)
-						.expectErrorUserFriendly(expectErrorUserFriendly)
+						.expectedStatusCode(Integer.parseInt(expectedStatusCode))
+						.expectedErrorMessageContaining(StringUtils.trimBlankToNull(expectErrorContaining))
+						.expectErrorUserFriendly(Boolean.parseBoolean(expectErrorUserFriendly))
 						.build()
 		);
 	}
