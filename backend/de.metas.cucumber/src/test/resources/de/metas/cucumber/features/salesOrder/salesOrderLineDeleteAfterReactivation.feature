@@ -13,10 +13,13 @@ Feature: Delete a sales order line after the order was reactivated
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2026-07-20T08:00:00+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # test C_BPartners are not EDI-flavored; disable the EDI interceptor so plain order creation doesn't fail
+    # trying to load them as de.metas.edi.model.I_C_BPartner (see AnnotatedModelInterceptorDisabler)
+    And set sys config String value N for sys config InterceptorEnabled_de.metas.edi.model.validator.C_Order#setEdiEnabledForNewOrder
 
   @Id:S29172_10
   Scenario: Reactivated line whose planning objects never produced a real document cascades cleanly
-    Given load M_AttributeSet:
+    Given add M_AttributeSet:
       | M_AttributeSet_ID.Identifier | Name                   |
       | attributeSet_delLine         | Delete-Line Attributes |
     And load M_Product_Category:
