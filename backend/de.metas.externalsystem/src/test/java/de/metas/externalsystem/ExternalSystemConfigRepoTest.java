@@ -38,6 +38,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConve
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -54,6 +55,7 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.pricing.PriceListId;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -1031,6 +1033,115 @@ class ExternalSystemConfigRepoTest
 		assertThat(result)
 				.extracting(config -> config.getId().getRepoId())
 				.containsExactly(validParent.getExternalSystem_Config_ID());
+	}
+
+	// The resilience filter was added to all readers; guard each of the previously-untested ones with
+	// a positive test (a correctly-parented config is still returned — catches a wrong expected-type
+	// argument that would filter everything out) and a mismatch test (a wrong-typed parent is skipped,
+	// not a 500).
+
+	@Test
+	void getActiveByType_woo_returnsValidConfig()
+	{
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(WOO.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_WooCommerce child = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		child.setExternalSystemValue("woo-value");
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		assertThat(externalSystemConfigRepo.getActiveByType(WOO))
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(parentRecord.getExternalSystem_Config_ID());
+	}
+
+	@Test
+	void getActiveByType_woo_skipsConfigWithMismatchedParentType()
+	{
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+
+		final I_ExternalSystem_Config_WooCommerce child = newInstance(I_ExternalSystem_Config_WooCommerce.class);
+		child.setExternalSystemValue("woo-value");
+		child.setExternalSystem_Config_ID(eddysonParent.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		assertThat(externalSystemConfigRepo.getActiveByType(WOO)).isEmpty();
+	}
+
+	@Test
+	void getActiveByType_grs_returnsValidConfig()
+	{
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.GRSSignum.getValue())
+				.build();
+
+		ExternalSystemConfigTestUtil.createGrsConfigBuilder()
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.value("grs-value")
+				.syncBPartnersToRestEndpoint(true)
+				.build();
+
+		assertThat(externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum))
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(parentRecord.getExternalSystem_Config_ID());
+	}
+
+	@Test
+	void getActiveByType_grs_skipsConfigWithMismatchedParentType()
+	{
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+
+		ExternalSystemConfigTestUtil.createGrsConfigBuilder()
+				.externalSystemConfigId(eddysonParent.getExternalSystem_Config_ID())
+				.value("grs-value")
+				.syncBPartnersToRestEndpoint(true)
+				.build();
+
+		assertThat(externalSystemConfigRepo.getActiveByType(ExternalSystemType.GRSSignum)).isEmpty();
+	}
+
+	@Test
+	void getActiveByType_pcm_returnsValidConfig()
+	{
+		// PCM's config build requires a regular (non-zero) AD_Org_ID.
+		final I_AD_Org org = newInstance(I_AD_Org.class);
+		saveRecord(org);
+
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.ProCareManagement.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_ProCareManagement child = newInstance(I_ExternalSystem_Config_ProCareManagement.class);
+		child.setAD_Org_ID(org.getAD_Org_ID());
+		child.setExternalSystemValue("pcm-value");
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		assertThat(externalSystemConfigRepo.getActiveByType(ExternalSystemType.ProCareManagement))
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(parentRecord.getExternalSystem_Config_ID());
+	}
+
+	@Test
+	void getActiveByType_pcm_skipsConfigWithMismatchedParentType()
+	{
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+
+		// no AD_Org_ID needed: the resilience filter skips this row before the PCM config is built.
+		final I_ExternalSystem_Config_ProCareManagement child = newInstance(I_ExternalSystem_Config_ProCareManagement.class);
+		child.setExternalSystemValue("pcm-value");
+		child.setExternalSystem_Config_ID(eddysonParent.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		assertThat(externalSystemConfigRepo.getActiveByType(ExternalSystemType.ProCareManagement)).isEmpty();
 	}
 }
 
