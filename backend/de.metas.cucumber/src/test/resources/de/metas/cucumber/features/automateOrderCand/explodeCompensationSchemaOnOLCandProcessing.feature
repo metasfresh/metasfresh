@@ -259,10 +259,14 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
       | pp_subProductB        | plv_mischkarton                   | subProductB             | 3.00     | PCE               | Normal                        |
 
     # the contract conditions the incoming candidate carries; its (dynamically-allocated) id is exposed as the REST
-    # context variable 'flatrateConditionsId' so the candidate payload below can reference it via @flatrateConditionsId@
+    # context variable 'flatrateConditionsId' so the candidate payload below can reference it via @flatrateConditionsId@.
+    # Type_Conditions=FlatFee (not Subscription): the exploded order lines must still carry C_Flatrate_Conditions_ID
+    # (the behaviour under test), but a non-subscription type does not spawn a C_Flatrate_Term on order completion
+    # (that path is gated on TYPE_CONDITIONS_Subscription in SubscriptionBL.isSubscription) and so does not drag in a
+    # full subscription/transition contract setup that is orthogonal to the OLCand-explosion threading.
     And metasfresh contains C_Flatrate_Conditions:
       | Identifier          | Name                | Type_Conditions | REST.Context.C_Flatrate_Conditions_ID |
-      | mischkartonFlatrate | mischkartonFlatrate | Subscr          | flatrateConditionsId                  |
+      | mischkartonFlatrate | mischkartonFlatrate | FlatFee         | flatrateConditionsId                  |
 
     And metasfresh contains C_BPartners:
       | Identifier          | Name                | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID  | GLN           |
@@ -366,11 +370,15 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
       | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
       | mischkartonProduct | mischkartonProduct | mischkartonSchema                            |
 
+    # the compensation product is a real M_Product (M_Product_ID is mandatory on the schema line), so it must be on
+    # the price list like any ordered product — order completion prices every line, including the compensation line.
+    # Its PriceStd is irrelevant to the discount amount (the line is a percentage whole-order discount), hence 0.
     And metasfresh contains M_ProductPrices
       | Identifier            | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_mischkartonProduct | plv_mischkarton                   | mischkartonProduct      | 15.00    | PCE               | Normal                        |
       | pp_subProductA        | plv_mischkarton                   | subProductA             | 5.00     | PCE               | Normal                        |
       | pp_subProductB        | plv_mischkarton                   | subProductB             | 3.00     | PCE               | Normal                        |
+      | pp_discountProduct    | plv_mischkarton                   | discountProduct         | 0.00     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
       | Identifier          | Name                | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID  | GLN           |
