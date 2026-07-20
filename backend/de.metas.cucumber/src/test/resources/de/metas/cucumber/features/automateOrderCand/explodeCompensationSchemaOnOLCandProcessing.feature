@@ -433,9 +433,9 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
       | order_comp            |
 
     # the order carries the 2 regular component lines (IsGroupCompensationLine=N) plus the compensation/discount line
-    # (IsGroupCompensationLine=Y, QtyOrdered=0 as it is a percentage whole-order discount)
+    # the schema's percentage whole-order discount materialises as a compensation line (IsGroupCompensationLine=Y, QtyOrdered=1)
     And validate the created order lines
       | C_OrderLine_ID.Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | processed |
       | orderLine_comp_subProductA | order_comp            | subProductA             | 4          | false                       | true      |
       | orderLine_comp_subProductB | order_comp            | subProductB             | 6          | false                       | true      |
-      | orderLine_comp_discount    | order_comp            | discountProduct         | 0          | true                        | true      |
+      | orderLine_comp_discount    | order_comp            | discountProduct         | 1          | true                        | true      |
