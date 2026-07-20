@@ -23,10 +23,12 @@
 //please keep package in sync with de.metas.process.model.interceptor.AD_Process.RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME
 package de.metas.ui.web.view.process;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidateGroup;
 import de.metas.document.references.related_documents.RelatedDocumentsId;
 import de.metas.document.references.related_documents.relation_type.RelationTypeId;
@@ -38,6 +40,8 @@ import de.metas.process.ProcessExecutionResult.ViewOpenTarget;
 import de.metas.process.ProcessExecutionResult.WebuiViewToOpen;
 import de.metas.process.ProcessOpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterParam;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -48,16 +52,24 @@ import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
+import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
 
@@ -72,6 +84,8 @@ import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
  */
 public class RelationTypeInOverlayProcess extends JavaProcess implements IProcessPrecondition
 {
+	private static final String UNION_FILTER_ID = "RelationTypeInOverlay-union";
+
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
 	@NonNull private final IViewsRepository viewsRepo;
 
@@ -108,21 +122,58 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		return process;
 	}
 
+	// Constructor for testing multi-selection: inject the selected record refs and a per-ref zoom source
+	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
+			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final de.metas.process.ProcessInfo processInfo,
+			@NonNull final List<TableRecordReference> selectedRecordRefs,
+			@NonNull final Map<TableRecordReference, IZoomSource> zoomSourcesByRecordRef)
+	{
+		final RelationTypeInOverlayProcess process = new RelationTypeInOverlayProcess(relationTypeProvidersFactory, viewsRepo)
+		{
+			@Override
+			protected List<TableRecordReference> getSelectedSourceRecordRefs()
+			{
+				return ImmutableList.copyOf(selectedRecordRefs);
+			}
+
+			@Override
+			protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
+			{
+				return Check.assumeNotNull(zoomSourcesByRecordRef.get(recordRef), "zoom source available for {}", recordRef);
+			}
+		};
+		process.init(processInfo);
+		return process;
+	}
+
 	@Override
 	protected String doIt()
 	{
-		final TableRecordReference recordRef = getRecordRef();
-
 		final RelationTypeId relationTypeId = getRelationTypeId();
+		final List<TableRecordReference> sourceRecordRefs = getSelectedSourceRecordRefs();
+		if (sourceRecordRefs.isEmpty())
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
 
+		final ViewId viewId = sourceRecordRefs.size() == 1
+				? createSingleSourceView(sourceRecordRefs.get(0), relationTypeId)
+				: createCombinedView(sourceRecordRefs, relationTypeId);
+
+		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder().viewId(viewId.getViewId()).target(getOpenTarget()).build());
+
+		return MSG_OK;
+	}
+
+	private ViewId createSingleSourceView(@NonNull final TableRecordReference recordRef, @NonNull final RelationTypeId relationTypeId)
+	{
 		// Create zoom source from the current record
 		final IZoomSource zoomSource = createZoomSource(recordRef);
 
 		// Get the specific provider for this relation type and retrieve related documents
-		final List<RelatedDocumentsCandidateGroup> relatedDocumentGroups = relationTypeProvidersFactory
-				.findRelatedDocumentsProvider(relationTypeId)
-				.map(docProvider -> docProvider.retrieveRelatedDocumentsCandidates(zoomSource, null))
-				.orElse(Collections.emptyList());
+		final List<RelatedDocumentsCandidateGroup> relatedDocumentGroups = retrieveRelatedDocumentGroups(relationTypeId, zoomSource);
 
 		if (relatedDocumentGroups.isEmpty())
 		{
@@ -135,11 +186,118 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		}
 
 		final RelatedDocumentsCandidateGroup firstGroup = relatedDocumentGroups.get(0);
-		final ViewId viewId = createView(recordRef, WindowId.of(firstGroup.getTargetWindowId())).getViewId();
+		return createView(recordRef, WindowId.of(firstGroup.getTargetWindowId())).getViewId();
+	}
 
-		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder().viewId(viewId.getViewId()).target(getOpenTarget()).build());
+	/**
+	 * Opens a single combined view showing the union of the related documents of all selected source records.
+	 * <p>
+	 * We cannot rely on {@code CreateViewRequest.referencingDocumentPaths} here: {@code SqlViewFactory} derives the
+	 * related-documents sticky filter from {@code getSingleReferencingDocumentPathOrNull()} (i.e. only the first path),
+	 * which would collapse the union to a single source. Instead we OR the per-source related-documents SQL where-clauses
+	 * into one sticky filter.
+	 */
+	private ViewId createCombinedView(@NonNull final List<TableRecordReference> sourceRecordRefs, @NonNull final RelationTypeId relationTypeId)
+	{
+		AdWindowId targetWindowId = null;
+		final List<String> whereClauses = new ArrayList<>();
 
-		return MSG_OK;
+		for (final TableRecordReference recordRef : sourceRecordRefs)
+		{
+			final IZoomSource zoomSource = createZoomSource(recordRef);
+			final List<RelatedDocumentsCandidateGroup> groups = retrieveRelatedDocumentGroups(relationTypeId, zoomSource);
+			for (final RelatedDocumentsCandidateGroup group : groups)
+			{
+				if (targetWindowId == null)
+				{
+					targetWindowId = group.getTargetWindowId();
+				}
+				else if (!Objects.equals(targetWindowId, group.getTargetWindowId()))
+				{
+					addLog("RelationType {} returned target window {} for {} but the combined view uses {}; ignoring that group.",
+							relationTypeId, group.getTargetWindowId(), recordRef, targetWindowId);
+					continue;
+				}
+
+				for (final RelatedDocumentsCandidate candidate : group.getCandidates())
+				{
+					final MQuery query = candidate.getQuerySupplier().getQuery();
+					final String whereClause = query != null ? query.getWhereClause(true) : null;
+					if (!Check.isBlank(whereClause))
+					{
+						whereClauses.add("(" + whereClause + ")");
+					}
+				}
+			}
+		}
+
+		// Note: whereClauses is only ever appended to after targetWindowId has been set, so non-empty implies non-null window
+		if (whereClauses.isEmpty())
+		{
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
+
+		final String combinedWhereClause = String.join(" OR ", whereClauses);
+		final DocumentFilter unionFilter = DocumentFilter.builder()
+				.filterId(UNION_FILTER_ID)
+				.parameter(DocumentFilterParam.ofSqlWhereClause(true, combinedWhereClause))
+				.build();
+
+		return createCombinedFilterView(WindowId.of(targetWindowId), unionFilter).getViewId();
+	}
+
+	private IView createCombinedFilterView(@NonNull final WindowId targetWindowId, @NonNull final DocumentFilter unionFilter)
+	{
+		final RelatedDocumentsId relatedDocumentsId = RelatedDocumentsId.ofString("AD_RelationType_ID-" + getRelationTypeId().getRepoId());
+		final CreateViewRequest request = CreateViewRequest.builder(targetWindowId, JSONViewDataType.grid)
+				.setDocumentReferenceId(WebuiDocumentReferenceId.ofRelatedDocumentsId(relatedDocumentsId))
+				.addStickyFilters(unionFilter)
+				.setUseAutoFilters(true)
+				.build();
+		return viewsRepo.createView(request);
+	}
+
+	private List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentGroups(
+			@NonNull final RelationTypeId relationTypeId,
+			@NonNull final IZoomSource zoomSource)
+	{
+		return relationTypeProvidersFactory
+				.findRelatedDocumentsProvider(relationTypeId)
+				.map(docProvider -> docProvider.retrieveRelatedDocumentsCandidates(zoomSource, null))
+				.orElse(Collections.emptyList());
+	}
+
+	/**
+	 * Resolves the selected source record(s):
+	 * <ul>
+	 * <li>single-record context (incl. single-document window): the one record ref;
+	 * <li>multi-row view selection: {@link de.metas.process.ProcessInfo} carries no single record but a selection where-clause,
+	 *     which we run against the source table to get all selected record refs.
+	 * </ul>
+	 */
+	protected List<TableRecordReference> getSelectedSourceRecordRefs()
+	{
+		final TableRecordReference singleRecordRef = getProcessInfo().getRecordRefOrNull();
+		if (singleRecordRef != null)
+		{
+			return ImmutableList.of(singleRecordRef);
+		}
+
+		final String tableName = getProcessInfo().getTableNameOrNull();
+		final IQueryFilter<Object> selectionFilter = getProcessInfo().getQueryFilterOrElse(null);
+		if (tableName == null || selectionFilter == null)
+		{
+			throw new AdempiereException("@NoSelection@");
+		}
+
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(tableName, PlainContextAware.newWithThreadInheritedTrx(getCtx()))
+				.filter(selectionFilter)
+				.create()
+				.listIds()
+				.stream()
+				.map(recordId -> TableRecordReference.of(tableName, recordId))
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private ViewOpenTarget getOpenTarget()
