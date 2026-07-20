@@ -143,9 +143,9 @@ public class S_ExternalReference_StepDef
 		{
 			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
 			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
-			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(row.getAsOptionalString("Type").orElse(null));
-			final String externalReference = row.getAsOptionalString("ExternalReference").orElse(null);
-			final String externalReferenceURL = row.getAsOptionalString("ExternalReferenceURL").orElse(null);
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(row.getAsString("Type"));
+			final String externalReference = row.getAsOptionalString("ExternalReference").map(DataTableUtil::nullToken2Null).orElse(null);
+			final String externalReferenceURL = row.getAsOptionalString("ExternalReferenceURL").map(DataTableUtil::nullToken2Null).orElse(null);
 
 			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
