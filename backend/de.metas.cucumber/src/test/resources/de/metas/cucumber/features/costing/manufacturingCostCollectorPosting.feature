@@ -132,6 +132,7 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 10        |
 
   @from:cucumber
+  @Id:S30811_TC1
   Scenario: Finished good is received at its current cost price
     # finProd already has its own standing AveragePO cost (25 CHF/PCE), higher than the
     # 1:1 BOM rollup from compProd (10 CHF/PCE). The receipt must post at finProd's own
@@ -193,8 +194,84 @@ Feature: Manufacturing cost collector posting - component issue vs material rece
       | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | CurrentCostPrice |
       | ppOrder                | finProd                 | AveragePO        | MR                    | 25 CHF           |
 
+    # Order-level CostDifference = received (finProd MR, 25) minus issued (compProd MI, 10) = 15:
+    # positive, because received exceeds issued.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | CostDifference |
+      | ppOrder    | 15             |
+
     # Receipt posts at finProd's own current cost (25), not at the 10 CHF BOM rollup.
     And Fact_Acct records are matching
       | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
       | receiptCostCollector | P_Asset_Acct          | finProd      | 25        | 0         |
       | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 25        |
+
+  @from:cucumber
+  @Id:S30811_TC2
+  Scenario: Finished good is received below its component cost
+    # finProd's own standing AveragePO cost (5 CHF/PCE) is lower than the 1:1 BOM rollup
+    # from compProd (10 CHF/PCE). The receipt posts at finProd's own current cost, so more
+    # was issued (compProd) than received (finProd): CostDifference must be negative.
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 | CostPrice | M_HU_ID |
+      | finInventory   | finInventoryLine   | 2024-03-20   | 540008         | finProd      | 0       | 10       | PCE          | 5         | finHU   |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
+      | acctSchema      | finProd      | AveragePO        | 5 CHF            | 10 PCE     |
+
+    And create PP_Order:
+      | PP_Order_ID.Identifier | DocBaseType | M_Product_ID.Identifier | QtyEntered | S_Resource_ID.Identifier | DateOrdered             | DatePromised            | DateStartSchedule       | completeDocument | OPT.PP_Product_Planning_ID.Identifier |
+      | ppOrder                | MOP         | finProd                 | 1          | testResource             | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | 2024-03-26T23:59:00.00Z | Y                | prodPlan                              |
+    And after not more than 60s, PP_Order_BomLines are found
+      | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
+      | ppOrderBomLine                 | ppOrder                | compProd                | 1            | false           | PCE               | CO            |
+    When complete planning for PP_Order:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+
+    And create JsonWFProcessStartRequest for manufacturing and store it in context as request payload:
+      | PP_Order_ID.Identifier |
+      | ppOrder                |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And process response and extract manufacturing step and issueTo HU manufacturing candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And process response and extract manufacturing line and receiving target values:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+
+    # Issue the component to the production order (at its own actual cost, different from finProd's cost)
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event   | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowStep.Identifier | WorkflowStepQRCode.Identifier |
+      | IssueTo | mfgWorkflow                | issueActivity               | issueStep               | issueQRCode                   |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    # Receive the finished good
+    And create JsonManufacturingOrderEvent and store it in context as request payload:
+      | Event       | WorkflowProcess.Identifier | WorkflowActivity.Identifier | WorkflowLine.Identifier | WorkflowReceivingTargetValues.Identifier |
+      | ReceiveFrom | mfgWorkflow                | receiptActivity             | receiptLine             | receivingTargetValues                    |
+    And the metasfresh REST-API endpoint path 'api/v2/manufacturing/event' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    And after not more than 60s, PP_Cost_Collector are found:
+      | PP_Cost_Collector_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | MovementQty | DocStatus |
+      | receiptCostCollector            | ppOrder                | finProd                 | 1           | CO        |
+
+    And Wait until documents receiptCostCollector are posted
+
+    # The PP_Order_Cost row for the main product must carry the same current cost price.
+    And PP_Order_Cost are found:
+      | PP_Order_ID.Identifier | M_Product_ID.Identifier | M_CostElement_ID | PP_Order_Cost_TrxType | CurrentCostPrice |
+      | ppOrder                | finProd                 | AveragePO        | MR                    | 5 CHF            |
+
+    # Order-level CostDifference = received (finProd MR, 5) minus issued (compProd MI, 10) = -5:
+    # negative, because issued exceeds received.
+    And after not more than 60s, PP_Orders are found
+      | Identifier | CostDifference |
+      | ppOrder    | -5             |
+
+    # Receipt posts at finProd's own current cost (5).
+    And Fact_Acct records are matching
+      | Record_ID            | AccountConceptualName | M_Product_ID | AmtAcctDr | AmtAcctCr |
+      | receiptCostCollector | P_Asset_Acct          | finProd      | 5         | 0         |
+      | receiptCostCollector | P_WIP_Acct            | finProd      | 0         | 5         |
