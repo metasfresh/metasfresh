@@ -29,7 +29,13 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.PLUType;
+import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
@@ -894,6 +900,137 @@ class ExternalSystemConfigRepoTest
 
 		// then
 		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void getChildByParentIdAndType_unhandledParentType_returnsEmpty()
+	{
+		// given: a parent config of a custom external-system type ("eddyson") that has no
+		// per-parent child-config table.
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+
+		// when
+		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepo.getChildByParentIdAndType(
+				ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()),
+				ExternalSystemType.ofValue("eddyson"));
+
+		// then: no child of that type -> empty (must NOT throw "Unsupported type", which would
+		// crash the ExternalSystem_Config type-change interceptor).
+		assertThat(result).isEmpty();
+	}
+
+	@Test
+	void getChildByParentIdAndType_scriptedExportConversion_withChild_returnsPresent()
+	{
+		// Regression guard: ScriptedExportConversion DOES have a per-parent child table (modelled
+		// 0..many), so the lookup must find its child rather than fall through to the empty
+		// catch-all — otherwise the type-change interceptor would let a scripted-export parent be
+		// re-typed and silently orphan its child rows.
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.ScriptedExportConversion.getValue())
+				.build();
+
+		final I_ExternalSystem_Endpoint endpoint = newInstance(I_ExternalSystem_Endpoint.class);
+		endpoint.setValue("export-endpoint");
+		saveRecord(endpoint);
+
+		final I_ExternalSystem_Config_ScriptedExportConversion child = newInstance(I_ExternalSystem_Config_ScriptedExportConversion.class);
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		child.setExternalSystem_Endpoint_ID(endpoint.getExternalSystem_Endpoint_ID());
+		child.setExternalSystemValue("export-orders");
+		child.setScriptIdentifier("echo");
+		child.setAD_Table_ID(318);
+		child.setWhereClause("1=1");
+		saveRecord(child);
+
+		// when
+		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepo.getChildByParentIdAndType(
+				ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()),
+				ExternalSystemType.ScriptedExportConversion);
+
+		// then
+		assertThat(result).isPresent();
+	}
+
+	@Test
+	void getActiveByType_alberta_returnsValidConfig()
+	{
+		// Guard against the resilience filter using the wrong expected type (which would filter
+		// out every valid config for that reader): a correctly-parented Alberta config must be returned.
+		final I_ExternalSystem_Config parentRecord = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(Alberta.getValue())
+				.build();
+
+		final I_ExternalSystem_Config_Alberta child = newInstance(I_ExternalSystem_Config_Alberta.class);
+		child.setApiKey("apiKey");
+		child.setBaseURL("baseUrl");
+		child.setTenant("tenant");
+		child.setExternalSystemValue("alberta-value");
+		child.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(child);
+
+		// when / then
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(Alberta);
+		assertThat(result)
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(parentRecord.getExternalSystem_Config_ID());
+	}
+
+	@Test
+	void getActiveByType_rabbitMQ_skipsConfigWithMismatchedParentType()
+	{
+		// Guard that the RabbitMQ reader also filters (it was missing the filter): a RabbitMQ child
+		// under a wrong-typed parent must be skipped, not 500 the status endpoint.
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+		ExternalSystemConfigTestUtil.createRabbitMQConfigBuilder()
+				.externalSystemConfigId(eddysonParent.getExternalSystem_Config_ID())
+				.value("rabbit-value")
+				.isSyncBPartnerToRabbitMQ(false)
+				.build();
+
+		// when / then: skipped (not returned), no throw
+		assertThat(externalSystemConfigRepo.getActiveByType(RabbitMQ)).isEmpty();
+	}
+
+	@Test
+	void getActiveByType_scriptedImportConversion_skipsConfigWithMismatchedParentType()
+	{
+		// given: a VALID scripted-import config under a scripted-import-typed parent ...
+		final I_ExternalSystem_Config validParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.ScriptedImportConversion.getValue())
+				.build();
+		final I_ExternalSystem_Config_ScriptedImportConversion validChild = newInstance(I_ExternalSystem_Config_ScriptedImportConversion.class);
+		validChild.setExternalSystem_Config_ID(validParent.getExternalSystem_Config_ID());
+		validChild.setExternalSystemValue("valid-orders");
+		validChild.setScriptIdentifier("echo");
+		validChild.setEndpointName("valid-orders-endpoint");
+		validChild.setAD_User_Import_ID(100);
+		saveRecord(validChild);
+
+		// ... and an INCONSISTENT scripted-import config created under a wrong-typed ("eddyson") parent.
+		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type("eddyson")
+				.build();
+		final I_ExternalSystem_Config_ScriptedImportConversion mismatchedChild = newInstance(I_ExternalSystem_Config_ScriptedImportConversion.class);
+		mismatchedChild.setExternalSystem_Config_ID(eddysonParent.getExternalSystem_Config_ID());
+		mismatchedChild.setExternalSystemValue("ORDERS");
+		mismatchedChild.setScriptIdentifier("echo");
+		mismatchedChild.setEndpointName("orders-endpoint");
+		mismatchedChild.setAD_User_Import_ID(100);
+		saveRecord(mismatchedChild);
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.ScriptedImportConversion);
+
+		// then: the mismatched config is skipped (not returned) and does NOT 500 the whole
+		// status endpoint; only the valid config is returned.
+		assertThat(result)
+				.extracting(config -> config.getId().getRepoId())
+				.containsExactly(validParent.getExternalSystem_Config_ID());
 	}
 }
 
