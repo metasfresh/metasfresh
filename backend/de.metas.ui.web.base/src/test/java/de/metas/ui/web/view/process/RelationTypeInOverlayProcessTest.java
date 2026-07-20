@@ -369,6 +369,40 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
+		void skipsUnloadableSourceRow_andOpensUnionOfTheRest()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId targetWindow = WindowId.of(AdWindowId.ofRepoId(200));
+
+			final TableRecordReference loadableRef = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference unloadableRef = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=1")));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			// unloadableRef has no zoom source -> createZoomSource throws (simulates a concurrently-deleted / unloadable row)
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(loadableRef, unloadableRef),
+					ImmutableMap.of(loadableRef, zoom1));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			final DocumentFilter unionFilter = captor.getValue().getStickyFilters().toList().get(0);
+			assertThat(unionFilter.getParameters().get(0).getSqlWhereClause().getSql())
+					.isEqualTo("(PC.C_OrderLine_ID=1)");
+		}
+
+		@Test
 		void throws_whenNoRelatedDocsForAnySelectedRow()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);

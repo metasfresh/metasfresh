@@ -141,7 +141,13 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 			@Override
 			protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
 			{
-				return Check.assumeNotNull(zoomSourcesByRecordRef.get(recordRef), "zoom source available for {}", recordRef);
+				final IZoomSource zoomSource = zoomSourcesByRecordRef.get(recordRef);
+				if (zoomSource == null)
+				{
+					// simulate an unloadable / concurrently-deleted source record (see the production createZoomSource)
+					throw new AdempiereException("Cannot load source record: " + recordRef);
+				}
+				return zoomSource;
 			}
 		};
 		process.init(processInfo);
@@ -204,8 +210,21 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 		for (final TableRecordReference recordRef : sourceRecordRefs)
 		{
-			final IZoomSource zoomSource = createZoomSource(recordRef);
-			final List<RelatedDocumentsCandidateGroup> groups = retrieveRelatedDocumentGroups(relationTypeId, zoomSource);
+			final List<RelatedDocumentsCandidateGroup> groups;
+			try
+			{
+				final IZoomSource zoomSource = createZoomSource(recordRef);
+				groups = retrieveRelatedDocumentGroups(relationTypeId, zoomSource);
+			}
+			catch (final Exception ex)
+			{
+				// A single unloadable/concurrently-deleted source must not abort the whole combined view;
+				// skip it and keep the union of the remaining selected records.
+				addLog("Skipping {} because its related documents could not be resolved: {}", recordRef, ex.getLocalizedMessage());
+				log.warn("Skipping {} while building the combined related-documents view", recordRef, ex);
+				continue;
+			}
+
 			for (final RelatedDocumentsCandidateGroup group : groups)
 			{
 				if (targetWindowId == null)
