@@ -42,6 +42,7 @@ import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -222,4 +223,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * No-op on processed schedules or when the project attribute is not storage-relevant.
 	 */
 	void updateASIFromProjectId(@NonNull I_M_ShipmentSchedule shipmentSchedule);
+
+	OlAndSchedCollection retrieveInvalid(@NonNull PInstanceId pinstanceId, @NonNull QueryLimit maxToProcess);
+
+	void save(@NonNull I_M_ShipmentSchedule shipmentSchedule);
 }

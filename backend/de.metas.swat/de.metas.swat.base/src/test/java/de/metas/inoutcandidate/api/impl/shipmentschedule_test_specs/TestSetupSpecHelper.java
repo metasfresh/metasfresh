@@ -5,6 +5,7 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.OlAndSchedCollection;
+import de.metas.inoutcandidate.api.OlAndSchedSupportingService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -56,8 +57,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Disabled
 public class TestSetupSpecHelper
 {
+	private OlAndSchedSupportingService olAndSchedSupportingService;
+
 	public OlAndSchedCollection setup(@NonNull final TestSetupSpec spec)
 	{
+		olAndSchedSupportingService = new OlAndSchedSupportingService();
+
 		final SetupData setupData = new SetupData();
 
 		setupData.bpartnerRecord = newInstance(I_C_BPartner.class);
@@ -112,6 +117,7 @@ public class TestSetupSpecHelper
 		saveRecord(shipmentScheduleRecord);
 
 		return OlAndSched.builder()
+				.services(olAndSchedSupportingService)
 				.deliverRequest(orderLineRecord::getQtyOrdered)
 				.shipmentSchedule(shipmentScheduleRecord)
 				.build();

@@ -2,9 +2,8 @@ package org.adempiere.inout.util;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
-import de.metas.logging.TableRecordMDC;
 import de.metas.material.cockpit.stock.StockDataItem;
 import de.metas.material.cockpit.stock.StockDataMultiQuery;
 import de.metas.material.cockpit.stock.StockDataQuery;
@@ -12,13 +11,12 @@ import de.metas.material.cockpit.stock.StockRepository;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
-import org.eevolution.api.PPOrderId;
 import org.eevolution.api.QtyCalculationsBOM;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -29,7 +27,7 @@ class ShipmentScheduleQtyOnHandStorageLoader
 {
 	@NonNull private final StockRepository stockRepository;
 	@NonNull private final QtyReservationRepository qtyReservationRepository;
-	@NonNull private final ImmutableList<I_M_ShipmentSchedule> shipmentSchedules;
+	@NonNull private final ImmutableSet<ShipmentScheduleQtyOnHandSegment> segments;
 
 	@NonNull private final StockDataQueriesLoadingCache cachedMaterialQueries = new StockDataQueriesLoadingCache();
 	@NonNull private final PickingBOMsLoadingCache cachedPickingBOMs = new PickingBOMsLoadingCache();
@@ -39,11 +37,11 @@ class ShipmentScheduleQtyOnHandStorageLoader
 	private ShipmentScheduleQtyOnHandStorageLoader(
 			@NonNull final StockRepository stockRepository,
 			@NonNull final QtyReservationRepository qtyReservationRepository,
-			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules)
+			@NonNull final Collection<ShipmentScheduleQtyOnHandSegment> segments)
 	{
 		this.stockRepository = stockRepository;
 		this.qtyReservationRepository = qtyReservationRepository;
-		this.shipmentSchedules = ImmutableList.copyOf(shipmentSchedules);
+		this.segments = ImmutableSet.copyOf(segments);
 	}
 
 	public ShipmentScheduleQtyOnHandStorage execute()
@@ -81,25 +79,25 @@ class ShipmentScheduleQtyOnHandStorageLoader
 	@NonNull
 	private ShipmentScheduleReservations retrieveReservations()
 	{
-		return ShipmentScheduleReservations.of(qtyReservationRepository.getActiveByProductIds(extractProductIds(shipmentSchedules)));
+		return ShipmentScheduleReservations.of(qtyReservationRepository.getActiveByProductIds(extractProductIds(segments)));
 	}
 
-	private static ImmutableSet<ProductId> extractProductIds(final @NotNull List<I_M_ShipmentSchedule> shipmentSchedules)
+	private static ImmutableSet<ProductId> extractProductIds(final @NotNull Collection<ShipmentScheduleQtyOnHandSegment> segments)
 	{
-		return shipmentSchedules.stream()
-				.map(shipmentSchedule -> ProductId.ofRepoId(shipmentSchedule.getM_Product_ID()))
+		return segments.stream()
+				.map(ShipmentScheduleQtyOnHandSegment::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@Nullable
 	private StockDataMultiQuery createMultiQueryOrNull()
 	{
-		if (shipmentSchedules.isEmpty())
+		if (segments.isEmpty())
 		{
 			return null;
 		}
 
-		final Set<StockDataQuery> stockDataQueries = shipmentSchedules.stream()
+		final Set<StockDataQuery> stockDataQueries = segments.stream()
 				.flatMap(this::getMaterialQueriesIncludingPickingBOMComponents)
 				.collect(ImmutableSet.toImmutableSet());
 		if (stockDataQueries.isEmpty())
@@ -112,13 +110,13 @@ class ShipmentScheduleQtyOnHandStorageLoader
 				.build();
 	}
 
-	private Stream<StockDataQuery> getMaterialQueriesIncludingPickingBOMComponents(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	private Stream<StockDataQuery> getMaterialQueriesIncludingPickingBOMComponents(@NonNull final ShipmentScheduleQtyOnHandSegment segment)
 	{
-		try (final MDC.MDCCloseable ignored = TableRecordMDC.putTableRecordReference(shipmentScheduleRecord))
+		try (final MDC.MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(segment.getShipmentScheduleId()))
 		{
-			final StockDataQuery mainProductQuery = cachedMaterialQueries.toQuery(shipmentScheduleRecord);
+			final StockDataQuery mainProductQuery = cachedMaterialQueries.toQuery(segment);
 
-			final QtyCalculationsBOM bom = getPickingBOM(shipmentScheduleRecord).orElse(null);
+			final QtyCalculationsBOM bom = getPickingBOM(segment).orElse(null);
 			if (bom == null)
 			{
 				return Stream.of(mainProductQuery);
@@ -134,9 +132,9 @@ class ShipmentScheduleQtyOnHandStorageLoader
 		}
 	}
 
-	private Optional<QtyCalculationsBOM> getPickingBOM(@NonNull final I_M_ShipmentSchedule sched)
+	private Optional<QtyCalculationsBOM> getPickingBOM(@NonNull final ShipmentScheduleQtyOnHandSegment segment)
 	{
-		return cachedPickingBOMs.getPickingBOM(PPOrderId.ofRepoIdOrNull(sched.getPickFrom_Order_ID()));
+		return cachedPickingBOMs.getPickingBOM(segment.getPickFromManufacturingOrderId());
 	}
 
 	private ShipmentScheduleAvailableStockDetail toStockDetail(@NonNull final StockDataItem stockDataItem)

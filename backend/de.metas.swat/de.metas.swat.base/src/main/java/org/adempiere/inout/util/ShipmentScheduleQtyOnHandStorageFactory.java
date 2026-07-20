@@ -1,9 +1,7 @@
 package org.adempiere.inout.util;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList;
 import de.metas.inoutcandidate.api.OlAndSchedCollection;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.material.cockpit.stock.StockRepository;
 import lombok.NonNull;
@@ -51,17 +49,10 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 		);
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
-	{
-		return newLoader()
-				.shipmentSchedules(ImmutableList.of(shipmentSchedule))
-				.build().execute();
-	}
-
 	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final OlAndSchedCollection lines)
 	{
 		return newLoader()
-				.shipmentSchedules(lines.getShipmentSchedules())
+				.segments(lines.getQtyOnHandSegments())
 				.build().execute();
 	}
 

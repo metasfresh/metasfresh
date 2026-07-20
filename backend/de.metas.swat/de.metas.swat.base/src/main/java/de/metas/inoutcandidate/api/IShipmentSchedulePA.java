@@ -80,11 +80,13 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 * marked with the given <code>adPinstanceId</code>.
 	 *
 	 * @param maxToProcess bounds the underlying tagging to whole products (see {@link IShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)});
-	 *                      the number of schedules actually retrieved can therefore exceed {@code maxToProcess} by up to one product's worth of schedules.
-	 *                      {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
+	 *                     the number of schedules actually retrieved can therefore exceed {@code maxToProcess} by up to one product's worth of schedules.
+	 *                     {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	OlAndSchedCollection retrieveInvalid(PInstanceId pinstanceId, QueryLimit maxToProcess);
+	OlAndSchedCollection retrieveInvalid(@NonNull PInstanceId pinstanceId, @NonNull QueryLimit maxToProcess, @NonNull final OlAndSchedSupportingService supportingServices);
+
+	OlAndSchedCollection createOlAndScheds(List<I_M_ShipmentSchedule> shipmentSchedules, @NonNull final OlAndSchedSupportingService supportingServices);
 
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
 

@@ -100,7 +100,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_limited_backlogRemains_limitReachedTrue()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
+		when(shipmentSchedulePA.retrieveInvalid(any(), any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(true);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(
@@ -119,7 +119,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_limited_backlogDrained_limitReachedFalse()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
+		when(shipmentSchedulePA.retrieveInvalid(any(), any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(false);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(
@@ -139,7 +139,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_noLimit_neverReportsLimitReached_regardlessOfBacklogSignal()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
+		when(shipmentSchedulePA.retrieveInvalid(any(), any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(true);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(

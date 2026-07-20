@@ -5,7 +5,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandSegment;
 import org.slf4j.MDC;
 
 import java.util.List;
@@ -56,4 +58,15 @@ public class OlAndSchedCollection
 	{
 		return list.stream().map(OlAndSched::getShipmentScheduleSegment).collect(ImmutableSet.toImmutableSet());
 	}
+
+	public Set<ShipmentScheduleQtyOnHandSegment> getQtyOnHandSegments()
+	{
+		return list.stream().map(OlAndSched::getQtyOnHandSegment).collect(ImmutableSet.toImmutableSet());
+	}
+
+	public OlAndSched getSingleOlAndSched()
+	{
+		return CollectionUtils.singleElement(list);
+	}
+
 }

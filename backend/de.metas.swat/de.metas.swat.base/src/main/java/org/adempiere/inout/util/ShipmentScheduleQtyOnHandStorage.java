@@ -3,7 +3,6 @@ package org.adempiere.inout.util;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
@@ -45,9 +44,9 @@ public class ShipmentScheduleQtyOnHandStorage
 	}
 
 	// visible for debugging
-	public StockDataQuery toQuery(@NonNull final I_M_ShipmentSchedule sched)
+	public StockDataQuery toQuery(@NonNull final ShipmentScheduleQtyOnHandSegment segment)
 	{
-		return cachedMaterialQueries.toQuery(sched);
+		return cachedMaterialQueries.toQuery(segment);
 	}
 
 	static StockDataQuery toPickBOMComponentQuery(
@@ -60,18 +59,18 @@ public class ShipmentScheduleQtyOnHandStorage
 				.build();
 	}
 
-	public ShipmentScheduleAvailableStock getStockDetailsMatching(@NonNull final I_M_ShipmentSchedule sched)
+	public ShipmentScheduleAvailableStock getStockDetailsMatching(@NonNull final ShipmentScheduleQtyOnHandSegment segment)
 	{
 		if (stockDetails.isEmpty()) {return ShipmentScheduleAvailableStock.of();}
 
 		//
 		// Main product
-		final StockDataQuery mainProductQuery = toQuery(sched);
+		final StockDataQuery mainProductQuery = toQuery(segment);
 		final ArrayList<ShipmentScheduleAvailableStockDetail> availableStockDetails = new ArrayList<>(getStockDetailsMatching(mainProductQuery));
 
 		//
 		// Picking (=> for "Trading BOM" feature)
-		final PPOrderId pickFromOrderId = PPOrderId.ofRepoIdOrNull(sched.getPickFrom_Order_ID());
+		final PPOrderId pickFromOrderId = segment.getPickFromManufacturingOrderId();
 		availableStockDetails.addAll(createPickFromStockDetails(mainProductQuery, pickFromOrderId));
 
 		return ShipmentScheduleAvailableStock.builder()

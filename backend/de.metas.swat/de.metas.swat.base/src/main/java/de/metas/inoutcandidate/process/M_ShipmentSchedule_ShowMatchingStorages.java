@@ -1,44 +1,37 @@
 package de.metas.inoutcandidate.process;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
+import de.metas.inoutcandidate.api.OlAndSchedSupportingService;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.cockpit.stock.StockDataQuery;
 import de.metas.process.JavaProcess;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.FillMandatoryException;
+import de.metas.util.Services;
 import org.adempiere.inout.util.ReservationKey;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStock;
 import org.adempiere.inout.util.ShipmentScheduleAvailableStockDetail;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorage;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
 public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 {
-	private I_M_ShipmentSchedule shipmentSchedule;
-
-	private final transient ShipmentScheduleQtyOnHandStorageFactory //
-			shipmentScheduleQtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
-
-	@Override
-	protected void prepare()
-	{
-		if (I_M_ShipmentSchedule.Table_Name.equals(getTableName()) && getRecord_ID() > 0)
-		{
-			shipmentSchedule = InterfaceWrapperHelper.create(getCtx(), getRecord_ID(), I_M_ShipmentSchedule.class, ITrx.TRXNAME_None);
-		}
-	}
+	// services
+	private final ShipmentScheduleQtyOnHandStorageFactory qtyOnHandStorageFactory = SpringContextHolder.instance.getBean(ShipmentScheduleQtyOnHandStorageFactory.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		if (shipmentSchedule == null || shipmentSchedule.getM_ShipmentSchedule_ID() <= 0)
-		{
-			throw new FillMandatoryException(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID);
-		}
+		final OlAndSchedCollection olAndSchedCollection = retrieveOlAndScheds();
+		final OlAndSched olAndSched = olAndSchedCollection.getSingleOlAndSched();
 
-		final ShipmentScheduleQtyOnHandStorage storagesContainer = shipmentScheduleQtyOnHandStorageFactory.ofShipmentSchedule(shipmentSchedule);
-		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(shipmentSchedule);
+		final ShipmentScheduleQtyOnHandStorage storagesContainer = qtyOnHandStorageFactory.ofOlAndScheds(olAndSchedCollection);
+
+		final ShipmentScheduleAvailableStock storageDetails = storagesContainer.getStockDetailsMatching(olAndSched.getQtyOnHandSegment());
 
 		addLog("@QtyOnHand@ (@Total@): " + storageDetails.getTotalQtyAvailable(ReservationKey.NO_KEY));
 
@@ -53,7 +46,7 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 		//
 		// Also show the Storage Query
 		{
-			final StockDataQuery materialQuery = storagesContainer.toQuery(shipmentSchedule);
+			final StockDataQuery materialQuery = storagesContainer.toQuery(olAndSched.getQtyOnHandSegment());
 			addLog("------------------------------------------------------------");
 			addLog("Storage Query:");
 			addLog(String.valueOf(materialQuery));
@@ -61,4 +54,12 @@ public class M_ShipmentSchedule_ShowMatchingStorages extends JavaProcess
 
 		return MSG_OK;
 	}
+
+	private OlAndSchedCollection retrieveOlAndScheds()
+	{
+		final ShipmentScheduleId shipmentScheduleId = getRecordIdAssumingTableName(I_M_ShipmentSchedule.Table_Name, ShipmentScheduleId::ofRepoId);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
+		return shipmentSchedulePA.createOlAndScheds(ImmutableList.of(shipmentSchedule), new OlAndSchedSupportingService());
+	}
+
 }

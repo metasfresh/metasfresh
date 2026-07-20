@@ -27,19 +27,22 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
 import de.metas.order.model.I_C_Order;
 import de.metas.product.ProductId;
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Services;
+import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.inout.util.ShipmentScheduleQtyOnHandSegment;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
+import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -53,19 +56,23 @@ import java.util.Optional;
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public final class OlAndSched
 {
-	private final I_M_ShipmentSchedule shipmentSchedule;
-	private final Optional<I_C_OrderLine> salesOrderLine;
-	private final Optional<I_C_Order> salesOrder;
-	private final IDeliverRequest deliverRequest;
-	@Getter private final BigDecimal initialSchedQtyDelivered;
+	@NonNull private final OlAndSchedSupportingService services;
+	@NonNull private final I_M_ShipmentSchedule shipmentSchedule;
+	@NonNull private final Optional<I_C_OrderLine> salesOrderLine;
+	@NonNull private final Optional<I_C_Order> salesOrder;
+	@Nullable private final IDeliverRequest deliverRequest;
+	@NonNull @Getter private final BigDecimal initialSchedQtyDelivered;
 
 	@Builder
 	private OlAndSched(
+			@NonNull OlAndSchedSupportingService services,
 			@Nullable final org.compiere.model.I_C_OrderLine orderLineOrNull,
 			@Nullable final org.compiere.model.I_C_Order orderOrNull,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@Nullable final IDeliverRequest deliverRequest)
 	{
+		this.services = services;
+
 		this.salesOrderLine = Optional.ofNullable(InterfaceWrapperHelper.create(orderLineOrNull, I_C_OrderLine.class));
 		this.salesOrder = Optional.ofNullable(InterfaceWrapperHelper.create(orderOrNull, I_C_Order.class));
 
@@ -73,7 +80,7 @@ public final class OlAndSched
 
 		if (deliverRequest == null)
 		{
-			this.deliverRequest = Services.get(IShipmentScheduleHandlerBL.class).createDeliverRequest(shipmentSchedule, orderLineOrNull);
+			this.deliverRequest = services.createDeliverRequest(shipmentSchedule, orderLineOrNull);
 		}
 		else
 		{
@@ -121,19 +128,19 @@ public final class OlAndSched
 	@NonNull
 	public WarehouseId getWarehouseId()
 	{
-		return Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(shipmentSchedule);
+		return services.getWarehouseId(shipmentSchedule);
 	}
 
 	@NonNull
 	public BPartnerId getBPartnerId()
 	{
-		return Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule);
+		return services.getBPartnerId(shipmentSchedule);
 	}
 
 	public I_C_UOM getOrderPriceUOM()
 	{
-		final int priceUomId = getSalesOrderLine().getPrice_UOM_ID();
-		return Services.get(IUOMDAO.class).getById(priceUomId);
+		final UomId priceUomId = UomId.ofRepoId(getSalesOrderLine().getPrice_UOM_ID());
+		return services.getUOMById(priceUomId);
 	}
 
 	public BigDecimal getOrderQtyReserved()
@@ -190,4 +197,36 @@ public final class OlAndSched
 				.build();
 
 	}
+
+	public ShipmentScheduleQtyOnHandSegment getQtyOnHandSegment()
+	{
+		return ShipmentScheduleQtyOnHandSegment.builder()
+				.warehouseId(getWarehouseId())
+				.productId(getProductId())
+				.pickFromManufacturingOrderId(getPickFromManufacturingOrderId())
+				.shipmentScheduleId(getShipmentScheduleId())
+				.sourceRef(TableRecordReference.ofReferenced(shipmentSchedule))
+				.build();
+	}
+
+	private @Nullable PPOrderId getPickFromManufacturingOrderId()
+	{
+		return PPOrderId.ofRepoIdOrNull(shipmentSchedule.getPickFrom_Order_ID());
+	}
+
+	public DeliveryRule getDeliveryRule()
+	{
+		return services.getDeliveryRule(shipmentSchedule);
+	}
+
+	public BigDecimal getQtyPickList()
+	{
+		return shipmentSchedule.getQtyPickList();
+	}
+
+	public void setQtyOnHand(final BigDecimal qtyOnHand)
+	{
+		shipmentSchedule.setQtyOnHand(qtyOnHand);
+	}
+
 }

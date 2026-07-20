@@ -13,13 +13,13 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.OlAndSchedCollection;
+import de.metas.inoutcandidate.api.OlAndSchedSupportingService;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -268,7 +268,10 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
 	@Override
-	public OlAndSchedCollection retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
+	public OlAndSchedCollection retrieveInvalid(
+			@NonNull final PInstanceId pinstanceId,
+			@NonNull final QueryLimit maxToProcess,
+			@NonNull final OlAndSchedSupportingService supportingServices)
 	{
 		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
@@ -294,7 +297,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			return OlAndSchedCollection.EMPTY;
 		}
 
-		return createOlAndScheds(shipmentSchedules);
+		return createOlAndScheds(shipmentSchedules, supportingServices);
 	}
 
 	private static OrderAndLineId extractOrderAndLineId(final I_M_ShipmentSchedule shipmentSchedule)
@@ -302,20 +305,21 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private OlAndSchedCollection createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	@Override
+	public OlAndSchedCollection createOlAndScheds(
+			@NonNull final List<I_M_ShipmentSchedule> shipmentSchedules,
+			@NonNull final OlAndSchedSupportingService supportingServices)
 	{
-		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
 		final Set<OrderAndLineId> orderLineIds = shipmentSchedules.stream()
 				.map(ShipmentSchedulePA::extractOrderAndLineId)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<OrderAndLineId, I_C_OrderLine> orderLines = orderDAO.getOrderLinesByIds(orderLineIds);
+		final Map<OrderAndLineId, I_C_OrderLine> orderLines = supportingServices.getOrderLinesByIds(orderLineIds);
 
 		final ImmutableSet<OrderId> orderIds = orderLineIds.stream().map(OrderAndLineId::getOrderId).collect(ImmutableSet.toImmutableSet());
 
-		final Map<OrderId, I_C_Order> orderId2record = Maps.uniqueIndex(orderDAO.getByIds(orderIds, I_C_Order.class), order -> OrderId.ofRepoId(order.getC_Order_ID()));
+		final Map<OrderId, I_C_Order> orderId2record = Maps.uniqueIndex(supportingServices.getOrdersByIds(orderIds, I_C_Order.class), order -> OrderId.ofRepoId(order.getC_Order_ID()));
 
 		final List<OlAndSched> result = new ArrayList<>();
 
@@ -342,7 +346,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					.build();
 			result.add(olAndSched);
 		}
-		
+
 		return OlAndSchedCollection.ofList(result);
 	}
 

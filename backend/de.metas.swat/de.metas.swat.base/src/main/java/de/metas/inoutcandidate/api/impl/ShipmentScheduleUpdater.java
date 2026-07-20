@@ -38,7 +38,6 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.OlAndSchedCollection;
@@ -123,7 +122,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
@@ -206,7 +204,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 
 			final QueryLimit maxToProcess = request.getMaxToProcess();
-			final OlAndSchedCollection olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId, maxToProcess);
+			final OlAndSchedCollection olsAndScheds = shipmentScheduleBL.retrieveInvalid(selectionId, maxToProcess);
 			loggable.addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
@@ -369,7 +367,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 					Check.errorUnless(schedRecord.getQtyToDeliver().signum() == 0, "{} has QtyToDeliver = {} (should be zero)", schedRecord, schedRecord.getQtyToDeliver());
 				}
 
-				shipmentSchedulePA.save(schedRecord);
+				shipmentScheduleBL.save(schedRecord);
 
 				return; //continue;
 			}
@@ -434,7 +432,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			// do not invoke this method, it's invoked by a model interceptor when M_ShipmentSchedule.ExportStatus is changed *for whatevever reason*.
 			// shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
-			shipmentSchedulePA.save(schedRecord);
+			shipmentScheduleBL.save(schedRecord);
 		});
 	}
 
@@ -506,16 +504,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
-			final I_M_ShipmentSchedule sched = olAndSched.getSched();
-
-			final DeliveryRule deliveryRule = shipmentScheduleEffectiveBL.getDeliveryRule(sched);
+			final DeliveryRule deliveryRule = olAndSched.getDeliveryRule();
 			logger.debug("DeliveryRule={}", deliveryRule);
 
 			final BigDecimal qtyRequired = computeQtyRequiredForOlAndSched(olAndSched, deliveryRule);
 
 			//
 			// QtyToDeliver: qtyRequired - qtyPickList (non negative!)
-			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, sched.getQtyPickList()/* qtyPickList was already updated by now*/);
+			final BigDecimal qtyToDeliver = ShipmentScheduleQtysHelper.computeQtyToDeliver(qtyRequired, olAndSched.getQtyPickList()/* qtyPickList was already updated by now*/);
 
 			logger.debug("QtyToDeliver={}", qtyToDeliver);
 			final ProductId productId = olAndSched.getProductId();
@@ -535,12 +531,12 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 			//
 			// Get the QtyOnHand storages suitable for our order line
-			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(sched);
-			final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(sched);
+			final ShipmentScheduleAvailableStock storages = shipmentScheduleQtyOnHandStorage.getStockDetailsMatching(olAndSched.getQtyOnHandSegment());
+			final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched);
 			final BigDecimal qtyOnHandBeforeAllocation = storages.getTotalQtyAvailable(reservationKey);
 
 			logger.debug("totalQtyAvailable={} from storages={}", qtyOnHandBeforeAllocation, storages);
-			sched.setQtyOnHand(qtyOnHandBeforeAllocation);
+			olAndSched.setQtyOnHand(qtyOnHandBeforeAllocation);
 
 			final CompleteStatus completeStatus = computeCompleteStatus(qtyToDeliver, qtyOnHandBeforeAllocation);
 
@@ -679,7 +675,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return; // we are done
 		}
 
-		final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched.getSched());
+		final ReservationKey reservationKey = ReservationKey.ofShipmentSchedule(olAndSched);
 
 		// Shipment Lines (i.e. candidate lines)
 		final List<DeliveryLineCandidate> deliveryLines = new ArrayList<>();

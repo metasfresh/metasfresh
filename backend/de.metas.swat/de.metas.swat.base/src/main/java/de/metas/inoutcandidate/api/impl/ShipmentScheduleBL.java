@@ -24,6 +24,8 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
+import de.metas.inoutcandidate.api.OlAndSchedSupportingService;
 import de.metas.inoutcandidate.api.ShipmentScheduleAllowConsolidatePredicateComposite;
 import de.metas.inoutcandidate.api.ShipmentScheduleLoadingCache;
 import de.metas.inoutcandidate.api.ShipmentScheduleUserChangeRequest;
@@ -59,6 +61,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -112,7 +115,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.adempiere.model.InterfaceWrapperHelper.createOld;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
@@ -166,6 +168,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final SpringContextHolder.Lazy<ProjectRepository> projectRepository = SpringContextHolder.lazyBean(ProjectRepository.class);
+	private final OlAndSchedSupportingService olAndSchedSupportingService = new OlAndSchedSupportingService();
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -1108,4 +1111,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		shipmentSchedule.setM_AttributeSetInstance_ID(newAsiId.getRepoId());
 	}
 
+	@Override
+	public OlAndSchedCollection retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
+	{
+		return shipmentSchedulePA.retrieveInvalid(pinstanceId, maxToProcess, olAndSchedSupportingService);
+	}
+
+	@Override
+	public void save(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		shipmentSchedulePA.save(shipmentSchedule);
+	}
 }

@@ -1,12 +1,15 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
+import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedSupportingService;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
 import org.adempiere.inout.util.DeliveryLineCandidate;
@@ -22,14 +25,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import de.metas.i18n.IMsgBL;
-import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.DeliveryRule;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -58,6 +58,7 @@ public class ShipmentScheduleQtysHelperTest
 	private String deliveryStopStatusMessage;
 	private String closedStatusMessage;
 	private IShipmentScheduleAllocDAO shipmentScheduleAllocDAO;
+	private OlAndSchedSupportingService olAndSchedSupportingService;
 
 	@BeforeEach
 	public void init()
@@ -69,6 +70,7 @@ public class ShipmentScheduleQtysHelperTest
 		closedStatusMessage = msgBL.getMsg(Env.getCtx(), ShipmentScheduleQtysHelper.MSG_ClosedStatus);
 
 		shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
+		olAndSchedSupportingService = new OlAndSchedSupportingService();
 	}
 
 	@Builder(builderMethodName = "shipmentSchedule", builderClassName = "ShipmentScheduleBuilder")
@@ -157,6 +159,7 @@ public class ShipmentScheduleQtysHelperTest
 			final BigDecimal qtyOrderedBD = new BigDecimal(qtyOrdered);
 
 			return OlAndSched.builder()
+					.services(olAndSchedSupportingService)
 					.shipmentSchedule(sched)
 					.deliverRequest(() -> qtyOrderedBD)
 					.build();

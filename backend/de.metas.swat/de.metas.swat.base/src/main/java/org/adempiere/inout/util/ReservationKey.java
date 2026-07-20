@@ -1,6 +1,6 @@
 package org.adempiere.inout.util;
 
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.order.OrderLineId;
 import lombok.NonNull;
 import lombok.Value;
@@ -25,9 +25,9 @@ public class ReservationKey
 		return new ReservationKey(salesOrderLineId);
 	}
 
-	public static ReservationKey ofShipmentSchedule(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	public static ReservationKey ofShipmentSchedule(@NonNull final OlAndSched olAndSched)
 	{
-		final OrderLineId salesOrderLineId = OrderLineId.ofRepoIdOrNull(shipmentSchedule.getC_OrderLine_ID());
+		final OrderLineId salesOrderLineId = olAndSched.getSalesOrderLineId().orElse(null);
 		return salesOrderLineId != null ? ofSalesOrderLineId(salesOrderLineId) : NO_KEY;
 	}
 

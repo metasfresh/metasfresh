@@ -1,6 +1,7 @@
 package de.metas.inoutcandidate.api.impl;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -42,13 +43,13 @@ import java.math.BigDecimal;
  */
 
 @UtilityClass
-/* package */class ShipmentScheduleQtysHelper
+		/* package */class ShipmentScheduleQtysHelper
 {
 	@VisibleForTesting
-	static final String MSG_DeliveryStopStatus = "ShipmentSchedule_DeliveryStop_Status";
+	static final AdMessageKey MSG_DeliveryStopStatus = AdMessageKey.of("ShipmentSchedule_DeliveryStop_Status");
 
 	@VisibleForTesting
-	static final String MSG_ClosedStatus = "ShipmentSchedule_Closed_Status";
+	static final AdMessageKey MSG_ClosedStatus = AdMessageKey.of("ShipmentSchedule_Closed_Status");
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleQtysHelper.class);
 
@@ -188,7 +189,7 @@ import java.math.BigDecimal;
 	}
 
 	public static BigDecimal computeQtyToDeliverOverrideFulFilled(
-			@NonNull final OlAndSched olAndSched, 
+			@NonNull final OlAndSched olAndSched,
 			@NonNull final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO)
 	{
 		final I_M_ShipmentSchedule sched = olAndSched.getSched();
