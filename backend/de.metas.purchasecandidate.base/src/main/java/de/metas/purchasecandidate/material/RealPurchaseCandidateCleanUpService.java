@@ -49,7 +49,7 @@ public class RealPurchaseCandidateCleanUpService
 	{
 		if (purchaseCandidateRepository.hasCandidateThatProducedAPurchaseOrder(salesOrderLineId))
 		{
-			throw new AdempiereException("@" + MSG_SalesOrderLine_CannotDelete_HasCompletedDocs + "@");
+			throw new AdempiereException(MSG_SalesOrderLine_CannotDelete_HasCompletedDocs);
 		}
 
 		final DeletePurchaseCandidateQuery deleteQuery = DeletePurchaseCandidateQuery.builder()

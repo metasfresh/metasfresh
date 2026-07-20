@@ -15,9 +15,8 @@ Feature: Delete a sales order line after the order was reactivated
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     # test C_BPartners are not EDI-flavored; disable the EDI interceptors so plain order creation and
     # invoice-candidate creation don't fail trying to load them as de.metas.edi.model.I_C_BPartner
-    # (see AnnotatedModelInterceptorDisabler); the local schema lacks C_BPartner.IsEdiInvoicRecipient
-    # (environment gap), so the interceptor that reads it during C_Invoice_Candidate creation must be
-    # disabled too, else createMissingCandidates() throws IllegalArgumentException on POWrapper
+    # (see AnnotatedModelInterceptorDisabler); EDI recipient flagging is irrelevant to this delete-flow
+    # test, so the interceptor that reads it during C_Invoice_Candidate creation is disabled too
     And set sys config String value N for sys config InterceptorEnabled_de.metas.edi.model.validator.C_Order#setEdiEnabledForNewOrder
     And set sys config String value N for sys config InterceptorEnabled_de.metas.edi.model.validator.C_Invoice_Candidate#setIsEDIInvoicRecipient
 

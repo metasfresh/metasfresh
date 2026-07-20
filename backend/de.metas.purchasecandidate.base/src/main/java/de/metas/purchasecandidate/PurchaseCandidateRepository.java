@@ -149,6 +149,13 @@ public class PurchaseCandidateRepository
 	 * sufficient here: a partially-fulfilled candidate has real {@code C_PurchaseCandidate_Alloc} rows while still
 	 * {@code Processed=false} (false negative), and the manual AD process {@code C_PurchaseCandiate_Mark_Processed}
 	 * can set {@code Processed=true} with no PO at all (false positive).
+	 * <p>
+	 * Note: unlike the shipment/invoice delete guards, this check does NOT unblock once the purchase order is
+	 * voided or reversed. Those guards look at the referenced document's {@code DocStatus} because voiding/reversing
+	 * a shipment or invoice cancels the document itself. Here, voiding/reversing the purchase order does NOT remove
+	 * the {@code C_PurchaseCandidate_Alloc} row that links the candidate to it, so the FK would still be violated if
+	 * the candidate were deleted. Blocking on Alloc existence alone (regardless of the PO's DocStatus) is therefore
+	 * deliberate and FK-necessary — do not add a DocStatus check here.
 	 */
 	public boolean hasCandidateThatProducedAPurchaseOrder(@NonNull final OrderLineId salesOrderLineId)
 	{
