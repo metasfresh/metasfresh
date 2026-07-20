@@ -149,6 +149,35 @@ public class C_OrderLine_ShipmentScheduleTest
 		assertThat(shipmentScheduleStillExists(sched)).isFalse();
 	}
 
+	/**
+	 * Creates an active {@code M_InOut} + {@code M_InOutLine} whose {@code C_OrderLine_ID} points directly at the
+	 * given order line, with NO {@code M_ShipmentSchedule_QtyPicked} row -- i.e. the manually-created-shipment case.
+	 */
+	private void createDirectOrderLineLink(final I_C_OrderLine orderLine, final String inOutDocStatus)
+	{
+		final I_M_InOut inOutRecord = newInstance(I_M_InOut.class);
+		inOutRecord.setDocStatus(inOutDocStatus);
+		saveRecord(inOutRecord);
+
+		final I_M_InOutLine inOutLineRecord = newInstance(I_M_InOutLine.class);
+		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
+		inOutLineRecord.setC_OrderLine_ID(orderLine.getC_OrderLine_ID());
+		saveRecord(inOutLineRecord);
+	}
+
+	@Test
+	public void schedule_withDirectInOutLineLinkToNonVoidedInOut_blocksDelete_onOrderLineDelete()
+	{
+		final I_M_ShipmentSchedule sched = createShipmentScheduleFor(salesOrderLineRecord);
+		createDirectOrderLineLink(salesOrderLineRecord, DocStatus.Completed.getCode());
+
+		assertThatThrownBy(() -> c_OrderLine_ShipmentSchedule.deleteOrGuardShipmentSchedules(salesOrderLineRecord))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SalesOrderLine_CannotDelete_HasCompletedDocs");
+
+		assertThat(shipmentScheduleStillExists(sched)).isTrue();
+	}
+
 	@Test
 	public void purchaseOrderLine_isNeverGuardedOrCascaded()
 	{

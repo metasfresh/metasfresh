@@ -69,12 +69,12 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	public static final AdMessageKey MSG_SalesOrderLine_CannotDelete_HasCompletedDocs = AdMessageKey.of("SalesOrderLine_CannotDelete_HasCompletedDocs");
 
 	/**
-	 * DocStatuses of an {@code M_InOut} that do NOT count as "a real shipment" blocking the sales order line delete
-	 * (AC3): a voided or reversed inout never blocks.
+	 * DocStatuses of an {@code M_InOut} that do NOT count as "a real shipment" blocking the sales order line delete:
+	 * a voided or reversed inout never blocks.
 	 */
-	private static final ImmutableSet<String> NON_BLOCKING_INOUT_DOCSTATUSES = ImmutableSet.of(
-			DocStatus.Voided.getCode(),
-			DocStatus.Reversed.getCode());
+	private static final ImmutableSet<DocStatus> NON_BLOCKING_INOUT_DOCSTATUSES = ImmutableSet.of(
+			DocStatus.Voided,
+			DocStatus.Reversed);
 
 	/**
 	 * When mass cache invalidation, above this threshold we will invalidate ALL shipment schedule records instead of particular IDS
@@ -610,14 +610,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	{
 		if (hasActiveShipmentToNonVoidedInOut(orderLineId))
 		{
-			throw new AdempiereException("@" + MSG_SalesOrderLine_CannotDelete_HasCompletedDocs + "@");
+			throw new AdempiereException(MSG_SalesOrderLine_CannotDelete_HasCompletedDocs);
 		}
 
 		deleteAllForReference(TableRecordReference.of(InterfaceWrapperHelper.getTableId(I_C_OrderLine.class), orderLineId.getRepoId()));
 	}
 
 	/**
-	 * Block predicate (AC2/AC3): the schedule for this order line has at least one active allocation
+	 * Block predicate: the schedule for this order line has at least one active allocation
 	 * ({@code M_ShipmentSchedule_QtyPicked}, or the direct {@code M_InOutLine.C_OrderLine_ID} link used for manually
 	 * created shipments) to an {@code M_InOutLine} whose parent {@code M_InOut} is NOT voided/reversed.
 	 */
