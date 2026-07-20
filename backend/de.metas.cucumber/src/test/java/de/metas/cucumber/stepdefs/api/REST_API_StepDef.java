@@ -29,7 +29,6 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -341,10 +340,6 @@ public class REST_API_StepDef
 	 * <p>All assertions are passed as inline Gherkin parameters so this step takes a single doc-string argument
 	 * (the JSON payload) — Gherkin grammar forbids a step from taking both a DataTable and a DocString.
 	 *
-	 * <p>The {@code expectErrorUserFriendly} and {@code expectErrorCode} parameters are wired directly
-	 * to {@link APIRequest#expectErrorUserFriendly} and {@link APIRequest#expectedErrorCode},
-	 * which are validated by {@link RESTUtil#validateAPIResponse} — no new assertion machinery is introduced.
-	 *
 	 * <p>Parameters (all inline Gherkin expressions):
 	 * <ul>
 	 *   <li>{@code endpointPath} – REST endpoint path, e.g. {@code api/v2/bpartner/002}</li>
@@ -382,7 +377,7 @@ public class REST_API_StepDef
 						.method("PUT")
 						.payload(payloadResolved)
 						.expectedStatusCode(Integer.parseInt(expectedStatusCode))
-						.expectedErrorCode(StringUtils.trimBlankToNull(expectErrorCode))
+						.expectedErrorCode(expectErrorCode)
 						.expectErrorUserFriendly(Boolean.parseBoolean(expectErrorUserFriendly))
 						.build()
 		);
