@@ -84,7 +84,7 @@ public interface IShipmentSchedulePA extends ISingletonService
 	 *                      {@link QueryLimit#NO_LIMIT} keeps the previous unbounded behavior.
 	 * @return the {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
-	List<OlAndSched> retrieveInvalid(PInstanceId pinstanceId, QueryLimit maxToProcess);
+	OlAndSchedCollection retrieveInvalid(PInstanceId pinstanceId, QueryLimit maxToProcess);
 
 	void setIsDiplayedForProduct(ProductId productId, boolean displayed);
 

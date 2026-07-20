@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.document.engine.DocStatus;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -39,12 +40,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -55,7 +56,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 @Disabled
 public class TestSetupSpecHelper
 {
-	public ImmutableList<OlAndSched> setup(@NonNull final TestSetupSpec spec)
+	public OlAndSchedCollection setup(@NonNull final TestSetupSpec spec)
 	{
 		final SetupData setupData = new SetupData();
 
@@ -71,7 +72,7 @@ public class TestSetupSpecHelper
 		return createShipmentSchedules(setupData, spec);
 	}
 
-	private ImmutableList<OlAndSched> createShipmentSchedules(final SetupData setupData, final TestSetupSpec spec)
+	private OlAndSchedCollection createShipmentSchedules(final SetupData setupData, final TestSetupSpec spec)
 	{
 		final ImmutableList.Builder<OlAndSched> olAndScheds = ImmutableList.builder();
 		for (final ShipmentScheduleSpec shipmentSchedule : spec.getShipmentSchedules())
@@ -80,7 +81,7 @@ public class TestSetupSpecHelper
 			olAndScheds.add(olAndSched);
 		}
 
-		return olAndScheds.build();
+		return OlAndSchedCollection.ofList(olAndScheds.build());
 	}
 
 	private OlAndSched createOlAndSched(final SetupData setupData, final ShipmentScheduleSpec shipmentSchedule)
@@ -100,7 +101,7 @@ public class TestSetupSpecHelper
 		shipmentScheduleRecord.setBPartnerAddress_Override("BPartnerAddress_Override"); // not flagged as mandatory in AD, but always set
 		shipmentScheduleRecord.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentScheduleRecord.setRecord_ID(orderLineRecord.getC_OrderLine_ID());
-		
+
 		shipmentScheduleRecord.setQtyOrdered(shipmentSchedule.getQtyOrdered());
 
 		shipmentScheduleRecord.setDeliveryRule(shipmentSchedule.getDeliveryRule().getCode()); // <==

@@ -1,13 +1,16 @@
 package de.metas.inoutcandidate.invalidation.segments;
 
-import java.util.Collections;
-import java.util.Set;
-
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.warehouse.WarehouseId;
+
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * Plain Immutable {@link IShipmentScheduleSegment} implementation.
@@ -77,6 +80,7 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 				warehouseIds, locatorIds);
 	}
 
+	@SuppressWarnings("unused")
 	public static class ImmutableShipmentScheduleSegmentBuilder
 	{
 		public ImmutableShipmentScheduleSegmentBuilder anyBPartner()
@@ -109,4 +113,23 @@ public class ImmutableShipmentScheduleSegment implements IShipmentScheduleSegmen
 			return this;
 		}
 	}
+
+	public ProductId getSingleProductId()
+	{
+		if (productIds.size() != 1)
+		{
+			throw new AdempiereException("Expected segment to have one and only one product: " + this);
+		}
+		return ProductId.ofRepoId(productIds.iterator().next());
+	}
+
+	public WarehouseId getSingleWarehouseId()
+	{
+		if (warehouseIds.size() != 1)
+		{
+			throw new AdempiereException("Expected segment to have one and only one warehouse: " + this);
+		}
+		return WarehouseId.ofRepoId(warehouseIds.iterator().next());
+	}
+
 }

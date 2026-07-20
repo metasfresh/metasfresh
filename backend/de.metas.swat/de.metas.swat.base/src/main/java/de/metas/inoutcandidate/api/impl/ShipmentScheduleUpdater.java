@@ -32,9 +32,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.bpartner.BPartnerId;
 import de.metas.inoutcandidate.ShipmentConstraintId;
-import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -43,6 +41,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
@@ -52,6 +51,7 @@ import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSe
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.inoutcandidate.spi.IShipmentSchedulesAfterFirstPassUpdater;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
 import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLineFactory;
@@ -94,7 +94,6 @@ import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageFactory;
 import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_BPartner_Product;
@@ -207,7 +206,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			}
 
 			final QueryLimit maxToProcess = request.getMaxToProcess();
-			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId, maxToProcess);
+			final OlAndSchedCollection olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId, maxToProcess);
 			loggable.addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
@@ -265,7 +264,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	 * To actually set those values, this method calls the registered {@link IShipmentSchedulesAfterFirstPassUpdater}.
 	 */
 	@VisibleForTesting
-	void updateSchedules(final Properties ctx, final List<OlAndSched> olsAndScheds)
+	void updateSchedules(final Properties ctx, final OlAndSchedCollection olsAndScheds)
 	{
 		if (olsAndScheds.isEmpty())
 		{
@@ -274,42 +273,38 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		//
 		// first update those shipment schedule properties that don't need two passes
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+		olsAndScheds.forEach(olAndSched -> {
+			final I_M_ShipmentSchedule sched = olAndSched.getSched();
+
+			shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
+
+			updateCatchUomId(sched);
+
+			updateWarehouseId(sched);
+
+			shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
+
+			shipmentScheduleBL.updateHeaderAggregationKey(sched);
+
+			updateShipmentConstraints(sched);
+
+			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
+			sched.setQtyDelivered(qtyDelivered);
+
+			//
+			// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
+			// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
+			// * QtyPicked from QtyPicked records
+			final BigDecimal qtyPickedOrOnDraftShipment;
 			{
-				final I_M_ShipmentSchedule sched = olAndSched.getSched();
+				// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
+				final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
+				logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
+				qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
 
-				shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
-
-				updateCatchUomId(sched);
-
-				updateWarehouseId(sched);
-
-				shipmentScheduleBL.updateCapturedLocationsAndRenderedAddresses(sched);
-
-				shipmentScheduleBL.updateHeaderAggregationKey(sched);
-
-				updateShipmentConstraints(sched);
-
-				final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(sched);
-				sched.setQtyDelivered(qtyDelivered);
-
-				//
-				// QtyPickList (i.e. qtyUnconfirmedShipments) is the sum of
-				// * MovementQtys from all draft shipment lines which are pointing to shipment schedule's order line
-				// * QtyPicked from QtyPicked records
-				final BigDecimal qtyPickedOrOnDraftShipment;
-				{
-					// task 08123: we also take those numbers into account that are *not* on an M_InOutLine yet, but are nonetheless picked
-					final Quantity qtyPickedAndUnconfirmed = shipmentScheduleAllocBL.retrieveQtyPickedAndUnconfirmed(sched);
-					logger.debug("QtyPickedAndUnconfirmed={}", qtyPickedAndUnconfirmed);
-					qtyPickedOrOnDraftShipment = qtyPickedAndUnconfirmed.toBigDecimal();
-
-					sched.setQtyPickList(qtyPickedOrOnDraftShipment);
-				}
+				sched.setQtyPickList(qtyPickedOrOnDraftShipment);
 			}
-		}
+		});
 
 		updateFromPickingJobSchedules(olsAndScheds);
 
@@ -336,11 +331,10 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		}
 
 		// make the second run
-		final IShipmentSchedulesDuringUpdate secondRun = generate_SecondRun(olsAndScheds, firstRun);
+		final ShipmentSchedulesDuringUpdate secondRun = generate_SecondRun(olsAndScheds, firstRun);
 
 		// finally update the shipment schedule entries
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
+		olsAndScheds.forEach(olAndSched -> {
 			final I_M_ShipmentSchedule schedRecord = olAndSched.getSched();
 			final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(schedRecord); // task 08756: we don't really care for the ol's partner, but for the partner who will actually receive the shipment.
 
@@ -377,7 +371,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 				shipmentSchedulePA.save(schedRecord);
 
-				continue;
+				return; //continue;
 			}
 
 			// task 08694
@@ -441,28 +435,22 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// do not invoke this method, it's invoked by a model interceptor when M_ShipmentSchedule.ExportStatus is changed *for whatevever reason*.
 			// shipmentScheduleBL.updateCanBeExportedAfter(schedRecord);
 			shipmentSchedulePA.save(schedRecord);
-		}
+		});
 	}
 
-	private void updateFromPickingJobSchedules(@NonNull final List<OlAndSched> olsAndScheds)
+	private void updateFromPickingJobSchedules(@NonNull final OlAndSchedCollection olsAndScheds)
 	{
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = olsAndScheds.stream()
-				.map(OlAndSched::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = olsAndScheds.getShipmentScheduleIds();
 
 		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = pickingJobScheduleRepository
 				.stream(PickingJobScheduleQuery.builder().onlyShipmentScheduleIds(shipmentScheduleIds).build())
 				.collect(PickingJobScheduleCollection.collectGroupedByShipmentScheduleId());
 
-		for (final OlAndSched olAndSched : olsAndScheds)
-		{
-			try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
-			{
-				final ShipmentScheduleId shipmentScheduleId = olAndSched.getShipmentScheduleId();
-				final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
-				updateFromPickingJobSchedules(olAndSched, jobSchedules);
-			}
-		}
+		olsAndScheds.forEach(olAndSched -> {
+			final ShipmentScheduleId shipmentScheduleId = olAndSched.getShipmentScheduleId();
+			final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.getOrDefault(shipmentScheduleId, PickingJobScheduleCollection.EMPTY);
+			updateFromPickingJobSchedules(olAndSched, jobSchedules);
+		});
 	}
 
 	private void updateFromPickingJobSchedules(@NonNull final OlAndSched olAndSched, @NonNull final PickingJobScheduleCollection jobSchedules)
@@ -476,7 +464,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		shipmentSchedule.setQtyScheduledForPickingOfProcessed(qtyScheduledToPickOfProcessed != null ? qtyScheduledToPickOfProcessed.toBigDecimal() : null);
 	}
 
-	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final List<OlAndSched> lines)
+	ShipmentSchedulesDuringUpdate generate_FirstRun(@NonNull final OlAndSchedCollection lines)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(1))
 		{
@@ -486,7 +474,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	ShipmentSchedulesDuringUpdate generate_SecondRun(
-			@NonNull final List<OlAndSched> lines,
+			@NonNull final OlAndSchedCollection lines,
 			@NonNull final ShipmentSchedulesDuringUpdate firstRun)
 	{
 		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleUpdateRunNo(2))
@@ -496,7 +484,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	private ShipmentSchedulesDuringUpdate generate(
-			@NonNull final List<OlAndSched> lines,
+			@NonNull final OlAndSchedCollection lines,
 			@NonNull final ShipmentSchedulesDuringUpdate shipmentSchedulesDuringUpdate)
 	{
 		//
@@ -506,10 +494,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 		//
 		// Iterate and try to allocate the QtyOnHand
-		for (final OlAndSched olAndSched : lines)
-		{
-			processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands);
-		}
+		lines.forEach(olAndSched -> processSingleOlAndSched(olAndSched, shipmentSchedulesDuringUpdate, qtyOnHands));
+
 		return shipmentSchedulesDuringUpdate;
 	} // generate
 
@@ -927,14 +913,15 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		sched.setCatch_UOM_ID(UomId.toRepoId(catchUOMId));
 	}
 
-	private void invalidatePickingBOMProducts(@NonNull final List<OlAndSched> olsAndScheds, final PInstanceId addToSelectionId)
+	private void invalidatePickingBOMProducts(@NonNull final OlAndSchedCollection olsAndScheds, final PInstanceId addToSelectionId)
 	{
 		if (olsAndScheds.isEmpty())
 		{
 			return;
 		}
 
-		final ImmutableSet<IShipmentScheduleSegment> pickingBOMsSegments = olsAndScheds.stream()
+		final ImmutableSet<IShipmentScheduleSegment> pickingBOMsSegments = olsAndScheds.getShipmentScheduleSegments()
+				.stream()
 				.flatMap(this::extractPickingBOMsStorageSegments)
 				.collect(ImmutableSet.toImmutableSet());
 		if (pickingBOMsSegments.isEmpty())
@@ -945,40 +932,33 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		invalidSchedulesRepo.invalidateStorageSegments(pickingBOMsSegments, addToSelectionId);
 	}
 
-	private Stream<IShipmentScheduleSegment> extractPickingBOMsStorageSegments(final OlAndSched olAndSched)
+	private Stream<ImmutableShipmentScheduleSegment> extractPickingBOMsStorageSegments(final ImmutableShipmentScheduleSegment bomProductSegment)
 	{
-		try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
+		// try (final MDCCloseable ignored = ShipmentSchedulesMDC.putShipmentScheduleId(olAndSched.getShipmentScheduleId()))
 		{
 			final PickingBOMsReversedIndex pickingBOMsReversedIndex = pickingBOMService.getPickingBOMsReversedIndex();
 
-			final ProductId componentId = olAndSched.getProductId();
+			final ProductId componentId = bomProductSegment.getSingleProductId();
 			final ImmutableSet<ProductId> pickingBOMProductIds = pickingBOMsReversedIndex.getBOMProductIdsByComponentId(componentId);
 			if (pickingBOMProductIds.isEmpty())
 			{
 				return Stream.empty();
 			}
 
-			final Set<WarehouseId> warehouseIds = warehousesRepo.getWarehouseIdsOfSamePickingGroup(olAndSched.getWarehouseId());
+			final ImmutableSet<Integer> warehouseIds = WarehouseId.toRepoIds(warehousesRepo.getWarehouseIdsOfSamePickingGroup(bomProductSegment.getSingleWarehouseId()));
 
-			final LinkedHashSet<IShipmentScheduleSegment> segments = new LinkedHashSet<>();
-			for (final WarehouseId warehouseId : warehouseIds)
+			final LinkedHashSet<ImmutableShipmentScheduleSegment> segments = new LinkedHashSet<>();
+			for (final ProductId pickingBOMProductId : pickingBOMProductIds)
 			{
-				final Set<Integer> locatorRepoIds = warehousesRepo.getLocatorIds(warehouseId)
-						.stream()
-						.map(LocatorId::getRepoId)
-						.collect(ImmutableSet.toImmutableSet());
-
-				for (final ProductId pickingBOMProductId : pickingBOMProductIds)
-				{
-					final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
-							.anyBPartner()
-							.productId(pickingBOMProductId.getRepoId())
-							.locatorIds(locatorRepoIds)
-							.build();
-					logger.debug("Add for pickingBOMProductId={} warehouseId={}: segment={}", pickingBOMProductId.getRepoId(), warehouseId.getRepoId(), segment);
-					segments.add(segment);
-				}
+				final ImmutableShipmentScheduleSegment segment = ImmutableShipmentScheduleSegment.builder()
+						.anyBPartner()
+						.productId(pickingBOMProductId.getRepoId())
+						.warehouseIds(warehouseIds)
+						.build();
+				logger.debug("Add for pickingBOMProductId={} warehouseIds={}: segment={}", pickingBOMProductId, warehouseIds, segment);
+				segments.add(segment);
 			}
+
 			return segments.stream();
 		}
 	}

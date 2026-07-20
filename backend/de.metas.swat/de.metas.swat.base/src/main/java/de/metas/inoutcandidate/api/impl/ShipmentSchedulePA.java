@@ -12,6 +12,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -76,7 +77,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * NOTE: this ordering is VERY important because that's the order in which the available QtyOnHand will be allocated.
 	 */
 	private static final String ORDER_CLAUSE = "\n ORDER BY " //
- 			// If the qty was actively scheduled for picking, the qtyToDeliver should have the highest priority
+			// If the qty was actively scheduled for picking, the qtyToDeliver should have the highest priority
 			// as this qty is fix planned and this should prevent it from decreasing because of other changes
 			+ "\n " + I_M_ShipmentSchedule.COLUMNNAME_IsScheduledForPicking + " DESC,"
 			//
@@ -267,7 +268,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
 	@Override
-	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
+	public OlAndSchedCollection retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
 		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
@@ -290,7 +291,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 				.list();
 		if (shipmentSchedules.isEmpty())
 		{
-			return ImmutableList.of();
+			return OlAndSchedCollection.EMPTY;
 		}
 
 		return createOlAndScheds(shipmentSchedules);
@@ -301,7 +302,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		return OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
 	}
 
-	private List<OlAndSched> createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
+	private OlAndSchedCollection createOlAndScheds(final List<I_M_ShipmentSchedule> shipmentSchedules)
 	{
 		final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
@@ -341,7 +342,8 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 					.build();
 			result.add(olAndSched);
 		}
-		return result;
+		
+		return OlAndSchedCollection.ofList(result);
 	}
 
 	@Override

@@ -1,16 +1,16 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
+import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
+import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
+import de.metas.material.event.commons.OrderLineDescriptor;
+import de.metas.process.PInstanceId;
+import de.metas.shipping.ShipperId;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -22,17 +22,13 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.api.OlAndSched;
-import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
-import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
-import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ShipmentScheduleReferencedLine;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.process.PInstanceId;
-import de.metas.shipping.ShipperId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /*
  * #%L
@@ -44,12 +40,12 @@ import de.metas.util.Services;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -104,13 +100,13 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_limited_backlogRemains_limitReachedTrue()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(ImmutableList.of());
+		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(true);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(
 				requestBuilder(QueryLimit.ofInt(3)).build());
 
-		assertThat(result.getUpdatedCount()).isEqualTo(0);
+		assertThat(result.getUpdatedCount()).isZero();
 		assertThat(result.isLimitReached())
 				.as("more untagged markers remain after this pass -> a follow-up run is needed")
 				.isTrue();
@@ -123,7 +119,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_limited_backlogDrained_limitReachedFalse()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(ImmutableList.of());
+		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(false);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(
@@ -143,7 +139,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateShipmentSchedules_noLimit_neverReportsLimitReached_regardlessOfBacklogSignal()
 	{
-		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(ImmutableList.of());
+		when(shipmentSchedulePA.retrieveInvalid(any(), any())).thenReturn(OlAndSchedCollection.EMPTY);
 		when(invalidSchedulesRepo.existsUntaggedRecomputeMarkers()).thenReturn(true);
 
 		final ShipmentScheduleUpdateInvalidResult result = shipmentScheduleUpdater.updateShipmentSchedules(
@@ -160,9 +156,7 @@ public class ShipmentScheduleUpdaterTest
 	@Test
 	public void updateSchedules_emptyList()
 	{
-		final List<OlAndSched> olAndScheds = new ArrayList<>();
-
-		shipmentScheduleUpdater.updateSchedules(Env.getCtx(), olAndScheds);
+		shipmentScheduleUpdater.updateSchedules(Env.getCtx(), OlAndSchedCollection.EMPTY);
 	}
 
 	@Test
@@ -185,7 +179,7 @@ public class ShipmentScheduleUpdaterTest
 		final DeliveryGroupCandidate result = shipmentScheduleUpdater.createGroup(scheduleSourceDoc, sched);
 
 		assertThat(result.getGroupId()).isEqualTo(DeliveryGroupCandidateGroupId.of(orderRef));
-		assertThat(result.getShipperId().get()).isEqualTo(SHIPPER_ID);
+		assertThat(result.getShipperId()).contains(SHIPPER_ID);
 		assertThat(result.getWarehouseId()).isEqualTo(WAREHOUSE_ID);
 		assertThat(result.getBPartnerAddress()).isEqualTo("bPartnerAddress");
 	}

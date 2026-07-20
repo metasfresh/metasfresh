@@ -2,7 +2,7 @@ package org.adempiere.inout.util;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import de.metas.inoutcandidate.api.OlAndSched;
+import de.metas.inoutcandidate.api.OlAndSchedCollection;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.qty_reservation.QtyReservationRepository;
 import de.metas.material.cockpit.stock.StockRepository;
@@ -10,10 +10,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.inout.util.ShipmentScheduleQtyOnHandStorageLoader.ShipmentScheduleQtyOnHandStorageLoaderBuilder;
 import org.compiere.Adempiere;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 /*
  * #%L
@@ -61,10 +58,10 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 				.build().execute();
 	}
 
-	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final List<OlAndSched> lines)
+	public final ShipmentScheduleQtyOnHandStorage ofOlAndScheds(@NonNull final OlAndSchedCollection lines)
 	{
 		return newLoader()
-				.shipmentSchedules(extractShipmentSchedules(lines))
+				.shipmentSchedules(lines.getShipmentSchedules())
 				.build().execute();
 	}
 
@@ -73,10 +70,5 @@ public class ShipmentScheduleQtyOnHandStorageFactory
 		return ShipmentScheduleQtyOnHandStorageLoader.builder()
 				.stockRepository(stockRepository)
 				.qtyReservationRepository(qtyReservationRepository);
-	}
-
-	private static List<I_M_ShipmentSchedule> extractShipmentSchedules(final @NotNull List<OlAndSched> lines)
-	{
-		return lines.stream().map(OlAndSched::getSched).collect(ImmutableList.toImmutableList());
 	}
 }

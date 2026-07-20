@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 /*
  * #%L
@@ -72,8 +71,10 @@ public class WarehouseId implements RepoIdAware
 		return warehouseId != null ? warehouseId.getRepoId() : -1;
 	}
 
-	public static Set<Integer> toRepoIds(final Collection<WarehouseId> warehouseIds)
+	public static ImmutableSet<Integer> toRepoIds(final Collection<WarehouseId> warehouseIds)
 	{
+		if (warehouseIds.isEmpty()) {return ImmutableSet.of();}
+		
 		return warehouseIds.stream()
 				.map(WarehouseId::toRepoId)
 				.filter(id -> id > 0)

@@ -22,7 +22,9 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.invalidation.segments.ImmutableShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.OrderLineId;
@@ -105,6 +107,7 @@ public final class OlAndSched
 		);
 	}
 
+	@NonNull
 	public ProductId getProductId()
 	{
 		return ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
@@ -115,9 +118,16 @@ public final class OlAndSched
 		return AttributeSetInstanceId.ofRepoIdOrNone(shipmentSchedule.getM_AttributeSetInstance_ID());
 	}
 
+	@NonNull
 	public WarehouseId getWarehouseId()
 	{
 		return Services.get(IShipmentScheduleEffectiveBL.class).getWarehouseId(shipmentSchedule);
+	}
+
+	@NonNull
+	public BPartnerId getBPartnerId()
+	{
+		return Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerId(shipmentSchedule);
 	}
 
 	public I_C_UOM getOrderPriceUOM()
@@ -168,5 +178,16 @@ public final class OlAndSched
 	public String getSalesOrderPORef()
 	{
 		return salesOrder.map(I_C_Order::getPOReference).orElse(null);
+	}
+
+	public ImmutableShipmentScheduleSegment getShipmentScheduleSegment()
+	{
+		return ImmutableShipmentScheduleSegment.builder()
+				.anyBPartner()
+				.bpartnerId(getBPartnerId().getRepoId())
+				.productId(getProductId().getRepoId())
+				.warehouseId(getWarehouseId().getRepoId())
+				.build();
+
 	}
 }
