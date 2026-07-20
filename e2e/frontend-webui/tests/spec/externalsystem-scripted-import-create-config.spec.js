@@ -343,9 +343,17 @@ asserts the endpoint persists bound after a reload.
         'the reloaded child grid row must show the bound endpoint (persisted)'
       ).toContainText(endpointValue, { timeout: SLOW_ACTION_TIMEOUT });
 
-      // Reopen the row into its detail form (double-click) and re-read the bound endpoint —
-      // the explicit persisted-save proof (mirrors the reference save test's re-read).
-      await childRow.dblclick();
+      // Reopen the row into its detail form and re-read the bound endpoint — the explicit
+      // persisted-save proof (mirrors the reference save test's re-read).
+      // Double-click the "Endpunkt" cell specifically (not the row centre): this grid now shows
+      // several editable columns, and a double-click on an editable cell starts inline edit
+      // (TableCell.onDoubleClick) instead of opening the record — only a non-editable cell lets the
+      // event bubble to TableRow → open. The endpoint FK cell is read-only in the grid, so it
+      // reliably opens the detail form regardless of column order/count. It's the cell showing the
+      // bound endpoint value.
+      const endpointCell = childRow.locator('td').filter({ hasText: endpointValue }).first();
+      await endpointCell.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await endpointCell.dblclick();
       const reopenedEndpoint = page.locator('.form-field-ExternalSystem_Endpoint_ID input').first();
       await expect(
         reopenedEndpoint,
