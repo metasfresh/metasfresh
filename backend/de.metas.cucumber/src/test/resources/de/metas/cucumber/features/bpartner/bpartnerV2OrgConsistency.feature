@@ -31,7 +31,8 @@ Feature: BPartner v2 upsert places records in the path org
       "bpartnerComposite": {
         "bpartner": {
           "name": "Org Consistency Test",
-          "language": "de"
+          "language": "de",
+          "group": "Org Consistency Test Group"
         },
         "locations": {
           "requestItems": [
@@ -85,7 +86,8 @@ Feature: BPartner v2 upsert places records in the path org
       "bpartnerComposite": {
         "bpartner": {
           "name": "Org Consistency Test",
-          "language": "de"
+          "language": "de",
+          "group": "Org Consistency Test Group"
         }
       }
     }
@@ -148,7 +150,8 @@ Feature: BPartner v2 upsert places records in the path org
       "bpartnerComposite": {
         "bpartner": {
           "name": "Org Consistency Test",
-          "language": "de"
+          "language": "de",
+          "group": "Org Consistency Test Group"
         }
       }
     }

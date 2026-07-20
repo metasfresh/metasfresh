@@ -7,7 +7,7 @@
 -- @0@ = path orgCode, @1@ = body orgCode.
 
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545775 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-20 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas','Y','Die Organisation "@1@" im Anfrage-Body unterscheidet sich von der Organisation "@0@" im URL-Pfad. Bitte nur eine angeben oder übereinstimmende Werte verwenden.','E',TO_TIMESTAMP('2026-07-20 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'BPartnerCompositeOrgMismatch');
+VALUES (0,545775 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-20 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Die Organisation "@1@" im Anfrage-Body unterscheidet sich von der Organisation "@0@" im URL-Pfad. Bitte nur eine angeben oder übereinstimmende Werte verwenden.','E',TO_TIMESTAMP('2026-07-20 09:00:00','YYYY-MM-DD HH24:MI:SS'),100,'BPartnerCompositeOrgMismatch');
 UPDATE AD_Message SET ErrorCode='BPartnerCompositeOrgMismatch', Updated=TO_TIMESTAMP('2026-07-20 09:00:01','YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100 WHERE AD_Message_ID=545775;
 INSERT INTO AD_Message_Trl (AD_Language,AD_Message_ID,MsgText,MsgTip,IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
 SELECT l.AD_Language,t.AD_Message_ID,t.MsgText,t.MsgTip,'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y'
