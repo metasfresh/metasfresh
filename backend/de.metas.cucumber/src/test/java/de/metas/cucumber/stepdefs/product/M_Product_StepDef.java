@@ -106,13 +106,22 @@ public class M_Product_StepDef
 	/**
 	 * Creates (or updates, if a matching {@code Value} already exists) {@link I_M_Product} records.
 	 * <p>
-	 * DataTable columns include (non-exhaustive; see {@link #createM_Product(DataTableRow)}):
+	 * Frequently used DataTable columns (full handling is in {@link #createM_Product(DataTableRow)}):
 	 * <ul>
+	 *     <li>{@code Identifier} (required) — identifier for later reference.</li>
+	 *     <li>{@code Name} / {@code Value} (optional) — auto-generated unique when omitted.</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier}, {@code OPT.C_UOM_ID.X12DE355},
+	 *         {@code OPT.M_AttributeSetInstance_ID.Identifier} — the common optional links.</li>
 	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
 	 *         {@link I_C_CompensationGroup_Schema} (created via
-	 *         "metasfresh contains C_CompensationGroup_Schema:") to link as the product's
+	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
 	 *         "Mischkarton" (mixed carton) compensation-group schema.</li>
 	 * </ul>
+	 * <pre>{@code
+	 * Given metasfresh contains M_Products:
+	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
+	 *   | mischkartonProduct | mischkartonProduct | mischkartonSchema                            |
+	 * }</pre>
 	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
@@ -340,7 +349,7 @@ public class M_Product_StepDef
 
 		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
 				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
-				.ifPresent((I_C_CompensationGroup_Schema schema) -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
+				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
