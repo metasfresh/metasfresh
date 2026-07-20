@@ -102,6 +102,13 @@ Feature: BPartner v2 upsert places records in the path org
     And verify that S_ExternalReference was created
       | ExternalSystem | Type     | ExternalReference | AD_Org_ID |
       | Test_System    | BPartner | 001               | org002    |
+    # no-duplicate: repeat PUT must not create a second C_BPartner or S_ExternalReference under any org
+    And verify that exactly 1 S_ExternalReference exists for:
+      | ExternalSystem | Type     | ExternalReference |
+      | Test_System    | BPartner | 001               |
+    And verify that exactly 1 C_BPartner exists for external identifier:
+      | ExternalSystem | ExternalReference |
+      | Test_System    | 001               |
 
   @Id:S30934_TC2
   Scenario: PUT api/v2/bpartner/002 with body orgCode 001 is rejected (org mismatch)

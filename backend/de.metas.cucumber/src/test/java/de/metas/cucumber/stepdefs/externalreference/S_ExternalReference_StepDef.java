@@ -412,6 +412,97 @@ public class S_ExternalReference_StepDef
 		externalReferenceRepository.save(externalReference);
 	}
 
+	/**
+	 * Asserts that exactly one {@code S_ExternalReference} row exists for the given external system, type,
+	 * and external-reference value — across <em>all</em> orgs (no AD_Org_ID filter).
+	 *
+	 * <p>No-duplicate guard: if a repeat upsert creates a second row under a different org,
+	 * the count becomes 2 and the assertion fails.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code ExternalSystem} – code of the external system (e.g. {@code Test_System})</li>
+	 *   <li>{@code Type}           – external reference type code (e.g. {@code BPartner})</li>
+	 *   <li>{@code ExternalReference} – the external reference value (e.g. {@code 001})</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And verify that exactly 1 S_ExternalReference exists for:
+	 *   | ExternalSystem | Type     | ExternalReference |
+	 *   | Test_System    | BPartner | 001               |
+	 * </pre>
+	 */
+	@Then("verify that exactly 1 S_ExternalReference exists for:")
+	public void verifyExactlyOneExists(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
+			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(row.getAsString("Type"));
+			final String externalReference = row.getAsString("ExternalReference");
+
+			final int count = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
+					.create()
+					.count();
+
+			assertThat(count)
+					.as("Expected exactly 1 S_ExternalReference across all orgs for ExternalSystem=%s, Type=%s, ExternalReference=%s — "
+									+ "a duplicate under a wrong org would make the count > 1",
+							externalSystemType.getValue(), type.getCode(), externalReference)
+					.isEqualTo(1);
+		});
+	}
+
+	/**
+	 * Asserts that exactly one {@code C_BPartner} row exists for the given external identifier,
+	 * across <em>all</em> orgs (no AD_Org_ID filter).
+	 *
+	 * <p>No-duplicate guard: if a repeat upsert creates a second {@code C_BPartner} under a
+	 * different org, a second {@code S_ExternalReference} row pointing to it will also exist,
+	 * and the two distinct {@code Record_ID} values make the assertion fail.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code ExternalSystem}    – code of the external system (e.g. {@code Test_System})</li>
+	 *   <li>{@code ExternalReference} – the external reference value (e.g. {@code 001})</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * And verify that exactly 1 C_BPartner exists for external identifier:
+	 *   | ExternalSystem | ExternalReference |
+	 *   | Test_System    | 001               |
+	 * </pre>
+	 */
+	@Then("verify that exactly 1 C_BPartner exists for external identifier:")
+	public void verifyExactlyOneBPartnerExists(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row ->
+		{
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
+			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
+			final String externalReference = row.getAsString("ExternalReference");
+
+			final List<Integer> bpartnerIds = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, BPartnerExternalReferenceType.BPARTNER.getCode())
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
+					.create()
+					.listDistinct(I_S_ExternalReference.COLUMNNAME_Record_ID, Integer.class);
+
+			assertThat(bpartnerIds)
+					.as("Expected exactly 1 C_BPartner across all orgs for ExternalSystem=%s, ExternalReference=%s — "
+									+ "a duplicate under a wrong org would produce 2 distinct Record_IDs",
+							externalSystemType.getValue(), externalReference)
+					.hasSize(1);
+		});
+	}
+
 	private void removeExternalReferenceIfExists(@NonNull DataTableRow row)
 	{
 		final String externalReference = row.getAsString(I_S_ExternalReference.COLUMNNAME_ExternalReference);
