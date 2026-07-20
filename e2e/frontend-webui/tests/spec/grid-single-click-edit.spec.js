@@ -83,18 +83,32 @@ testCases.forEach(({ language, label }) => {
 
       await openRecord();
 
-      // reactivate so the line grid becomes editable
+      // reactivate so the line grid becomes editable. Verify reactivation actually
+      // completed (Complete action reappears → document back to Drafted) rather than
+      // relying on the spinner-detached heuristic alone, which can false-pass before
+      // the spinner mounts. Mirrors PurchaseOrderPage.reactivate().
       await test.step('reactivate order', async () => {
-        await page.getByTestId('status-button').click();
-        await page.waitForTimeout(600);
-        const re = page.getByTestId('status-RE');
-        await re.waitFor({ state: 'visible', timeout: 10000 });
-        await re.click();
-        await page
-          .locator('.rotating, .indicator-pending')
-          .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
-          .catch(() => {});
-        await page.waitForTimeout(1500);
+        for (let attempt = 1; attempt <= 3; attempt++) {
+          if (!(await page.getByTestId('status-RE').isVisible().catch(() => false))) {
+            await page.getByTestId('status-button').click();
+            await page.waitForTimeout(500);
+          }
+          const re = page.getByTestId('status-RE');
+          await re.waitFor({ state: 'visible', timeout: 10000 });
+          await re.click();
+          await page
+            .locator('.rotating, .indicator-pending')
+            .waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT })
+            .catch(() => {});
+          // confirm the document is now completable again (Drafted)
+          await page.getByTestId('status-button').click();
+          await page.waitForTimeout(500);
+          const backToDrafted = await page.getByTestId('status-CO').isVisible().catch(() => false);
+          await page.keyboard.press('Escape');
+          if (backToDrafted) break;
+          expect(attempt, 'order should reactivate to a Drafted (completable) state').toBeLessThan(3);
+          await page.waitForTimeout(1500);
+        }
       });
 
       const qtyCell = () =>
