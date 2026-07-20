@@ -30,7 +30,7 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
@@ -41,13 +41,13 @@ import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.process.InvokeScriptedExportConversionAction;
 import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.security.RoleId;
 import de.metas.user.UserId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -104,7 +104,7 @@ public class ExternalSystemScriptedExportConversionService
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 	@NonNull private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 	@NonNull private final ExternalSystemExportAuditRepo exportAuditRepo;
-	@NonNull private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	@NonNull private final ExternalSystemConfigRepository externalSystemConfigRepository;
 
 	public void addCacheResetListener(@NonNull final ExternalSystemScriptedExportConversionConfigChangedListener listener)
 	{
@@ -544,7 +544,7 @@ public class ExternalSystemScriptedExportConversionService
 		try
 		{
 			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(
-					externalSystemConfigRepo.getParentTypeById(config.getParentId()));
+					externalSystemConfigRepository.getParentTypeById(config.getParentId()));
 
 			final UserId exportUserId = Env.getLoggedUserIdIfExists(getCtx()).orElse(UserId.SYSTEM);
 			final RoleId exportRoleId = Env.getLoggedRoleIdIfExists(getCtx()).orElse(RoleId.SYSTEM);

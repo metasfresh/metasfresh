@@ -23,7 +23,7 @@
 package de.metas.externalsystem.process;
 
 import de.metas.externalsystem.ExternalSystemConfigQuery;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemProcesses;
@@ -50,7 +50,7 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.MSG_ER
 
 public class DisableSchedulerForExternalSystem extends JavaProcess implements IProcessPrecondition
 {
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	@Override
@@ -66,7 +66,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 		}
 		else
 		{
-			final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
+			final String externalSystemType = externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()));
 
 			final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 
@@ -74,7 +74,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 					.parentConfigId(ExternalSystemParentConfigId.ofRepoId(context.getSingleSelectedRecordId()))
 					.build();
 
-			final Optional<ExternalSystemParentConfig> config = externalSystemConfigRepo.getByQuery(type, query);
+			final Optional<ExternalSystemParentConfig> config = externalSystemConfigRepository.getByQuery(type, query);
 
 			if (!config.isPresent())
 			{
@@ -89,7 +89,7 @@ public class DisableSchedulerForExternalSystem extends JavaProcess implements IP
 	{
 		final SchedulerEventBusService schedulerEventBusService = SpringContextHolder.instance.getBean(SchedulerEventBusService.class);
 
-		final String externalSystemType = externalSystemConfigRepo.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
+		final String externalSystemType = externalSystemConfigRepository.getParentTypeById(ExternalSystemParentConfigId.ofRepoId(getRecord_ID()));
 
 		final ExternalSystemType type = ExternalSystemType.ofValue(externalSystemType);
 

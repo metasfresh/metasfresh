@@ -29,21 +29,18 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.leichmehl.PLUType;
-import de.metas.externalsystem.ExternalSystemType;
-import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
-import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.X_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
@@ -74,10 +71,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(SnapshotExtension.class)
-class ExternalSystemConfigRepoTest
+class ExternalSystemConfigRepositoryTest
 {
 
-	private ExternalSystemConfigRepo externalSystemConfigRepo;
+	private ExternalSystemConfigRepository externalSystemConfigRepository;
 	private Expect expect;
 
 	@BeforeEach
@@ -85,7 +82,7 @@ class ExternalSystemConfigRepoTest
 	{
 		AdempiereTestHelper.get().init();
 		POJOLookupMap.setNextIdSupplier_PerTableSequence();
-		externalSystemConfigRepo = ExternalSystemConfigRepo.newInstanceForUnitTesting();
+		externalSystemConfigRepository = ExternalSystemConfigRepository.newInstanceForUnitTesting();
 	}
 
 	@Test
@@ -106,7 +103,7 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemAlbertaConfigId id = ExternalSystemAlbertaConfigId.ofRepoId(childRecord.getExternalSystem_Config_Alberta_ID());
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
@@ -144,7 +141,7 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemShopware6ConfigId id = ExternalSystemShopware6ConfigId.ofRepoId(childRecord.getExternalSystem_Config_Shopware6_ID());
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
@@ -167,7 +164,7 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemRabbitMQConfigId id = ExternalSystemRabbitMQConfigId.ofRepoId(childRecord.getExternalSystem_Config_RabbitMQ_HTTP_ID());
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
@@ -206,7 +203,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(shopware6Uom);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(Shopware6, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -233,7 +230,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(Alberta, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(Alberta, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -260,7 +257,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(RabbitMQ, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(RabbitMQ, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -287,7 +284,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(Shopware6, value);
 
 		assertThat(externalSystemParentConfig).isEmpty();
 	}
@@ -312,7 +309,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, Alberta)
+		final IExternalSystemChildConfig result = externalSystemConfigRepository.getChildByParentIdAndType(externalSystemParentConfigId, Alberta)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -370,7 +367,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, Shopware6)
+		final IExternalSystemChildConfig result = externalSystemConfigRepository.getChildByParentIdAndType(externalSystemParentConfigId, Shopware6)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -395,7 +392,7 @@ class ExternalSystemConfigRepoTest
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, RabbitMQ)
+		final IExternalSystemChildConfig result = externalSystemConfigRepository.getChildByParentIdAndType(externalSystemParentConfigId, RabbitMQ)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -420,7 +417,7 @@ class ExternalSystemConfigRepoTest
 		final ExternalSystemOtherConfigId otherConfigId = ExternalSystemOtherConfigId.ofExternalSystemParentConfigId(externalSystemParentConfigId);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(otherConfigId);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(otherConfigId);
 
 		// then
 		assertThat(result).isNotNull();
@@ -443,7 +440,7 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemWooCommerceConfigId id = ExternalSystemWooCommerceConfigId.ofRepoId(childRecord.getExternalSystem_Config_WooCommerce_ID());
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
@@ -466,7 +463,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.WOO, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(ExternalSystemType.WOO, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -491,7 +488,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(childRecord);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -514,7 +511,7 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ExternalSystemGRSSignumConfigId id = ExternalSystemGRSSignumConfigId.ofRepoId(childRecord.getExternalSystem_Config_GRSSignum_ID());
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(id);
 
 		// then
 		assertThat(result).isNotNull();
@@ -538,7 +535,7 @@ class ExternalSystemConfigRepoTest
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.GRSSignum)
+		final IExternalSystemChildConfig result = externalSystemConfigRepository.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.GRSSignum)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -565,7 +562,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.GRSSignum, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(ExternalSystemType.GRSSignum, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -590,7 +587,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -633,7 +630,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByQuery(Shopware6, query)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByQuery(Shopware6, query)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -662,7 +659,7 @@ class ExternalSystemConfigRepoTest
 		initialChildRecord.setIsActive(false);
 		saveRecord(initialChildRecord);
 
-		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
+		final ExternalSystemParentConfig parentConfig = externalSystemConfigRepository.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 
 		final String baseURL = "new-baseURL";
 		final String clientId = "new-clientId";
@@ -685,10 +682,10 @@ class ExternalSystemConfigRepoTest
 				.childConfig(childConfig)
 				.build();
 		// when
-		externalSystemConfigRepo.saveConfig(updatedParentConfig);
+		externalSystemConfigRepository.saveConfig(updatedParentConfig);
 
 		// then
-		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepo.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
+		final ExternalSystemParentConfig updatedChildConfig = externalSystemConfigRepository.getById(ExternalSystemShopware6ConfigId.ofRepoId(initialChildRecord.getExternalSystem_Config_Shopware6_ID()));
 		assertThat(updatedChildConfig).isNotNull();
 		expect.serializer("orderedJson").toMatchSnapshot(updatedChildConfig);
 
@@ -724,7 +721,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(leichMehlConfig);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
 
 		// then
 		assertThat(result).isNotNull();
@@ -752,7 +749,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(leichMehlConfig);
 
 		// when
-		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
+		final ExternalSystemParentConfig result = externalSystemConfigRepository.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
 
 		// then
@@ -781,7 +778,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(leichMehlConfig);
 
 		// when
-		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(Shopware6, value);
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepository.getByTypeAndValue(Shopware6, value);
 
 		//then
 		assertThat(externalSystemParentConfig).isEmpty();
@@ -809,7 +806,7 @@ class ExternalSystemConfigRepoTest
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
 		// when
-		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.LeichUndMehl)
+		final IExternalSystemChildConfig result = externalSystemConfigRepository.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.LeichUndMehl)
 				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
 
 		// then
@@ -854,7 +851,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(configLeichMehlInactive);
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepository.getActiveByType(ExternalSystemType.LeichUndMehl);
 
 		// then
 		assertThat(result).isNotEmpty();
@@ -875,7 +872,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(RabbitMQ);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepository.getActiveByType(RabbitMQ);
 
 		// then
 		assertThat(result).isNotEmpty();
@@ -896,7 +893,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(Alberta);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepository.getActiveByType(Alberta);
 
 		// then
 		assertThat(result).isEmpty();
@@ -912,7 +909,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when
-		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepo.getChildByParentIdAndType(
+		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepository.getChildByParentIdAndType(
 				ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()),
 				ExternalSystemType.ofValue("eddyson"));
 
@@ -946,7 +943,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(child);
 
 		// when
-		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepo.getChildByParentIdAndType(
+		final Optional<IExternalSystemChildConfig> result = externalSystemConfigRepository.getChildByParentIdAndType(
 				ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID()),
 				ExternalSystemType.ScriptedExportConversion);
 
@@ -972,7 +969,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(child);
 
 		// when / then
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(Alberta);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepository.getActiveByType(Alberta);
 		assertThat(result)
 				.extracting(config -> config.getId().getRepoId())
 				.containsExactly(parentRecord.getExternalSystem_Config_ID());
@@ -993,7 +990,7 @@ class ExternalSystemConfigRepoTest
 				.build();
 
 		// when / then: skipped (not returned), no throw
-		assertThat(externalSystemConfigRepo.getActiveByType(RabbitMQ)).isEmpty();
+		assertThat(externalSystemConfigRepository.getActiveByType(RabbitMQ)).isEmpty();
 	}
 
 	@Test
@@ -1024,7 +1021,7 @@ class ExternalSystemConfigRepoTest
 		saveRecord(mismatchedChild);
 
 		// when
-		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.ScriptedImportConversion);
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepository.getActiveByType(ExternalSystemType.ScriptedImportConversion);
 
 		// then: the mismatched config is skipped (not returned) and does NOT 500 the whole
 		// status endpoint; only the valid config is returned.
