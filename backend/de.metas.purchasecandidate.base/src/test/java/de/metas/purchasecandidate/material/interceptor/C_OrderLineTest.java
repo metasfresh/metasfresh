@@ -31,6 +31,7 @@ import de.metas.purchasecandidate.ReferenceGenerator;
 import de.metas.purchasecandidate.material.RealPurchaseCandidateCleanUpService;
 import de.metas.purchasecandidate.material.SimulatedPurchaseCandidateCleanUpService;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemRepository;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -102,8 +103,16 @@ public class C_OrderLineTest
 
 	private I_C_PurchaseCandidate createCandidate(final boolean simulated, final boolean processed)
 	{
+		return createCandidate(salesOrderLineRecord, simulated, processed);
+	}
+
+	private I_C_PurchaseCandidate createCandidate(
+			final I_C_OrderLine orderLineSO,
+			final boolean simulated,
+			final boolean processed)
+	{
 		final I_C_PurchaseCandidate candidateRecord = newInstance(I_C_PurchaseCandidate.class);
-		candidateRecord.setC_OrderLineSO_ID(salesOrderLineRecord.getC_OrderLine_ID());
+		candidateRecord.setC_OrderLineSO_ID(orderLineSO.getC_OrderLine_ID());
 		candidateRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		candidateRecord.setM_WarehousePO_ID(30);
 		candidateRecord.setC_UOM_ID(productRecord.getC_UOM_ID());
@@ -113,6 +122,36 @@ public class C_OrderLineTest
 		candidateRecord.setProcessed(processed);
 		saveRecord(candidateRecord);
 		return candidateRecord;
+	}
+
+	/**
+	 * Creates a purchase order + purchase order line, representing the PO that a purchase candidate produced.
+	 */
+	private I_C_OrderLine createPurchaseOrderLine()
+	{
+		final I_C_Order purchaseOrderRecord = newInstance(I_C_Order.class);
+		purchaseOrderRecord.setIsSOTrx(false);
+		saveRecord(purchaseOrderRecord);
+
+		final I_C_OrderLine purchaseOrderLineRecord = newInstance(I_C_OrderLine.class);
+		purchaseOrderLineRecord.setC_Order(purchaseOrderRecord);
+		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
+		purchaseOrderLineRecord.setQtyOrdered(BigDecimal.ONE);
+		saveRecord(purchaseOrderLineRecord);
+		return purchaseOrderLineRecord;
+	}
+
+	/**
+	 * Creates the {@code C_PurchaseCandidate_Alloc} record that is the real, ground-truth link between a purchase
+	 * candidate and the purchase order line it produced.
+	 */
+	private void createAlloc(final I_C_PurchaseCandidate candidate, final I_C_OrderLine purchaseOrderLineRecord)
+	{
+		final I_C_PurchaseCandidate_Alloc allocRecord = newInstance(I_C_PurchaseCandidate_Alloc.class);
+		allocRecord.setC_PurchaseCandidate_ID(candidate.getC_PurchaseCandidate_ID());
+		allocRecord.setC_OrderLinePO_ID(purchaseOrderLineRecord.getC_OrderLine_ID());
+		allocRecord.setC_OrderPO_ID(purchaseOrderLineRecord.getC_Order_ID());
+		saveRecord(allocRecord);
 	}
 
 	private List<I_C_PurchaseCandidate> getAllCandidateRecords()
@@ -146,6 +185,27 @@ public class C_OrderLineTest
 	public void realCandidate_thatProducedAPurchaseOrder_blocksDelete_onOrderLineDelete()
 	{
 		final I_C_PurchaseCandidate realCandidate = createCandidate(false, true);
+		createAlloc(realCandidate, createPurchaseOrderLine());
+
+		assertThatThrownBy(() -> c_OrderLine.deleteOrGuardRealPurchaseCandidate(salesOrderLineRecord))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("SalesOrderLine_CannotDelete_HasCompletedDocs");
+
+		assertThat(getAllCandidateRecords())
+				.anyMatch(record -> record.getC_PurchaseCandidate_ID() == realCandidate.getC_PurchaseCandidate_ID());
+	}
+
+	/**
+	 * A candidate that is only partially fulfilled has a real {@code C_PurchaseCandidate_Alloc} row (the true link
+	 * to the PO it produced) while still {@code Processed=false}. The guard must be based on the {@code Alloc}
+	 * ground truth, not on {@code Processed} -- otherwise it would miss this case (false negative) and the
+	 * candidate would be hard-deleted while the {@code Alloc} row still FK-references it.
+	 */
+	@Test
+	public void realCandidate_partiallyFulfilled_blocksDelete_onOrderLineDelete()
+	{
+		final I_C_PurchaseCandidate realCandidate = createCandidate(false, false);
+		createAlloc(realCandidate, createPurchaseOrderLine());
 
 		assertThatThrownBy(() -> c_OrderLine.deleteOrGuardRealPurchaseCandidate(salesOrderLineRecord))
 				.isInstanceOf(AdempiereException.class)
@@ -158,18 +218,12 @@ public class C_OrderLineTest
 	@Test
 	public void purchaseOrderLine_isNeverGuardedOrCascaded()
 	{
-		final I_C_Order purchaseOrderRecord = newInstance(I_C_Order.class);
-		purchaseOrderRecord.setIsSOTrx(false);
-		saveRecord(purchaseOrderRecord);
+		final I_C_OrderLine purchaseOrderLineRecord = createPurchaseOrderLine();
 
-		final I_C_OrderLine purchaseOrderLineRecord = newInstance(I_C_OrderLine.class);
-		purchaseOrderLineRecord.setC_Order(purchaseOrderRecord);
-		purchaseOrderLineRecord.setM_Product_ID(productRecord.getM_Product_ID());
-		purchaseOrderLineRecord.setQtyOrdered(BigDecimal.ONE);
-		saveRecord(purchaseOrderLineRecord);
-
-		// even a candidate that "produced a PO" must not block deleting a *purchase* order line
-		final I_C_PurchaseCandidate realCandidate = createCandidate(false, true);
+		// the candidate genuinely references the *purchase* order line under test (C_OrderLineSO_ID) and has
+		// actually produced a PO (real Alloc row) -- if the isSOTrx gate were removed, this would block the delete
+		final I_C_PurchaseCandidate realCandidate = createCandidate(purchaseOrderLineRecord, false, false);
+		createAlloc(realCandidate, createPurchaseOrderLine());
 
 		c_OrderLine.deleteOrGuardRealPurchaseCandidate(purchaseOrderLineRecord); // must not throw
 

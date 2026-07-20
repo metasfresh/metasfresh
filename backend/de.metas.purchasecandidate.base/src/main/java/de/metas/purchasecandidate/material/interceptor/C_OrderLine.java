@@ -26,6 +26,7 @@ import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.material.RealPurchaseCandidateCleanUpService;
 import de.metas.purchasecandidate.material.SimulatedPurchaseCandidateCleanUpService;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_OrderLine;
@@ -34,6 +35,7 @@ import org.springframework.stereotype.Component;
 
 @Interceptor(I_C_OrderLine.class)
 @Component
+@RequiredArgsConstructor
 public class C_OrderLine
 {
 	@NonNull
@@ -41,14 +43,6 @@ public class C_OrderLine
 
 	@NonNull
 	private final RealPurchaseCandidateCleanUpService realPurchaseCandidateCleanUpService;
-
-	public C_OrderLine(
-			final @NonNull SimulatedPurchaseCandidateCleanUpService simulatedPurchaseCandidateCleanUpService,
-			final @NonNull RealPurchaseCandidateCleanUpService realPurchaseCandidateCleanUpService)
-	{
-		this.simulatedPurchaseCandidateCleanUpService = simulatedPurchaseCandidateCleanUpService;
-		this.realPurchaseCandidateCleanUpService = realPurchaseCandidateCleanUpService;
-	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void removeSimulatedPurchaseCandidate(final I_C_OrderLine orderLine)

@@ -142,15 +142,34 @@ public class PurchaseCandidateRepository
 
 	/**
 	 * @return {@code true} if a real (i.e. non-simulated) purchase candidate exists for the given sales order line
-	 * which has already been used to create a purchase order.
+	 * which has already been used to create a purchase order, i.e. has at least one {@link I_C_PurchaseCandidate_Alloc}
+	 * record (the real link to a {@code C_OrderLinePO_ID}/{@code C_OrderPO_ID}).
+	 * <p>
+	 * Note: intentionally NOT based on {@code C_PurchaseCandidate.Processed}. That flag is neither necessary nor
+	 * sufficient here: a partially-fulfilled candidate has real {@code C_PurchaseCandidate_Alloc} rows while still
+	 * {@code Processed=false} (false negative), and the manual AD process {@code C_PurchaseCandiate_Mark_Processed}
+	 * can set {@code Processed=true} with no PO at all (false positive).
 	 */
 	public boolean hasCandidateThatProducedAPurchaseOrder(@NonNull final OrderLineId salesOrderLineId)
 	{
-		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+		final Set<PurchaseCandidateId> candidateIds = queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, salesOrderLineId)
 				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, false)
-				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, true)
+				.create()
+				.listIds()
+				.stream()
+				.map(PurchaseCandidateId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (candidateIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_C_PurchaseCandidate_Alloc.COLUMN_C_PurchaseCandidate_ID, PurchaseCandidateId.toIntSet(candidateIds))
 				.create()
 				.anyMatch();
 	}

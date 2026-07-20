@@ -27,6 +27,7 @@ import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.DeletePurchaseCandidateQuery;
 import de.metas.purchasecandidate.PurchaseCandidateRepository;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -36,17 +37,13 @@ import org.springframework.stereotype.Service;
  * already produced a purchase order block the delete.
  */
 @Service
+@RequiredArgsConstructor
 public class RealPurchaseCandidateCleanUpService
 {
 	public static final AdMessageKey MSG_SalesOrderLine_CannotDelete_HasCompletedDocs = AdMessageKey.of("SalesOrderLine_CannotDelete_HasCompletedDocs");
 
 	@NonNull
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
-
-	public RealPurchaseCandidateCleanUpService(final @NonNull PurchaseCandidateRepository purchaseCandidateRepository)
-	{
-		this.purchaseCandidateRepository = purchaseCandidateRepository;
-	}
 
 	public void deleteRealCandidatesFor(@NonNull final OrderLineId salesOrderLineId)
 	{
