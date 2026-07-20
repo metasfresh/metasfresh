@@ -28,9 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
-import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
@@ -72,6 +72,7 @@ import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.tax.TaxCategoryDAO;
@@ -90,6 +91,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -99,8 +101,10 @@ import java.util.Optional;
 
 @Repository
 @RequiredArgsConstructor
-public class ExternalSystemConfigRepo
+public class ExternalSystemConfigRepository
 {
+	private static final Logger logger = LogManager.getLogger(ExternalSystemConfigRepository.class);
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull private final TaxCategoryDAO taxCategoryDAO;
@@ -109,10 +113,10 @@ public class ExternalSystemConfigRepo
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 
 	@VisibleForTesting
-	public static ExternalSystemConfigRepo newInstanceForUnitTesting()
+	public static ExternalSystemConfigRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ExternalSystemConfigRepo(
+		return new ExternalSystemConfigRepository(
 				new TaxCategoryDAO(),
 				ExternalSystemRepository.newInstanceForUnitTesting(),
 				new ExternalSystemOtherConfigRepository(),
@@ -269,7 +273,25 @@ public class ExternalSystemConfigRepo
 		{
 			return getScriptedImportConversionConfigByParentId(id);
 		}
-		throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
+		else if (externalSystemType.isScriptedExportConversion())
+		{
+			// ScriptedExportConversion is modelled 0..many per parent (not a single Optional),
+			// so it has no getXxxByParentId branch above; resolve it explicitly here. Returning
+			// the first child (if any) is enough for every caller — the type-change interceptor
+			// only needs "does a child of this type still exist?" (must NOT fall through to the
+			// empty catch-all below, which would let the parent be re-typed and orphan the rows).
+			return externalSystemScriptedExportConversionRepository.getByParentConfigId(id)
+					.stream()
+					.findFirst()
+					.map(child -> (IExternalSystemChildConfig)child);
+		}
+		// No per-parent child-config table for this type (e.g. a custom/other external-system
+		// type). Return empty rather than throwing: callers ask "is there a child of this type
+		// under this parent?" and the honest answer is "no". Throwing here made the
+		// ExternalSystem_Config type-change interceptor crash on such a parent instead of
+		// letting the user correct the data.
+		logger.debug("getChildByParentIdAndType: no child-config lookup for type={}, id={} -> empty", externalSystemType, id);
+		return Optional.empty();
 	}
 
 	@NonNull
@@ -625,6 +647,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.Alberta))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -686,6 +709,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.WOO))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -870,6 +894,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.GRSSignum))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -881,6 +906,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.RabbitMQ))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -969,6 +995,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.LeichUndMehl))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -1157,6 +1184,7 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.ProCareManagement))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
 	}
@@ -1168,7 +1196,37 @@ public class ExternalSystemConfigRepo
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()
+				.filter(config -> isParentConfigOfType(config.getExternalSystem_Config_ID(), ExternalSystemType.ScriptedImportConversion))
 				.map(this::getExternalSystemParentConfig)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * True if the parent {@code ExternalSystem_Config}'s type equals {@code expectedType}.
+	 * Guards the whole-table status readers ({@link #getActiveByType(ExternalSystemType)}): a
+	 * child config whose parent was re-typed, or that was created under a wrong-typed parent
+	 * (e.g. a scripted-import config placed under a custom external system), is inconsistent
+	 * data. Skipping it (logged) keeps one bad row from throwing out of
+	 * {@link ExternalSystemParentConfig}'s constructor and 500-ing the entire external-system
+	 * status endpoint.
+	 */
+	private boolean isParentConfigOfType(final int externalSystemConfigId, @NonNull final ExternalSystemType expectedType)
+	{
+		final I_ExternalSystem_Config parent = InterfaceWrapperHelper.load(externalSystemConfigId, I_ExternalSystem_Config.class);
+		if (parent == null)
+		{
+			logger.warn("Skipping {} config whose parent ExternalSystem_Config_ID={} no longer exists (orphaned child)",
+					expectedType, externalSystemConfigId);
+			return false;
+		}
+
+		final ExternalSystemType parentType = externalSystemRepository.getById(ExternalSystemId.ofRepoId(parent.getExternalSystem_ID())).getType();
+		final boolean matches = expectedType.equals(parentType);
+		if (!matches)
+		{
+			logger.warn("Skipping inconsistent {} config under ExternalSystem_Config_ID={} whose parent is of type {} (expected {})",
+					expectedType, externalSystemConfigId, parentType, expectedType);
+		}
+		return matches;
 	}
 }

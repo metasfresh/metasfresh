@@ -24,7 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemProcesses;
 import de.metas.externalsystem.ExternalSystemType;
@@ -54,11 +54,11 @@ public class ExternalSystemScriptedImportConversionHouseKeepingTask implements I
 	private static final Logger logger = LogManager.getLogger(ExternalSystemScriptedImportConversionHouseKeepingTask.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemConfigRepository externalSystemConfigDAO;
 	private final ExternalSystemEndpointRepository endpointRepository;
 
 	public ExternalSystemScriptedImportConversionHouseKeepingTask(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
+			@NonNull final ExternalSystemConfigRepository externalSystemConfigDAO,
 			@NonNull final ExternalSystemEndpointRepository endpointRepository)
 	{
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
