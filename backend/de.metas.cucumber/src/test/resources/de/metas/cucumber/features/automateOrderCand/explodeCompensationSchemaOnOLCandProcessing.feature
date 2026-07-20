@@ -158,6 +158,10 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
     And metasfresh contains C_BPartners:
       | Identifier          | Name                | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID  | GLN           |
       | mischkartonCustomer | mischkartonCustomer | Y              | N            | ps_mischkarton                | mischkartonCustomerLocation | 4009900001234 |
+    # explicit ship-to/bill-to location so the shipment-header C_BPartner_Location_ID assertion resolves the identifier reliably (registered in the step-def data)
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier                  | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | mischkartonCustomerLocation | 4009900001234 | mischkartonCustomer      | true         | true         |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
   """
