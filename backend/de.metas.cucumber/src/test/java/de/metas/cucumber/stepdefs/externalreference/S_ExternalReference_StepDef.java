@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.shipper.M_Shipper_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -104,6 +105,7 @@ public class S_ExternalReference_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ExternalReferenceTypes externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
@@ -112,28 +114,54 @@ public class S_ExternalReference_StepDef
 
 	private final TestContext testContext;
 
+	/**
+	 * Verifies that an {@code S_ExternalReference} record exists with the given field values,
+	 * and optionally asserts its {@code AD_Org_ID}.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code ExternalSystem} – code of the external system (e.g. {@code GRS})</li>
+	 *   <li>{@code Type} – external reference type code</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns (absent cell = not asserted):
+	 * {@code ExternalReference}, {@code ExternalReferenceURL},
+	 * {@code AD_Org_ID} – org identifier previously registered in {@link AD_Org_StepDefData}; asserts that
+	 * {@code S_ExternalReference.AD_Org_ID} matches the referenced org.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Then verify that S_ExternalReference was created
+	 *   | ExternalSystem | Type      | ExternalReference | AD_Org_ID |
+	 *   | GRS            | BPartner  | ext-001           | org1      |
+	 * </pre>
+	 */
 	@Then("verify that S_ExternalReference was created")
 	public void verifyExists(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> externalReferencesTableList = dataTable.asMaps();
-		for (final Map<String, String> dataTableRow : externalReferencesTableList)
+		DataTableRows.of(dataTable).forEach(row ->
 		{
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalSystem"));
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofValue(row.getAsString("ExternalSystem"));
 			final ExternalSystem externalSystem = externalSystemRepository.getByType(externalSystemType);
-			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type"));
-			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
-			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
+			final IExternalReferenceType type = externalReferenceTypes.ofCodeNotNull(row.getAsOptionalString("Type").orElse(null));
+			final String externalReference = row.getAsOptionalString("ExternalReference").orElse(null);
+			final String externalReferenceURL = row.getAsOptionalString("ExternalReferenceURL").orElse(null);
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
 					.create()
-					.anyMatch();
+					.firstOnlyOrNull(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
-		}
+			assertThat(externalRefRecord).as("S_ExternalReference exists for externalReference=%s", externalReference).isNotNull();
+
+			row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
+					.ifPresent(orgIdentifier -> assertThat(externalRefRecord.getAD_Org_ID())
+							.as(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
+							.isEqualTo(orgTable.getIdAsInt(orgIdentifier)));
+		});
 	}
 
 	@And("metasfresh contains S_ExternalReference:")
