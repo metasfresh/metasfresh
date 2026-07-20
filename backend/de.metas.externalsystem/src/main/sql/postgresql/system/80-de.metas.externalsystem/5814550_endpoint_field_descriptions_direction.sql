@@ -57,3 +57,16 @@ UPDATE AD_Element_Trl SET Description='Firma SAS (Shared Access Signature) per l
 -- next script (element fork): a plain AD_Field.Description override does NOT survive
 -- after_migration_sync_translations, which re-propagates the field description from the column's
 -- (shared, empty) element -- so they need a dedicated forked element instead.
+
+-- Propagate the element description edits down to the derived AD_Column(_Trl)/AD_Field(_Trl) rows
+-- (NULL language = all languages), per the convention used by the sibling migrations. The
+-- after_migration sync also does this, but call it explicitly so the result never depends on it.
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584678, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584679, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584680, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584677, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584106, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584192, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584193, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584194, NULL);
+SELECT update_TRL_Tables_On_AD_Element_TRL_Update(584220, NULL);

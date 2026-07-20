@@ -22,7 +22,7 @@ UPDATE AD_Element_Trl SET Name='Content type',    Description='Content type of t
 UPDATE AD_Element_Trl SET Name='Type de contenu', Description='Type de contenu de la requête HTTP sortante (export uniquement).',IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585112 AND AD_Language='fr_CH';
 UPDATE AD_Element_Trl SET Name='Content type',    Description='Tipo di contenuto della richiesta HTTP in uscita (solo export).', IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585112 AND AD_Language='it_CH';
 
-UPDATE AD_Field SET AD_Name_ID=585112, Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=774765;
+UPDATE AD_Field SET AD_Name_ID=585112, Name='Content type', Description='Content-Type der ausgehenden HTTP-Anfrage (nur Export).', Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=774765;
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585112, 'de_DE');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585112, 'de_CH');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585112, 'en_US');
@@ -44,7 +44,7 @@ UPDATE AD_Element_Trl SET Name='Authentication Token',     Description='Authenti
 UPDATE AD_Element_Trl SET Name='Jeton d''authentification',Description='Jeton d''authentification pour les appels HTTP sortants (export uniquement).',    IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585113 AND AD_Language='fr_CH';
 UPDATE AD_Element_Trl SET Name='Authentication Token',     Description='Token di autenticazione per le chiamate HTTP in uscita (solo export).',          IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585113 AND AD_Language='it_CH';
 
-UPDATE AD_Field SET AD_Name_ID=585113, Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=755946;
+UPDATE AD_Field SET AD_Name_ID=585113, Name='Authentifizierungs-Token', Description='Authentifizierungs-Token für ausgehende HTTP-Aufrufe (nur Export).', Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=755946;
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585113, 'de_DE');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585113, 'de_CH');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585113, 'en_US');
@@ -66,7 +66,7 @@ UPDATE AD_Element_Trl SET Name='Login User Name',             Description='Usern
 UPDATE AD_Element_Trl SET Name='Nom d''utilisateur connexion',Description='Nom d''utilisateur pour l''authentification des appels HTTP sortants (export uniquement).',      IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585114 AND AD_Language='fr_CH';
 UPDATE AD_Element_Trl SET Name='Login User Name',             Description='Nome utente per l''autenticazione delle chiamate HTTP in uscita (solo export).',                IsTranslated='Y', Updated=now(), UpdatedBy=100 WHERE AD_Element_ID=585114 AND AD_Language='it_CH';
 
-UPDATE AD_Field SET AD_Name_ID=585114, Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=755949;
+UPDATE AD_Field SET AD_Name_ID=585114, Name='Login Nutzer Name', Description='Benutzername für die Authentifizierung ausgehender HTTP-Aufrufe (nur Export).', Updated=now(), UpdatedBy=100 WHERE AD_Field_ID=755949;
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585114, 'de_DE');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585114, 'de_CH');
 SELECT update_TRL_Tables_On_AD_Element_TRL_Update(585114, 'en_US');
