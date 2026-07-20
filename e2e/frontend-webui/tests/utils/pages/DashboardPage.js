@@ -23,10 +23,17 @@ export class DashboardPage {
           timeout: SLOW_ACTION_TIMEOUT,
         });
 
-      // Wait for network to settle
-      await page.waitForLoadState('networkidle', {
-        timeout: SLOW_ACTION_TIMEOUT,
-      });
+      // Wait for network to settle. Best-effort only: the dashboard's STOMP/websocket
+      // + KPI polling keep the network permanently active, so networkidle can never
+      // settle on a real backend. The .app-content/.dashboard visibility wait above is
+      // the deterministic load signal; don't let this extra grace period gate the test.
+      await page
+        .waitForLoadState('networkidle', {
+          timeout: SLOW_ACTION_TIMEOUT,
+        })
+        .catch(() => {
+          // Ignore timeout - dashboard keeps background network activity (STOMP, polling)
+        });
     });
   }
 
