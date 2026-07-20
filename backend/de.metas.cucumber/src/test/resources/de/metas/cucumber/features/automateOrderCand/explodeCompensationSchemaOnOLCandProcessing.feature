@@ -323,9 +323,9 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
 
     # both exploded component lines must carry the candidate's contract conditions (C2 threading)
     And validate the created order lines
-      | C_OrderLine_ID.Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Flatrate_Conditions_ID.Identifier | processed |
-      | orderLine_flatrate_subProdA | order_flatrate        | subProductA             | 4          | mischkartonFlatrate                     | true      |
-      | orderLine_flatrate_subProdB | order_flatrate        | subProductB             | 6          | mischkartonFlatrate                     | true      |
+      | C_OrderLine_ID.Identifier      | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.C_Flatrate_Conditions_ID.Identifier | processed |
+      | orderLine_flatrate_subProductA | order_flatrate        | subProductA             | 4          | mischkartonFlatrate                     | true      |
+      | orderLine_flatrate_subProductB | order_flatrate        | subProductB             | 6          | mischkartonFlatrate                     | true      |
 
   @from:cucumber
   @allure.label.epic:E0100_Sales
@@ -433,9 +433,10 @@ Feature: Explode a Mischkarton compensation-group-schema product into its compon
       | order_comp            |
 
     # the order carries the 2 regular component lines (IsGroupCompensationLine=N) plus the compensation/discount line
-    # the schema's percentage whole-order discount materialises as a compensation line (IsGroupCompensationLine=Y, QtyOrdered=1)
+    # the schema's 10% whole-order discount materialises as a compensation line (IsGroupCompensationLine=Y, QtyOrdered=1,
+    # GroupCompensationPercentage=10 — the discount % carried from the schema line's CompleteOrderDiscount)
     And validate the created order lines
-      | C_OrderLine_ID.Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | processed |
-      | orderLine_comp_subProductA | order_comp            | subProductA             | 4          | false                       | true      |
-      | orderLine_comp_subProductB | order_comp            | subProductB             | 6          | false                       | true      |
-      | orderLine_comp_discount    | order_comp            | discountProduct         | 1          | true                        | true      |
+      | C_OrderLine_ID.Identifier  | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage | processed |
+      | orderLine_comp_subProductA | order_comp            | subProductA             | 4          | false                       |                                 | true      |
+      | orderLine_comp_subProductB | order_comp            | subProductB             | 6          | false                       |                                 | true      |
+      | orderLine_comp_discount    | order_comp            | discountProduct         | 1          | true                        | 10                              | true      |

@@ -46,6 +46,7 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -70,41 +71,20 @@ import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_Type_F
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
+@RequiredArgsConstructor
 public class C_Flatrate_Conditions_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
-	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
-	private final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
-	private final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
-	private final C_Flatrate_Conditions_StepDefData conditionsTable;
-	private final M_PricingSystem_StepDefData pricingSysTable;
-	private final M_Product_StepDefData productTable;
-	private final C_UOM_StepDefData uomTable;
-	private final TestContext testContext;
-
-	public C_Flatrate_Conditions_StepDef(
-			@NonNull final C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable,
-			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
-			@NonNull final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable,
-			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
-			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
-			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_UOM_StepDefData uomTable,
-			@NonNull final TestContext testContext)
-	{
-		this.hierarchyCommissionSettingsTable = hierarchyCommissionSettingsTable;
-		this.licenseFeeSettingsTable = licenseFeeSettingsTable;
-		this.customerTradeMarginTable = customerTradeMarginTable;
-		this.mediatedCommissionSettingsTable = mediatedCommissionSettingsTable;
-		this.conditionsTable = conditionsTable;
-		this.pricingSysTable = pricingSysTable;
-		this.productTable = productTable;
-		this.uomTable = uomTable;
-		this.testContext = testContext;
-	}
+	private final @NonNull C_HierarchyCommissionSettings_StepDefData hierarchyCommissionSettingsTable;
+	private final @NonNull C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
+	private final @NonNull C_Customer_Trade_Margin_StepDefData customerTradeMarginTable;
+	private final @NonNull C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable;
+	private final @NonNull C_Flatrate_Conditions_StepDefData conditionsTable;
+	private final @NonNull M_PricingSystem_StepDefData pricingSysTable;
+	private final @NonNull M_Product_StepDefData productTable;
+	private final @NonNull C_UOM_StepDefData uomTable;
+	private final @NonNull TestContext testContext;
 
 	/**
 	 * Creates (or upserts by {@code Name}) {@link I_C_Flatrate_Conditions} records used to set up flatrate/contract
