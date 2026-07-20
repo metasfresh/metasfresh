@@ -41,7 +41,6 @@ import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.util.Services;
-import java.util.Optional;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -366,10 +365,11 @@ public class CreateBPartnerV2_StepDef
 		switch (contactIdentifier.getType())
 		{
 			case EXTERNAL_REFERENCE:
-				final Optional<MetasfreshId> metasfreshId =
-						jsonRetrieverService.resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID);
-				return metasfreshId.isPresent() &&
-						MetasfreshId.equals(metasfreshId.get(), MetasfreshId.of(jsonContact.getMetasfreshId()));
+				final MetasfreshId resolvedId =
+						jsonRetrieverService.resolveExternalReference(orgId, contactIdentifier, ExternalUserReferenceType.USER_ID)
+								.orElse(null);
+				return resolvedId != null &&
+						MetasfreshId.equals(resolvedId, MetasfreshId.of(jsonContact.getMetasfreshId()));
 			case METASFRESH_ID:
 				return MetasfreshId.equals(contactIdentifier.asMetasfreshId(), MetasfreshId.of(jsonContact.getMetasfreshId()));
 			default:
