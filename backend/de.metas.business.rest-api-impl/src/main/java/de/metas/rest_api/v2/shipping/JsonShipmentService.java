@@ -631,14 +631,17 @@ public class JsonShipmentService
 		final Set<OrderLineId> orderLineIds = olCandDAO.retrieveOLCandIdToOrderLineId(ImmutableSet.of(olCandId))
 				.get(olCandId);
 
-		if (orderLineIds.isEmpty())
+		// This external-header/line-id lookup must resolve exactly ONE order line (-> one shipment schedule) for the
+		// one candidate. A compensation-group-schema/"Mischkarton" candidate explodes 1->N order lines during
+		// OLCand->order processing and cannot satisfy this 1:1 contract, so fail loud (mirrors the olCandIds.size()
+		// != 1 assertion above) instead of silently picking an arbitrary one of the N lines.
+		if (orderLineIds.size() != 1)
 		{
-			throw new AdempiereException("No orderLineId found for olCandId: " + olCandId);
+			throw new AdempiereException("Expected exactly 1 orderLineId for olCandId: " + olCandId
+					+ " but found " + orderLineIds.size()
+					+ " (candidate was likely exploded via a compensation-group schema)");
 		}
 
-		// This external-header/line-id lookup resolves a single shipment schedule for one candidate; it is not
-		// the compensation-group-schema/"Mischkarton" explosion path (that runs during OLCand->order processing).
-		// For the 1:1 case there is exactly one order line; take the first to keep the single-schedule contract.
 		final OrderLineId orderLineId = orderLineIds.iterator().next();
 
 		final Optional<ShipmentScheduleId> shipmentScheduleId = Optional.ofNullable(shipmentSchedulePA.getShipmentScheduleIdByOrderLineId(orderLineId));

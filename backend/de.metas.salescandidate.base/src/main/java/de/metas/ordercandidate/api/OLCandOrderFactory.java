@@ -683,7 +683,21 @@ class OLCandOrderFactory
 		// The ordered number of cartons scales the schema's template-line quantities.
 		// M5: cartonQty is passed as the pure group qty-multiplier with NO UOM conversion, matching
 		// OrderLineQuickInputProcessor. This assumes candidate.getQty() is already expressed in the schema
-		// product's own counting UOM (i.e. a count of cartons); a UOM other than that would scale wrongly.
+		// product's own stocking (counting) UOM (i.e. a count of cartons); a UOM other than that would scale
+		// every exploded component quantity wrongly. Guard the assumption instead of silently trusting the
+		// (REST/EDI) caller: fail loud if the candidate qty UOM differs from the schema product's stocking UOM.
+		final UomId candidateQtyUomId = candidate.getQty().getUomId();
+		final UomId schemaProductStockUomId = productBL.getStockUOMId(productId);
+		if (!UomId.equals(candidateQtyUomId, schemaProductStockUomId))
+		{
+			throw new AdempiereException("OLCand qty UOM does not match the compensation-group-schema product's"
+					+ " stocking UOM; the exploded component quantities would be mis-scaled")
+					.setParameter("productId", productId)
+					.setParameter("candidateQtyUomId", candidateQtyUomId)
+					.setParameter("schemaProductStockUomId", schemaProductStockUomId)
+					.setParameter("C_OLCand_ID", candidate.getId())
+					.appendParametersToMessage();
+		}
 		final BigDecimal cartonQty = candidate.getQty().toBigDecimal();
 
 		// C2: thread the carton candidate's flatrate/contract conditions into createGroup. This is how the
