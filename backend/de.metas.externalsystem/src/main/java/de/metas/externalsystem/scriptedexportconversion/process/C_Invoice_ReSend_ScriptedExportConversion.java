@@ -22,8 +22,6 @@
 
 package de.metas.externalsystem.scriptedexportconversion.process;
 
-import de.metas.externalsystem.ExternalSystemInvocationContext;
-import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfig;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionConfigId;
 import de.metas.externalsystem.scriptedexportconversion.ExternalSystemScriptedExportConversionService;
 import de.metas.process.JavaProcess;
@@ -79,15 +77,12 @@ public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess imple
 
 			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 			{
-				final ExternalSystemScriptedExportConversionConfig config =
-						scriptedExportService.resolveConfigAndRecordPendingAsResend(configId, sourceRecord);
-
-				scriptedExportService.executeInvokeScriptedExportConversionActionAndGetResult(
-						config,
-						c_invoice_id,
-						ExternalSystemInvocationContext.RESEND);
-
-				triggered++;
+				// The service gates the re-send on the config's WhereClause: nothing left to export
+				// (e.g. every line already exported) → DontSend, no adapter invocation.
+				if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, c_invoice_id))
+				{
+					triggered++;
+				}
 			}
 		}
 
