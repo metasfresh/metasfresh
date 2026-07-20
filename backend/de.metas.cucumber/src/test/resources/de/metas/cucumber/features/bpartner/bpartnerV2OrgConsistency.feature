@@ -10,7 +10,7 @@ Feature: BPartner v2 upsert places records in the path org
     And metasfresh contains AD_Org:
       | AD_Org_ID.Identifier | Name | Value |
       | org002               | 002  | 002   |
-    Then metasfresh contains External System
+    And metasfresh contains External System
       | Name        | Value       |
       | Test System | Test_System |
 
@@ -59,7 +59,7 @@ Feature: BPartner v2 upsert places records in the path org
 """
     Then verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier  | name                   | AD_Org_ID |
-      | bpartner_org002          | ext-Test_System-001 | Org Consistency Test   | org002    |
+      | bpartner_org002          | ext-Test_System-001 | Org Consistency Test | org002    |
     And verify that location was created for bpartner
       | bpartnerIdentifier  | locationIdentifier       | address1       | countryCode | AD_Org_ID |
       | ext-Test_System-001 | ext-Test_System-001-loc1 | Test Street 1  | DE          | org002    |
@@ -108,9 +108,9 @@ Feature: BPartner v2 upsert places records in the path org
     {
       "bpartnerIdentifier": "ext-Test_System-002",
       "bpartnerComposite": {
+        "orgCode": "001",
         "bpartner": {
           "name": "Org Mismatch Test",
-          "orgCode": "001",
           "language": "de"
         }
       }
@@ -146,7 +146,8 @@ Feature: BPartner v2 upsert places records in the path org
   }
 }
 """
-    # GET by path org 002 should find the partner
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/002/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='200'
+    # GET by path org 002 should find the partner (currently fails: record lands under MAIN, not org002)
+    Then the metasfresh REST-API endpoint path 'api/v2/bpartner/002/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='200'
     # GET by path org 001 should return not-found (org isolation)
-    When the metasfresh REST-API endpoint path 'api/v2/bpartner/001/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='404'
+    # Currently (bug): the code finds the partner across orgs — this assertion fails RED.
+    Then the metasfresh REST-API endpoint path 'api/v2/bpartner/001/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='404'
