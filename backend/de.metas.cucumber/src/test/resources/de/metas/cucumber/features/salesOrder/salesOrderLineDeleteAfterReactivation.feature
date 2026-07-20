@@ -22,12 +22,9 @@ Feature: Delete a sales order line after the order was reactivated
     Given add M_AttributeSet:
       | M_AttributeSet_ID.Identifier | Name                   |
       | attributeSet_delLine         | Delete-Line Attributes |
-    And load M_Product_Category:
-      | M_Product_Category_ID.Identifier | Name       | Value      |
-      | category_delLine                 | DeleteLine | DeleteLine |
-    And update M_Product_Category:
-      | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
-      | category_delLine                 | attributeSet_delLine             |
+    And metasfresh contains M_Product_Categories:
+      | Identifier       | Name       | Value      | OPT.M_AttributeSet_ID.Identifier |
+      | category_delLine | DeleteLine | DeleteLine | attributeSet_delLine             |
     And metasfresh contains M_Products:
       | Identifier      | Name            | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
       | product_delLine | product_delLine | category_delLine                     | Y          | Y               |
@@ -131,9 +128,12 @@ Feature: Delete a sales order line after the order was reactivated
       | orderLine_2 | order_2               | product_delLineInv      | 5          |
     When the order identified by order_2 is completed
 
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCandidate_2                | orderLine_2               | 5            |
+    Then after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoiceCandidate_2                | orderLine_2               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate_2                | orderLine_2                   | 5            |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_2                |
@@ -190,9 +190,12 @@ Feature: Delete a sales order line after the order was reactivated
       | orderLine_3 | order_3               | product_delLineVoid     | 5          |
     When the order identified by order_3 is completed
 
-    Then after not more than 60s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCandidate_3                | orderLine_3               | 5            |
+    Then after not more than 60s locate up2date invoice candidates by order line:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
+      | invoiceCandidate_3                | orderLine_3               |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate_3                | orderLine_3                   | 5            |
     When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_3                |
