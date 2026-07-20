@@ -202,10 +202,6 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		if (!context.isSingleSelection())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
 		if (context.getAdWindowId() == null)
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No AD_Window_ID");
