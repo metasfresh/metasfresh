@@ -140,6 +140,21 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * @return {@code true} if a real (i.e. non-simulated) purchase candidate exists for the given sales order line
+	 * which has already been used to create a purchase order.
+	 */
+	public boolean hasCandidateThatProducedAPurchaseOrder(@NonNull final OrderLineId salesOrderLineId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID, salesOrderLineId)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, false)
+				.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_Processed, true)
+				.create()
+				.anyMatch();
+	}
+
 	@NonNull
 	public Optional<PurchaseCandidateId> getByExternalHeaderAndLineId(
 			@NonNull final String externalHeaderId,
@@ -760,7 +775,11 @@ public class PurchaseCandidateRepository
 
 		if (deletePurchaseCandidateQuery.isOnlySimulated())
 		{
-			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, deletePurchaseCandidateQuery.isOnlySimulated());
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, true);
+		}
+		else
+		{
+			deleteQuery.addEqualsFilter(I_C_PurchaseCandidate.COLUMNNAME_IsSimulated, false);
 		}
 
 		if (deletePurchaseCandidateQuery.getSalesOrderLineId() != null)
