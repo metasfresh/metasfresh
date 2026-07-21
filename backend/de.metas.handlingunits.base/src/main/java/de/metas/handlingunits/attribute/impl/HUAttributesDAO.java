@@ -9,9 +9,11 @@ import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -92,9 +94,10 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final List<I_M_HU_Attribute> huAttributes = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
+		final IQueryBuilder<I_M_HU_Attribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
+		addActiveRecordsFilterUnlessDestroyed(queryBuilder, hu);
+		final List<I_M_HU_Attribute> huAttributes = queryBuilder
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
@@ -121,10 +124,11 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addOnlyActiveRecordsFilter()
+		final IQueryBuilder<I_M_HU_Attribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId);
+		addActiveRecordsFilterUnlessDestroyed(queryBuilder, hu);
+		final List<I_M_HU_Attribute> huAttributes = queryBuilder
 				.create()
 				.list(I_M_HU_Attribute.class);
 
@@ -135,6 +139,24 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		}
 
 		return huAttributes;
+	}
+
+	/**
+	 * Restricts the query to active attribute rows, EXCEPT for a destroyed HU.
+	 * <p>
+	 * The HU-attribute archival job sets M_HU_Attribute.IsActive='N' on ALL attributes of a destroyed
+	 * HU. Filtering active-only would then hide every attribute of a destroyed HU (e.g. its
+	 * HU_ReceiptInOutLine_ID link), breaking destroyed-HU attribute consumers such as the
+	 * material-tracking receipt-line lookup. A destroyed HU's attributes are uniformly the archived
+	 * set, so dropping the active filter for it reads exactly that set. Live HUs keep the active-only
+	 * filter (and the M_HU_Attribute active partial index it relies on).
+	 */
+	private static void addActiveRecordsFilterUnlessDestroyed(final IQueryBuilder<I_M_HU_Attribute> queryBuilder, final I_M_HU hu)
+	{
+		if (!X_M_HU.HUSTATUS_Destroyed.equals(hu.getHUStatus()))
+		{
+			queryBuilder.addOnlyActiveRecordsFilter();
+		}
 	}
 
 	@Override
