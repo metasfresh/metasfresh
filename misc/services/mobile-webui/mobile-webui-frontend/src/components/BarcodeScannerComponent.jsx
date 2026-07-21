@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { toastError, toastErrorFromObj } from '../utils/toast';
-import { useNumber, usePositiveNumberSetting } from '../reducers/settings';
+import { useIsSettingsLoaded, useNumber, usePositiveNumberSetting } from '../reducers/settings';
 import { beep } from '../utils/audio';
 import * as uiTrace from '../utils/ui_trace';
 import Spinner from './Spinner';
@@ -24,10 +24,10 @@ const BarcodeScannerComponent = ({
     invisible,
   });
 
-  const [activeMode, setActiveMode] = useState(defaultMode);
+  const [isProcessing, setProcessing] = useState(false);
+  const { activeMode, setActiveMode, selectMode } = useSettingsDefaultModeAdoption({ defaultMode, isProcessing });
 
   const scanningStatusRef = useRef({ running: false, done: false });
-  const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, onStart, onSuccess, onError, onFinally }) => {
@@ -129,7 +129,7 @@ const BarcodeScannerComponent = ({
         <ManualModePanel
           isProcessing={isProcessing}
           enabledModes={enabledModes}
-          onModeSelected={setActiveMode}
+          onModeSelected={selectMode}
           onBarcodeScanned={({ scannedBarcode, onSuccess, onError }) =>
             validateScannedBarcodeAndForward({
               scannedBarcode,
@@ -150,7 +150,7 @@ const BarcodeScannerComponent = ({
         />
       )}
       {!invisible && (
-        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={setActiveMode} />
+        <BarcodeScannerFooter activeMode={activeMode} enabledModes={enabledModes} onModeSelected={selectMode} />
       )}
     </div>
   );
@@ -169,6 +169,52 @@ BarcodeScannerComponent.defaultProps = {
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+// Owns activeMode and adopts the configured default mode when settings arrive late.
+//
+// Why: settings load async after login. If the scanner mounts first, defaultMode resolves to the
+// hook default (HARDWARE) and activeMode freezes there — so a manual-default workplace would stay
+// stuck on hardware with no visible input until the screen is left and re-entered.
+//
+// Fix: when settings first arrive, adopt their default once. Three guards:
+//   - once only, on the not-loaded → loaded transition (didAdoptSettingsDefault);
+//   - not while a scan is processing — flipping mid-scan flickers the panel, so we skip and let a
+//     later, calm render (isProcessing=false) do it;
+//   - not if the operator already picked a mode (hasOperatorSelectedModeRef) — their choice wins
+//     over a late settings arrival; internal auto-returns to default (post-scan, camera cancel)
+//     go through setActiveMode directly and do NOT count as an operator choice.
+//
+// Adopting during render (React's "adjust state on prop change" pattern) lands the switch before
+// paint, avoiding a one-frame flash of the wrong panel.
+//
+// Returns: activeMode + setActiveMode (raw, for internal auto-returns) + selectMode (operator
+// picks, which set the guard).
+const useSettingsDefaultModeAdoption = ({ defaultMode, isProcessing }) => {
+  const [activeMode, setActiveMode] = useState(defaultMode);
+
+  const hasOperatorSelectedModeRef = useRef(false);
+  const selectMode = useCallback((mode) => {
+    hasOperatorSelectedModeRef.current = true;
+    setActiveMode(mode);
+  }, []);
+
+  const isSettingsLoaded = useIsSettingsLoaded();
+  const [didAdoptSettingsDefault, setDidAdoptSettingsDefault] = useState(false);
+  if (isSettingsLoaded && !isProcessing && !didAdoptSettingsDefault) {
+    setDidAdoptSettingsDefault(true);
+    if (!hasOperatorSelectedModeRef.current && activeMode !== defaultMode) {
+      setActiveMode(defaultMode);
+    }
+  }
+
+  return { activeMode, setActiveMode, selectMode };
+};
 
 //
 //
