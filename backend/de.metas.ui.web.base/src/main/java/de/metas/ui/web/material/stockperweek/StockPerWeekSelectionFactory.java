@@ -189,11 +189,8 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 						.append(", row_number() OVER (ORDER BY " + rowNumberOrderBySql + ")"
 								+ ", " + FUNCTION_ALIAS + "." + KEY_COLUMN
 								+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID
-								// IntKey3 = the applied WAREHOUSE FILTER (constant for the selection), NOT the per-row
-								// warehouse: readAppliedFilter re-parameterizes the page render with it. A product-only
-								// selection spans several warehouses, so this must be null (=warehouseFnParam) -> the render
-								// sources MD_Stock_PerWeek_fn(product, NULL) and its join back to the selection restores
-								// every warehouse. Persisting fn.M_Warehouse_ID here collapsed the render to one warehouse.
+								// IntKey3 = the applied warehouse filter (null for a product-only selection), not the
+								// per-row warehouse; readAppliedFilter re-parameterizes the page render with it.
 								+ ", CAST(? AS numeric)\n"
 								+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, warehouseFnParam, productId, warehouseFnParam)
 						.append("\n WHERE 1=1 ")
