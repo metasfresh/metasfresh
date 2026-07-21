@@ -162,3 +162,95 @@ testCases.forEach(({ language, label }) => {
     });
   });
 });
+
+/**
+ * Product-only filter must show EVERY warehouse the product has stock/demand in — driven through the
+ * UI (facet filter → grid), so the recorded video shows the actual behavior.
+ *
+ * Regression guard: the selection factory persists the applied warehouse FILTER (null for a
+ * product-only filter), not the per-row warehouse, so the page render sources
+ * MD_Stock_PerWeek_fn(product, NULL) and restores every warehouse. A prior defect collapsed a
+ * product-only grid to one arbitrary warehouse.
+ *
+ * Setup: one product with an open sales-order line in EACH of two warehouses → Material Disposition
+ * creates candidates for the product in both → the product-filtered grid must span both warehouses.
+ */
+test.describe('Stock per Week — product-only filter spans all warehouses', () => {
+  test('Filtering by product only shows rows from every warehouse the product is in', async ({ page }) => {
+    allure.epic('E0155: Material Disposition');
+    allure.tag('F19100: Stock per week');
+    allure.tag('F19100');
+    allure.story('Product-only filter shows all warehouses (not just one)');
+    allure.severity('critical');
+
+    test.setTimeout(300000); // SO completion + async dispo + UI filter retries
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'de_DE', firstname: 'spw', lastname: 'multiwh' } },
+        bpartners: { CUSTOMER1: { isVendor: false, isCustomer: true, isSoPriceList: true, name: 'Customer' } },
+        products: { P1: { name: 'SPW_MULTIWH', type: 'Item', prices: [{ price: 30.0, currencyCode: 'EUR' }] } },
+        warehouses: { whA: {}, whB: {} },
+        salesOrders: {
+          SO_A: { bpartner: 'CUSTOMER1', warehouse: 'whA', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 5 }] },
+          SO_B: { bpartner: 'CUSTOMER1', warehouse: 'whB', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 7 }] },
+        },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+    const productId = masterdata.products.P1.id;
+    const productName = masterdata.products.P1.productName || 'SPW_MULTIWH';
+    expect(productId, 'seeded product must expose its M_Product_ID').toBeTruthy();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    // Material Disposition materializes candidates asynchronously; give it a head start.
+    await page.waitForTimeout(12000);
+
+    // Open the window (standalone → empty) then apply the product facet filter via the UI, retrying to
+    // absorb async dispo. Read the warehouse the grid actually shows per row.
+    const distinctWarehouses = new Set();
+    for (let attempt = 1; attempt <= 8; attempt++) {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${STOCK_PER_WEEK_WINDOW_ID}`);
+      await page.locator('.document-list-wrapper, .document-list').first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      const productFacet = page.locator('[data-testid="filter-button-facet-M_Product_ID"]');
+      await productFacet.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await productFacet.first().click();
+      await page.waitForTimeout(1500);
+
+      const option = page.locator(`[data-testid="filter-option-${productId}"]`);
+      if (await option.count() === 0) {
+        // product not in the visible option list — type to narrow, then retry the locator
+        const search = page.locator('.filter-menu input, input[type="text"]').first();
+        if (await search.count() > 0) { await search.fill(String(productName)); await page.waitForTimeout(1000); }
+      }
+      await option.first().locator('label.form-control-label').click({ timeout: SLOW_ACTION_TIMEOUT });
+      await page.getByTestId('filter-apply-button').click();
+      await page.waitForTimeout(3000);
+      await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      const cells = await page.locator('table tbody tr [data-cy="cell-M_Warehouse_ID"]').allTextContents();
+      cells.map((c) => c.trim()).filter(Boolean).forEach((w) => distinctWarehouses.add(w));
+      console.log(`[INFO] attempt ${attempt}: distinct warehouses in grid = ${[...distinctWarehouses].join(' | ')}`);
+
+      if (distinctWarehouses.size >= 2) break;
+      distinctWarehouses.clear();
+      await page.waitForTimeout(10000); // let dispo catch up, then re-open + re-filter
+    }
+
+    allure.attachment('Filtered grid (product only)', await page.screenshot({ fullPage: true }), 'image/png');
+    allure.attachment('Distinct warehouses shown', JSON.stringify([...distinctWarehouses]), 'application/json');
+
+    expect(
+      distinctWarehouses.size,
+      'product-only filter must show rows for BOTH warehouses the product is stocked in (must not collapse to one)'
+    ).toBeGreaterThanOrEqual(2);
+
+    console.log('[PASS] Stock-per-week product-only filter spans all warehouses');
+  });
+});
