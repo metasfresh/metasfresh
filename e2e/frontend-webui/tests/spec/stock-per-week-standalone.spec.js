@@ -165,7 +165,7 @@ testCases.forEach(({ language, label }) => {
 
 /**
  * Product-only filter must show EVERY warehouse the product has stock/demand in — driven through the
- * UI (facet filter → grid), so the recorded video shows the actual behavior.
+ * UI (the real filter panel → grid), so the recorded video shows the actual behavior.
  *
  * Regression guard: the selection factory persists the applied warehouse FILTER (null for a
  * product-only filter), not the per-row warehouse, so the page render sources
@@ -174,6 +174,13 @@ testCases.forEach(({ language, label }) => {
  *
  * Setup: one product with an open sales-order line in EACH of two warehouses → Material Disposition
  * creates candidates for the product in both → the product-filtered grid must span both warehouses.
+ *
+ * UI note (verified against the live window 542159 DOM): M_Product_ID is an IsSelectionColumn, so it
+ * lives in the combined "Default" filter panel — NOT a per-column facet button. There is no
+ * `filter-button-facet-M_Product_ID`. The real interaction is: open the Default panel (the generic
+ * "Filter" toggle in `.filters-not-frequent`), type into the Product lookup input
+ * (`.form-field-M_Product_ID input.input-field`), pick the option (`option-<M_Product_ID>` in the
+ * lookup dropdown), then Apply (`filter-apply-button`).
  */
 test.describe('Stock per Week — product-only filter spans all warehouses', () => {
   test('Filtering by product only shows rows from every warehouse the product is in', async ({ page }) => {
@@ -209,8 +216,8 @@ test.describe('Stock per Week — product-only filter spans all warehouses', () 
     // Material Disposition materializes candidates asynchronously; give it a head start.
     await page.waitForTimeout(12000);
 
-    // Open the window (standalone → empty) then apply the product facet filter via the UI, retrying to
-    // absorb async dispo. Read the warehouse the grid actually shows per row.
+    // Open the window (standalone → empty) then apply the product filter via the Default filter panel,
+    // retrying to absorb async dispo. Read the warehouse the grid actually shows per row.
     const distinctWarehouses = new Set();
     for (let attempt = 1; attempt <= 8; attempt++) {
       await page.goto(`${FRONTEND_BASE_URL}/window/${STOCK_PER_WEEK_WINDOW_ID}`);
@@ -218,18 +225,22 @@ test.describe('Stock per Week — product-only filter spans all warehouses', () 
         .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
-      const productFacet = page.locator('[data-testid="filter-button-facet-M_Product_ID"]');
-      await productFacet.first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-      await productFacet.first().click();
-      await page.waitForTimeout(1500);
+      // 1) open the combined "Default" filter panel (product is a selection column, not a facet)
+      const filterToggle = page.locator('.filters-not-frequent button.toggle-filters').first();
+      await filterToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await filterToggle.click();
+      await page.locator('.filter-menu.filter-widget').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      const option = page.locator(`[data-testid="filter-option-${productId}"]`);
-      if (await option.count() === 0) {
-        // product not in the visible option list — type to narrow, then retry the locator
-        const search = page.locator('.filter-menu input, input[type="text"]').first();
-        if (await search.count() > 0) { await search.fill(String(productName)); await page.waitForTimeout(1000); }
-      }
-      await option.first().locator('label.form-control-label').click({ timeout: SLOW_ACTION_TIMEOUT });
+      // 2) type the product name into the Product lookup and pick the exact option (option-<M_Product_ID>)
+      const prodInput = page.locator('.form-field-M_Product_ID input.input-field').first();
+      await prodInput.click();
+      await prodInput.fill(String(productName));
+      await page.waitForTimeout(1500); // lookup debounce + options fetch
+      await page.locator(`.input-dropdown-list [data-testid="option-${productId}"]`)
+        .first()
+        .click({ timeout: SLOW_ACTION_TIMEOUT });
+
+      // 3) apply the product-only filter
       await page.getByTestId('filter-apply-button').click();
       await page.waitForTimeout(3000);
       await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
