@@ -59,7 +59,8 @@ class OrderPayScheduleUpdateStatusFromContextTest
 
 	private static final LocalDate OLD_BL_DATE = LocalDate.of(2026, 3, 1);
 	private static final LocalDate NEW_BL_DATE = LocalDate.of(2026, 3, 15); // corrected BL date
-	private static final LocalDate LC_DATE = LocalDate.of(2026, 2, 1); // unchanged
+	private static final LocalDate LC_DATE = LocalDate.of(2026, 2, 1); // LC line's stored value, must stay untouched
+	private static final LocalDate NEW_LC_CONTEXT_DATE = LocalDate.of(2026, 2, 20); // context-only change; must never reach the LC line
 
 	private PaymentTerm newPaymentTerm()
 	{
@@ -129,7 +130,7 @@ class OrderPayScheduleUpdateStatusFromContextTest
 		final OrderSchedulingContext context = OrderSchedulingContext.builder()
 				.orderId(ORDER_ID)
 				.billOfLadingDate(NEW_BL_DATE) // corrected
-				.letterOfCreditDate(LC_DATE) // unchanged
+				.letterOfCreditDate(NEW_LC_CONTEXT_DATE) // also changed in the context; must not reach the LC line
 				.grandTotal(Money.of(BigDecimal.valueOf(10000), EUR))
 				.precision(CurrencyPrecision.TWO)
 				.paymentTerm(newPaymentTerm())
@@ -144,7 +145,7 @@ class OrderPayScheduleUpdateStatusFromContextTest
 
 		assertThat(lcLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
 		assertThat(lcLine.isPaid()).isFalse();
-		assertThat(lcLine.getDueDate()).as("LC line dueDate must stay untouched by this recompute").isEqualTo(LC_DATE);
-		assertThat(lcLine.getReferenceDate()).isEqualTo(LC_DATE);
+		assertThat(lcLine.getDueDate()).as("LC line dueDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
+		assertThat(lcLine.getReferenceDate()).as("LC line referenceDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
 	}
 }
