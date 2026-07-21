@@ -48,6 +48,7 @@ import org.apache.camel.test.junit5.CamelTestSupport;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
@@ -60,6 +61,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -67,7 +69,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSupport
 {
@@ -143,6 +145,14 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 	{
 		System.clearProperty(PROPERTY_SCRIPT_REPO_BASE_DIR);
 	}
+
+	/** LOCAL processed-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	@TempDir
+	Path localProcessedDir;
+
+	/** LOCAL error-folder archive target (REST has no remote file — see AC5 runtime-fixes refinement). */
+	@TempDir
+	Path localErrorDir;
 
 	@Override
 	protected RouteBuilder createRouteBuilder()
@@ -258,7 +268,8 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		final String endpointName = invokeExternalSystemRequest.getParameters().get(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
 		final String scriptIdentifier = invokeExternalSystemRequest.getParameters().get(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 
-		context.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, new JavaScriptRepo("baseDir"), new JavaScriptExecutorService(), template));
+		context.addRoutes(new ScriptedImportConversionDynamicRouteBuilder(endpointName, scriptIdentifier, new JavaScriptRepo("baseDir"), new JavaScriptExecutorService(), template,
+				localProcessedDir.toAbsolutePath().toString(), localErrorDir.toAbsolutePath().toString()));
 		context.getRouteController().startRoute(endpointName);
 
 		//when fire the route
@@ -320,6 +331,78 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		// (toD("direct:${exchangeProperty.endpointName}")) correctly routed to the dynamic OLCand-producing route
 		final Integer httpResponseCode = responseExchange.getMessage().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
 		assertThat(httpResponseCode).isEqualTo(200);
+
+		// And: the raw POST payload was archived to the LOCAL processed folder (REST has no remote file
+		// to consume — see AC5 runtime-fixes refinement)
+		final List<Path> processedFiles;
+		try (var files = Files.list(localProcessedDir))
+		{
+			processedFiles = files.toList();
+		}
+		assertThat(processedFiles).hasSize(1);
+		assertThat(Files.readString(processedFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(OLCAND_INPUT_JSON);
+
+		try (var errorFiles = Files.list(localErrorDir))
+		{
+			assertThat(errorFiles.findAny()).isEmpty();
+		}
+	}
+
+	@Test
+	void postMalformedPayloadToRestApiArchivesToLocalErrorDir() throws Exception
+	{
+		final MockAuthenticateTokenEP mockAuthenticateTokenEP = new MockAuthenticateTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
+
+		prepareEnableRouteForTesting(mockAuthenticateTokenEP, mockStoreExternalStatusEP);
+		registerDummyErrorRoute();
+		registerOlCandMockRoute();
+
+		context.start();
+
+		writeOlCandTransformScript();
+
+		final MockEndpoint olCandMockEndpoint = getMockEndpoint(OLCAND_MOCK_ROUTE_URI);
+		olCandMockEndpoint.expectedMessageCount(0);
+
+		// Enable the REST endpoint with the same real (non-mocked) OLCand-producing transform — its
+		// JSON.parse will throw on the malformed input below.
+		final JsonExternalSystemRequest enableRequest = buildOlCandEnableRequest();
+		template.sendBody("direct:" + ScriptedImportConversionRestAPIRouteBuilder.ENABLE_RESOURCE_ROUTE_ID, enableRequest);
+		assertThat(context.getRouteController().getRouteStatus(OLCAND_ENDPOINT_NAME).isStarted()).isTrue();
+
+		mockAuthenticatedRequest();
+
+		final String malformedInput = "{ \"orderId\": \"REST-99\", this is not valid json !!";
+
+		final Exchange responseExchange = template.send("direct:" + ScriptedImportConversionRestAPIRouteBuilder.REST_API_ROUTE_ID,
+				exchange -> {
+					exchange.getIn().setHeader(Exchange.HTTP_PATH, "/interchange/import/" + OLCAND_ENDPOINT_NAME);
+					exchange.getIn().setBody(malformedInput);
+				});
+
+		// Then: nothing should have been dispatched to the OLCand route
+		olCandMockEndpoint.assertIsSatisfied(2_000);
+
+		// And: the client sees an error response — the exception propagated back through the REST
+		// catch-all's doCatch(Exception.class) (not a JsonProcessingException, so 500, not 400)
+		final Integer httpResponseCode = responseExchange.getMessage().getHeader(Exchange.HTTP_RESPONSE_CODE, Integer.class);
+		assertThat(httpResponseCode).isEqualTo(500);
+
+		// And: the malformed payload was archived to the LOCAL error folder — never silently lost
+		final List<Path> errorFiles;
+		try (var files = Files.list(localErrorDir))
+		{
+			errorFiles = files.toList();
+		}
+		assertThat(errorFiles).hasSize(1);
+		assertThat(Files.readString(errorFiles.get(0), StandardCharsets.UTF_8)).isEqualTo(malformedInput);
+
+		// And: it must not have ended up in the local processed folder
+		try (var files = Files.list(localProcessedDir))
+		{
+			assertThat(files.findAny()).isEmpty();
+		}
 	}
 
 	private void mockAuthenticatedRequest()
@@ -345,6 +428,9 @@ public class ScriptedImportConversionRestAPIRouteBuilderTest extends CamelTestSu
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, OLCAND_ENDPOINT_NAME);
 		params.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, OLCAND_SCRIPT_IDENTIFIER);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, "token");
+		// LOCAL, transport-agnostic archive folders (REST has no remote file to consume)
+		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, localProcessedDir.toAbsolutePath().toString());
+		params.put(ExternalSystemConstants.PARAM_ERROR_DIR, localErrorDir.toAbsolutePath().toString());
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of("ScriptedImportConversion"))

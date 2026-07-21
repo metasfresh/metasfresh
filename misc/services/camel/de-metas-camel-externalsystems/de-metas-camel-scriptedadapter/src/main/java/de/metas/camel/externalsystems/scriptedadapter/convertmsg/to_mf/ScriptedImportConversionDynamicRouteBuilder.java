@@ -44,6 +44,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +56,15 @@ import java.util.logging.Logger;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.FIELD_ERROR_MESSAGE;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @RequiredArgsConstructor
 public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 {
 	private static final Logger logger = Logger.getLogger(ScriptedImportConversionDynamicRouteBuilder.class.getName());
+
+	private static final DateTimeFormatter ARCHIVE_FILE_TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HHmmssSSS");
 
 	public static final String SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID = "ScriptedImportConversionProcessorId";
 
@@ -69,17 +74,25 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 	@NonNull private final JavaScriptExecutorService javaScriptExecutorService;
 	@NonNull private final ProducerTemplate producerTemplate;
 
+	/** LOCAL, transport-agnostic archive folder for the raw POST payload on success. REST has no remote file. */
+	@NonNull private final String processedDir;
+	/** LOCAL, transport-agnostic archive folder for the raw POST payload on failure. REST has no remote file. */
+	@NonNull private final String errorDir;
+
 	@Override
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
+				.process(this::archiveLocallyOnError)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
 		from("direct:" + getRouteId())
 				.routeId(getRouteId())
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
+				.convertBodyTo(String.class)
+				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo)).id(SCRIPTED_IMPORT_CONVERSION_PROCESSOR_ID)
 				.choice()
 					.when(body().isNull())
@@ -90,8 +103,32 @@ public class ScriptedImportConversionDynamicRouteBuilder extends RouteBuilder
 							.process(this::handleItemInList)
 						.end()
 					.endChoice()
-				.end();
+				.end()
+				.process(this::archiveLocallyOnSuccess);
 		//@formatter:on
+	}
+
+	private void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
+	{
+		archiveLocally(exchange, processedDir);
+	}
+
+	private void archiveLocallyOnError(@NonNull final Exchange exchange)
+	{
+		archiveLocally(exchange, errorDir);
+	}
+
+	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
+	{
+		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);
+		if (payload == null)
+		{
+			// nothing was ever read from the POST body (failure occurred before the body was captured)
+			return;
+		}
+
+		final String fileName = ARCHIVE_FILE_TIMESTAMP_FORMATTER.format(ZonedDateTime.now()) + "_" + endpointName + ".json";
+		ScriptedImportConversionLocalArchiver.archive(directory, fileName, payload);
 	}
 
 	private void handleItemInList(@NonNull final Exchange exchange)

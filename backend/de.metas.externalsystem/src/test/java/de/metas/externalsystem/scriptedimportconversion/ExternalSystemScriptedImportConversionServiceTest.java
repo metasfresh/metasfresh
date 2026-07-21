@@ -193,6 +193,45 @@ class ExternalSystemScriptedImportConversionServiceTest
 	}
 
 	@Test
+	void getParameters_processedErrorDirs_includedRegardlessOfTransport()
+	{
+		// given: an HTTP (REST) endpoint with the LOCAL processed/error dirs set — these are
+		// transport-agnostic (used by both SFTP and REST local archiving), not SFTP-only
+		final UserId userImportId = createUserId();
+		userAuthTokenRepository.createNew(CreateUserAuthTokenRequest.builder()
+				.userId(userImportId)
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.MAIN)
+				.roleId(RoleId.WEBUI)
+				.build());
+
+		final I_ExternalSystem_Endpoint endpointRecord = newInstance(I_ExternalSystem_Endpoint.class);
+		endpointRecord.setValue("eddyson-rest");
+		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+		endpointRecord.setAuthType(X_ExternalSystem_Endpoint.AUTHTYPE_Token);
+		endpointRecord.setProcessedDirectory("/local/rest/processed");
+		endpointRecord.setErrorDirectory("/local/rest/error");
+		endpointRecord.setIsArrayFanOut(false);
+		saveRecord(endpointRecord);
+
+		final ExternalSystemScriptedImportConversionConfig config = ExternalSystemScriptedImportConversionConfig.builder()
+				.id(ExternalSystemScriptedImportConversionConfigId.ofRepoId(1))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(1))
+				.value("scriptedImportValue")
+				.scriptIdentifier("scriptId")
+				.userImportId(userImportId)
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(endpointRecord.getExternalSystem_Endpoint_ID()))
+				.build();
+
+		// when
+		final Map<String, String> parameters = service.getParameters(config);
+
+		// then: the local archive dirs are present even though the endpoint is HTTP, not SFTP
+		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/local/rest/processed");
+		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/local/rest/error");
+	}
+
+	@Test
 	void getParameters_importeurWithoutWebuiToken_throwsClearError()
 	{
 		// given: an Importeur that has NO WEBUI auth token

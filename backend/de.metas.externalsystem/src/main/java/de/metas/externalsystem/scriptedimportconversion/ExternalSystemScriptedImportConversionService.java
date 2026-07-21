@@ -128,6 +128,17 @@ public class ExternalSystemScriptedImportConversionService
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, config.getScriptIdentifier());
 		parameters.put(PARAM_SCRIPTEDADAPTER_TO_MF_TOKEN, token.getAuthToken());
 
+		// LOCAL, transport-agnostic archive dirs — used by BOTH the SFTP and the REST import flow for
+		// local done/error archiving, so these are not gated on TransportType.SFTP.
+		if (endpoint.getProcessedDirectory() != null)
+		{
+			parameters.put(PARAM_PROCESSED_DIR, endpoint.getProcessedDirectory());
+		}
+		if (endpoint.getErrorDirectory() != null)
+		{
+			parameters.put(PARAM_ERROR_DIR, endpoint.getErrorDirectory());
+		}
+
 		// Add SFTP endpoint parameters if endpoint uses SFTP transport
 		if (endpoint.getTransportType() == TransportType.SFTP)
 		{
@@ -150,14 +161,6 @@ public class ExternalSystemScriptedImportConversionService
 			if (endpoint.getSftpPollingIntervalMs() != null)
 			{
 				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(endpoint.getSftpPollingIntervalMs()));
-			}
-			if (endpoint.getProcessedDirectory() != null)
-			{
-				parameters.put(PARAM_PROCESSED_DIR, endpoint.getProcessedDirectory());
-			}
-			if (endpoint.getErrorDirectory() != null)
-			{
-				parameters.put(PARAM_ERROR_DIR, endpoint.getErrorDirectory());
 			}
 		}
 
