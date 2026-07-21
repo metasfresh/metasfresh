@@ -139,7 +139,6 @@ test.describe('Vendor Invoice line - GL account override (F01010.4)', () => {
       expect(lineDoc.rowId, 'the new invoice-line document must carry its own rowId').toBeTruthy();
       lineId = lineDoc.rowId;
       console.log(`[STEP] invoice line rowId=${lineId} (parent invoice ${invoiceId})`);
-      expect(lineId).toBeTruthy();
 
       const patchLine = (changes) =>
         page.request.patch(`${REST}/window/${CRUD_WIN}/${invoiceId}/${crudLineTabId}/${lineId}`, { data: changes });
