@@ -23,6 +23,7 @@ package de.metas.shipping.model.validator;
  */
 
 import de.metas.copy_with_details.CopyRecordFactory;
+import de.metas.document.engine.DocStatus;
 import de.metas.order.IOrderBL;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -33,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
@@ -60,5 +62,24 @@ public class M_ShipperTransportation
 			shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
 					.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_M_ShipperTransportation.COLUMNNAME_BLDate, I_M_ShipperTransportation.COLUMNNAME_ETA })
+	public void syncOrderDatesOnEdit(final I_M_ShipperTransportation transportOrder)
+	{
+		final DocStatus docStatus = DocStatus.ofCode(transportOrder.getDocStatus());
+		if (!docStatus.isCompletedOrClosed())
+		{
+			return; // tentative draft/in-progress transport-order dates must not drive the purchase order's due date
+		}
+
+		if (transportOrder.getETA() == null && transportOrder.getBLDate() == null)
+		{
+			return;
+		}
+
+		shipperTransportationDAO.retrieveOrderIds(ShipperTransportationId.ofRepoId(transportOrder.getM_ShipperTransportation_ID()))
+				.forEach(orderId -> orderBL.syncDatesFromTransportOrder(orderId, transportOrder));
 	}
 }
