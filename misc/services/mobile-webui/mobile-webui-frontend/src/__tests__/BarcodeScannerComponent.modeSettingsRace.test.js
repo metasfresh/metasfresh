@@ -16,6 +16,10 @@ jest.mock('../utils/ui_trace', () => ({
   traceFunction: (fn) => fn,
 }));
 
+// beep() news up an AudioContext and calls navigator.vibrate — neither exists in jsdom, so a
+// completed scan would throw. Mock it (the scan-processing tests below drive a full scan cycle).
+jest.mock('../utils/audio', () => ({ beep: jest.fn() }));
+
 // Reproduces the async-settings race exercised by barcode_scanner_modes.spec.js
 // ("manual mode — visible editable input rendered…").
 //
@@ -111,5 +115,46 @@ describe('BarcodeScannerComponent — activeMode adoption on async settings load
       store.dispatch(putSettingsAction(MANUAL_MODE_SETTINGS));
     });
     expect(screen.queryByTestId('manual-entry-input')).not.toBeInTheDocument();
+  });
+
+  it('defers adoption while a scan is processing, then adopts once processing ends', async () => {
+    // Mounts before settings → boots HARDWARE. A scan is fired and is still in flight (slow
+    // network) when the settings finally arrive carrying a DIFFERENT default (manual). Flipping
+    // activeMode mid-scan would flicker the visible panel once; adoption must wait for a render
+    // where isProcessing is false, then apply.
+    let resolveScan;
+    const resolveScannedBarcode = jest.fn(() => new Promise((resolve) => (resolveScan = resolve)));
+    const store = createStore(combineReducers({ settings: settingsReducer }));
+    render(
+      <Provider store={store}>
+        <BarcodeScannerComponent onResolvedResult={jest.fn()} resolveScannedBarcode={resolveScannedBarcode} />
+      </Provider>
+    );
+
+    // Boots in HARDWARE mode: the offscreen scan input is present, no manual input.
+    const hardwareInput = screen.getByTestId('qrCode-input');
+    expect(screen.queryByTestId('manual-entry-input')).not.toBeInTheDocument();
+
+    // Fire a hardware scan → isProcessing becomes true and stays true (resolveScannedBarcode's
+    // promise is left pending). The offscreen input unmounts while processing.
+    act(() => {
+      hardwareInput.value = '12345';
+      fireEvent.keyUp(hardwareInput, { key: 'Enter' });
+    });
+    expect(resolveScannedBarcode).toHaveBeenCalled();
+    expect(screen.queryByTestId('qrCode-input')).not.toBeInTheDocument();
+
+    // Settings arrive mid-scan with defaultMode=manual. The guard must hold the mode on HARDWARE
+    // (no manual input) until the scan finishes — no mid-scan flip.
+    act(() => {
+      store.dispatch(putSettingsAction(MANUAL_MODE_SETTINGS));
+    });
+    expect(screen.queryByTestId('manual-entry-input')).not.toBeInTheDocument();
+
+    // Scan resolves → isProcessing flips false → the deferred adoption runs → manual mode shows.
+    await act(async () => {
+      resolveScan({ scannedBarcode: '12345', error: null });
+    });
+    expect(screen.getByTestId('manual-entry-input')).toBeInTheDocument();
   });
 });

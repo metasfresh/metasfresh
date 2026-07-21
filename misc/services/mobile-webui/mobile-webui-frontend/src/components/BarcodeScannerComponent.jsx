@@ -24,47 +24,10 @@ const BarcodeScannerComponent = ({
     invisible,
   });
 
-  const [activeMode, setActiveMode] = useState(defaultMode);
-
-  // Set true the moment the operator explicitly picks a mode (footer HW/CAM toggle, footer
-  // "enter manually", or the ManualModePanel "back to scanner" button). Read by the async-settings
-  // adoption below so a deliberate operator choice made during the settings-load window is never
-  // overridden. NOT set by the internal auto-returns to the default mode (post-scan / camera
-  // cancel) — those are not operator mode selections.
-  const hasOperatorSelectedModeRef = useRef(false);
-  const selectMode = useCallback((mode) => {
-    hasOperatorSelectedModeRef.current = true;
-    setActiveMode(mode);
-  }, []);
-
-  // ── Async-settings default adoption ─────────────────────────────────────────────────────────
-  // Settings load asynchronously (ApplicationRoot fetches them fire-and-forget after login). If
-  // this scanner mounts BEFORE they arrive, useBarcodeScannerModes returns its hook defaults so
-  // defaultMode resolves to HARDWARE, and the useState initializer above freezes activeMode there
-  // — it would NOT pick up the configured default once settings resolve (e.g. defaultMode=manual),
-  // leaving the operator stuck in hardware mode with no visible manual input (flaky e2e case:
-  // barcode_scanner_modes.spec.js "manual mode — visible editable input rendered…").
-  //
-  // Adjust the state DURING RENDER (React's documented "adjust state when an input changes"
-  // pattern) rather than in a useEffect, so the switch happens before paint — on a handheld this
-  // avoids a one-frame flash of the wrong-mode scanner UI. Guarded so it fires exactly once, on
-  // the not-loaded→loaded transition.
-  //
-  // Adopt the configured default ONLY if the operator has NOT explicitly picked a mode during the
-  // load window (the footer's "enter manually" / toggle buttons are live before settings load) —
-  // otherwise a late settings arrival would silently revert the operator's own selection.
-  const isSettingsLoaded = useIsSettingsLoaded();
-  const [didAdoptSettingsDefault, setDidAdoptSettingsDefault] = useState(false);
-  if (isSettingsLoaded && !didAdoptSettingsDefault) {
-    setDidAdoptSettingsDefault(true);
-    if (!hasOperatorSelectedModeRef.current && activeMode !== defaultMode) {
-      setActiveMode(defaultMode);
-    }
-  }
-  // ─────────────────────────────────────────────────────────────────────────────────────────────
+  const [isProcessing, setProcessing] = useState(false);
+  const { activeMode, setActiveMode, selectMode } = useSettingsDefaultModeAdoption({ defaultMode, isProcessing });
 
   const scanningStatusRef = useRef({ running: false, done: false });
-  const [isProcessing, setProcessing] = useState(false);
   const { trackDuplicateScan } = useDuplicateScansGuard({ scanDuplicatesIntervalMillis });
 
   const validateScannedBarcodeAndForward0 = async ({ scannedBarcode, onStart, onSuccess, onError, onFinally }) => {
@@ -206,6 +169,52 @@ BarcodeScannerComponent.defaultProps = {
 };
 
 export default BarcodeScannerComponent;
+
+//
+//
+//
+//
+//
+
+// Owns activeMode and adopts the configured default mode when settings arrive late.
+//
+// Why: settings load async after login. If the scanner mounts first, defaultMode resolves to the
+// hook default (HARDWARE) and activeMode freezes there — so a manual-default workplace would stay
+// stuck on hardware with no visible input until the screen is left and re-entered.
+//
+// Fix: when settings first arrive, adopt their default once. Three guards:
+//   - once only, on the not-loaded → loaded transition (didAdoptSettingsDefault);
+//   - not while a scan is processing — flipping mid-scan flickers the panel, so we skip and let a
+//     later, calm render (isProcessing=false) do it;
+//   - not if the operator already picked a mode (hasOperatorSelectedModeRef) — their choice wins
+//     over a late settings arrival; internal auto-returns to default (post-scan, camera cancel)
+//     go through setActiveMode directly and do NOT count as an operator choice.
+//
+// Adopting during render (React's "adjust state on prop change" pattern) lands the switch before
+// paint, avoiding a one-frame flash of the wrong panel.
+//
+// Returns: activeMode + setActiveMode (raw, for internal auto-returns) + selectMode (operator
+// picks, which set the guard).
+const useSettingsDefaultModeAdoption = ({ defaultMode, isProcessing }) => {
+  const [activeMode, setActiveMode] = useState(defaultMode);
+
+  const hasOperatorSelectedModeRef = useRef(false);
+  const selectMode = useCallback((mode) => {
+    hasOperatorSelectedModeRef.current = true;
+    setActiveMode(mode);
+  }, []);
+
+  const isSettingsLoaded = useIsSettingsLoaded();
+  const [didAdoptSettingsDefault, setDidAdoptSettingsDefault] = useState(false);
+  if (isSettingsLoaded && !isProcessing && !didAdoptSettingsDefault) {
+    setDidAdoptSettingsDefault(true);
+    if (!hasOperatorSelectedModeRef.current && activeMode !== defaultMode) {
+      setActiveMode(defaultMode);
+    }
+  }
+
+  return { activeMode, setActiveMode, selectMode };
+};
 
 //
 //
