@@ -39,6 +39,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Repository Tables: ExternalSystem_Endpoint
+ * Repository Cluster: sole owner of {@code ExternalSystem_Endpoint}.
+ */
 @Repository
 public class ExternalSystemEndpointRepository
 {
