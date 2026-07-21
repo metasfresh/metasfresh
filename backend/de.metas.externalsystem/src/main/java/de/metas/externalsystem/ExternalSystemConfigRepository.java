@@ -28,9 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.common.util.StringUtils;
-import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
@@ -72,6 +72,7 @@ import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
+import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.tax.TaxCategoryDAO;
@@ -90,6 +91,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -97,14 +99,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import de.metas.logging.LogManager;
-import org.slf4j.Logger;
-
 @Repository
 @RequiredArgsConstructor
-public class ExternalSystemConfigRepo
+public class ExternalSystemConfigRepository
 {
-	private static final Logger logger = LogManager.getLogger(ExternalSystemConfigRepo.class);
+	private static final Logger logger = LogManager.getLogger(ExternalSystemConfigRepository.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -114,10 +113,10 @@ public class ExternalSystemConfigRepo
 	@NonNull private final ExternalSystemScriptedExportConversionRepository externalSystemScriptedExportConversionRepository;
 
 	@VisibleForTesting
-	public static ExternalSystemConfigRepo newInstanceForUnitTesting()
+	public static ExternalSystemConfigRepository newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
-		return new ExternalSystemConfigRepo(
+		return new ExternalSystemConfigRepository(
 				new TaxCategoryDAO(),
 				ExternalSystemRepository.newInstanceForUnitTesting(),
 				new ExternalSystemOtherConfigRepository(),
