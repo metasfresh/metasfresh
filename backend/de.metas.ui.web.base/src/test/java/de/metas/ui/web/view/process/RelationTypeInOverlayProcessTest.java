@@ -463,6 +463,83 @@ class RelationTypeInOverlayProcessTest
 		}
 	}
 
+	@Nested
+	class DoItSingleSelection
+	{
+		final RelationTypeRelatedDocumentsProvidersFactory providerFactory = mock(RelationTypeRelatedDocumentsProvidersFactory.class);
+		final IViewsRepository viewsRepo = mock(IViewsRepository.class);
+
+		@Test
+		void throwsFriendlyNoRelatedDocs_whenTheSingleSelectedSourceRowCannotBeLoaded()
+		{
+			// Reproduces https://github.com/metasfresh/metasfresh/pull/25261 :
+			// a single selected Purchase Cockpit row that resolves to an unloadable source record (e.g. RV_PurchaseCockpit/0)
+			// must not blow up with a raw 500; it must surface the friendly "no related documents" message.
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final TableRecordReference unloadableRef = TableRecordReference.of("C_OrderLine", 1);
+
+			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					providerFactory, viewsRepo,
+					buildProcessInfo(relationTypeId),
+					ImmutableList.of(unloadableRef),
+					ImmutableMap.of() /* no zoom source -> createZoomSource throws */);
+
+			assertThatThrownBy(process::doIt)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NO_RELATED_DOCS_FOUND");
+		}
+
+		@Test
+		void getSelectedSourceRecordRefs_fallsThrough_whenSingleRecordIdIsZero()
+		{
+			// A single selected view row whose record resolves to id 0 (RV_PurchaseCockpit/0) is not a usable single record:
+			// getRecordRefOrNull() accepts id 0, so we must not short-circuit on it. With no selection where-clause available
+			// there is nothing to resolve -> @NoSelection@.
+			final ProcessInfo processInfo = ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process_ID(1)
+					.setRecord("C_OrderLine", 0)
+					.setAdWindowId(AdWindowId.ofRepoId(100))
+					.setAdRelationTypeId(RelationTypeId.ofRepoId(42))
+					.build();
+
+			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					providerFactory, viewsRepo, processInfo, mock(IZoomSource.class));
+
+			assertThatThrownBy(process::getSelectedSourceRecordRefs)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NoSelection");
+		}
+
+		@Test
+		void getSelectedSourceRecordRefs_returnsSingleRef_whenRecordIdIsPositive()
+		{
+			final TableRecordReference ref = TableRecordReference.of("C_OrderLine", 101);
+			final ProcessInfo processInfo = ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process_ID(1)
+					.setRecord(ref)
+					.setAdWindowId(AdWindowId.ofRepoId(100))
+					.setAdRelationTypeId(RelationTypeId.ofRepoId(42))
+					.build();
+
+			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					providerFactory, viewsRepo, processInfo, mock(IZoomSource.class));
+
+			assertThat(process.getSelectedSourceRecordRefs()).containsExactly(ref);
+		}
+
+		private ProcessInfo buildProcessInfo(final RelationTypeId relationTypeId)
+		{
+			return ProcessInfo.builder()
+					.setCtx(Env.getCtx())
+					.setAD_Process_ID(1)
+					.setAdWindowId(AdWindowId.ofRepoId(100))
+					.setAdRelationTypeId(relationTypeId)
+					.build();
+		}
+	}
+
 	private RelationTypeInOverlayProcess buildProcessWithoutRelationTypeId(
 			final RelationTypeRelatedDocumentsProvidersFactory factory,
 			final IViewsRepository viewsRepo)

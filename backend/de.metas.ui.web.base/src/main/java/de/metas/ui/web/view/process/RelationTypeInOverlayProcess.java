@@ -175,8 +175,20 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 	private ViewId createSingleSourceView(@NonNull final TableRecordReference recordRef, @NonNull final RelationTypeId relationTypeId)
 	{
-		// Create zoom source from the current record
-		final IZoomSource zoomSource = createZoomSource(recordRef);
+		// Create zoom source from the current record.
+		// A source record that cannot be loaded (e.g. a Purchase Cockpit demand row with no backing record,
+		// or a concurrently-deleted row) must surface the friendly "no related documents" message instead of a raw 500.
+		final IZoomSource zoomSource;
+		try
+		{
+			zoomSource = createZoomSource(recordRef);
+		}
+		catch (final Exception ex)
+		{
+			addLog("Cannot resolve related documents for {}: {}", recordRef, ex.getLocalizedMessage());
+			log.warn("Cannot resolve related documents for {}", recordRef, ex);
+			throw new AdempiereException(MSG_NO_RELATED_DOCS_FOUND);
+		}
 
 		// Get the specific provider for this relation type and retrieve related documents
 		final List<RelatedDocumentsCandidateGroup> relatedDocumentGroups = retrieveRelatedDocumentGroups(relationTypeId, zoomSource);
@@ -296,8 +308,11 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	 */
 	protected List<TableRecordReference> getSelectedSourceRecordRefs()
 	{
+		// Note: getRecordRefOrNull() accepts record_id 0 (it only rejects negative ids), so a view row that resolves to
+		// e.g. RV_PurchaseCockpit/0 (a row with no single backing record) would otherwise be treated as a loadable single
+		// record. Require a real (>0) id here; otherwise fall through to the view selection where-clause below.
 		final TableRecordReference singleRecordRef = getProcessInfo().getRecordRefOrNull();
-		if (singleRecordRef != null)
+		if (singleRecordRef != null && singleRecordRef.getRecord_ID() > 0)
 		{
 			return ImmutableList.of(singleRecordRef);
 		}
