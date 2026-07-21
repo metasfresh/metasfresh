@@ -428,6 +428,81 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
+		void skipsCandidatesWithBlankWhereClause_fromTheUnion()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId targetWindow = WindowId.of(AdWindowId.ofRepoId(200));
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+			final IZoomSource zoom2 = mock(IZoomSource.class);
+
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=1")));
+			// a candidate that yields documents but whose MQuery has no where-clause (querySupplier -> null)
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithOneEntry(targetWindow)));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of(ref1, zoom1, ref2, zoom2));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			final DocumentFilter unionFilter = captor.getValue().getStickyFilters().toList().get(0);
+			assertThat(unionFilter.getParameters().get(0).getSqlWhereClause().getSql())
+					.isEqualTo("(PC.C_OrderLine_ID=1)");
+		}
+
+		@Test
+		void deduplicatesIdenticalWhereClauses_inTheUnion()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId targetWindow = WindowId.of(AdWindowId.ofRepoId(200));
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+			final IZoomSource zoom2 = mock(IZoomSource.class);
+
+			// both selected rows resolve to the same related-documents where-clause
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_PurchaseCandidate_ID=7")));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_PurchaseCandidate_ID=7")));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of(ref1, zoom1, ref2, zoom2));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			final DocumentFilter unionFilter = captor.getValue().getStickyFilters().toList().get(0);
+			// identical clause is not repeated as "(...) OR (...)"
+			assertThat(unionFilter.getParameters().get(0).getSqlWhereClause().getSql())
+					.isEqualTo("(PC.C_PurchaseCandidate_ID=7)");
+		}
+
+		@Test
 		void throws_whenAllSourceRowsAreUnloadable()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
@@ -533,8 +608,7 @@ class RelationTypeInOverlayProcessTest
 		@Test
 		void throwsFriendlyNoRelatedDocs_whenTheSingleSelectedSourceRowCannotBeLoaded()
 		{
-			// Reproduces https://github.com/metasfresh/metasfresh/pull/25261 :
-			// a single selected Purchase Cockpit row that resolves to an unloadable source record (e.g. RV_PurchaseCockpit/0)
+			// A single selected Purchase Cockpit row that resolves to an unloadable source record (e.g. RV_PurchaseCockpit/0)
 			// must not blow up with a raw 500; it must surface the friendly "no related documents" message.
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final TableRecordReference unloadableRef = TableRecordReference.of("C_OrderLine", 1);

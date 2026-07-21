@@ -66,11 +66,12 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
 
@@ -221,7 +222,9 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	private ViewId createCombinedView(@NonNull final List<TableRecordReference> sourceRecordRefs, @NonNull final RelationTypeId relationTypeId)
 	{
 		AdWindowId targetWindowId = null;
-		final List<String> whereClauses = new ArrayList<>();
+		// LinkedHashSet: dedupe identical per-source where-clauses (e.g. two rows resolving to the same candidate)
+		// while keeping a stable order in the combined filter.
+		final Set<String> whereClauses = new LinkedHashSet<>();
 
 		for (final TableRecordReference recordRef : sourceRecordRefs)
 		{
@@ -253,7 +256,9 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 					continue;
 				}
 
-				// A candidate whose MQuery has no where-clause would match the whole target table and cannot be OR'ed into the union; it is intentionally skipped below. Safe for the current relation types, whose candidates always carry a where-clause; revisit if reused elsewhere.
+				// A candidate whose MQuery has no where-clause would match the whole target table and cannot
+				// be OR'ed into the union, so it is intentionally skipped below. Safe for the current relation
+				// types, whose candidates always carry a where-clause; revisit if reused for other relation types.
 				for (final RelatedDocumentsCandidate candidate : group.getCandidates())
 				{
 					final MQuery query = candidate.getQuerySupplier().getQuery();
