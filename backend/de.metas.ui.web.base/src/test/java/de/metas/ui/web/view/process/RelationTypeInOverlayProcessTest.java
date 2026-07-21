@@ -538,6 +538,9 @@ class RelationTypeInOverlayProcessTest
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final TableRecordReference unloadableRef = TableRecordReference.of("C_OrderLine", 1);
 
+			// Uses the multi-selection factory (List/Map variant) even though this is a single-selection test:
+			// it is the only factory that lets us inject a per-ref zoom source that throws (an empty map), simulating
+			// an unloadable source. The size-1 list still routes through the single-source path (createSingleSourceView).
 			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
 					providerFactory, viewsRepo,
 					buildProcessInfo(relationTypeId),

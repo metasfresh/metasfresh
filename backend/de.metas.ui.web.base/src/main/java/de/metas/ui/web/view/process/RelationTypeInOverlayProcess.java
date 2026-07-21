@@ -23,6 +23,7 @@
 //please keep package in sync with de.metas.process.model.interceptor.AD_Process.RELATION_TYPE_IN_OVERLAY_PROCESS_CLASSNAME
 package de.metas.ui.web.view.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
@@ -104,6 +105,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		this.viewsRepo = viewsRepo;
 	}
 
+	@VisibleForTesting
 	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
 			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
 			@NonNull final IViewsRepository viewsRepo,
@@ -123,6 +125,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	}
 
 	// Constructor for testing multi-selection: inject the selected record refs and a per-ref zoom source
+	@VisibleForTesting
 	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
 			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
 			@NonNull final IViewsRepository viewsRepo,
