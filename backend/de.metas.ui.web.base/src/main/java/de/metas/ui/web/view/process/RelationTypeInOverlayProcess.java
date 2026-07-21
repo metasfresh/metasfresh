@@ -253,6 +253,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 					continue;
 				}
 
+				// A candidate whose MQuery has no where-clause would match the whole target table and cannot be OR'ed into the union; it is intentionally skipped below. Safe for the current relation types, whose candidates always carry a where-clause; revisit if reused elsewhere.
 				for (final RelatedDocumentsCandidate candidate : group.getCandidates())
 				{
 					final MQuery query = candidate.getQuerySupplier().getQuery();

@@ -57,6 +57,7 @@ class RelationTypeInOverlayProcessTest
 	@BeforeEach
 	void beforeEach()
 	{
+		// NOTE: initMocks (not openMocks) on purpose - openMocks is not available in the Mockito version used here.
 		MockitoAnnotations.initMocks(this);
 		AdempiereTestHelper.get().init();
 		Services.registerService(IADProcessDAO.class, mock(IADProcessDAO.class));
@@ -205,7 +206,7 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
-		void doIt_whenOpenTargetIsO_opensModalOverlay()
+		void doIt_whenOpenTargetIsModalOverlay_opensModalOverlay()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
@@ -228,7 +229,7 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
-		void doIt_whenOpenTargetIsN_opensInNewBrowserTab()
+		void doIt_whenOpenTargetIsNewBrowserTab_opensInNewBrowserTab()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
 			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
