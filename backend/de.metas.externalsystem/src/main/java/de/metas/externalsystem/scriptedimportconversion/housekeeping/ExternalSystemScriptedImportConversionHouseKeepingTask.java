@@ -37,6 +37,7 @@ import de.metas.user.UserId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -45,18 +46,15 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
 
 @Component
+@RequiredArgsConstructor
 public class ExternalSystemScriptedImportConversionHouseKeepingTask implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ExternalSystemScriptedImportConversionHouseKeepingTask.class);
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
-	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 
-	public ExternalSystemScriptedImportConversionHouseKeepingTask(
-			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
-	{
-		this.externalSystemConfigDAO = externalSystemConfigDAO;
-	}
+	@NonNull
+	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 
 	@Override
 	public void executeTask()

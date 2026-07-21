@@ -23,9 +23,11 @@
 package de.metas.externalsystem.scriptedimportconversion;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
+import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
 import de.metas.externalsystem.endpoint.TransportType;
 import de.metas.security.RoleId;
@@ -95,10 +97,20 @@ public class ExternalSystemScriptedImportConversionService
 			throw new AdempiereException("resolveCommands requires either parentId or childConfigId");
 		}
 
+		final ImmutableMap<ExternalSystemEndpointId, ExternalSystemEndpoint> endpointsById = externalSystemEndpointRepository.getByIds(
+				children.stream()
+						.map(ExternalSystemScriptedImportConversionConfig::getExternalSystemEndpointId)
+						.collect(ImmutableList.toImmutableList()));
+
 		return children.stream()
 				.map(child -> {
-					final TransportType transportType = externalSystemEndpointRepository.getById(child.getExternalSystemEndpointId()).getTransportType();
-					final ScriptedImportConversionCommand command = ScriptedImportConversionCommand.ofIntentAndTransport(intent, transportType);
+					final ExternalSystemEndpointId endpointId = child.getExternalSystemEndpointId();
+					final ExternalSystemEndpoint endpoint = endpointsById.get(endpointId);
+					if (endpoint == null)
+					{
+						throw new AdempiereException("No Endpoint found for " + endpointId);
+					}
+					final ScriptedImportConversionCommand command = ScriptedImportConversionCommand.ofIntentAndTransport(intent, endpoint.getTransportType());
 					return new ResolvedChildCommand(child, command);
 				})
 				.collect(ImmutableList.toImmutableList());
