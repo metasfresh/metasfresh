@@ -426,6 +426,66 @@ class RelationTypeInOverlayProcessTest
 					.hasMessageContaining("NO_RELATED_DOCS_FOUND");
 		}
 
+		@Test
+		void throws_whenAllSourceRowsAreUnloadable()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+
+			// no zoom sources -> createZoomSource throws for both -> all rows skipped -> whereClauses empty
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of());
+
+			assertThatThrownBy(process::doIt)
+					.isInstanceOf(AdempiereException.class)
+					.hasMessageContaining("NO_RELATED_DOCS_FOUND");
+		}
+
+		@Test
+		void usesFirstWindowOnly_whenSelectedRowsTargetDifferentWindows()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId firstWindow = WindowId.of(AdWindowId.ofRepoId(200));
+			final WindowId otherWindow = WindowId.of(AdWindowId.ofRepoId(201));
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+			final IZoomSource zoom2 = mock(IZoomSource.class);
+
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(firstWindow, "PC.C_OrderLine_ID=1")));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(otherWindow, "PC.C_OrderLine_ID=2")));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of(ref1, zoom1, ref2, zoom2));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			final CreateViewRequest request = captor.getValue();
+
+			// The union is scoped to the first-established window; the second row's group (different window) is dropped.
+			assertThat(request.getViewId().getWindowId()).isEqualTo(firstWindow);
+			final DocumentFilter unionFilter = request.getStickyFilters().toList().get(0);
+			assertThat(unionFilter.getParameters().get(0).getSqlWhereClause().getSql())
+					.isEqualTo("(PC.C_OrderLine_ID=1)");
+		}
+
 		private RelationTypeInOverlayProcess buildMultiProcess(
 				final RelationTypeRelatedDocumentsProvidersFactory factory,
 				final IViewsRepository viewsRepo,
