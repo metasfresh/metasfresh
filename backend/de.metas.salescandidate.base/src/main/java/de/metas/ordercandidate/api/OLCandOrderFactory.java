@@ -90,7 +90,6 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
-import de.metas.util.lang.RepoIdAware;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
@@ -807,13 +806,15 @@ class OLCandOrderFactory
 		// group. Track every one of them in `orderLines` (and allocate the candidate to each) so that a later
 		// rollback in onCompensationGroupFailure (deleteAll(orderLines) + delete(order)) does not leave an
 		// untracked compensation line still FK-referencing C_Order and make delete(order) fail.
-		final List<RepoIdAware> generatedLineIds = new ArrayList<>();
-		group.getRegularLines().forEach(regularLine -> generatedLineIds.add(regularLine.getRepoId()));
-		group.getCompensationLines().forEach(compensationLine -> generatedLineIds.add(compensationLine.getRepoId()));
+		final List<OrderLineId> generatedLineIds = new ArrayList<>();
+		group.getRegularLines().forEach(regularLine -> generatedLineIds.add(OrderLineId.ofRepoId(regularLine.getRepoId().getRepoId())));
+		group.getCompensationLines().forEach(compensationLine -> generatedLineIds.add(OrderLineId.ofRepoId(compensationLine.getRepoId().getRepoId())));
 
-		for (final RepoIdAware generatedLineId : generatedLineIds)
+		for (final OrderLineId generatedLineId : generatedLineIds)
 		{
-			final I_C_OrderLine componentOrderLine = InterfaceWrapperHelper.load(generatedLineId, I_C_OrderLine.class);
+			// Persistence primitives (load/save) go through IOrderDAO, not InterfaceWrapperHelper directly
+			// (docs/coding-rules/service-injection.md §4 — a BL/Factory class must not call the persistence primitives).
+			final I_C_OrderLine componentOrderLine = orderDAO.getOrderLineById(generatedLineId, I_C_OrderLine.class);
 
 			// H4: the generated group lines otherwise inherit warehouse/org from the order header only. Mirror the
 			// plain path (see addOLCand0) and align them with THIS candidate, so a later compensation-group-schema candidate
@@ -821,7 +822,7 @@ class OLCandOrderFactory
 			componentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 			componentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));
 			componentOrderLine.setAD_Org_ID(candidate.getAD_Org_ID());
-			InterfaceWrapperHelper.save(componentOrderLine);
+			orderDAO.save(componentOrderLine);
 
 			// Preserve the OLCand -> order traceability and cover the line for rollback.
 			createOla(candidate, componentOrderLine);
