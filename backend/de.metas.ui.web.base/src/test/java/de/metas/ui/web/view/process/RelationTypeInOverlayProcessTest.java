@@ -428,6 +428,43 @@ class RelationTypeInOverlayProcessTest
 		}
 
 		@Test
+		void skipsCandidatesWithNullQuery_fromTheUnion()
+		{
+			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
+			final WindowId targetWindow = WindowId.of(AdWindowId.ofRepoId(200));
+
+			final TableRecordReference ref1 = TableRecordReference.of("C_OrderLine", 1);
+			final TableRecordReference ref2 = TableRecordReference.of("C_OrderLine", 2);
+			final IZoomSource zoom1 = mock(IZoomSource.class);
+			final IZoomSource zoom2 = mock(IZoomSource.class);
+
+			final SpecificRelationTypeRelatedDocumentsProvider provider = mock(SpecificRelationTypeRelatedDocumentsProvider.class);
+			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=1")));
+			// a candidate whose querySupplier returns null (no MQuery at all) -> query != null guard -> skipped
+			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithOneEntry(targetWindow)));
+
+			final IView mockView = mock(IView.class);
+			when(viewsRepo.createView(any())).thenReturn(mockView);
+			when(mockView.getViewId()).thenReturn(ViewId.ofViewIdString("200-someViewId"));
+
+			final RelationTypeInOverlayProcess process = buildMultiProcess(
+					providerFactory, viewsRepo, relationTypeId,
+					ImmutableList.of(ref1, ref2),
+					ImmutableMap.of(ref1, zoom1, ref2, zoom2));
+
+			process.doIt();
+
+			final ArgumentCaptor<CreateViewRequest> captor = ArgumentCaptor.forClass(CreateViewRequest.class);
+			verify(viewsRepo).createView(captor.capture());
+			final DocumentFilter unionFilter = captor.getValue().getStickyFilters().toList().get(0);
+			assertThat(unionFilter.getParameters().get(0).getSqlWhereClause().getSql())
+					.isEqualTo("(PC.C_OrderLine_ID=1)");
+		}
+
+		@Test
 		void skipsCandidatesWithBlankWhereClause_fromTheUnion()
 		{
 			final RelationTypeId relationTypeId = RelationTypeId.ofRepoId(42);
@@ -442,9 +479,10 @@ class RelationTypeInOverlayProcessTest
 			when(providerFactory.findRelatedDocumentsProvider(eq(relationTypeId))).thenReturn(Optional.of(provider));
 			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom1), any()))
 					.thenReturn(ImmutableList.of(buildCandidateGroupWithQuery(targetWindow, "PC.C_OrderLine_ID=1")));
-			// a candidate that yields documents but whose MQuery has no where-clause (querySupplier -> null)
+			// a candidate that yields documents but whose (non-null) MQuery has no restriction, so its where-clause is
+			// blank -> Check.isBlank(whereClause) guard -> skipped
 			when(provider.retrieveRelatedDocumentsCandidates(eq(zoom2), any()))
-					.thenReturn(ImmutableList.of(buildCandidateGroupWithOneEntry(targetWindow)));
+					.thenReturn(ImmutableList.of(buildCandidateGroupWithBlankWhereClause(targetWindow)));
 
 			final IView mockView = mock(IView.class);
 			when(viewsRepo.createView(any())).thenReturn(mockView);
@@ -578,6 +616,24 @@ class RelationTypeInOverlayProcessTest
 					.build();
 
 			return RelationTypeInOverlayProcess.newInstanceForUnitTesting(factory, viewsRepo, processInfo, selectedRecordRefs, zoomSourcesByRecordRef);
+		}
+
+		private RelatedDocumentsCandidateGroup buildCandidateGroupWithBlankWhereClause(final WindowId targetWindowId)
+		{
+			// non-null MQuery but with no restriction -> getWhereClause(true) is blank
+			final MQuery mquery = new MQuery("PurchaseCandidate");
+
+			return RelatedDocumentsCandidateGroup.builder()
+					.candidate(RelatedDocumentsCandidate.builder()
+							.id(RelatedDocumentsId.ofString("test-blank-where"))
+							.internalName("test-blank-where")
+							.targetWindow(RelatedDocumentsTargetWindow.ofAdWindowId(targetWindowId.toAdWindowIdOrNull()))
+							.priority(Priority.MEDIUM)
+							.windowCaption(TranslatableStrings.anyLanguage("testCaption"))
+							.querySupplier(() -> mquery)
+							.documentsCountSupplier((permissions) -> 1)
+							.build())
+					.build();
 		}
 
 		private RelatedDocumentsCandidateGroup buildCandidateGroupWithQuery(final WindowId targetWindowId, final String directWhereClause)
