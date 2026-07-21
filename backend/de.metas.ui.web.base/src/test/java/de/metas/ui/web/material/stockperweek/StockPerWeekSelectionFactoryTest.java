@@ -114,8 +114,8 @@ class StockPerWeekSelectionFactoryTest
 		// sourced from the function; product is the 1st fn param, warehouse (2nd) is NULL = all warehouses
 		assertThat(sqlText).contains("MD_Stock_PerWeek_fn(?, ?) fn");
 		assertThat(sql.getSqlParams()).containsSubsequence(PRODUCT_ID, null);
-		// product persisted into IntKey2 (what readAppliedFilter reads to route the page render through the fn)
-		assertThat(sqlText).contains(", fn.M_Product_ID, fn.M_Warehouse_ID");
+		// product persisted into IntKey2; IntKey3 = the (null, zoom) warehouse filter param -> render sources fn(product, NULL)
+		assertThat(sqlText).contains(", fn.M_Product_ID, CAST(? AS numeric)\n FROM MD_Stock_PerWeek_fn(?, ?) fn");
 		// the clause's residual warehouse-resolution + week floor are applied against the fn output, not dropped
 		assertThat(sqlText).contains("MD_getStockWarehouse");
 		assertThat(sqlText).contains("WeekStartDate >=");
@@ -143,9 +143,21 @@ class StockPerWeekSelectionFactoryTest
 				DocumentFilter.equalsFilter("M_Warehouse_ID", warehouseId)));
 
 		assertThat(sql).isNotNull();
-		assertThat(sql.getSql()).contains("MD_Stock_PerWeek_fn(?, ?) fn");
-		assertThat(sql.getSqlParams()).containsSubsequence(PRODUCT_ID, warehouseId);
+		assertThat(sql.getSql()).contains(", fn.M_Product_ID, CAST(? AS numeric)\n FROM MD_Stock_PerWeek_fn(?, ?) fn");
+		// IntKey3 persists the warehouse FILTER (=warehouseId), then product+warehouse are the two fn params
+		assertThat(sql.getSqlParams()).containsSubsequence(warehouseId, PRODUCT_ID, warehouseId);
 		assertThat(sql.getSql()).doesNotContain("\n AND (\n"); // direct facet => no residual WHERE
+	}
+
+	@Test
+	void productOnlyFacet_persistsNullWarehouseFilter_soRenderSpansAllWarehouses()
+	{
+		// Product-only selection: IntKey3 persists the (null) warehouse filter, not the per-row warehouse,
+		// so the render sources fn(product, NULL) and its join to the selection restores every warehouse.
+		final SqlAndParams sql = buildSql(DocumentFilterList.of(DocumentFilter.equalsFilter("M_Product_ID", PRODUCT_ID)));
+
+		assertThat(sql).isNotNull();
+		assertThat(sql.getSql()).contains(", fn.M_Product_ID, CAST(? AS numeric)\n FROM MD_Stock_PerWeek_fn(?, ?) fn");
 	}
 
 	@Test
