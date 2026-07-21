@@ -202,6 +202,78 @@ class ProformaOrderAllocServiceTest
 		assertThat(repository.getByOrderId(orderId)).hasSize(1);
 	}
 
+	/**
+	 * A purchase payment term with NO Letter-of-Credit break and TWO non-material-receipt (advance)
+	 * breaks — {@code OD} 10% + {@code Invoice} 90% — must be rejected: allocate throws
+	 * {@code MSG_MultipleAdvanceBreaksUnsupported} and no allocation row is created.
+	 */
+	@Test
+	void allocate_multipleAdvanceBreaksNoLc_throws()
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(1000001);
+		final int currencyId = 318; // EUR
+
+		final PaymentTermId paymentTermId = createMultipleAdvanceBreaksNoLcPaymentTerm();
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(false);
+		order.setC_BPartner_ID(vendorId.getRepoId());
+		order.setC_Currency_ID(currencyId);
+		order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		order.setDocumentNo("PO-multi-advance");
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final IOrderBL orderBL = mock(IOrderBL.class);
+		when(orderBL.getById(orderId)).thenReturn(order);
+		when(orderBL.getEffectiveBillPartnerId(order)).thenReturn(vendorId);
+		Services.registerService(IOrderBL.class, orderBL);
+
+		final InvoiceId invoiceId = createProformaInvoice(vendorId, currencyId);
+
+		assertThatThrownBy(() -> service.allocate(invoiceId, orderId))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("MultipleAdvanceBreaksUnsupported");
+
+		assertThat(repository.getByOrderId(orderId)).isEmpty();
+	}
+
+	/**
+	 * A purchase payment term WITH a single Letter-of-Credit break ({@code BL} 50% + {@code LC} 50%)
+	 * must remain a valid allocation target — confirms the gate rewrite (no-LC handling added) left the
+	 * pre-existing LC allocation leg intact.
+	 */
+	@Test
+	void allocate_singleLcBreak_succeeds()
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(1000002);
+		final int currencyId = 318; // EUR
+
+		final PaymentTermId paymentTermId = createSingleLcPaymentTerm();
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(false);
+		order.setC_BPartner_ID(vendorId.getRepoId());
+		order.setC_Currency_ID(currencyId);
+		order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		order.setDocumentNo("PO-single-lc");
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		final IOrderBL orderBL = mock(IOrderBL.class);
+		when(orderBL.getById(orderId)).thenReturn(order);
+		when(orderBL.getEffectiveBillPartnerId(order)).thenReturn(vendorId);
+		Services.registerService(IOrderBL.class, orderBL);
+
+		final InvoiceId invoiceId = createProformaInvoice(vendorId, currencyId);
+
+		assertThatCode(() -> service.allocate(invoiceId, orderId))
+				.as("allocate must succeed for a payment term with a single LC break")
+				.doesNotThrowAnyException();
+
+		assertThat(repository.getByOrderId(orderId)).hasSize(1);
+	}
+
 	// -----------------------------------------------------------------------
 	// Fixture helpers
 	// -----------------------------------------------------------------------
@@ -255,6 +327,46 @@ class ProformaOrderAllocServiceTest
 
 		createPaymentTermBreak(paymentTermId, ReferenceDateType.OrderDate, 10, 10);
 		createPaymentTermBreak(paymentTermId, ReferenceDateType.BillOfLadingDate, 90, 20);
+
+		return paymentTermId;
+	}
+
+	/**
+	 * No-LC variant with TWO non-material-receipt breaks: {@code OD} 10% (advance) + {@code Invoice} 90%
+	 * (also advance, since only {@code BL}/{@code ETA} count as material-receipt) — no LC, no BL/ETA.
+	 */
+	private PaymentTermId createMultipleAdvanceBreaksNoLcPaymentTerm()
+	{
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("multi-advance-test");
+		paymentTermRecord.setName("Multiple-advance-breaks test payment term");
+		paymentTermRecord.setDiscount(BigDecimal.ZERO);
+		paymentTermRecord.setDiscount2(BigDecimal.ZERO);
+		saveRecord(paymentTermRecord);
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
+
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.OrderDate, 10, 10);
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.InvoiceDate, 90, 20);
+
+		return paymentTermId;
+	}
+
+	/**
+	 * Single-LC variant: {@code BL} 50% (material receipt) + {@code LC} 50% (Letter-of-Credit) — exactly
+	 * one LC break, a valid allocation target.
+	 */
+	private PaymentTermId createSingleLcPaymentTerm()
+	{
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("single-lc-test");
+		paymentTermRecord.setName("Single-LC test payment term");
+		paymentTermRecord.setDiscount(BigDecimal.ZERO);
+		paymentTermRecord.setDiscount2(BigDecimal.ZERO);
+		saveRecord(paymentTermRecord);
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
+
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.BillOfLadingDate, 50, 10);
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.LetterOfCreditDate, 50, 20);
 
 		return paymentTermId;
 	}

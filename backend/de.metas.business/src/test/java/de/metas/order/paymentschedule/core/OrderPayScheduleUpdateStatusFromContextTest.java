@@ -62,6 +62,10 @@ class OrderPayScheduleUpdateStatusFromContextTest
 	private static final LocalDate LC_DATE = LocalDate.of(2026, 2, 1); // LC line's stored value, must stay untouched
 	private static final LocalDate NEW_LC_CONTEXT_DATE = LocalDate.of(2026, 2, 20); // context-only change; must never reach the LC line
 
+	private static final PaymentTermBreakId ETA_BREAK_ID = PaymentTermBreakId.ofRepoId(PT_ID.getRepoId(), 5022);
+	private static final LocalDate OLD_ETA_DATE = LocalDate.of(2026, 4, 1);
+	private static final LocalDate NEW_ETA_DATE = LocalDate.of(2026, 4, 15); // corrected ETA date
+
 	private PaymentTerm newPaymentTerm()
 	{
 		final PaymentTermBreak blBreak = PaymentTermBreak.builder()
@@ -87,6 +91,35 @@ class OrderPayScheduleUpdateStatusFromContextTest
 				.value("pt_bl_lc")
 				.name("pt_bl_lc (BL 50% + LC 50%)")
 				.breaks(ImmutableList.of(blBreak, lcBreak))
+				.paySchedules(ImmutableList.of())
+				.build();
+	}
+
+	private PaymentTerm newPaymentTermWithETA()
+	{
+		final PaymentTermBreak etaBreak = PaymentTermBreak.builder()
+				.id(ETA_BREAK_ID)
+				.referenceDateType(ReferenceDateType.ETADate)
+				.percent(Percent.of("50"))
+				.seqNo(SeqNo.ofInt(10))
+				.offsetDays(0)
+				.build();
+
+		final PaymentTermBreak lcBreak = PaymentTermBreak.builder()
+				.id(LC_BREAK_ID)
+				.referenceDateType(ReferenceDateType.LetterOfCreditDate)
+				.percent(Percent.of("50"))
+				.seqNo(SeqNo.ofInt(20))
+				.offsetDays(0)
+				.build();
+
+		return PaymentTerm.builder()
+				.id(PT_ID)
+				.clientId(ClientId.SYSTEM)
+				.orgId(OrgId.ANY)
+				.value("pt_eta_lc")
+				.name("pt_eta_lc (ETA 50% + LC 50%)")
+				.breaks(ImmutableList.of(etaBreak, lcBreak))
 				.paySchedules(ImmutableList.of())
 				.build();
 	}
@@ -142,6 +175,42 @@ class OrderPayScheduleUpdateStatusFromContextTest
 		assertThat(blLine.isPaid()).isFalse();
 		assertThat(blLine.getDueDate()).as("BL line dueDate refreshed to corrected BL date").isEqualTo(NEW_BL_DATE);
 		assertThat(blLine.getReferenceDate()).isEqualTo(NEW_BL_DATE);
+
+		assertThat(lcLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(lcLine.isPaid()).isFalse();
+		assertThat(lcLine.getDueDate()).as("LC line dueDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
+		assertThat(lcLine.getReferenceDate()).as("LC line referenceDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
+	}
+
+	/**
+	 * Same recompute path as {@link #blLineRefreshed_lcLineUntouched_onBLDateCorrection()}, but for the
+	 * other material-receipt reference type: an unsettled {@code Awaiting_Pay} {@code ETA} line must also
+	 * refresh its due date on an ETA reference-date correction, proving the refresh gate
+	 * ({@code isMaterialReceiptDate()}) covers ETA, not just BL.
+	 */
+	@Test
+	void etaLineRefreshed_onETADateCorrection()
+	{
+		final OrderPayScheduleLine etaLine = newAwaitingPayLine(ETA_BREAK_ID, ReferenceDateType.ETADate, OLD_ETA_DATE);
+		final OrderPayScheduleLine lcLine = newAwaitingPayLine(LC_BREAK_ID, ReferenceDateType.LetterOfCreditDate, LC_DATE);
+
+		final OrderPaySchedule paySchedule = OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(etaLine, lcLine));
+
+		final OrderSchedulingContext context = OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.ETADate(NEW_ETA_DATE) // corrected
+				.letterOfCreditDate(NEW_LC_CONTEXT_DATE) // also changed in the context; must not reach the LC line
+				.grandTotal(Money.of(BigDecimal.valueOf(10000), EUR))
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(newPaymentTermWithETA())
+				.build();
+
+		paySchedule.updateStatusFromContext(context);
+
+		assertThat(etaLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(etaLine.isPaid()).isFalse();
+		assertThat(etaLine.getDueDate()).as("ETA line dueDate refreshed to corrected ETA date").isEqualTo(NEW_ETA_DATE);
+		assertThat(etaLine.getReferenceDate()).isEqualTo(NEW_ETA_DATE);
 
 		assertThat(lcLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
 		assertThat(lcLine.isPaid()).isFalse();
