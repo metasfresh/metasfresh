@@ -4,7 +4,7 @@ import { allure } from 'allure-playwright';
 import { Backend } from '../utils/Backend';
 import { LoginPage } from '../utils/pages/LoginPage';
 import { DashboardPage } from '../utils/pages/DashboardPage';
-import { FRONTEND_BASE_URL, SLOW_ACTION_TIMEOUT } from '../utils/common';
+import { FRONTEND_BASE_URL } from '../utils/common';
 import { STOCK_PER_WEEK_WINDOW_ID } from '../utils/WindowIds';
 
 /**
@@ -47,8 +47,8 @@ test.describe('Stock per Week — product-only filter spans all warehouses', () 
           whB: {},
         },
         salesOrders: {
-          SO_A: { bpartner: 'CUSTOMER1', warehouse: 'whA', lines: [{ product: 'P1', qty: 5 }] },
-          SO_B: { bpartner: 'CUSTOMER1', warehouse: 'whB', lines: [{ product: 'P1', qty: 7 }] },
+          SO_A: { bpartner: 'CUSTOMER1', warehouse: 'whA', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 5 }] },
+          SO_B: { bpartner: 'CUSTOMER1', warehouse: 'whB', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 7 }] },
         },
       },
     });
