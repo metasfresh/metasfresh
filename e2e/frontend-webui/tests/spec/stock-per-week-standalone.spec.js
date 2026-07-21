@@ -229,19 +229,25 @@ test.describe('Stock per Week — product-only filter spans all warehouses', () 
       const filterToggle = page.locator('.filters-not-frequent button.toggle-filters').first();
       await filterToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
       await filterToggle.click();
-      await page.locator('.filter-menu.filter-widget').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      const filterPanel = page.locator('.filter-menu.filter-widget');
+      await filterPanel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-      // 2) type the product name into the Product lookup and pick the exact option (option-<M_Product_ID>)
-      const prodInput = page.locator('.form-field-M_Product_ID input.input-field').first();
+      // 2) type the product name into the Product lookup (scoped to the panel) and pick the exact option
+      //    (option-<M_Product_ID>). Gate on the option becoming visible rather than a fixed sleep — the
+      //    lookup typeahead is async and can be slower than a flat timeout under CI load. Selecting by
+      //    exact M_Product_ID (not caption text) avoids picking a stale same-named product, since this
+      //    test seeds real masterdata with no teardown.
+      const prodInput = filterPanel.locator('.form-field-M_Product_ID input.input-field').first();
       await prodInput.click();
       await prodInput.fill(String(productName));
-      await page.waitForTimeout(1500); // lookup debounce + options fetch
-      await page.locator(`.input-dropdown-list [data-testid="option-${productId}"]`)
-        .first()
-        .click({ timeout: SLOW_ACTION_TIMEOUT });
+      const productOption = page
+        .locator(`.input-dropdown-list [data-testid="option-${productId}"]`)
+        .first();
+      await productOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await productOption.click();
 
       // 3) apply the product-only filter
-      await page.getByTestId('filter-apply-button').click();
+      await filterPanel.getByTestId('filter-apply-button').click();
       await page.waitForTimeout(3000);
       await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
 
