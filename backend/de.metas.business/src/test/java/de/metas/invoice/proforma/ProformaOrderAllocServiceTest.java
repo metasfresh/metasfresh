@@ -22,30 +22,39 @@
 
 package de.metas.invoice.proforma;
 
+import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.order.paymentschedule.steps.letter_of_credit.OrderPayScheduleLCStepService;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.PaymentTermService;
+import de.metas.payment.paymentterm.ReferenceDateType;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_C_PaymentTerm;
+import org.compiere.model.I_C_PaymentTerm_Break;
 import org.compiere.model.I_C_Proforma_Order_Alloc;
+import org.compiere.model.X_C_DocType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -151,6 +160,47 @@ class ProformaOrderAllocServiceTest
 		assertThat(repository.getByInvoiceId(invoiceId)).hasSize(2);
 	}
 
+	/**
+	 * US01: a purchase payment term with NO Letter-of-Credit break — only an {@code OD}
+	 * (order-date/advance) break and a {@code BL} (bill-of-lading/material-receipt) break — must be
+	 * a valid allocation target. Today {@link ProformaOrderAllocateCommand#validate} hard-rejects any
+	 * payment term with zero LC breaks via {@code MSG_NoLCBreakInOrder}, so this is expected to FAIL
+	 * (RED) until the production gate is generalized in a later task.
+	 */
+	@Test
+	void allocate_noLcBreak_succeeds()
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(1000000);
+		final int currencyId = 318; // EUR
+
+		final PaymentTermId paymentTermId = createNoLcPaymentTerm();
+
+		final I_C_Order order = newInstance(I_C_Order.class);
+		order.setIsSOTrx(false);
+		order.setC_BPartner_ID(vendorId.getRepoId());
+		order.setC_Currency_ID(currencyId);
+		order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		order.setDocumentNo("PO-no-lc");
+		saveRecord(order);
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+
+		// Override the class-level IOrderBL mock (registered in beforeEach for the deallocate-guard path only)
+		// with stubs matching THIS order/vendor, so validate() sees the real fixture instead of the generic stub.
+		final IOrderBL orderBL = mock(IOrderBL.class);
+		when(orderBL.getById(orderId)).thenReturn(order);
+		when(orderBL.getEffectiveBillPartnerId(order)).thenReturn(vendorId);
+		Services.registerService(IOrderBL.class, orderBL);
+
+		final InvoiceId invoiceId = createProformaInvoice(vendorId, currencyId);
+
+		// US01: no-LC payment terms are a valid allocation target — must NOT throw MSG_NoLCBreakInOrder.
+		assertThatCode(() -> service.allocate(invoiceId, orderId))
+				.as("US01: allocate must succeed for a no-LC (OD+BL only) payment term")
+				.doesNotThrowAnyException();
+
+		assertThat(repository.getByOrderId(orderId)).hasSize(1);
+	}
+
 	// -----------------------------------------------------------------------
 	// Fixture helpers
 	// -----------------------------------------------------------------------
@@ -167,6 +217,60 @@ class ProformaOrderAllocServiceTest
 		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
 		saveRecord(invoice);
 		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+	}
+
+	/**
+	 * Purchase-proforma-invoice (APF) variant of {@link #createProformaInvoice()} — sets the
+	 * {@code C_DocType} (DocBaseType=APF) plus vendor/currency, needed to pass
+	 * {@code ProformaOrderAllocateCommand.validate}'s {@code isPurchaseProforma}/currency/vendor checks.
+	 */
+	private InvoiceId createProformaInvoice(final BPartnerId vendorId, final int currencyId)
+	{
+		final I_C_DocType docType = newInstance(I_C_DocType.class);
+		docType.setDocBaseType(X_C_DocType.DOCBASETYPE_APProFormaInvoice);
+		saveRecord(docType);
+
+		final I_C_Invoice invoice = newInstance(I_C_Invoice.class);
+		invoice.setC_DocType_ID(docType.getC_DocType_ID());
+		invoice.setC_BPartner_ID(vendorId.getRepoId());
+		invoice.setC_Currency_ID(currencyId);
+		saveRecord(invoice);
+		return InvoiceId.ofRepoId(invoice.getC_Invoice_ID());
+	}
+
+	/**
+	 * OrderDate/no-LC variant of a payment term: two breaks, {@code OD} 10% (advance) + {@code BL} 90%
+	 * (material receipt) — no Letter-of-Credit break at all.
+	 */
+	private PaymentTermId createNoLcPaymentTerm()
+	{
+		final I_C_PaymentTerm paymentTermRecord = newInstance(I_C_PaymentTerm.class);
+		paymentTermRecord.setValue("no-lc-test");
+		paymentTermRecord.setName("No-LC test payment term");
+		paymentTermRecord.setDiscount(BigDecimal.ZERO);
+		paymentTermRecord.setDiscount2(BigDecimal.ZERO);
+		saveRecord(paymentTermRecord);
+		final PaymentTermId paymentTermId = PaymentTermId.ofRepoId(paymentTermRecord.getC_PaymentTerm_ID());
+
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.OrderDate, 10, 10);
+		createPaymentTermBreak(paymentTermId, ReferenceDateType.BillOfLadingDate, 90, 20);
+
+		return paymentTermId;
+	}
+
+	private void createPaymentTermBreak(
+			final PaymentTermId paymentTermId,
+			final ReferenceDateType referenceDateType,
+			final int percent,
+			final int seqNo)
+	{
+		final I_C_PaymentTerm_Break breakRecord = newInstance(I_C_PaymentTerm_Break.class);
+		breakRecord.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		breakRecord.setReferenceDateType(referenceDateType.getCode());
+		breakRecord.setPercent(percent);
+		breakRecord.setSeqNo(seqNo);
+		breakRecord.setOffsetDays(0);
+		saveRecord(breakRecord);
 	}
 
 	private void createAlloc(final InvoiceId invoiceId, final OrderId orderId)
