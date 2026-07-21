@@ -49,8 +49,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -169,8 +169,8 @@ class ExternalSystemScriptedImportConversionServiceTest
 		endpointRecord.setValue("eddyson-sftp");
 		endpointRecord.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_SFTP);
 		endpointRecord.setSftpPollingIntervalMs(30000);
-		endpointRecord.setSftpProcessedDirectory("/inbound/processed");
-		endpointRecord.setSftpErrorDirectory("/inbound/error");
+		endpointRecord.setProcessedDirectory("/inbound/processed");
+		endpointRecord.setErrorDirectory("/inbound/error");
 		endpointRecord.setIsArrayFanOut(false);
 		saveRecord(endpointRecord);
 
@@ -188,8 +188,8 @@ class ExternalSystemScriptedImportConversionServiceTest
 
 		// then: the poll interval + processed/error directories are sourced from the endpoint
 		assertThat(parameters.get(PARAM_SFTP_POLLING_INTERVAL_MS)).isEqualTo("30000");
-		assertThat(parameters.get(PARAM_SFTP_POLLING_PROCESSED_DIR)).isEqualTo("/inbound/processed");
-		assertThat(parameters.get(PARAM_SFTP_POLLING_ERROR_DIR)).isEqualTo("/inbound/error");
+		assertThat(parameters.get(PARAM_PROCESSED_DIR)).isEqualTo("/inbound/processed");
+		assertThat(parameters.get(PARAM_ERROR_DIR)).isEqualTo("/inbound/error");
 	}
 
 	@Test

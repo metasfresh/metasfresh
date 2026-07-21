@@ -51,9 +51,9 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PRIVATE_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERROR_DIR;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIR;
 
 @Service
 @RequiredArgsConstructor
@@ -151,13 +151,13 @@ public class ExternalSystemScriptedImportConversionService
 			{
 				parameters.put(PARAM_SFTP_POLLING_INTERVAL_MS, String.valueOf(endpoint.getSftpPollingIntervalMs()));
 			}
-			if (endpoint.getSftpProcessedDirectory() != null)
+			if (endpoint.getProcessedDirectory() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_PROCESSED_DIR, endpoint.getSftpProcessedDirectory());
+				parameters.put(PARAM_PROCESSED_DIR, endpoint.getProcessedDirectory());
 			}
-			if (endpoint.getSftpErrorDirectory() != null)
+			if (endpoint.getErrorDirectory() != null)
 			{
-				parameters.put(PARAM_SFTP_POLLING_ERROR_DIR, endpoint.getSftpErrorDirectory());
+				parameters.put(PARAM_ERROR_DIR, endpoint.getErrorDirectory());
 			}
 		}
 

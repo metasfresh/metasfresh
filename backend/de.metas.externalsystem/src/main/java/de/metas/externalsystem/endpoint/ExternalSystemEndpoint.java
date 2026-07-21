@@ -79,12 +79,13 @@ public class ExternalSystemEndpoint
 
 	@Nullable String sftpFilenamePattern;
 
-	// SFTP inbound-polling settings (poll interval + processed/error directories).
+	// SFTP inbound-polling settings (poll interval -- SFTP-only).
 	@Nullable Integer sftpPollingIntervalMs;
 
-	@Nullable String sftpProcessedDirectory;
+	// Local, transport-agnostic archive folders (used by both SFTP and REST import).
+	@Nullable String processedDirectory;
 
-	@Nullable String sftpErrorDirectory;
+	@Nullable String errorDirectory;
 
 	/**
 	 * If TRUE and the upstream scripted-adapter conversion returns a JSON array, the downstream

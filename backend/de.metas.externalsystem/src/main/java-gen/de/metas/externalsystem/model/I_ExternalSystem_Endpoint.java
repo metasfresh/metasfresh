@@ -73,6 +73,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Authentication Type.
+	 * Authentication method for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -82,6 +83,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Authentication Type.
+	 * Authentication method for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -94,6 +96,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Client ID.
+	 * Client ID for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -103,6 +106,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Client ID.
+	 * Client ID for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -115,6 +119,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Client Secret.
+	 * Client secret for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -124,6 +129,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Client Secret.
+	 * Client secret for OAuth authentication of outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -200,6 +206,29 @@ public interface I_ExternalSystem_Endpoint
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_Description = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Error Directory.
+	 * Local directory where failed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setErrorDirectory (@Nullable java.lang.String ErrorDirectory);
+
+	/**
+	 * Get Error Directory.
+	 * Local directory where failed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getErrorDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ErrorDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ErrorDirectory", null);
+	String COLUMNNAME_ErrorDirectory = "ErrorDirectory";
 
 	/**
 	 * Set ExternalSystem Endpoint.
@@ -314,7 +343,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Set Outbound HTTP Method.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
+	 * HTTP method to use when sending data (e.g. POST, PUT) (export only)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -324,7 +353,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get Outbound HTTP Method.
-	 * HTTP method to use when sending data (e.g. POST, PUT)
+	 * HTTP method to use when sending data (e.g. POST, PUT) (export only)
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -359,7 +388,31 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_Password = "Password";
 
 	/**
+	 * Set Processed Directory.
+	 * Local directory where successfully processed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProcessedDirectory (@Nullable java.lang.String ProcessedDirectory);
+
+	/**
+	 * Get Processed Directory.
+	 * Local directory where successfully processed payloads are archived (SFTP and REST import).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProcessedDirectory();
+
+	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_ProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "ProcessedDirectory", null);
+	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
+
+	/**
 	 * Set SAS-Signature.
+	 * SAS (Shared Access Signature) for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -369,6 +422,7 @@ public interface I_ExternalSystem_Endpoint
 
 	/**
 	 * Get SAS-Signature.
+	 * SAS (Shared Access Signature) for outbound HTTP calls (export only).
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -403,29 +457,6 @@ public interface I_ExternalSystem_Endpoint
 	String COLUMNNAME_SftpAuthType = "SftpAuthType";
 
 	/**
-	 * Set SFTP Error Directory.
-	 * Remote directory to move files that failed processing to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpErrorDirectory (@Nullable java.lang.String SftpErrorDirectory);
-
-	/**
-	 * Get SFTP Error Directory.
-	 * Remote directory to move files that failed processing to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpErrorDirectory();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpErrorDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpErrorDirectory", null);
-	String COLUMNNAME_SftpErrorDirectory = "SftpErrorDirectory";
-
-	/**
 	 * Set SFTP Filename Pattern.
 	 * Pattern for outbound filenames. Placeholders: 
 {
@@ -445,7 +476,7 @@ documentno}
 _
 {
 timestamp}
-.json
+.json (export only)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -473,7 +504,7 @@ documentno}
 _
 {
 timestamp}
-.json
+.json (export only)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -509,7 +540,7 @@ timestamp}
 
 	/**
 	 * Set SFTP Polling Interval (ms).
-	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute) (import only)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -519,7 +550,7 @@ timestamp}
 
 	/**
 	 * Get SFTP Polling Interval (ms).
-	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute)
+	 * How often to check the SFTP server for new files, in milliseconds (default: 60000 = 1 minute) (import only)
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -552,29 +583,6 @@ timestamp}
 
 	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpPort = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpPort", null);
 	String COLUMNNAME_SftpPort = "SftpPort";
-
-	/**
-	 * Set SFTP Processed Directory.
-	 * Remote directory to move successfully processed files to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSftpProcessedDirectory (@Nullable java.lang.String SftpProcessedDirectory);
-
-	/**
-	 * Get SFTP Processed Directory.
-	 * Remote directory to move successfully processed files to
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSftpProcessedDirectory();
-
-	ModelColumn<I_ExternalSystem_Endpoint, Object> COLUMN_SftpProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Endpoint.class, "SftpProcessedDirectory", null);
-	String COLUMNNAME_SftpProcessedDirectory = "SftpProcessedDirectory";
 
 	/**
 	 * Set SFTP Remote Path.

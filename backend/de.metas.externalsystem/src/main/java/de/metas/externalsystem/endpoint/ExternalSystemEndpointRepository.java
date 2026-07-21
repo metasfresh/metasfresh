@@ -85,8 +85,8 @@ public class ExternalSystemEndpointRepository
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
 				.sftpPollingIntervalMs(endpointRecord.getSftpPollingIntervalMs() > 0 ? endpointRecord.getSftpPollingIntervalMs() : null)
-				.sftpProcessedDirectory(endpointRecord.getSftpProcessedDirectory())
-				.sftpErrorDirectory(endpointRecord.getSftpErrorDirectory())
+				.processedDirectory(endpointRecord.getProcessedDirectory())
+				.errorDirectory(endpointRecord.getErrorDirectory())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
 				.build();
 	}

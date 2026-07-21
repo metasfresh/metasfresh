@@ -411,8 +411,8 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, "PASSWORD");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "inbound");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "500");
-		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR, ".done");
-		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR, ".error");
+		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, ".done");
+		params.put(ExternalSystemConstants.PARAM_ERROR_DIR, ".error");
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of("ScriptedImportConversion"))

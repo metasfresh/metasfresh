@@ -155,8 +155,8 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		}
 		final String sftpRemotePath = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "/");
 		final String pollingIntervalMs = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "60000");
-		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_PROCESSED_DIR, ".done");
-		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ERROR_DIR, ".error");
+		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, ".done");
+		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, ".error");
 
 		// Build SFTP URI
 		final StringBuilder sftpUri = new StringBuilder();
