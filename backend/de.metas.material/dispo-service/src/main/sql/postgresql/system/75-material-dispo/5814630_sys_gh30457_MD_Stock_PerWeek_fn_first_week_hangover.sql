@@ -1,16 +1,9 @@
--- Function MD_Stock_PerWeek_fn — parameterized companion of MD_Stock_PerWeek_V (F19100
--- "Bestand pro Woche" / stock per week).
---
--- Same output shape/semantics as MD_Stock_PerWeek_V (see MD_Stock_PerWeek_V.sql for the full
--- column documentation), but the M_Product_ID / M_Warehouse_ID filter is pushed INTO the base
--- MD_Candidate scan instead of being applied after the view fully materializes. This lets the
--- planner use the partial index md_candidate_perweek_pw_idx (M_Product_ID, M_Warehouse_ID)
--- to answer a filtered "stock per week for this product/warehouse" read directly from the
--- index, instead of scanning/building the entire MD_Stock_PerWeek_V for every product and
--- warehouse and then throwing most of it away.
---
--- NULL parameters degrade to "no filter on that dimension" (fn(NULL, NULL) ~= the full view).
--- Output is byte-identical to MD_Stock_PerWeek_V for the same filter.
+-- MD_Stock_PerWeek_fn: stop double-showing overdue backlog in the first week.
+-- Overdue shipments/receipts (projected before the current week) are no longer rolled into the current
+-- week's Expected Shipments / Receipts columns (movement columns now bucket by the candidate's actual
+-- week). The backlog stays reflected in QtyATPBegin, which is the projected running balance and already
+-- accounts for it -- so it is shown once (in ATP), not twice. QtyATPBegin itself is unchanged. The view
+-- MD_Stock_PerWeek_V is fn(NULL,NULL) and inherits this behavior.
 
 CREATE OR REPLACE FUNCTION MD_Stock_PerWeek_fn(
     p_product_id   numeric DEFAULT NULL,   -- NULL = no product filter (degrades to full view)

@@ -114,8 +114,8 @@ class StockPerWeekSelectionFactoryTest
 		// sourced from the function; product is the 1st fn param, warehouse (2nd) is NULL = all warehouses
 		assertThat(sqlText).contains("MD_Stock_PerWeek_fn(?, ?) fn");
 		assertThat(sql.getSqlParams()).containsSubsequence(PRODUCT_ID, null);
-		// product persisted into IntKey2 (what readAppliedFilter reads to route the page render through the fn)
-		assertThat(sqlText).contains(", fn.M_Product_ID, fn.M_Warehouse_ID");
+		// product persisted into IntKey2; IntKey3 = the (null, zoom) warehouse filter param -> render sources fn(product, NULL)
+		assertThat(sqlText).contains(", fn.M_Product_ID, CAST(? AS numeric)\n FROM MD_Stock_PerWeek_fn(?, ?) fn");
 		// the clause's residual warehouse-resolution + week floor are applied against the fn output, not dropped
 		assertThat(sqlText).contains("MD_getStockWarehouse");
 		assertThat(sqlText).contains("WeekStartDate >=");
@@ -146,6 +146,19 @@ class StockPerWeekSelectionFactoryTest
 		assertThat(sql.getSql()).contains("MD_Stock_PerWeek_fn(?, ?) fn");
 		assertThat(sql.getSqlParams()).containsSubsequence(PRODUCT_ID, warehouseId);
 		assertThat(sql.getSql()).doesNotContain("\n AND (\n"); // direct facet => no residual WHERE
+	}
+
+	@Test
+	void productOnlyFacet_persistsNullWarehouseFilter_soRenderSpansAllWarehouses()
+	{
+		// A product-only selection legitimately spans several warehouses. IntKey3 must persist the (null)
+		// warehouse FILTER -- NOT the per-row fn.M_Warehouse_ID -- so readAppliedFilter re-parameterizes the
+		// page render as fn(product, NULL) and the page's join to the selection restores every warehouse.
+		// Persisting the per-row warehouse collapsed a product-only grid to a single warehouse.
+		final SqlAndParams sql = buildSql(DocumentFilterList.of(DocumentFilter.equalsFilter("M_Product_ID", PRODUCT_ID)));
+
+		assertThat(sql).isNotNull();
+		assertThat(sql.getSql()).contains(", fn.M_Product_ID, CAST(? AS numeric)\n FROM MD_Stock_PerWeek_fn(?, ?) fn");
 	}
 
 	@Test
