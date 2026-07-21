@@ -104,9 +104,16 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.routeId(ERROR_SEND_LOG_MESSAGE)
 				.log("Route invoked")
 
-				.process(this::prepareErrorLogMessage)
-
-				.to(direct(MF_LOG_MESSAGE_ROUTE_ID));
+				.choice()
+					.when(header(HEADER_PINSTANCE_ID).isNull())
+						// no PInstanceId to attach the log message to (e.g. a continuous polling consumer never sets one) ->
+						// degrade gracefully instead of throwing, which would mask the actual error being reported
+						.process(this::logErrorWithoutPInstance)
+						.log(LoggingLevel.WARN, "${body}")
+					.otherwise()
+						.process(this::prepareErrorLogMessage)
+						.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
+				.end();
 		//@formatter:on
 	}
 
@@ -177,6 +184,13 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		{
 			return Optional.empty();
 		}
+	}
+
+	private void logErrorWithoutPInstance(@NonNull final Exchange exchange)
+	{
+		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
+
+		exchange.getIn().setBody("No PInstanceId available; reporting error without pInstance linkage. Error: " + errorItem);
 	}
 
 	private void prepareErrorLogMessage(@NonNull final Exchange exchange)
