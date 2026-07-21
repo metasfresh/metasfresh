@@ -44,6 +44,7 @@ import java.util.Optional;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.EXCEPTION_PREFIX;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Slf4j
@@ -58,11 +59,22 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends RouteBuilde
 	@NonNull private final JavaScriptExecutorService javaScriptExecutorService;
 	@NonNull private final ProducerTemplate producerTemplate;
 
+	/** LOCAL, transport-agnostic archive folder for the payload on success. Never a remote path. */
+	@NonNull private final String processedDir;
+	/** LOCAL, transport-agnostic archive folder for the payload on failure. Never a remote path. */
+	@NonNull private final String errorDir;
+
 	@Override
 	public void configure()
 	{
 		errorHandler(defaultErrorHandler());
+		// handled(true): the remote file is consumed (deleted, via the sftpUri's delete=true option)
+		// regardless of whether the transform succeeds or fails — marking the exception handled here
+		// keeps Camel's file-consumer "commit" path (which performs the delete) on the failure path too,
+		// instead of leaving the file in place to be re-polled forever.
 		onException(Exception.class)
+				.handled(true)
+				.process(this::archiveLocallyOnError)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
 		//@formatter:off
@@ -71,6 +83,7 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends RouteBuilde
 				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.log("SFTP file received: ${header.CamelFileName}")
 				.convertBodyTo(String.class)
+				.setProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, body())
 				.process(new ScriptedImportConversionProcessor(javaScriptExecutorService, scriptIdentifier, javaScriptRepo))
 				.choice()
 					.when(body().isNull())
@@ -81,8 +94,34 @@ public class ScriptedImportConversionSftpDynamicRouteBuilder extends RouteBuilde
 							.process(this::handleItemInList)
 						.end()
 					.endChoice()
-				.end();
+				.end()
+				.process(this::archiveLocallyOnSuccess);
 		//@formatter:on
+	}
+
+	private void archiveLocallyOnSuccess(@NonNull final Exchange exchange)
+	{
+		archiveLocally(exchange, processedDir);
+	}
+
+	private void archiveLocallyOnError(@NonNull final Exchange exchange)
+	{
+		archiveLocally(exchange, errorDir);
+	}
+
+	private void archiveLocally(@NonNull final Exchange exchange, @NonNull final String directory)
+	{
+		final String payload = exchange.getProperty(PROPERTY_SCRIPTED_IMPORT_ORIGINAL_PAYLOAD, String.class);
+		if (payload == null)
+		{
+			// nothing was ever read from the remote file (failure occurred before the body was captured)
+			return;
+		}
+
+		final String fileName = Optional.ofNullable(exchange.getIn().getHeader(Exchange.FILE_NAME, String.class))
+				.orElseGet(() -> endpointName + "_" + System.currentTimeMillis());
+
+		ScriptedImportConversionLocalArchiver.archive(directory, fileName, payload);
 	}
 
 	private void handleItemInList(@NonNull final Exchange exchange)

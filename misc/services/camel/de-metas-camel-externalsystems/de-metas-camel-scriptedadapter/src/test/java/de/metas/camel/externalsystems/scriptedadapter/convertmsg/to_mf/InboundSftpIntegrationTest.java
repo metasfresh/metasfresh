@@ -57,19 +57,23 @@ import static org.assertj.core.api.Assertions.assertThat;
  * End-to-end integration test for inbound SFTP polling via the scripted adapter.
  * <p>
  * Starts an embedded SFTP server, drops a test file into /inbound, enables the SFTP polling route,
- * waits for the file to be picked up and processed, then verifies it was moved to .done.
- * Finally disables the route and verifies clean shutdown.
+ * waits for the file to be picked up and processed, then verifies the remote file was CONSUMED
+ * (deleted — no remote mkdir, no remote {@code .done}/{@code .error} move) and the payload archived to a
+ * LOCAL processed/error folder. Finally disables the route and verifies clean shutdown.
  * <p>
  * Covers three scenarios:
  * <ul>
- *     <li>{@link #sftpFilePolledAndMovedToDone()} — a trivial (no-op) JavaScript transform that returns
- *     an empty array, focused on verifying the plain SFTP file lifecycle (pick up + move to .done).</li>
- *     <li>{@link #sftpFileWithOlCandTransformDispatchedToOlCandRouteAndMovedToDone()} — a real JavaScript
- *     transform that parses the input file and emits an order-line-candidate item, verifying the item is
- *     actually dispatched to the OLCand route and the source file is moved to .done.</li>
- *     <li>{@link #malformedSftpFileMovedToError()} — a malformed input file that makes the same real
- *     transform throw, verifying the file is moved to .error instead of being silently lost, and that
- *     nothing is dispatched to the OLCand route.</li>
+ *     <li>{@link #sftpFilePolledConsumedAndArchivedLocally()} — a trivial (no-op) JavaScript transform
+ *     that returns an empty array, focused on verifying the plain SFTP file lifecycle (consume by
+ *     delete + local archive).</li>
+ *     <li>{@link #sftpFileWithOlCandTransformConsumedArchivedLocallyAndDispatchedToOlCandRoute()} — a real
+ *     JavaScript transform that parses the input file and emits an order-line-candidate item, verifying
+ *     the item is actually dispatched to the OLCand route and the source file is consumed + archived
+ *     locally.</li>
+ *     <li>{@link #malformedSftpFileConsumedAndArchivedToLocalErrorDir()} — a malformed input file that
+ *     makes the same real transform throw, verifying the remote file is still consumed (deleted) and the
+ *     payload archived to the LOCAL error folder instead of being silently lost, and that nothing is
+ *     dispatched to the OLCand route.</li>
  * </ul>
  * The {@link ProducerTemplate} used by the routes under test is a real one (bound to this test's
  * {@link #context}), so that a dispatch to the OLCand route id ({@value ExternalSystemCamelConstants#MF_PUSH_OL_CANDIDATES_ROUTE_ID})
@@ -106,6 +110,14 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@TempDir
 	Path scriptRepoDir;
 
+	/** LOCAL processed-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	@TempDir
+	Path localProcessedDir;
+
+	/** LOCAL error-folder archive target (never a remote dir — see AC5 runtime-fixes refinement). */
+	@TempDir
+	Path localErrorDir;
+
 	private EmbeddedSftpServer sftpServer;
 
 	@BeforeEach
@@ -116,10 +128,9 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 				"metasfresh.scriptedadapter.repo.baseDir",
 				scriptRepoDir.toAbsolutePath().toString());
 
-		// Create SFTP directories
+		// Create the SFTP inbound directory. No remote .done/.error subdirs — the remote file is
+		// consumed by delete, never moved to a remote folder (see class javadoc).
 		Files.createDirectories(sftpRootDir.resolve("inbound"));
-		Files.createDirectories(sftpRootDir.resolve("inbound/.done"));
-		Files.createDirectories(sftpRootDir.resolve("inbound/.error"));
 
 		// Create a trivial JS script that returns an empty array (no API calls to dispatch)
 		final String noopScript = "function transform(messageToMetasfresh) {\n"
@@ -218,7 +229,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	}
 
 	@Test
-	void sftpFilePolledAndMovedToDone() throws Exception
+	void sftpFilePolledConsumedAndArchivedLocally() throws Exception
 	{
 		// Arrange: intercept the external status endpoint and the error route so they don't fail
 		interceptExternalStatusEndpoints();
@@ -240,18 +251,25 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// The dynamic route should now be registered
 		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
 
-		// Wait for the file to be polled and moved to .done (up to 10 seconds)
-		final Path doneFile = sftpRootDir.resolve("inbound/.done").resolve(TEST_FILE_NAME);
-		final boolean fileMovedToDone = waitForCondition(() -> Files.exists(doneFile), 10_000, 250);
-		assertThat(fileMovedToDone)
-				.as("File should be moved from /inbound to /inbound/.done within 10 seconds")
+		// Wait for the payload to be archived to the LOCAL processed folder (up to 10 seconds)
+		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
+		final boolean archivedLocally = waitForCondition(() -> Files.exists(localDoneFile), 10_000, 250);
+		assertThat(archivedLocally)
+				.as("Payload should be archived to the LOCAL processed folder within 10 seconds")
 				.isTrue();
 
-		// The original file should no longer be in /inbound
+		// The remote file must be CONSUMED (deleted) — never moved to a remote .done folder
 		assertThat(inboundFile).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
-		// The .done file content should match what we placed
-		assertThat(Files.readString(doneFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+		// The locally-archived file content should match what we placed
+		assertThat(Files.readString(localDoneFile, StandardCharsets.UTF_8)).isEqualTo(TEST_FILE_CONTENT);
+
+		// Nothing should have landed in the local error folder
+		try (var files = Files.list(localErrorDir))
+		{
+			assertThat(files.findAny()).isEmpty();
+		}
 
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
@@ -262,7 +280,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	}
 
 	@Test
-	void sftpFileWithOlCandTransformDispatchedToOlCandRouteAndMovedToDone() throws Exception
+	void sftpFileWithOlCandTransformConsumedArchivedLocallyAndDispatchedToOlCandRoute() throws Exception
 	{
 		// Arrange: intercept the external status endpoint, the error route, and register a dummy
 		// destination for the OLCand route id so the dispatch has somewhere real to land.
@@ -285,13 +303,16 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
 		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
 
-		// Wait for the file to be polled and moved to .done (up to 10 seconds)
-		final Path doneFile = sftpRootDir.resolve("inbound/.done").resolve(TEST_FILE_NAME);
-		final boolean fileMovedToDone = waitForCondition(() -> Files.exists(doneFile), 10_000, 250);
-		assertThat(fileMovedToDone)
-				.as("File should be moved from /inbound to /inbound/.done within 10 seconds")
+		// Wait for the payload to be archived to the LOCAL processed folder (up to 10 seconds)
+		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
+		final boolean archivedLocally = waitForCondition(() -> Files.exists(localDoneFile), 10_000, 250);
+		assertThat(archivedLocally)
+				.as("Payload should be archived to the LOCAL processed folder within 10 seconds")
 				.isTrue();
+
+		// The remote file must be CONSUMED (deleted) — never moved to a remote .done folder
 		assertThat(inboundFile).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
 
 		// Then: the item produced by the real transform was actually dispatched to the OLCand route
 		olCandMockEndpoint.assertIsSatisfied(10_000);
@@ -307,7 +328,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	}
 
 	@Test
-	void malformedSftpFileMovedToError() throws Exception
+	void malformedSftpFileConsumedAndArchivedToLocalErrorDir() throws Exception
 	{
 		// Arrange: same setup as the successful OLCand-dispatch test, but the input file will make the
 		// real transform throw (JSON.parse on invalid JSON), so nothing should ever reach the OLCand route.
@@ -330,17 +351,23 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
 		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
 
-		// Wait for the file to be moved to .error (up to 10 seconds) — it must not be silently lost
-		final Path errorFile = sftpRootDir.resolve("inbound/.error").resolve(MALFORMED_TEST_FILE_NAME);
-		final boolean fileMovedToError = waitForCondition(() -> Files.exists(errorFile), 10_000, 250);
-		assertThat(fileMovedToError)
-				.as("Malformed file should be moved from /inbound to /inbound/.error within 10 seconds")
+		// Wait for the payload to be archived to the LOCAL error folder (up to 10 seconds) — it must
+		// not be silently lost
+		final Path localErrorFile = localErrorDir.resolve(MALFORMED_TEST_FILE_NAME);
+		final boolean archivedLocally = waitForCondition(() -> Files.exists(localErrorFile), 10_000, 250);
+		assertThat(archivedLocally)
+				.as("Malformed payload should be archived to the LOCAL error folder within 10 seconds")
 				.isTrue();
+		assertThat(Files.readString(localErrorFile, StandardCharsets.UTF_8)).isEqualTo(MALFORMED_TEST_FILE_CONTENT);
 
-		// The original file should no longer be in /inbound, and it must not have ended up in .done
+		// The remote file must still be CONSUMED (deleted) — never left in place, never moved remotely
 		assertThat(inboundFile).doesNotExist();
-		final Path doneFile = sftpRootDir.resolve("inbound/.done").resolve(MALFORMED_TEST_FILE_NAME);
-		assertThat(doneFile).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.done")).doesNotExist();
+		assertThat(sftpRootDir.resolve("inbound/.error")).doesNotExist();
+
+		// It must not have ended up in the local processed folder either
+		final Path localDoneFile = localProcessedDir.resolve(MALFORMED_TEST_FILE_NAME);
+		assertThat(localDoneFile).doesNotExist();
 
 		// Nothing should have been dispatched to the OLCand route
 		olCandMockEndpoint.assertIsSatisfied(2_000);
@@ -411,8 +438,9 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, "PASSWORD");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "inbound");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "500");
-		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, ".done");
-		params.put(ExternalSystemConstants.PARAM_ERROR_DIR, ".error");
+		// LOCAL, transport-agnostic archive folders (never remote — see class javadoc)
+		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, localProcessedDir.toAbsolutePath().toString());
+		params.put(ExternalSystemConstants.PARAM_ERROR_DIR, localErrorDir.toAbsolutePath().toString());
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of("ScriptedImportConversion"))

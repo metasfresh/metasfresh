@@ -50,6 +50,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_ERROR_DIR;
+import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.DEFAULT_LOCAL_PROCESSED_DIR;
 import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterConstants.SCRIPTED_IMPORT_CONVERSION_SYSTEM_NAME;
 import static de.metas.camel.externalsystems.scriptedadapter.convertmsg.from_mf.ScriptedAdapterConvertMsgFromMFRouteBuilder.PROPERTY_SCRIPTING_REPO_BASE_DIR;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -155,8 +157,10 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		}
 		final String sftpRemotePath = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "/");
 		final String pollingIntervalMs = params.getOrDefault(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "60000");
-		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, ".done");
-		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, ".error");
+		// LOCAL, transport-agnostic archive folders (never remote — the remote file is consumed by
+		// delete, see below). Default to a container path when the endpoint's dir fields are unset.
+		final String processedDir = params.getOrDefault(ExternalSystemConstants.PARAM_PROCESSED_DIR, DEFAULT_LOCAL_PROCESSED_DIR);
+		final String errorDir = params.getOrDefault(ExternalSystemConstants.PARAM_ERROR_DIR, DEFAULT_LOCAL_ERROR_DIR);
 
 		// Build SFTP URI
 		final StringBuilder sftpUri = new StringBuilder();
@@ -186,8 +190,11 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		}
 
 		sftpUri.append("&delay=").append(pollingIntervalMs);
-		sftpUri.append("&move=").append(processedDir);
-		sftpUri.append("&moveFailed=").append(errorDir);
+		// Consume the remote file by DELETE (never a remote move/mkdir) — no remote .done/.error
+		// folders. The payload is instead archived to the LOCAL processedDir/errorDir below (see
+		// ScriptedImportConversionSftpDynamicRouteBuilder, whose onException is handled(true) so this
+		// delete still applies even when the transform fails).
+		sftpUri.append("&delete=true");
 		sftpUri.append("&stepwise=false");
 		sftpUri.append("&disconnect=true");
 		// NOTE: Host key verification is disabled for convenience. Consider making this configurable for production use.
@@ -199,7 +206,8 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
 				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
-				endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate));
+				endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
+				processedDir, errorDir));
 
 		getCamelContext().getRouteController().startRoute(endpointName);
 		log.info("Dynamic SFTP polling route '{}' started successfully.", endpointName);
