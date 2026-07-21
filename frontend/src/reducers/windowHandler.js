@@ -350,6 +350,36 @@ const updateIndicatorToState = ({ windowHandler, indicator, isModal }) => {
   });
 };
 
+/**
+ * A "relevant" save error is a server-side rejection of a save that was actually attempted
+ * on a complete, individually-valid document — a business rule / unique-index collision. Those
+ * carry a real save exception flagged userFriendlyError, and their reason must be surfaced.
+ *
+ * It deliberately does NOT fire for a merely incomplete/invalid document (mandatory field not yet
+ * filled, individually-invalid value): those also set saveStatus.error, but as a pure validation
+ * state with NO exception, and are already communicated by the field-level cues. validStatus.valid
+ * is intentionally not consulted — it is non-deterministic across the save round-trip for the
+ * business-rejection case.
+ */
+export const isRelevantSaveError = (saveStatus) =>
+  saveStatus?.error === true &&
+  saveStatus?.exception?.userFriendlyError === true;
+
+/**
+ * Indicator state for a new-record modal: promote to ERROR when a relevant save rejection holds
+ * (see isRelevantSaveError), otherwise keep the base indicator from computeSaveStatusFlags.
+ * Scoped to the window modal so process modals (whose Start button is disabled on ERROR) are
+ * unaffected. Pure, so the promotion wiring is unit-testable independently of the connected Modal.
+ */
+export const computeModalIndicator = ({
+  modalType,
+  saveStatus,
+  baseIndicator,
+}) =>
+  modalType === 'window' && isRelevantSaveError(saveStatus)
+    ? IndicatorState.ERROR
+    : baseIndicator;
+
 export const computeSaveStatusFlags = ({
   state,
   modal: modalParam,

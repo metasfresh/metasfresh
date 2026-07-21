@@ -36,7 +36,10 @@ import {
   handleProcessResponse,
 } from '../../actions/ProcessActions';
 import ChangeCurrentWorkplace from './ChangeCurrentWorkplace';
-import { computeSaveStatusFlags } from '../../reducers/windowHandler';
+import {
+  computeSaveStatusFlags,
+  computeModalIndicator,
+} from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
 import * as StaticModalType from '../../constants/StaticModalType';
 import { useWebsocket } from '../../hooks/useWebsocket';
@@ -961,12 +964,26 @@ const mapStateToProps = (state, props) => {
 
   const parentSelector = getSelection();
 
-  const { indicator } = computeSaveStatusFlags({ modal });
+  const { indicator: baseIndicator } = computeSaveStatusFlags({ modal });
+  // Surface a relevant server-side save rejection (a complete, individually-valid document
+  // refused by a business rule / unique index) in the open new-record window modal, which
+  // computeSaveStatusFlags otherwise keeps quiet (its ERROR gate needs presentInDatabase,
+  // false for a failed insert). computeModalIndicator scopes this to the window modal so
+  // process modals — whose Start button is disabled on ERROR — are unaffected.
+  const indicator = computeModalIndicator({
+    modalType: modal.modalType,
+    saveStatus: modal.saveStatus,
+    baseIndicator,
+  });
 
   return {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator,
+    // saveStatus feeds the modal's <Indicator error={saveStatus.reason}>. Container also passes
+    // it via {...modal}; mapping it here makes the Indicator's dependency explicit rather than
+    // relying on the ownProps spread.
+    saveStatus: modal.saveStatus,
     parentViewId,
     parentId,
     viewOrderBy: parentView?.orderBy,

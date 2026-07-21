@@ -114,9 +114,10 @@ new child PLV.
       .toBeGreaterThan(0);
 
     // 6. The colliding save fails server-side — captured via saveErrorReasons from the PATCH response.
-    //    NOTE: as of this fix the WebUI "Add new" overlay does NOT surface that message on screen (the save
-    //    fails silently); that display gap is tracked separately. This test asserts only what the eviction
-    //    fix guarantees: the document survives (no 404) and the schema dropdown still resolves.
+    //    The in-dialog DISPLAY of this friendly reason (the indicator-promotion fix) is covered by the
+    //    computeModalIndicator unit tests and verified via manual UAT: automating the on-screen check
+    //    here is unreliable because the modal auto-saves the default ValidFrom on open and a colliding
+    //    edit then auto-reverts, making the error transient relative to the follow-up save.
     console.log(`[plv-collision] save errors: ${JSON.stringify(saveErrorReasons)}`);
     allure.attachment('Save error reason(s)', JSON.stringify(saveErrorReasons, null, 2), 'application/json');
 

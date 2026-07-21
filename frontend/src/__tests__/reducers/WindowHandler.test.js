@@ -13,7 +13,10 @@ import reducer, {
   getMasterDocStatus,
   getProcessWidgetData,
   getProcessWidgetFields,
+  isRelevantSaveError,
+  computeModalIndicator,
 } from '../../reducers/windowHandler';
+import * as IndicatorState from '../../constants/IndicatorState';
 
 const createState = function (state = {}) {
   return merge(
@@ -190,6 +193,109 @@ describe('WindowHandler helper functions', () => {
     const layoutFields = layout.elements[elementIndex].fields;
 
     expect(fieldsData).toEqual(layoutFields);
+  });
+});
+
+describe('isRelevantSaveError', () => {
+  // A server-side business rejection of a complete, individually-valid document
+  // (e.g. a unique-index collision) carries a real save exception flagged
+  // userFriendlyError -> the reason must be surfaced.
+  it('is true for a userFriendly save exception (business rejection)', () => {
+    const saveStatus = {
+      saved: false,
+      error: true,
+      reason: 'The date is already used in another version of this price list.',
+      exception: { message: 'duplicate date', userFriendlyError: true },
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(true);
+  });
+
+  // A mandatory-missing / incomplete new record ALSO sets error=true, but with NO
+  // exception (a pure validation state) -> must stay quiet (field cues already signal it).
+  it('is false for a mandatory-missing state (error but no exception)', () => {
+    const saveStatus = {
+      saved: false,
+      error: true,
+      reason: 'Fill mandatory fields:  Price List Version',
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(false);
+  });
+
+  it('is false when an exception is present but not userFriendly', () => {
+    const saveStatus = {
+      error: true,
+      exception: { message: 'NPE somewhere', userFriendlyError: false },
+    };
+    expect(isRelevantSaveError(saveStatus)).toBe(false);
+  });
+
+  it('is false when there is no error', () => {
+    expect(isRelevantSaveError({ error: false, exception: { userFriendlyError: true } })).toBe(false);
+    expect(isRelevantSaveError({ saved: true })).toBe(false);
+  });
+
+  it('is null-safe', () => {
+    expect(isRelevantSaveError(undefined)).toBe(false);
+    expect(isRelevantSaveError(null)).toBe(false);
+    expect(isRelevantSaveError({})).toBe(false);
+    expect(isRelevantSaveError({ error: true })).toBe(false);
+  });
+});
+
+describe('computeModalIndicator', () => {
+  const relevantError = {
+    error: true,
+    reason: 'duplicate date',
+    exception: { userFriendlyError: true },
+  };
+
+  it('promotes a window modal to ERROR on a relevant save error', () => {
+    expect(
+      computeModalIndicator({
+        modalType: 'window',
+        saveStatus: relevantError,
+        baseIndicator: IndicatorState.SAVED,
+      })
+    ).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT promote a process modal (leaves the base indicator)', () => {
+    expect(
+      computeModalIndicator({
+        modalType: 'process',
+        saveStatus: relevantError,
+        baseIndicator: IndicatorState.SAVED,
+      })
+    ).toBe(IndicatorState.SAVED);
+  });
+
+  it('does NOT promote a window modal on a non-relevant save state', () => {
+    // mandatory-missing: error but no userFriendly exception
+    expect(
+      computeModalIndicator({
+        modalType: 'window',
+        saveStatus: { error: true, reason: 'Fill mandatory fields' },
+        baseIndicator: IndicatorState.PENDING,
+      })
+    ).toBe(IndicatorState.PENDING);
+    // no error at all
+    expect(
+      computeModalIndicator({
+        modalType: 'window',
+        saveStatus: { saved: true },
+        baseIndicator: IndicatorState.SAVED,
+      })
+    ).toBe(IndicatorState.SAVED);
+  });
+
+  it('is null-safe (keeps the base indicator)', () => {
+    expect(
+      computeModalIndicator({
+        modalType: 'window',
+        saveStatus: undefined,
+        baseIndicator: IndicatorState.SAVED,
+      })
+    ).toBe(IndicatorState.SAVED);
   });
 });
 
