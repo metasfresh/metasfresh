@@ -107,7 +107,7 @@ public class C_Flatrate_Conditions_StepDef
 	 * <pre>
 	 * And metasfresh contains C_Flatrate_Conditions:
 	 *   | Name         | Type_Conditions | REST.Context.C_Flatrate_Conditions_ID |
-	 *   | mischkartonFC | Subscription    | flatrateConditionsId                  |
+	 *   | flatrateConditions | Subscription    | flatrateConditionsId                  |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_Flatrate_Conditions:")

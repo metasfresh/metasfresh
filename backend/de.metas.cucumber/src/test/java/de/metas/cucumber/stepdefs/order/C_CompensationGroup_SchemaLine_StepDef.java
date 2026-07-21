@@ -70,7 +70,7 @@ public class C_CompensationGroup_SchemaLine_StepDef
 	 * <pre>
 	 * And metasfresh contains C_CompensationGroup_SchemaLine:
 	 *   | Identifier          | C_CompensationGroup_Schema_ID.Identifier | M_Product_ID.Identifier | OPT.CompleteOrderDiscount | OPT.SeqNo |
-	 *   | mischkartonDiscount | mischkartonSchema                        | discountProduct         | 10                        | 30        |
+	 *   | schemaDiscount | compGroupSchema                        | discountProduct         | 10                        | 30        |
 	 * </pre>
 	 */
 	@Given("metasfresh contains C_CompensationGroup_SchemaLine:")

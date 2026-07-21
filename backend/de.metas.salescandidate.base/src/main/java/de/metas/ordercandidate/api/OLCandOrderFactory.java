@@ -524,8 +524,8 @@ class OLCandOrderFactory
 
 	private void addOLCand0(@NonNull final OLCand candidate)
 	{
-		// If the candidate's product carries a compensation-group schema ("Mischkarton" / trading-BOM),
-		// explode it into the schema's component order lines instead of creating a single carton line
+		// If the candidate's product carries a compensation-group schema (trading-BOM),
+		// explode it into the schema's component order lines instead of creating a single un-exploded line
 		// (mirrors what the sales-order window / Quick-Input does).
 		if (tryExplodeCompensationGroupSchema(candidate))
 		{
@@ -653,12 +653,12 @@ class OLCandOrderFactory
 	}
 
 	/**
-	 * If the candidate's product has a compensation-group schema (a "Mischkarton" / trading-BOM) and the candidate is
-	 * NOT already part of an explicit OLCand group, explode the ordered carton qty into the schema's component order
+	 * If the candidate's product has a compensation-group schema (a trading-BOM) and the candidate is
+	 * NOT already part of an explicit OLCand group, explode the ordered qty into the schema's component order
 	 * lines (regular + compensation) using the same business API the sales-order window / Quick-Input uses, and link
-	 * the carton candidate to each generated regular line via {@code C_Order_Line_Alloc}.
+	 * the candidate to each generated regular line via {@code C_Order_Line_Alloc}.
 	 *
-	 * @return {@code true} if the candidate was handled by schema explosion (caller must NOT create a plain carton
+	 * @return {@code true} if the candidate was handled by schema explosion (caller must NOT create a plain order
 	 * line); {@code false} otherwise (caller proceeds with the plain-line flow).
 	 */
 	private boolean tryExplodeCompensationGroupSchema(@NonNull final OLCand candidate)
@@ -683,17 +683,17 @@ class OLCandOrderFactory
 			return false;
 		}
 
-		// Make sure the order exists (without creating a stray carton order line).
+		// Make sure the order exists (without creating a stray order line).
 		if (order == null)
 		{
 			order = newOrder(candidate);
 		}
 		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
 
-		// The ordered number of cartons scales the schema's template-line quantities.
-		// M5: cartonQty is passed as the pure group qty-multiplier with NO UOM conversion, matching
+		// The ordered quantity scales the schema's template-line quantities.
+		// M5: orderedQty is passed as the pure group qty-multiplier with NO UOM conversion, matching
 		// OrderLineQuickInputProcessor. This assumes candidate.getQty() is already expressed in the schema
-		// product's own stocking (counting) UOM (i.e. a count of cartons); a UOM other than that would scale
+		// product's own stocking (counting) UOM; a UOM other than that would scale
 		// every exploded component quantity wrongly. Guard the assumption instead of silently trusting the
 		// (REST/EDI) caller: fail loud if the candidate qty UOM differs from the schema product's stocking UOM.
 		final UomId candidateQtyUomId = candidate.getQty().getUomId();
@@ -708,9 +708,9 @@ class OLCandOrderFactory
 					.setParameter("C_OLCand_ID", candidate.getId())
 					.appendParametersToMessage();
 		}
-		final BigDecimal cartonQty = candidate.getQty().toBigDecimal();
+		final BigDecimal orderedQty = candidate.getQty().toBigDecimal();
 
-		// C2: thread the carton candidate's flatrate/contract conditions into createGroup. This is how the
+		// C2: thread the candidate's flatrate/contract conditions into createGroup. This is how the
 		// exploded component lines get their C_Flatrate_Conditions_ID: OrderGroupRepository.createRegularLineFromTemplate
 		// sets it from the request's newContractConditionsId (and the same id also drives which template regular
 		// lines match). This is the Quick-Input mechanism; the OLCand listener path (FlatrateOLCandListener) is
@@ -719,7 +719,7 @@ class OLCandOrderFactory
 
 		final Group group = orderGroupsRepository.prepareNewGroup()
 				.groupTemplate(groupTemplateRepository.getById(groupTemplateId))
-				.qty(cartonQty)
+				.qty(orderedQty)
 				.createGroup(orderId, flatrateConditionsId);
 
 		// Track the created compensation-group header so onCompensationGroupFailure can delete it during rollback.
@@ -728,7 +728,7 @@ class OLCandOrderFactory
 		compensationGroupIds.add(group.getGroupId());
 
 		// H3: we deliberately do NOT fire olCandListeners.onOrderLineCreated for the generated component lines.
-		// HU packing-instruction (OLCandPIIPListener) is product-specific and must not be copied from the carton
+		// HU packing-instruction (OLCandPIIPListener) is product-specific and must not be copied from the schema-product
 		// candidate onto its differing-product component lines; flatrate conditions are instead threaded via
 		// createGroup's conditions parameter (above).
 		//
@@ -745,7 +745,7 @@ class OLCandOrderFactory
 			final I_C_OrderLine componentOrderLine = InterfaceWrapperHelper.load(generatedLineId, I_C_OrderLine.class);
 
 			// H4: the generated group lines otherwise inherit warehouse/org from the order header only. Mirror the
-			// plain path (see addOLCand0) and align them with THIS candidate, so a later Mischkarton candidate
+			// plain path (see addOLCand0) and align them with THIS candidate, so a later compensation-group-schema candidate
 			// aggregated into the same order (different warehouse/org) does not silently diverge from its own values.
 			componentOrderLine.setM_Warehouse_ID(WarehouseId.toRepoId(candidate.getWarehouseId()));
 			componentOrderLine.setM_Warehouse_Dest_ID(WarehouseId.toRepoId(candidate.getWarehouseDestId()));

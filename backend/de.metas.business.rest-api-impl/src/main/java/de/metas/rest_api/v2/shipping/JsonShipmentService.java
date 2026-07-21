@@ -632,7 +632,7 @@ public class JsonShipmentService
 				.get(olCandId);
 
 		// This external-header/line-id lookup must resolve exactly ONE order line (-> one shipment schedule) for the
-		// one candidate. A compensation-group-schema/"Mischkarton" candidate explodes 1->N order lines during
+		// one candidate. A compensation-group-schema candidate explodes 1->N order lines during
 		// OLCand->order processing and cannot satisfy this 1:1 contract, so fail loud (mirrors the olCandIds.size()
 		// != 1 assertion above) instead of silently picking an arbitrary one of the N lines.
 		if (orderLineIds.size() != 1)

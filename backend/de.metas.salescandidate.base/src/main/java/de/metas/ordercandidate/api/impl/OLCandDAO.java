@@ -235,7 +235,7 @@ public class OLCandDAO implements IOLCandDAO
 			return ImmutableSetMultimap.of();
 		}
 
-		// A single C_OLCand can be allocated to N C_OrderLines (e.g. a compensation-group-schema/"Mischkarton"
+		// A single C_OLCand can be allocated to N C_OrderLines (e.g. a compensation-group-schema
 		// product exploded into its component order lines), so this must be a multimap.
 		return queryBL.createQueryBuilder(I_C_Order_Line_Alloc.class)
 				.addInArrayFilter(I_C_Order_Line_Alloc.COLUMNNAME_C_OLCand_ID, olCandIds)

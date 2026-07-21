@@ -115,12 +115,12 @@ public class M_Product_StepDef
 	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
 	 *         {@link I_C_CompensationGroup_Schema} (created via
 	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
-	 *         "Mischkarton" (mixed carton) compensation-group schema.</li>
+	 *         compensation-group schema.</li>
 	 * </ul>
 	 * <pre>{@code
 	 * Given metasfresh contains M_Products:
 	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
-	 *   | mischkartonProduct | mischkartonProduct | mischkartonSchema                            |
+	 *   | schemaProduct | schemaProduct | compGroupSchema                            |
 	 * }</pre>
 	 */
 	@Given("metasfresh contains M_Products:")
