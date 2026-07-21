@@ -250,6 +250,7 @@ Feature: Purchase order with complex payment term
   @from:cucumber
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @F00600
 @Id:S30954_1
   Scenario: BL date entered after transport order completion recomputes the shipping line
@@ -303,6 +304,7 @@ Feature: Purchase order with complex payment term
   @from:cucumber
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @F00600
 @Id:S30954_2
   Scenario: BL date corrected after transport order completion recomputes the shipping line
@@ -359,6 +361,7 @@ Feature: Purchase order with complex payment term
   @from:cucumber
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
 @F00600
 @Id:S30954_3
   Scenario: Draft transport order does not propagate its BL date to the shipping line
