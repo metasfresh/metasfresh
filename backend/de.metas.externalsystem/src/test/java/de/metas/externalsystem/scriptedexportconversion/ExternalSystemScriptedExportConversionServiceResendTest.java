@@ -22,8 +22,8 @@
 
 package de.metas.externalsystem.scriptedexportconversion;
 
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemExportStatus;
-import de.metas.externalsystem.ExternalSystemInvocationContext;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.util.Services;
@@ -87,7 +87,7 @@ public class ExternalSystemScriptedExportConversionServiceResendTest
 				scriptedRepo,
 				mock(de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository.class),
 				mock(de.metas.externalsystem.audit.ExternalSystemExportAuditRepo.class),
-				mock(de.metas.externalsystem.ExternalSystemConfigRepo.class)));
+				mock(ExternalSystemConfigRepository.class)));
 
 		final int tableId = Services.get(IADTableDAO.class).retrieveTableId(I_M_InOut.Table_Name);
 		configId = ExternalSystemScriptedExportConversionConfigId.ofRepoId(101);
