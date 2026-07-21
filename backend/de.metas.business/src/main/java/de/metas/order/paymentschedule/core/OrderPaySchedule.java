@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 public class OrderPaySchedule
 {
 	private static final AdMessageKey MSG_MultipleLCBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleLCBreaksUnsupported");
+	private static final AdMessageKey MSG_MultipleAdvanceBreaksUnsupported = AdMessageKey.of("de.metas.invoice.proforma.MultipleAdvanceBreaksUnsupported");
 
 	@NonNull @Getter OrderId orderId;
 	@NonNull private final ArrayList<OrderPayScheduleLine> lines;
@@ -158,6 +159,25 @@ public class OrderPaySchedule
 		else
 		{
 			return Optional.of(lcLines.get(0));
+		}
+	}
+
+	public Optional<OrderPayScheduleLine> getSingleAdvanceLine()
+	{
+		final ImmutableList<OrderPayScheduleLine> advanceLines = lines.stream()
+				.filter(line -> !line.isMaterialReceiptDate())
+				.collect(ImmutableList.toImmutableList());
+		if (advanceLines.isEmpty())
+		{
+			return Optional.empty();  // no advance break in payment term — no-op
+		}
+		else if (advanceLines.size() > 1)
+		{
+			throw new AdempiereException(MSG_MultipleAdvanceBreaksUnsupported, orderId);
+		}
+		else
+		{
+			return Optional.of(advanceLines.get(0));
 		}
 	}
 }

@@ -124,6 +124,8 @@ public class OrderPayScheduleLine
 
 	public boolean isLetterOfCreditDate() {return referenceDateType.isLetterOfCreditDate();}
 
+	public boolean isMaterialReceiptDate() {return referenceDateType.isMaterialReceiptDate();}
+
 	/**
 	 * True if this line is linked to a committed downstream document — a goods receipt ({@code inoutId})
 	 * or a matched invoice ({@code invoiceId}). Such a link reflects real activity that a reactivate
