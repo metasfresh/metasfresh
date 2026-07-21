@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
@@ -331,6 +332,61 @@ public class REST_API_StepDef
 		}
 
 		testContext.setVariable(variableName, value);
+	}
+
+	/**
+	 * Sends a PUT request to the given endpoint with the payload from the doc-string, asserts the HTTP status code,
+	 * and validates the {@code JsonErrorItem} returned in the response body using a machine-readable error code.
+	 *
+	 * <p>All assertions are passed as inline Gherkin parameters so this step takes a single doc-string argument
+	 * (the JSON payload) — Gherkin grammar forbids a step from taking both a DataTable and a DocString.
+	 *
+	 * <p>Parameters (all inline Gherkin expressions):
+	 * <ul>
+	 *   <li>{@code endpointPath} – REST endpoint path, e.g. {@code api/v2/bpartner/002}</li>
+	 *   <li>{@code expectedStatusCode} – HTTP status code the server must return, e.g. {@code 422}</li>
+	 *   <li>{@code expectErrorUserFriendly} – {@code true} or {@code false}; expected value of
+	 *       {@code JsonErrorItem.isUserFriendlyError}</li>
+	 *   <li>{@code expectErrorCode} – exact AD_Message key that must appear in {@code JsonErrorItem.errorCode},
+	 *       e.g. {@code BPartnerCompositeOrgMismatch}</li>
+	 *   <li>{@code expectErrorContaining} – substring that must appear in {@code JsonErrorItem.message}
+	 *       (blank = not asserted). Use it to prove a parameterized AD_Message actually interpolated its
+	 *       arguments, e.g. the path org code {@code 002} in the rendered message.</li>
+	 * </ul>
+	 *
+	 * <p>The doc-string (the step's single argument) is the JSON request body.
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * When a PUT request with below payload is sent to metasfresh REST-API 'api/v2/bpartner/002' expecting status '422' user-friendly 'true' error code 'BPartnerCompositeOrgMismatch' containing '002':
+	 *   """
+	 *   { "requestItems": [ { "bpartnerComposite": { "orgCode": "001" } } ] }
+	 *   """
+	 * </pre>
+	 */
+	@When("a PUT request with below payload is sent to metasfresh REST-API {string} expecting status {string} user-friendly {string} error code {string} containing {string}:")
+	public void put_request_with_payload_and_error_assertions(
+			@NonNull final String endpointPath,
+			@NonNull final String expectedStatusCode,
+			@NonNull final String expectErrorUserFriendly,
+			@NonNull final String expectErrorCode,
+			@NonNull final String expectErrorContaining,
+			@NonNull final String payload) throws IOException
+	{
+		final String payloadResolved = resolveContextVariables(payload);
+		testContext.setRequestPayload(payloadResolved);
+
+		performHTTPRequest(
+				newAPIRequest()
+						.endpointPath(resolveContextVariables(endpointPath))
+						.method("PUT")
+						.payload(payloadResolved)
+						.expectedStatusCode(Integer.parseInt(expectedStatusCode))
+						.expectedErrorCode(expectErrorCode)
+						.expectedErrorMessageContaining(StringUtils.trimBlankToNull(expectErrorContaining))
+						.expectErrorUserFriendly(Boolean.parseBoolean(expectErrorUserFriendly))
+						.build()
+		);
 	}
 
 }
