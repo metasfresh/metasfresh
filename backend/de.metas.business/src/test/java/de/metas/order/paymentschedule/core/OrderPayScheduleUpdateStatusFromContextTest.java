@@ -1,0 +1,150 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.order.paymentschedule.core;
+
+import com.google.common.collect.ImmutableList;
+import de.metas.currency.CurrencyPrecision;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTerm;
+import de.metas.payment.paymentterm.PaymentTermBreak;
+import de.metas.payment.paymentterm.PaymentTermBreakId;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.ReferenceDateType;
+import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
+import org.adempiere.service.ClientId;
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+/**
+ * Tests for {@link OrderPaySchedule#updateStatusFromContext(OrderSchedulingContext)} — the recompute
+ * must refresh an unsettled {@code Awaiting_Pay} material-receipt (BL/ETA) line on a reference-date
+ * change, while leaving an {@code Awaiting_Pay} LC line untouched (that line stays on the dedicated
+ * LC step service path).
+ */
+class OrderPayScheduleUpdateStatusFromContextTest
+{
+	private static final PaymentTermId PT_ID = PaymentTermId.ofRepoId(5002);
+	private static final PaymentTermBreakId BL_BREAK_ID = PaymentTermBreakId.ofRepoId(PT_ID.getRepoId(), 5020);
+	private static final PaymentTermBreakId LC_BREAK_ID = PaymentTermBreakId.ofRepoId(PT_ID.getRepoId(), 5021);
+	private static final CurrencyId EUR = CurrencyId.ofRepoId(102);
+	private static final OrderId ORDER_ID = OrderId.ofRepoId(7002);
+
+	private static final LocalDate OLD_BL_DATE = LocalDate.of(2026, 3, 1);
+	private static final LocalDate NEW_BL_DATE = LocalDate.of(2026, 3, 15); // corrected BL date
+	private static final LocalDate LC_DATE = LocalDate.of(2026, 2, 1); // unchanged
+
+	private PaymentTerm newPaymentTerm()
+	{
+		final PaymentTermBreak blBreak = PaymentTermBreak.builder()
+				.id(BL_BREAK_ID)
+				.referenceDateType(ReferenceDateType.BillOfLadingDate)
+				.percent(Percent.of("50"))
+				.seqNo(SeqNo.ofInt(10))
+				.offsetDays(0)
+				.build();
+
+		final PaymentTermBreak lcBreak = PaymentTermBreak.builder()
+				.id(LC_BREAK_ID)
+				.referenceDateType(ReferenceDateType.LetterOfCreditDate)
+				.percent(Percent.of("50"))
+				.seqNo(SeqNo.ofInt(20))
+				.offsetDays(0)
+				.build();
+
+		return PaymentTerm.builder()
+				.id(PT_ID)
+				.clientId(ClientId.SYSTEM)
+				.orgId(OrgId.ANY)
+				.value("pt_bl_lc")
+				.name("pt_bl_lc (BL 50% + LC 50%)")
+				.breaks(ImmutableList.of(blBreak, lcBreak))
+				.paySchedules(ImmutableList.of())
+				.build();
+	}
+
+	private OrderPayScheduleLine newAwaitingPayLine(
+			final PaymentTermBreakId breakId,
+			final ReferenceDateType referenceDateType,
+			final LocalDate referenceDate)
+	{
+		return OrderPayScheduleLine.builder()
+				.id(OrderPayScheduleId.ofRepoId(breakId.getRepoId()))
+				.orderId(ORDER_ID)
+				.paymentTermBreakId(breakId)
+				.referenceDateType(referenceDateType)
+				.percent(Percent.of("50"))
+				.offsetDays(0)
+				.status(OrderPayScheduleStatus.Awaiting_Pay)
+				.isPaid(false)
+				.referenceDate(referenceDate)
+				.dueDate(referenceDate)
+				.dueAmount(Money.of(BigDecimal.valueOf(5000), EUR))
+				.invoiceId(null)
+				.inoutId(null)
+				.build();
+	}
+
+	/**
+	 * After a Transport Order completes, the BL line is already {@code Awaiting_Pay}. A later BL-date
+	 * correction must still refresh its due date (unsettled: not paid, no invoice, no receipt linked
+	 * yet). The LC line, also {@code Awaiting_Pay}, must stay byte-behavior-identical — it is refreshed
+	 * only via the dedicated LC step service, never by this generic recompute.
+	 */
+	@Test
+	void blLineRefreshed_lcLineUntouched_onBLDateCorrection()
+	{
+		final OrderPayScheduleLine blLine = newAwaitingPayLine(BL_BREAK_ID, ReferenceDateType.BillOfLadingDate, OLD_BL_DATE);
+		final OrderPayScheduleLine lcLine = newAwaitingPayLine(LC_BREAK_ID, ReferenceDateType.LetterOfCreditDate, LC_DATE);
+
+		final OrderPaySchedule paySchedule = OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(blLine, lcLine));
+
+		final OrderSchedulingContext context = OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.billOfLadingDate(NEW_BL_DATE) // corrected
+				.letterOfCreditDate(LC_DATE) // unchanged
+				.grandTotal(Money.of(BigDecimal.valueOf(10000), EUR))
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(newPaymentTerm())
+				.build();
+
+		paySchedule.updateStatusFromContext(context);
+
+		assertThat(blLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(blLine.isPaid()).isFalse();
+		assertThat(blLine.getDueDate()).as("BL line dueDate refreshed to corrected BL date").isEqualTo(NEW_BL_DATE);
+		assertThat(blLine.getReferenceDate()).isEqualTo(NEW_BL_DATE);
+
+		assertThat(lcLine.getStatus()).isEqualTo(OrderPayScheduleStatus.Awaiting_Pay);
+		assertThat(lcLine.isPaid()).isFalse();
+		assertThat(lcLine.getDueDate()).as("LC line dueDate must stay untouched by this recompute").isEqualTo(LC_DATE);
+		assertThat(lcLine.getReferenceDate()).isEqualTo(LC_DATE);
+	}
+}

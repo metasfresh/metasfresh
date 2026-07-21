@@ -123,7 +123,19 @@ public class OrderPaySchedule
 
 		for (final OrderPayScheduleLine line : lines)
 		{
-			if (line.getStatus().isPending())
+			// An unsettled awaiting-pay material-receipt (BL/ETA) line is refreshed too: after a Transport
+			// Order completes, the line is already Awaiting_Pay, so a later BL/ETA reference-date correction
+			// would otherwise never reach it (it is not Pending anymore). Gated on isMaterialReceiptDate() so
+			// an LC/OD line is never touched here — it is refreshed only via the dedicated LC step service.
+			// Gated on !isPaid()/no invoice/no receipt so a settled or downstream-linked line is left alone.
+			final boolean refreshUnsettledDeliveryLine =
+					line.isMaterialReceiptDate()
+					&& line.getStatus() == OrderPayScheduleStatus.Awaiting_Pay
+					&& !line.isPaid()
+					&& line.getInvoiceId() == null
+					&& line.getInoutId() == null;
+
+			if (line.getStatus().isPending() || refreshUnsettledDeliveryLine)
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
 				final OrderPayScheduleLineContext dueDateAndStatus = context.computeLineContext(termBreak);
