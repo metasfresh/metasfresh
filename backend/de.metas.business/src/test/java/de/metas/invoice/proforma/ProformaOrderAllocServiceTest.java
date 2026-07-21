@@ -161,15 +161,15 @@ class ProformaOrderAllocServiceTest
 	}
 
 	/**
-	 * US01: a purchase payment term with NO Letter-of-Credit break — only an {@code OD}
+	 * A purchase payment term with NO Letter-of-Credit break — only an {@code OD}
 	 * (order-date/advance) break and a {@code BL} (bill-of-lading/material-receipt) break — must be
-	 * a valid allocation target. Today {@link ProformaOrderAllocateCommand#validate} hard-rejects any
-	 * payment term with zero LC breaks via {@code MSG_NoLCBreakInOrder}, so this is expected to FAIL
-	 * (RED) until the production gate is generalized in a later task.
+	 * a valid allocation target. Verifies that allocate does not throw {@code MSG_NoLCBreakInOrder}
+	 * for no-LC payment terms.
 	 */
 	@Test
 	void allocate_noLcBreak_succeeds()
 	{
+		// Synthetic vendor ID: not validated, only used for matching with mocked getEffectiveBillPartnerId.
 		final BPartnerId vendorId = BPartnerId.ofRepoId(1000000);
 		final int currencyId = 318; // EUR
 
@@ -177,6 +177,7 @@ class ProformaOrderAllocServiceTest
 
 		final I_C_Order order = newInstance(I_C_Order.class);
 		order.setIsSOTrx(false);
+		// Kept for fixture realism; the vendor match is driven by the mock below.
 		order.setC_BPartner_ID(vendorId.getRepoId());
 		order.setC_Currency_ID(currencyId);
 		order.setC_PaymentTerm_ID(paymentTermId.getRepoId());
@@ -193,9 +194,9 @@ class ProformaOrderAllocServiceTest
 
 		final InvoiceId invoiceId = createProformaInvoice(vendorId, currencyId);
 
-		// US01: no-LC payment terms are a valid allocation target — must NOT throw MSG_NoLCBreakInOrder.
+		// No-LC payment terms are a valid allocation target — must NOT throw MSG_NoLCBreakInOrder.
 		assertThatCode(() -> service.allocate(invoiceId, orderId))
-				.as("US01: allocate must succeed for a no-LC (OD+BL only) payment term")
+				.as("allocate must succeed for a no-LC (OD+BL only) payment term")
 				.doesNotThrowAnyException();
 
 		assertThat(repository.getByOrderId(orderId)).hasSize(1);

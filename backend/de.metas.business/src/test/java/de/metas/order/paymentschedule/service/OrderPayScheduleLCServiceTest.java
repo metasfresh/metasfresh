@@ -334,19 +334,16 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// US01 (no-LC payment terms) — TDD RED
+	// No-LC payment terms (no Letter-of-Credit break)
 	// -----------------------------------------------------------------------
 
 	/**
-	 * US01: a payment term with a single {@code OD} advance break + a {@code BL} break (no LC break
+	 * A payment term with a single {@code OD} advance break + a {@code BL} break (no LC break
 	 * at all). Once the proforma is allocated and its payment completes, the OD (advance) line must
 	 * reach {@code Paid} with {@code DueAmt_Actual == proforma GrandTotal}; {@code C_Order.LC_Date}
 	 * must stay null (no LC break to stamp); the BL line must be untouched.
 	 * <p>
-	 * Today {@link OrderPayScheduleLCStepService#recomputeLCStep} only ever looks for a single LC
-	 * line ({@code OrderPaySchedule#getSingleLCLine()}); with no LC line present it no-ops entirely,
-	 * so the OD line never reaches {@code Paid}. Expected to FAIL (RED) until a later task
-	 * generalizes the paid-transition to non-LC advance breaks.
+	 * Verifies that the recompute step correctly handles no-LC advance breaks.
 	 */
 	@Test
 	void noLc_advanceLine_completedPayment_yields_Paid()
@@ -364,7 +361,7 @@ class OrderPayScheduleLCServiceTest
 
 		final I_C_OrderPaySchedule odLine = findLineByReferenceDateType(orderId, ReferenceDateType.OrderDate);
 		assertThat(odLine.getStatus())
-				.as("US01: no-LC advance (OD) line must reach Paid once the proforma payment completes")
+				.as("no-LC advance (OD) line must reach Paid once the proforma payment completes")
 				.isEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
 		assertThat(odLine.getDueAmt_Actual()).isEqualByComparingTo(PROFORMA_GRAND_TOTAL);
 
@@ -375,12 +372,12 @@ class OrderPayScheduleLCServiceTest
 
 		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
 		assertThat(blLine.getStatus())
-				.as("BL line is untouched by the LC-only recompute step")
+				.as("BL line is untouched by the recompute step")
 				.isEqualTo(X_C_OrderPaySchedule.STATUS_Pending_Ref);
 	}
 
 	/**
-	 * AC5: a payment term with only a {@code BL} (material-receipt) break — no advance line, no LC
+	 * A payment term with only a {@code BL} (material-receipt) break — no advance line, no LC
 	 * line at all. Paying the proforma must not mark any line {@code Paid} and must not throw.
 	 */
 	@Test
@@ -394,12 +391,12 @@ class OrderPayScheduleLCServiceTest
 		createPayment(proformaInvoiceId, X_C_Payment.DOCSTATUS_Completed);
 
 		assertThatCode(() -> service.recomputeLCStep(orderId))
-				.as("AC5: no exception even though there is no advance/LC line to pay")
+				.as("no exception even though there is no advance/LC line to pay")
 				.doesNotThrowAnyException();
 
 		final I_C_OrderPaySchedule blLine = findLineByReferenceDateType(orderId, ReferenceDateType.BillOfLadingDate);
 		assertThat(blLine.getStatus())
-				.as("AC5: no advance/LC line present — nothing should be marked Paid")
+				.as("no advance/LC line present — nothing should be marked Paid")
 				.isNotEqualTo(X_C_OrderPaySchedule.STATUS_Paid);
 	}
 
@@ -434,7 +431,7 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	/**
-	 * OrderDate/no-LC variant: the {@code OD} advance break of a no-LC payment term (US01).
+	 * OrderDate/no-LC variant: the {@code OD} advance break of a no-LC payment term.
 	 */
 	private void createAdvancePayScheduleLine(final OrderId orderId, final String initialStatus)
 	{
@@ -442,7 +439,7 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	/**
-	 * OrderDate/no-LC variant: the {@code BL} material-receipt break of a no-LC payment term (US01).
+	 * OrderDate/no-LC variant: the {@code BL} material-receipt break of a no-LC payment term.
 	 */
 	private void createMaterialReceiptPayScheduleLine(final OrderId orderId, final String initialStatus)
 	{
