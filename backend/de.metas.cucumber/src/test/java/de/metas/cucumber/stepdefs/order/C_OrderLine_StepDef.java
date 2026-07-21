@@ -326,6 +326,21 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates order lines by locating each one via ({@code C_Order_ID}, {@code M_Product_ID}, {@code QtyOrdered}) and
+	 * asserting the remaining columns.
+	 * <p>
+	 * Required DataTable columns: {@code C_Order_ID.Identifier}, {@code M_Product_ID.Identifier}, {@code QtyOrdered}.
+	 * All other columns are optional per-row assertions handled by {@code validateOrderLine} — among them
+	 * {@code OPT.C_Flatrate_Conditions_ID.Identifier} (the threaded contract conditions),
+	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}) and
+	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage).
+	 * <pre>
+	 * And validate the created order lines
+	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
+	 *   | orderLine_discount        | order_1               | discountProduct         | 1          | true                        | 10                              |
+	 * </pre>
+	 */
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
 	{
@@ -512,6 +527,12 @@ public class C_OrderLine_StepDef
 			final boolean isManualPrice = StringUtils.toBoolean(isManualPriceStr);
 			softly.assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
 		}
+
+		row.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine)
+				.ifPresent(isGroupCompensationLine -> softly.assertThat(orderLine.isGroupCompensationLine()).as("IsGroupCompensationLine").isEqualTo(isGroupCompensationLine));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
+				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
