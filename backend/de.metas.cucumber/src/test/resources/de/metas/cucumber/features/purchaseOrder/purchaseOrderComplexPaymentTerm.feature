@@ -251,7 +251,7 @@ Feature: Purchase order with complex payment term
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
 @F00600
-@S30954_US02
+@Id:S30954_1
   Scenario: BL date entered after transport order completion recomputes the shipping line
     When metasfresh contains C_PaymentTerm
       | Identifier |
@@ -304,7 +304,7 @@ Feature: Purchase order with complex payment term
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
 @F00600
-@S30954_US02
+@Id:S30954_2
   Scenario: BL date corrected after transport order completion recomputes the shipping line
     When metasfresh contains C_PaymentTerm
       | Identifier |
@@ -360,7 +360,7 @@ Feature: Purchase order with complex payment term
 @allure.label.epic:E0140_Purchasing
 @allure.label.feature:F00600_Purchase_Order
 @F00600
-@S30954_US02
+@Id:S30954_3
   Scenario: Draft transport order does not propagate its BL date to the shipping line
     When metasfresh contains C_PaymentTerm
       | Identifier |
