@@ -245,3 +245,165 @@ Feature: Purchase order with complex payment term
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB31                  | 2025-10-10 | 25.58  | WP     |
       | PTB32                  | 2025-04-01 | 76.72  | WP     |
+
+
+  @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
+@S30954_US02
+  Scenario: BL date entered after transport order completion recomputes the shipping line
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_4    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB41      | pt_PO_4          | 10      | 1          | OD                | 10    |
+      | PTB42      | pt_PO_4          | 90      | 5          | BL                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_4    | Y         | Y       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po4        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_4          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po4_l1     | po4        | product      | 10         |
+    And the order identified by po4 is completed
+    Then the order identified by po4 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB41                  | 2025-10-10 | 10.23  | WP     |
+      | PTB42                  | 9999-12-01 | 92.07  | PR     |
+
+    And metasfresh contains Transport Order
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | shipperTransp_2 | shipper_DHL  | shipper             | shipperLocation     |
+    And metasfresh contains M_Package
+      | Identifier | M_Shipper_ID |
+      | Pckg2      | shipper_DHL  |
+    And metasfresh contains M_ShippingPackage
+      | Identifier | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
+      | shPckg2    | po4        | shipperTransp_2            | Pckg2        | shipperLocation        |
+    And the transport order identified by shipperTransp_2 is completed
+    Then the order identified by po4 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB41                  | 2025-10-10 | 10.23  | WP     |
+      | PTB42                  | 9999-12-01 | 92.07  | PR     |
+
+    And update transport order
+      | M_ShipperTransportation_ID | BLDate     |
+      | shipperTransp_2            | 2025-10-20 |
+    Then the order identified by po4 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB41                  | 2025-10-10 | 10.23  | WP     |
+      | PTB42                  | 2025-10-25 | 92.07  | WP     |
+
+
+  @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
+@S30954_US02
+  Scenario: BL date corrected after transport order completion recomputes the shipping line
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_5    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB51      | pt_PO_5          | 10      | 1          | OD                | 10    |
+      | PTB52      | pt_PO_5          | 90      | 5          | BL                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_5    | Y         | Y       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po5        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_5          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po5_l1     | po5        | product      | 10         |
+    And the order identified by po5 is completed
+    Then the order identified by po5 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB51                  | 2025-10-10 | 10.23  | WP     |
+      | PTB52                  | 9999-12-01 | 92.07  | PR     |
+
+    And metasfresh contains Transport Order
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | shipperTransp_3 | shipper_DHL  | shipper             | shipperLocation     |
+    And metasfresh contains M_Package
+      | Identifier | M_Shipper_ID |
+      | Pckg3      | shipper_DHL  |
+    And metasfresh contains M_ShippingPackage
+      | Identifier | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
+      | shPckg3    | po5        | shipperTransp_3            | Pckg3        | shipperLocation        |
+    And update transport order
+      | M_ShipperTransportation_ID | BLDate     |
+      | shipperTransp_3            | 2025-10-15 |
+    And the transport order identified by shipperTransp_3 is completed
+    Then the order identified by po5 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB51                  | 2025-10-10 | 10.23  | WP     |
+      | PTB52                  | 2025-10-20 | 92.07  | WP     |
+
+    And update transport order
+      | M_ShipperTransportation_ID | BLDate     |
+      | shipperTransp_3            | 2025-10-22 |
+    Then the order identified by po5 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB51                  | 2025-10-10 | 10.23  | WP     |
+      | PTB52                  | 2025-10-27 | 92.07  | WP     |
+
+
+  @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@F00600
+@S30954_US02
+  Scenario: Draft transport order does not propagate its BL date to the shipping line
+    When metasfresh contains C_PaymentTerm
+      | Identifier |
+      | pt_PO_6    |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB61      | pt_PO_6          | 10      | 1          | OD                | 10    |
+      | PTB62      | pt_PO_6          | 90      | 5          | BL                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_6    | Y         | Y       |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po6        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_6          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po6_l1     | po6        | product      | 10         |
+    And the order identified by po6 is completed
+    Then the order identified by po6 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB61                  | 2025-10-10 | 10.23  | WP     |
+      | PTB62                  | 9999-12-01 | 92.07  | PR     |
+
+    And metasfresh contains Transport Order
+      | Identifier      | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | shipperTransp_4 | shipper_DHL  | shipper             | shipperLocation     |
+    And metasfresh contains M_Package
+      | Identifier | M_Shipper_ID |
+      | Pckg4      | shipper_DHL  |
+    And metasfresh contains M_ShippingPackage
+      | Identifier | C_Order_ID | M_ShipperTransportation_ID | M_Package_ID | C_BPartner_Location_ID |
+      | shPckg4    | po6        | shipperTransp_4            | Pckg4        | shipperLocation        |
+    And update transport order
+      | M_ShipperTransportation_ID | BLDate     |
+      | shipperTransp_4            | 2025-10-18 |
+    Then the order identified by po6 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB61                  | 2025-10-10 | 10.23  | WP     |
+      | PTB62                  | 9999-12-01 | 92.07  | PR     |
+
+    And the transport order identified by shipperTransp_4 is completed
+    Then the order identified by po6 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
+      | PTB61                  | 2025-10-10 | 10.23  | WP     |
+      | PTB62                  | 2025-10-23 | 92.07  | WP     |
