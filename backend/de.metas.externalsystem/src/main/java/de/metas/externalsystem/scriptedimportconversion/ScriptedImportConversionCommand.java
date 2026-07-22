@@ -42,6 +42,40 @@ public enum ScriptedImportConversionCommand
 	@Getter
 	private final String value;
 
+	@NonNull
+	public static ScriptedImportConversionCommand ofCode(@NonNull final String value)
+	{
+		for (final ScriptedImportConversionCommand command : values())
+		{
+			if (command.value.equals(value))
+			{
+				return command;
+			}
+		}
+		throw new AdempiereException("No ScriptedImportConversionCommand for code")
+				.appendParametersToMessage()
+				.setParameter("code", value);
+	}
+
+	/** The enable/disable transport commands map back to the Start/Stop intent the generic infra reasons in. */
+	@NonNull
+	public ScriptedImportConversionIntent getIntent()
+	{
+		switch (this)
+		{
+			case EnableRestAPI:
+			case EnableSftpPolling:
+				return ScriptedImportConversionIntent.Start;
+			case DisableRestAPI:
+			case DisableSftpPolling:
+				return ScriptedImportConversionIntent.Stop;
+			default:
+				throw new AdempiereException("Unhandled ScriptedImportConversionCommand")
+						.appendParametersToMessage()
+						.setParameter("command", this);
+		}
+	}
+
 	/**
 	 * Derive the concrete command from the user's Start/Stop intent and the child's endpoint
 	 * transport. A parent config may have both REST and SFTP children, so this is resolved per child.
