@@ -22,18 +22,22 @@
 
 package de.metas.factoring.process;
 
+import com.google.common.base.Joiner;
+import de.metas.i18n.AdMessageKey;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.db.CConnection;
+import org.springframework.core.io.ByteArrayResource;
 
 import javax.annotation.Nullable;
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
@@ -73,11 +77,23 @@ import java.util.List;
  */
 public class Factoring_OP_Liste_Export extends JavaProcess
 {
+	// AD_Message rows for these keys are seeded by the AD_Process registration migration (Task 6).
+	private static final AdMessageKey MSG_RoleScopeAllOrgs = AdMessageKey.of("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
+	private static final AdMessageKey MSG_NoFactorer = AdMessageKey.of("Factoring_OP_Liste_EXT_NoFactorer");
+	private static final AdMessageKey MSG_MultipleFactorers = AdMessageKey.of("Factoring_OP_Liste_EXT_MultipleFactorers");
+	private static final AdMessageKey MSG_MissingContractNo = AdMessageKey.of("Factoring_OP_Liste_EXT_MissingContractNo");
+	private static final AdMessageKey MSG_MissingClientAccountId = AdMessageKey.of("Factoring_OP_Liste_EXT_MissingClientAccountId");
+
 	/** Parameter name: currency (mandatory). */
 	static final String PARAM_C_CURRENCY_ID = "C_Currency_ID";
 
 	@Param(parameterName = PARAM_C_CURRENCY_ID, mandatory = true)
 	private int p_C_Currency_ID;
+
+	public Factoring_OP_Liste_Export()
+	{
+		SpringContextHolder.instance.autowire(this);
+	}
 
 	// -------------------------------------------------------------------------
 	// JavaProcess contract
@@ -93,7 +109,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		try (final Connection conn = createConnection())
 		{
 			final ExportResult result = runExport(conn, orgId, clientId, p_C_Currency_ID);
-			getResult().setReportData(result.file, result.filename);
+			getResult().setReportData(new ByteArrayResource(result.bytes), result.filename, "text/csv");
 			addLog("File: {} ({} data row(s))", result.filename, result.rowCount);
 			return MSG_OK;
 		}
@@ -105,7 +121,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 
 	/**
 	 * Runs the full export: validates the factorer BP, calls the SQL function,
-	 * and writes the CSV file to a temp path.
+	 * and writes the CSV to a byte array.
 	 *
 	 * <p><b>JDBC rationale</b>: this class calls a PostgreSQL set-returning function
 	 * ({@code report_factoring_op_liste}) which cannot be invoked via {@code IQueryBL}.
@@ -116,9 +132,9 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	 * @param orgId     AD_Org_ID of the current user's organisation
 	 * @param clientId  AD_Client_ID
 	 * @param currencyId C_Currency_ID (the Währung parameter)
-	 * @return export result containing the temp file and its filename
+	 * @return export result containing the CSV bytes and the filename
 	 * @throws SQLException if a database error occurs
-	 * @throws IOException  if the temp file cannot be written
+	 * @throws IOException  if the CSV cannot be written
 	 */
 	ExportResult runExport(
 			@NonNull final Connection conn,
@@ -129,8 +145,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Refuse a role-scope-'*' invocation — the export is org-scoped.
 		if (orgId == 0)
 		{
-			throw new AdempiereException("Please select a specific organisation before running the Factoring OP-Liste Export. "
-					+ "Running with all-organisations scope ('*') is not supported.")
+			throw new AdempiereException(MSG_RoleScopeAllOrgs)
 					.markAsUserValidationError();
 		}
 
@@ -140,18 +155,17 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// ---- Call SQL function ----
 		final List<String[]> rows = callSqlFunction(conn, currencyId, orgId, clientId);
 
-		// ---- Write CSV file ----
+		// ---- Write CSV bytes ----
 		final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		final String filename = factorerBp.contractNo + "_INH_" + today + ".csv";
+		final String filename = Joiner.on("_").skipNulls()
+				.join(factorerBp.contractNo, "INH", today) + ".csv";
 
-		final File tempFile = File.createTempFile("factoring_op_liste_", ".csv");
-		tempFile.deleteOnExit();
-
-		writeCsv(tempFile, rows);
+		final ByteArrayOutputStream out = new ByteArrayOutputStream();
+		writeCsv(out, rows);
 
 		// Number of data rows = total rows minus the 1 header row
 		final int dataRowCount = Math.max(0, rows.size() - 1);
-		return new ExportResult(tempFile, filename, dataRowCount);
+		return new ExportResult(out.toByteArray(), filename, dataRowCount);
 	}
 
 	// -------------------------------------------------------------------------
@@ -191,8 +205,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		if (factorers.isEmpty())
 		{
 			final String orgName = getOrgName(conn, orgId);
-			throw new AdempiereException("No factorer BPartner (IsFactorer='Y') found for organisation " + orgName + ". "
-					+ "Please configure a BPartner with IsFactorer='Y' for this organisation.")
+			throw new AdempiereException(MSG_NoFactorer, orgName)
 					.markAsUserValidationError();
 		}
 
@@ -209,8 +222,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 				}
 				names.append(fp.name);
 			}
-			throw new AdempiereException("Multiple factorer BPartners (IsFactorer='Y') found for organisation " + orgName + ": " + names
-					+ ". Exactly one factorer BPartner per organisation is required.")
+			throw new AdempiereException(MSG_MultipleFactorers, orgName, names.toString())
 					.markAsUserValidationError();
 		}
 
@@ -219,14 +231,14 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Factorer BP must have a contract number set for export.
 		if (isBlank(factorer.contractNo))
 		{
-			throw new AdempiereException("Factorer BPartner '" + factorer.name + "' has no FactoringContractNo set — required for the OP-Liste export.")
+			throw new AdempiereException(MSG_MissingContractNo, factorer.name)
 					.markAsUserValidationError();
 		}
 
 		// Factorer BP must have a client account ID set for export.
 		if (isBlank(factorer.clientAccountId))
 		{
-			throw new AdempiereException("Factorer BPartner '" + factorer.name + "' has no FactoringClientAccountId set — required for the OP-Liste export.")
+			throw new AdempiereException(MSG_MissingClientAccountId, factorer.name)
 					.markAsUserValidationError();
 		}
 
@@ -289,7 +301,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Writes the row set to the given file.
+	 * Writes the row set to the given output stream.
 	 *
 	 * <p>Format: UTF-8 BOM, then each row as 11 values joined by {@code ;}
 	 * (row_type + col_1..col_10 — col_11 from the SQL function is an internal spare
@@ -297,21 +309,18 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	 * field 11 = col_10 renders as the trailing {@code ;} after the D/C flag / totals).
 	 * Terminated by CRLF ({@code \r\n}); last row also gets a trailing CRLF (matching the reference file).
 	 */
-	private void writeCsv(final File file, final List<String[]> rows) throws IOException
+	private void writeCsv(final OutputStream out, final List<String[]> rows) throws IOException
 	{
-		try (final FileOutputStream fos = new FileOutputStream(file))
-		{
-			// Write UTF-8 BOM as literal bytes (required for Crédit Agricole CSV spec compliance)
-			fos.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
+		// Write UTF-8 BOM as literal bytes (required for Crédit Agricole CSV spec compliance)
+		out.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
 
-			try (final BufferedWriter writer = new BufferedWriter(
-					new OutputStreamWriter(fos, StandardCharsets.UTF_8)))
+		try (final BufferedWriter writer = new BufferedWriter(
+				new OutputStreamWriter(out, StandardCharsets.UTF_8)))
+		{
+			for (final String[] row : rows)
 			{
-				for (final String[] row : rows)
-				{
-					writer.write(buildCsvLine(row));
-					writer.write("\r\n"); // CRLF line terminator — required by the spec; not the platform newline
-				}
+				writer.write(buildCsvLine(row));
+				writer.write("\r\n"); // CRLF line terminator — required by the spec; not the platform newline
 			}
 		}
 	}
@@ -386,13 +395,13 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	/** Result of a successful export run. */
 	static final class ExportResult
 	{
-		@NonNull public final File file;
+		@NonNull public final byte[] bytes;
 		@NonNull public final String filename;
 		public final int rowCount;
 
-		ExportResult(@NonNull final File file, @NonNull final String filename, final int rowCount)
+		ExportResult(@NonNull final byte[] bytes, @NonNull final String filename, final int rowCount)
 		{
-			this.file = file;
+			this.bytes = bytes;
 			this.filename = filename;
 			this.rowCount = rowCount;
 		}

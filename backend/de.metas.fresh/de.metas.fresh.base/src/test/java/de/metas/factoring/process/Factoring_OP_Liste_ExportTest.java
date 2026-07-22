@@ -28,9 +28,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -459,8 +456,8 @@ class Factoring_OP_Liste_ExportTest
 		assertThat(result.filename).as("filename convention: <ContractNo>_INH_<yyyyMMdd>.csv")
 				.isEqualTo("DE00001_INH_" + today + ".csv");
 
-		// ---- Read produced file bytes ----
-		final byte[] actualBytes = Files.readAllBytes(result.file.toPath());
+		// ---- Read produced bytes ----
+		final byte[] actualBytes = result.bytes;
 
 		// ---- BOM check (AC2, AC9) ----
 		assertThat(actualBytes).as("file length >= 3 bytes").hasSizeGreaterThanOrEqualTo(3);
@@ -521,8 +518,7 @@ class Factoring_OP_Liste_ExportTest
 
 		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("No factorer BPartner")
-				.hasMessageContaining("IsFactorer='Y'");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_NoFactorer");
 	}
 
 	// The multiple-factorer constraint is enforced at the schema level by the partial unique
@@ -549,8 +545,7 @@ class Factoring_OP_Liste_ExportTest
 
 		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("FactoringContractNo")
-				.hasMessageContaining("Faktoring Ohne Vertrag");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingContractNo");
 	}
 
 	/**
@@ -569,8 +564,7 @@ class Factoring_OP_Liste_ExportTest
 
 		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("FactoringClientAccountId")
-				.hasMessageContaining("Faktoring Ohne Konto");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingClientAccountId");
 	}
 
 	/**
@@ -583,8 +577,7 @@ class Factoring_OP_Liste_ExportTest
 
 		assertThatThrownBy(() -> process.runExport(conn, 0 /*all-orgs*/, AD_CLIENT_ID, EUR_CURRENCY_ID))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("specific organisation")
-				.hasMessageContaining("all-organisations");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
 	}
 
 	// =========================================================================
