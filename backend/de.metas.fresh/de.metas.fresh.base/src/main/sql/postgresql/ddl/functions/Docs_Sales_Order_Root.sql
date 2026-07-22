@@ -21,7 +21,7 @@ SELECT
 	o.DocStatus,
 	dt.PrintName,
 	o.C_Currency_ID,
-	poreference,
+	o.poreference,
 	CASE
 		WHEN
 		EXISTS(
