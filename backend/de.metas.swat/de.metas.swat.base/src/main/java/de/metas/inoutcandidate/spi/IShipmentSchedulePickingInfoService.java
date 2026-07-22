@@ -28,9 +28,7 @@ import lombok.NonNull;
 import java.util.Set;
 
 /**
- * Implemented in {@code de.metas.handlingunits.base} (which owns the picking-job aggregate) and resolved from
- * {@code de.metas.swat.base} via the dependency-inversion pattern, because {@code de.metas.swat.base} does not
- * depend on {@code de.metas.handlingunits.base}.
+ * Reports whether a shipment schedule still has picking work in progress.
  */
 public interface IShipmentSchedulePickingInfoService
 {
