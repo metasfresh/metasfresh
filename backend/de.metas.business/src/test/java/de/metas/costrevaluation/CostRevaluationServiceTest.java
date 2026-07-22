@@ -273,7 +273,7 @@ public class CostRevaluationServiceTest
 				.costElementId(sourceCostElementId)
 				.build();
 
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(seg);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(seg);
 		currentCost.setFrom(CostDetailPreviousAmounts.builder()
 				.costPrice(CostPrice.builder()
 						.ownCostPrice(CostAmount.of(ownCostPrice, euroCurrencyId))

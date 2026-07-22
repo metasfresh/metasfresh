@@ -572,7 +572,7 @@ public class CostingService implements ICostingService
 			@NonNull final Instant anchorDate,
 			@NonNull final CostRevaluationLineId lineId)
 	{
-		final CurrentCost currentCost = currentCostsRepo.getOrCreate(targetSegmentAndElement);
+		final CurrentCost currentCost = currentCostsRepo.getOrCreateForUpdate(targetSegmentAndElement);
 		currentCost.setFrom(opening);
 		currentCostsRepo.save(currentCost);
 
