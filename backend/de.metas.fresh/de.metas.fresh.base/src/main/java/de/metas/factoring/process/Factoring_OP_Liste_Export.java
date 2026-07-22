@@ -77,7 +77,12 @@ import java.util.List;
  */
 public class Factoring_OP_Liste_Export extends JavaProcess
 {
-	// AD_Message rows for these keys are seeded by the AD_Process registration migration (Task 6).
+	// AD_Message rows for these keys are seeded alongside the AD_Process registration migration.
+	// Note: throws below use the {@code @key@} placeholder form via {@link AdMessageKey#toAD_MessageWithMarkers()}
+	// rather than {@code new AdempiereException(AdMessageKey, ...)} — the latter constructor calls
+	// {@code MsgBL.getErrorCode()} at throw time, which requires the metasfresh Msg/DB layer to be
+	// initialized. Deferring resolution to {@code Msg.parseTranslation()} at display time keeps
+	// construction safe in raw-JDBC integration tests.
 	private static final AdMessageKey MSG_RoleScopeAllOrgs = AdMessageKey.of("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
 	private static final AdMessageKey MSG_NoFactorer = AdMessageKey.of("Factoring_OP_Liste_EXT_NoFactorer");
 	private static final AdMessageKey MSG_MultipleFactorers = AdMessageKey.of("Factoring_OP_Liste_EXT_MultipleFactorers");
@@ -92,6 +97,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 
 	public Factoring_OP_Liste_Export()
 	{
+		// Reserved for future @Autowired collaborators (mirrors DATEV_ExportFile's pattern).
 		SpringContextHolder.instance.autowire(this);
 	}
 
@@ -145,7 +151,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Refuse a role-scope-'*' invocation — the export is org-scoped.
 		if (orgId == 0)
 		{
-			throw new AdempiereException("@" + MSG_RoleScopeAllOrgs.toAD_Message() + "@")
+			throw new AdempiereException(MSG_RoleScopeAllOrgs.toAD_MessageWithMarkers())
 					.markAsUserValidationError();
 		}
 
@@ -205,7 +211,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		if (factorers.isEmpty())
 		{
 			final String orgName = getOrgName(conn, orgId);
-			throw new AdempiereException("@" + MSG_NoFactorer.toAD_Message() + "@ " + orgName)
+			throw new AdempiereException(MSG_NoFactorer.toAD_MessageWithMarkers() + " " + orgName)
 					.markAsUserValidationError();
 		}
 
@@ -222,7 +228,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 				}
 				names.append(fp.name);
 			}
-			throw new AdempiereException("@" + MSG_MultipleFactorers.toAD_Message() + "@ " + orgName + ": " + names)
+			throw new AdempiereException(MSG_MultipleFactorers.toAD_MessageWithMarkers() + " " + orgName + ": " + names)
 					.markAsUserValidationError();
 		}
 
@@ -231,14 +237,14 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Factorer BP must have a contract number set for export.
 		if (isBlank(factorer.contractNo))
 		{
-			throw new AdempiereException("@" + MSG_MissingContractNo.toAD_Message() + "@ " + factorer.name)
+			throw new AdempiereException(MSG_MissingContractNo.toAD_MessageWithMarkers() + " " + factorer.name)
 					.markAsUserValidationError();
 		}
 
 		// Factorer BP must have a client account ID set for export.
 		if (isBlank(factorer.clientAccountId))
 		{
-			throw new AdempiereException("@" + MSG_MissingClientAccountId.toAD_Message() + "@ " + factorer.name)
+			throw new AdempiereException(MSG_MissingClientAccountId.toAD_MessageWithMarkers() + " " + factorer.name)
 					.markAsUserValidationError();
 		}
 
