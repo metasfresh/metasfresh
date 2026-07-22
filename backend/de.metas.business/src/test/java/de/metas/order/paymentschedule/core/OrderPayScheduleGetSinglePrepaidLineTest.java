@@ -113,6 +113,19 @@ class OrderPayScheduleGetSinglePrepaidLineTest
 	}
 
 	@Test
+	void getSinglePrepaidLine_soleInvoiceDateNoOrderDateNoLc_returnsEmpty()
+	{
+		// A term whose only non-material-receipt break is an invoice-date break has NO prepaid step —
+		// an invoice-date break is a regular post-invoice term — so the proforma settles nothing here.
+		final OrderPayScheduleLine materialReceiptLine = newLine(100, ReferenceDateType.BillOfLadingDate);
+		final OrderPayScheduleLine invoiceDateLine = newLine(101, ReferenceDateType.InvoiceDate);
+
+		final OrderPaySchedule paySchedule = schedule(materialReceiptLine, invoiceDateLine);
+
+		assertThat(paySchedule.getSinglePrepaidLine()).isEmpty();
+	}
+
+	@Test
 	void getSinglePrepaidLine_invoiceDateAndOrderDate_ignoresInvoiceDate()
 	{
 		// An invoice-date break is a regular post-invoice term, not prepaid: with one OD (prepaid) break

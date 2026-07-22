@@ -104,6 +104,12 @@ class ProformaOrderAllocateCommand
 	 *   <li>Multiple advance breaks: a payment term with no LC break must have at most one advance
 	 *       (non-material-receipt) break.</li>
 	 * </ol>
+	 * <p>
+	 * Note on the prepaid target: the step a proforma payment settles is the Letter-of-Credit or the
+	 * order-date (advance) break (see {@link de.metas.order.paymentschedule.core.OrderPayScheduleLine#isPrepaidLine()}).
+	 * A term whose only non-material-receipt break is an invoice-date break has no prepaid step: allocation
+	 * still records the proforma↔order link, but the proforma payment marks no pay-schedule line paid, since
+	 * an invoice-date break is a regular post-invoice term rather than an up-front advance.
 	 *
 	 * @throws AdempiereException with a translated user-facing message on any violation
 	 */
