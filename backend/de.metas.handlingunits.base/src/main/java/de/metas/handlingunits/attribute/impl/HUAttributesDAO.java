@@ -3,13 +3,13 @@ package de.metas.handlingunits.attribute.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.attribute.HUAndPIAttributes;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.PIAttributes;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.X_M_HU;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -26,6 +26,7 @@ import java.util.Optional;
 public final class HUAttributesDAO implements IHUAttributesDAO
 {
 	public static final HUAttributesDAO instance = new HUAttributesDAO();
+	private static final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private HUAttributesDAO()
@@ -149,7 +150,7 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	 */
 	private static IQueryBuilder<I_M_HU_Attribute> addActiveRecordsFilterUnlessDestroyed(final IQueryBuilder<I_M_HU_Attribute> queryBuilder, final I_M_HU hu)
 	{
-		if (!X_M_HU.HUSTATUS_Destroyed.equals(hu.getHUStatus()))
+		if (!huStatusBL.isStatusDestroyed(hu))
 		{
 			queryBuilder.addOnlyActiveRecordsFilter();
 		}
