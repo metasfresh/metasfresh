@@ -341,7 +341,9 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		return retrieveSelectedRecordsQueryBuilder(Object.class)
+		// applyActiveRecordsFilter=false: the source can be a view (e.g. RV_PurchaseCockpit) with no IsActive column, and
+		// the user has already picked the exact rows, so an IsActive restriction would both break the SQL and be wrong here.
+		return retrieveSelectedRecordsQueryBuilder(Object.class, false)
 				.create()
 				.listIds()
 				.stream()
