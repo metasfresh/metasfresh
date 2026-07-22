@@ -1,3 +1,4 @@
+-- Source DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Factoring_OP_Liste.sql
 -- noinspection SqlNoDataSourceInspectionForFile
 
 -- #5815400 - Factoring OP-Liste: create SQL function report_factoring_op_liste

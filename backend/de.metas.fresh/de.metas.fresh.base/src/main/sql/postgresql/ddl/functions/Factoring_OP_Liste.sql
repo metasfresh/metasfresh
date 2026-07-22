@@ -13,6 +13,9 @@
 --   row_type  col_1   col_2   col_3                col_4                      col_5        col_6  col_7          col_8        col_9              col_10             col_11
 --   01        SAF     EFAG    FactoringContractNo   FactoringClientAccountId   currency     ''     upload date    row count    sum D grandtotal   sum C grandtotal   ''
 --   02        debno   name    documentno            dateinvoiced               duedate      curr   grandtotal     openamt      D/C flag           ''
+--
+-- Numbering note: "col_N" is the function-return numbering (row_type is a separate leading discriminator).
+-- REQUIREMENTS AC3/AC4 count row_type as "field 1", so AC "field N" = col_(N-1) here.
 
 DROP FUNCTION IF EXISTS report_factoring_op_liste(numeric, numeric, numeric);
 

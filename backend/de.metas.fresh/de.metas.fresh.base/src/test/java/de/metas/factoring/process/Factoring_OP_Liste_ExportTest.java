@@ -87,7 +87,6 @@ class Factoring_OP_Liste_ExportTest
 	// Sequence tracking for cleanup
 	private final List<Long> insertedBPartnerIds = new ArrayList<>();
 	private final List<Long> insertedInvoiceIds = new ArrayList<>();
-	private Long insertedOrgId2 = null;
 
 	private Connection conn;
 
@@ -115,22 +114,48 @@ class Factoring_OP_Liste_ExportTest
 		conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 		conn.setAutoCommit(true);
 		cleanupStaleTestData(); // remove any data left by prior non-rolled-back runs
+		insertTestOrg();        // insert second org for exclusion tests (committed immediately)
 		conn.setAutoCommit(false); // everything in one transaction, rolled back in @AfterEach
+	}
+
+	/**
+	 * Inserts a minimal {@code ad_org} row with id {@link #AD_ORG_ID_OTHER} for the other-org
+	 * exclusion test (AC8). Committed immediately (auto-commit) so it survives the transaction
+	 * boundary; cleaned up in {@link #deleteTestOrg()}.
+	 */
+	private void insertTestOrg() throws SQLException
+	{
+		try (final Statement st = conn.createStatement())
+		{
+			// Delete any stale row first (crash-recovery), then insert fresh.
+			st.executeUpdate("DELETE FROM ad_org WHERE ad_org_id = " + AD_ORG_ID_OTHER
+					+ " AND ad_client_id = " + AD_CLIENT_ID);
+			st.executeUpdate("INSERT INTO ad_org"
+					+ " (ad_org_id, ad_client_id, value, name, isactive, issummary, iseuonestopshop,"
+					+ "  created, updated, createdby, updatedby)"
+					+ " VALUES"
+					+ " (" + AD_ORG_ID_OTHER + ", " + AD_CLIENT_ID + ", 'TST_ORG2', 'Test Org 2', 'Y', 'N', 'N',"
+					+ "  now(), now(), 0, 0)");
+		}
 	}
 
 	/**
 	 * Removes any C_Invoice + C_BPartner rows created by a prior test run that didn't roll back.
 	 * Identified by the TEST_MARKER prefix on the BPartner.value column.
+	 * Also removes any stale other-org row left by a prior crash.
 	 */
 	private void cleanupStaleTestData() throws SQLException
 	{
 		try (final Statement st = conn.createStatement())
 		{
-			// invoices reference BPs — delete invoices first
+			// invoices reference BPs — delete invoices first (covers both orgs via TEST_MARKER)
 			st.executeUpdate("DELETE FROM c_invoice WHERE c_bpartner_id IN"
 					+ " (SELECT c_bpartner_id FROM c_bpartner WHERE value LIKE '" + TEST_MARKER + "%'"
 					+ "  AND ad_client_id = " + AD_CLIENT_ID + ")");
 			st.executeUpdate("DELETE FROM c_bpartner WHERE value LIKE '" + TEST_MARKER + "%'"
+					+ " AND ad_client_id = " + AD_CLIENT_ID);
+			// stale other-org row
+			st.executeUpdate("DELETE FROM ad_org WHERE ad_org_id = " + AD_ORG_ID_OTHER
 					+ " AND ad_client_id = " + AD_CLIENT_ID);
 		}
 	}
@@ -141,7 +166,29 @@ class Factoring_OP_Liste_ExportTest
 		if (conn != null && !conn.isClosed())
 		{
 			conn.rollback(); // roll back all fixture inserts — leaves DB clean
+			deleteTestOrg();
 			conn.close();
+		}
+	}
+
+	/**
+	 * Deletes BPartner/invoice test rows in the other org and then the org row itself.
+	 * Must run after rollback (data committed in-test is still in the DB after rollback of the
+	 * post-commit boundary; the cleanupStaleTestData prefix covers most of it, but we need the
+	 * org gone too). Deletes in FK order: invoices → bpartners → org.
+	 */
+	private void deleteTestOrg() throws SQLException
+	{
+		conn.setAutoCommit(true);
+		try (final Statement st = conn.createStatement())
+		{
+			// Remove any bpartner/invoice rows still referencing this org (committed before function call)
+			st.executeUpdate("DELETE FROM c_invoice WHERE ad_org_id = " + AD_ORG_ID_OTHER
+					+ " AND ad_client_id = " + AD_CLIENT_ID);
+			st.executeUpdate("DELETE FROM c_bpartner WHERE ad_org_id = " + AD_ORG_ID_OTHER
+					+ " AND ad_client_id = " + AD_CLIENT_ID);
+			st.executeUpdate("DELETE FROM ad_org WHERE ad_org_id = " + AD_ORG_ID_OTHER
+					+ " AND ad_client_id = " + AD_CLIENT_ID);
 		}
 	}
 
@@ -158,17 +205,19 @@ class Factoring_OP_Liste_ExportTest
 	 *   <li>1 non-factoring customer with 1 invoice (must be excluded)
 	 *   <li>1 invoice in USD on a factoring customer (must be excluded)
 	 *   <li>1 fully-paid factoring-customer invoice (openamt = 0, must be excluded)
+	 *   <li>1 factoring customer in a different org (AD_ORG_ID_OTHER) with 1 EUR invoice (must be excluded — AC8)
 	 * </ul>
 	 *
 	 * <p>Assert total rows = 5 (1 header + 4 detail); header fields per AC3; detail rows sorted by
 	 * C_BPartner.Value then DateInvoiced; each row's 11 fields match hand-computed expected values.
+	 * The other-org row must NOT appear in the result.
 	 */
 	@Test
 	void sql_function_returns_expected_rows_for_fixture() throws SQLException
 	{
 		// ---- BPartners ----
 		// Factorer BP
-		final long factorerBpId = insertBPartner(TEST_MARKER + "FACTORER01", "Faktoring GmbH", "Y", "N",
+		insertBPartner(TEST_MARKER + "FACTORER01", "Faktoring GmbH", "Y", "N",
 				"DE00001", "2500000000");
 
 		// Customer 1 — Value sorts first alphabetically within TEST_MARKER namespace
@@ -189,19 +238,19 @@ class Factoring_OP_Liste_ExportTest
 		final LocalDate dateDue = LocalDate.of(2025, 10, 1);
 
 		// TST_FKOP_CUST-AA: ARI invoice, grandtotal=1000.00, openamt=750.00 (partially paid)
-		final long invCust1Ari = insertInvoice(cust1BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
+		insertInvoice(cust1BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
 				"INV-AA-001", dateInv1, dateDue, 1000.00, 750.00);
 
 		// CUST-AA: ARC credit note, grandtotal=200.00, openamt=200.00
-		final long invCust1Arc = insertInvoice(cust1BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID,
+		insertInvoice(cust1BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID,
 				"CR-AA-001", dateInv2, dateDue, 200.00, 200.00);
 
 		// CUST-BB: ARI invoice, grandtotal=500.00, openamt=500.00
-		final long invCust2Ari = insertInvoice(cust2BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
+		insertInvoice(cust2BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
 				"INV-BB-001", dateInv1, dateDue, 500.00, 500.00);
 
 		// CUST-BB: ARC credit note, grandtotal=100.00, openamt=100.00
-		final long invCust2Arc = insertInvoice(cust2BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID,
+		insertInvoice(cust2BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID,
 				"CR-BB-001", dateInv2, dateDue, 100.00, 100.00);
 
 		// Non-factoring customer invoice — must be excluded
@@ -216,6 +265,12 @@ class Factoring_OP_Liste_ExportTest
 		insertInvoice(cust2BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
 				"INV-BB-PAID", dateInv1, dateDue, 600.00, 0.00);
 
+		// AC8: factoring customer in a different org — must be excluded (inv.ad_org_id = p_ad_org_id filter)
+		final long custOtherOrgBpId = insertBPartnerWithOrg(
+				TEST_MARKER + "CUST-OTHERORG", "Other Org Kunde GmbH", "N", "Y", null, null, AD_ORG_ID_OTHER);
+		insertInvoiceWithOrg(custOtherOrgBpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
+				"INV-OTHERORG-001", dateInv1, dateDue, 800.00, 800.00, AD_ORG_ID_OTHER);
+
 		conn.commit(); // commit so the function sees the data (function runs in same session)
 		conn.setAutoCommit(false); // keep transaction boundary for rollback in @AfterEach
 
@@ -223,8 +278,11 @@ class Factoring_OP_Liste_ExportTest
 		final List<String[]> rows = callFunction(EUR_CURRENCY_ID, AD_ORG_ID, AD_CLIENT_ID);
 
 		// ---- Assertions ----
-		// 1 header + 4 detail rows
+		// 1 header + 4 detail rows (other-org row must NOT appear)
 		assertThat(rows).as("total rows (1 header + 4 detail)").hasSize(5);
+		// AC8: verify no row belongs to the other-org BP
+		assertThat(rows.stream().noneMatch(r -> (TEST_MARKER + "CUST-OTHERORG").equals(r[1])))
+				.as("no row from other org (AC8 exclusion)").isTrue();
 
 		// Header row (row_type='01')
 		final String[] header = rows.get(0);
@@ -360,7 +418,7 @@ class Factoring_OP_Liste_ExportTest
 	}
 
 	/**
-	 * Inserts a C_BPartner row for the test fixture and tracks its ID for cleanup.
+	 * Inserts a C_BPartner row for the test fixture using {@link #AD_ORG_ID} and tracks its ID for cleanup.
 	 *
 	 * @return the generated c_bpartner_id
 	 */
@@ -371,6 +429,24 @@ class Factoring_OP_Liste_ExportTest
 			final String isFactoring,
 			final String factoringContractNo,
 			final String factoringClientAccountId) throws SQLException
+	{
+		return insertBPartnerWithOrg(value, name, isFactorer, isFactoring,
+				factoringContractNo, factoringClientAccountId, AD_ORG_ID);
+	}
+
+	/**
+	 * Inserts a C_BPartner row with a caller-specified {@code adOrgId} and tracks its ID for cleanup.
+	 *
+	 * @return the generated c_bpartner_id
+	 */
+	private long insertBPartnerWithOrg(
+			final String value,
+			final String name,
+			final String isFactorer,
+			final String isFactoring,
+			final String factoringContractNo,
+			final String factoringClientAccountId,
+			final int adOrgId) throws SQLException
 	{
 		final String sql = "INSERT INTO c_bpartner"
 				+ " (c_bpartner_id, ad_client_id, ad_org_id, c_bp_group_id, value, name, isfactorer, isfactoring,"
@@ -387,7 +463,7 @@ class Factoring_OP_Liste_ExportTest
 		try (final PreparedStatement ps = conn.prepareStatement(sql))
 		{
 			ps.setInt(1, AD_CLIENT_ID);
-			ps.setInt(2, AD_ORG_ID);
+			ps.setInt(2, adOrgId);
 			ps.setInt(3, C_BP_GROUP_ID);
 			ps.setString(4, value);
 			ps.setString(5, name);
@@ -406,7 +482,7 @@ class Factoring_OP_Liste_ExportTest
 	}
 
 	/**
-	 * Inserts a C_Invoice row (minimal fields for the function to work).
+	 * Inserts a C_Invoice row using {@link #AD_ORG_ID} (minimal fields for the function to work).
 	 *
 	 * @return the generated c_invoice_id
 	 */
@@ -419,6 +495,26 @@ class Factoring_OP_Liste_ExportTest
 			final LocalDate dueDate,
 			final double grandTotal,
 			final double openAmt) throws SQLException
+	{
+		return insertInvoiceWithOrg(bpartnerId, docTypeId, currencyId, documentNo,
+				dateInvoiced, dueDate, grandTotal, openAmt, AD_ORG_ID);
+	}
+
+	/**
+	 * Inserts a C_Invoice row with a caller-specified {@code adOrgId}.
+	 *
+	 * @return the generated c_invoice_id
+	 */
+	private long insertInvoiceWithOrg(
+			final long bpartnerId,
+			final int docTypeId,
+			final int currencyId,
+			final String documentNo,
+			final LocalDate dateInvoiced,
+			final LocalDate dueDate,
+			final double grandTotal,
+			final double openAmt,
+			final int adOrgId) throws SQLException
 	{
 		// All NOT NULL columns are provided; defaults handle the rest.
 		// ispaid = Y if openAmt == 0, else N
@@ -443,7 +539,7 @@ class Factoring_OP_Liste_ExportTest
 		try (final PreparedStatement ps = conn.prepareStatement(sql))
 		{
 			ps.setInt(1, AD_CLIENT_ID);
-			ps.setInt(2, AD_ORG_ID);
+			ps.setInt(2, adOrgId);
 			ps.setLong(3, bpartnerId);
 			ps.setInt(4, C_BPARTNER_LOCATION_ID);
 			ps.setInt(5, docTypeId);
