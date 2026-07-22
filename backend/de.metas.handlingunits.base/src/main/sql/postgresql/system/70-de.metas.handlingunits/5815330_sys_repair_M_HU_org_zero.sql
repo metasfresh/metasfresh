@@ -1,8 +1,8 @@
 -- Repair physical HUs left with AD_Org_ID=0 (the * / ANY org).
 -- A physical HU lives in a locator -> warehouse -> exactly one real org, so AD_Org_ID=0 is corrupt: it makes
 -- MD_Stock_From_HUs_V emit an org-0 aggregate row for a real-org warehouse, which MD_Stock_Update_From_M_HUs
--- cannot reconcile -> the whole stock-correction run fails. Set each such active HU's org to its locator's
--- warehouse org. Idempotent: only touches active org-0 HUs whose warehouse carries a real org, so a re-run
+-- cannot reconcile -> the whole stock-correction run fails. Set each such HU's org to its locator's
+-- warehouse org. Idempotent: only touches org-0 HUs whose warehouse carries a real org, so a re-run
 -- corrects nothing further.
 SELECT backup_table('m_hu', '_repair_org_zero');
 
