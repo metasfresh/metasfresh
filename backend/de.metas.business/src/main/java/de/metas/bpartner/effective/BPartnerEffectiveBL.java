@@ -31,9 +31,12 @@ import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -255,6 +258,11 @@ public class BPartnerEffectiveBL
 				() -> false)));
 
 		bPartnerBuilder.salesRepId(UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID()));
+
+		bPartnerBuilder.freightCostRule(FreightCostRule.ofNullableCode(bPartnerRecord.getFreightCostRule()));
+		bPartnerBuilder.deliveryRule(DeliveryRule.ofNullableCode(bPartnerRecord.getDeliveryRule()));
+		bPartnerBuilder.deliveryViaRule(DeliveryViaRule.ofNullableCode(bPartnerRecord.getDeliveryViaRule()));
+		bPartnerBuilder.poDeliveryViaRule(DeliveryViaRule.ofNullableCode(bPartnerRecord.getPO_DeliveryViaRule()));
 
 		return bPartnerBuilder.build();
 	}

@@ -23,9 +23,12 @@
 package de.metas.bpartner.effective;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.incoterms.Incoterms;
 import de.metas.shipping.ShipperId;
 import de.metas.lang.SOTrx;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -58,6 +61,23 @@ public class BPartnerEffective
 	@Getter @Nullable private final ShipperId shipperId;
 	// sales-only: C_BPartner.SalesRep_ID has no purchase counterpart, hence no SOTrx split
 	@Getter @Nullable private final UserId salesRepId;
+	@Getter @Nullable private final FreightCostRule freightCostRule;
+	@Nullable private final DeliveryRule deliveryRule;
+	@Nullable private final DeliveryViaRule deliveryViaRule;
+	@Nullable private final DeliveryViaRule poDeliveryViaRule;
+
+	@Nullable
+	public DeliveryRule getDeliveryRule(@NonNull final SOTrx soTrx)
+	{
+		// sales-only: C_BPartner.DeliveryRule has no purchase counterpart
+		return soTrx.isSales() ? deliveryRule : null;
+	}
+
+	@Nullable
+	public DeliveryViaRule getDeliveryViaRule(@NonNull final SOTrx soTrx)
+	{
+		return soTrx.isSales() ? deliveryViaRule : poDeliveryViaRule;
+	}
 
 	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final SOTrx soTrx)
