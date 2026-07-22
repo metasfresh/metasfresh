@@ -63,7 +63,7 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		// 1) Hard-block, all-or-nothing, over the FULL user selection: if any selected schedule still has an
-		// unfinished (Drafted) picking job, reject the whole close and close NOTHING (AC1, AC6).
+		// unfinished (Drafted) picking job, reject the whole close and close NOTHING.
 		final List<I_M_ShipmentSchedule> fullSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
 				.create()
 				.list();

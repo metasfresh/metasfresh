@@ -179,7 +179,7 @@ Feature: Closing a shipment schedule with an unfinished picking order
     # this closes the schedule via ShipmentScheduleBL.closeShipmentSchedule directly -- the same BL
     # chokepoint every automatic/system close path uses (post-shipment auto-close, picking-complete,
     # REST close, contract close, order-triggered close) -- bypassing the user-Close process the guard
-    # lives in (AC5)
+    # lives in
     And the M_ShipmentSchedule identified by shipmentSchedule is closed
 
     Then after not more than 60s, validate shipment schedules:
