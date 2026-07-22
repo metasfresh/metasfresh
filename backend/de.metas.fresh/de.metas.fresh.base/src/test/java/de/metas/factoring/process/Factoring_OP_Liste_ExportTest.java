@@ -22,11 +22,15 @@
 
 package de.metas.factoring.process;
 
+import org.adempiere.exceptions.AdempiereException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -40,6 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Integration test for the {@code report_factoring_op_liste} SQL function.
@@ -383,6 +388,207 @@ class Factoring_OP_Liste_ExportTest
 
 	// =========================================================================
 	// Helpers
+	// =========================================================================
+
+	// =========================================================================
+	// Process integration tests (Task 5)
+	// =========================================================================
+
+	/**
+	 * Creates a {@link Factoring_OP_Liste_Export} that delegates its DB connection to
+	 * the test's own JDBC connection, so the process sees committed test data.
+	 */
+	private Factoring_OP_Liste_Export createProcessWithTestConn(final Connection testConn)
+	{
+		return new Factoring_OP_Liste_Export()
+		{
+			@Override
+			java.sql.Connection createConnection()
+			{
+				return testConn;
+			}
+		};
+	}
+
+	/**
+	 * Process end-to-end test — byte-for-byte CSV content validation (AC2, AC9).
+	 *
+	 * <p>Same fixture as {@link #sql_function_returns_expected_rows_for_fixture()}:
+	 * 1 factorer BP, 2 factoring customers × (1 ARI + 1 ARC) in EUR, plus excluded rows.
+	 * Asserts: UTF-8 BOM, filename convention, CRLF-only line endings, exact CSV content.
+	 */
+	@Test
+	void process_produces_expected_csv_byte_for_byte() throws Exception
+	{
+		// ---- same fixture as sql_function_returns_expected_rows_for_fixture ----
+		insertBPartner(TEST_MARKER + "FACTORER03", "Faktoring GmbH 3", "Y", "N",
+				"DE00001", "2500000000");
+
+		final long cust1BpId = insertBPartner(TEST_MARKER + "CUST-AA3", "Alpha Kunde GmbH", "N", "Y", null, null);
+		final long cust2BpId = insertBPartner(TEST_MARKER + "CUST-BB3", "Beta Kunde AG", "N", "Y", null, null);
+		final long nonFactoringBpId = insertBPartner(TEST_MARKER + "NONFACT03", "Nicht Faktoring GmbH", "N", "N", null, null);
+
+		final LocalDate dateInv1 = LocalDate.of(2025, 9, 1);
+		final LocalDate dateInv2 = LocalDate.of(2025, 9, 5);
+		final LocalDate dateDue = LocalDate.of(2025, 10, 1);
+
+		insertInvoice(cust1BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID, "INV-AA3-001", dateInv1, dateDue, 1000.00, 750.00);
+		insertInvoice(cust1BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID, "CR-AA3-001", dateInv2, dateDue, 200.00, 200.00);
+		insertInvoice(cust2BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID, "INV-BB3-001", dateInv1, dateDue, 500.00, 500.00);
+		insertInvoice(cust2BpId, ARC_DOCTYPE_ID, EUR_CURRENCY_ID, "CR-BB3-001", dateInv2, dateDue, 100.00, 100.00);
+		insertInvoice(nonFactoringBpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID, "INV-NF3-001", dateInv1, dateDue, 300.00, 300.00);
+		insertInvoice(cust1BpId, ARI_DOCTYPE_ID, USD_CURRENCY_ID, "INV-USD3-001", dateInv1, dateDue, 400.00, 400.00);
+		insertInvoice(cust2BpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID, "INV-BB3-PAID", dateInv1, dateDue, 600.00, 0.00);
+
+		// Other-org factoring customer (must be excluded)
+		final long custOtherOrgBpId = insertBPartnerWithOrg(
+				TEST_MARKER + "CUST-OO3", "Other Org Kunde GmbH", "N", "Y", null, null, AD_ORG_ID_OTHER);
+		insertInvoiceWithOrg(custOtherOrgBpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID,
+				"INV-OO3-001", dateInv1, dateDue, 800.00, 800.00, AD_ORG_ID_OTHER);
+
+		conn.commit();
+		conn.setAutoCommit(false);
+
+		// ---- Run process ----
+		final Factoring_OP_Liste_Export process = createProcessWithTestConn(conn);
+		final Factoring_OP_Liste_Export.ExportResult result =
+				process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID);
+
+		// ---- Assert filename ----
+		final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+		assertThat(result.filename).as("filename convention: <ContractNo>_INH_<yyyyMMdd>.csv")
+				.isEqualTo("DE00001_INH_" + today + ".csv");
+
+		// ---- Read produced file bytes ----
+		final byte[] actualBytes = Files.readAllBytes(result.file.toPath());
+
+		// ---- BOM check (AC2, AC9) ----
+		assertThat(actualBytes).as("file length >= 3 bytes").hasSizeGreaterThanOrEqualTo(3);
+		assertThat(actualBytes[0]).as("BOM byte 0 = 0xEF").isEqualTo((byte) 0xEF);
+		assertThat(actualBytes[1]).as("BOM byte 1 = 0xBB").isEqualTo((byte) 0xBB);
+		assertThat(actualBytes[2]).as("BOM byte 2 = 0xBF").isEqualTo((byte) 0xBF);
+
+		// ---- CRLF check — no lone LF in the byte stream (AC2) ----
+		for (int i = 0; i < actualBytes.length; i++)
+		{
+			if (actualBytes[i] == 0x0A /* LF */)
+			{
+				assertThat(i).as("LF at position " + i + " must be preceded by CR").isGreaterThan(0);
+				assertThat(actualBytes[i - 1]).as("LF at position " + i + " must be preceded by CR (0x0D)").isEqualTo((byte) 0x0D);
+			}
+		}
+
+		// ---- Content check: 5 lines (1 header + 4 detail), with today's date in header ----
+		final String content = new String(actualBytes, 3, actualBytes.length - 3, java.nio.charset.StandardCharsets.UTF_8);
+		final String[] lines = content.split("\r\n", -1);
+		// Last element is empty string (trailing CRLF produces empty element after split)
+		assertThat(lines).as("5 content lines + empty trailing element").hasSize(6);
+		assertThat(lines[5]).as("last element is empty (trailing CRLF)").isEmpty();
+
+		// Header line — 11 semicolon-separated tokens per AC3.
+		// Fields: 1='01', 2='SAF', 3='EFAG', 4=contract, 5=client-account-id, 6=currency,
+		// 7='' (technical semicolon → shows as ;;), 8=upload date, 9=row count,
+		// 10=sum D, 11=sum C. Field 11 carries a value (not empty) — NO trailing ';' after sum C.
+		assertThat(lines[0]).as("header line").isEqualTo(
+				"01;SAF;EFAG;DE00001;2500000000;EUR;;" + LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+						+ ";5,00;1500,00;300,00");
+
+		// Detail rows
+		assertThat(lines[1]).as("detail row 1")
+				.isEqualTo("02;" + TEST_MARKER + "CUST-AA3;Alpha Kunde GmbH;INV-AA3-001;01.09.2025;01.10.2025;EUR;1000,00;750,00;D;");
+		assertThat(lines[2]).as("detail row 2")
+				.isEqualTo("02;" + TEST_MARKER + "CUST-AA3;Alpha Kunde GmbH;CR-AA3-001;05.09.2025;01.10.2025;EUR;200,00;200,00;C;");
+		assertThat(lines[3]).as("detail row 3")
+				.isEqualTo("02;" + TEST_MARKER + "CUST-BB3;Beta Kunde AG;INV-BB3-001;01.09.2025;01.10.2025;EUR;500,00;500,00;D;");
+		assertThat(lines[4]).as("detail row 4")
+				.isEqualTo("02;" + TEST_MARKER + "CUST-BB3;Beta Kunde AG;CR-BB3-001;05.09.2025;01.10.2025;EUR;100,00;100,00;C;");
+	}
+
+	/**
+	 * AC6: zero factorer BPs → AdempiereException naming the org.
+	 */
+	@Test
+	void process_fails_when_no_factorer_bp_for_org() throws Exception
+	{
+		// Only factoring customers, no IsFactorer='Y' BP
+		final long custBpId = insertBPartner(TEST_MARKER + "CUST-NOFACT01", "Kunde Ohne Faktor", "N", "Y", null, null);
+		insertInvoice(custBpId, ARI_DOCTYPE_ID, EUR_CURRENCY_ID, "INV-NF-ERR-001",
+				LocalDate.of(2025, 9, 1), LocalDate.of(2025, 10, 1), 1000.00, 1000.00);
+		conn.commit();
+		conn.setAutoCommit(false);
+
+		final Factoring_OP_Liste_Export process = createProcessWithTestConn(conn);
+
+		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("No factorer BPartner")
+				.hasMessageContaining("IsFactorer='Y'");
+	}
+
+	// AC6 "multiple factorer BPs in one org" is enforced at the schema level by the partial unique
+	// index c_bpartner_isfactorer_uniqe on (IsFactorer, AD_Org_ID) WHERE IsFactorer='Y' AND
+	// IsActive='Y' — the DB will not accept two active factorers in the same org, so an integration
+	// test cannot construct that fixture. The Java-side check in resolveFactorerBp() remains as a
+	// belt-and-suspenders guard against a hypothetical schema regression (e.g. someone dropping the
+	// partial index or changing its predicate) and against races if two factorer rows briefly
+	// coexist during a de-activate-then-activate flip on the same org.
+
+	/**
+	 * AC6: factorer BP has null FactoringContractNo → AdempiereException naming the field and BP.
+	 */
+	@Test
+	void process_fails_when_factorer_has_empty_contract_no() throws Exception
+	{
+		// FactoringContractNo = null (empty)
+		insertBPartner(TEST_MARKER + "FACTORER-NOCONTRACT", "Faktoring Ohne Vertrag", "Y", "N",
+				null, "9999999999");
+		conn.commit();
+		conn.setAutoCommit(false);
+
+		final Factoring_OP_Liste_Export process = createProcessWithTestConn(conn);
+
+		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("FactoringContractNo")
+				.hasMessageContaining("Faktoring Ohne Vertrag");
+	}
+
+	/**
+	 * AC6: factorer BP has null FactoringClientAccountId → AdempiereException naming the field and BP.
+	 */
+	@Test
+	void process_fails_when_factorer_has_empty_client_account_id() throws Exception
+	{
+		// FactoringClientAccountId = null (empty)
+		insertBPartner(TEST_MARKER + "FACTORER-NOACCT", "Faktoring Ohne Konto", "Y", "N",
+				"DE-NOACCT", null);
+		conn.commit();
+		conn.setAutoCommit(false);
+
+		final Factoring_OP_Liste_Export process = createProcessWithTestConn(conn);
+
+		assertThatThrownBy(() -> process.runExport(conn, AD_ORG_ID, AD_CLIENT_ID, EUR_CURRENCY_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("FactoringClientAccountId")
+				.hasMessageContaining("Faktoring Ohne Konto");
+	}
+
+	/**
+	 * AC6: process called with org 0 (all-orgs scope, the '*' role) → AdempiereException.
+	 */
+	@Test
+	void process_fails_when_role_scope_is_all_orgs() throws Exception
+	{
+		final Factoring_OP_Liste_Export process = createProcessWithTestConn(conn);
+
+		assertThatThrownBy(() -> process.runExport(conn, 0 /*all-orgs*/, AD_CLIENT_ID, EUR_CURRENCY_ID))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("specific organisation")
+				.hasMessageContaining("all-organisations");
+	}
+
+	// =========================================================================
+	// Helpers (SQL function invocation)
 	// =========================================================================
 
 	/**
