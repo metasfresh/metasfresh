@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
@@ -33,6 +34,7 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +56,14 @@ import java.util.stream.Stream;
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * PostgreSQL/JDBC caps bind parameters at {@code Short.MAX_VALUE} (32767) — a 2-byte slot per parameter. This
+	 * constant caps the number of {@code M_ShipmentSchedule_ID} values folded into a single {@code IN (...)} filter,
+	 * with headroom below that hard limit (mirrors
+	 * {@code de.metas.picking.job_schedule.repository.PickingJobScheduleRepository#MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY}).
+	 */
+	@VisibleForTesting static final int MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY = 30000;
 
 	@VisibleForTesting
 	public static PickingJobRepository newInstanceForUnitTesting()
@@ -313,11 +323,38 @@ public class PickingJobRepository
 	@NonNull
 	public ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob(@NonNull final Set<ShipmentScheduleId> scheduleIds)
 	{
+		return getScheduleIdsWithDraftedPickingJob(scheduleIds, MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY);
+	}
+
+	@NonNull
+	@VisibleForTesting
+	ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob(@NonNull final Set<ShipmentScheduleId> scheduleIds, final int maxIdsPerChunk)
+	{
 		if (scheduleIds.isEmpty())
 		{
 			return ImmutableSet.of();
 		}
 
+		if (scheduleIds.size() <= maxIdsPerChunk)
+		{
+			return getScheduleIdsWithDraftedPickingJob0(scheduleIds);
+		}
+
+		// Each chunk is a separate statement, so under READ COMMITTED there is no cross-chunk MVCC snapshot consistency for id
+		// sets > MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY. Acceptable here: the result is a Set, deduplicated across chunks, and the
+		// caller (the user-Close guard) only needs to know WHICH schedules currently have an unfinished picking job.
+		final Iterable<List<ShipmentScheduleId>> partitions = Iterables.partition(scheduleIds, maxIdsPerChunk);
+		final ImmutableSet.Builder<ShipmentScheduleId> result = ImmutableSet.builder();
+		for (final List<ShipmentScheduleId> chunk : partitions)
+		{
+			result.addAll(getScheduleIdsWithDraftedPickingJob0(chunk));
+		}
+		return result.build();
+	}
+
+	@NonNull
+	private ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob0(@NonNull final Collection<ShipmentScheduleId> scheduleIds)
+	{
 		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
 				.addOnlyActiveRecordsFilter()
