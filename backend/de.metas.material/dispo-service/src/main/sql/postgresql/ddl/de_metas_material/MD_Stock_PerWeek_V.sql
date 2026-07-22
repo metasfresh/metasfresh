@@ -18,9 +18,9 @@
 --
 -- Horizon: current week .. current+N, where N = SysConfig
 --   'de.metas.material.stockperweek.HorizonWeeks' (default 12 => 13 rows).
--- Overdue activity (dated before the current week) is rolled into the current-week row
--- via GREATEST(week-of(DateProjected), current-week) so backlog is never hidden.
--- Only active, non-'simulated' candidates are considered.
+-- Overdue activity (dated before the current week) is NOT rolled into the current week's movement
+-- columns; it is already reflected in QtyATPBegin (the projected running balance), so backlog is
+-- shown once, not twice. Only active, non-'simulated' candidates are considered.
 --
 -- Aggregation defaults (DESIGN.md §7 — confirm with customer at UAT):
 --   * attributes : summed across StorageAttributesKey (latest STOCK per key, then SUM)

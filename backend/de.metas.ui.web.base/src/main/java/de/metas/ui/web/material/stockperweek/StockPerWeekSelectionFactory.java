@@ -189,8 +189,10 @@ public class StockPerWeekSelectionFactory implements ViewRowIdsOrderedSelectionF
 						.append(", row_number() OVER (ORDER BY " + rowNumberOrderBySql + ")"
 								+ ", " + FUNCTION_ALIAS + "." + KEY_COLUMN
 								+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Product_ID
-								+ ", " + FUNCTION_ALIAS + "." + I_MD_Stock_PerWeek_V.COLUMNNAME_M_Warehouse_ID + "\n"
-								+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, productId, warehouseFnParam)
+								// IntKey3 = the applied warehouse filter (null for a product-only selection), not the
+								// per-row warehouse; readAppliedFilter re-parameterizes the page render with it.
+								+ ", CAST(? AS numeric)\n"
+								+ " FROM " + FUNCTION_NAME + "(?, ?) " + FUNCTION_ALIAS, warehouseFnParam, productId, warehouseFnParam)
 						.append("\n WHERE 1=1 ")
 						.wrap(securityRestrictionsWrapper(applySecurityRestrictions)));
 
