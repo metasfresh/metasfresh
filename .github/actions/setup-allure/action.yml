@@ -7,9 +7,9 @@ runs:
       shell: bash
       run: |
         # Canonical (new_dawn_uat) reads the version from e2e/mobile-webui/package.json.
-        # This OLD-pipeline branch (gray_knight_hotfix) has no e2e/mobile-webui npm project
-        # (its mobile test runs via docker-builds/mobiletest/), so pin the same version that
-        # new_dawn_uat uses and treat that package.json as an optional override if it ever exists.
+        # This branch has no e2e/mobile-webui npm project (its mobile test runs via
+        # docker-builds/mobiletest/), so pin the same version that new_dawn_uat uses and
+        # treat that package.json as an optional override if it ever exists.
         DEFAULT_ALLURE_VERSION="2.32.1"
         ALLURE_VERSION="$DEFAULT_ALLURE_VERSION"
         if [ -f e2e/mobile-webui/package.json ]; then

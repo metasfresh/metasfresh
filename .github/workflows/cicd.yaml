@@ -1464,7 +1464,7 @@ jobs:
       contents: read
       pull-requests: write # post Allure report links as PR comments
     steps:
-      - uses: actions/checkout@v4 # needed for .github/test-report-permalinks (generator + resolver page)
+      - uses: actions/checkout@v6 # needed for .github/test-report-permalinks (generator + resolver page)
 
       - name: Check for report server secret
         id: check-secret
