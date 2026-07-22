@@ -94,10 +94,8 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 		// NOTE: don't cache on this level. Caching is handled on upper levels
 
 		// there are only some dozen attributes at most, so i think it'S fine to order them after loading
-		final IQueryBuilder<I_M_HU_Attribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID());
-		addActiveRecordsFilterUnlessDestroyed(queryBuilder, hu);
-		final List<I_M_HU_Attribute> huAttributes = queryBuilder
+		final List<I_M_HU_Attribute> huAttributes = addActiveRecordsFilterUnlessDestroyed(queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu), hu)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
 				.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
@@ -124,11 +122,9 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 
 	private List<I_M_HU_Attribute> retrieveAttributes(final I_M_HU hu, @NonNull final AttributeId attributeId)
 	{
-		final IQueryBuilder<I_M_HU_Attribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu)
+		final List<I_M_HU_Attribute> huAttributes = addActiveRecordsFilterUnlessDestroyed(queryBL.createQueryBuilder(I_M_HU_Attribute.class, hu), hu)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_ID, hu.getM_HU_ID())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId);
-		addActiveRecordsFilterUnlessDestroyed(queryBuilder, hu);
-		final List<I_M_HU_Attribute> huAttributes = queryBuilder
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeId)
 				.create()
 				.list(I_M_HU_Attribute.class);
 
@@ -149,14 +145,15 @@ public final class HUAttributesDAO implements IHUAttributesDAO
 	 * HU_ReceiptInOutLine_ID link), breaking destroyed-HU attribute consumers such as the
 	 * material-tracking receipt-line lookup. A destroyed HU's attributes are uniformly the archived
 	 * set, so dropping the active filter for it reads exactly that set. Live HUs keep the active-only
-	 * filter (and the M_HU_Attribute active partial index it relies on).
+	 * filter (unchanged behaviour).
 	 */
-	private static void addActiveRecordsFilterUnlessDestroyed(final IQueryBuilder<I_M_HU_Attribute> queryBuilder, final I_M_HU hu)
+	private static IQueryBuilder<I_M_HU_Attribute> addActiveRecordsFilterUnlessDestroyed(final IQueryBuilder<I_M_HU_Attribute> queryBuilder, final I_M_HU hu)
 	{
 		if (!X_M_HU.HUSTATUS_Destroyed.equals(hu.getHUStatus()))
 		{
 			queryBuilder.addOnlyActiveRecordsFilter();
 		}
+		return queryBuilder;
 	}
 
 	@Override
