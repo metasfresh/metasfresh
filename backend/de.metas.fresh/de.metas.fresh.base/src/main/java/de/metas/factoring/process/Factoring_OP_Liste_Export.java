@@ -145,7 +145,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Refuse a role-scope-'*' invocation — the export is org-scoped.
 		if (orgId == 0)
 		{
-			throw new AdempiereException(MSG_RoleScopeAllOrgs)
+			throw new AdempiereException("@" + MSG_RoleScopeAllOrgs.toAD_Message() + "@")
 					.markAsUserValidationError();
 		}
 
@@ -205,7 +205,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		if (factorers.isEmpty())
 		{
 			final String orgName = getOrgName(conn, orgId);
-			throw new AdempiereException(MSG_NoFactorer, orgName)
+			throw new AdempiereException("@" + MSG_NoFactorer.toAD_Message() + "@ " + orgName)
 					.markAsUserValidationError();
 		}
 
@@ -222,7 +222,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 				}
 				names.append(fp.name);
 			}
-			throw new AdempiereException(MSG_MultipleFactorers, orgName, names.toString())
+			throw new AdempiereException("@" + MSG_MultipleFactorers.toAD_Message() + "@ " + orgName + ": " + names)
 					.markAsUserValidationError();
 		}
 
@@ -231,14 +231,14 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		// Factorer BP must have a contract number set for export.
 		if (isBlank(factorer.contractNo))
 		{
-			throw new AdempiereException(MSG_MissingContractNo, factorer.name)
+			throw new AdempiereException("@" + MSG_MissingContractNo.toAD_Message() + "@ " + factorer.name)
 					.markAsUserValidationError();
 		}
 
 		// Factorer BP must have a client account ID set for export.
 		if (isBlank(factorer.clientAccountId))
 		{
-			throw new AdempiereException(MSG_MissingClientAccountId, factorer.name)
+			throw new AdempiereException("@" + MSG_MissingClientAccountId.toAD_Message() + "@ " + factorer.name)
 					.markAsUserValidationError();
 		}
 
