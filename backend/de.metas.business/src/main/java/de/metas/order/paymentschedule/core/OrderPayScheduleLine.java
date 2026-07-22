@@ -127,6 +127,13 @@ public class OrderPayScheduleLine
 	public boolean isMaterialReceiptDate() {return referenceDateType.isMaterialReceiptDate();}
 
 	/**
+	 * True for a prepaid step — one settled up front via a proforma, before delivery: a Letter-of-Credit
+	 * or an order-date (advance) break. An invoice-date break is a regular post-invoice term (not prepaid);
+	 * a material-receipt (BL/ETA) break is delivery-driven (not prepaid).
+	 */
+	public boolean isPrepaidLine() {return isLetterOfCreditDate() || referenceDateType.isOrderDate();}
+
+	/**
 	 * True if this line is linked to a committed downstream document — a goods receipt ({@code inoutId})
 	 * or a matched invoice ({@code invoiceId}). Such a link reflects real activity that a reactivate
 	 * (drop-and-rebuild) would orphan; a line that is merely {@code Awaiting_Pay}/{@code Paid} because its
@@ -135,13 +142,11 @@ public class OrderPayScheduleLine
 	public boolean isLinkedToDownstreamDocument() {return inoutId != null || invoiceId != null;}
 
 	/**
-	 * True for an unsettled, still-open material-receipt (BL/ETA) line that the generic recompute is
-	 * allowed to refresh on a later reference-date correction: it is {@code Awaiting_Pay} (a Transport
-	 * Order already completed it, so it is no longer {@code Pending}), not yet paid, and not linked to a
-	 * committed downstream document. LC/OD lines are excluded ({@code isMaterialReceiptDate()}) — an LC
-	 * line is refreshed only via the dedicated LC step service. {@code !isPaid()} guards against a
-	 * hand-edited/legacy row where status and {@code isPaid} drift apart (isPaid is a separate DB column,
-	 * not derived from status).
+	 * True for a material-receipt (BL/ETA) line the generic recompute may still refresh on a later
+	 * reference-date correction: {@code Awaiting_Pay} (a Transport Order completed it, so no longer
+	 * {@code Pending}), not yet paid, and not linked to a committed downstream document. LC/OD lines are
+	 * out via {@code isMaterialReceiptDate()} (an LC line is refreshed only by the LC step service);
+	 * {@code !isPaid()} guards a legacy row whose status and {@code isPaid} column have drifted apart.
 	 */
 	public boolean isUnsettledAwaitingPayMaterialReceipt()
 	{

@@ -109,8 +109,8 @@ public class OrderPayScheduleLCStepService
 		final OrderPaySchedule schedule = orderPayScheduleService.getByOrderId(orderId).orElse(null);
 		if (schedule == null) {return;} // no pay-schedule at all — no-op
 
-		final OrderPayScheduleLine target = schedule.getSingleLCLine().orElseGet(() -> schedule.getSingleAdvanceLine().orElse(null));
-		if (target == null) {return;} // no LC break and no single advance line in payment term — no-op
+		final OrderPayScheduleLine target = schedule.getSingleLCLine().orElseGet(() -> schedule.getSinglePrepaidLine().orElse(null));
+		if (target == null) {return;} // no LC break and no single prepaid line in payment term — no-op
 
 		//
 		// Proforma invoice

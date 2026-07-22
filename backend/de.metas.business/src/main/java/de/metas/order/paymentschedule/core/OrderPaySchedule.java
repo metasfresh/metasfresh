@@ -165,27 +165,28 @@ public class OrderPaySchedule
 	}
 
 	/**
-	 * The single advance break of the payment term, i.e. the one line that is neither a material-receipt
-	 * (BL/ETA) line nor an LC line. LC lines are excluded explicitly so the method stays honest regardless
-	 * of the caller: an "advance line" is never an LC line, even on a schedule that happens to carry both
-	 * (LC lines are resolved via {@link #getSingleLCLine()}).
+	 * The single prepaid line of the payment term — the one step settled up front via a proforma
+	 * ({@link OrderPayScheduleLine#isPrepaidLine()}: a Letter-of-Credit or an order-date/advance break).
+	 * Callers resolve the LC line first via {@link #getSingleLCLine()} and only fall through to here for
+	 * the no-LC case, so on a schedule carrying both an LC and an OD break this counts both as prepaid
+	 * and fails loud — that misuse never happens on the guarded caller path.
 	 */
-	public Optional<OrderPayScheduleLine> getSingleAdvanceLine()
+	public Optional<OrderPayScheduleLine> getSinglePrepaidLine()
 	{
-		final ImmutableList<OrderPayScheduleLine> advanceLines = lines.stream()
-				.filter(line -> !line.isMaterialReceiptDate() && !line.isLetterOfCreditDate())
+		final ImmutableList<OrderPayScheduleLine> prepaidLines = lines.stream()
+				.filter(OrderPayScheduleLine::isPrepaidLine)
 				.collect(ImmutableList.toImmutableList());
-		if (advanceLines.isEmpty())
+		if (prepaidLines.isEmpty())
 		{
-			return Optional.empty();  // no advance break in payment term — no-op
+			return Optional.empty();  // no prepaid break in payment term — no-op
 		}
-		else if (advanceLines.size() > 1)
+		else if (prepaidLines.size() > 1)
 		{
 			throw new AdempiereException(MSG_MultipleAdvanceBreaksUnsupported, orderId);
 		}
 		else
 		{
-			return Optional.of(advanceLines.get(0));
+			return Optional.of(prepaidLines.get(0));
 		}
 	}
 }
