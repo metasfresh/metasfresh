@@ -305,6 +305,47 @@ public class PickingJobRepository
 								Collectors.toList())));
 	}
 
+	/**
+	 * Returns the subset of {@code scheduleIds} that are referenced -- via {@link I_M_Picking_Job_Line} OR
+	 * {@link I_M_Picking_Job_Step} -- by a {@code Drafted} {@link I_M_Picking_Job}, i.e. have an unfinished
+	 * picking job. Completed/Voided jobs (and schedules with no picking job at all) do not count.
+	 */
+	@NonNull
+	public ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob(@NonNull final Set<ShipmentScheduleId> scheduleIds)
+	{
+		if (scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.create();
+
+		final Stream<ShipmentScheduleId> scheduleIdsFromLines = queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
+				.create()
+				.stream()
+				.map(line -> ShipmentScheduleId.ofRepoId(line.getM_ShipmentSchedule_ID()));
+
+		final Stream<ShipmentScheduleId> scheduleIdsFromSteps = queryBL
+				.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addInArrayFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
+				.create()
+				.stream()
+				.map(step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()));
+
+		return Stream.concat(scheduleIdsFromLines, scheduleIdsFromSteps)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	@NonNull
 	public List<PickingJob> getDraftedByPickingSlotId(
 			@NonNull final PickingSlotId slotId,
