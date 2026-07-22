@@ -38,8 +38,11 @@ import static org.adempiere.ad.dao.impl.CompareQueryFilter.normalizeValue;
  * NOTES:
  * <ul>
  * <li>NULL case is covered (i.e. if one of your values is NULL, the built SQL will contain an "ColumnName IS NULL" check
- * <li>maximum values list length is not checked and we rely on database. However in PostgreSQL there is no limit (see
- * <a href="http://stackoverflow.com/questions/1009706/postgresql-max-number-of-parameters-in-in-clause">...</a>)
+ * <li>PostgreSQL allows an unlimited number of values in an {@code IN (...)} list, BUT the wire protocol caps
+ * <b>bind parameters</b> at {@value #MAX_BIND_PARAMS_BEFORE_EMBED_HARD_LIMIT} (a signed 2-byte count) per statement.
+ * Rendering one {@code ?} per value overflows that cap once a list exceeds it ("out-of-range integer as a 2-byte
+ * value"). To stay safe for any list size, a list larger than {@link #MAX_BIND_PARAMS_BEFORE_EMBED} is rendered
+ * <b>inline</b> (no bind parameters) instead of as {@code ?} placeholders — see {@link #buildSql()}.
  * </ul>
  *
  * @param <T>
@@ -50,6 +53,25 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 {
 	static final String SQL_TRUE = "1=1";
 	static final String SQL_FALSE = "1=0";
+
+	/**
+	 * The PostgreSQL/JDBC hard cap on bind parameters per statement (a signed 2-byte count). Rendering one {@code ?}
+	 * per value overflows this once an {@code IN (...)} list exceeds it ("out-of-range integer as a 2-byte value").
+	 */
+	@VisibleForTesting
+	static final int MAX_BIND_PARAMS_BEFORE_EMBED_HARD_LIMIT = 32767;
+
+	/**
+	 * Above this many values, an {@code IN (...)} list is rendered inline (values embedded via {@link DB#TO_SQL(Object)})
+	 * instead of as {@code ?} bind parameters, so it cannot overflow {@link #MAX_BIND_PARAMS_BEFORE_EMBED_HARD_LIMIT}.
+	 * Kept below that hard cap with headroom for the other bind parameters in the same statement; smaller lists keep
+	 * the {@code ?} form, which is plan-cacheable (the common case).
+	 * <p>
+	 * NOTE: this bounds a single IN filter. A statement combining several near-threshold IN filters could still exceed
+	 * the per-statement cap; such a query should bind the list as an array ({@code = ANY(?)}) instead.
+	 */
+	@VisibleForTesting
+	static final int MAX_BIND_PARAMS_BEFORE_EMBED = 30000;
 
 	private final String columnName;
 	@Nullable private final List<Object> values;
@@ -216,6 +238,11 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 			return;
 		}
 
+		// Render values inline (no bind parameters) when explicitly requested, OR automatically once the list is large
+		// enough that one '?' per value would overflow the JDBC 2-byte bind-parameter cap. values.size() is a safe upper
+		// bound on the bind-param count (nulls don't bind), so this never under-embeds.
+		final boolean embed = embedSqlParams || (values != null && values.size() > MAX_BIND_PARAMS_BEFORE_EMBED);
+
 		if (values == null || values.isEmpty())
 		{
 			sqlWhereClause = defaultReturnWhenEmpty ? SQL_TRUE : SQL_FALSE;
@@ -229,7 +256,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 				sqlWhereClause = columnName + " IS NULL";
 				sqlParams = ImmutableList.of();
 			}
-			else if (embedSqlParams)
+			else if (embed)
 			{
 				sqlWhereClause = columnName + "=" + DB.TO_SQL(value);
 				sqlParams = ImmutableList.of();
@@ -268,7 +295,7 @@ public final class InArrayQueryFilter<T> implements IQueryFilter<T>, ISqlQueryFi
 					sqlWhereClauseBuilt.append(columnName).append(" IN (");
 				}
 
-				if (embedSqlParams)
+				if (embed)
 				{
 					sqlWhereClauseBuilt.append(DB.TO_SQL(value));
 				}

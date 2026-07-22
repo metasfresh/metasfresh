@@ -226,6 +226,48 @@ public class InArrayQueryFilterTest
 		assertThat(filter1).isEqualTo(filter2);
 	}
 
+	/**
+	 * A list larger than the JDBC 2-byte bind-parameter cap (32767) must not be rendered as one {@code ?} per value,
+	 * or the statement overflows ("out-of-range integer as a 2-byte value"). Above the embed threshold the values are
+	 * rendered inline instead, so there are zero bind parameters and the overflow is impossible.
+	 */
+	@Test
+	public void test_oversizedList_rendersInline_withoutBindParams()
+	{
+		final List<Object> values = new ArrayList<>();
+		for (int i = 1; i <= InArrayQueryFilter.MAX_BIND_PARAMS_BEFORE_EMBED + 1; i++)
+		{
+			values.add(i);
+		}
+
+		final InArrayQueryFilter<I_Test> filter = new InArrayQueryFilter<>("MyColumnName", values);
+
+		assertThat(filter.getSqlParams(ctx)).isEmpty();
+		assertThat(filter.getSql())
+				.startsWith("MyColumnName IN (1,2,3,")
+				.doesNotContain("?")
+				.endsWith(")");
+	}
+
+	/** The common (small) case stays on the plan-cacheable {@code ?} bind-parameter path. */
+	@Test
+	public void test_smallList_usesBindParams()
+	{
+		final InArrayQueryFilter<I_Test> filter = new InArrayQueryFilter<>("MyColumnName", 1, 2, 3);
+
+		assertThat(filter.getSql()).isEqualTo("MyColumnName IN (?,?,?)");
+		assertThat(filter.getSqlParams(ctx)).containsExactly(1, 2, 3);
+	}
+
+	/** The embed threshold must stay strictly within the JDBC 2-byte bind-parameter cap, or the overflow it guards returns. */
+	@Test
+	public void test_embedThreshold_staysWithinJdbcBindParamCap()
+	{
+		assertThat(InArrayQueryFilter.MAX_BIND_PARAMS_BEFORE_EMBED)
+				.isGreaterThan(0)
+				.isLessThanOrEqualTo(32767);
+	}
+
 	private void assertDefaultReturnWhenEmpty(final boolean defaultReturnWhenEmpty, final List<Object> params)
 	{
 		final String columnName = "MyColumnName";
