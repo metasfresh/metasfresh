@@ -46,8 +46,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID;
@@ -438,12 +440,12 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		return sftpPollRouteUris().size();
 	}
 
-	private java.util.List<String> sftpPollRouteUris()
+	private List<String> sftpPollRouteUris()
 	{
 		return context.getRoutes().stream()
 				.map(route -> route.getEndpoint().getEndpointUri())
 				.filter(uri -> uri.startsWith("sftp://"))
-				.collect(java.util.stream.Collectors.toList());
+				.collect(Collectors.toList());
 	}
 
 	private void interceptExternalStatusEndpoints() throws Exception

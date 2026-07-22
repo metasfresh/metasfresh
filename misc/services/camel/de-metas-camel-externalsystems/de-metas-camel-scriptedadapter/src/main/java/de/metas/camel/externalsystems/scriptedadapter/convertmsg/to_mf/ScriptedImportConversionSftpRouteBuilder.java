@@ -137,6 +137,12 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// endpoint name/host — otherwise a later endpoint change orphans this poller (disable recomputes a
 		// different key and stops nothing). endpointName is kept only for display / the archive-file fallback.
 		final String routeKey = requireRouteKey(params);
+
+		// Idempotent replace: tear down any poller (and its ssh-key temp file) already running under this
+		// stable key BEFORE (re)creating it — a re-enable after an endpoint/connection change must not leak
+		// the previous route, nor its ssh-key temp file (which the new enable below would otherwise orphan).
+		removePollingRoute(routeKey);
+
 		final String endpointName = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
 		final String scriptIdentifier = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 
@@ -212,10 +218,6 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
 				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
 
-		// Idempotent replace: a re-enable after an endpoint/connection change must not leak the previous
-		// poller. Tear down any route already running under this stable key before adding the new one.
-		removeRouteIfPresent(routeKey);
-
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
 				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
 				processedDir, errorDir));
@@ -231,14 +233,7 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		// whether the child's endpoint (host/Value) has since changed.
 		final String routeKey = requireRouteKey(request.getParameters());
 
-		removeRouteIfPresent(routeKey);
-
-		// Cleanup SSH key temp file if any
-		final Path tempKeyFile = sshKeyTempFiles.remove(routeKey);
-		if (tempKeyFile != null)
-		{
-			Files.deleteIfExists(tempKeyFile);
-		}
+		removePollingRoute(routeKey);
 
 		log.info("Dynamic SFTP polling route '{}' stopped and removed.", routeKey);
 	}
@@ -259,13 +254,23 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		return routeKey;
 	}
 
-	/** Stops and removes the route with the given id if it currently exists in the context; no-op otherwise. */
-	private void removeRouteIfPresent(@NonNull final String routeId) throws Exception
+	/**
+	 * Tears down the dynamic SFTP poll route for {@code routeKey}: stops and removes the route if present,
+	 * and deletes + forgets its ssh-key temp file if one was tracked. Idempotent — safe to call when nothing
+	 * is running (used both by disable and by enable's idempotent-replace pre-clean).
+	 */
+	private void removePollingRoute(@NonNull final String routeKey) throws Exception
 	{
-		if (getCamelContext().getRoute(routeId) != null)
+		if (getCamelContext().getRoute(routeKey) != null)
 		{
-			getCamelContext().getRouteController().stopRoute(routeId);
-			getCamelContext().removeRoute(routeId);
+			getCamelContext().getRouteController().stopRoute(routeKey);
+			getCamelContext().removeRoute(routeKey);
+		}
+
+		final Path tempKeyFile = sshKeyTempFiles.remove(routeKey);
+		if (tempKeyFile != null)
+		{
+			Files.deleteIfExists(tempKeyFile);
 		}
 	}
 
