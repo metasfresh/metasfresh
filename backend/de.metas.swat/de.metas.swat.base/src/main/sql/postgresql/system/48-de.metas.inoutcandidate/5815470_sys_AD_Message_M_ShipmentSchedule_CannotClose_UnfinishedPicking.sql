@@ -31,7 +31,7 @@ WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y' AND t.AD_Message_ID = 545779
 
 -- 4. en_US override (the real English text) + IsTranslated='Y'
 UPDATE AD_Message_Trl
-SET MsgText      = 'Cannot close the shipment schedule: an unfinished picking order still exists for {0}.',
+SET MsgText      = 'Cannot close the shipment schedule: an unfinished picking job still exists for {0}.',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-07-22 00:00:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
