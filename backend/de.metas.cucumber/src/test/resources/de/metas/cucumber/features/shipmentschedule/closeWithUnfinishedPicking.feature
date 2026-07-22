@@ -158,3 +158,30 @@ Feature: Closing a shipment schedule with an unfinished picking order
       | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
       | busySchedule                     | false        |
       | cleanSchedule                    | false        |
+
+  @Id:S30915_040
+  Scenario: Automatic/system close paths are not affected by the user-Close guard
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2026-07-22  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product                 | 160        | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    # same as S30915_010: a real warehouse worker started picking this schedule (M_Picking_Job created,
+    # DocStatus Drafted) and has not finished picking it yet
+    And start picking job for sales order identified by SO
+
+    # this closes the schedule via ShipmentScheduleBL.closeShipmentSchedule directly -- the same BL
+    # chokepoint every automatic/system close path uses (post-shipment auto-close, picking-complete,
+    # REST close, contract close, order-triggered close) -- bypassing the user-Close process the guard
+    # lives in (AC5)
+    And the M_ShipmentSchedule identified by shipmentSchedule is closed
+
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
+      | shipmentSchedule                 | true         |
