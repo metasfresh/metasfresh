@@ -115,16 +115,16 @@ de.metas.shipper.client.nshift.NShiftShipAdvisorServiceTest.build_request_test=[
           "Value": "Customer reference"
         },
         {
-          "Kind": 65,
-          "Value": "Y"
-        },
-        {
           "Kind": 63,
           "Value": "incoterms"
         },
         {
           "Kind": 64,
           "Value": "Other"
+        },
+        {
+          "Kind": 65,
+          "Value": "Y"
         }
       ],
       "Services": [ ]
