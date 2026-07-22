@@ -4,7 +4,7 @@
 -- cannot reconcile -> the whole stock-correction run fails. Set each such active HU's org to its locator's
 -- warehouse org. Idempotent: only touches active org-0 HUs whose warehouse carries a real org, so a re-run
 -- corrects nothing further.
-SELECT backup_table('m_hu', '_me03_30595_org_zero');
+SELECT backup_table('m_hu', '_repair_org_zero');
 
 UPDATE m_hu hu
    SET ad_org_id = w.ad_org_id,
