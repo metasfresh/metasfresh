@@ -14,8 +14,6 @@ import javax.annotation.Nullable;
  * are packed into one Transport Unit (HU_UnitType=TU).
  *
  * <p>Values map to the {@code PackageDimensionCalcMethod} AD_Reference (ID 542122).</p>
- *
- * @see de.metas.handlingunits.shipping.HUPackageBL
  */
 @Getter
 @RequiredArgsConstructor

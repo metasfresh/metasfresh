@@ -93,6 +93,11 @@ public class PackageDimensions
 			@NonNull final PackageDimensionCalcMethod mode,
 			@NonNull final List<PackageDimensionItem> items)
 	{
+		if (items.isEmpty())
+		{
+			return UNSPECIFIED;
+		}
+
 		// Guard: if any item has unspecified dims, the whole TU has no dims
 		for (final PackageDimensionItem item : items)
 		{
@@ -136,7 +141,6 @@ public class PackageDimensions
 		{
 			final int qty = item.getQty().toBigDecimal().setScale(0, RoundingMode.CEILING).intValue();
 			final List<Integer> sorted = sortedEdges(item.getDims());
-			// sorted[0] = min, sorted[1] = mid, sorted[2] = max
 			stackingAxisTotal += sorted.get(0) * qty;
 			maxMidEdge = Math.max(maxMidEdge, sorted.get(1));
 			maxMaxEdge = Math.max(maxMaxEdge, sorted.get(2));

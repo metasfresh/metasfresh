@@ -36,17 +36,11 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Unit tests for {@link PackageDimensions#ofItems(PackageDimensionCalcMethod, List)}.
+ * Unit tests for {@link PackageDimensions#ofItems(PackageDimensionCalcMethod, java.util.List)}.
  *
- * <p>Test coverage per the task-3-brief.md:
- * <ol>
- *   <li>Strapping single product — parity with {@link PackageDimensions#ofProductDimensionsAndQty}</li>
- *   <li>Strapping mixed (two products)</li>
- *   <li>Repacking mixed — volume formula + shape derivation</li>
- *   <li>Nesting — item with largest single edge wins</li>
- *   <li>Any item with unspecified dims → result is UNSPECIFIED</li>
- * </ol>
- * </p>
+ * <p>Tests all three calculation modes (Strapping, Repacking, Nesting) and the
+ * {@link PackageDimensions#UNSPECIFIED} propagation contract (any item with no dimensions,
+ * or an empty item list, yields {@code UNSPECIFIED}).</p>
  */
 public class PackageDimensionsTest
 {
@@ -144,13 +138,13 @@ public class PackageDimensionsTest
 		 * B: (L=7, W=5, H=3) × qty 2 → volume contribution = 7*5*3*2 = 210
 		 * Total volume V = (144 + 210) * 1.05 = 354 * 1.05 = 371.7
 		 * <p>
-		 * Shape formula:
-		 *   height = ⅔ * V^(1/3)   ≈ ⅔ * 7.191… ≈ 4.794… → int 4
-		 *   width  = ⅗ * √(V / height)  ≈ ⅗ * √(371.7/4) ≈ ⅗ * √92.925 ≈ ⅗ * 9.640 ≈ 5.784 → int 5
-		 *   length = (V / height) / width ≈ (371.7/4) / 5 ≈ 92.925 / 5 ≈ 18.585 → int 18
+		 * Shape formula (all rounded via {@link Math#round}):
+		 *   height = round(⅔ * 371.7^(1/3)) = round(⅔ * 7.191) = round(4.794) = 5
+		 *   width  = round(⅗ * √(371.7 / 5)) = round(⅗ * √74.34) = round(⅗ * 8.622) = round(5.173) = 5
+		 *   length = round((371.7 / 5) / 5) = round(74.34 / 5) = round(14.868) = 15
 		 * <p>
-		 * Verify h*w*l ≈ V (within rounding): 4*5*18 = 360; V≈371.7 → within a few percent.
-		 * We assert the volume product is within 5% of the true V.
+		 * Self-consistency: 5 * 5 * 15 = 375; V = 371.7 → ratio 1.009 — within rounding.
+		 * We assert the volume product is within 10% of V to accommodate integer rounding.
 		 */
 		@Test
 		void mixedTwoProducts_volumeFormula()
@@ -243,6 +237,24 @@ public class PackageDimensionsTest
 				final PackageDimensions result = PackageDimensions.ofItems(mode, items);
 				assertThat(result)
 						.as("mode %s should return UNSPECIFIED when any item has no dims", mode)
+						.isEqualTo(PackageDimensions.UNSPECIFIED);
+			}
+		}
+
+		/**
+		 * An empty item list has no dimensions to compute from; result is UNSPECIFIED
+		 * for all modes.
+		 */
+		@Test
+		void emptyList_returnsUnspecified()
+		{
+			final List<PackageDimensionItem> items = ImmutableList.of();
+
+			for (final PackageDimensionCalcMethod mode : PackageDimensionCalcMethod.values())
+			{
+				final PackageDimensions result = PackageDimensions.ofItems(mode, items);
+				assertThat(result)
+						.as("mode %s should return UNSPECIFIED for an empty item list", mode)
 						.isEqualTo(PackageDimensions.UNSPECIFIED);
 			}
 		}
