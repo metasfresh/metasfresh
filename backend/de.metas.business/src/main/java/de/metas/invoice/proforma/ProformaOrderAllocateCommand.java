@@ -100,7 +100,7 @@ class ProformaOrderAllocateCommand
 	 * <ol>
 	 *   <li>Currency match: proforma and order must share the same currency.</li>
 	 *   <li>Vendor (BPartner) match: proforma and order must have the same bill-to partner.</li>
-	 *   <li>Multiple LC breaks: order payment term must have at most one LC break (iter 2 limitation).</li>
+	 *   <li>Multiple LC breaks: order payment term must have at most one LC break (only one LC break per term is currently supported).</li>
 	 *   <li>Multiple advance breaks: a payment term with no LC break must have at most one advance
 	 *       (non-material-receipt) break.</li>
 	 * </ol>
@@ -129,8 +129,8 @@ class ProformaOrderAllocateCommand
 					.markAsUserValidationError();
 		}
 
-		// LC-break count — >1 LC break → reject (iter 2 limitation); a term with no LC break is now allowed,
-		// as long as it does not have more than one advance (non-material-receipt) break.
+		// LC-break count — >1 LC break → reject (only one LC break per term is currently supported); a term
+		// with no LC break is allowed, as long as it does not have more than one advance (non-material-receipt) break.
 		final PaymentTermId paymentTermId = PaymentTermId.ofRepoIdOrNull(order.getC_PaymentTerm_ID());
 		final List<PaymentTermBreak> breaks = paymentTermId != null
 				? paymentTermService.getById(paymentTermId).getSortedBreaks()

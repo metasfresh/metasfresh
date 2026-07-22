@@ -439,7 +439,7 @@ class OrderPayScheduleLCServiceTest
 	}
 
 	/**
-	 * OrderDate/no-LC variant: the {@code BL} material-receipt break of a no-LC payment term.
+	 * The {@code BL} (bill-of-lading) material-receipt break of a no-LC payment term.
 	 */
 	private void createMaterialReceiptPayScheduleLine(final OrderId orderId, final String initialStatus)
 	{
@@ -539,7 +539,7 @@ class OrderPayScheduleLCServiceTest
 		return de.metas.util.Services.get(org.adempiere.ad.dao.IQueryBL.class)
 				.createQueryBuilder(I_C_OrderPaySchedule.class)
 				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_C_Order_ID, orderId)
-				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, referenceDateType.getCode())
+				.addEqualsFilter(I_C_OrderPaySchedule.COLUMNNAME_ReferenceDateType, referenceDateType)
 				.create()
 				.firstOnlyNotNull(I_C_OrderPaySchedule.class);
 	}

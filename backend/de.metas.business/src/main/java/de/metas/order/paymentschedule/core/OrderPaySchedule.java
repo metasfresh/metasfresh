@@ -123,20 +123,9 @@ public class OrderPaySchedule
 
 		for (final OrderPayScheduleLine line : lines)
 		{
-			// An unsettled awaiting-pay material-receipt (BL/ETA) line is refreshed too: after a Transport
-			// Order completes, the line is already Awaiting_Pay, so a later BL/ETA reference-date correction
-			// would otherwise never reach it (it is not Pending anymore). Gated on isMaterialReceiptDate() so
-			// an LC/OD line is never touched here — it is refreshed only via the dedicated LC step service.
-			// Gated on !isLinkedToDownstreamDocument() so a downstream-linked line is left alone. !isPaid() is
-			// kept as defense against a hand-edited/legacy persisted row where status and isPaid drift apart
-			// (status=Awaiting_Pay yet isPaid=true) — isPaid is a separate DB column, not derived from status.
-			final boolean refreshUnsettledDeliveryLine =
-					line.isMaterialReceiptDate()
-					&& line.getStatus() == OrderPayScheduleStatus.Awaiting_Pay
-					&& !line.isPaid()
-					&& !line.isLinkedToDownstreamDocument();
-
-			if (line.getStatus().isPending() || refreshUnsettledDeliveryLine)
+			// A still-Pending line is (re)computed as usual; an unsettled Awaiting_Pay material-receipt line
+			// is additionally refreshed so a post-completion BL/ETA correction still reaches it.
+			if (line.getStatus().isPending() || line.isUnsettledAwaitingPayMaterialReceipt())
 			{
 				final PaymentTermBreak termBreak = paymentTerm.getBreakById(line.getPaymentTermBreakId());
 				final OrderPayScheduleLineContext dueDateAndStatus = context.computeLineContext(termBreak);
@@ -175,10 +164,16 @@ public class OrderPaySchedule
 		}
 	}
 
+	/**
+	 * The single advance break of the payment term, i.e. the one line that is neither a material-receipt
+	 * (BL/ETA) line nor an LC line. LC lines are excluded explicitly so the method stays honest regardless
+	 * of the caller: an "advance line" is never an LC line, even on a schedule that happens to carry both
+	 * (LC lines are resolved via {@link #getSingleLCLine()}).
+	 */
 	public Optional<OrderPayScheduleLine> getSingleAdvanceLine()
 	{
 		final ImmutableList<OrderPayScheduleLine> advanceLines = lines.stream()
-				.filter(line -> !line.isMaterialReceiptDate())
+				.filter(line -> !line.isMaterialReceiptDate() && !line.isLetterOfCreditDate())
 				.collect(ImmutableList.toImmutableList());
 		if (advanceLines.isEmpty())
 		{

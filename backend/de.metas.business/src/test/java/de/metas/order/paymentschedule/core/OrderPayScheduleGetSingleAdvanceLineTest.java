@@ -100,6 +100,19 @@ class OrderPayScheduleGetSingleAdvanceLineTest
 	}
 
 	@Test
+	void getSingleAdvanceLine_lcLineAndAdvanceLine_ignoresLcAndReturnsAdvance()
+	{
+		// An LC line is not an advance line: with one LC break + one true advance (OD) break, the method
+		// must return the advance line, never throw MultipleAdvanceBreaksUnsupported by counting the LC line.
+		final OrderPayScheduleLine lcLine = newLine(100, ReferenceDateType.LetterOfCreditDate);
+		final OrderPayScheduleLine advanceLine = newLine(101, ReferenceDateType.OrderDate);
+
+		final OrderPaySchedule paySchedule = schedule(lcLine, advanceLine);
+
+		assertThat(paySchedule.getSingleAdvanceLine()).contains(advanceLine);
+	}
+
+	@Test
 	void getSingleAdvanceLine_twoNonMaterialReceiptLines_throws()
 	{
 		final OrderPayScheduleLine advanceLine1 = newLine(100, ReferenceDateType.OrderDate);

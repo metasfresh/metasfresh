@@ -163,8 +163,7 @@ class ProformaOrderAllocServiceTest
 	/**
 	 * A purchase payment term with NO Letter-of-Credit break — only an {@code OD}
 	 * (order-date/advance) break and a {@code BL} (bill-of-lading/material-receipt) break — must be
-	 * a valid allocation target. Verifies that allocate does not throw {@code MSG_NoLCBreakInOrder}
-	 * for no-LC payment terms.
+	 * a valid allocation target: allocate must not reject a no-LC payment term.
 	 */
 	@Test
 	void allocate_noLcBreak_succeeds()
@@ -194,7 +193,7 @@ class ProformaOrderAllocServiceTest
 
 		final InvoiceId invoiceId = createProformaInvoice(vendorId, currencyId);
 
-		// No-LC payment terms are a valid allocation target — must NOT throw MSG_NoLCBreakInOrder.
+		// No-LC payment terms are a valid allocation target — allocate must not reject them.
 		assertThatCode(() -> service.allocate(invoiceId, orderId))
 				.as("allocate must succeed for a no-LC (OD+BL only) payment term")
 				.doesNotThrowAnyException();

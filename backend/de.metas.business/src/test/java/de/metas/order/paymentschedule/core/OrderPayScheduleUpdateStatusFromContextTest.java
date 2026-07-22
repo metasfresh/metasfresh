@@ -24,6 +24,7 @@ package de.metas.order.paymentschedule.core;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.inout.InOutId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
@@ -216,5 +217,82 @@ class OrderPayScheduleUpdateStatusFromContextTest
 		assertThat(lcLine.isPaid()).isFalse();
 		assertThat(lcLine.getDueDate()).as("LC line dueDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
 		assertThat(lcLine.getReferenceDate()).as("LC line referenceDate must stay at its OLD value, ignoring the changed context LC date").isEqualTo(LC_DATE);
+	}
+
+	/**
+	 * The refresh gate excludes an already-paid line: an {@code Awaiting_Pay} BL line whose {@code isPaid}
+	 * has drifted to true (hand-edited/legacy row) must NOT be re-dated by a later BL-date correction —
+	 * the {@code !isPaid()} guard keeps it untouched.
+	 */
+	@Test
+	void paidMaterialReceiptLine_notRefreshed_onBLDateCorrection()
+	{
+		final OrderPayScheduleLine paidBlLine = OrderPayScheduleLine.builder()
+				.id(OrderPayScheduleId.ofRepoId(BL_BREAK_ID.getRepoId()))
+				.orderId(ORDER_ID)
+				.paymentTermBreakId(BL_BREAK_ID)
+				.referenceDateType(ReferenceDateType.BillOfLadingDate)
+				.percent(Percent.of("50"))
+				.offsetDays(0)
+				.status(OrderPayScheduleStatus.Awaiting_Pay)
+				.isPaid(true) // drifted: Awaiting_Pay yet already paid
+				.referenceDate(OLD_BL_DATE)
+				.dueDate(OLD_BL_DATE)
+				.dueAmount(Money.of(BigDecimal.valueOf(5000), EUR))
+				.build();
+
+		final OrderPaySchedule paySchedule = OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(paidBlLine));
+
+		final OrderSchedulingContext context = OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.billOfLadingDate(NEW_BL_DATE) // corrected
+				.grandTotal(Money.of(BigDecimal.valueOf(10000), EUR))
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(newPaymentTerm())
+				.build();
+
+		paySchedule.updateStatusFromContext(context);
+
+		assertThat(paidBlLine.getDueDate()).as("a paid line must NOT be refreshed by a later BL-date correction").isEqualTo(OLD_BL_DATE);
+		assertThat(paidBlLine.getReferenceDate()).isEqualTo(OLD_BL_DATE);
+	}
+
+	/**
+	 * The refresh gate excludes a line already linked to a committed downstream document: an
+	 * {@code Awaiting_Pay} BL line whose goods receipt ({@code inoutId}) is set must NOT be re-dated by a
+	 * later BL-date correction — the {@code !isLinkedToDownstreamDocument()} guard keeps it untouched.
+	 */
+	@Test
+	void downstreamLinkedMaterialReceiptLine_notRefreshed_onBLDateCorrection()
+	{
+		final OrderPayScheduleLine linkedBlLine = OrderPayScheduleLine.builder()
+				.id(OrderPayScheduleId.ofRepoId(BL_BREAK_ID.getRepoId()))
+				.orderId(ORDER_ID)
+				.paymentTermBreakId(BL_BREAK_ID)
+				.referenceDateType(ReferenceDateType.BillOfLadingDate)
+				.percent(Percent.of("50"))
+				.offsetDays(0)
+				.status(OrderPayScheduleStatus.Awaiting_Pay)
+				.isPaid(false)
+				.referenceDate(OLD_BL_DATE)
+				.dueDate(OLD_BL_DATE)
+				.dueAmount(Money.of(BigDecimal.valueOf(5000), EUR))
+				.inoutId(InOutId.ofRepoId(900001)) // goods receipt already matched
+				.build();
+
+		final OrderPaySchedule paySchedule = OrderPaySchedule.ofList(ORDER_ID, ImmutableList.of(linkedBlLine));
+
+		final OrderSchedulingContext context = OrderSchedulingContext.builder()
+				.orderId(ORDER_ID)
+				.billOfLadingDate(NEW_BL_DATE) // corrected
+				.grandTotal(Money.of(BigDecimal.valueOf(10000), EUR))
+				.precision(CurrencyPrecision.TWO)
+				.paymentTerm(newPaymentTerm())
+				.build();
+
+		paySchedule.updateStatusFromContext(context);
+
+		assertThat(linkedBlLine.getDueDate()).as("a downstream-linked line must NOT be refreshed by a later BL-date correction").isEqualTo(OLD_BL_DATE);
+		assertThat(linkedBlLine.getReferenceDate()).isEqualTo(OLD_BL_DATE);
 	}
 }

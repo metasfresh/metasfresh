@@ -134,6 +134,23 @@ public class OrderPayScheduleLine
 	 */
 	public boolean isLinkedToDownstreamDocument() {return inoutId != null || invoiceId != null;}
 
+	/**
+	 * True for an unsettled, still-open material-receipt (BL/ETA) line that the generic recompute is
+	 * allowed to refresh on a later reference-date correction: it is {@code Awaiting_Pay} (a Transport
+	 * Order already completed it, so it is no longer {@code Pending}), not yet paid, and not linked to a
+	 * committed downstream document. LC/OD lines are excluded ({@code isMaterialReceiptDate()}) — an LC
+	 * line is refreshed only via the dedicated LC step service. {@code !isPaid()} guards against a
+	 * hand-edited/legacy row where status and {@code isPaid} drift apart (isPaid is a separate DB column,
+	 * not derived from status).
+	 */
+	public boolean isUnsettledAwaitingPayMaterialReceipt()
+	{
+		return isMaterialReceiptDate()
+				&& status == OrderPayScheduleStatus.Awaiting_Pay
+				&& !isPaid()
+				&& !isLinkedToDownstreamDocument();
+	}
+
 	public void applyAndProcess(@NonNull final OrderPayScheduleLineContext context)
 	{
 		final OrderPayScheduleStatus nextStatus = context.getStatus();
