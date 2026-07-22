@@ -92,4 +92,25 @@ class MobileUIPickingUserProfileRepositoryTest
 
 		assertThat(profile.isMassPrinting()).isFalse();
 	}
+
+	@Test
+	void isShowQtyAvailableForLines_Y()
+	{
+		final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+		record.setIsShowQtyAvailableForLines(true);
+		saveRecord(record);
+
+		final MobileUIPickingUserProfile profile = repository.getProfile();
+
+		assertThat(profile.isShowQtyAvailableForLines()).isTrue();
+	}
+
+	@Test
+	void isShowQtyAvailableForLines_default()
+	{
+		// no profile record — should return default (false)
+		final MobileUIPickingUserProfile profile = repository.getProfile();
+
+		assertThat(profile.isShowQtyAvailableForLines()).isFalse();
+	}
 }
