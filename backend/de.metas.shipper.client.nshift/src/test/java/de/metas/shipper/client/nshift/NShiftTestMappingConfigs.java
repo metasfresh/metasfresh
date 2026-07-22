@@ -475,6 +475,12 @@ public class NShiftTestMappingConfigs
 					.build(),
 			JsonMappingConfig.builder()
 					.seqNo(220)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_PRE_ADVICE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(220)
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
 					.attributeKey(LINE_REFERENCE_KIND_TOP_LEVEL_TYPE)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE)
