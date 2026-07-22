@@ -1113,14 +1113,10 @@ public class ExternalSystemConfigRepository
 				.id(scriptedImportConfigId)
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
-				.endpointName(config.getEndpointName())
 				.scriptIdentifier(config.getScriptIdentifier())
 				.userImportId(UserId.ofRepoId(config.getAD_User_Import_ID()))
 				.description(config.getDescription())
-				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoIdOrNull(config.getExternalSystem_Endpoint_ID() > 0 ? config.getExternalSystem_Endpoint_ID() : null))
-				.sftpPollingIntervalMs(config.getSftpPollingIntervalMs() > 0 ? config.getSftpPollingIntervalMs() : null)
-				.sftpProcessedDirectory(config.getSftpProcessedDirectory())
-				.sftpErrorDirectory(config.getSftpErrorDirectory())
+				.externalSystemEndpointId(ExternalSystemEndpointId.ofRepoId(config.getExternalSystem_Endpoint_ID()))
 				.build();
 	}
 
@@ -1155,6 +1151,30 @@ public class ExternalSystemConfigRepository
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_ScriptedImportConversion.class)
 				.map(this::buildExternalSystemScriptedImportConversionConfig);
+	}
+
+	/**
+	 * All ACTIVE scripted-import children of a parent config. Unlike
+	 * {@link #getScriptedImportConversionConfigByParentId} (single, throws on 2+), a parent may have
+	 * several import children with different endpoints/transports — the "call" process iterates them.
+	 */
+	@NonNull
+	public ImmutableList<ExternalSystemScriptedImportConversionConfig> getScriptedImportConversionChildrenByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_ScriptedImportConversion.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_ScriptedImportConversion.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.stream()
+				.map(this::buildExternalSystemScriptedImportConversionConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ExternalSystemScriptedImportConversionConfig getScriptedImportConversionChildById(@NonNull final ExternalSystemScriptedImportConversionConfigId id)
+	{
+		return buildExternalSystemScriptedImportConversionConfig(
+				InterfaceWrapperHelper.load(id.getRepoId(), I_ExternalSystem_Config_ScriptedImportConversion.class));
 	}
 
 	@NonNull
