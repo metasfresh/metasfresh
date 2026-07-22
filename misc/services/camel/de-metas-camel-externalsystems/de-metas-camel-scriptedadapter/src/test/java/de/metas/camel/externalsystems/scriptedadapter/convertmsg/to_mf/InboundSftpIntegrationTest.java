@@ -84,6 +84,12 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	private static final String SFTP_USERNAME = "testuser";
 	private static final String SFTP_PASSWORD = "testpass";
 	private static final String ENDPOINT_NAME = "sftpIntegrationTestEndpoint";
+	/**
+	 * Stable per-child route key — the dynamic SFTP poll route is keyed on THIS (the child config id),
+	 * NOT on {@link #ENDPOINT_NAME} (the endpoint Value), so that changing the endpoint does not leak the
+	 * old poller. This is the value the backend puts under {@code PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY}.
+	 */
+	private static final String ROUTE_KEY = "ScriptedImportConversion-100";
 	private static final String SCRIPT_IDENTIFIER = "inbound_sftp_test_noop";
 	private static final String SCRIPT_IDENTIFIER_OLCAND = "inbound_sftp_test_olcand";
 	private static final String TEST_FILE_NAME = "test_order.json";
@@ -176,13 +182,13 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 	@AfterEach
 	void tearDown() throws Exception
 	{
-		// Stop the dynamic route if still running
-		if (context.getRoute(ENDPOINT_NAME) != null)
+		// Stop the dynamic route if still running (keyed on the stable route key, not the endpoint name)
+		if (context.getRoute(ROUTE_KEY) != null)
 		{
 			try
 			{
-				context.getRouteController().stopRoute(ENDPOINT_NAME);
-				context.removeRoute(ENDPOINT_NAME);
+				context.getRouteController().stopRoute(ROUTE_KEY);
+				context.removeRoute(ROUTE_KEY);
 			}
 			catch (final Exception ignored)
 			{
@@ -249,7 +255,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
 
 		// The dynamic route should now be registered
-		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY)).isNotNull();
 
 		// Wait for the payload to be archived to the LOCAL processed folder (up to 10 seconds)
 		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
@@ -276,7 +282,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
 
 		// Then: route should be removed
-		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
 	}
 
 	@Test
@@ -301,7 +307,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// Act: fire the enable SFTP polling route, using the real (non-no-op) OLCand-producing transform
 		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND);
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
-		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY)).isNotNull();
 
 		// Wait for the payload to be archived to the LOCAL processed folder (up to 10 seconds)
 		final Path localDoneFile = localProcessedDir.resolve(TEST_FILE_NAME);
@@ -324,7 +330,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
-		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
 	}
 
 	@Test
@@ -349,7 +355,7 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// Act: fire the enable SFTP polling route
 		final JsonExternalSystemRequest enableRequest = buildEnableRequest(SCRIPT_IDENTIFIER_OLCAND);
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID, enableRequest);
-		assertThat(context.getRouteController().getRouteStatus(ENDPOINT_NAME)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(ROUTE_KEY)).isNotNull();
 
 		// Wait for the payload to be archived to the LOCAL error folder (up to 10 seconds) — it must
 		// not be silently lost
@@ -375,7 +381,69 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 		// Act: disable the polling route
 		final JsonExternalSystemRequest disableRequest = buildDisableRequest();
 		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID, disableRequest);
-		assertThat(context.getRoute(ENDPOINT_NAME)).isNull();
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	/**
+	 * Reproduces the production leak: a child's SFTP endpoint is changed (pointed at a different endpoint
+	 * record — different host / {@code Value}) and the poller is re-started. The previously-started route
+	 * must be torn down; only ONE poller — the new one — may remain.
+	 * <p>
+	 * The dynamic route is keyed on the STABLE per-child route key ({@link #ROUTE_KEY}), not on the endpoint
+	 * name/host, so the second enable idempotently REPLACES the first. On the pre-fix code (route keyed on
+	 * the endpoint name) the two enables produced two distinct routes and the old host kept being polled.
+	 */
+	@Test
+	void endpointChanged_previousPollerTornDown_onlyNewPollerRemains() throws Exception
+	{
+		interceptExternalStatusEndpoints();
+		registerDummyErrorRoute();
+
+		context.start();
+
+		// Two remote locations on the SFTP server — "before" and "after" the endpoint change.
+		Files.createDirectories(sftpRootDir.resolve("inboundA"));
+		Files.createDirectories(sftpRootDir.resolve("inboundB"));
+
+		// Enable pointing at endpoint A (Value "endpointA", remote path inboundA).
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				buildEnableRequest(SCRIPT_IDENTIFIER, "endpointA", ROUTE_KEY, "inboundA"));
+
+		// The child's endpoint is changed to a DIFFERENT endpoint record (Value "endpointB", remote path
+		// inboundB) and Start is pressed again — SAME child, SAME stable route key, different host/path.
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.ENABLE_SFTP_POLLING_ROUTE_ID,
+				buildEnableRequest(SCRIPT_IDENTIFIER, "endpointB", ROUTE_KEY, "inboundB"));
+
+		// Exactly ONE SFTP poll route must remain — the old endpoint-A poller must have been removed.
+		assertThat(countSftpPollRoutes())
+				.as("Changing the child's endpoint must not leak the old SFTP poller")
+				.isEqualTo(1);
+
+		// And the surviving route must poll the NEW location, never the old one.
+		final String survivingUri = sftpPollRouteUris().stream().findFirst().orElse("");
+		assertThat(survivingUri).contains("inboundB");
+		assertThat(survivingUri).doesNotContain("inboundA");
+
+		// Disable via the stable key removes the poller entirely.
+		template.sendBody("direct:" + ScriptedImportConversionSftpRouteBuilder.DISABLE_SFTP_POLLING_ROUTE_ID,
+				buildDisableRequest("endpointB", ROUTE_KEY));
+		assertThat(countSftpPollRoutes())
+				.as("Disable must remove the SFTP poller")
+				.isZero();
+		assertThat(context.getRoute(ROUTE_KEY)).isNull();
+	}
+
+	private long countSftpPollRoutes()
+	{
+		return sftpPollRouteUris().size();
+	}
+
+	private java.util.List<String> sftpPollRouteUris()
+	{
+		return context.getRoutes().stream()
+				.map(route -> route.getEndpoint().getEndpointUri())
+				.filter(uri -> uri.startsWith("sftp://"))
+				.collect(java.util.stream.Collectors.toList());
 	}
 
 	private void interceptExternalStatusEndpoints() throws Exception
@@ -428,15 +496,25 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 
 	private JsonExternalSystemRequest buildEnableRequest(@NonNull final String scriptIdentifier)
 	{
+		return buildEnableRequest(scriptIdentifier, ENDPOINT_NAME, ROUTE_KEY, "inbound");
+	}
+
+	private JsonExternalSystemRequest buildEnableRequest(
+			@NonNull final String scriptIdentifier,
+			@NonNull final String endpointName,
+			@NonNull final String routeKey,
+			@NonNull final String remotePath)
+	{
 		final Map<String, String> params = new HashMap<>();
-		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, ENDPOINT_NAME);
+		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpointName);
+		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, routeKey);
 		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER, scriptIdentifier);
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_HOST, "localhost");
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PORT, String.valueOf(sftpServer.getPort()));
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_USERNAME, SFTP_USERNAME);
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_PASSWORD, SFTP_PASSWORD);
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_AUTH_TYPE, "PASSWORD");
-		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, "inbound");
+		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_ENDPOINT_REMOTE_PATH, remotePath);
 		params.put(ExternalSystemConstants.PARAM_SFTP_POLLING_INTERVAL_MS, "500");
 		// LOCAL, transport-agnostic archive folders (never remote — see class javadoc)
 		params.put(ExternalSystemConstants.PARAM_PROCESSED_DIR, localProcessedDir.toAbsolutePath().toString());
@@ -456,8 +534,16 @@ public class InboundSftpIntegrationTest extends CamelTestSupport
 
 	private JsonExternalSystemRequest buildDisableRequest()
 	{
+		return buildDisableRequest(ENDPOINT_NAME, ROUTE_KEY);
+	}
+
+	private JsonExternalSystemRequest buildDisableRequest(
+			@NonNull final String endpointName,
+			@NonNull final String routeKey)
+	{
 		final Map<String, String> params = new HashMap<>();
-		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, ENDPOINT_NAME);
+		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME, endpointName);
+		params.put(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY, routeKey);
 
 		return JsonExternalSystemRequest.builder()
 				.externalSystemName(JsonExternalSystemName.of("ScriptedImportConversion"))

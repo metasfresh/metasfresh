@@ -133,6 +133,10 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 		final Map<String, String> params = request.getParameters();
 
+		// Stable per-child route id (child config id based). The route MUST be keyed on this, not on the
+		// endpoint name/host — otherwise a later endpoint change orphans this poller (disable recomputes a
+		// different key and stops nothing). endpointName is kept only for display / the archive-file fallback.
+		final String routeKey = requireRouteKey(params);
 		final String endpointName = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
 		final String scriptIdentifier = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_SCRIPT_IDENTIFIER);
 
@@ -180,7 +184,9 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 			final FileAttribute<Set<PosixFilePermission>> attr = PosixFilePermissions.asFileAttribute(ownerOnly);
 			final Path tempKeyFile = Files.createTempFile("sftp_key_" + endpointName + "_", ".pem", attr);
 			Files.writeString(tempKeyFile, sshPrivateKey);
-			sshKeyTempFiles.put(endpointName, tempKeyFile);
+			// Key the temp-file map on the STABLE route key so disable's cleanup matches regardless of an
+			// endpoint change (mirrors the route id below).
+			sshKeyTempFiles.put(routeKey, tempKeyFile);
 			sftpUri.append("&privateKeyFile=").append(tempKeyFile.toAbsolutePath());
 		}
 		else
@@ -205,30 +211,62 @@ public class ScriptedImportConversionSftpRouteBuilder extends RouteBuilder imple
 		final String finalSftpUri = sftpUri.toString();
 		final JavaScriptRepo javaScriptRepo = new JavaScriptRepo(
 				getCamelContext().resolvePropertyPlaceholders("{{" + PROPERTY_SCRIPTING_REPO_BASE_DIR + "}}"));
+
+		// Idempotent replace: a re-enable after an endpoint/connection change must not leak the previous
+		// poller. Tear down any route already running under this stable key before adding the new one.
+		removeRouteIfPresent(routeKey);
+
 		getCamelContext().addRoutes(new ScriptedImportConversionSftpDynamicRouteBuilder(
-				endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
+				routeKey, endpointName, finalSftpUri, scriptIdentifier, javaScriptRepo, javaScriptExecutorService, producerTemplate,
 				processedDir, errorDir));
 
-		getCamelContext().getRouteController().startRoute(endpointName);
-		log.info("Dynamic SFTP polling route '{}' started successfully.", endpointName);
+		getCamelContext().getRouteController().startRoute(routeKey);
+		log.info("Dynamic SFTP polling route '{}' started successfully.", routeKey);
 	}
 
 	private void disableSftpPollingProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-		final String endpointName = request.getParameters().get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ENDPOINT_NAME);
+		// Stop by the SAME stable key the route was started with — matches the running poller regardless of
+		// whether the child's endpoint (host/Value) has since changed.
+		final String routeKey = requireRouteKey(request.getParameters());
 
-		getCamelContext().getRouteController().stopRoute(endpointName);
-		getCamelContext().removeRoute(endpointName);
+		removeRouteIfPresent(routeKey);
 
 		// Cleanup SSH key temp file if any
-		final Path tempKeyFile = sshKeyTempFiles.remove(endpointName);
+		final Path tempKeyFile = sshKeyTempFiles.remove(routeKey);
 		if (tempKeyFile != null)
 		{
 			Files.deleteIfExists(tempKeyFile);
 		}
 
-		log.info("Dynamic SFTP polling route '{}' stopped and removed.", endpointName);
+		log.info("Dynamic SFTP polling route '{}' stopped and removed.", routeKey);
+	}
+
+	/**
+	 * The stable per-child route key ({@link ExternalSystemConstants#PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY})
+	 * is mandatory — the backend always supplies it for both enable and disable. A missing key would mean
+	 * the poller could not be reliably torn down, so fail loudly rather than leak a route.
+	 */
+	@NonNull
+	private static String requireRouteKey(@NonNull final Map<String, String> params)
+	{
+		final String routeKey = params.get(ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY);
+		if (routeKey == null || routeKey.isBlank())
+		{
+			throw new org.apache.camel.RuntimeCamelException("Parameter '" + ExternalSystemConstants.PARAM_SCRIPTEDADAPTER_TO_MF_ROUTE_KEY + "' is required!");
+		}
+		return routeKey;
+	}
+
+	/** Stops and removes the route with the given id if it currently exists in the context; no-op otherwise. */
+	private void removeRouteIfPresent(@NonNull final String routeId) throws Exception
+	{
+		if (getCamelContext().getRoute(routeId) != null)
+		{
+			getCamelContext().getRouteController().stopRoute(routeId);
+			getCamelContext().removeRoute(routeId);
+		}
 	}
 
 	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus externalStatus)
