@@ -156,7 +156,7 @@ public class S_ExternalReference_StepDef
 
 			// scope by org when provided, so the same external reference can be asserted independently per org
 			row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
-					.ifPresent(orgIdentifier -> queryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, orgTable.getIdAsInt(orgIdentifier)));
+					.ifPresent(orgIdentifier -> queryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, orgTable.getId(orgIdentifier)));
 
 			final I_S_ExternalReference externalRefRecord = queryBuilder
 					.create()
