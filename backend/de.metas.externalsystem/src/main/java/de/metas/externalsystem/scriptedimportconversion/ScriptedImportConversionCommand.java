@@ -57,7 +57,6 @@ public enum ScriptedImportConversionCommand
 				.setParameter("code", value);
 	}
 
-	/** The enable/disable transport commands map back to the Start/Stop intent the generic infra reasons in. */
 	@NonNull
 	public ScriptedImportConversionIntent getIntent()
 	{
