@@ -66,6 +66,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -147,11 +148,17 @@ public class S_ExternalReference_StepDef
 			final String externalReference = row.getAsOptionalString("ExternalReference").map(DataTableUtil::nullToken2Null).orElse(null);
 			final String externalReferenceURL = row.getAsOptionalString("ExternalReferenceURL").map(DataTableUtil::nullToken2Null).orElse(null);
 
-			final I_S_ExternalReference externalRefRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final IQueryBuilder<I_S_ExternalReference> queryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_ID, externalSystem.getId())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
-					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL);
+
+			// scope by org when provided, so the same external reference can be asserted independently per org
+			row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
+					.ifPresent(orgIdentifier -> queryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID, orgTable.getIdAsInt(orgIdentifier)));
+
+			final I_S_ExternalReference externalRefRecord = queryBuilder
 					.create()
 					.firstOnlyOrNull(I_S_ExternalReference.class);
 

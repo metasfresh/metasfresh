@@ -10,6 +10,7 @@ Feature: BPartner v2 upsert places records in the path org
     And metasfresh contains AD_Org:
       | AD_Org_ID.Identifier | Name | Value |
       | org002               | 002  | 002   |
+      | org003               | 003  | 003   |
     And metasfresh contains External System
       | Name        | Value       |
       | Test System | Test_System |
@@ -19,6 +20,7 @@ Feature: BPartner v2 upsert places records in the path org
       | 002               | Test_System    | BPartner         |
       | 001-loc1          | Test_System    | BPartnerLocation |
       | 001-con1          | Test_System    | UserID           |
+      | shared            | Test_System    | BPartner         |
 
   @Id:S30934_TC1
   Scenario: PUT api/v2/bpartner/002 places C_BPartner and S_ExternalReference under org 002
@@ -183,3 +185,57 @@ Feature: BPartner v2 upsert places records in the path org
 """
     # GET by path org 001 should return not-found (org isolation)
     Then the metasfresh REST-API endpoint path 'api/v2/bpartner/001/ext-Test_System-001' receives a 'GET' request with the headers from context, expecting status='404'
+
+  @Id:S30934_TC4
+  Scenario: The same external reference may exist once per org (per-org uniqueness)
+    # External references are looked up per org, so the same external system + reference code must be
+    # usable independently by two different orgs. With an org-agnostic unique index the second org's
+    # write collided on the global key; the index includes AD_Org_ID so each org keeps its own row.
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/002' and fulfills with '201' status code
+    """
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-Test_System-shared",
+      "bpartnerComposite": {
+        "bpartner": {
+          "name": "Shared Ref Org 002",
+          "language": "de"
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+    # Same external reference (Test_System / shared / BPartner) under a DIFFERENT org must ALSO succeed
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/003' and fulfills with '201' status code
+    """
+{
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-Test_System-shared",
+      "bpartnerComposite": {
+        "bpartner": {
+          "name": "Shared Ref Org 003",
+          "language": "de"
+        }
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+    # both external references persist, one per org
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference | AD_Org_ID |
+      | Test_System    | BPartner | shared            | org002    |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type     | ExternalReference | AD_Org_ID |
+      | Test_System    | BPartner | shared            | org003    |
