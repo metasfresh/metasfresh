@@ -22,6 +22,7 @@
 
 package de.metas.externalsystem.process;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -40,11 +41,13 @@ import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedIm
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionConfigId;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService;
 import de.metas.externalsystem.scriptedimportconversion.ExternalSystemScriptedImportConversionService.ResolvedChildCommand;
+import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionCommand;
 import de.metas.externalsystem.scriptedimportconversion.ScriptedImportConversionIntent;
 import de.metas.logging.LogManager;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessPreconditionsResolution;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
@@ -74,7 +77,7 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ScriptedImportConversionIntent intent = ScriptedImportConversionIntent.ofCode(externalRequest);
+		final ScriptedImportConversionIntent intent = resolveIntent(externalRequest);
 
 		final ImmutableList<ResolvedChildCommand> resolvedCommands = resolveChildCommands(intent);
 		if (resolvedCommands.isEmpty())
@@ -114,6 +117,36 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 		}
 
 		return MSG_OK + " (" + succeeded + "/" + resolvedCommands.size() + ")";
+	}
+
+	/**
+	 * Resolve the Start/Stop intent from {@code External_Request}. Two callers pass different codes here:
+	 * the manual "call" process passes a Start/Stop intent (AD_Reference 541998), while the generic
+	 * external-system infra (startup reconciler) and the {@code ExternalSystem_Service} enable/disable
+	 * commands pass the CONCRETE transport command (e.g. {@code enableSftpPolling}). Accept both.
+	 */
+	@VisibleForTesting
+	static ScriptedImportConversionIntent resolveIntent(@NonNull final String externalRequest)
+	{
+		try
+		{
+			return ScriptedImportConversionIntent.ofCode(externalRequest);
+		}
+		catch (final AdempiereException intentNotFound)
+		{
+			try
+			{
+				return ScriptedImportConversionCommand.ofCode(externalRequest).getIntent();
+			}
+			catch (final AdempiereException commandNotFound)
+			{
+				throw new AdempiereException("No ScriptedImportConversion intent or command for External_Request")
+						.appendParametersToMessage()
+						.setParameter("External_Request", externalRequest)
+						.setParameter("acceptedIntents", "start, stop")
+						.setParameter("acceptedCommands", "enableRestAPI, disableRestAPI, enableSftpPolling, disableSftpPolling");
+			}
+		}
 	}
 
 	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)
