@@ -98,7 +98,7 @@ import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 @RequiredArgsConstructor
 public class S_ExternalReference_StepDef
 {
-	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
+	private final OrgId defaultOrgId = OrgId.MAIN;
 
 	private final AD_User_StepDefData userTable;
 	private final S_ExternalReference_StepDefData externalRefTable;
