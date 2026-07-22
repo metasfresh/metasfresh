@@ -2,9 +2,9 @@ package de.metas.product;
 
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 import javax.annotation.Nullable;
 
@@ -17,7 +17,8 @@ import javax.annotation.Nullable;
  *
  * @see de.metas.handlingunits.shipping.HUPackageBL
  */
-@AllArgsConstructor
+@Getter
+@RequiredArgsConstructor
 public enum PackageDimensionCalcMethod implements ReferenceListAwareEnum
 {
 	/**
@@ -38,7 +39,6 @@ public enum PackageDimensionCalcMethod implements ReferenceListAwareEnum
 	Nesting("N"),
 	;
 
-	@Getter
 	private final String code;
 
 	private static final ReferenceListAwareEnums.ValuesIndex<PackageDimensionCalcMethod> index =
