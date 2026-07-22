@@ -147,7 +147,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 				return null;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+					.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
 			orderCosts = null;

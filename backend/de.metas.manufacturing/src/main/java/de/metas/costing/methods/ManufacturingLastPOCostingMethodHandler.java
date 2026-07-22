@@ -135,7 +135,8 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 				return CostDetailCreateResultsList.EMPTY;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+					.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
 			orderCosts = null;

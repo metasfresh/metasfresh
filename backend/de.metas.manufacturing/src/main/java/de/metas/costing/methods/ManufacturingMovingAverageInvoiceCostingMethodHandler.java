@@ -93,7 +93,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 		else if (costCollectorType.isActivityControl())
 		{
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+					.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
 			orderCosts = null;

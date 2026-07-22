@@ -147,7 +147,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				return null;
 			}
 
-			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+					.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 
 			final Duration totalDuration = costCollectorsService.getTotalDurationReported(cc);
 
@@ -167,7 +168,8 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 					return null;
 				}
 
-				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId);
+				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
+						.orElseThrow(() -> new AdempiereException("No product found for " + actualResourceId));
 
 				final Duration totalDurationReported = costCollectorsService.getTotalDurationReported(cc);
 				final Quantity qty = convertDurationToQuantity(totalDurationReported, actualResourceProductId);
