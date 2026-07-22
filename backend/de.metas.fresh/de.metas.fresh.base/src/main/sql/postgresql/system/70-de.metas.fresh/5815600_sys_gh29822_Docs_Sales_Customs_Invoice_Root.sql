@@ -1,6 +1,8 @@
+-- me03 #29822: Factoring - show factoring bank account on customs invoice documents
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) );
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Customs_Invoice_Root ( IN Record_ID numeric, IN AD_Language Character Varying (6) )
-RETURNS TABLE 
+RETURNS TABLE
 	(AD_Org_ID numeric,
 	DocStatus character(2),
 	PrintName character varying(60),
@@ -9,7 +11,7 @@ RETURNS TABLE
 	isFactoringPartner character(1)
 	)
 AS
-$$	
+$$
 SELECT
 	i.AD_Org_ID,
 	i.DocStatus,
@@ -42,5 +44,5 @@ FROM
 WHERE
 	i.C_Customs_Invoice_ID = $1 AND i.isActive = 'Y'
 $$
-LANGUAGE sql STABLE	
+LANGUAGE sql STABLE
 ;
