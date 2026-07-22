@@ -104,3 +104,57 @@ Feature: Closing a shipment schedule with an unfinished picking order
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
       | shipmentSchedule                 | false        |
+
+  @Id:S30915_020
+  Scenario: Close succeeds when the schedule has no unfinished picking job
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2026-07-22  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product                 | 160        | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N              |
+
+    # no picking job was ever started for this schedule
+    When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is not rejected
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
+      | shipmentSchedule                 | true         |
+
+  @Id:S30915_030
+  Scenario: Multi-selection is all-or-nothing when one of the selected schedules has an unfinished picking job
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO1        | true    | customer                 | 2026-07-22  |
+      | SO2        | true    | customer                 | 2026-07-22  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO1                   | L1         | product                 | 160        | TUx4                                   |
+      | SO2                   | L2         | product                 | 160        | TUx4                                   |
+    And the order identified by SO1 is completed
+    And the order identified by SO2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
+      | busySchedule  | L1                        | N              |
+      | cleanSchedule | L2                        | N              |
+
+    # only SO1's schedule is still being picked; SO2's schedule has no picking job at all
+    And start picking job for sales order identified by SO1
+
+    When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+      | M_ShipmentSchedule_ID |
+      | busySchedule          |
+      | cleanSchedule         |
+
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
+      | busySchedule                     | false        |
+      | cleanSchedule                    | false        |

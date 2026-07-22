@@ -147,4 +147,24 @@ public class M_ShipmentSchedule_CloseShipmentSchedules_StepDef
 				.isNotNull()
 				.isInstanceOf(AdempiereException.class);
 	}
+
+	/**
+	 * Asserts that the last {@code M_ShipmentSchedule_CloseShipmentSchedules} process run
+	 * ({@link #runCloseShipmentSchedulesProcess(DataTable)}) completed WITHOUT error (i.e. the close was accepted,
+	 * not refused).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: none (reads the exception captured by the previous step)
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_ShipmentSchedule_CloseShipmentSchedules process is not rejected
+	 * </pre>
+	 */
+	@Then("^the M_ShipmentSchedule_CloseShipmentSchedules process is not rejected$")
+	public void assertCloseShipmentSchedulesProcessNotRejected()
+	{
+		assertThat(lastCloseProcessException)
+				.as("Closing a shipment schedule with no unfinished picking job must NOT be rejected")
+				.isNull();
+	}
 }
