@@ -31,7 +31,9 @@ import de.metas.camel.externalsystems.scriptedadapter.JavaScriptRepo;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.CamelServiceRouteIdWithRequestType;
 import de.metas.camel.externalsystems.scriptedadapter.convertmsg.to_mf.model.ScriptedImportedConversionToMfRequest;
 import de.metas.common.util.Check;
+import lombok.AccessLevel;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.apache.camel.AggregationStrategy;
 import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
@@ -59,6 +61,7 @@ import static de.metas.camel.externalsystems.scriptedadapter.ScriptedAdapterCons
  * {@link #archiveFileName(Exchange)} (the real remote file name for SFTP, a synthesized name for REST,
  * which has no remote file).
  */
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends RouteBuilder
 {
 	@NonNull protected final String endpointName;
@@ -71,24 +74,6 @@ abstract class AbstractScriptedImportConversionArchivingRouteBuilder extends Rou
 	@NonNull protected final String processedDir;
 	/** LOCAL, transport-agnostic archive folder for the payload on failure. Never a remote path. */
 	@NonNull protected final String errorDir;
-
-	protected AbstractScriptedImportConversionArchivingRouteBuilder(
-			@NonNull final String endpointName,
-			@NonNull final String scriptIdentifier,
-			@NonNull final JavaScriptRepo javaScriptRepo,
-			@NonNull final JavaScriptExecutorService javaScriptExecutorService,
-			@NonNull final ProducerTemplate producerTemplate,
-			@NonNull final String processedDir,
-			@NonNull final String errorDir)
-	{
-		this.endpointName = endpointName;
-		this.scriptIdentifier = scriptIdentifier;
-		this.javaScriptRepo = javaScriptRepo;
-		this.javaScriptExecutorService = javaScriptExecutorService;
-		this.producerTemplate = producerTemplate;
-		this.processedDir = processedDir;
-		this.errorDir = errorDir;
-	}
 
 	/** Derives the archive file name for {@code exchange} — the one difference between transports. */
 	protected abstract String archiveFileName(@NonNull Exchange exchange);
