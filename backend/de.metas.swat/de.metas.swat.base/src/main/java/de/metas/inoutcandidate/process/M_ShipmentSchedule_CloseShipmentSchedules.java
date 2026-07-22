@@ -36,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -123,7 +124,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	 * 		order {@code DocumentNo} when it references one, else its {@code M_ShipmentSchedule_ID} as a fallback.
 	 * 		Orders are batch-loaded once (never one-by-one per schedule).
 	 */
-	private String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
+	@VisibleForTesting
+	static String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
 	{
 		final ImmutableSet<OrderId> orderIds = offendingSchedules.stream()
 				.map(schedule -> OrderId.ofRepoIdOrNull(schedule.getC_Order_ID()))
@@ -140,7 +142,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 				.collect(Collectors.joining(", "));
 	}
 
-	private String toHumanReadableIdentifier(final I_M_ShipmentSchedule schedule, final Map<OrderId, String> documentNoByOrderId)
+	@VisibleForTesting
+	static String toHumanReadableIdentifier(final I_M_ShipmentSchedule schedule, final Map<OrderId, String> documentNoByOrderId)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
 		final String documentNo = orderId != null ? documentNoByOrderId.get(orderId) : null;
