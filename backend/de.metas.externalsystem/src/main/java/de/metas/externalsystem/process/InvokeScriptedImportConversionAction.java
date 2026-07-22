@@ -120,10 +120,8 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 	}
 
 	/**
-	 * Resolve the Start/Stop intent from {@code External_Request}. Two callers pass different codes here:
-	 * the manual "call" process passes a Start/Stop intent (AD_Reference 541998), while the generic
-	 * external-system infra (startup reconciler) and the {@code ExternalSystem_Service} enable/disable
-	 * commands pass the CONCRETE transport command (e.g. {@code enableSftpPolling}). Accept both.
+	 * The manual process passes a Start/Stop intent, but the generic infra + {@code ExternalSystem_Service}
+	 * enable/disable commands pass the CONCRETE transport command here — so accept both.
 	 */
 	@VisibleForTesting
 	static ScriptedImportConversionIntent resolveIntent(@NonNull final String externalRequest)
