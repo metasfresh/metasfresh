@@ -125,6 +125,12 @@ public class HUShipmentScheduleDAO implements IHUShipmentScheduleDAO
 	}
 
 	@Override
+	public boolean hasActiveQtyPickedForTopLevelHU(@NonNull final I_M_HU topLevelHU)
+	{
+		return queryByTopLevelHU(topLevelHU).create().anyMatch();
+	}
+
+	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(final I_M_HU vhu)
 	{
 		return retrieveSchedsQtyPickedForVHUQuery(vhu)

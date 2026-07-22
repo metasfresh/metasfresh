@@ -51,6 +51,11 @@ public class JsonPickingJob
 	boolean lineLevelPickTarget;
 	@Nullable JsonLUPickingTarget luPickingTarget;
 	@Nullable JsonTUPickingTarget tuPickingTarget;
+	// Job-level carrier advise — the fallback the mobile UI shows when there is no LU/TU pick target
+	// (e.g. a header-level CU-direct pick): the job-scoped carrier product for the whole job.
+	boolean carrierAdviseAvailable;
+	boolean carrierAdviseReadOnly;
+	@Nullable String carrierProductCaption;
 	@NonNull List<JsonPickingJobLine> lines;
 	@NonNull List<JsonPickFromAlternative> pickFromAlternatives;
 

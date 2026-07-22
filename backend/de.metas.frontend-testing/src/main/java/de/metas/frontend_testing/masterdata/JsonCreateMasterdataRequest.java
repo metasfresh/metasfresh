@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
+import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.JsonCustomQRCodeFormatRequest;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
@@ -40,6 +42,21 @@ public class JsonCreateMasterdataRequest
 	@Nullable Map<String, Object> context;
 
 	@Nullable Map<String, String> sysconfigs;
+
+	/**
+	 * Sets flag columns on {@code AD_Process} records matched by a {@code JasperReport} substring.
+	 * Used to enable {@code IsPdfA3Output=Y} on the sales-invoice report process so that the mock
+	 * report service returns a valid PDF/A-3 and ZUGFeRD assembly can embed the CII XML into it.
+	 * Applied in execution order before bpartner/product creation.
+	 */
+	@Nullable List<JsonSetAdProcessFlagsRequest> adProcessFlags;
+
+	/**
+	 * Configures an org's seller identity for ZUGFeRD / EN16931: sets
+	 * {@code AD_OrgInfo.Org_BPartner_ID} + {@code OrgBP_Location_ID} to the specified
+	 * BR-DE-conformant BPartner. Must appear after {@code bpartners} in execution order.
+	 */
+	@Nullable JsonOrgSellerRequest orgSeller;
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;

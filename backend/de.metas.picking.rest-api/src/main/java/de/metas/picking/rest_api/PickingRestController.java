@@ -54,6 +54,8 @@ import de.metas.picking.rest_api.json.JsonPickingLineCloseRequest;
 import de.metas.picking.rest_api.json.JsonPickingLineOpenRequest;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
 import de.metas.picking.rest_api.json.JsonTUPickingTarget;
+import de.metas.picking.rest_api.json.JsonUnpickResolveRequest;
+import de.metas.picking.rest_api.json.JsonUnpickResolveResponse;
 import de.metas.picking.workflow.handlers.PickingMobileApplication;
 import de.metas.scannable_code.ScannedCode;
 import de.metas.security.mobile_application.MobileApplicationPermissions;
@@ -199,6 +201,19 @@ public class PickingRestController
 		return workflowRestController.toJson(wfProcess);
 	}
 
+	@PostMapping("/job/{wfProcessId}/target/advise")
+	public JsonWFProcess advisePackedHU(
+			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
+			@RequestParam(value = "lineId", required = false) @Nullable final String lineIdStr)
+	{
+		assertApplicationAccess();
+
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final PickingJobLineId lineId = PickingJobLineId.ofNullableString(lineIdStr);
+		final WFProcess wfProcess = pickingMobileApplication.advisePackedHU(wfProcessId, lineId, getLoggedUserId());
+		return workflowRestController.toJson(wfProcess);
+	}
+
 	@PostMapping("/job/{wfProcessId}/target/tu/close")
 	public JsonWFProcess closeTUPickingTarget(
 			@PathVariable("wfProcessId") @NonNull final String wfProcessIdStr,
@@ -320,6 +335,21 @@ public class PickingRestController
 	{
 		assertApplicationAccess();
 		return pickingMobileApplication.getNextEligibleLineToPack(request, getLoggedUserId());
+	}
+
+	/**
+	 * Resolves a scanned product barcode (GTIN/EAN13/product code) against the given picking job
+	 * and returns the product info plus the total packed qty for that product in the job.
+	 * Read-only; does not mutate any state.
+	 *
+	 * <p>Request: {@code { "wfProcessId": "...", "scannedCode": "<barcode>" }}
+	 * <p>Response: {@code { "productId": "123", "productName": "...", "packedQty": 5.0, "packedQtyUom": "Stk", "unpickable": true }}
+	 */
+	@PostMapping("/unpick/resolve")
+	public @NonNull JsonUnpickResolveResponse resolveUnpick(@RequestBody @NonNull final JsonUnpickResolveRequest request)
+	{
+		assertApplicationAccess();
+		return pickingMobileApplication.resolveUnpick(request, getLoggedUserId(), Env.getADLanguageOrBaseLanguage());
 	}
 
 	@PostMapping("/massPrinting/scan")

@@ -22,6 +22,7 @@
 
 package de.metas.ordercandidate.api;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -38,6 +39,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
@@ -50,6 +52,7 @@ import org.adempiere.warehouse.WarehouseId;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Map;
 
 @Value
 public class OLCandCreateRequest
@@ -150,6 +153,16 @@ public class OLCandCreateRequest
 	String email;
 	String phone;
 
+	@NonNull Map<String, Object> extendedProps;
+
+	@Nullable PromotionCodeId promotionCodeId;
+
+	@Nullable PromotionCodeId promotionCode2Id;
+
+	boolean isWithoutCharge;
+
+	@Nullable String reason;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -206,7 +219,12 @@ public class OLCandCreateRequest
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
-			@Nullable final String phone)
+			@Nullable final String phone,
+			@Nullable final Map<String, Object> extendedProps,
+			@Nullable final PromotionCodeId promotionCodeId,
+			@Nullable final PromotionCodeId promotionCode2Id,
+			final boolean isWithoutCharge,
+			@Nullable final String reason)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -278,5 +296,10 @@ public class OLCandCreateRequest
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+		this.extendedProps = extendedProps != null ? ImmutableMap.copyOf(extendedProps) : ImmutableMap.of();
+		this.promotionCodeId = promotionCodeId;
+		this.promotionCode2Id = promotionCode2Id;
+		this.isWithoutCharge = isWithoutCharge;
+		this.reason = reason;
 	}
 }

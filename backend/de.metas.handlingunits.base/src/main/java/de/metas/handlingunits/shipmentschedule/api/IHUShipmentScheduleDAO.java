@@ -41,6 +41,9 @@ public interface IHUShipmentScheduleDAO extends ISingletonService
 
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForTU(int shipmentScheduleId, int tuHUId, String trxName);
 
+	/** @return true if any active M_ShipmentSchedule_QtyPicked row is still keyed to the given top-level HU (LU/TU/VHU) — a shared HU can carry another schedule's active row. */
+	boolean hasActiveQtyPickedForTopLevelHU(@NonNull I_M_HU topLevelHU);
+
 	List<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHU(I_M_HU vhu);
 
 	IQueryBuilder<I_M_ShipmentSchedule_QtyPicked> retrieveSchedsQtyPickedForVHUQuery(I_M_HU vhu);

@@ -420,27 +420,6 @@ public interface I_C_BP_Group
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Association.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsAssociation (boolean IsAssociation);
-
-	/**
-	 * Get Association.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isAssociation();
-
-	ModelColumn<I_C_BP_Group, Object> COLUMN_IsAssociation = new ModelColumn<>(I_C_BP_Group.class, "IsAssociation", null);
-	String COLUMNNAME_IsAssociation = "IsAssociation";
-
-	/**
 	 * Set Auto Invoice.
 	 *
 	 * <br>Type: List
@@ -529,6 +508,27 @@ public interface I_C_BP_Group
 
 	ModelColumn<I_C_BP_Group, Object> COLUMN_IsDefault = new ModelColumn<>(I_C_BP_Group.class, "IsDefault", null);
 	String COLUMNNAME_IsDefault = "IsDefault";
+
+	/**
+	 * Set Alternate Invoice Recipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeviatingBillBPartner (boolean IsDeviatingBillBPartner);
+
+	/**
+	 * Get Alternate Invoice Recipient.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeviatingBillBPartner();
+
+	ModelColumn<I_C_BP_Group, Object> COLUMN_IsDeviatingBillBPartner = new ModelColumn<>(I_C_BP_Group.class, "IsDeviatingBillBPartner", null);
+	String COLUMNNAME_IsDeviatingBillBPartner = "IsDeviatingBillBPartner";
 
 	/**
 	 * Set Pre-Advice Required.

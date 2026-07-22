@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -43,7 +42,6 @@ import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.function.Consumer;
 
@@ -52,7 +50,6 @@ import java.util.function.Consumer;
 public class ShipmentScheduleService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
@@ -144,13 +141,12 @@ public class ShipmentScheduleService
 		boolean isProcessed;
 		boolean isClosed;
 		boolean isActive;
-		@NonNull BigDecimal quantityToDeliver;
 		@Nullable CarrierAdviseStatus carrierAdvisingStatus;
 
 		boolean isAuto;
 		boolean isIncludeCarrierAdviseManual;
 
-		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule, @NonNull final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL)
+		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 		{
 			return EligibleCarrierAdviseRequest.builder()
 					.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(shipmentSchedule.getM_ShipmentSchedule_ID()))
@@ -158,7 +154,6 @@ public class ShipmentScheduleService
 					.isProcessed(shipmentSchedule.isProcessed())
 					.isClosed(shipmentSchedule.isClosed())
 					.isActive(shipmentSchedule.isActive())
-					.quantityToDeliver(shipmentScheduleEffectiveBL.getQtyToDeliverBD(shipmentSchedule))
 					.carrierAdvisingStatus(CarrierAdviseStatus.ofNullableCode(shipmentSchedule.getCarrier_Advising_Status()))
 					.build();
 		}
@@ -171,7 +166,6 @@ public class ShipmentScheduleService
 					.isProcessed(shipmentSchedule.isProcessed())
 					.isClosed(shipmentSchedule.isClosed())
 					.isActive(shipmentSchedule.isActive())
-					.quantityToDeliver(shipmentSchedule.getQuantityToDeliver().toBigDecimal())
 					.carrierAdvisingStatus(shipmentSchedule.getCarrierAdvisingStatus())
 					.build();
 		}
@@ -179,7 +173,7 @@ public class ShipmentScheduleService
 
 	public boolean isEligibleForAutoCarrierAdvise(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule, shipmentScheduleEffectiveBL);
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
 		return isEligibleForCarrierAdvise(request.toBuilder().isAuto(true).build());
 	}
 
@@ -191,11 +185,13 @@ public class ShipmentScheduleService
 
 	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request)
 	{
+		// NOTE: no QtyToDeliver gate — the advise request is per-unit (numberOfItems=1), so it is independent of
+		// the deliverable qty. Gating on QtyToDeliver>0 would wrongly skip advise for an open availability-gated
+		// schedule (DeliveryRule='A') that currently has nothing on hand (QtyToDeliver=0 is its normal state).
 		if (request.getShipperId() == null
 				|| request.isProcessed()
 				|| request.isClosed()
-				|| !request.isActive()
-				|| request.getQuantityToDeliver().signum() <= 0)
+				|| !request.isActive())
 		{
 			return false;
 		}

@@ -139,6 +139,25 @@ export const PickingJobScreen = {
         }
     }),
 
+    clickAdviseCarrier: async () => await step(`${NAME} - Click advise carrier button`, async () => {
+        const button = page.getByTestId('advise-carrier-button');
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    expectAdviseCarrierButtonVisible: async () => await step(`${NAME} - Expect advise carrier button visible`, async () => {
+        await page.getByTestId('advise-carrier-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCarrierProductCaption: async ({ caption }) => await step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
+        // The current carrier product now renders as a detail line inside the advise-carrier button.
+        const detail = page.getByTestId('carrier-product-caption');
+        await detail.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(detail).toContainText(caption);
+    }),
+
     pickHU: async ({
                        qrCode,
                        isScanDirectly,
@@ -247,7 +266,139 @@ export const PickingJobScreen = {
         await page.locator(ID_BACK_BUTTON).tap();
         await PickingJobsListScreen.waitForScreen();
     }),
+
+    clickUnpickItem: async () => await step(`${NAME} - Click "Unpack item"`, async () => {
+        await page.getByTestId('unpick-item-button').tap();
+        // The unpick panel replaces the job screen; wait for the job-screen scan button to be gone so
+        // its scanner is unmounted before we scan into the unpick scanner (otherwise the product scan
+        // can land in the still-mounted job scanner).
+        await page.getByTestId('unpick-item-button').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Scans the product GTIN; the backend resolves it (job-scoped) to the packed product and the qty
+    // dialog opens with default = packed qty. Re-scans if the scan landed in the mount-race window
+    // before the freshly-mounted scanner armed its keydown listener — a real operator simply scans
+    // again when nothing registers.
+    scanProductToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product GTIN '${scannedCode}'`, async () => {
+        const qtyDialog = page.locator('.get-qty-dialog');
+        const maxScanAttempts = 3;
+        for (let attempt = 1; attempt <= maxScanAttempts; attempt++) {
+            await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-product-scanner' });
+            try {
+                await qtyDialog.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+                return;
+            } catch (e) {
+                if (attempt === maxScanAttempts) {
+                    throw e;
+                }
+                await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+            }
+        }
+    }),
+
+    expectDefaultQtyToUnpick: async ({ qty }) => await step(`${NAME} - Expect default qty to unpick '${qty}'`, async () => {
+        await GetQuantityDialog.expectQtyEntered(qty);
+    }),
+
+    enterQtyToUnpick: async ({ qty }) => await step(`${NAME} - Enter qty to unpick '${qty}'`, async () => {
+        await GetQuantityDialog.typeQtyEntered(qty);
+        await GetQuantityDialog.clickDone({});
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    scanTargetHUAndCommit: async ({ qrCode }) => await step(`${NAME} - Scan target HU and commit`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode: qrCode, testId: 'unpick-target-hu-scanner' });
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    skipTargetHUAndCommit: async () => await step(`${NAME} - Skip target HU (to floor) and commit`, async () => {
+        await page.getByTestId('unpick-skip-to-floor').tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    unpickItem: async ({ scannedCode, qty, targetHUQRCode, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' into target HU`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+        await PickingJobScreen.scanTargetHUAndCommit({ qrCode: targetHUQRCode });
+    }),
+
+    unpickItemToFloor: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}' to the floor (skip target HU)`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+        await PickingJobScreen.skipTargetHUAndCommit();
+    }),
+
+    // Drives the unpick panel up to (but not through) the target-HU scan: open the panel, scan the
+    // product GTIN, enter the qty -> the panel is now on the SCAN_TARGET stage (the target-HU scanner
+    // is armed). Stops here so the caller can drive the target-HU submit itself (e.g. under a network
+    // fault) and assert on the in-between state.
+    unpickAdvanceToTargetStage: async ({ scannedCode, qty, expectDefaultQty }) => await step(`${NAME} - Unpack ${qty} of '${scannedCode}', advance to target-HU scan stage`, async () => {
+        await PickingJobScreen.clickUnpickItem();
+        await PickingJobScreen.scanProductToUnpick({ scannedCode });
+        if (expectDefaultQty != null) {
+            await PickingJobScreen.expectDefaultQtyToUnpick({ qty: expectDefaultQty });
+        }
+        await PickingJobScreen.enterQtyToUnpick({ qty });
+    }),
+
+    // Scans a code at the target-HU stage when the submit (the picking/event POST) is expected to FAIL:
+    // either a transient network failure (no HTTP response) or a server rejection (4xx/5xx, e.g. the
+    // operator mis-scans the product GTIN they are holding instead of a target HU). The scan fires and is
+    // submitted, but the unpick does NOT commit and the panel must NOT close. Only commits the scan — the
+    // caller asserts the error toast and the still-open panel via expectOnTargetScanStage(); the caller's
+    // test.step / expectErrorToast label carries which failure mode is under test.
+    scanCodeAtTargetStageNoCommit: async ({ scannedCode }) => await step(`${NAME} - Scan '${scannedCode}' at target-HU stage (submit failure expected, no commit)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-target-hu-scanner' });
+    }),
+
+    // Asserts the unpick panel is still on the SCAN_TARGET stage: the target-HU scanner is still armed
+    // (the panel did not close back to the job screen). This is the submit-failure invariant — a failed
+    // submit (transient network OR a server rejection) keeps the panel open so the operator can simply
+    // scan again.
+    expectOnTargetScanStage: async () => await step(`${NAME} - Expect still on target-HU scan stage`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-target-hu-scanner', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Negative path: scans a code that does not resolve to a product packed in this job. The single
+    // error surface is the scanner's toast; wrap the call site in expectErrorToast(...) to assert it.
+    scanProductCodeToUnpick: async ({ scannedCode }) => await step(`${NAME} - Scan product code '${scannedCode}' (no advance expected)`, async () => {
+        await BarcodeScannerComponent.type({ scannedCode, testId: 'unpick-product-scanner' });
+    }),
+
+    expectOnProductScanStage: async () => await step(`${NAME} - Expect still on product-scan stage`, async () => {
+        await BarcodeScannerComponent.expectAttached({ testId: 'unpick-product-scanner', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(page.locator('.get-qty-dialog')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+    }),
+
+    closeUnpickItem: async () => await step(`${NAME} - Close "Unpack item"`, async () => {
+        await page.getByTestId('unpick-close-button').tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    // Simulates a transient network failure on the unpick submit by aborting the picking/event POST at
+    // the network layer (no HTTP response). With no axiosError.response, the unpick panel treats this as
+    // a recoverable failure -> toasts the error and stays on the SCAN_TARGET stage. Pair with
+    // unblockUnpickSubmit() to release the fault before the retry.
+    blockUnpickSubmit: async () => await step(`${NAME} - Block picking/event (simulate network fault on unpick submit)`, async () => {
+        await page.route(UNPICK_SUBMIT_ROUTE, route => route.abort('failed'));
+    }),
+
+    unblockUnpickSubmit: async () => await step(`${NAME} - Unblock picking/event (release network fault)`, async () => {
+        await page.unroute(UNPICK_SUBMIT_ROUTE);
+    }),
 };
+
+// The picking/event POST that the unpick submit (postStepPartiallyUnPicked) fires.
+const UNPICK_SUBMIT_ROUTE = '**/picking/event';
 
 //
 //

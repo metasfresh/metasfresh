@@ -143,6 +143,13 @@ const translations = {
       skip: 'Überspringen',
       scanTargetHU: 'Ziel HU scannen',
       qtyRejectedIgnoreReason: 'Ohne Grund',
+      unpick: {
+        unpickItemBtn: 'Artikel entpacken',
+        scanProduct: 'Produkt scannen',
+        qtyCaption: 'Zu entpackende Menge',
+        scanTargetHU: 'Ziel HU scannen',
+        productNotInPackage: 'Dieses Produkt ist nicht im Paket',
+      },
       qrcode: {
         missingQty: 'Der gescannte QR-Code enthält keine Mengenangaben!',
         differentUOM: 'Der gescannte QR UOM stimmt nicht mit dem Ziel überein!',
@@ -180,6 +187,7 @@ const translations = {
         unitsOfOpenDemandRemaining: 'Verbleibender offener Bedarf',
         skippedProducts: 'Übersprungene Produkte',
       },
+      adviseCarrier: 'Lieferweg-Abfrage',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',

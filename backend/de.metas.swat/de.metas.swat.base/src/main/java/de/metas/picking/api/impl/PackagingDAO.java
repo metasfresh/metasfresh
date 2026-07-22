@@ -154,7 +154,8 @@ public class PackagingDAO implements IPackagingDAO
 		}
 
 		//
-		// Filter: IsFixedDatePromised
+		// Filter: IsFixedDatePromised (header flag, applies to ALL lines) — compares the per-line DatePromised
+		// (override-inclusive; see M_Packageable_V). Keep in sync with de.metas.handlingunits...ShipmentService.
 		final ZonedDateTime maximumFixedPromisedDate = query.getMaximumFixedPromisedDate();
 		if (maximumFixedPromisedDate != null)
 		{

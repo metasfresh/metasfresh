@@ -10,6 +10,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.ui.web.material.adapter.AvailableForSaleAdapter;
 import de.metas.ui.web.material.adapter.AvailableToPromiseAdapter;
 import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
@@ -177,7 +178,8 @@ import java.util.Set;
 
 	private ProductLookupDescriptor createProductLookupDescriptor(@NonNull final Optional<SOTrx> soTrx)
 	{
-		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, Env.getClientAndOrgId());
+		final ClientAndOrgId clientAndOrgId = Env.getClientAndOrgId();
+		final boolean isFallbackToBasePriceList = sysConfigBL.getBooleanValue(SYSCONFIG_FALLBACK_TO_BASE_PRICELIST, true, clientAndOrgId);
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
 			return ProductLookupDescriptor
@@ -190,6 +192,7 @@ import java.util.Set;
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.SALES)
 					.build();
 		}
 		else
@@ -204,6 +207,7 @@ import java.util.Set;
 					.availableForSaleAdapter(availableForSaleAdapter)
 					.availableForSalesConfigRepo(availableForSalesConfigRepo)
 					.isFallbackToBasePricelist(isFallbackToBasePriceList)
+					.restrictByOrderType(SOTrx.PURCHASE)
 					.build();
 		}
 	}

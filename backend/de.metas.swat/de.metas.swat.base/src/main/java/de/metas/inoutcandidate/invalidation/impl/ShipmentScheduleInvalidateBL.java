@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.invalidation.impl;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.IInOutDAO;
@@ -46,6 +47,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.service.ITaskExecutorService;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -64,12 +66,31 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
+	/**
+	 * Int sysconfig bounding the invalidation-segment accumulator during a long-running batch: when the accumulator
+	 * ({@link ShipmentScheduleSegmentChangedProcessor}) reaches this size it flushes mid-batch (not only at
+	 * AFTER_COMMIT). A value {@code <= 0} disables the mid-batch flush. Default {@value #DEFAULT_SegmentFlushThreshold}.
+	 */
+	static final String SYSCONFIG_SegmentFlushThreshold = "de.metas.inoutcandidate.ShipmentScheduleSegmentFlushThreshold";
+	private static final int DEFAULT_SegmentFlushThreshold = 1000;
+
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final PickingBOMService pickingBOMService;
+
+	/**
+	 * The mid-batch flush threshold for the invalidation-segment accumulator. Owned here (this BL owns the
+	 * invalidation concern and its collaborators); {@link ShipmentScheduleSegmentChangedProcessor} obtains it from
+	 * its owning BL rather than reaching into the {@link ISysConfigBL} registry itself.
+	 */
+	int getSegmentFlushThreshold()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_SegmentFlushThreshold, DEFAULT_SegmentFlushThreshold);
+	}
 
 	private boolean isShipmentScheduleUpdaterRunning()
 	{
@@ -303,7 +324,8 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		}
 	}
 
-	private Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
+	@VisibleForTesting
+	Stream<IShipmentScheduleSegment> explodeByPickingBOMs(final IShipmentScheduleSegment segment)
 	{
 		if (segment.isAnyProduct())
 		{
@@ -322,6 +344,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 				.productIds(ProductId.toRepoIds(pickingBOMProductIds))
 				.anyBPartner()
 				.locatorIds(segment.getLocatorIds())
+				.warehouseIds(segment.getWarehouseIds())
 				.build();
 
 		return Stream.of(segment, pickingBOMsSegment);

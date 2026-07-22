@@ -32,7 +32,6 @@ import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.user.UserRepository;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.error.AdIssueId;
@@ -70,6 +69,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
+import de.metas.user.UserRepository;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -130,15 +130,22 @@ public class OLCandBL implements IOLCandBL
 		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 	}
 
+	/**
+	 * Registers (and returns) the {@link OLCandBL} for unit tests under the {@link IOLCandBL} interface key that
+	 * consumers resolve via {@code Services.get(IOLCandBL.class)} — call it once in setup; no extra registerJUnitBean
+	 * needed. Returns the concrete type so callers that hold an {@link OLCandBL} field can assign it directly.
+	 */
 	@VisibleForTesting
 	public static OLCandBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
 		//noinspection DataFlowIssue
-		return SpringContextHolder.getBeanOrSupply(OLCandBL.class, () -> new OLCandBL(
-				SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
-				BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
-				BPartnerAddressEffectiveBL.newInstanceForUnitTesting()));
+		return (OLCandBL)SpringContextHolder.getBeanOrSupply(
+				IOLCandBL.class,
+				() -> new OLCandBL(
+						SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+						BPartnerOrderParamsRepository.newInstanceForUnitTesting(),
+						BPartnerAddressEffectiveBL.newInstanceForUnitTesting()));
 	}
 
 	@Override

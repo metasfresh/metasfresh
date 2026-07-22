@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1401752580L;
+	private static final long serialVersionUID = -1879918600L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -309,18 +309,6 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 		return get_ValueAsString(COLUMNNAME_InvoiceRule);
 	}
 
-	@Override
-	public void setIsAssociation (final boolean IsAssociation)
-	{
-		set_Value (COLUMNNAME_IsAssociation, IsAssociation);
-	}
-
-	@Override
-	public boolean isAssociation() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsAssociation);
-	}
-
 	/** 
 	 * IsAutoInvoice AD_Reference_ID=319
 	 * Reference name: _YesNo
@@ -376,6 +364,18 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public boolean isDefault() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefault);
+	}
+
+	@Override
+	public void setIsDeviatingBillBPartner (final boolean IsDeviatingBillBPartner)
+	{
+		set_Value (COLUMNNAME_IsDeviatingBillBPartner, IsDeviatingBillBPartner);
+	}
+
+	@Override
+	public boolean isDeviatingBillBPartner() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDeviatingBillBPartner);
 	}
 
 	/** 

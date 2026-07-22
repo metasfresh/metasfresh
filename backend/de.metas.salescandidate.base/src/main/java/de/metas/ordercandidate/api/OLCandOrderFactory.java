@@ -70,6 +70,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.attributebased.IAttributePricingBL;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -88,6 +89,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.persistence.custom_columns.CustomColumnService;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -159,6 +161,7 @@ class OLCandOrderFactory
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
+	private final CustomColumnService customColumnService = SpringContextHolder.instance.getBean(CustomColumnService.class);
 
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_PROCESSING_ERROR_DESC_1P = AdMessageKey.of("OLCandProcessor.ProcessingError_Desc");
 	private static final AdMessageKey MSG_OL_CAND_PROCESSOR_ORDER_COMPLETION_FAILED_2P = AdMessageKey.of("OLCandProcessor.Order_Completion_Failed");
@@ -179,6 +182,8 @@ class OLCandOrderFactory
 	private final Collection<I_C_Order_Line_Alloc> allocations = new HashSet<>();
 	private I_C_OrderLine currentOrderLine = null;
 	private final Map<Integer, I_C_OrderLine> orderLines = new LinkedHashMap<>();
+	// The earliest of the per-line DatePromised values; the header C_Order.DatePromised is set to it in completeOrDelete().
+	private Timestamp earliestLineDatePromised = null;
 	private final List<OLCand> candidates = new ArrayList<>();
 	private final ListMultimap<String, OrderLineId> groupsToOrderLines = ArrayListMultimap.create();
 	private final Map<OrderLineId, OrderLineGroup> primaryOrderLineToGroup = new HashMap<>();
@@ -243,8 +248,11 @@ class OLCandOrderFactory
 		order.setDateAcct(dateOrdered);
 
 		// task 06269 (see KurzBeschreibung)
-		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder()
-		// also note that for now we set datepromised only in the header, so different DatePromised values result in differnt orders, and all ol have the same datepromised
+		// note that C_Order.DatePromised is propagated to C_OrderLine.DatePromised in MOrder.afterSave() and MOrderLine.setOrder().
+		// We seed the header with the first candidate's DatePromised here so the order can be saved (lines need the FK).
+		// Each line then gets its own olcand DatePromised at creation (see addOLCand0), and the header is set to the
+		// earliest of those line dates in completeOrDelete() via applyEarliestHeaderDatePromised(). The MOrder.afterSave()
+		// header->line broadcast does not overwrite the per-line dates (guarded by isUIAction || lineDateNotSet there).
 		order.setDatePromised(TimeUtil.asTimestamp(candidateOfGroup.getDatePromised()));
 
 		// if the olc has no value set, we are not falling back here!
@@ -343,6 +351,20 @@ class OLCandOrderFactory
 			order.setIncotermLocation(candidateOfGroup.getIncotermLocation());
 		}
 
+		// First-class field propagation: promotion codes from OLCand to order header
+		final PromotionCodeId promotionCodeId = candidateOfGroup.getPromotionCodeId();
+		if (promotionCodeId != null)
+		{
+			order.setC_PromotionCode_ID(promotionCodeId.getRepoId());
+		}
+		final PromotionCodeId promotionCode2Id = candidateOfGroup.getPromotionCode2Id();
+		if (promotionCode2Id != null)
+		{
+			order.setC_PromotionCode2_ID(promotionCode2Id.getRepoId());
+		}
+
+		customColumnService.copyCustomColumns(candidateOfGroup.unbox(), I_C_OLCand.Table_Name, I_C_Order.Table_Name, order);
+
 		save(order);
 		return order;
 	}
@@ -360,6 +382,8 @@ class OLCandOrderFactory
 		}
 		else
 		{
+			applyEarliestHeaderDatePromised(order);
+
 			try
 			{
 				validateAndCreateCompensationGroups();
@@ -394,6 +418,27 @@ class OLCandOrderFactory
 					olCandValidatorService.sendNotificationAfterCommit(TableRecordReference.of(I_C_OLCand.Table_Name, candidate.getId()));
 				}
 			}
+		}
+	}
+
+	/**
+	 * Sets the header {@code C_Order.DatePromised} to the earliest of the lines' own delivery dates.
+	 * <p>
+	 * Each line already carries its own {@code DatePromised} from creation (see {@link #addOLCand0(OLCand)}); this method
+	 * only sets the header, leaving the per-line dates intact. When no line carried a {@code DatePromised}, the header
+	 * keeps its fallback and nothing is changed here.
+	 */
+	private void applyEarliestHeaderDatePromised(@NonNull final I_C_Order order)
+	{
+		if (earliestLineDatePromised == null)
+		{
+			return;
+		}
+
+		if (!Objects.equals(earliestLineDatePromised, order.getDatePromised()))
+		{
+			order.setDatePromised(earliestLineDatePromised);
+			orderDAO.save(order);
 		}
 	}
 
@@ -526,6 +571,20 @@ class OLCandOrderFactory
 		{
 			currentOrderLine = newOrderLine(candidate);
 			isNewOrderLine = true;
+
+			// Carry this candidate's own delivery date onto the new line from creation, so the line owns its
+			// per-line DatePromised. When several candidates aggregate into one line, the line keeps the creating
+			// candidate's date. The header is set to the earliest such date in completeOrDelete() via
+			// applyEarliestHeaderDatePromised().
+			final Timestamp lineDatePromised = TimeUtil.asTimestamp(candidate.getDatePromised());
+			if (lineDatePromised != null)
+			{
+				currentOrderLine.setDatePromised(lineDatePromised);
+				if (earliestLineDatePromised == null || lineDatePromised.before(earliestLineDatePromised))
+				{
+					earliestLineDatePromised = lineDatePromised;
+				}
+			}
 		}
 		else
 		{
@@ -615,6 +674,15 @@ class OLCandOrderFactory
 			attributePricingBL.setDynAttrProductPriceAttributeAware(orderLineASIAware, candidate);
 		}
 
+		// First-class field propagation: IsWithoutCharge and Reason from OLCand to order line
+		// Done before firing the listeners, so that listeners observe a fully-populated order line.
+		{
+			currentOrderLine.setIsWithoutCharge(candidate.isWithoutCharge());
+			currentOrderLine.setReason(candidate.getReason());
+
+			customColumnService.copyCustomColumns(candidate.unbox(), I_C_OLCand.Table_Name, I_C_OrderLine.Table_Name, currentOrderLine);
+		}
+
 		//
 		// Fire listeners
 		olCandListeners.onOrderLineCreated(candidate, currentOrderLine);
@@ -638,6 +706,7 @@ class OLCandOrderFactory
 
 		//
 		orderLines.put(currentOrderLine.getC_OrderLine_ID(), currentOrderLine);
+
 		candidates.add(candidate);
 	}
 

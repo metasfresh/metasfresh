@@ -1,5 +1,6 @@
 package de.metas.handlingunits.picking.job.repository;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
@@ -25,6 +26,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.Adempiere;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.DB;
@@ -46,12 +48,24 @@ import java.util.stream.Stream;
  * existence / lookup queries over the same tables.
  *
  * Repository Tables: M_Picking_Job, M_Picking_Job_Line, M_Picking_Job_Step, M_Picking_Job_Step_HUAlternative, M_Picking_Job_Step_PickedHU, M_Picking_Job_HUAlternative
- * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper
+ * Repository Cluster: PickingJobRepository, PickingJobLoaderAndSaver, PickingJobSaver, PickingJobCreateRepoHelper, PickingJobLineCarrierServiceRepository
  */
 @Repository
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@VisibleForTesting
+	public static PickingJobRepository newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		// Register PickingJobLineCarrierServiceRepository in the JUnit bean registry (a side effect of its
+		// getBeanOrSupply in unit-test mode). The returned instance is intentionally discarded: PickingJobSaver
+		// resolves it lazily via SpringContextHolder.getBean(...) at save time, so it only needs to be REGISTERED
+		// before a save runs, not held here.
+		PickingJobLineCarrierServiceRepository.newInstanceForUnitTesting();
+		return new PickingJobRepository();
+	}
 
 	/**
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references

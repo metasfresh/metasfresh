@@ -1,6 +1,8 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
+import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
@@ -56,6 +58,8 @@ import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
+import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
 import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
@@ -74,6 +78,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -97,9 +102,13 @@ public class CreateMasterdataCommand
 		// Apply sysconfigs early (before any masterdata creation)
 		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
 
+		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
+		applyAdProcessFlags();
+
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
+		configureOrgSeller();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
 		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
@@ -574,6 +583,36 @@ public class CreateMasterdataCommand
 	{
 		return SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.build()
+				.execute();
+	}
+
+	private void applyAdProcessFlags()
+	{
+		final List<JsonSetAdProcessFlagsRequest> requests = request.getAdProcessFlags();
+		if (requests == null || requests.isEmpty())
+		{
+			return;
+		}
+		for (final JsonSetAdProcessFlagsRequest flagRequest : requests)
+		{
+			SetAdProcessFlagsCommand.builder()
+					.request(flagRequest)
+					.build()
+					.execute();
+		}
+	}
+
+	private void configureOrgSeller()
+	{
+		final JsonOrgSellerRequest orgSellerRequest = request.getOrgSeller();
+		if (orgSellerRequest == null)
+		{
+			return;
+		}
+		ConfigureOrgSellerCommand.builder()
+				.context(context)
+				.request(orgSellerRequest)
 				.build()
 				.execute();
 	}

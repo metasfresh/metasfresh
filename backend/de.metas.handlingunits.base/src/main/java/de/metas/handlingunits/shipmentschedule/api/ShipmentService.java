@@ -289,6 +289,9 @@ public class ShipmentService implements IShipmentService
 
 		if (nowInstant != null)
 		{
+			// Per-line "hold each line until its own date" gate. PreparationDate and DatePromised are per line in
+			// M_Packageable_V (DatePromised = the override-inclusive per-line date — see the view); IsFixedPreparationDate
+			// and IsFixedDatePromised are header flags that apply to ALL lines of the order.
 			final IQuery<I_M_Packageable_V> subQueryPackageable = queryBL.createQueryBuilder(I_M_Packageable_V.class)
 					.filter(queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
 							.setJoinOr()

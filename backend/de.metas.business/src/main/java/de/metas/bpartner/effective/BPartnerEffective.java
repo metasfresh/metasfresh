@@ -30,6 +30,7 @@ import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,6 +56,8 @@ public class BPartnerEffective
 	@Nullable private final Integer purchaseTransportDays;
 	@Getter private final boolean isPreAdviceRequired;
 	@Getter @Nullable private final ShipperId shipperId;
+	// sales-only: C_BPartner.SalesRep_ID has no purchase counterpart, hence no SOTrx split
+	@Getter @Nullable private final UserId salesRepId;
 
 	@Nullable
 	public PaymentTermId getPaymentTermId(@NonNull final SOTrx soTrx)

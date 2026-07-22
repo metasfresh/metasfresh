@@ -15,12 +15,14 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.lang.SOTrx;
 import de.metas.material.cockpit.availableforsales.AvailableForSalesConfigRepo;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.model.I_M_Product;
 import de.metas.quantity.Quantity;
@@ -161,12 +163,15 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 	private final boolean excludeBOMProducts;
 	private final boolean isFallbackToBasePricelist;
+	@Nullable
+	private final SOTrx restrictByOrderType;
 
 	@Getter
 	private final int searchStringMinLength;
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Builder(builderClassName = "BuilderWithStockInfo", builderMethodName = "builderWithStockInfo")
 	private ProductLookupDescriptor(
@@ -178,7 +183,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final AvailableForSalesConfigRepo availableForSalesConfigRepo,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts,
-			final Boolean isFallbackToBasePricelist)
+			final Boolean isFallbackToBasePricelist,
+			@Nullable final SOTrx restrictByOrderType)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -197,6 +203,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 
 		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
+		this.restrictByOrderType = restrictByOrderType;
 	}
 
 	@Builder(builderClassName = "BuilderWithoutStockInfo", builderMethodName = "builderWithoutStockInfo")
@@ -205,7 +212,8 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 			@NonNull final String pricingDateParamName,
 			final boolean hideDiscontinued,
 			final boolean excludeBOMProducts,
-			final Boolean isFallbackToBasePricelist)
+			final Boolean isFallbackToBasePricelist,
+			@Nullable final SOTrx restrictByOrderType)
 	{
 		param_C_BPartner_ID = CtxNames.ofNameAndDefaultValue(bpartnerParamName, "-1");
 		param_PricingDate = CtxNames.ofNameAndDefaultValue(pricingDateParamName, "NULL");
@@ -218,10 +226,11 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID, param_AD_Client_ID);
 
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
+		this.restrictByOrderType = restrictByOrderType;
 	}
 
 	@Override
@@ -679,6 +688,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		appendFilterByPriceList(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByNotFreightCostProduct(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterByOrg(sqlWhereClause, sqlWhereClauseParams, evalCtx);
+		appendFilterByOrderType(sqlWhereClause, sqlWhereClauseParams, evalCtx);
 		appendFilterBOMProducts(sqlWhereClause, sqlWhereClauseParams);
 
 		//
@@ -784,6 +794,30 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		}
 
 		sqlWhereClause.append("\n AND p." + I_M_Product_Lookup_V.COLUMNNAME_IsBOM + "=").append(sqlWhereClauseParams.placeholder(false));
+	}
+
+	private void appendFilterByOrderType(
+			@NonNull final StringBuilder sqlWhereClause,
+			@NonNull final SqlParamsCollector sqlWhereClauseParams,
+			@NonNull final LookupDataSourceContext evalCtx)
+	{
+		if (restrictByOrderType == null)
+		{
+			return;
+		}
+		// Resolve the enforcement gate from the request context's client/org.
+		final ClientId clientId = ClientId.ofRepoId(param_AD_Client_ID.getValueAsInteger(evalCtx));
+		final OrgId orgId = OrgId.ofRepoId(param_AD_Org_ID.getValueAsInteger(evalCtx));
+		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))
+		{
+			return;
+		}
+		final String flagColumn = restrictByOrderType.isSales() ? org.compiere.model.I_M_Product.COLUMNNAME_IsSold : org.compiere.model.I_M_Product.COLUMNNAME_IsPurchased;
+		sqlWhereClause.append("\n AND EXISTS (")
+				.append("SELECT 1 FROM " + org.compiere.model.I_M_Product.Table_Name + " mp")
+				.append(" WHERE mp.M_Product_ID=p." + I_M_Product_Lookup_V.COLUMNNAME_M_Product_ID)
+				.append(" AND mp.").append(flagColumn).append("=").append(sqlWhereClauseParams.placeholder(true))
+				.append(")");
 	}
 
 	@Nullable

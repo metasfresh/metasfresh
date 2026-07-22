@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 
 export const useKeyboardBarcodeReader = ({
   onReadDone,
@@ -11,7 +11,11 @@ export const useKeyboardBarcodeReader = ({
   const bufferRef = useRef('');
   const lastKeyTimeRef = useRef(0);
 
-  useEffect(() => {
+  // useLayoutEffect (not useEffect): the outgoing scanner's listener detach and the incoming scanner's
+  // attach must happen in the same commit (before paint). A deferred useEffect cleanup leaves both
+  // listeners live in the gap after the DOM the operator sees is committed, so a scan fired then is
+  // caught by the WRONG (outgoing) scanner.
+  useLayoutEffect(() => {
     const handleKeyDown = async (event) => {
       // console.log('[scanner] keydown', {
       //   key: event.key,

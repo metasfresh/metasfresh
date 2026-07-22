@@ -76,4 +76,13 @@ public class JsonPickingStepEvent
 
 	// Event Type: UNPICK
 	@Nullable String unpickToTargetQRCode;
+
+	/**
+	 * Optional — partial unpick by product+qty.
+	 * When both {@code unpickProductId} and {@code unpickQty} are set, only the HUs matching that
+	 * product (LIFO, whole-HU boundaries) up to the given qty are reversed.
+	 * When absent the existing whole-step/whole-job unpick behaviour is unchanged.
+	 */
+	@Nullable String unpickProductId;
+	@Nullable BigDecimal unpickQty;
 }

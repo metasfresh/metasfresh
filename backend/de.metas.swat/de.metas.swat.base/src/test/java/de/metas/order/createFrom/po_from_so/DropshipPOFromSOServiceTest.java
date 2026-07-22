@@ -91,6 +91,7 @@ class DropshipPOFromSOServiceTest
 		when(orderCreatePOFromSOsBL.getConfigPurchaseQtySource()).thenReturn("QtyOrdered");
 		when(orderCreatePOFromSOsDAO.retrieveOrderLines(any(), anyBoolean(), anyString()))
 				.thenReturn(Collections.emptyList());
+		when(orderCreatePOFromSOsBL.isCompleteDropshipPO()).thenReturn(true);
 
 		service = new TestableDropshipPOFromSOService();
 	}
@@ -245,6 +246,32 @@ class DropshipPOFromSOServiceTest
 				.isInstanceOf(AdempiereException.class);
 
 		// and processEx was never called
+		verify(documentBL, never()).processEx(any(), anyString(), anyString());
+	}
+
+	/**
+	 * When isCompleteDropshipPO() returns false, the created dropship PO is left in
+	 * DocStatus=DR — processEx must NOT be called.
+	 */
+	@Test
+	void createDropshipPOForSO_leavesPODraftWhenCompleteDropshipPOIsFalse()
+	{
+		// Given: draft mode configured
+		when(orderCreatePOFromSOsBL.isCompleteDropshipPO()).thenReturn(false);
+		final I_C_Order salesOrder = createSalesOrder();
+
+		// and a draft dropship PO linked to it (what the aggregator produces)
+		final I_C_Order draftPO = newInstance(I_C_Order.class);
+		draftPO.setIsSOTrx(false);
+		draftPO.setLink_Order_ID(salesOrder.getC_Order_ID());
+		draftPO.setDocStatus(IDocument.STATUS_Drafted);
+		draftPO.setIsDropShip(true);
+		saveRecord(draftPO);
+
+		// When
+		service.createDropshipPOForSO(salesOrder);
+
+		// Then: PO left in draft — no completion
 		verify(documentBL, never()).processEx(any(), anyString(), anyString());
 	}
 
