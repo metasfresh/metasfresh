@@ -93,7 +93,7 @@ class PickingJobScheduleRepositoryChunkingTest
 	}
 
 	/**
-	 * TC1 (AC1/AC2): ~5 shipment-schedule ids, one of them with 2 job-schedule rows (the rest with 1 each) — the
+	 * ~5 shipment-schedule ids, one of them with 2 job-schedule rows (the rest with 1 each) — the
 	 * chunked stream (chunk size 2, well below the 5-id/6-row total) must return exactly the same rows and the
 	 * same per-shipment-schedule grouping as an oversized single-chunk call (10 000): no loss, no duplication.
 	 */
@@ -136,7 +136,7 @@ class PickingJobScheduleRepositoryChunkingTest
 				.isEqualTo(groupByShipmentScheduleId(unchunked));
 	}
 
-	/** TC2 (AC4): the chunk-size cap must stay strictly positive and within the JDBC 2-byte bind-param limit. */
+	/** The chunk-size cap must stay strictly positive and within the JDBC 2-byte bind-param limit. */
 	@Test
 	void maxShipmentScheduleIdsPerQuery_staysUnderJdbc2ByteParamLimit()
 	{
@@ -145,7 +145,7 @@ class PickingJobScheduleRepositoryChunkingTest
 				.isLessThanOrEqualTo(32767);
 	}
 
-	/** TC3 (AC3): a shipment-schedule-id set at or below the cap takes the fast path — identical to the plain (unchunked) query. */
+	/** A shipment-schedule-id set at or below the cap takes the fast path — identical to the plain (unchunked) query. */
 	@Test
 	void stream_withSetSizeAtOrBelowCap_isEquivalentToPlainQuery()
 	{

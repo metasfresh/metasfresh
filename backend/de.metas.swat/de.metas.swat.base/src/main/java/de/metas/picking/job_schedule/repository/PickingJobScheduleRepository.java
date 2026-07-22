@@ -31,6 +31,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -53,6 +54,9 @@ public class PickingJobScheduleRepository
 	 * PostgreSQL/JDBC caps bind parameters at {@code Short.MAX_VALUE} (32767) — a 2-byte slot per parameter. This
 	 * constant caps the number of {@code M_ShipmentSchedule_ID} values folded into a single {@code IN (...)} filter,
 	 * with headroom below that hard limit (mirrors the rationale of {@code org.adempiere.ad.persistence.TableModelLoader.MAX_IDS_PER_QUERY}).
+	 * NOTE: this bounds only the {@code M_ShipmentSchedule_ID} IN-list. It does not budget for other bind parameters
+	 * in the same statement (e.g. a large {@code C_Workplace_ID}/exclude filter). No current caller combines those with
+	 * a near-cap shipment-schedule set; a future one would have to account for the combined bind-parameter count.
 	 */
 	@VisibleForTesting static final int MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY = 30000;
 
@@ -211,7 +215,7 @@ public class PickingJobScheduleRepository
 		// and snapshot-independent).
 		final Iterable<List<ShipmentScheduleId>> partitions = Iterables.partition(onlyShipmentScheduleIds, maxIdsPerChunk);
 		return Streams.stream(partitions)
-				.flatMap(chunk -> toSqlQuery(query, ImmutableSet.copyOf(chunk))
+				.flatMap(chunk -> toSqlQuery(query, chunk)
 						.stream()
 						.map(PickingJobScheduleRepository::fromRecord));
 	}
@@ -223,7 +227,7 @@ public class PickingJobScheduleRepository
 		return toSqlQuery(query, query.getOnlyShipmentScheduleIds()).anyMatch();
 	}
 
-	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull final PickingJobScheduleQuery query, @NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
+	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull final PickingJobScheduleQuery query, @NonNull final Collection<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (query.isAny())
 		{
