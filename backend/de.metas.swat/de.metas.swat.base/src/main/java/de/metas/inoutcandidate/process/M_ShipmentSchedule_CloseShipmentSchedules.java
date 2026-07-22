@@ -26,6 +26,8 @@ import java.math.BigDecimal;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.AdMessageKey;
@@ -106,28 +109,41 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 			return;
 		}
 
-		final String offendingIdentifiers = fullSelection.stream()
+		final List<I_M_ShipmentSchedule> offendingSchedules = fullSelection.stream()
 				.filter(schedule -> offendingScheduleIds.contains(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID())))
-				.map(this::toHumanReadableIdentifier)
-				.distinct()
-				.collect(Collectors.joining(", "));
+				.collect(Collectors.toList());
+
+		final String offendingIdentifiers = toHumanReadableIdentifiersCsv(offendingSchedules);
 
 		throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers).markAsUserValidationError();
 	}
 
 	/**
-	 * @return a human-readable identifier for the offending schedule: the order's {@code DocumentNo} when the
-	 * 		schedule references one, else the {@code M_ShipmentSchedule_ID} as a fallback.
+	 * @return a comma-separated, human-readable identifier list for the offending schedules: each schedule's
+	 * 		order {@code DocumentNo} when it references one, else its {@code M_ShipmentSchedule_ID} as a fallback.
+	 * 		Orders are batch-loaded once (never one-by-one per schedule).
 	 */
-	private String toHumanReadableIdentifier(final I_M_ShipmentSchedule schedule)
+	private String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
 	{
-		final int orderId = schedule.getC_Order_ID();
-		if (orderId <= 0)
-		{
-			return "M_ShipmentSchedule_ID=" + schedule.getM_ShipmentSchedule_ID();
-		}
+		final ImmutableSet<OrderId> orderIds = offendingSchedules.stream()
+				.map(schedule -> OrderId.ofRepoIdOrNull(schedule.getC_Order_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
 
-		final I_C_Order order = Services.get(IOrderDAO.class).getById(OrderId.ofRepoId(orderId));
-		return order.getDocumentNo();
+		final Map<OrderId, String> documentNoByOrderId = Services.get(IOrderDAO.class).getByIds(orderIds)
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
+
+		return offendingSchedules.stream()
+				.map(schedule -> toHumanReadableIdentifier(schedule, documentNoByOrderId))
+				.distinct()
+				.collect(Collectors.joining(", "));
+	}
+
+	private String toHumanReadableIdentifier(final I_M_ShipmentSchedule schedule, final Map<OrderId, String> documentNoByOrderId)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
+		final String documentNo = orderId != null ? documentNoByOrderId.get(orderId) : null;
+		return documentNo != null ? documentNo : "M_ShipmentSchedule_ID=" + schedule.getM_ShipmentSchedule_ID();
 	}
 }

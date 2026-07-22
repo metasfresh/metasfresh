@@ -116,7 +116,7 @@ Feature: Closing a shipment schedule with an unfinished picking order
     And the order identified by SO is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
-      | shipmentSchedule | L1                        | N              |
+      | shipmentSchedule | L1                        | N             |
 
     # no picking job was ever started for this schedule
     When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
@@ -142,8 +142,8 @@ Feature: Closing a shipment schedule with an unfinished picking order
     And the order identified by SO2 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
-      | busySchedule  | L1                        | N              |
-      | cleanSchedule | L2                        | N              |
+      | busySchedule  | L1                        | N             |
+      | cleanSchedule | L2                        | N             |
 
     # only SO1's schedule is still being picked; SO2's schedule has no picking job at all
     And start picking job for sales order identified by SO1
