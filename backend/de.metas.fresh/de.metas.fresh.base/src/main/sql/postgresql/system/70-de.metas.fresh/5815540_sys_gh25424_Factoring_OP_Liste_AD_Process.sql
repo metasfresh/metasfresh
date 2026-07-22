@@ -43,13 +43,16 @@ VALUES (585124, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:02','YYYY-MM-
 -- 2. AD_Process
 -- ============================================================================
 
+-- Note: AD_Process has NO ad_element_id column in the current schema (verified against the
+-- deep_tundra_release preloaded DB — the metasfresh-db skill rule "AD_Process.Name comes
+-- from AD_Element_ID" is stale for AD_Process specifically). Name / Description sit directly
+-- on AD_Process; translation propagation for AD_Process_Trl is not element-driven here.
 INSERT INTO AD_Process (ad_process_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                         value, name, description, classname, procedurename, isreport, showhelp, accesslevel,
-                        entitytype, isbetafunctionality, isdirectprint, type, ad_element_id)
-VALUES (585642, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
+                        entitytype, isbetafunctionality, isdirectprint, type)
+VALUES (585642 /*From ID Server*/, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
         'Factoring_OP_Liste_Export', 'Factoring OP-Liste Export', 'Exportiert die offenen Rechnungen und Gutschriften der Factoring-Kunden als CSV-Datei.', 'de.metas.factoring.process.Factoring_OP_Liste_Export', NULL, 'N', 'N', '3',
-        'D', 'N', 'N', 'Java', 585124)
-/*From ID Server*/;
+        'D', 'N', 'N', 'Java');
 
 -- ============================================================================
 -- 3. AD_Process_Para for C_Currency_ID
