@@ -1,6 +1,7 @@
 package de.metas.handlingunits.shipping.impl;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.inout.InOutId;
@@ -10,6 +11,7 @@ import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.inout.IHUPackingMaterialDAO;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Package_HU;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
@@ -21,8 +23,11 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensionCalcMethod;
+import de.metas.product.PackageDimensionItem;
 import de.metas.product.PackageDimensions;
 import de.metas.product.Product;
+import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.shipping.ShipperId;
@@ -45,6 +50,7 @@ import org.compiere.model.I_M_Package;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +86,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUPackageBL implements IHUPackageBL
 {
-	private final static AdMessageKey MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES = AdMessageKey.of("SelfPackedProductWithNoDefinedSizes");
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	// services
@@ -206,8 +211,8 @@ public class HUPackageBL implements IHUPackageBL
 			return ImmutableList.of(createM_Package(request));
 		}
 
-		// One parcel per unit: split the HU weight evenly across the N identical units, and use the product's
-		// SINGLE-unit dimensions (self-packed → product's NAMED dims verbatim; else UNSPECIFIED).
+		// One parcel per unit: split the HU weight evenly across the N identical units, and use the
+		// product's SINGLE-unit dimensions when present, else UNSPECIFIED — IsSelfPacked is not checked.
 		final BigDecimal huWeightInKg = request.getWeightInKg();
 		final BigDecimal perUnitWeightInKg = huWeightInKg != null
 				? huWeightInKg.divide(BigDecimal.valueOf(parcelCount), 3, RoundingMode.HALF_UP)
@@ -230,24 +235,14 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	/**
-	 * Single-unit dimensions: a self-packed CU is one label per unit, so each parcel carries the product's
-	 * named dimensions verbatim (no qty-based sort/scale). Same self-packed / no-dimensions guards as
-	 * {@code getPackageDimensions}.
+	 * Single-unit dimensions: each parcel carries the product's named dimensions verbatim
+	 * (no qty-based sort/scale). Returns {@link PackageDimensions#UNSPECIFIED} when the product
+	 * has no dims; {@code IsSelfPacked} does not gate this.
 	 */
 	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
 	{
-		if (!product.isSelfPacked())
-		{
-			return PackageDimensions.UNSPECIFIED;
-		}
-		else if (product.getPackageDimensions().isUnspecified())
-		{
-			throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
-		}
-		else
-		{
-			return product.getPackageDimensions();
-		}
+		final PackageDimensions dims = product.getPackageDimensions();
+		return dims.isUnspecified() ? PackageDimensions.UNSPECIFIED : dims;
 	}
 
 	@Override
@@ -465,25 +460,53 @@ public class HUPackageBL implements IHUPackageBL
 		}
 		else
 		{
-			//Loaded here to avoid recursion
+			// Loaded here to avoid recursion
 			final ProductRepository productRepository = SpringContextHolder.instance.getBean(ProductRepository.class);
 
 			final List<IHUProductStorage> productStorages = handlingUnitsBL.getStorageFactory().getProductStorages(hu);
 			if (productStorages.size() > 1)
 			{
-				//Multiple products stored in HU, there's no chance we can infer the dimensions of the package.
+				// Multi-product TU: dispatch via the pi-version's calc method (only when HU_UnitType=TU).
+				// If no mode is configured (not a TU, or TU with no mode set), fall back to UNSPECIFIED.
+				if (handlingUnitsBL.isTransportUnit(hu))
+				{
+					final I_M_HU_PI_Version piVersion = handlingUnitsBL.getEffectivePIVersion(hu);
+					if (piVersion != null)
+					{
+						final PackageDimensionCalcMethod calcMethod = PackageDimensionCalcMethod.ofNullableCode(piVersion.getPackageDimensionCalcMethod());
+						if (calcMethod != null)
+						{
+							// Batch-load all products in one query to avoid an N+1 DB round-trip.
+							final Set<ProductId> productIds = productStorages.stream()
+									.map(IHUProductStorage::getProductId)
+									.collect(ImmutableSet.toImmutableSet());
+							final ImmutableMap<ProductId, Product> productsById = productRepository.getByIdsAsMap(productIds);
+
+							final List<PackageDimensionItem> items = new ArrayList<>();
+							for (final IHUProductStorage storage : productStorages)
+							{
+								final Product product = productsById.get(storage.getProductId());
+								if (product == null)
+								{
+									// Product not found (inactive/deleted) — degrade gracefully.
+									return PackageDimensions.UNSPECIFIED;
+								}
+								items.add(PackageDimensionItem.of(product.getPackageDimensions(), storage.getQtyInStockingUOM()));
+							}
+							return PackageDimensions.ofItems(calcMethod, items);
+						}
+					}
+				}
 				return PackageDimensions.UNSPECIFIED;
 			}
+
+			// Single-product: use product dims regardless of IsSelfPacked.
 			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
 			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
 			final PackageDimensions dimensions = product.getPackageDimensions();
-			if (!product.isSelfPacked())
-			{
-				return PackageDimensions.UNSPECIFIED;
-			}
 			if (dimensions.isUnspecified())
 			{
-				throw new AdempiereException(MSG_SELF_PACKED_PRODUCT_WITH_NO_DEFINED_SIZES, product.getValue());
+				return PackageDimensions.UNSPECIFIED;
 			}
 			final Quantity qtyInStockingUOM = singleHUProductStorage.getQtyInStockingUOM();
 			return PackageDimensions.ofProductDimensionsAndQty(dimensions, qtyInStockingUOM);

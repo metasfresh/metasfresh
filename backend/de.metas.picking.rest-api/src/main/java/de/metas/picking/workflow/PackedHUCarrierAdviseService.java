@@ -440,9 +440,12 @@ public class PackedHUCarrierAdviseService
 					.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
-			dimensions = product.isSelfPacked()
-					? product.getPackageDimensions()
-					: PackageDimensions.UNSPECIFIED;
+			// Use product dims regardless of IsSelfPacked;
+			// fall back to UNSPECIFIED only when no dims are defined.
+			final PackageDimensions productDims = product.getPackageDimensions();
+			dimensions = productDims.isUnspecified()
+					? PackageDimensions.UNSPECIFIED
+					: productDims;
 		}
 		else
 		{
