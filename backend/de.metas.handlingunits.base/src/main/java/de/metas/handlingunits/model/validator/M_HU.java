@@ -77,8 +77,9 @@ public class M_HU
 	}
 
 	/**
-	 * Sets the HU's {@code AD_Org_ID} from its locator's warehouse at creation time, so that a physical HU
-	 * always belongs to the org that owns its warehouse, regardless of the creating context's org.
+	 * Sets the HU's {@code AD_Org_ID} from its locator's warehouse at creation time, when that warehouse has a
+	 * real org, so that a physical HU always belongs to the org that owns its warehouse, regardless of the
+	 * creating context's org.
 	 *
 	 * @param hu
 	 */
@@ -91,7 +92,17 @@ public class M_HU
 			return; // no physical location => keep the context org
 		}
 
-		hu.setAD_Org_ID(warehouse.getAD_Org_ID());
+		final int warehouseOrgId = warehouse.getAD_Org_ID();
+		if (warehouseOrgId <= 0)
+		{
+			// Warehouse itself carries no real org (0 = * / ANY). Stamping org 0 here would re-introduce the
+			// very org-0 physical HU this interceptor exists to prevent, so keep the context org instead —
+			// symmetric with the data-repair migration, which likewise only repairs HUs whose warehouse has a
+			// real org (w.ad_org_id > 0).
+			return;
+		}
+
+		hu.setAD_Org_ID(warehouseOrgId);
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)

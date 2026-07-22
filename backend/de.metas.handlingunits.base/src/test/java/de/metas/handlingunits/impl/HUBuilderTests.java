@@ -316,4 +316,69 @@ public class HUBuilderTests
 		final I_M_HU reloadedOrgR = InterfaceWrapperHelper.load(resultOrgR.getM_HU_ID(), I_M_HU.class);
 		assertThat(reloadedOrgR.getAD_Org_ID()).isEqualTo(orgR.getRepoId());
 	}
+
+	/**
+	 * An org-0 warehouse ("*" / ANY) carries no real org. The interceptor shall then keep the creating
+	 * context's org rather than re-stamping the physical HU with org 0 (symmetric with the data-repair
+	 * migration, which likewise only repairs HUs whose warehouse has a real org).
+	 */
+	@Test
+	public void huCreatedAtOrgZeroWarehouseKeepsContextOrg()
+	{
+		// Production wiring registers M_HU.INSTANCE as a model validator (see Main#registerInterceptors).
+		// HUTestHelper's "minimal" interceptor setup intentionally skips it (to avoid NPEs in unrelated tests),
+		// so register it here to exercise the real TYPE_BEFORE_NEW creation path.
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(M_HU.INSTANCE);
+
+		// Fixture: a warehouse+locator whose own AD_Org_ID is 0 ("*" / ANY)
+		final I_M_Warehouse warehouseOrgZero = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_Warehouse.class);
+		warehouseOrgZero.setValue("WhOrgZero");
+		warehouseOrgZero.setName("WhOrgZero");
+		warehouseOrgZero.setIsIssueWarehouse(false);
+		warehouseOrgZero.setAD_Org_ID(0);
+		InterfaceWrapperHelper.save(warehouseOrgZero);
+		assertThat(warehouseOrgZero.getAD_Org_ID()).isEqualTo(0); // fixture sanity check
+
+		final I_M_Locator locatorOrgZero = BusinessTestHelper.createLocator("WhOrgZero-default", warehouseOrgZero);
+		final LocatorId locatorIdOrgZero = LocatorId.ofRepoId(warehouseOrgZero.getM_Warehouse_ID(), locatorOrgZero.getM_Locator_ID());
+
+		// Set the creation context org to a real org R and create a top-level HU at the org-0-warehouse locator.
+		final OrgId orgR = AdempiereTestHelper.createOrgWithTimeZone("HuOrgZeroWarehouseContextOrg");
+		assertThat(orgR.getRepoId()).isGreaterThan(0); // fixture sanity check
+		Env.setContext(helper.getCtx(), Env.CTXNAME_AD_Org_ID, orgR.getRepoId());
+
+		final HUBuilder testee = new HUBuilder(huContext);
+		testee.setLocatorId(locatorIdOrgZero);
+		final I_M_HU result = testee.create(piLU_Version);
+
+		final I_M_HU reloaded = InterfaceWrapperHelper.load(result.getM_HU_ID(), I_M_HU.class);
+		assertThat(reloaded.getM_Locator_ID()).isEqualTo(locatorOrgZero.getM_Locator_ID()); // guard
+		assertThat(reloaded.getAD_Org_ID()).isEqualTo(orgR.getRepoId());
+	}
+
+	/**
+	 * An HU with no locator (no physical location) has no warehouse to derive an org from
+	 * ({@link IHandlingUnitsBL#extractWarehouseOrNull} returns null). The interceptor shall then keep the
+	 * creating context's org.
+	 */
+	@Test
+	public void huCreatedWithoutLocatorKeepsContextOrg()
+	{
+		// Production wiring registers M_HU.INSTANCE as a model validator (see Main#registerInterceptors).
+		// HUTestHelper's "minimal" interceptor setup intentionally skips it (to avoid NPEs in unrelated tests),
+		// so register it here to exercise the real TYPE_BEFORE_NEW creation path.
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(M_HU.INSTANCE);
+
+		final OrgId orgR = AdempiereTestHelper.createOrgWithTimeZone("HuNoLocatorContextOrg");
+		assertThat(orgR.getRepoId()).isGreaterThan(0); // fixture sanity check
+		Env.setContext(helper.getCtx(), Env.CTXNAME_AD_Org_ID, orgR.getRepoId());
+
+		// no setLocatorId(..) call => M_Locator_ID stays 0 => extractWarehouseOrNull(hu) returns null
+		final HUBuilder testee = new HUBuilder(huContext);
+		final I_M_HU result = testee.create(piLU_Version);
+
+		final I_M_HU reloaded = InterfaceWrapperHelper.load(result.getM_HU_ID(), I_M_HU.class);
+		assertThat(reloaded.getM_Locator_ID()).isLessThanOrEqualTo(0); // guard: no physical location (LocatorId.toRepoId(null) == -1)
+		assertThat(reloaded.getAD_Org_ID()).isEqualTo(orgR.getRepoId());
+	}
 }
