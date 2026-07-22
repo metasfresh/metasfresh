@@ -55,17 +55,16 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.GenericPO;
-import org.adempiere.model.PlainContextAware;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.MQuery;
 import org.compiere.model.PO;
 
+import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -88,8 +87,18 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 {
 	private static final String UNION_FILTER_ID = "RelationTypeInOverlay-union";
 
+	/**
+	 * Upper bound for how many rows may be selected before the process is offered.
+	 * Guards against building an unbounded per-source OR-union / running per-row zoom resolution.
+	 * Set the sysconfig to {@code 0} (or negative) to disable the limit.
+	 */
+	@VisibleForTesting
+	static final String SYSCONFIG_MaxSelectionSize = "de.metas.ui.web.view.process.RelationTypeInOverlayProcess.MaxSelectionSize";
+	private static final int DEFAULT_MaxSelectionSize = 100;
+
 	@NonNull private final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory;
 	@NonNull private final IViewsRepository viewsRepo;
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public RelationTypeInOverlayProcess()
 	{
@@ -106,32 +115,23 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		this.viewsRepo = viewsRepo;
 	}
 
+	/**
+	 * Single test factory for both single- and multi-selection scenarios.
+	 * <p>
+	 * The real axis is <em>how the zoom source is resolved</em>, not single vs multi: {@code zoomSourcesByRecordRef}
+	 * maps each selected record ref to its zoom source, and any ref that is absent from the map makes
+	 * {@code createZoomSource} throw — which lets a test simulate an unloadable / concurrently-deleted source
+	 * (a "fixed zoom" is simply a single-entry map).
+	 *
+	 * @param selectedRecordRefs the selection to inject; pass {@code null} to let the real
+	 *                           {@link #getSelectedSourceRecordRefs()} resolve it from the {@code processInfo}.
+	 */
 	@VisibleForTesting
 	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
 			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
 			@NonNull final IViewsRepository viewsRepo,
 			@NonNull final de.metas.process.ProcessInfo processInfo,
-			@NonNull final IZoomSource zoomSource)
-	{
-		final RelationTypeInOverlayProcess process = new RelationTypeInOverlayProcess(relationTypeProvidersFactory, viewsRepo)
-		{
-			@Override
-			protected IZoomSource createZoomSource(@NonNull final TableRecordReference recordRef)
-			{
-				return zoomSource;
-			}
-		};
-		process.init(processInfo);
-		return process;
-	}
-
-	// Constructor for testing multi-selection: inject the selected record refs and a per-ref zoom source
-	@VisibleForTesting
-	public static RelationTypeInOverlayProcess newInstanceForUnitTesting(
-			@NonNull final RelationTypeRelatedDocumentsProvidersFactory relationTypeProvidersFactory,
-			@NonNull final IViewsRepository viewsRepo,
-			@NonNull final de.metas.process.ProcessInfo processInfo,
-			@NonNull final List<TableRecordReference> selectedRecordRefs,
+			@Nullable final List<TableRecordReference> selectedRecordRefs,
 			@NonNull final Map<TableRecordReference, IZoomSource> zoomSourcesByRecordRef)
 	{
 		final RelationTypeInOverlayProcess process = new RelationTypeInOverlayProcess(relationTypeProvidersFactory, viewsRepo)
@@ -139,7 +139,9 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 			@Override
 			protected List<TableRecordReference> getSelectedSourceRecordRefs()
 			{
-				return ImmutableList.copyOf(selectedRecordRefs);
+				return selectedRecordRefs != null
+						? ImmutableList.copyOf(selectedRecordRefs)
+						: super.getSelectedSourceRecordRefs();
 			}
 
 			@Override
@@ -218,6 +220,11 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	 * related-documents sticky filter from {@code getSingleReferencingDocumentPathOrNull()} (i.e. only the first path),
 	 * which would collapse the union to a single source. Instead we OR the per-source related-documents SQL where-clauses
 	 * into one sticky filter.
+	 * <p>
+	 * We deliberately do not use the framework's {@code ProcessExecutionResult#setRecordsToOpen(records, windowId)}
+	 * convenience (as e.g. Material Cockpit does): it materializes the full related-id set up front and hardcodes
+	 * {@code GridView} + {@code SAME_TAB_OVERLAY}, whereas the sticky-filter view stays lazy (the grid pages through the
+	 * filter) and honours {@link #getOpenTarget()} (ModalOverlay / NewBrowserTab).
 	 */
 	private ViewId createCombinedView(@NonNull final List<TableRecordReference> sourceRecordRefs, @NonNull final RelationTypeId relationTypeId)
 	{
@@ -317,25 +324,24 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	 */
 	protected List<TableRecordReference> getSelectedSourceRecordRefs()
 	{
-		// Note: getRecordRefOrNull() accepts record_id 0 (it only rejects negative ids), so a view row that resolves to
-		// e.g. RV_PurchaseCockpit/0 (a row with no single backing record) would otherwise be treated as a loadable single
-		// record. Require a real (>0) id here; otherwise fall through to the view selection where-clause below.
-		final TableRecordReference singleRecordRef = getProcessInfo().getRecordRefOrNull();
-		if (singleRecordRef != null && singleRecordRef.getRecord_ID() > 0)
+		// Single-record context: use it directly. isRecordSet() requires a real (>0) id, so a view row that resolves to
+		// e.g. RV_PurchaseCockpit/0 (a row with no single backing record) is not treated as a loadable single record and
+		// falls through to the view-selection resolution below.
+		if (getProcessInfo().isRecordSet())
 		{
-			return ImmutableList.of(singleRecordRef);
+			return ImmutableList.of(getProcessInfo().getRecordRefNotNull());
 		}
 
+		// Multi-row view selection: resolve the AD_PInstance selection where-clause to the selected record refs.
+		// We keep the explicit guards (rather than letting retrieveSelectedRecordsQueryBuilder decide) because that
+		// helper treats record_id 0 as a valid single record, whereas here id 0 must surface as @NoSelection@.
 		final String tableName = getProcessInfo().getTableNameOrNull();
-		final IQueryFilter<Object> selectionFilter = getProcessInfo().getQueryFilterOrElse(null);
-		if (tableName == null || selectionFilter == null)
+		if (tableName == null || getProcessInfo().getQueryFilterOrElse(null) == null)
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		return Services.get(IQueryBL.class)
-				.createQueryBuilder(tableName, PlainContextAware.newWithThreadInheritedTrx(getCtx()))
-				.filter(selectionFilter)
+		return retrieveSelectedRecordsQueryBuilder(Object.class)
 				.create()
 				.listIds()
 				.stream()
@@ -407,7 +413,17 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No AD_Window_ID");
 		}
-		return ProcessPreconditionsResolution.accept();
+		if (context.isNoSelection())
+		{
+			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
+		}
 
+		final int maxSelectionSize = sysConfigBL.getIntValue(SYSCONFIG_MaxSelectionSize, DEFAULT_MaxSelectionSize);
+		if (maxSelectionSize > 0 && context.isMoreThanAllowedSelected(maxSelectionSize))
+		{
+			return ProcessPreconditionsResolution.rejectBecauseTooManyRecordsSelected(maxSelectionSize);
+		}
+
+		return ProcessPreconditionsResolution.accept();
 	}
 }

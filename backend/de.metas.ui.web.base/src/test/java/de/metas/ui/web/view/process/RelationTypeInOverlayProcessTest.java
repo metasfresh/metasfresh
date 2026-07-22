@@ -17,6 +17,7 @@ import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessOpenTarget;
 import de.metas.process.ProcessPreconditionsResolution;
+import org.adempiere.service.ISysConfigBL;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.view.CreateViewRequest;
 import de.metas.ui.web.view.IView;
@@ -47,6 +48,8 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,6 +64,12 @@ class RelationTypeInOverlayProcessTest
 		MockitoAnnotations.initMocks(this);
 		AdempiereTestHelper.get().init();
 		Services.registerService(IADProcessDAO.class, mock(IADProcessDAO.class));
+
+		// SysConfig is read while resolving the max-selection precondition; return the passed default so the limit is active.
+		final ISysConfigBL sysConfigBL = mock(ISysConfigBL.class);
+		when(sysConfigBL.getIntValue(anyString(), anyInt())).thenAnswer(invocation -> invocation.getArgument(1));
+		Services.registerService(ISysConfigBL.class, sysConfigBL);
+
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(100));
 	}
 
@@ -75,6 +84,8 @@ class RelationTypeInOverlayProcessTest
 		{
 			final IProcessPreconditionsContext ctx = mock(IProcessPreconditionsContext.class);
 			when(ctx.getAdWindowId()).thenReturn(AdWindowId.ofRepoId(100));
+			when(ctx.isNoSelection()).thenReturn(false);
+			when(ctx.isMoreThanAllowedSelected(anyInt())).thenReturn(false);
 
 			final ProcessPreconditionsResolution resolution = buildProcessWithoutRelationTypeId(providerFactory, viewsRepo)
 					.checkPreconditionsApplicable(ctx);
@@ -86,7 +97,6 @@ class RelationTypeInOverlayProcessTest
 		void rejects_whenNoWindowId()
 		{
 			final IProcessPreconditionsContext ctx = mock(IProcessPreconditionsContext.class);
-			when(ctx.isSingleSelection()).thenReturn(true);
 			when(ctx.getAdWindowId()).thenReturn(null);
 
 			final ProcessPreconditionsResolution resolution = buildProcessWithoutRelationTypeId(providerFactory, viewsRepo)
@@ -99,13 +109,41 @@ class RelationTypeInOverlayProcessTest
 		void accepts_whenSingleSelectionAndWindowIdPresent()
 		{
 			final IProcessPreconditionsContext ctx = mock(IProcessPreconditionsContext.class);
-			when(ctx.isSingleSelection()).thenReturn(true);
 			when(ctx.getAdWindowId()).thenReturn(AdWindowId.ofRepoId(100));
+			when(ctx.isNoSelection()).thenReturn(false);
+			when(ctx.isMoreThanAllowedSelected(anyInt())).thenReturn(false);
 
 			final ProcessPreconditionsResolution resolution = buildProcessWithoutRelationTypeId(providerFactory, viewsRepo)
 					.checkPreconditionsApplicable(ctx);
 
 			assertThat(resolution.isAccepted()).isTrue();
+		}
+
+		@Test
+		void rejects_whenNoSelection()
+		{
+			final IProcessPreconditionsContext ctx = mock(IProcessPreconditionsContext.class);
+			when(ctx.getAdWindowId()).thenReturn(AdWindowId.ofRepoId(100));
+			when(ctx.isNoSelection()).thenReturn(true);
+
+			final ProcessPreconditionsResolution resolution = buildProcessWithoutRelationTypeId(providerFactory, viewsRepo)
+					.checkPreconditionsApplicable(ctx);
+
+			assertThat(resolution.isAccepted()).isFalse();
+		}
+
+		@Test
+		void rejects_whenMoreThanAllowedSelected()
+		{
+			final IProcessPreconditionsContext ctx = mock(IProcessPreconditionsContext.class);
+			when(ctx.getAdWindowId()).thenReturn(AdWindowId.ofRepoId(100));
+			when(ctx.isNoSelection()).thenReturn(false);
+			when(ctx.isMoreThanAllowedSelected(anyInt())).thenReturn(true);
+
+			final ProcessPreconditionsResolution resolution = buildProcessWithoutRelationTypeId(providerFactory, viewsRepo)
+					.checkPreconditionsApplicable(ctx);
+
+			assertThat(resolution.isAccepted()).isFalse();
 		}
 	}
 
@@ -276,8 +314,13 @@ class RelationTypeInOverlayProcessTest
 					.setOpenTarget(openTarget)
 					.build();
 
+			// single record (C_Order/101) is set on the ProcessInfo, so the real getSelectedSourceRecordRefs() resolves it;
+			// map the zoom source by that ref (a "fixed zoom" is just a single-entry map).
 			final IZoomSource mockZoomSource = mock(IZoomSource.class);
-			return RelationTypeInOverlayProcess.newInstanceForUnitTesting(factory, viewsRepo, processInfo, mockZoomSource);
+			return RelationTypeInOverlayProcess.newInstanceForUnitTesting(
+					factory, viewsRepo, processInfo,
+					null,
+					ImmutableMap.of(TableRecordReference.of("C_Order", 101), mockZoomSource));
 		}
 	}
 
@@ -698,7 +741,7 @@ class RelationTypeInOverlayProcessTest
 					.build();
 
 			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
-					providerFactory, viewsRepo, processInfo, mock(IZoomSource.class));
+					providerFactory, viewsRepo, processInfo, null, ImmutableMap.of());
 
 			assertThatThrownBy(process::getSelectedSourceRecordRefs)
 					.isInstanceOf(AdempiereException.class)
@@ -718,7 +761,7 @@ class RelationTypeInOverlayProcessTest
 					.build();
 
 			final RelationTypeInOverlayProcess process = RelationTypeInOverlayProcess.newInstanceForUnitTesting(
-					providerFactory, viewsRepo, processInfo, mock(IZoomSource.class));
+					providerFactory, viewsRepo, processInfo, null, ImmutableMap.of());
 
 			assertThat(process.getSelectedSourceRecordRefs()).containsExactly(ref);
 		}
@@ -746,8 +789,7 @@ class RelationTypeInOverlayProcessTest
 				// no relation type id
 				.build();
 
-		final IZoomSource mockZoomSource = mock(IZoomSource.class);
-		return RelationTypeInOverlayProcess.newInstanceForUnitTesting(factory, viewsRepo, processInfo, mockZoomSource);
+		return RelationTypeInOverlayProcess.newInstanceForUnitTesting(factory, viewsRepo, processInfo, null, ImmutableMap.of());
 	}
 
 	private static RelatedDocumentsCandidateGroup buildCandidateGroupWithOneEntry(final WindowId targetWindowId)
