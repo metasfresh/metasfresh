@@ -56,8 +56,8 @@ public class EDI_Desadv_JSON_Export_StepDef
 	 * Inspects the {@code Packings[].LineItems[]} in the last API response and counts:
 	 * <ul>
 	 *     <li>Total packings (should be reduced after merging)</li>
-	 *     <li>Main articles ({@code IsSubArticle=false}): must have {@code MainArticleLine=null}</li>
-	 *     <li>Sub-articles ({@code IsSubArticle=true}): must have {@code MainArticleLine > 0}</li>
+	 *     <li>Main articles ({@code IsSubArticle=false}): must have {@code MainArticleItemLine=null}</li>
+	 *     <li>Sub-articles ({@code IsSubArticle=true}): must have {@code MainArticleItemLine > 0}</li>
 	 * </ul>
 	 * <p>
 	 * DataTable columns:
@@ -107,16 +107,16 @@ public class EDI_Desadv_JSON_Export_StepDef
 					if (isSubArticle)
 					{
 						actualSubArticles++;
-						final JsonNode mainArticleLine = item.path("MainArticleLine");
-						assertThat(mainArticleLine.isNull()).as("SubArticle should have MainArticleLine set").isFalse();
+						final JsonNode mainArticleLine = item.path("MainArticleItemLine");
+						assertThat(mainArticleLine.isNull()).as("SubArticle should have MainArticleItemLine set").isFalse();
 						subArticleMainLines.add(mainArticleLine.asInt());
 					}
 					else
 					{
 						actualMainArticles++;
-						final JsonNode mainArticleLine = item.path("MainArticleLine");
+						final JsonNode mainArticleLine = item.path("MainArticleItemLine");
 						assertThat(mainArticleLine.isNull())
-								.as("Non-sub-article should have MainArticleLine=null")
+								.as("Non-sub-article should have MainArticleItemLine=null")
 								.isTrue();
 					}
 				}
@@ -132,7 +132,7 @@ public class EDI_Desadv_JSON_Export_StepDef
 			// Verify all sub-articles reference a valid main line
 			for (final Integer mainLine : subArticleMainLines)
 			{
-				assertThat(mainLine).as("MainArticleLine should be > 0").isGreaterThan(0);
+				assertThat(mainLine).as("MainArticleItemLine should be > 0").isGreaterThan(0);
 			}
 		});
 	}

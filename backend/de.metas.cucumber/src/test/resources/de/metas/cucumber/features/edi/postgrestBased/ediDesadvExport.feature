@@ -253,7 +253,7 @@ Feature: EDI DESADV export via postgREST
             "QtyCUsPerTU_InInvoiceUOM": 10,
             "M_HU_PackagingCode_TU_Text": "CART",
             "IsSubArticle": false,
-            "MainArticleLine": null
+            "MainArticleItemLine": null
           }
         ],
         "IPA_SSCC18": "012345670010000005",
@@ -433,7 +433,7 @@ Feature: EDI DESADV export via postgREST
     """
     # The compensation group merging should produce 1 pack (from originally 3):
     # the main article's pack absorbs the sub-article packs.
-    # Result: 1 main article LineItem (IsSubArticle=false) + 2 sub-article LineItems (IsSubArticle=true with MainArticleLine)
+    # Result: 1 main article LineItem (IsSubArticle=false) + 2 sub-article LineItems (IsSubArticle=true with MainArticleItemLine)
     Then verify DESADV JSON export has compensation group packing:
       | PackingCount | MainArticleCount | SubArticleCount |
       | 1            | 1                | 2               |
