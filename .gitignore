@@ -102,3 +102,6 @@ nul
 docker-builds/e2e-tests/.env
 *.stackdump
 tmp/
+
+# graphify knowledge-graph output (per-module graph.json/graph.html, can be 5-30 MB each)
+graphify-out/
