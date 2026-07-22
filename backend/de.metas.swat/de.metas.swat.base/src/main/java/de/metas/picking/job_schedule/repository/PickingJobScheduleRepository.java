@@ -2,6 +2,9 @@ package de.metas.picking.job_schedule.repository;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Streams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
@@ -45,6 +48,13 @@ public class PickingJobScheduleRepository
 {
 	@NonNull private static final AdMessageKey UPDATE_OF_PROCESSED_NOT_ALLOWED = AdMessageKey.of("UPDATE_OF_PROCESSED_NOT_ALLOWED");
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * PostgreSQL/JDBC caps bind parameters at {@code Short.MAX_VALUE} (32767) — a 2-byte slot per parameter. This
+	 * constant caps the number of {@code M_ShipmentSchedule_ID} values folded into a single {@code IN (...)} filter,
+	 * with headroom below that hard limit (mirrors the rationale of {@code org.adempiere.ad.persistence.TableModelLoader.MAX_IDS_PER_QUERY}).
+	 */
+	@VisibleForTesting static final int MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY = 30000;
 
 	@VisibleForTesting
 	public static PickingJobScheduleRepository newInstanceForUnitTesting()
@@ -182,17 +192,38 @@ public class PickingJobScheduleRepository
 
 	public Stream<PickingJobSchedule> stream(@NonNull final PickingJobScheduleQuery query)
 	{
-		return toSqlQuery(query)
-				.stream()
-				.map(PickingJobScheduleRepository::fromRecord);
+		return stream(query, MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY);
+	}
+
+	@VisibleForTesting
+	Stream<PickingJobSchedule> stream(@NonNull final PickingJobScheduleQuery query, final int maxIdsPerChunk)
+	{
+		final ImmutableSet<ShipmentScheduleId> onlyShipmentScheduleIds = query.getOnlyShipmentScheduleIds();
+		if (onlyShipmentScheduleIds.size() <= maxIdsPerChunk)
+		{
+			return toSqlQuery(query, onlyShipmentScheduleIds)
+					.stream()
+					.map(PickingJobScheduleRepository::fromRecord);
+		}
+
+		// Each chunk is a separate statement, so under READ COMMITTED there is no cross-chunk MVCC snapshot consistency for id
+		// sets > MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY. Acceptable here: callers group the result by M_ShipmentSchedule_ID (order-
+		// and snapshot-independent).
+		final Iterable<List<ShipmentScheduleId>> partitions = Iterables.partition(onlyShipmentScheduleIds, maxIdsPerChunk);
+		return Streams.stream(partitions)
+				.flatMap(chunk -> toSqlQuery(query, ImmutableSet.copyOf(chunk))
+						.stream()
+						.map(PickingJobScheduleRepository::fromRecord));
 	}
 
 	public boolean anyMatch(@NonNull final PickingJobScheduleQuery query)
 	{
-		return toSqlQuery(query).anyMatch();
+		// Not chunked: the only caller passes a single id. If a caller ever needs a large set here, chunk it as stream() does
+		// (see the deferred unbounded-parameter audit).
+		return toSqlQuery(query, query.getOnlyShipmentScheduleIds()).anyMatch();
 	}
 
-	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull final PickingJobScheduleQuery query)
+	private IQuery<I_M_Picking_Job_Schedule> toSqlQuery(@NonNull final PickingJobScheduleQuery query, @NonNull final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds)
 	{
 		if (query.isAny())
 		{
@@ -214,9 +245,9 @@ public class PickingJobScheduleRepository
 			queryBuilder.addNotInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, query.getExcludeJobScheduleIds());
 		}
 
-		if (!query.getOnlyShipmentScheduleIds().isEmpty())
+		if (!shipmentScheduleIds.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, query.getOnlyShipmentScheduleIds());
+			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleIds);
 		}
 
 		if (query.getIsProcessed() != null)
