@@ -94,7 +94,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		{
 			final ExportResult result = runExport(conn, orgId, clientId, p_C_Currency_ID);
 			getResult().setReportData(result.file, result.filename);
-			getResult().addLog("File: " + result.filename + ", " + result.rowCount + " data row(s)");
+			addLog("File: {} ({} data row(s))", result.filename, result.rowCount);
 			return MSG_OK;
 		}
 	}
