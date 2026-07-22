@@ -269,8 +269,8 @@ public class HUBuilderTests
 
 	/**
 	 * A physical HU (top-level, real locator) shall get its {@code AD_Org_ID} from the locator's warehouse
-	 * at creation time, regardless of the creating context's org (AC1-AC3). If the context org already matches
-	 * the warehouse org, nothing changes (AC4, no-regression).
+	 * at creation time, regardless of the creating context's org. If the context org already matches
+	 * the warehouse org, nothing changes (no-regression).
 	 */
 	@Test
 	public void huCreatedUnderOrgZeroContextGetsWarehouseOrg()
@@ -295,7 +295,7 @@ public class HUBuilderTests
 		final I_M_Locator locatorR = BusinessTestHelper.createLocator("WhOrgR-default", warehouseR);
 		final LocatorId locatorIdR = LocatorId.ofRepoId(warehouseR.getM_Warehouse_ID(), locatorR.getM_Locator_ID());
 
-		// AC1-AC3: Set the creation context org to 0 and create a top-level HU at the real-org locator.
+		// Set the creation context org to 0 and create a top-level HU at the real-org locator.
 		Env.setContext(helper.getCtx(), Env.CTXNAME_AD_Org_ID, 0);
 
 		final HUBuilder testeeOrgZero = new HUBuilder(huContext);
@@ -306,7 +306,7 @@ public class HUBuilderTests
 		assertThat(reloadedOrgZero.getM_Locator_ID()).isEqualTo(locatorR.getM_Locator_ID()); // guard
 		assertThat(reloadedOrgZero.getAD_Org_ID()).isEqualTo(orgR.getRepoId());
 
-		// AC4 (no-regression): context org already == R => persisted org stays R
+		// No-regression: context org already == R => persisted org stays R
 		Env.setContext(helper.getCtx(), Env.CTXNAME_AD_Org_ID, orgR.getRepoId());
 
 		final HUBuilder testeeOrgR = new HUBuilder(huContext);
