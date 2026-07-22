@@ -69,7 +69,6 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import static de.metas.ui.web.view.SqlViewFactory.MSG_NO_RELATED_DOCS_FOUND;
@@ -228,7 +227,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 	 */
 	private ViewId createCombinedView(@NonNull final List<TableRecordReference> sourceRecordRefs, @NonNull final RelationTypeId relationTypeId)
 	{
-		AdWindowId targetWindowId = null;
+		WindowId targetWindowId = null;
 		// LinkedHashSet: dedupe identical per-source where-clauses (e.g. two rows resolving to the same candidate)
 		// while keeping a stable order in the combined filter.
 		final Set<String> whereClauses = new LinkedHashSet<>();
@@ -252,14 +251,15 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 
 			for (final RelatedDocumentsCandidateGroup group : groups)
 			{
+				final WindowId groupWindowId = WindowId.of(group.getTargetWindowId());
 				if (targetWindowId == null)
 				{
-					targetWindowId = group.getTargetWindowId();
+					targetWindowId = groupWindowId;
 				}
-				else if (!Objects.equals(targetWindowId, group.getTargetWindowId()))
+				else if (!WindowId.equals(targetWindowId, groupWindowId))
 				{
 					addLog("RelationType {} returned target window {} for {} but the combined view uses {}; ignoring that group.",
-							relationTypeId, group.getTargetWindowId(), recordRef, targetWindowId);
+							relationTypeId, groupWindowId, recordRef, targetWindowId);
 					continue;
 				}
 
@@ -290,7 +290,7 @@ public class RelationTypeInOverlayProcess extends JavaProcess implements IProces
 				.parameter(DocumentFilterParam.ofSqlWhereClause(true, combinedWhereClause))
 				.build();
 
-		return createCombinedFilterView(WindowId.of(targetWindowId), unionFilter).getViewId();
+		return createCombinedFilterView(targetWindowId, unionFilter).getViewId();
 	}
 
 	private IView createCombinedFilterView(@NonNull final WindowId targetWindowId, @NonNull final DocumentFilter unionFilter)
