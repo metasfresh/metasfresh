@@ -45,10 +45,10 @@ VALUES (585124, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:02','YYYY-MM-
 
 INSERT INTO AD_Process (ad_process_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                         value, name, description, classname, procedurename, isreport, showhelp, accesslevel,
-                        entitytype, isbetafunctionality, isdirectprint, type)
+                        entitytype, isbetafunctionality, isdirectprint, type, ad_element_id)
 VALUES (585642, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:03','YYYY-MM-DD HH24:MI:SS'), 100,
         'Factoring_OP_Liste_Export', 'Factoring OP-Liste Export', 'Exportiert die offenen Rechnungen und Gutschriften der Factoring-Kunden als CSV-Datei.', 'de.metas.factoring.process.Factoring_OP_Liste_Export', NULL, 'N', 'N', '3',
-        'D', 'N', 'N', 'Java')
+        'D', 'N', 'N', 'Java', 585124)
 /*From ID Server*/;
 
 -- ============================================================================
@@ -92,23 +92,33 @@ VALUES (545780, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:06','YYYY-MM-DD HH24:M
         'D')
 /*From ID Server*/;
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545780, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:06','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:06','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Bitte wählen Sie eine spezifische Organisation aus, bevor Sie den Factoring-OP-Liste-Export starten. Die Rollenrichtweite "*" (alle Organisationen) wird nicht unterstützt.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message SET ErrorCode = 'FACTORING_OP_ROLE_SCOPE_ALL_ORGS',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:16','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545780;
 
 INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                             msgtext, istranslated)
-VALUES (545780, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:06','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:06','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Bitte wählen Sie eine spezifische Organisation aus, bevor Sie den Factoring-OP-Liste-Export starten. Die Rollenrichtweite "*" (alle Organisationen) wird nicht unterstützt.', 'Y')
-/*From ID Server*/;
+SELECT t.AD_Message_ID, l.AD_Language,
+       0, 0, 'Y',
+       TO_TIMESTAMP('2026-07-22 00:00:17','YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-07-22 00:00:17','YYYY-MM-DD HH24:MI:SS'), 100,
+       t.MsgText, 'N'
+FROM AD_Language l, AD_Message t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+  AND t.AD_Message_ID = 545780
+  AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl e
+                  WHERE e.AD_Language = l.AD_Language AND e.AD_Message_ID = t.AD_Message_ID);
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545780, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:07','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:07','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Please select a specific organisation before running the Factoring OP-Liste Export. The all-organisations scope (''*'') is not supported.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message_Trl
+SET MsgText = 'Please select a specific organisation before running the Factoring OP-Liste Export. The all-organisations scope (''*'') is not supported.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545780 AND AD_Language = 'en_US';
+
+UPDATE AD_Message_Trl
+SET IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:18','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545780 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- Message 2: Factoring_OP_Liste_EXT_NoFactorer
 INSERT INTO AD_Message (ad_message_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -119,23 +129,33 @@ VALUES (545781, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:08','YYYY-MM-DD HH24:M
         'D')
 /*From ID Server*/;
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545781, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:08','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:08','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Kein Factoring-Geschäftspartner (IsFactorer=''Y'') für die Organisation gefunden. Bitte richten Sie einen Geschäftspartner mit IsFactorer=''Y'' für diese Organisation ein.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message SET ErrorCode = 'FACTORING_OP_NO_FACTORER',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:19','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545781;
 
 INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                             msgtext, istranslated)
-VALUES (545781, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:08','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:08','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Kein Factoring-Geschäftspartner (IsFactorer=''Y'') für die Organisation gefunden. Bitte richten Sie einen Geschäftspartner mit IsFactorer=''Y'' für diese Organisation ein.', 'Y')
-/*From ID Server*/;
+SELECT t.AD_Message_ID, l.AD_Language,
+       0, 0, 'Y',
+       TO_TIMESTAMP('2026-07-22 00:00:20','YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-07-22 00:00:20','YYYY-MM-DD HH24:MI:SS'), 100,
+       t.MsgText, 'N'
+FROM AD_Language l, AD_Message t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+  AND t.AD_Message_ID = 545781
+  AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl e
+                  WHERE e.AD_Language = l.AD_Language AND e.AD_Message_ID = t.AD_Message_ID);
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545781, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:09','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:09','YYYY-MM-DD HH24:MI:SS'), 100,
-        'No factorer BPartner (IsFactorer=''Y'') found for this organisation. Please configure a BPartner with IsFactorer=''Y'' for this organisation.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message_Trl
+SET MsgText = 'No factorer BPartner (IsFactorer=''Y'') found for this organisation. Please configure a BPartner with IsFactorer=''Y'' for this organisation.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545781 AND AD_Language = 'en_US';
+
+UPDATE AD_Message_Trl
+SET IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:21','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545781 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- Message 3: Factoring_OP_Liste_EXT_MultipleFactorers
 INSERT INTO AD_Message (ad_message_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -146,23 +166,33 @@ VALUES (545782, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:10','YYYY-MM-DD HH24:M
         'D')
 /*From ID Server*/;
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545782, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:10','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Mehrere Factoring-Geschäftspartner (IsFactorer=''Y'') für die Organisation gefunden. Es ist genau ein Factoring-Geschäftspartner pro Organisation erforderlich.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message SET ErrorCode = 'FACTORING_OP_MULTIPLE_FACTORERS',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:22','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545782;
 
 INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                             msgtext, istranslated)
-VALUES (545782, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:10','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:10','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Mehrere Factoring-Geschäftspartner (IsFactorer=''Y'') für die Organisation gefunden. Es ist genau ein Factoring-Geschäftspartner pro Organisation erforderlich.', 'Y')
-/*From ID Server*/;
+SELECT t.AD_Message_ID, l.AD_Language,
+       0, 0, 'Y',
+       TO_TIMESTAMP('2026-07-22 00:00:23','YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-07-22 00:00:23','YYYY-MM-DD HH24:MI:SS'), 100,
+       t.MsgText, 'N'
+FROM AD_Language l, AD_Message t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+  AND t.AD_Message_ID = 545782
+  AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl e
+                  WHERE e.AD_Language = l.AD_Language AND e.AD_Message_ID = t.AD_Message_ID);
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545782, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:11','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:11','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Multiple factorer BPartners (IsFactorer=''Y'') found for this organisation. Exactly one factorer BPartner per organisation is required.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message_Trl
+SET MsgText = 'Multiple factorer BPartners (IsFactorer=''Y'') found for this organisation. Exactly one factorer BPartner per organisation is required.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545782 AND AD_Language = 'en_US';
+
+UPDATE AD_Message_Trl
+SET IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:24','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545782 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- Message 4: Factoring_OP_Liste_EXT_MissingContractNo
 INSERT INTO AD_Message (ad_message_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -173,23 +203,33 @@ VALUES (545783, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:12','YYYY-MM-DD HH24:M
         'D')
 /*From ID Server*/;
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545783, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:12','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:12','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Der Factoring-Geschäftspartner hat keine Vertragsnummer (FactoringContractNo) hinterlegt. Dies wird für den OP-Listen-Export benötigt.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message SET ErrorCode = 'FACTORING_OP_MISSING_CONTRACT_NO',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:25','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545783;
 
 INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                             msgtext, istranslated)
-VALUES (545783, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:12','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:12','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Der Factoring-Geschäftspartner hat keine Vertragsnummer (FactoringContractNo) hinterlegt. Dies wird für den OP-Listen-Export benötigt.', 'Y')
-/*From ID Server*/;
+SELECT t.AD_Message_ID, l.AD_Language,
+       0, 0, 'Y',
+       TO_TIMESTAMP('2026-07-22 00:00:26','YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-07-22 00:00:26','YYYY-MM-DD HH24:MI:SS'), 100,
+       t.MsgText, 'N'
+FROM AD_Language l, AD_Message t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+  AND t.AD_Message_ID = 545783
+  AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl e
+                  WHERE e.AD_Language = l.AD_Language AND e.AD_Message_ID = t.AD_Message_ID);
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545783, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:13','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:13','YYYY-MM-DD HH24:MI:SS'), 100,
-        'The factorer BPartner has no FactoringContractNo set — required for the OP-Liste export.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message_Trl
+SET MsgText = 'The factorer BPartner has no FactoringContractNo set — required for the OP-Liste export.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:27','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545783 AND AD_Language = 'en_US';
+
+UPDATE AD_Message_Trl
+SET IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:27','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545783 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- Message 5: Factoring_OP_Liste_EXT_MissingClientAccountId
 INSERT INTO AD_Message (ad_message_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
@@ -200,23 +240,33 @@ VALUES (545784, 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:14','YYYY-MM-DD HH24:M
         'D')
 /*From ID Server*/;
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545784, 'de_DE', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:14','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:14','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Der Factoring-Geschäftspartner hat keine Kundenkontonummer (FactoringClientAccountId) hinterlegt. Dies wird für den OP-Listen-Export benötigt.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message SET ErrorCode = 'FACTORING_OP_MISSING_CLIENT_ACCOUNT_ID',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:28','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545784;
 
 INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
                             msgtext, istranslated)
-VALUES (545784, 'de_CH', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:14','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:14','YYYY-MM-DD HH24:MI:SS'), 100,
-        'Der Factoring-Geschäftspartner hat keine Kundenkontonummer (FactoringClientAccountId) hinterlegt. Dies wird für den OP-Listen-Export benötigt.', 'Y')
-/*From ID Server*/;
+SELECT t.AD_Message_ID, l.AD_Language,
+       0, 0, 'Y',
+       TO_TIMESTAMP('2026-07-22 00:00:29','YYYY-MM-DD HH24:MI:SS'), 100,
+       TO_TIMESTAMP('2026-07-22 00:00:29','YYYY-MM-DD HH24:MI:SS'), 100,
+       t.MsgText, 'N'
+FROM AD_Language l, AD_Message t
+WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
+  AND t.AD_Message_ID = 545784
+  AND NOT EXISTS (SELECT 1 FROM AD_Message_Trl e
+                  WHERE e.AD_Language = l.AD_Language AND e.AD_Message_ID = t.AD_Message_ID);
 
-INSERT INTO AD_Message_Trl (ad_message_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby,
-                            msgtext, istranslated)
-VALUES (545784, 'en_US', 0, 0, 'Y', TO_TIMESTAMP('2026-07-22 00:00:15','YYYY-MM-DD HH24:MI:SS'), 100, TO_TIMESTAMP('2026-07-22 00:00:15','YYYY-MM-DD HH24:MI:SS'), 100,
-        'The factorer BPartner has no FactoringClientAccountId set — required for the OP-Liste export.', 'Y')
-/*From ID Server*/;
+UPDATE AD_Message_Trl
+SET MsgText = 'The factorer BPartner has no FactoringClientAccountId set — required for the OP-Liste export.',
+    IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:30','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545784 AND AD_Language = 'en_US';
+
+UPDATE AD_Message_Trl
+SET IsTranslated = 'Y',
+    Updated = TO_TIMESTAMP('2026-07-22 00:00:30','YYYY-MM-DD HH24:MI:SS'), UpdatedBy = 100
+WHERE AD_Message_ID = 545784 AND AD_Language IN ('de_DE', 'de_CH');
 
 -- ============================================================================
 -- Translation propagation and element updates
