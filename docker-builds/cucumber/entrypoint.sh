@@ -33,3 +33,4 @@ echo "==================="
 
 cp target/*.xml /reports
 cp target/*.html /reports
+cp -r target/allure-results /reports/ 2>/dev/null || true
