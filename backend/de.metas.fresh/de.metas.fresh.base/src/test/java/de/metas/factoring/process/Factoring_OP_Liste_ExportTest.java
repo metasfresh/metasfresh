@@ -110,9 +110,26 @@ class Factoring_OP_Liste_ExportTest
 	// from prior runs that didn't roll back (e.g. JVM kill, test-runner crash).
 	private static final String TEST_MARKER = "TST_FKOP_";
 
+	// Skips these tests when the local DB is not reachable. Purpose: CI's `test (java)` module runs
+	// unit tests without the local deep_tundra_release Docker DB — probing the connection lets the
+	// tests execute locally (where the DB is up on port 22432) while remaining a no-op on CI.
+	private static boolean isLocalDbAvailable()
+	{
+		try (Connection probe = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD))
+		{
+			return probe.isValid(2);
+		}
+		catch (final SQLException e)
+		{
+			return false;
+		}
+	}
+
 	@BeforeEach
 	void openConnection() throws SQLException
 	{
+		org.junit.jupiter.api.Assumptions.assumeTrue(isLocalDbAvailable(),
+				"Local metasfresh DB not reachable at " + DB_URL + " — skipping (test is a local integration test).");
 		conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
 		conn.setAutoCommit(true);
 		cleanupStaleTestData(); // remove any data left by prior non-rolled-back runs
