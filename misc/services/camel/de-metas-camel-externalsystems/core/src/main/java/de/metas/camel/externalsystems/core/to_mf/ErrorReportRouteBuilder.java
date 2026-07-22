@@ -94,11 +94,20 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		from(direct(ERROR_WRITE_TO_ADISSUE))
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
-				.process(this::prepareJsonErrorRequest)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
-				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
+
+				.choice()
+					.when(header(HEADER_PINSTANCE_ID).isNull())
+						// no PInstanceId to attach the AD_Issue write to (e.g. a continuous polling consumer never sets one) ->
+						// degrade gracefully instead of throwing, which would mask the actual error being reported
+						.process(this::logErrorWithoutPInstance)
+						.log(LoggingLevel.WARN, "${body}")
+					.otherwise()
+						.process(this::prepareJsonErrorRequest)
+						.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
+						.removeHeaders("CamelHttp*")
+						.setHeader(Exchange.HTTP_METHOD, constant(HttpMethods.POST))
+						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
+				.end();
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)
