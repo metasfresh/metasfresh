@@ -101,8 +101,8 @@ public class BPartnerOrderParamsRepository
 			@NonNull final I_C_BPartner shipBPartnerRecord,
 			@NonNull final SOTrx soTrx)
 	{
-		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getByRecord(billBPartnerRecord);
-		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getByRecord(shipBPartnerRecord);
+		final BPartnerEffective billBPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(billBPartnerRecord.getC_BPartner_ID()));
+		final BPartnerEffective shipBPartnerEffective = bPartnerEffectiveBL.getById(BPartnerId.ofRepoId(shipBPartnerRecord.getC_BPartner_ID()));
 		return BPartnerOrderParams.builder()
 				.deliveryRule(getDeliveryRuleOrNull(shipBPartnerRecord, soTrx))
 				.deliveryViaRule(getDeliveryViaRuleOrNull(shipBPartnerRecord, soTrx))
