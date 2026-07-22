@@ -14,5 +14,4 @@ UPDATE m_hu hu
   JOIN m_warehouse w ON w.m_warehouse_id = l.m_warehouse_id
  WHERE hu.m_locator_id = l.m_locator_id
    AND hu.ad_org_id    = 0
-   AND hu.isactive     = 'Y'
    AND w.ad_org_id     > 0;
