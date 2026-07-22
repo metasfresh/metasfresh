@@ -25,6 +25,7 @@ package de.metas.shipper.client.nshift;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Streams;
 import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
+import de.metas.common.delivery.v1.json.JsonPackageDimensions;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryOrderParcel;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.request.JsonCarrierService;
@@ -225,9 +226,14 @@ public class NShiftShipmentService
 	{
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
-		final int lengthMM = deliveryLine.getPackageDimensions().getLengthInCM() * 10;
-		final int widthMM = deliveryLine.getPackageDimensions().getWidthInCM() * 10;
-		final int heightMM = deliveryLine.getPackageDimensions().getHeightInCM() * 10;
+		final JsonPackageDimensions dims = deliveryLine.getPackageDimensions();
+		if (dims.getLengthInCM() == 0 && dims.getWidthInCM() == 0 && dims.getHeightInCM() == 0)
+		{
+			throw new IllegalStateException("Package dimensions are mandatory but were not specified (all dimensions are zero/unspecified).");
+		}
+		final int lengthMM = dims.getLengthInCM() * 10;
+		final int widthMM = dims.getWidthInCM() * 10;
+		final int heightMM = dims.getHeightInCM() * 10;
 
 		final Function<String, Optional<String>> valueProvider =
 				NShiftUtil.withFallback(deliveryLine::getValue, attributeValue -> Optional.ofNullable(deliveryRequest.getValue(attributeValue)));
