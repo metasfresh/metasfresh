@@ -91,6 +91,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -115,6 +118,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -142,6 +146,7 @@ public class JsonPersisterService
 	private static final AdMessageKey MSG_BPartnerCompositeOrgMismatch = AdMessageKey.of("BPartnerCompositeOrgMismatch");
 
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -1030,6 +1035,25 @@ public class JsonPersisterService
 			else
 			{
 				bpartner.setDiscountPrinted(jsonBPartner.getDiscountPrinted());
+			}
+		}
+
+		// priceListId -> customer pricing system (looked up from the price list)
+		if (jsonBPartner.isPriceListIdSet())
+		{
+			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonBPartner.getPriceListId()));
+			if (priceListId != null)
+			{
+				final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+				if (priceList == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("priceListId")
+							.resourceIdentifier(String.valueOf(priceListId.getRepoId()))
+							.parentResource(jsonBPartner)
+							.build();
+				}
+				bpartner.setCustomerPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 			}
 		}
 
