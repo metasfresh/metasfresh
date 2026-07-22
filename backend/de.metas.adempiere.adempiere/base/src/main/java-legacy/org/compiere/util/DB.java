@@ -1906,6 +1906,13 @@ public class DB
 		{
 			return TO_STRING(DisplayType.toBooleanString((Boolean)param));
 		}
+		else if (param instanceof Number)
+		{
+			// Long/Short/Byte/AtomicInteger/Double/... — the JDBC '?' bind path accepts any Number, so inline rendering
+			// must too (else switching a large IN list to inline would reject a type that used to bind). Integer and
+			// BigDecimal are handled by their specific branches above; this covers the rest.
+			return param.toString();
+		}
 		else
 		{
 			throw new DBException("Unknown parameter type: " + param + " (" + param.getClass() + ")");

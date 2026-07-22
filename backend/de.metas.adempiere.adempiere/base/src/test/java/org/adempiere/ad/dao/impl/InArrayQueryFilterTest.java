@@ -249,6 +249,48 @@ public class InArrayQueryFilterTest
 				.endsWith(")");
 	}
 
+	/**
+	 * Regression guard: the {@code ?} bind path accepts any type the JDBC driver handles (e.g. {@code Long}); the inline
+	 * path must too, or switching a large list to inline would reject a type that used to work. An oversized {@code Long}
+	 * list must render inline without throwing.
+	 */
+	@Test
+	public void test_oversizedList_ofLongs_rendersInline_withoutThrowing()
+	{
+		final List<Object> values = new ArrayList<>();
+		for (long i = 1; i <= InArrayQueryFilter.MAX_BIND_PARAMS_BEFORE_EMBED + 1; i++)
+		{
+			values.add(i); // autoboxed to Long
+		}
+
+		final InArrayQueryFilter<I_Test> filter = new InArrayQueryFilter<>("MyColumnName", values);
+
+		assertThat(filter.getSqlParams(ctx)).isEmpty();
+		assertThat(filter.getSql())
+				.startsWith("MyColumnName IN (1,2,3,")
+				.doesNotContain("?");
+	}
+
+	/** An oversized list mixing NULLs still renders the "IN (...) OR IS NULL" shape inline, with zero bind parameters. */
+	@Test
+	public void test_oversizedList_withNulls_rendersInline()
+	{
+		final List<Object> values = new ArrayList<>();
+		for (int i = 1; i <= InArrayQueryFilter.MAX_BIND_PARAMS_BEFORE_EMBED + 1; i++)
+		{
+			values.add(i);
+		}
+		values.add(null);
+
+		final InArrayQueryFilter<I_Test> filter = new InArrayQueryFilter<>("MyColumnName", values);
+
+		assertThat(filter.getSqlParams(ctx)).isEmpty();
+		assertThat(filter.getSql())
+				.startsWith("(MyColumnName IN (1,2,3,")
+				.doesNotContain("?")
+				.endsWith("MyColumnName IS NULL)");
+	}
+
 	/** The common (small) case stays on the plan-cacheable {@code ?} bind-parameter path. */
 	@Test
 	public void test_smallList_usesBindParams()
