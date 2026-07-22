@@ -178,7 +178,8 @@ public class BPartner
 	private boolean identifiedByExternalReference;
 
 	private final PaymentTermId customerPaymentTermId;
-	private final PricingSystemId customerPricingSystemId;
+	// non-final so @Data generates a setter: the v2 BPartner REST persister sets it from the request's priceListId
+	private PricingSystemId customerPricingSystemId;
 	private final IncotermsId customerIncotermsId;
 
 	private final PaymentTermId vendorPaymentTermId;
