@@ -200,7 +200,8 @@ Feature: BPartner v2 upsert places records in the path org
       "bpartnerComposite": {
         "bpartner": {
           "name": "Shared Ref Org 002",
-          "language": "de"
+          "language": "de",
+          "group": "Shared Ref Group 002"
         }
       }
     }
@@ -221,7 +222,8 @@ Feature: BPartner v2 upsert places records in the path org
       "bpartnerComposite": {
         "bpartner": {
           "name": "Shared Ref Org 003",
-          "language": "de"
+          "language": "de",
+          "group": "Shared Ref Group 003"
         }
       }
     }
