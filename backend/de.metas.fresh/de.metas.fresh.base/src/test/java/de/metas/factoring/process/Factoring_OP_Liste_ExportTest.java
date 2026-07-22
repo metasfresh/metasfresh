@@ -49,7 +49,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 /**
  * Integration test for the {@code report_factoring_op_liste} SQL function.
  *
- * <p>Requires the local DB to be running at localhost:22432 (deep_tundra_release_db container).
+ * <p>Requires the local DB to be running at localhost:22432 (local metasfresh DB container).
  * Inserts a controlled fixture, calls the function, and validates the returned rows.
  *
  * <p>Open-amount source: {@code C_Invoice.openamt} — the denormalized open-amount column
@@ -59,7 +59,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class Factoring_OP_Liste_ExportTest
 {
 	// =========================================================================
-	// DB connection constants — local deep_tundra_release_db container
+	// DB connection constants — local metasfresh DB container (port 22432)
 	// =========================================================================
 	private static final String DB_URL = "jdbc:postgresql://localhost:22432/metasfresh";
 	private static final String DB_USER = "metasfresh";
@@ -391,7 +391,7 @@ class Factoring_OP_Liste_ExportTest
 	// =========================================================================
 
 	// =========================================================================
-	// Process integration tests (Task 5)
+	// End-to-end process tests
 	// =========================================================================
 
 	/**
@@ -525,7 +525,7 @@ class Factoring_OP_Liste_ExportTest
 				.hasMessageContaining("IsFactorer='Y'");
 	}
 
-	// AC6 "multiple factorer BPs in one org" is enforced at the schema level by the partial unique
+	// The multiple-factorer constraint is enforced at the schema level by the partial unique
 	// index c_bpartner_isfactorer_uniqe on (IsFactorer, AD_Org_ID) WHERE IsFactorer='Y' AND
 	// IsActive='Y' — the DB will not accept two active factorers in the same org, so an integration
 	// test cannot construct that fixture. The Java-side check in resolveFactorerBp() remains as a

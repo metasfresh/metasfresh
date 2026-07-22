@@ -55,14 +55,14 @@ import java.util.List;
  * <p>The file is named {@code <FactoringContractNo>_INH_<YYYYMMDD>.csv} and attached
  * to the process result for download.
  *
- * <p>Byte-level format requirements (AC2, AC3, AC4):
+ * <p>Byte-level format requirements:
  * <ul>
  *   <li>UTF-8 BOM (0xEF 0xBB 0xBF) as first 3 bytes</li>
  *   <li>Semicolons as field delimiter; trailing semicolon on every row (col_11 = '')</li>
  *   <li>CRLF ({@code \r\n}) line terminator, including on the last row</li>
  * </ul>
  *
- * <p>Error paths (AC6):
+ * <p>Error paths:
  * <ul>
  *   <li>Role scope is '*' (AD_Org_ID = 0) → AdempiereException</li>
  *   <li>Zero factorer BPs in the org → AdempiereException</li>
@@ -94,7 +94,8 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		{
 			final ExportResult result = runExport(conn, orgId, clientId, p_C_Currency_ID);
 			getResult().setReportData(result.file, result.filename);
-			return "OK — " + result.filename + ", " + result.rowCount + " data row(s)";
+			getResult().addLog("File: " + result.filename + ", " + result.rowCount + " data row(s)");
+			return MSG_OK;
 		}
 	}
 
@@ -105,6 +106,11 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	/**
 	 * Runs the full export: validates the factorer BP, calls the SQL function,
 	 * and writes the CSV file to a temp path.
+	 *
+	 * <p><b>JDBC rationale</b>: this class calls a PostgreSQL set-returning function
+	 * ({@code report_factoring_op_liste}) which cannot be invoked via {@code IQueryBL}.
+	 * The factorer-BP lookup is kept in the same JDBC session to share the connection
+	 * and avoid the overhead of a separate Spring transaction. No domain mutations occur.
 	 *
 	 * @param conn      JDBC connection to the metasfresh database
 	 * @param orgId     AD_Org_ID of the current user's organisation
@@ -120,7 +126,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 			final int clientId,
 			final int currencyId) throws SQLException, IOException
 	{
-		// AC6: role scope must not be '*' (AD_Org_ID = 0 = any/all orgs)
+		// Refuse a role-scope-'*' invocation — the export is org-scoped.
 		if (orgId == 0)
 		{
 			throw new AdempiereException("Please select a specific organisation before running the Factoring OP-Liste Export. "
@@ -128,7 +134,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 					.markAsUserValidationError();
 		}
 
-		// ---- Validate factorer BP (AC6) ----
+		// ---- Validate factorer BP ----
 		final FactorerBpInfo factorerBp = resolveFactorerBp(conn, orgId, clientId);
 
 		// ---- Call SQL function ----
@@ -181,7 +187,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 			}
 		}
 
-		// AC6: zero factorers
+		// No factorer BP configured for this org.
 		if (factorers.isEmpty())
 		{
 			final String orgName = getOrgName(conn, orgId);
@@ -190,7 +196,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 					.markAsUserValidationError();
 		}
 
-		// AC6: multiple factorers
+		// Multiple factorer BPs in one org — not permitted.
 		if (factorers.size() > 1)
 		{
 			final String orgName = getOrgName(conn, orgId);
@@ -210,14 +216,14 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 
 		final FactorerBpInfo factorer = factorers.get(0);
 
-		// AC6: empty FactoringContractNo
+		// Factorer BP must have a contract number set for export.
 		if (isBlank(factorer.contractNo))
 		{
 			throw new AdempiereException("Factorer BPartner '" + factorer.name + "' has no FactoringContractNo set — required for the OP-Liste export.")
 					.markAsUserValidationError();
 		}
 
-		// AC6: empty FactoringClientAccountId
+		// Factorer BP must have a client account ID set for export.
 		if (isBlank(factorer.clientAccountId))
 		{
 			throw new AdempiereException("Factorer BPartner '" + factorer.name + "' has no FactoringClientAccountId set — required for the OP-Liste export.")
@@ -279,7 +285,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	}
 
 	// -------------------------------------------------------------------------
-	// CSV writing (AC2)
+	// CSV writing
 	// -------------------------------------------------------------------------
 
 	/**
@@ -287,7 +293,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	 *
 	 * <p>Format: UTF-8 BOM, then each row as 11 values joined by {@code ;}
 	 * (row_type + col_1..col_10 — col_11 from the SQL function is an internal spare
-	 * and NOT emitted; per AC3/AC4 the visible file has exactly 11 fields per row where
+	 * and NOT emitted; the visible file has exactly 11 fields per row where
 	 * field 11 = col_10 renders as the trailing {@code ;} after the D/C flag / totals).
 	 * Terminated by CRLF ({@code \r\n}); last row also gets a trailing CRLF (matching the reference file).
 	 */
@@ -295,7 +301,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	{
 		try (final FileOutputStream fos = new FileOutputStream(file))
 		{
-			// Write UTF-8 BOM as literal bytes (AC2, AC9)
+			// Write UTF-8 BOM as literal bytes (required for Crédit Agricole CSV spec compliance)
 			fos.write(new byte[] { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF });
 
 			try (final BufferedWriter writer = new BufferedWriter(
@@ -304,7 +310,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 				for (final String[] row : rows)
 				{
 					writer.write(buildCsvLine(row));
-					writer.write("\r\n"); // CRLF, not platform newline (AC2)
+					writer.write("\r\n"); // CRLF line terminator — required by the spec; not the platform newline
 				}
 			}
 		}
@@ -312,8 +318,8 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 
 	private String buildCsvLine(final String[] row)
 	{
-		// row[0]     = row_type (AC3/AC4 field 1: literal '01' or '02')
-		// row[1..10] = col_1..col_10 (AC3/AC4 fields 2..11)
+		// row[0]     = row_type (field 1: literal '01' or '02')
+		// row[1..10] = col_1..col_10 (fields 2..11)
 		// row[11]    = col_11 (SQL function's spare — intentionally NOT emitted)
 		// Total emitted tokens: 11 (row_type + col_1..col_10)
 		final int emitUpTo = Math.min(row.length, 11); // row_type + 10 payload cols
@@ -341,7 +347,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	 */
 	Connection createConnection() throws SQLException
 	{
-		return CConnection.get().getConnection(false, java.sql.Connection.TRANSACTION_READ_COMMITTED);
+		return CConnection.get().getConnection(false /* autoCommit off */, java.sql.Connection.TRANSACTION_READ_COMMITTED);
 	}
 
 	// -------------------------------------------------------------------------
@@ -362,7 +368,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	// Inner types
 	// -------------------------------------------------------------------------
 
-	/** Factorer BP configuration, validated per AC6. */
+	/** Factorer BP configuration, validated per the process contract. */
 	static final class FactorerBpInfo
 	{
 		@NonNull public final String name;
