@@ -90,6 +90,8 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -139,6 +141,7 @@ public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -1009,6 +1012,16 @@ public class JsonPersisterService
 			else
 			{
 				bpartner.setDiscountPrinted(jsonBPartner.getDiscountPrinted());
+			}
+		}
+
+		// priceListId -> customer pricing system (looked up from the price list)
+		if (jsonBPartner.isPriceListIdSet())
+		{
+			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonBPartner.getPriceListId()));
+			if (priceListId != null)
+			{
+				bpartner.setCustomerPricingSystemId(priceListDAO.getPricingSystemId(priceListId));
 			}
 		}
 

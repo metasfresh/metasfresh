@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
@@ -87,6 +88,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
@@ -359,6 +361,82 @@ class BpartnerRestControllerTest
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + 2);
+	}
+
+	/**
+	 * A provided {@code priceListId} must set the bpartner's customer pricing system
+	 * ({@code C_BPartner.M_PricingSystem_ID}) to the price list's pricing system.
+	 */
+	@Test
+	void createOrUpdateBPartner_setsCustomerPricingSystemFromPriceListId()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+
+		final int pricingSystemId = 540123;
+		final I_M_PriceList priceListRecord = newInstance(I_M_PriceList.class);
+		priceListRecord.setM_PricingSystem_ID(pricingSystemId);
+		saveRecord(priceListRecord);
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
+		bpartner.setGroup(BP_GROUP_RECORD_NAME);
+		bpartner.setPriceListId(JsonMetasfreshId.of(priceListRecord.getM_PriceList_ID()));
+
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier(bPartnerIdentifier)
+						.externalVersion(BP_EXTERNAL_VERSION)
+						.bpartnerComposite(bpartnerComposite)
+						.build())
+				.build();
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, bPartnerIdentifier);
+		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
+
+		assertThat(persistedResult.getBpartner().getCustomerPricingSystemId())
+				.isEqualTo(PricingSystemId.ofRepoId(pricingSystemId));
+	}
+
+	/**
+	 * When no {@code priceListId} is provided, the customer pricing system stays unset — the field is
+	 * set-only and never clears an existing value.
+	 */
+	@Test
+	void createOrUpdateBPartner_noPriceListId_leavesCustomerPricingSystemUnset()
+	{
+		createCountryRecord("CH");
+		createCountryRecord("DE");
+
+		final String bPartnerIdentifier = "ext-" + EXTERNAL_SYSTEM_NAME + "-b1_" + C_BPARTNER_EXTERNAL_ID;
+		final JsonRequestComposite bpartnerComposite = MockedDataUtil.createMockBPartner(bPartnerIdentifier);
+		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
+		bpartner.setGroup(BP_GROUP_RECORD_NAME);
+		// intentionally no priceListId
+
+		final JsonRequestBPartnerUpsert bpartnerUpsertRequest = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItem(JsonRequestBPartnerUpsertItem.builder()
+						.bpartnerIdentifier(bPartnerIdentifier)
+						.externalVersion(BP_EXTERNAL_VERSION)
+						.bpartnerComposite(bpartnerComposite)
+						.build())
+				.build();
+
+		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
+
+		final ResponseEntity<JsonResponseBPartnerCompositeUpsert> result = bpartnerRestController.createOrUpdateBPartner(bpartnerUpsertRequest);
+
+		final JsonMetasfreshId metasfreshId = assertUpsertResultOK(result, bPartnerIdentifier);
+		final BPartnerComposite persistedResult = bpartnerCompositeRepository.getById(BPartnerId.ofRepoId(metasfreshId.getValue()));
+
+		assertThat(persistedResult.getBpartner().getCustomerPricingSystemId()).isNull();
 	}
 
 	/**
