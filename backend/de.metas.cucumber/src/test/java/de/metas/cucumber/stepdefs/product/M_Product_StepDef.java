@@ -33,10 +33,12 @@ import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.ValueAndName;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.order.C_CompensationGroup_Schema_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.order.model.I_C_CompensationGroup_Schema;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -95,6 +97,7 @@ public class M_Product_StepDef
 	@NonNull private final M_Product_Category_StepDefData productCategoryTable;
 	@NonNull private final AD_Org_StepDefData orgTable;
 	@NonNull private final de.metas.cucumber.stepdefs.customstariff.M_CustomsTariff_StepDefData customsTariffTable;
+	@NonNull private final C_CompensationGroup_Schema_StepDefData compensationGroupSchemaTable;
 	@NonNull private final TestContext restTestContext;
 
 	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -103,6 +106,26 @@ public class M_Product_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
+	/**
+	 * Creates (or updates, if a matching {@code Value} already exists) {@link I_M_Product} records.
+	 * <p>
+	 * Frequently used DataTable columns (full handling is in {@link #createM_Product(DataTableRow)}):
+	 * <ul>
+	 *     <li>{@code Identifier} (required) — identifier for later reference.</li>
+	 *     <li>{@code Name} / {@code Value} (optional) — auto-generated unique when omitted.</li>
+	 *     <li>{@code OPT.M_Product_Category_ID.Identifier}, {@code OPT.C_UOM_ID.X12DE355},
+	 *         {@code OPT.M_AttributeSetInstance_ID.Identifier} — the common optional links.</li>
+	 *     <li>{@code OPT.C_CompensationGroup_Schema_ID.Identifier} (optional) — identifier of a
+	 *         {@link I_C_CompensationGroup_Schema} (created via
+	 *         "metasfresh contains C_CompensationGroup_Schema:") linking the product to its
+	 *         compensation-group schema.</li>
+	 * </ul>
+	 * <pre>{@code
+	 * Given metasfresh contains M_Products:
+	 *   | Identifier         | Name               | OPT.C_CompensationGroup_Schema_ID.Identifier |
+	 *   | schemaProduct | schemaProduct | compGroupSchema                            |
+	 * }</pre>
+	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{
@@ -340,6 +363,10 @@ public class M_Product_StepDef
 			final AttributeSetId attributeSetId = attributeSetTable.getId(asIdentifier);
 			productRecord.setM_AttributeSet_ID(attributeSetId.getRepoId());
 		}
+
+		tableRow.getAsOptionalIdentifier(I_M_Product.COLUMNNAME_C_CompensationGroup_Schema_ID)
+				.map(identifier -> identifier.lookupNotNullIn(compensationGroupSchemaTable))
+				.ifPresent(schema -> productRecord.setC_CompensationGroup_Schema_ID(schema.getC_CompensationGroup_Schema_ID()));
 
 		InterfaceWrapperHelper.saveRecord(productRecord);
 
