@@ -13,6 +13,9 @@ WITH asi_key AS (
     -- Set-based attributesKey computation, once per ASI, instead of a per-row
     -- generateasistorageattributeskey() call in each of the branches below. Same encoding as
     -- GenerateASIStorageAttributesKeyPart (same filters, delimiter and ordering) => identical output.
+    -- Restricted to the ASIs actually referenced by the four branches below (the IN-subquery uses the
+    -- same predicates as those branches), so the key is computed once per *referenced* ASI rather than
+    -- over all of M_AttributeInstance system-wide (which on a large instance means ~1M function calls).
     SELECT asi_id,
            STRING_AGG(keypart, '§&§' ORDER BY av_id NULLS LAST, attr_id) AS attributeskey
     FROM (
@@ -26,6 +29,12 @@ WITH asi_key AS (
                       LEFT JOIN M_AttributeValue av ON av.M_AttributeValue_ID = ai.M_AttributeValue_ID
              WHERE a.IsActive = 'Y'
                AND a.IsStorageRelevant = 'Y'
+               AND ai.M_AttributeSetInstance_ID IN (
+                   SELECT ss.m_attributesetinstance_id  FROM m_shipmentschedule ss WHERE COALESCE(ss.qtyReserved, 0)  <> 0
+                   UNION SELECT rs.m_attributesetinstance_id  FROM m_receiptschedule rs  WHERE COALESCE(rs.qtyToMove, 0)    <> 0
+                   UNION SELECT poc.m_attributesetinstance_id FROM pp_order_candidate poc WHERE COALESCE(poc.qtyToProcess, 0) <> 0
+                   UNION SELECT fl.m_attributesetinstance_id  FROM m_forecastline fl    WHERE COALESCE(fl.qty, 0)         <> 0
+               )
          ) parts
     WHERE keypart IS NOT NULL
     GROUP BY asi_id
