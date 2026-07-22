@@ -410,3 +410,90 @@ Feature: Purchase order with complex payment term
       | C_PaymentTerm_Break_ID | DueDate    | DueAmt | Status |
       | PTB61                  | 2025-10-10 | 10.23  | WP     |
       | PTB62                  | 2025-10-23 | 92.07  | WP     |
+
+
+  @from:cucumber
+@allure.label.epic:E0140_Purchasing
+@allure.label.feature:F00600_Purchase_Order
+@allure.label.feature:F00994_Multiple_Levels_of_Payment
+@F00600
+@Id:S30954_4
+  Scenario: Advance paid via a proforma marks the order-date step Paid on a no-LC payment term
+    # No-Letter-of-Credit purchase term: OD 10% (order-date advance) + BL 90% (bill-of-lading material receipt).
+    # The procurement worker pays the 10% advance up front via a purchase proforma invoice.
+    # Advance step (OD) state walk: Awaiting_Pay (order completed) -> Paid (proforma allocated + paid).
+    # BL step stays Pending throughout - the bill-of-lading date is not yet known (no goods receipt).
+    When metasfresh contains C_PaymentTerm
+      | Identifier   |
+      | pt_PO_7      |
+      | pt_immediate |
+    And metasfresh contains C_PaymentTerm_Break
+      | Identifier | C_PaymentTerm_ID | Percent | OffsetDays | ReferenceDateType | SeqNo |
+      | PTB71      | pt_PO_7          | 10      | 1          | OD                | 10    |
+      | PTB72      | pt_PO_7          | 90      | 5          | BL                | 20    |
+    And validate C_PaymentTerm:
+      | Identifier | IsComplex | IsValid |
+      | pt_PO_7    | Y         | Y       |
+
+    And metasfresh contains organization bank accounts
+      | Identifier      | C_Currency_ID |
+      | org_CHF_account | CHF           |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | C_PaymentTerm_ID |
+      | po7        | N       | vendor        | 2025-10-09  | POO         | wh             | pt_PO_7          |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
+      | po7_l1     | po7        | product      | 10         |
+    And the order identified by po7 is completed
+
+    # Order completed: OD step is Awaiting_Pay (order date is known); BL step is Pending (BL date unknown).
+    Then the order identified by po7 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueAmt | DueAmt_Actual | DueDate    | Status |
+      | PTB71                  | 10.23  | null          | 2025-10-10 | WP     |
+      | PTB72                  | 92.07  | null          | 9999-12-01 | PR     |
+
+    # Vendor sends a proforma for the 10% advance (1 PCE at 9.98 CHF net -> 10.23 CHF incl. 2.5% tax).
+    And metasfresh contains C_Invoice:
+      | Identifier     | C_BPartner_ID | C_DocTypeTarget_ID.Name       | DateInvoiced | IsSOTrx | C_Currency_ID | C_PaymentTerm_ID |
+      | advanceInvoice | vendor        | Proforma-Rechnung (Lieferant) | 2025-10-10   | false   | CHF           | pt_immediate     |
+    And metasfresh contains C_InvoiceLines
+      | Identifier       | C_Invoice_ID   | M_Product_ID | QtyInvoiced | Price |
+      | advanceInvoiceL1 | advanceInvoice | product      | 1 PCE       | 9.98  |
+    And the invoice identified by advanceInvoice is completed
+
+    # A completed but unpaid proforma does not change the pay schedule.
+    And validate created invoices
+      | Identifier     | IsPaid |
+      | advanceInvoice | N      |
+    Then the order identified by po7 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueAmt | DueAmt_Actual | DueDate    | Status |
+      | PTB71                  | 10.23  | null          | 2025-10-10 | WP     |
+      | PTB72                  | 92.07  | null          | 9999-12-01 | PR     |
+
+    # Allocate the proforma to the order: the OD step captures the actual proforma amount (DueAmt_Actual).
+    And I allocate proforma 'advanceInvoice' to order 'po7'
+    Then the order identified by po7 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueAmt | DueAmt_Actual | DueDate    | Status |
+      | PTB71                  | 10.23  | 10.23         | 2025-10-10 | WP     |
+      | PTB72                  | 92.07  | null          | 9999-12-01 | PR     |
+
+    # Pay the proforma in full (Proforma_Invoice_ID + IsPrepayment=Y). Completion marks the OD step Paid.
+    And metasfresh contains C_Payment
+      | Identifier     | C_BPartner_ID | PayAmt    | IsReceipt | C_BP_BankAccount_ID | Proforma_Invoice_ID |
+      | advancePayment | vendor        | 10.23 CHF | false     | org_CHF_account     | advanceInvoice      |
+    And the payment identified by advancePayment is completed
+    Then validate payments
+      | C_Payment_ID.Identifier | IsPrepayment | C_Invoice_ID | Proforma_Invoice_ID | PayAmt |
+      | advancePayment          | Y            | null         | advanceInvoice      | 10.23  |
+
+    # The proforma flips to IsPaid=Y (C_Payment AFTER_COMPLETE interceptor - proforma payments have no allocation lines).
+    And validate created invoices
+      | Identifier     | IsPaid |
+      | advanceInvoice | Y      |
+
+    # Final state: OD advance step Paid; BL step still Pending (open) awaiting the bill-of-lading date.
+    Then the order identified by po7 has following pay schedules
+      | C_PaymentTerm_Break_ID | DueAmt | DueAmt_Actual | DueDate    | Status |
+      | PTB71                  | 10.23  | 10.23         | 2025-10-10 | P      |
+      | PTB72                  | 92.07  | null          | 9999-12-01 | PR     |
