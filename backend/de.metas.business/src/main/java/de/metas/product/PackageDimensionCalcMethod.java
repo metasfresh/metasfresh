@@ -21,8 +21,7 @@ import javax.annotation.Nullable;
  * not the other way round). The generated {@code X_M_HU_PI_Version} constants therefore cannot
  * be imported here without introducing a reverse module dependency. So this enum is the
  * source of truth for the codes, and the ref-list migration's {@code Value}s must match them
- * (S / R / N). Handlingunits-side callers should reference the generated
- * {@code X_M_HU_PI_Version.PACKAGEDIMENSIONCALCMETHOD_*} constants.</p>
+ * (S / R / N).</p>
  */
 @Getter
 @RequiredArgsConstructor
