@@ -27,6 +27,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 /**
  * User intent for the scripted-import "call" process ({@code AD_Process 585512}, param
  * {@code External_Request} = {@code AD_Reference 541998}): whether to START or STOP the import
@@ -49,6 +51,19 @@ public enum ScriptedImportConversionIntent
 	@NonNull
 	public static ScriptedImportConversionIntent ofCode(@NonNull final String code)
 	{
+		final ScriptedImportConversionIntent intent = ofCodeOrNull(code);
+		if (intent == null)
+		{
+			throw new AdempiereException("No ScriptedImportConversionIntent for code")
+					.appendParametersToMessage()
+					.setParameter("code", code);
+		}
+		return intent;
+	}
+
+	@Nullable
+	public static ScriptedImportConversionIntent ofCodeOrNull(@Nullable final String code)
+	{
 		for (final ScriptedImportConversionIntent intent : values())
 		{
 			if (intent.code.equals(code))
@@ -56,8 +71,6 @@ public enum ScriptedImportConversionIntent
 				return intent;
 			}
 		}
-		throw new AdempiereException("No ScriptedImportConversionIntent for code")
-				.appendParametersToMessage()
-				.setParameter("code", code);
+		return null;
 	}
 }

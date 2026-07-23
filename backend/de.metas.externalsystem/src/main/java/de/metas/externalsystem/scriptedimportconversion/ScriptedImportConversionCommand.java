@@ -28,6 +28,8 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+
 @AllArgsConstructor
 public enum ScriptedImportConversionCommand
 {
@@ -45,6 +47,19 @@ public enum ScriptedImportConversionCommand
 	@NonNull
 	public static ScriptedImportConversionCommand ofCode(@NonNull final String value)
 	{
+		final ScriptedImportConversionCommand command = ofCodeOrNull(value);
+		if (command == null)
+		{
+			throw new AdempiereException("No ScriptedImportConversionCommand for code")
+					.appendParametersToMessage()
+					.setParameter("code", value);
+		}
+		return command;
+	}
+
+	@Nullable
+	public static ScriptedImportConversionCommand ofCodeOrNull(@Nullable final String value)
+	{
 		for (final ScriptedImportConversionCommand command : values())
 		{
 			if (command.value.equals(value))
@@ -52,9 +67,7 @@ public enum ScriptedImportConversionCommand
 				return command;
 			}
 		}
-		throw new AdempiereException("No ScriptedImportConversionCommand for code")
-				.appendParametersToMessage()
-				.setParameter("code", value);
+		return null;
 	}
 
 	@NonNull

@@ -126,25 +126,23 @@ public class InvokeScriptedImportConversionAction extends AlterExternalSystemSer
 	@VisibleForTesting
 	static ScriptedImportConversionIntent resolveIntent(@NonNull final String externalRequest)
 	{
-		try
+		final ScriptedImportConversionIntent intent = ScriptedImportConversionIntent.ofCodeOrNull(externalRequest);
+		if (intent != null)
 		{
-			return ScriptedImportConversionIntent.ofCode(externalRequest);
+			return intent;
 		}
-		catch (final AdempiereException intentNotFound)
+
+		final ScriptedImportConversionCommand command = ScriptedImportConversionCommand.ofCodeOrNull(externalRequest);
+		if (command != null)
 		{
-			try
-			{
-				return ScriptedImportConversionCommand.ofCode(externalRequest).getIntent();
-			}
-			catch (final AdempiereException commandNotFound)
-			{
-				throw new AdempiereException("No ScriptedImportConversion intent or command for External_Request")
-						.appendParametersToMessage()
-						.setParameter("External_Request", externalRequest)
-						.setParameter("acceptedIntents", "start, stop")
-						.setParameter("acceptedCommands", "enableRestAPI, disableRestAPI, enableSftpPolling, disableSftpPolling");
-			}
+			return command.getIntent();
 		}
+
+		throw new AdempiereException("No ScriptedImportConversion intent or command for External_Request")
+				.appendParametersToMessage()
+				.setParameter("External_Request", externalRequest)
+				.setParameter("acceptedIntents", "start, stop")
+				.setParameter("acceptedCommands", "enableRestAPI, disableRestAPI, enableSftpPolling, disableSftpPolling");
 	}
 
 	private ImmutableList<ResolvedChildCommand> resolveChildCommands(final ScriptedImportConversionIntent intent)

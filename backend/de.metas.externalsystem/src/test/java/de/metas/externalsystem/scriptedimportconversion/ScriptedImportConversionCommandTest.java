@@ -48,6 +48,20 @@ class ScriptedImportConversionCommandTest
 	}
 
 	@Test
+	void ofCodeOrNull_matchesByWireValue()
+	{
+		assertThat(ScriptedImportConversionCommand.ofCodeOrNull("enableRestAPI")).isEqualTo(ScriptedImportConversionCommand.EnableRestAPI);
+		assertThat(ScriptedImportConversionCommand.ofCodeOrNull("disableSftpPolling")).isEqualTo(ScriptedImportConversionCommand.DisableSftpPolling);
+	}
+
+	@Test
+	void ofCodeOrNull_unknownOrNull_returnsNull()
+	{
+		assertThat(ScriptedImportConversionCommand.ofCodeOrNull("start")).isNull();
+		assertThat(ScriptedImportConversionCommand.ofCodeOrNull(null)).isNull();
+	}
+
+	@Test
 	void getIntent_enableMapsToStart_disableMapsToStop()
 	{
 		assertThat(ScriptedImportConversionCommand.EnableRestAPI.getIntent()).isEqualTo(ScriptedImportConversionIntent.Start);
