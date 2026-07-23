@@ -30,7 +30,7 @@ import {
  *
  * Language-independence: every selector/assertion uses language-invariant identifiers — the DB
  * ColumnName (`.form-field-<Column>`), the ref-list VALUE as the option key
- * (`[data-test-id^="<Value>"]`, since SelectionDropdown sets data-test-id = `${key}${caption}`),
+ * (`[data-testid="option-<Value>"]`, since SelectionDropdown sets data-testid = `option-${key}`),
  * and the `.input-mandatory` structural class. Run in en_US + de_DE to prove it.
  */
 
@@ -43,9 +43,9 @@ const COPY_FROM_WRAPPER = '.form-field-CopyFrom_M_CostElement_ID';
 // Empty mandatory List/Lookup renders `.input-mandatory` (RawList / Lookup) — language-invariant.
 const COPY_FROM_MANDATORY = `${COPY_FROM_WRAPPER} .input-mandatory`;
 
-// SelectionDropdown option data-test-id = `${key}${caption}`; the List option key is the ref-list
-// VALUE, which is language-invariant (caption changes per language, the key prefix does not).
-const optionByKey = (key) => `.input-dropdown-list-option[data-test-id^="${key}"]`;
+// SelectionDropdown option data-testid = `option-${key}`; the List option key is the ref-list
+// VALUE, which is language-invariant (the ref-list value doesn't change per language).
+const optionByKey = (key) => `.input-dropdown-list-option[data-testid="option-${key}"]`;
 
 const testCases = [
   { language: 'en_US', label: 'English' },
