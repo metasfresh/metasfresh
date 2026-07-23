@@ -26,6 +26,10 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
     const startCamera = async () => {
       const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
       try {
+        // TEMP DIAGNOSTIC (flaky case 3 — DO NOT MERGE): the catch below swallows the real
+        // camera-start exception into a generic toast, hiding why the panel unmounts in CI.
+        // eslint-disable-next-line no-console
+        console.log('[case3-diag] startCamera begin; videoRef present =', !!videoRef.current);
         const controls = await codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, ctrl) => {
           if (cancelled) {
             ctrl.stop();
@@ -35,12 +39,18 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
             onBarcodeScanned({ scannedBarcode: result.text });
           }
         });
+        // eslint-disable-next-line no-console
+        console.log('[case3-diag] decodeFromVideoDevice RESOLVED; cancelled =', cancelled);
         if (cancelled) {
           controls.stop();
           return;
         }
         cameraControlsRef.current = controls;
       } catch (err) {
+        // TEMP DIAGNOSTIC (flaky case 3 — DO NOT MERGE): surface the real throw before it is swallowed.
+        // eslint-disable-next-line no-console
+        console.error('[case3-diag] decodeFromVideoDevice THREW name=', err && err.name,
+          '| message=', err && err.message, '| stack=', err && err.stack);
         if (cancelled) return;
         toastError({
           plainMessage: trl('components.BarcodeScannerComponent.cameraError'),
