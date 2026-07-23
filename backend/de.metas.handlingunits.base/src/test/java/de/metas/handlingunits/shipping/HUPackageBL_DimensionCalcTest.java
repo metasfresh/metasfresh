@@ -11,12 +11,15 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -121,6 +124,64 @@ public class HUPackageBL_DimensionCalcTest
 		assertThat(result.getLengthInCM()).isEqualTo(10);
 		assertThat(result.getHeightInCM()).isEqualTo(20);
 		assertThat(result.getWidthInCM()).isEqualTo(30);
+	}
+
+	/**
+	 * SysConfig gate: when {@code de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked=Y},
+	 * a non-self-packed single product WITH dims must return {@link PackageDimensions#UNSPECIFIED}.
+	 * When the SysConfig is absent / 'N' (the default), dims are returned unchanged.
+	 */
+	@Nested
+	class IsSelfPackedGate
+	{
+		private static final String SYSCONFIG_CHECK_IS_SELF_PACKED
+				= "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
+		@Test
+		public void whenSysConfigY_nonSelfPacked_withDims_returnsUnspecified()
+		{
+			// Arrange: set SysConfig to Y (legacy gate active)
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, true, ClientId.SYSTEM, OrgId.ANY);
+
+			// pTomato is NOT self-packed; it has dims set in @BeforeEach.
+			assertThat(data.helper.pTomato.isSelfPacked()).isFalse();
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pTomatoProductId, BigDecimal.ONE, data.helper.uomKg);
+
+			final I_M_HU cu = CollectionUtils.singleElement(producer.getCreatedHUs());
+
+			// Act
+			final PackageDimensions result = huPackageBL.getPackageDimensions(cu);
+
+			// Assert: gate active → UNSPECIFIED (IsSelfPacked=false blocks the product dims)
+			assertThat(result.isUnspecified()).isTrue();
+		}
+
+		@Test
+		public void whenSysConfigN_nonSelfPacked_withDims_returnsDims()
+		{
+			// Arrange: SysConfig absent / N → default OFF (new behaviour)
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false, ClientId.SYSTEM, OrgId.ANY);
+
+			assertThat(data.helper.pTomato.isSelfPacked()).isFalse();
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pTomatoProductId, BigDecimal.ONE, data.helper.uomKg);
+
+			final I_M_HU cu = CollectionUtils.singleElement(producer.getCreatedHUs());
+
+			// Act
+			final PackageDimensions result = huPackageBL.getPackageDimensions(cu);
+
+			// Assert: gate inactive → dims returned
+			assertThat(result.isUnspecified()).isFalse();
+			assertThat(result.getLengthInCM()).isEqualTo(10);
+			assertThat(result.getHeightInCM()).isEqualTo(20);
+			assertThat(result.getWidthInCM()).isEqualTo(30);
+		}
 	}
 
 	@Nested

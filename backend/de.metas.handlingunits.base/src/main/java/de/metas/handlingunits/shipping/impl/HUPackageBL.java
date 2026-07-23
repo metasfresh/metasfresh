@@ -41,6 +41,7 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.service.ISysConfigBL;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -86,6 +87,14 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUPackageBL implements IHUPackageBL
 {
+	/**
+	 * When set to 'Y', the legacy IsSelfPacked gate is restored: non-self-packed products return
+	 * {@link PackageDimensions#UNSPECIFIED} instead of using the product's named dimensions.
+	 * Default 'N' = flag-independent behaviour (current default).
+	 */
+	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	// services
@@ -237,10 +246,16 @@ public class HUPackageBL implements IHUPackageBL
 	/**
 	 * Single-unit dimensions: each parcel carries the product's named dimensions verbatim
 	 * (no qty-based sort/scale). Returns {@link PackageDimensions#UNSPECIFIED} when the product
-	 * has no dims; {@code IsSelfPacked} does not gate this.
+	 * has no dims. When {@value #SYSCONFIG_CHECK_IS_SELF_PACKED}='Y', also returns
+	 * {@link PackageDimensions#UNSPECIFIED} for non-self-packed products (legacy gate).
 	 */
 	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
 	{
+		final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+		if (checkSelfPacked && !product.isSelfPacked())
+		{
+			return PackageDimensions.UNSPECIFIED;
+		}
 		final PackageDimensions dims = product.getPackageDimensions();
 		return dims.isUnspecified() ? PackageDimensions.UNSPECIFIED : dims;
 	}
@@ -500,9 +515,14 @@ public class HUPackageBL implements IHUPackageBL
 				return PackageDimensions.UNSPECIFIED;
 			}
 
-			// Single-product: use product dims regardless of IsSelfPacked.
+			// Single-product: use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
 			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
 			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
+			final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+			if (checkSelfPacked && !product.isSelfPacked())
+			{
+				return PackageDimensions.UNSPECIFIED;
+			}
 			final PackageDimensions dimensions = product.getPackageDimensions();
 			if (dimensions.isUnspecified())
 			{

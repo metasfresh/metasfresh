@@ -58,6 +58,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -71,6 +72,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PackedHUCarrierAdviseService
 {
+	/**
+	 * When set to 'Y', the legacy IsSelfPacked gate is restored: non-self-packed products return
+	 * {@link PackageDimensions#UNSPECIFIED} instead of using the product's named dimensions.
+	 * Default 'N' = flag-independent behaviour (current default).
+	 */
+	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ProductRepository productRepository;
@@ -440,12 +448,19 @@ public class PackedHUCarrierAdviseService
 					.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
-			// Use product dims regardless of IsSelfPacked;
-			// fall back to UNSPECIFIED only when no dims are defined.
-			final PackageDimensions productDims = product.getPackageDimensions();
-			dimensions = productDims.isUnspecified()
-					? PackageDimensions.UNSPECIFIED
-					: productDims;
+			// Use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
+			final boolean checkSelfPacked = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+			if (checkSelfPacked && !product.isSelfPacked())
+			{
+				dimensions = PackageDimensions.UNSPECIFIED;
+			}
+			else
+			{
+				final PackageDimensions productDims = product.getPackageDimensions();
+				dimensions = productDims.isUnspecified()
+						? PackageDimensions.UNSPECIFIED
+						: productDims;
+			}
 		}
 		else
 		{
