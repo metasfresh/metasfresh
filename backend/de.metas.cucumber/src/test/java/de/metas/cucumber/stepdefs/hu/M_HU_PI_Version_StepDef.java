@@ -143,8 +143,11 @@ public class M_HU_PI_Version_StepDef
 	{
 		assertThat(lastSaveException)
 				.as("Expected the TU-only guard AdempiereException when saving M_HU_PI_Version, but none was thrown")
-				.isNotNull()
-				.hasMessageContaining("can only be set on Transport Unit");
+				.isNotNull();
+		// Assert the language-independent errorCode (the message text is translated: cucumber runs de_DE).
+		assertThat(lastSaveException.getErrorCode())
+				.as("Expected the TU-only guard error code")
+				.isEqualTo("M_HU_PI_Version_CalcMethodOnlyOnTU");
 	}
 
 	private void buildAndSavePiVersion(
