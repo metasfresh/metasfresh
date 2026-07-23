@@ -106,6 +106,18 @@ class MobileUIPickingUserProfileRepositoryTest
 	}
 
 	@Test
+	void isShowQtyAvailableForLines_N()
+	{
+		final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+		record.setIsShowQtyAvailableForLines(false);
+		saveRecord(record);
+
+		final MobileUIPickingUserProfile profile = repository.getProfile();
+
+		assertThat(profile.isShowQtyAvailableForLines()).isFalse();
+	}
+
+	@Test
 	void isShowQtyAvailableForLines_default()
 	{
 		// no profile record — should return default (false)
