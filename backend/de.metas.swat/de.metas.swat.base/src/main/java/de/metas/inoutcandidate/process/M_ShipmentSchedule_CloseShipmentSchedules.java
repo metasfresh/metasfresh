@@ -53,6 +53,11 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
 
+	// The offending-schedules query feeds ONLY the rejection message, so it is capped: listing every schedule of a
+	// pathologically large selection would waste the query and produce an unreadable message. One offender is enough
+	// to reject the all-or-nothing close; the cap just bounds how many get named.
+	private static final int MAX_OFFENDING_SCHEDULES_TO_REPORT = 100;
+
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -65,18 +70,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		// 1) Hard-block, all-or-nothing, over the FULL user selection: if any selected schedule still has an
-		// unfinished (Drafted) picking job, reject the whole close and close NOTHING. The unfinished-picking check
-		// is a subquery filter folded into the selection query, so the offending schedules come from a single query
-		// (no id round-trip / in-memory intersection).
-		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
-				.filter(pickingInfoService.newUnfinishedPickingFilter())
-				.create()
-				.list();
-		if (!offendingSchedules.isEmpty())
-		{
-			final String offendingIdentifiers = toHumanReadableIdentifiersCsv(offendingSchedules);
-			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers);
-		}
+		// unfinished (Drafted) picking job, reject the whole close and close NOTHING.
+		assertNoOffendingSchedules(userSelectionFilter);
 
 		// 2) Close the eligible schedules. Two guards, both as folded subquery/SQL filters so they re-evaluate against
 		// live DB state (this is a SEPARATE query execution from the check above — re-applying the unfinished-picking
@@ -102,6 +97,25 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		}
 
 		return MSG_OK;
+	}
+
+	/**
+	 * Rejects the whole close (all-or-nothing) if any selected schedule still has an unfinished (Drafted) picking
+	 * job. The unfinished-picking check is a subquery filter folded into the selection query, so the offending
+	 * schedules come from a single query (no id round-trip / in-memory intersection); the query is capped at
+	 * {@link #MAX_OFFENDING_SCHEDULES_TO_REPORT} because it only feeds the rejection message.
+	 */
+	private void assertNoOffendingSchedules(final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
+	{
+		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+				.filter(pickingInfoService.newUnfinishedPickingFilter())
+				.setLimit(MAX_OFFENDING_SCHEDULES_TO_REPORT)
+				.create()
+				.list();
+		if (!offendingSchedules.isEmpty())
+		{
+			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, toHumanReadableIdentifiersCsv(offendingSchedules));
+		}
 	}
 
 	/**
