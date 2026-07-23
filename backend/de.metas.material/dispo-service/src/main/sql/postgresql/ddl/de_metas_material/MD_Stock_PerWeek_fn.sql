@@ -59,25 +59,25 @@ weeks AS (
    CROSS JOIN horizon h
    CROSS JOIN LATERAL generate_series(0, h.weeks) AS g(w)
 ),
+-- Movement columns bucket by the candidate's ACTUAL week (no overdue roll-up into the current week),
+-- so overdue activity (dated before the current week) does NOT appear in the current week's Expected
+-- Shipments / Receipts. It stays reflected in the opening ATP -- QtyATPBegin is the projected running
+-- balance, which already accounts for it -- so the backlog is shown once (in ATP), not twice.
 ship AS (
   SELECT b.M_Product_ID, b.M_Warehouse_ID,
-         GREATEST(date_trunc('week', b.DateProjected)::date,
-                  date_trunc('week', current_date)::date) AS WeekStartDate,
+         date_trunc('week', b.DateProjected)::date AS WeekStartDate,
          SUM(ABS(b.Qty)) AS qty
     FROM base b
    WHERE b.MD_Candidate_Type = 'DEMAND' AND b.MD_Candidate_BusinessCase = 'SHIPMENT'
-   GROUP BY b.M_Product_ID, b.M_Warehouse_ID,
-            GREATEST(date_trunc('week', b.DateProjected)::date, date_trunc('week', current_date)::date)
+   GROUP BY b.M_Product_ID, b.M_Warehouse_ID, date_trunc('week', b.DateProjected)::date
 ),
 recv AS (
   SELECT b.M_Product_ID, b.M_Warehouse_ID,
-         GREATEST(date_trunc('week', b.DateProjected)::date,
-                  date_trunc('week', current_date)::date) AS WeekStartDate,
+         date_trunc('week', b.DateProjected)::date AS WeekStartDate,
          SUM(b.Qty) AS qty
     FROM base b
    WHERE b.MD_Candidate_Type = 'SUPPLY' AND b.MD_Candidate_BusinessCase = 'PURCHASE'
-   GROUP BY b.M_Product_ID, b.M_Warehouse_ID,
-            GREATEST(date_trunc('week', b.DateProjected)::date, date_trunc('week', current_date)::date)
+   GROUP BY b.M_Product_ID, b.M_Warehouse_ID, date_trunc('week', b.DateProjected)::date
 ),
 atp_collapsed AS (
   SELECT DISTINCT ON (b.M_Product_ID, b.M_Warehouse_ID,

@@ -144,6 +144,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.showFilterByQtyAvailableAtPickFromLocator(true)
 				.applicationParameter("allowQuickPackAll", profile.isAllowQuickPackAll())
 				.applicationParameter("massPrinting", profile.isMassPrinting())
+				.applicationParameter("isShowQtyAvailableForLines", profile.isShowQtyAvailableForLines())
 				.build();
 	}
 
