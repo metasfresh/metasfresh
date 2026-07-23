@@ -231,11 +231,9 @@ public class PickingJobTestHelper
 				inventoryService,
 				new HUGraiService(new HUPIGraiRepository()));
 
-		final PickingJobSalesOrderService salesOrderService = new PickingJobSalesOrderService();
-
 		final DefaultPickingJobLoaderSupportingServicesFactory defaultPickingJobLoaderSupportingServicesFactory = new DefaultPickingJobLoaderSupportingServicesFactory(
 				configService,
-				salesOrderService,
+				new PickingJobSalesOrderService(),
 				warehouseService,
 				bpartnerService,
 				productService,
@@ -261,8 +259,7 @@ public class PickingJobTestHelper
 				PickingJobCarrierAdviseConsistencyService.newInstanceForUnitTesting(Mockito.mock(CarrierAdviseConsistencyService.class)),
 				new PickingJobGraiTargetService(huService),
 				new PickingJobUnpickProductResolver(huService, productService),
-				new PickingShelfLifeCheck(productService, bpartnerService),
-				salesOrderService
+				new PickingShelfLifeCheck(productService, bpartnerService)
 		);
 
 		huTracer = new HUTracerInstance()

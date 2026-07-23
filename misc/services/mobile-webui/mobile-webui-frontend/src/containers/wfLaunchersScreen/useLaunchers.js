@@ -22,15 +22,19 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
 
   //
   // Load application launchers
-  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
-    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
+  const onNewLaunchers = ({ applicationId, applicationLaunchers, requestTimestamp }) => {
+    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers, requestTimestamp }));
   };
   useEffect(() => {
     if (isEnabled) {
       setLoading(true);
+      // Capture WHEN the request is issued (not when it resolves): a launchers response is only
+      // authoritative about processes that existed when the request went out. Threading this into
+      // populateLaunchersComplete lets the wfProcesses reducer keep a process started after this.
+      const launchersFetchStartedAt = Date.now();
       getLaunchers({ applicationId, filterByQRCodeString, filters, facets })
         .then((applicationLaunchers) => {
-          onNewLaunchers({ applicationId, applicationLaunchers });
+          onNewLaunchers({ applicationId, applicationLaunchers, requestTimestamp: launchersFetchStartedAt });
         })
         .finally(() => setLoading(false));
     } else {
@@ -50,7 +54,9 @@ export const useLaunchers = ({ applicationId, showFilterByQRCode, facets, filter
     filters,
     facets,
     onWebsocketMessage: ({ applicationId, applicationLaunchers }) => {
-      onNewLaunchers({ applicationId, applicationLaunchers });
+      // A websocket push carries no request-issued time; it reflects current server state, so use
+      // receipt time. This preserves the pre-existing GC behaviour for pushed snapshots.
+      onNewLaunchers({ applicationId, applicationLaunchers, requestTimestamp: Date.now() });
     },
   });
 

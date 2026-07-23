@@ -397,7 +397,7 @@ public class ExternalSystem_Config_StepDef
 
 		// Create an outbound endpoint with defaults
 		final I_ExternalSystem_Endpoint outboundEndpoint = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Endpoint.class);
-		outboundEndpoint.setOutboundHttpEP("http://localhost:9999");
+		outboundEndpoint.setHttpEndPoint("http://localhost:9999");
 		outboundEndpoint.setOutboundHttpMethod(HttpMethod.POST.getCode());
 		outboundEndpoint.setType(X_ExternalSystem_Endpoint.TYPE_HTTP);
 		outboundEndpoint.setAuthType(EndpointAuthType.Token.getCode());
@@ -432,8 +432,8 @@ public class ExternalSystem_Config_StepDef
 		if (readStatusColumn)
 		{
 			// Status_AD_Column_ID was removed from the model when the per-record status design was
-			// consolidated into ExternalSystem_ScriptedExportConversion_Status (a single-row-upsert table
-			// that carries the export lifecycle).  IsTriggerOnComplete is still required to tell the
+			// consolidated into ExternalSystem_ScriptedExportConversion_Status (one row per export
+			// attempt, carrying the export lifecycle).  IsTriggerOnComplete is still required to tell the
 			// complete-interceptor to start the export.
 			scriptedExportConversionConfig.setIsTriggerOnComplete(true);
 

@@ -41,13 +41,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * State machine for the scripted-export-conversion status row.
  *
- * <p>States (one row per config+record): Pending → Enqueued → Sent | Error | Invalid; plus the
- * terminal DontSend (evaluated but excluded by the config WhereClause).
+ * <p>States (one row per export ATTEMPT): Pending → Enqueued → Sent | Error | Invalid; plus the
+ * terminal DontSend (evaluated but excluded by the config WhereClause). A re-send starts a NEW
+ * attempt row; the roll-up and re-send selection consider the latest attempt per config.
  */
 @Service
 @RequiredArgsConstructor
@@ -81,7 +84,7 @@ public class ExternalSystemExportStatusService
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.DontSend)
@@ -96,7 +99,7 @@ public class ExternalSystemExportStatusService
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
@@ -104,16 +107,15 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Flips the (config, record) status row back to {@link ExternalSystemExportStatus#Pending} with
-	 * {@code IsResend=Y} using an in-place upsert — matching the single-row-per-key design.
-	 * Creates the row if somehow absent; otherwise updates the existing row so no duplicate key
-	 * can arise.
+	 * Records a re-send as a NEW attempt row in state {@link ExternalSystemExportStatus#Pending} with
+	 * {@code IsResend=Y}. Prior attempts (the original send + any earlier re-sends) remain as history;
+	 * the aggregated status and the lifecycle transitions then track this newest attempt.
 	 */
 	public void recordPendingAsResend(
 			@NonNull final ExternalSystemScriptedExportConversionConfigId configId,
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		repo.upsert(ScriptedExportConversionStatusCreateRequest.builder()
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
 				.configId(configId)
 				.sourceRecord(sourceRecord)
 				.status(ExternalSystemExportStatus.Pending)
@@ -122,19 +124,32 @@ public class ExternalSystemExportStatusService
 	}
 
 	/**
-	 * Returns the config IDs whose status row for the given source record is in a terminal-failure
-	 * state ({@link ExternalSystemExportStatus#Error} or {@link ExternalSystemExportStatus#Invalid}).
-	 * In-flight rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
+	 * Returns the config IDs whose latest status row for the given source record is re-sendable
+	 * ({@link ExternalSystemExportStatus#isResendable()} — {@link ExternalSystemExportStatus#Error},
+	 * {@link ExternalSystemExportStatus#Invalid} or {@link ExternalSystemExportStatus#DontSend}). A
+	 * DontSend row is included so a suppressed record can be re-evaluated on re-send. Sent and in-flight
+	 * rows (Pending, Enqueued, SendingStarted) are excluded to prevent double-sending.
 	 */
 	@NonNull
 	public List<ExternalSystemScriptedExportConversionConfigId> getResendableConfigsBySourceRecord(
 			@NonNull final TableRecordReference sourceRecord)
 	{
-		return repo.getLatestBySourceRecord(sourceRecord)
-				.stream()
-				.filter(s -> s.getStatus().isErrorOrInvalid())
+		// Reduce the per-attempt history to the LATEST attempt per config (getLatestBySourceRecord
+		// returns ALL rows newest-first, so putIfAbsent keeps the newest), then offer only configs whose
+		// latest attempt is resendable — Error/Invalid OR DontSend (a suppressed attempt is re-offered so
+		// a re-send can re-evaluate relevance). Without the latest-per-config dedup a config whose latest
+		// attempt already SUCCEEDED would still be offered because an OLDER attempt errored — re-triggering
+		// an already-delivered export. Mirrors getConfigsWithNonSentAttemptBySourceRecord's dedup.
+		final LinkedHashMap<ExternalSystemScriptedExportConversionConfigId, ScriptedExportConversionStatus> latestPerConfig =
+				new LinkedHashMap<>();
+		for (final ScriptedExportConversionStatus entry : repo.getLatestBySourceRecord(sourceRecord))
+		{
+			latestPerConfig.putIfAbsent(entry.getConfigId(), entry);
+		}
+
+		return latestPerConfig.values().stream()
+				.filter(s -> s.getStatus().isResendable())
 				.map(ScriptedExportConversionStatus::getConfigId)
-				.distinct()
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -214,6 +229,34 @@ public class ExternalSystemExportStatusService
 		repo.update(existing
 				.withStatus(ExternalSystemExportStatus.Invalid)
 				.withStatusMessage(message));
+	}
+
+	// ------------------------------------------------------------------
+	// Queries
+	// ------------------------------------------------------------------
+
+	/**
+	 * Returns the status row bound to the given {@code pInstanceId}, if any — the read-only
+	 * counterpart of the pInstance-keyed {@code markXxx} transitions below. Callers use this to
+	 * resolve the (config, sourceRecord) that a successful/failed invocation belongs to.
+	 */
+	@NonNull
+	public Optional<ScriptedExportConversionStatus> getLatestByPInstanceId(@NonNull final PInstanceId pInstanceId)
+	{
+		return repo.getLatestByPInstanceId(pInstanceId);
+	}
+
+	/**
+	 * Returns the distinct config IDs whose <b>active</b> status row for the source record is in-flight
+	 * (Enqueued or SendingStarted — dispatched but not yet confirmed/failed). Used to prevent
+	 * reversing/reactivating a source document whose export is still in-flight (it may already be at
+	 * the receiver). Only active rows count, so deactivating a stuck status row releases the document.
+	 */
+	@NonNull
+	public List<ExternalSystemScriptedExportConversionConfigId> getInflightConfigsBySourceRecord(
+			@NonNull final TableRecordReference sourceRecord)
+	{
+		return repo.getInflightConfigsBySourceRecord(sourceRecord);
 	}
 
 	// ------------------------------------------------------------------

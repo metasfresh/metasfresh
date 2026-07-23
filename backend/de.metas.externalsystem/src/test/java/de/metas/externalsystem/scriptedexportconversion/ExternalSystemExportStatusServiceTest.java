@@ -283,10 +283,10 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// Upsert semantics: second transition on same key keeps a single row
+	// A transition (markEnqueued) updates the SAME attempt row — one enqueue, one row
 	// -----------------------------------------------------------------------
 	@Test
-	void upsert_sameRow_onSecondCall()
+	void transition_updatesSameAttemptRow()
 	{
 		final TableRecordReference ref = newInOutRef();
 		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
@@ -301,7 +301,7 @@ public class ExternalSystemExportStatusServiceTest
 	}
 
 	// -----------------------------------------------------------------------
-	// getResendableConfigsBySourceRecord — Error/Invalid-only filter
+	// getResendableConfigsBySourceRecord — Error/Invalid/DontSend (isResendable) filter
 	// -----------------------------------------------------------------------
 
 	/**
@@ -320,6 +320,27 @@ public class ExternalSystemExportStatusServiceTest
 				service.getResendableConfigsBySourceRecord(ref);
 
 		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * Per-attempt history: a config whose OLDER attempt errored but whose LATEST attempt succeeded
+	 * (a re-send that worked) must NOT be offered for re-send — otherwise the manual Re-send process
+	 * would re-trigger an export that already delivered successfully.
+	 */
+	@Test
+	void getResendableConfigs_excludesConfigWhoseLatestAttemptSucceeded()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		// older attempt errored ...
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Error).build());
+		// ... but the LATEST attempt (a successful re-send) is Sent
+		repo.insertNewAttempt(ScriptedExportConversionStatusCreateRequest.builder()
+				.configId(configId).sourceRecord(ref).status(ExternalSystemExportStatus.Sent).build());
+
+		assertThat(service.getResendableConfigsBySourceRecord(ref)).isEmpty();
 	}
 
 	/**
@@ -355,6 +376,24 @@ public class ExternalSystemExportStatusServiceTest
 		service.recordPending(configId, ref);
 		service.markEnqueued(configId, ref, pInstanceId);
 		service.markInvalid(pInstanceId, "bad data");
+
+		final List<ExternalSystemScriptedExportConversionConfigId> result =
+				service.getResendableConfigsBySourceRecord(ref);
+
+		assertThat(result).containsExactly(configId);
+	}
+
+	/**
+	 * A config whose latest attempt is DontSend ("shall not be sent" — e.g. suppressed because
+	 * everything was already in the ledger) must ALSO be resendable, so a re-send can re-evaluate it.
+	 */
+	@Test
+	void getResendableConfigs_includes_dontSendConfig()
+	{
+		final TableRecordReference ref = newInOutRef();
+		final ExternalSystemScriptedExportConversionConfigId configId = newConfigId();
+
+		service.recordDontSend(configId, ref);
 
 		final List<ExternalSystemScriptedExportConversionConfigId> result =
 				service.getResendableConfigsBySourceRecord(ref);
