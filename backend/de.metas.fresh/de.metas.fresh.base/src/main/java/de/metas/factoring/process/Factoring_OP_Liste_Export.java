@@ -23,14 +23,17 @@
 package de.metas.factoring.process;
 
 import com.google.common.base.Joiner;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.i18n.AdMessageKey;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
-import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.db.CConnection;
+import org.compiere.model.I_C_BPartner;
 import org.springframework.core.io.ByteArrayResource;
 
 import javax.annotation.Nullable;
@@ -40,13 +43,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -62,7 +60,7 @@ import java.util.List;
  * <p>Byte-level format requirements:
  * <ul>
  *   <li>UTF-8 BOM (0xEF 0xBB 0xBF) as first 3 bytes</li>
- *   <li>Semicolons as field delimiter; trailing semicolon on every row (col_11 = '')</li>
+ *   <li>Semicolons as field delimiter; trailing semicolon on every detail row (col_10 = '' renders as the trailing ';')</li>
  *   <li>CRLF ({@code \r\n}) line terminator, including on the last row</li>
  * </ul>
  *
@@ -82,7 +80,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	// rather than {@code new AdempiereException(AdMessageKey, ...)} — the latter constructor calls
 	// {@code MsgBL.getErrorCode()} at throw time, which requires the metasfresh Msg/DB layer to be
 	// initialized. Deferring resolution to {@code Msg.parseTranslation()} at display time keeps
-	// construction safe in raw-JDBC integration tests.
+	// construction safe from any pre-Msg-init callsite.
 	private static final AdMessageKey MSG_RoleScopeAllOrgs = AdMessageKey.of("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
 	private static final AdMessageKey MSG_NoFactorer = AdMessageKey.of("Factoring_OP_Liste_EXT_NoFactorer");
 	private static final AdMessageKey MSG_MultipleFactorers = AdMessageKey.of("Factoring_OP_Liste_EXT_MultipleFactorers");
@@ -92,13 +90,32 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	/** Parameter name: currency (mandatory). */
 	static final String PARAM_C_CURRENCY_ID = "C_Currency_ID";
 
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private FactoringOpListeRepository factoringRepo;
+
 	@Param(parameterName = PARAM_C_CURRENCY_ID, mandatory = true)
 	private int p_C_Currency_ID;
 
 	public Factoring_OP_Liste_Export()
 	{
-		// Reserved for future @Autowired collaborators (mirrors DATEV_ExportFile's pattern).
 		SpringContextHolder.instance.autowire(this);
+		try
+		{
+			this.factoringRepo = SpringContextHolder.instance.getBean(FactoringOpListeRepository.class);
+		}
+		catch (final Exception e)
+		{
+			// Spring context not available (e.g. in a unit-test env) — the test provides a repository via
+			// {@link #setFactoringRepoForTesting(FactoringOpListeRepository)}.
+			this.factoringRepo = null;
+		}
+	}
+
+	/** Package-private test seam: lets a unit test inject a mocked repository (no Spring context). */
+	void setFactoringRepoForTesting(@NonNull final FactoringOpListeRepository repo)
+	{
+		this.factoringRepo = repo;
 	}
 
 	// -------------------------------------------------------------------------
@@ -106,19 +123,15 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	// -------------------------------------------------------------------------
 
 	@Override
-	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
-		final int orgId = getProcessInfo().getAD_Org_ID();
+		final int orgIdRepo = getProcessInfo().getAD_Org_ID();
 		final int clientId = getProcessInfo().getAD_Client_ID();
 
-		try (final Connection conn = createConnection())
-		{
-			final ExportResult result = runExport(conn, orgId, clientId, p_C_Currency_ID);
-			getResult().setReportData(new ByteArrayResource(result.bytes), result.filename, "text/csv");
-			addLog("File: {} ({} data row(s))", result.filename, result.rowCount);
-			return MSG_OK;
-		}
+		final ExportResult result = runExport(orgIdRepo, clientId, p_C_Currency_ID);
+		getResult().setReportData(new ByteArrayResource(result.bytes), result.filename, "text/csv");
+		addLog("File: {} ({} data row(s))", result.filename, result.rowCount);
+		return MSG_OK;
 	}
 
 	// -------------------------------------------------------------------------
@@ -126,42 +139,27 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Runs the full export: validates the factorer BP, calls the SQL function,
-	 * and writes the CSV to a byte array.
-	 *
-	 * <p><b>JDBC rationale</b>: this class calls a PostgreSQL set-returning function
-	 * ({@code report_factoring_op_liste}) which cannot be invoked via {@code IQueryBL}.
-	 * The factorer-BP lookup is kept in the same JDBC session to share the connection
-	 * and avoid the overhead of a separate Spring transaction. No domain mutations occur.
-	 *
-	 * @param conn      JDBC connection to the metasfresh database
-	 * @param orgId     AD_Org_ID of the current user's organisation
-	 * @param clientId  AD_Client_ID
-	 * @param currencyId C_Currency_ID (the Währung parameter)
-	 * @return export result containing the CSV bytes and the filename
-	 * @throws SQLException if a database error occurs
-	 * @throws IOException  if the CSV cannot be written
+	 * Runs the full export: validates the factorer BP via {@link IBPartnerDAO}, calls the SQL
+	 * function via {@link FactoringOpListeRepository}, and writes the CSV to a byte array.
 	 */
 	ExportResult runExport(
-			@NonNull final Connection conn,
-			final int orgId,
+			final int orgIdRepo,
 			final int clientId,
-			final int currencyId) throws SQLException, IOException
+			final int currencyId) throws IOException
 	{
 		// Refuse a role-scope-'*' invocation — the export is org-scoped.
-		if (orgId == 0)
+		if (orgIdRepo == 0)
 		{
 			throw new AdempiereException(MSG_RoleScopeAllOrgs.toAD_MessageWithMarkers())
 					.markAsUserValidationError();
 		}
 
-		// ---- Validate factorer BP ----
-		final FactorerBpInfo factorerBp = resolveFactorerBp(conn, orgId, clientId);
+		final OrgId orgId = OrgId.ofRepoId(orgIdRepo);
 
-		// ---- Call SQL function ----
-		final List<String[]> rows = callSqlFunction(conn, currencyId, orgId, clientId);
+		final FactorerBpInfo factorerBp = resolveFactorerBp(orgId);
 
-		// ---- Write CSV bytes ----
+		final List<String[]> rows = factoringRepo.loadOpListRows(currencyId, orgIdRepo, clientId);
+
 		final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
 		final String filename = Joiner.on("_").skipNulls()
 				.join(factorerBp.contractNo, "INH", today) + ".csv";
@@ -169,137 +167,69 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		writeCsv(out, rows);
 
-		// Number of data rows = total rows minus the 1 header row
-		final int dataRowCount = Math.max(0, rows.size() - 1);
+		final int dataRowCount = Math.max(0, rows.size() - 1); // total rows minus 1 header row
 		return new ExportResult(out.toByteArray(), filename, dataRowCount);
 	}
 
 	// -------------------------------------------------------------------------
-	// Factorer BP resolution (AC6 validations)
+	// Factorer BP resolution
 	// -------------------------------------------------------------------------
 
-	private FactorerBpInfo resolveFactorerBp(
-			final Connection conn,
-			final int orgId,
-			final int clientId) throws SQLException
+	private FactorerBpInfo resolveFactorerBp(@NonNull final OrgId orgId)
 	{
-		final String sql = "SELECT name, factoringcontractno, factoringclientaccountid"
-				+ " FROM c_bpartner"
-				+ " WHERE isfactorer = 'Y'"
-				+ " AND isactive = 'Y'"
-				+ " AND ad_org_id = ?"
-				+ " AND ad_client_id = ?";
+		final List<I_C_BPartner> factorers = bpartnerDAO.retrieveFactorerBPartnersForOrg(orgId);
 
-		final List<FactorerBpInfo> factorers = new ArrayList<>();
-		try (final PreparedStatement ps = conn.prepareStatement(sql))
-		{
-			ps.setInt(1, orgId);
-			ps.setInt(2, clientId);
-			try (final ResultSet rs = ps.executeQuery())
-			{
-				while (rs.next())
-				{
-					factorers.add(new FactorerBpInfo(
-							rs.getString("name"),
-							rs.getString("factoringcontractno"),
-							rs.getString("factoringclientaccountid")));
-				}
-			}
-		}
-
-		// No factorer BP configured for this org.
 		if (factorers.isEmpty())
 		{
-			final String orgName = getOrgName(conn, orgId);
-			throw new AdempiereException(MSG_NoFactorer.toAD_MessageWithMarkers() + " " + orgName)
+			throw new AdempiereException(MSG_NoFactorer.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId))
 					.markAsUserValidationError();
 		}
 
-		// Multiple factorer BPs in one org — not permitted.
 		if (factorers.size() > 1)
 		{
-			final String orgName = getOrgName(conn, orgId);
 			final StringBuilder names = new StringBuilder();
-			for (final FactorerBpInfo fp : factorers)
+			for (final I_C_BPartner fp : factorers)
 			{
 				if (names.length() > 0)
 				{
 					names.append(", ");
 				}
-				names.append(fp.name);
+				names.append(fp.getName());
 			}
-			throw new AdempiereException(MSG_MultipleFactorers.toAD_MessageWithMarkers() + " " + orgName + ": " + names)
+			throw new AdempiereException(MSG_MultipleFactorers.toAD_MessageWithMarkers()
+					+ " " + resolveOrgName(orgId) + ": " + names)
 					.markAsUserValidationError();
 		}
 
-		final FactorerBpInfo factorer = factorers.get(0);
+		final I_C_BPartner factorer = factorers.get(0);
 
-		// Factorer BP must have a contract number set for export.
-		if (isBlank(factorer.contractNo))
+		if (isBlank(factorer.getFactoringContractNo()))
 		{
-			throw new AdempiereException(MSG_MissingContractNo.toAD_MessageWithMarkers() + " " + factorer.name)
+			throw new AdempiereException(MSG_MissingContractNo.toAD_MessageWithMarkers() + " " + factorer.getName())
 					.markAsUserValidationError();
 		}
 
-		// Factorer BP must have a client account ID set for export.
-		if (isBlank(factorer.clientAccountId))
+		if (isBlank(factorer.getFactoringClientAccountId()))
 		{
-			throw new AdempiereException(MSG_MissingClientAccountId.toAD_MessageWithMarkers() + " " + factorer.name)
+			throw new AdempiereException(MSG_MissingClientAccountId.toAD_MessageWithMarkers() + " " + factorer.getName())
 					.markAsUserValidationError();
 		}
 
-		return factorer;
+		return new FactorerBpInfo(factorer.getName(),
+				factorer.getFactoringContractNo(),
+				factorer.getFactoringClientAccountId());
 	}
 
-	private String getOrgName(final Connection conn, final int orgId) throws SQLException
+	private String resolveOrgName(@NonNull final OrgId orgId)
 	{
-		try (final PreparedStatement ps = conn.prepareStatement(
-				"SELECT name FROM ad_org WHERE ad_org_id = ?"))
+		try
 		{
-			ps.setInt(1, orgId);
-			try (final ResultSet rs = ps.executeQuery())
-			{
-				return rs.next() ? rs.getString("name") : String.valueOf(orgId);
-			}
+			return orgDAO.getById(orgId).getName();
 		}
-	}
-
-	// -------------------------------------------------------------------------
-	// SQL function call
-	// -------------------------------------------------------------------------
-
-	private List<String[]> callSqlFunction(
-			final Connection conn,
-			final int currencyId,
-			final int orgId,
-			final int clientId) throws SQLException
-	{
-		final String sql = "SELECT row_type, col_1, col_2, col_3, col_4, col_5,"
-				+ " col_6, col_7, col_8, col_9, col_10, col_11"
-				+ " FROM report_factoring_op_liste(?, ?, ?)";
-
-		final List<String[]> rows = new ArrayList<>();
-		try (final PreparedStatement ps = conn.prepareStatement(sql))
+		catch (final Exception e)
 		{
-			ps.setInt(1, currencyId);
-			ps.setInt(2, orgId);
-			ps.setInt(3, clientId);
-			try (final ResultSet rs = ps.executeQuery())
-			{
-				while (rs.next())
-				{
-					// row_type at index 0; col_1..col_11 at indices 1..11
-					final String[] row = new String[12];
-					row[0] = nullToEmpty(rs.getString("row_type")).trim();
-					for (int i = 1; i <= 11; i++)
-					{
-						row[i] = nullToEmpty(rs.getString("col_" + i));
-					}
-					rows.add(row);
-				}
-			}
+			return String.valueOf(orgId.getRepoId());
 		}
-		return rows;
 	}
 
 	// -------------------------------------------------------------------------
@@ -348,21 +278,6 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 			sb.append(nullToEmpty(row[i]));
 		}
 		return sb.toString();
-	}
-
-	// -------------------------------------------------------------------------
-	// Connection factory (overridable in tests)
-	// -------------------------------------------------------------------------
-
-	/**
-	 * Returns a JDBC connection to the metasfresh database.
-	 *
-	 * <p>In production this uses the configured metasfresh DB pool.
-	 * In integration tests the subclass overrides this method to return the test connection.
-	 */
-	Connection createConnection() throws SQLException
-	{
-		return CConnection.get().getConnection(false /* autoCommit off */, java.sql.Connection.TRANSACTION_READ_COMMITTED);
 	}
 
 	// -------------------------------------------------------------------------
