@@ -266,7 +266,6 @@ Feature: HU Package Dimension Calculation
   Scenario: LU version guard — PackageDimensionCalcMethod is rejected on non-TU versions
     # The M_HU_PI_Version interceptor throws an AdempiereException when the calc method
     # is set on an LU version. Only TU versions may carry a PackageDimensionCalcMethod.
-    When metasfresh contains M_HU_PI_Version expecting error:
+    Then metasfresh contains M_HU_PI_Version expecting error "M_HU_PI_Version_CalcMethodOnlyOnTU":
       | M_HU_PI_Version_ID | M_HU_PI_ID    | HU_UnitType | IsCurrent | PackageDimensionCalcMethod |
       | dimcalc_LU_Version | dimcalc_LU_PI | LU          | Y         | S                          |
-    Then an AdempiereException was thrown when saving the M_HU_PI_Version

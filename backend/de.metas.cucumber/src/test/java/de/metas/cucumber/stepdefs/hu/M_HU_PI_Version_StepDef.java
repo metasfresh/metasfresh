@@ -32,7 +32,6 @@ import de.metas.product.PackageDimensionCalcMethod;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import javax.annotation.Nullable;
 import org.adempiere.ad.dao.IQueryBL;
@@ -56,10 +55,6 @@ public class M_HU_PI_Version_StepDef
 	private final M_HU_PI_StepDefData huPiTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
 	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
-
-	/** Captures the last exception thrown by {@link #add_M_HU_PI_Version_expectingError}. */
-	@Nullable
-	private AdempiereException lastSaveException;
 
 	public M_HU_PI_Version_StepDef(
 			@NonNull final M_HU_PI_StepDefData huPiTable,
@@ -99,24 +94,25 @@ public class M_HU_PI_Version_StepDef
 	}
 
 	/**
-	 * Variant of {@link #add_M_HU_PI_Version} that captures the first {@link AdempiereException}
-	 * thrown during save (e.g. when {@code PackageDimensionCalcMethod} is set on a non-TU version)
-	 * instead of propagating it. The captured exception can be asserted via
-	 * {@link #assertLastSaveExceptionWasThrown()}.
+	 * Variant of {@link #add_M_HU_PI_Version} that expects the save to FAIL with a specific error:
+	 * it saves the given rows, catches the {@link AdempiereException} (e.g. when {@code PackageDimensionCalcMethod}
+	 * is set on a non-TU version), and asserts its {@code errorCode} equals the given code. The errorCode is the
+	 * language-independent AD_Message key, so the assertion is stable regardless of the runtime language (cucumber
+	 * runs in de_DE, so the message TEXT is German — the key/errorCode is not).
 	 *
 	 * @cucumber.stepdef
+	 * @cucumber.columns Same columns as {@link #add_M_HU_PI_Version}.
 	 * @cucumber.example
 	 * <pre>
-	 * When metasfresh contains M_HU_PI_Version expecting error:
+	 * When metasfresh contains M_HU_PI_Version expecting error "M_HU_PI_Version_CalcMethodOnlyOnTU":
 	 *   | M_HU_PI_Version_ID | M_HU_PI_ID | HU_UnitType | PackageDimensionCalcMethod |
 	 *   | luVersion          | luPi       | LU          | S                          |
-	 * Then an AdempiereException was thrown when saving the M_HU_PI_Version
 	 * </pre>
 	 */
-	@And("metasfresh contains M_HU_PI_Version expecting error:")
-	public void add_M_HU_PI_Version_expectingError(@NonNull final DataTable dataTable)
+	@And("metasfresh contains M_HU_PI_Version expecting error {string}:")
+	public void add_M_HU_PI_Version_expectingError(@NonNull final String expectedErrorCode, @NonNull final DataTable dataTable)
 	{
-		lastSaveException = null;
+		AdempiereException caughtException = null;
 		try
 		{
 			DataTableRows.of(dataTable)
@@ -125,29 +121,15 @@ public class M_HU_PI_Version_StepDef
 		}
 		catch (final AdempiereException e)
 		{
-			lastSaveException = e;
+			caughtException = e;
 		}
-	}
 
-	/**
-	 * Asserts that the most recent {@link #add_M_HU_PI_Version_expectingError} step did throw an {@link AdempiereException}.
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.example
-	 * <pre>
-	 * Then an AdempiereException was thrown when saving the M_HU_PI_Version
-	 * </pre>
-	 */
-	@Then("an AdempiereException was thrown when saving the M_HU_PI_Version")
-	public void assertLastSaveExceptionWasThrown()
-	{
-		assertThat(lastSaveException)
-				.as("Expected the TU-only guard AdempiereException when saving M_HU_PI_Version, but none was thrown")
+		assertThat(caughtException)
+				.as("Expected the save to fail with errorCode %s, but no AdempiereException was thrown", expectedErrorCode)
 				.isNotNull();
-		// Assert the language-independent errorCode (the message text is translated: cucumber runs de_DE).
-		assertThat(lastSaveException.getErrorCode())
-				.as("Expected the TU-only guard error code")
-				.isEqualTo("M_HU_PI_Version_CalcMethodOnlyOnTU");
+		assertThat(caughtException.getErrorCode())
+				.as("Expected the guard error code")
+				.isEqualTo(expectedErrorCode);
 	}
 
 	private void buildAndSavePiVersion(
