@@ -116,8 +116,8 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	 */
 	private boolean shouldNarrowToSelfByProductRepoId(final int productRepoId)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(productRepoId);
-		return productId == null || shouldNarrowToSelf(productId);
+		// isStocked(null) == false, so a product-less charge line (repoId 0 → null) narrows just like a non-stocked product.
+		return !productBL.isStocked(ProductId.ofRepoIdOrNull(productRepoId));
 	}
 
 	@Override
