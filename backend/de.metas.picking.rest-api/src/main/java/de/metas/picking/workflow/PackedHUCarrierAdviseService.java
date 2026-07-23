@@ -28,6 +28,8 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
 import de.metas.inoutcandidate.CarrierServiceId;
@@ -71,6 +73,9 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PackedHUCarrierAdviseService
 {
+	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_NO_TARGET = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.NoTarget");
+	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_READONLY = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.ReadOnly");
+
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ProductRepository productRepository;
@@ -85,6 +90,7 @@ public class PackedHUCarrierAdviseService
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	/**
 	 * Builds the display info from a job-scoped carrier product — the picking-job line's (or header's)
@@ -96,7 +102,8 @@ public class PackedHUCarrierAdviseService
 	@NonNull
 	public CarrierAdviseTargetInfo resolveTargetInfoFromCarrierProduct(
 			@Nullable final CarrierProductId carrierProductId,
-			final boolean readOnly)
+			final boolean readOnly,
+			@Nullable final String disabledReason)
 	{
 		if (carrierProductId == null)
 		{
@@ -113,6 +120,7 @@ public class PackedHUCarrierAdviseService
 				.available(true)
 				.readOnly(readOnly)
 				.productCaption(carrierProduct.getName())
+				.disabledReason(disabledReason)
 				.build();
 	}
 
@@ -125,14 +133,19 @@ public class PackedHUCarrierAdviseService
 	 * {@code carrierAdviseReadOnly}). The <b>line</b> carries its create-time initial carrier. A per-line display
 	 * reads the header once the line HAS a pick target (the parcel is being built) and the line's own carrier before
 	 * that (nothing to advise onto yet).
+	 *
+	 * @param adLanguage the AD_Language of the current user session, used to translate the {@code disabledReason}
 	 */
 	@NonNull
-	public CarrierAdviseTargetInfo resolveInfo(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLine line)
+	public CarrierAdviseTargetInfo resolveInfo(
+			@NonNull final PickingJob pickingJob,
+			@Nullable final PickingJobLine line,
+			@NonNull final String adLanguage)
 	{
 		// Job header (line == null): read the header's current-parcel carrier state.
 		if (line == null)
 		{
-			return resolveHeaderInfo(pickingJob);
+			return resolveHeaderInfo(pickingJob, adLanguage);
 		}
 
 		// Per-line display: once the line has a pick target (its parcel is being built), the CURRENT parcel's state
@@ -140,7 +153,7 @@ public class PackedHUCarrierAdviseService
 		// read-only (nothing to advise onto yet, or a manual/read-only line).
 		if (hasExistingTarget(pickingJob, line.getId()))
 		{
-			return resolveHeaderInfo(pickingJob);
+			return resolveHeaderInfo(pickingJob, adLanguage);
 		}
 
 		final CarrierProductId lineCarrierProductId = line.getCarrierProductId();
@@ -148,8 +161,9 @@ public class PackedHUCarrierAdviseService
 		{
 			return CarrierAdviseTargetInfo.NONE;
 		}
-		final boolean readOnly = true; // no target ⇒ nothing to advise onto
-		return resolveTargetInfoFromCarrierProduct(lineCarrierProductId, readOnly || line.isManual() || line.isCarrierAdviseReadOnly());
+		// no target ⇒ nothing to advise onto yet
+		final String disabledReason = msgBL.getMsg(adLanguage, MSG_CARRIER_ADVISE_DISABLED_NO_TARGET);
+		return resolveTargetInfoFromCarrierProduct(lineCarrierProductId, true, disabledReason);
 	}
 
 	/**
@@ -159,11 +173,14 @@ public class PackedHUCarrierAdviseService
 	 *     <li><b>caption</b> — the header's persisted carrier product name, only when it is itself API-advise
 	 *         (a divergent/none header carrier ⇒ null ⇒ no single current carrier shown);</li>
 	 *     <li><b>readOnly</b> — no existing pick target (nothing to advise onto yet) OR the header is flagged
-	 *         read-only (a manual override the parcel carries).</li>
+	 *         read-only (a manual override the parcel carries);</li>
+	 *     <li><b>disabledReason</b> — translated human-readable reason when readOnly, null otherwise.</li>
 	 * </ul>
 	 */
 	@NonNull
-	private CarrierAdviseTargetInfo resolveHeaderInfo(@NonNull final PickingJob pickingJob)
+	private CarrierAdviseTargetInfo resolveHeaderInfo(
+			@NonNull final PickingJob pickingJob,
+			@NonNull final String adLanguage)
 	{
 		// Availability gate: at least one line carries an API-advise carrier product (excludes non-API fallback
 		// carrier products used only for workplace assignment).
@@ -176,16 +193,38 @@ public class PackedHUCarrierAdviseService
 			return CarrierAdviseTargetInfo.NONE;
 		}
 
-		final boolean readOnly = !hasExistingTarget(pickingJob, null) || pickingJob.isCarrierAdviseReadOnly();
+		final boolean noTarget = !hasExistingTarget(pickingJob, null);
+		final boolean readOnly = noTarget || pickingJob.isCarrierAdviseReadOnly();
+
+		// disabledReason: ReadOnly (manually locked carrier) takes priority over NoTarget when both apply, because
+		// it is the more specific reason the user should act on (the carrier is locked regardless of target state).
+		final String disabledReason;
+		if (!readOnly)
+		{
+			disabledReason = null;
+		}
+		else if (pickingJob.isCarrierAdviseReadOnly())
+		{
+			disabledReason = msgBL.getMsg(adLanguage, MSG_CARRIER_ADVISE_DISABLED_READONLY);
+		}
+		else
+		{
+			disabledReason = msgBL.getMsg(adLanguage, MSG_CARRIER_ADVISE_DISABLED_NO_TARGET);
+		}
 
 		// Caption = the header's current carrier product, but only when it is an API-advise product; a null/divergent
 		// header carrier shows the button without a single current carrier.
 		final CarrierProductId headerCarrierProductId = pickingJob.getCarrierProductId();
 		if (headerCarrierProductId == null || !isApiAdviseCarrierProduct(headerCarrierProductId))
 		{
-			return CarrierAdviseTargetInfo.builder().available(true).readOnly(readOnly).productCaption(null).build();
+			return CarrierAdviseTargetInfo.builder()
+					.available(true)
+					.readOnly(readOnly)
+					.productCaption(null)
+					.disabledReason(disabledReason)
+					.build();
 		}
-		return resolveTargetInfoFromCarrierProduct(headerCarrierProductId, readOnly);
+		return resolveTargetInfoFromCarrierProduct(headerCarrierProductId, readOnly, disabledReason);
 	}
 
 	/**

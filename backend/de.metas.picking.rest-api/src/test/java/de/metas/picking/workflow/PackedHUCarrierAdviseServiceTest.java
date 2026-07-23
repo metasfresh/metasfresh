@@ -7,7 +7,10 @@ import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestItem;
 import de.metas.common.delivery.v1.json.request.JsonDeliveryAdvisorRequestParcel;
 import de.metas.currency.CurrencyRepository;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.money.MoneyService;
+import de.metas.util.Services;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestinationTestSupport;
@@ -88,6 +91,7 @@ public class PackedHUCarrierAdviseServiceTest
 	public void init()
 	{
 		data = new LUTUProducerDestinationTestSupport();
+		Services.registerService(IMsgBL.class, new PlainMsgBL());
 
 		packedHUShippingInfoService = PackedHUShippingInfoService.newInstanceForUnitTesting();
 		huShipmentScheduleResolver = mock(HUShipmentScheduleResolver.class);
@@ -376,7 +380,7 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJobLine line1 = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701));
 		final PickingJobLine line2 = mockLine(data.helper.pSaladProductId, CarrierProductId.ofRepoId(702));
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(mockJobLevelJob(ImmutableList.of(line1, line2)), null, "en_US");
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
 	}
@@ -402,7 +406,7 @@ public class PackedHUCarrierAdviseServiceTest
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(apiLine, nonApiLine));
 		when(job.getCarrierProductId()).thenReturn(apiCarrierProductId);
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, "en_US");
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.getProductCaption()).isEqualTo("carrier");
 	}
@@ -416,7 +420,7 @@ public class PackedHUCarrierAdviseServiceTest
 	{
 		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, null);
 
-		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null, "en_US").isAvailable())
 				.isFalse();
 	}
 
@@ -429,7 +433,7 @@ public class PackedHUCarrierAdviseServiceTest
 	{
 		final PickingJobLine line = mockLine(data.helper.pTomatoProductId, CarrierProductId.ofRepoId(701), false);
 
-		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null).isAvailable())
+		assertThat(service.resolveInfo(mockJobLevelJob(ImmutableList.of(line)), null, "en_US").isAvailable())
 				.isFalse();
 	}
 
