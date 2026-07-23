@@ -79,7 +79,7 @@ public class PackedHUCarrierAdviseService
 	 */
 	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;

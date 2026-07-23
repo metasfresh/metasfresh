@@ -11,15 +11,18 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
+import de.metas.handlingunits.shipping.CreatePackageForHURequest;
 import de.metas.organization.OrgId;
 import de.metas.product.PackageDimensions;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.shipping.ShipperId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_M_Package;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
@@ -181,6 +184,49 @@ public class HUPackageBL_DimensionCalcTest
 			assertThat(result.getLengthInCM()).isEqualTo(10);
 			assertThat(result.getHeightInCM()).isEqualTo(20);
 			assertThat(result.getWidthInCM()).isEqualTo(30);
+		}
+
+		/**
+		 * Exercises {@code resolveSingleUnitDimensions} (the multi-parcel split path in
+		 * {@code createM_Packages}): a non-self-packed VHU with integer qty=2 is split into 2 parcels;
+		 * when SysConfig=Y, each parcel must carry UNSPECIFIED dims.
+		 */
+		@Test
+		public void whenSysConfigY_nonSelfPacked_multiParcelSplit_eachParcelUnspecified()
+		{
+			// Arrange: gate active
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, true, ClientId.SYSTEM, OrgId.ANY);
+
+			// pTomato is NOT self-packed; it has dims (30×20×10) set in @BeforeEach.
+			assertThat(data.helper.pTomato.isSelfPacked()).isFalse();
+
+			// Create a loose VHU with integer qty=2 — triggers the multi-parcel split in createM_Packages.
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pTomatoProductId, new BigDecimal("2"), data.helper.uomKg);
+			final I_M_HU cu = CollectionUtils.singleElement(producer.getCreatedHUs());
+
+			// createM_Package requires C_BPartner_ID and C_BPartner_Location_ID > 0
+			cu.setC_BPartner_ID(1);
+			cu.setC_BPartner_Location_ID(1);
+			save(cu);
+
+			final CreatePackageForHURequest request = CreatePackageForHURequest.builder()
+					.hu(cu)
+					.shipperId(ShipperId.ofRepoId(1))
+					.build();
+
+			// Act: qty=2 → 2 parcels, each via resolveSingleUnitDimensions
+			final List<I_M_Package> packages = huPackageBL.createM_Packages(request);
+
+			// Assert: 2 parcels, each with UNSPECIFIED dims (-1)
+			assertThat(packages).hasSize(2);
+			for (final I_M_Package pkg : packages)
+			{
+				assertThat(pkg.getLengthInCm()).isEqualTo(-1);
+				assertThat(pkg.getWidthInCm()).isEqualTo(-1);
+				assertThat(pkg.getHeightInCm()).isEqualTo(-1);
+			}
 		}
 	}
 
