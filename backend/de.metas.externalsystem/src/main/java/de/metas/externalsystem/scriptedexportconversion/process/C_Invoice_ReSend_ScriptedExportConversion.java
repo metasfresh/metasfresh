@@ -78,7 +78,7 @@ public class C_Invoice_ReSend_ScriptedExportConversion extends JavaProcess imple
 			for (final ExternalSystemScriptedExportConversionConfigId configId : configIds)
 			{
 				// The service gates the re-send on the config's WhereClause: nothing left to export
-				// (e.g. every SSCC already in the EPCIS ledger) → DontSend, no adapter invocation.
+				// → DontSend, no adapter invocation.
 				if (scriptedExportService.resendConfigIfRelevant(configId, sourceRecord, c_invoice_id))
 				{
 					triggered++;
