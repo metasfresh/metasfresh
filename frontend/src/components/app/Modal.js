@@ -961,12 +961,22 @@ const mapStateToProps = (state, props) => {
 
   const parentSelector = getSelection();
 
+  // computeSaveStatusFlags surfaces a relevant server-side save rejection (a complete,
+  // individually-valid document refused by a business rule / unique index) in the open
+  // new-record window modal as ERROR — its window-context branch covers this even though the
+  // legacy ERROR gate stays quiet for a not-yet-persisted insert (presentInDatabase=false).
+  // It scopes the promotion to the window modal, so process modals — whose Start button is
+  // disabled on ERROR — are unaffected.
   const { indicator } = computeSaveStatusFlags({ modal });
 
   return {
     parentSelection: parentSelector(state, parentViewTableId),
     activeTabId: state.windowHandler.master.layout.activeTab,
     indicator,
+    // saveStatus feeds the modal's <Indicator error={saveStatus.reason}>. Container also passes
+    // it via {...modal}; mapping it here makes the Indicator's dependency explicit rather than
+    // relying on the ownProps spread.
+    saveStatus: modal.saveStatus,
     parentViewId,
     parentId,
     viewOrderBy: parentView?.orderBy,
