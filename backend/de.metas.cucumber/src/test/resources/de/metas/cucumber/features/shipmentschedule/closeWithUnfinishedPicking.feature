@@ -184,3 +184,54 @@ Feature: Closing a shipment schedule with an unfinished picking order
     Then after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
       | shipmentSchedule                 | true         |
+
+  @Id:S30915_050
+  Scenario: Close skips a picked-but-not-yet-shipped schedule that has no unfinished picking job
+    # a customer whose picking only DRAFTS the shipment: the pick is finished, but the back office has
+    # not yet confirmed shipping, so the picked qty stays un-shipped (M_ShipmentSchedule.QtyPickList > 0)
+    Given set mobile UI picking profile
+      | CreateShipmentPolicy |
+      | CREATE_DRAFT         |
+
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO         | true    | customer                 | 2026-07-22  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO                    | L1         | product                 | 160        | TUx4                                   |
+    And the order identified by SO is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+
+    # the warehouse picks the schedule and completes the picking job -- because the policy is CREATE_DRAFT
+    # a DRAFT (uncompleted) shipment is generated, so the picked qty is not yet shipped
+    And start picking job for sales order identified by SO
+    And scan picking slot identified by 200.0
+    And pick lines
+      | PickingLine.byProduct | PickFromHU | QtyPicked |
+      | product               | pickFromCU | 3         |
+    And complete picking job
+
+    # wait for the DRAFT shipment and the shipment-schedule recompute to land, then confirm the schedule
+    # is picked-but-not-yet-shipped: QtyPickList > 0 while the picking job is Completed (not Drafted)
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier | DocStatus |
+      | shipmentSchedule                 | draftShipment         | DR        |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier       | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule | L1                        | N             |
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | QtyPickList | OPT.IsClosed |
+      | shipmentSchedule                 | 12          | false        |
+
+    # no Drafted picking job exists, so the all-or-nothing unfinished-picking guard does not fire; but
+    # QtyPickList > 0 makes the schedule ineligible, so the process closes nothing and ends with @NoSelection@
+    When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+      | M_ShipmentSchedule_ID |
+      | shipmentSchedule      |
+
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | QtyPickList | OPT.IsClosed |
+      | shipmentSchedule                 | 12          | false        |
