@@ -616,6 +616,15 @@ public class DocumentCollection
 	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
 	 * reset with {@code forgetNotSavedDocuments=true}.
 	 *
+	 * <p><b>Exception — user-validation errors are kept, not self-healed.</b> A user-fixable business
+	 * rejection (e.g. editing a record to a value that violates a unique constraint) sets the root's
+	 * save/valid status to a <i>user-validation</i> error. Unlike a system/technical error, this is not a
+	 * stale-data artifact a fresh reload would clear — reloading merely discards the user's rejected input
+	 * and the explanation. So a user-validation error is NOT treated as an eviction reason here; the root
+	 * is kept and the frontend keeps mirroring the error the standard way (via {@code saveStatus}). It
+	 * still clears naturally on the next successful (writable) save, LRU eviction, or admin cache reset.
+	 * An explicit full-invalidation request, a system save error, or a system invalid state still evicts.
+	 *
 	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
 	 * {@link Document} (which is final and has a non-trivial constructor).
 	 *
@@ -624,6 +633,17 @@ public class DocumentCollection
 	 * explicit full-invalidation request — so this method can return {@code false} despite
 	 * {@code callerRequestedFullInvalidation == true}.
 	 *
+	 * @param callerRequestedFullInvalidation   the caller explicitly asked to fully invalidate the root (not
+	 *                                          just a child-triggered self-heal); still overridden by the
+	 *                                          unsaved-new-included-document guard (see note above)
+	 * @param rootHasSaveError                  the cached root currently carries a save error at all — the gate
+	 *                                          for the save-error eviction branch
+	 * @param rootSaveErrorIsUserValidation     the root's save error (if any) is a user-fixable business
+	 *                                          rejection, not a system/technical fault — kept, not evicted
+	 * @param rootValidStatusIsValid            the root's valid-status is currently valid; when {@code false}
+	 *                                          the invalid-valid-status eviction branch applies
+	 * @param rootValidStatusInvalidIsUserValidation the root's invalid valid-status (if any) is a user-fixable
+	 *                                          business rejection — kept, not evicted
 	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
 	 *                                          would lose it entirely
 	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
@@ -634,7 +654,9 @@ public class DocumentCollection
 	static boolean shouldInvalidateRootOnChildInvalidation(
 			final boolean callerRequestedFullInvalidation,
 			final boolean rootHasSaveError,
+			final boolean rootSaveErrorIsUserValidation,
 			final boolean rootValidStatusIsValid,
+			final boolean rootValidStatusInvalidIsUserValidation,
 			final boolean rootIsNew,
 			@NonNull final BooleanSupplier rootHasUnsavedNewIncludedDocument)
 	{
@@ -646,9 +668,17 @@ public class DocumentCollection
 		}
 
 		// Would we evict at all? (cheap checks)
+		// A user-validation error — a user-fixable business rejection such as a unique-constraint
+		// violation — is NOT, by itself, a reason to evict: keeping the errored root lets the user keep
+		// seeing why their edit was rejected, instead of the error silently self-healing away on the next
+		// child-record invalidation (which, for an already-persisted record, also reverts the rejected
+		// value). Only a system/technical save error, a system invalid state, or an explicit
+		// full-invalidation request forces eviction.
+		final boolean systemSaveErrorForcesEvict = rootHasSaveError && !rootSaveErrorIsUserValidation;
+		final boolean systemInvalidForcesEvict = !rootValidStatusIsValid && !rootValidStatusInvalidIsUserValidation;
 		final boolean wouldInvalidate = callerRequestedFullInvalidation
-				|| rootHasSaveError
-				|| !rootValidStatusIsValid;
+				|| systemSaveErrorForcesEvict
+				|| systemInvalidForcesEvict;
 		if (!wouldInvalidate)
 		{
 			return false;
@@ -713,7 +743,9 @@ public class DocumentCollection
 				if (shouldInvalidateRootOnChildInvalidation(
 						documentToInvalidate.isInvalidateDocument(),
 						rootDocument.getSaveStatus().isError(),
+						rootDocument.getSaveStatus().isUserValidationError(),
 						rootDocument.getValidStatus().isValid(),
+						rootDocument.getValidStatus().isUserValidationError(),
 						rootDocument.isNew(),
 						rootDocument::hasUnsavedNewIncludedDocuments))
 				{
