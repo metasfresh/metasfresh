@@ -2100,6 +2100,70 @@ Feature: nShift Shipment
       | cp1                | cgt1                  | 1          |
       | cp2                | cgt2                  | 1          |
 
+  @Id:S30591_TC1
+  Scenario: C_Order — single goods-type allocation auto-sets Carrier_Goods_Type_ID
+    # When a carrier product has exactly one allocated goods type, setting it on a draft order
+    # must auto-populate Carrier_Goods_Type_ID via the C_Order interceptor.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc1     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc1     | cp1                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc1     | cgt1                  |
+
+  @Id:S30591_TC2
+  Scenario: C_Order — multiple goods-type allocations leave Carrier_Goods_Type_ID unset
+    # When a carrier product has several allocated goods types, the interceptor must not
+    # auto-set Carrier_Goods_Type_ID (the user picks from the val-rule-constrained list).
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp2                | cgt1                  |
+      | cp2                | cgt2                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc2     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc2     | cp2                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc2     | null                  |
+
+  @Id:S30591_TC3
+  Scenario: C_Order — changing Carrier_Product_ID clears Carrier_Goods_Type_ID and bridge rows
+    # When Carrier_Product_ID is changed on a draft order, the interceptor must clear
+    # Carrier_Goods_Type_ID and delete any C_Order_Carrier_Service rows.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc3     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    # Pre-set cp1 → auto-sets cgt1
+    And C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc3     | cp1                |
+    # Pre-create a bridge service row to verify it gets cleared
+    And metasfresh contains C_Order_Carrier_Services:
+      | C_Order_ID | Carrier_Service_ID |
+      | so_tc3     | cs1                |
+    # Now change to cp3 (no goods-type alloc for cp3 → Carrier_Goods_Type_ID stays unset)
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc3     | cp3                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc3     | null                  |
+    And C_Order has no carrier services assigned:
+      | C_Order_ID |
+      | so_tc3     |
+
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
     And set sys config boolean value false for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder

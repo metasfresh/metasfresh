@@ -71,6 +71,21 @@ public class CarrierProductGoodsTypeAllocRepository
 		return carrierProductId + "#" + goodsTypeId;
 	}
 
+	/**
+	 * Returns all {@link CarrierGoodsTypeId}s allocated to the given carrier product.
+	 * Returns an empty set if no allocations exist.
+	 */
+	public ImmutableSet<CarrierGoodsTypeId> getGoodsTypeIdsByCarrierProductId(@NonNull final CarrierProductId carrierProductId)
+	{
+		return queryBL.createQueryBuilder(I_Carrier_Product_GoodsType_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_Carrier_Product_GoodsType_Alloc.COLUMNNAME_Carrier_Product_ID, carrierProductId)
+				.create()
+				.stream()
+				.map(r -> CarrierGoodsTypeId.ofRepoId(r.getCarrier_Goods_Type_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
 	public void save(@NonNull final CarrierProductId carrierProductId, @NonNull final CarrierGoodsTypeId goodsTypeId)
 	{
 		final I_Carrier_Product_GoodsType_Alloc record = InterfaceWrapperHelper.newInstance(I_Carrier_Product_GoodsType_Alloc.class);
