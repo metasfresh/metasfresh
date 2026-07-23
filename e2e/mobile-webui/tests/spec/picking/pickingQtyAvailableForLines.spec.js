@@ -1,9 +1,9 @@
-import { test } from "../../../playwright.config";
+import { test } from '../../../playwright.config';
 import { allure } from 'allure-playwright';
-import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
-import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
-import { Backend } from "../../utils/screens/Backend";
-import { LoginScreen } from "../../utils/screens/LoginScreen";
+import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
+import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
+import { Backend } from '../../utils/screens/Backend';
+import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { PickingJobScreen } from '../../utils/screens/picking/PickingJobScreen';
 
 // P1 has stock provisioned in the picking-group locator (workplace1 -> wh); P2 has none.
@@ -11,10 +11,10 @@ const createMasterdata = async ({ showQtyAvailableForLines }) => {
     return await Backend.createMasterdata({
         language: 'de_DE',
         request: {
-            login: { user: { language: 'de_DE', workplace: "workplace1" } },
+            login: { user: { language: 'de_DE', workplace: 'workplace1' } },
             mobileConfig: {
                 picking: {
-                    aggregationType: "sales_order",
+                    aggregationType: 'sales_order',
                     createShipmentPolicy: 'CL',
                     allowPickingAnyHU: true,
                     allowQuickPackAll: false,
@@ -24,27 +24,27 @@ const createMasterdata = async ({ showQtyAvailableForLines }) => {
                     allowCompletingPartialPickingJob: false,
                     allowPickingAnyCustomer: false,
                     customers: [
-                        { customer: "customer1" },
+                        { customer: 'customer1' },
                     ],
                 }
             },
-            bpartners: { "customer1": {} },
-            warehouses: { "wh": {} },
+            bpartners: { 'customer1': {} },
+            warehouses: { 'wh': {} },
             pickingSlots: { slot1: {} },
-            workplaces: { "workplace1": { warehouse: 'wh', pickingSlot: 'slot1' } },
+            workplaces: { 'workplace1': { warehouse: 'wh', pickingSlot: 'slot1' } },
             products: {
-                "P1": { price: 1 }, // WITH stock
-                "P2": { price: 2 }, // WITHOUT stock
+                'P1': { price: 1 }, // WITH stock
+                'P2': { price: 2 }, // WITHOUT stock
             },
             packingInstructions: {
-                "LU_CU": { cu: true, lu: "LU", qtyTUsPerLU: 1 },
+                'LU_CU': { cu: true, lu: 'LU', qtyTUsPerLU: 1 },
             },
             handlingUnits: {
-                "HU1": { product: 'P1', warehouse: 'wh', qty: 1000, packingInstructions: 'LU_CU' },
+                'HU1': { product: 'P1', warehouse: 'wh', qty: 1000, packingInstructions: 'LU_CU' },
                 // no HU for P2 -> zero available stock in the picking-group locator
             },
             salesOrders: {
-                "SO1": {
+                'SO1': {
                     bpartner: 'customer1',
                     warehouse: 'wh',
                     datePromised: '2025-03-01T00:00:00.000+02:00',
@@ -76,9 +76,9 @@ test('Show available qty per line when flag is on', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    // AC1: line with stock in the picking-group locator shows the actual available qty.
+    // line with stock in the picking-group locator shows the actual available qty.
     await PickingJobScreen.expectLineQtyAvailable({ index: 1, qtyAvailable: 'Verfügbar: 10 Stk' });
-    // AC2: line without any stock shows zero, not hidden.
+    // line without any stock shows zero, not hidden.
     await PickingJobScreen.expectLineQtyAvailable({ index: 2, qtyAvailable: 'Verfügbar: 0 Stk' });
 });
 
@@ -100,7 +100,7 @@ test('Hide available qty per line when flag is off', async ({ page }) => {
     await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
     await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
 
-    // AC4: gating off -> no Verfügbar element on any line.
+    // flag off -> no Verfügbar element on any line.
     await PickingJobScreen.expectLineQtyAvailableNotVisible({ index: 1 });
     await PickingJobScreen.expectLineQtyAvailableNotVisible({ index: 2 });
 });
