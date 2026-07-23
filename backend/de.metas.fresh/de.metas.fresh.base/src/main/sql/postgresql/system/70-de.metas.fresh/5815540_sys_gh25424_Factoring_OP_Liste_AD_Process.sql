@@ -1,4 +1,4 @@
--- Function DDL: backend/de.metas.fresh/de.metas.fresh.base/src/main/sql/postgresql/ddl/functions/Factoring_OP_Liste.sql
+-- Implemented by: backend/de.metas.fresh/de.metas.fresh.base/src/main/java/de/metas/factoring/process/Factoring_OP_Liste_Export.java
 
 -- IDs allocated from idserver.metas.de on 2026-07-22:
 --   AD_MigrationScript  5815540 (this file prefix)

@@ -90,11 +90,11 @@ public class FactoringOpListeService
 	 * Loads the export data for the given org + currency.
 	 *
 	 * @return an export-data value object; {@link FactoringOpListeExportData#getDetailRows()}
-	 *         is empty when no open invoices match — the caller renders a header-only file
-	 *         in that case.
+	 * is empty when no open invoices match — the caller renders a header-only file
+	 * in that case.
 	 * @throws AdempiereException (with a {@code @key@} marker) when the factorer BP is missing,
-	 *         ambiguous, or has {@code FactoringContractNo}/{@code FactoringClientAccountId}
-	 *         empty.
+	 *                            ambiguous, or has {@code FactoringContractNo}/{@code FactoringClientAccountId}
+	 *                            empty.
 	 */
 	@NonNull
 	public FactoringOpListeExportData buildExportData(
