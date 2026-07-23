@@ -144,7 +144,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId).orElse(null);
@@ -281,8 +281,8 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostDetailCreateRequest ignoredRequest,
 			final Duration ignoredTotalDuration)
 	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Computing activity costs is not yet supported");
+		// Activity-control costs are not tracked for this costing method -> post zero facts (me03#29817)
+		return null;
 	}
 
 	@Override

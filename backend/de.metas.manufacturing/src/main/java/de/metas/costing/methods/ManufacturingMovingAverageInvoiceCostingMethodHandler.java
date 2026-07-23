@@ -227,8 +227,8 @@ public class ManufacturingMovingAverageInvoiceCostingMethodHandler implements Co
 			final CostDetailCreateRequest ignoredRequest,
 			final Duration ignoredTotalDuration)
 	{
-		// TODO Auto-generated method stub
-		throw new AdempiereException("Computing activity costs is not yet supported");
+		// Activity-control costs are not tracked for this costing method -> post zero facts (me03#29817)
+		return null;
 	}
 
 	@Override
