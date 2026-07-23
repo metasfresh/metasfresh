@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.product.PackageDimensionCalcMethod;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -141,8 +142,9 @@ public class M_HU_PI_Version_StepDef
 	public void assertLastSaveExceptionWasThrown()
 	{
 		assertThat(lastSaveException)
-				.as("Expected an AdempiereException to be thrown when saving M_HU_PI_Version, but none was thrown")
-				.isNotNull();
+				.as("Expected the TU-only guard AdempiereException when saving M_HU_PI_Version, but none was thrown")
+				.isNotNull()
+				.hasMessageContaining("can only be set on Transport Unit");
 	}
 
 	private void buildAndSavePiVersion(
@@ -184,8 +186,8 @@ public class M_HU_PI_Version_StepDef
 					piVersion.setM_HU_PackagingCode_ID(huPackagingCodeId);
 				});
 
-		row.getAsOptionalString(COLUMNNAME_PackageDimensionCalcMethod)
-				.ifPresent(piVersion::setPackageDimensionCalcMethod);
+		row.getAsOptionalEnum(COLUMNNAME_PackageDimensionCalcMethod, PackageDimensionCalcMethod.class)
+				.ifPresent(calcMethod -> piVersion.setPackageDimensionCalcMethod(calcMethod.getCode()));
 
 		saveRecord(piVersion);
 
