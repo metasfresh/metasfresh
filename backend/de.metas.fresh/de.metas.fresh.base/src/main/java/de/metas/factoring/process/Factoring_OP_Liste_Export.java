@@ -45,7 +45,9 @@ import java.time.format.DateTimeFormatter;
  * <p>Thin glue on top of {@link FactoringOpListeService} + {@link FactoringOpListeCsvWriter}:
  * <ol>
  *   <li>validate role scope (must be a specific org, not '*'),</li>
- *   <li>delegate to the service to fetch + aggregate the typed export data,</li>
+ *   <li>delegate to the service to fetch + aggregate the typed export data
+ *       (which validates the factorer BP configuration and throws {@code AdempiereException}
+ *       with a {@code @key@} marker on any missing/ambiguous config),</li>
  *   <li>delegate to the writer to serialise the CSV bytes,</li>
  *   <li>attach the bytes to the process result.</li>
  * </ol>
@@ -54,8 +56,6 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 {
 	private static final AdMessageKey MSG_RoleScopeAllOrgs =
 			AdMessageKey.of("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
-	private static final AdMessageKey MSG_NoFactoringCustomers =
-			AdMessageKey.of("Factoring_OP_Liste_EXT_NoFactoringCustomers");
 
 	static final String PARAM_C_CURRENCY_ID = "C_Currency_ID";
 
@@ -88,13 +88,13 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 	protected String doIt() throws Exception
 	{
 		final ExportResult result = runExport(getProcessInfo().getAD_Org_ID(), p_C_Currency_ID);
-		getResult().setReportData(new ByteArrayResource(result.bytes), result.filename, "text/csv");
-		addLog("File: {} ({} data row(s))", result.filename, result.dataRowCount);
+		getResult().setReportData(new ByteArrayResource(result.getBytes()), result.getFilename(), "text/csv");
+		addLog("File: {} ({} data row(s))", result.getFilename(), result.getDataRowCount());
 		return MSG_OK;
 	}
 
 	/**
-	 * Core export logic — testable without a {@link org.compiere.process.ProcessInfo} setup.
+	 * Core export logic — testable without a full {@code ProcessInfo} setup.
 	 * Returns the CSV bytes + resolved filename + data-row count.
 	 */
 	@NonNull
@@ -108,16 +108,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		final OrgId orgId = OrgId.ofRepoId(orgIdRepo);
 		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyIdRepo);
 
-		final FactoringOpListeExportData data;
-		try
-		{
-			data = service.buildExportData(orgId, currencyId);
-		}
-		catch (final FactoringOpListeService.NoFactoringDataException e)
-		{
-			throw new AdempiereException(MSG_NoFactoringCustomers.toAD_MessageWithMarkers())
-					.markAsUserValidationError();
-		}
+		final FactoringOpListeExportData data = service.buildExportData(orgId, currencyId);
 		final byte[] bytes = FactoringOpListeCsvWriter.toCsvBytes(data);
 		return new ExportResult(bytes, buildFilename(data), data.getDetailRows().size());
 	}

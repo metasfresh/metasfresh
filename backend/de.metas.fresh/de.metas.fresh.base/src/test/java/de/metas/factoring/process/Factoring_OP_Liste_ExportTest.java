@@ -44,8 +44,12 @@ import static org.mockito.Mockito.when;
  *
  * <p>Exercises the package-private {@code runExport(orgIdRepo, currencyIdRepo)} method — the
  * same code path {@code doIt()} runs, but without needing a full {@code ProcessInfo}. The
- * service is mocked with Mockito; the writer is exercised for real so byte-level CSV shape
- * is validated end-to-end.
+ * service is mocked with Mockito; the writer runs for real so byte-level CSV shape is
+ * validated end-to-end.
+ *
+ * <p>The service's own AC6 error paths (missing/ambiguous factorer configuration) are exercised
+ * by configuring the mock to throw {@link AdempiereException} with the appropriate {@code @key@}
+ * marker — the process passes the exception through unchanged.
  */
 class Factoring_OP_Liste_ExportTest
 {
@@ -69,6 +73,10 @@ class Factoring_OP_Liste_ExportTest
 		process.setServiceForTesting(serviceMock);
 	}
 
+	// -------------------------------------------------------------------------
+	// Role-scope validation (in the process itself)
+	// -------------------------------------------------------------------------
+
 	@Test
 	void role_scope_all_orgs_is_rejected()
 	{
@@ -77,16 +85,67 @@ class Factoring_OP_Liste_ExportTest
 				.hasMessageContaining("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
 	}
 
+	// -------------------------------------------------------------------------
+	// AC6 error paths (surface via the service throwing AdempiereException with @key@)
+	// -------------------------------------------------------------------------
+
 	@Test
-	void no_factoring_customers_yields_AdempiereException()
+	void no_factorer_yields_AdempiereException()
 	{
 		when(serviceMock.buildExportData(any(OrgId.class), any(CurrencyId.class)))
-				.thenThrow(new FactoringOpListeService.NoFactoringDataException());
+				.thenThrow(new AdempiereException("@Factoring_OP_Liste_EXT_NoFactorer@ Test-Org")
+						.markAsUserValidationError());
 
 		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Factoring_OP_Liste_EXT_NoFactoringCustomers");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_NoFactorer");
 	}
+
+	@Test
+	void multiple_factorers_yields_AdempiereException()
+	{
+		when(serviceMock.buildExportData(any(OrgId.class), any(CurrencyId.class)))
+				.thenThrow(new AdempiereException(
+						"@Factoring_OP_Liste_EXT_MultipleFactorers@ Test-Org: Factor A, Factor B")
+						.markAsUserValidationError());
+
+		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Factoring_OP_Liste_EXT_MultipleFactorers")
+				.hasMessageContaining("Factor A")
+				.hasMessageContaining("Factor B");
+	}
+
+	@Test
+	void missing_contract_no_yields_AdempiereException()
+	{
+		when(serviceMock.buildExportData(any(OrgId.class), any(CurrencyId.class)))
+				.thenThrow(new AdempiereException("@Factoring_OP_Liste_EXT_MissingContractNo@ Test-Factor GmbH")
+						.markAsUserValidationError());
+
+		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingContractNo")
+				.hasMessageContaining("Test-Factor GmbH");
+	}
+
+	@Test
+	void missing_client_account_id_yields_AdempiereException()
+	{
+		when(serviceMock.buildExportData(any(OrgId.class), any(CurrencyId.class)))
+				.thenThrow(new AdempiereException(
+						"@Factoring_OP_Liste_EXT_MissingClientAccountId@ Test-Factor GmbH")
+						.markAsUserValidationError());
+
+		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingClientAccountId")
+				.hasMessageContaining("Test-Factor GmbH");
+	}
+
+	// -------------------------------------------------------------------------
+	// Happy paths
+	// -------------------------------------------------------------------------
 
 	@Test
 	void produces_expected_csv_byte_for_byte() throws Exception
@@ -177,8 +236,6 @@ class Factoring_OP_Liste_ExportTest
 		return FactoringOpListeDetailRow.builder()
 				.debitorNo(value)
 				.debitorName(name)
-				.contractNo("DE00001")
-				.clientAccountId("2500000000")
 				.documentNo(documentNo)
 				.dateInvoiced(dateInvoiced)
 				.dueDate(dueDate)

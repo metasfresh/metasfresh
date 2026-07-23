@@ -23,15 +23,18 @@
 package de.metas.factoring.process;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.currency.ICurrencyBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
@@ -46,17 +49,31 @@ import java.util.List;
 /**
  * Loads and aggregates the Factoring OP-Liste export data using {@code IQueryBL}.
  *
- * <p>Fetches all open invoices/credit notes ({@code C_Invoice.OpenAmt != 0}) of
- * factoring-customer BPs ({@code C_BPartner.IsFactoring='Y'}) in the given org and currency,
- * mapped to typed {@link FactoringOpListeDetailRow} rows sorted by BPartner value then
- * invoice date. Aggregates the D/C totals and picks the header contract number from the
- * first detail row.
+ * <p>Domain model:
+ * <ul>
+ *   <li>The <b>factorer BP</b> ({@code IsFactorer='Y'}, unique per org) carries the tenant's
+ *       {@code FactoringContractNo} + {@code FactoringClientAccountId} — these feed the header
+ *       row and the filename. This lookup is validated before the invoice query runs;
+ *       missing/ambiguous/incomplete configuration aborts the export with a user-visible error.</li>
+ *   <li>The <b>factoring customers</b> ({@code IsFactoring='Y'}) are the BPs whose open invoices
+ *       feed the detail rows.</li>
+ * </ul>
  */
 @Service
 public class FactoringOpListeService
 {
+	private static final AdMessageKey MSG_NoFactorer =
+			AdMessageKey.of("Factoring_OP_Liste_EXT_NoFactorer");
+	private static final AdMessageKey MSG_MultipleFactorers =
+			AdMessageKey.of("Factoring_OP_Liste_EXT_MultipleFactorers");
+	private static final AdMessageKey MSG_MissingContractNo =
+			AdMessageKey.of("Factoring_OP_Liste_EXT_MissingContractNo");
+	private static final AdMessageKey MSG_MissingClientAccountId =
+			AdMessageKey.of("Factoring_OP_Liste_EXT_MissingClientAccountId");
+
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final CurrencyRepository currencyRepo;
 
 	public FactoringOpListeService(@NonNull final CurrencyRepository currencyRepo)
@@ -70,40 +87,22 @@ public class FactoringOpListeService
 	 * @return an export-data value object; {@link FactoringOpListeExportData#getDetailRows()}
 	 *         is empty when no open invoices match — the caller renders a header-only file
 	 *         in that case.
-	 * @throws NoFactoringDataException when there is at least one factoring customer but none
-	 *         have a {@code FactoringContractNo}/{@code FactoringClientAccountId} set — the
-	 *         process wraps this in a user-visible {@code AdempiereException}.
+	 * @throws AdempiereException (with a {@code @key@} marker) when the factorer BP is missing,
+	 *         ambiguous, or has {@code FactoringContractNo}/{@code FactoringClientAccountId}
+	 *         empty.
 	 */
 	@NonNull
 	public FactoringOpListeExportData buildExportData(
 			@NonNull final OrgId orgId,
 			@NonNull final CurrencyId currencyId)
 	{
+		final I_C_BPartner factorer = resolveFactorerOrThrow(orgId);
+
 		final CurrencyCode currencyCode = currencyRepo.getCurrencyCodeById(currencyId);
 		final String currencyIso = currencyCode.toThreeLetterCode();
 
-		final ImmutableList<FactoringOpListeDetailRow> detailRows = loadDetailRows(orgId, currencyId, currencyIso);
-
-		final String contractNo;
-		final String clientAccountId;
-		if (detailRows.isEmpty())
-		{
-			// Header-only file: fall back to the org's first factoring-customer configuration so the
-			// filename and header still resolve. If NO factoring customer with config exists, the
-			// process class rejects the run before calling this method.
-			final I_C_BPartner anyFactoringBp = firstFactoringBpartnerWithConfig(orgId);
-			if (anyFactoringBp == null)
-			{
-				throw new NoFactoringDataException();
-			}
-			contractNo = anyFactoringBp.getFactoringContractNo();
-			clientAccountId = anyFactoringBp.getFactoringClientAccountId();
-		}
-		else
-		{
-			contractNo = detailRows.get(0).getContractNo();
-			clientAccountId = detailRows.get(0).getClientAccountId();
-		}
+		final ImmutableList<FactoringOpListeDetailRow> detailRows =
+				loadDetailRows(orgId, currencyId, currencyIso);
 
 		final BigDecimal sumD = detailRows.stream()
 				.filter(r -> r.getDebitCreditFlag() == FactoringOpListeDetailRow.DebitCreditFlag.D)
@@ -115,14 +114,73 @@ public class FactoringOpListeService
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
 		return new FactoringOpListeExportData(
-				contractNo,
-				clientAccountId,
+				factorer.getFactoringContractNo(),
+				factorer.getFactoringClientAccountId(),
 				currencyIso,
 				LocalDate.now(),
 				detailRows,
 				sumD,
 				sumC);
 	}
+
+	// -------------------------------------------------------------------------
+	// Factorer BP resolution + validation
+	// -------------------------------------------------------------------------
+
+	@NonNull
+	private I_C_BPartner resolveFactorerOrThrow(@NonNull final OrgId orgId)
+	{
+		final List<I_C_BPartner> factorers = bpartnerDAO.retrieveFactorerBPartnersForOrg(orgId);
+
+		if (factorers.isEmpty())
+		{
+			throw new AdempiereException(
+					MSG_NoFactorer.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId))
+					.markAsUserValidationError();
+		}
+		if (factorers.size() > 1)
+		{
+			final String names = factorers.stream()
+					.map(I_C_BPartner::getName)
+					.reduce((a, b) -> a + ", " + b)
+					.orElse("");
+			throw new AdempiereException(
+					MSG_MultipleFactorers.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId) + ": " + names)
+					.markAsUserValidationError();
+		}
+
+		final I_C_BPartner factorer = factorers.get(0);
+		if (isBlank(factorer.getFactoringContractNo()))
+		{
+			throw new AdempiereException(
+					MSG_MissingContractNo.toAD_MessageWithMarkers() + " " + factorer.getName())
+					.markAsUserValidationError();
+		}
+		if (isBlank(factorer.getFactoringClientAccountId()))
+		{
+			throw new AdempiereException(
+					MSG_MissingClientAccountId.toAD_MessageWithMarkers() + " " + factorer.getName())
+					.markAsUserValidationError();
+		}
+
+		return factorer;
+	}
+
+	private String resolveOrgName(@NonNull final OrgId orgId)
+	{
+		try
+		{
+			return orgDAO.getById(orgId).getName();
+		}
+		catch (final Exception e)
+		{
+			return String.valueOf(orgId.getRepoId());
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Detail-row load
+	// -------------------------------------------------------------------------
 
 	private ImmutableList<FactoringOpListeDetailRow> loadDetailRows(
 			@NonNull final OrgId orgId,
@@ -136,7 +194,6 @@ public class FactoringOpListeService
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Currency_ID, currencyId.getRepoId())
 				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_OpenAmt, BigDecimal.ZERO);
 
-		// Filter to invoices of factoring customers via a subquery on C_BPartner
 		invoiceQuery.addInSubQueryFilter(
 				I_C_Invoice.COLUMNNAME_C_BPartner_ID,
 				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
@@ -159,8 +216,6 @@ public class FactoringOpListeService
 			rows.add(FactoringOpListeDetailRow.builder()
 					.debitorNo(safeLeft(bp.getValue(), 20))
 					.debitorName(safeLeft(bp.getName(), 50))
-					.contractNo(bp.getFactoringContractNo())
-					.clientAccountId(bp.getFactoringClientAccountId())
 					.documentNo(nullSafe(invoice.getDocumentNo()))
 					.dateInvoiced(toLocalDate(invoice.getDateInvoiced()))
 					.dueDate(toLocalDate(invoice.getDueDate()))
@@ -172,26 +227,11 @@ public class FactoringOpListeService
 					.build());
 		}
 
-		// Sort by BPartner.Value then DateInvoiced
 		rows.sort(Comparator
 				.comparing(FactoringOpListeDetailRow::getDebitorNo)
 				.thenComparing(FactoringOpListeDetailRow::getDateInvoiced));
 
 		return ImmutableList.copyOf(rows);
-	}
-
-	@javax.annotation.Nullable
-	private I_C_BPartner firstFactoringBpartnerWithConfig(@NonNull final OrgId orgId)
-	{
-		return queryBL
-				.createQueryBuilder(I_C_BPartner.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
-				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactoring, true)
-				.addNotNull(I_C_BPartner.COLUMNNAME_FactoringContractNo)
-				.addNotNull(I_C_BPartner.COLUMNNAME_FactoringClientAccountId)
-				.create()
-				.first();
 	}
 
 	// -------------------------------------------------------------------------
@@ -202,14 +242,5 @@ public class FactoringOpListeService
 	private static String safeLeft(final String s, final int max) { final String v = nullSafe(s); return v.length() <= max ? v : v.substring(0, max); }
 	private static BigDecimal nullToZero(final BigDecimal v) { return v != null ? v : BigDecimal.ZERO; }
 	private static LocalDate toLocalDate(final java.sql.Timestamp ts) { return ts != null ? ts.toLocalDateTime().toLocalDate() : LocalDate.now(); }
-
-	/**
-	 * Marker exception thrown when {@link #buildExportData} runs against an org that
-	 * has no factoring customers with the required config. The JavaProcess translates
-	 * this into a user-visible {@code AdempiereException}.
-	 */
-	public static class NoFactoringDataException extends RuntimeException
-	{
-		private static final long serialVersionUID = 1L;
-	}
+	private static boolean isBlank(final String s) { return s == null || s.trim().isEmpty(); }
 }

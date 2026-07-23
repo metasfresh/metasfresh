@@ -26,19 +26,17 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
- * One detail row of the Factoring OP-Liste export.
+ * One detail row of the Factoring OP-Liste export — one open invoice or credit note of a
+ * factoring customer ({@code C_BPartner.IsFactoring='Y'}) in the current org and the selected
+ * currency.
  *
- * <p>Corresponds to one open invoice or credit note of a factoring customer
- * (C_BPartner.IsFactoring='Y') in the current org and the selected currency.
- *
- * <p>{@link #contractNo} and {@link #clientAccountId} come from the invoice's
- * bill-partner (the factoring customer), matching the domain rule that these
- * are per-customer values, not per-org.
+ * <p>Contract number and client-account-id are NOT part of a detail row — they are per-org
+ * tenant configuration on the factorer BP ({@code IsFactorer='Y'}, unique per org) used only
+ * in the header, and {@link FactoringOpListeExportData} holds them at that level.
  */
 @Value
 @Builder
@@ -48,17 +46,13 @@ public class FactoringOpListeDetailRow
 	@NonNull String debitorNo;
 	/** {@code C_BPartner.Name} of the factoring customer (max 50 chars in the CSV). */
 	@NonNull String debitorName;
-	/** {@code C_BPartner.FactoringContractNo} of the factoring customer. */
-	@Nullable String contractNo;
-	/** {@code C_BPartner.FactoringClientAccountId} of the factoring customer. */
-	@Nullable String clientAccountId;
 	/** {@code C_Invoice.DocumentNo}. */
 	@NonNull String documentNo;
 	@NonNull LocalDate dateInvoiced;
 	@NonNull LocalDate dueDate;
 	/** ISO3 code (e.g. {@code EUR}). */
 	@NonNull String currencyIso;
-	/** {@code C_Invoice.GrandTotal} — always the positive gross amount, direction encoded in {@link #debitCreditFlag}. */
+	/** {@code C_Invoice.GrandTotal} — always positive, direction encoded in {@link #debitCreditFlag}. */
 	@NonNull BigDecimal grandTotal;
 	/** {@code C_Invoice.OpenAmt} — positive; non-zero for a row to be included. */
 	@NonNull BigDecimal openAmount;
