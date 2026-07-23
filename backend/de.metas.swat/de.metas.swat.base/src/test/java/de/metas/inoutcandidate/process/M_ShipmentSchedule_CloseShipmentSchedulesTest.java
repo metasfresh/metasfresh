@@ -10,6 +10,7 @@ import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -125,5 +126,33 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 		final String csv = M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifiersCsv(offendingSchedules);
 
 		assertThat(csv).isEqualTo("SO-4001");
+	}
+
+	@Test
+	void isEligibleForClose_zeroQtyPickList_isEligible()
+	{
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		schedule.setQtyPickList(BigDecimal.ZERO);
+
+		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isTrue();
+	}
+
+	@Test
+	void isEligibleForClose_nonZeroQtyPickList_isNotEligible()
+	{
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		schedule.setQtyPickList(new BigDecimal("5"));
+
+		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isFalse();
+	}
+
+	@Test
+	void isEligibleForClose_nullQtyPickList_isNotEligible()
+	{
+		// QtyPickList left unset -> NULL. The pre-existing SQL filter `QtyPickList = 0` excludes NULL rows, so the
+		// in-memory eligibility must too (guards against getQtyPickList() masking NULL as ZERO and wrongly closing).
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+
+		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isFalse();
 	}
 }

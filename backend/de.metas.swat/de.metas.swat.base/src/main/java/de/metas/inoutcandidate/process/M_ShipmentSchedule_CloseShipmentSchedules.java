@@ -24,7 +24,6 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,6 +32,7 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
@@ -72,24 +72,36 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 
 		// 2) Unchanged pre-existing eligibility: among the (now proven picking-clean) selection, only schedules
 		// with QtyPickList=0 are actually closed; schedules with picked-but-unshipped qty are silently skipped.
-		final Iterator<I_M_ShipmentSchedule> schedulesToUpdateIterator = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
-				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, BigDecimal.ZERO)
-				.create()
-				.iterate(I_M_ShipmentSchedule.class);
+		// Derived in-memory from the already-loaded fullSelection (same base query) to avoid a second DB round-trip
+		// over a potentially large selection.
+		final List<I_M_ShipmentSchedule> schedulesToClose = fullSelection.stream()
+				.filter(M_ShipmentSchedule_CloseShipmentSchedules::isEligibleForClose)
+				.collect(Collectors.toList());
 
-		if (!schedulesToUpdateIterator.hasNext())
+		if (schedulesToClose.isEmpty())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		while (schedulesToUpdateIterator.hasNext())
+		for (final I_M_ShipmentSchedule schedule : schedulesToClose)
 		{
-			final I_M_ShipmentSchedule schedule = schedulesToUpdateIterator.next();
-
 			shipmentScheduleBL.closeShipmentSchedule(schedule);
 		}
 
 		return MSG_OK;
+	}
+
+	/**
+	 * Mirrors the pre-existing SQL {@code QtyPickList = 0} eligibility filter EXACTLY: only schedules whose
+	 * {@code QtyPickList} is set to zero are closed. A NULL {@code QtyPickList} is NOT eligible — the SQL {@code = 0}
+	 * predicate excludes NULLs — so the raw column value is read via {@link InterfaceWrapperHelper#getValueOrNull}:
+	 * the generated {@code getQtyPickList()} masks NULL as {@link BigDecimal#ZERO} and would wrongly include those rows.
+	 */
+	@VisibleForTesting
+	static boolean isEligibleForClose(final I_M_ShipmentSchedule schedule)
+	{
+		final BigDecimal qtyPickList = InterfaceWrapperHelper.getValueOrNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
+		return qtyPickList != null && qtyPickList.signum() == 0;
 	}
 
 	/**
