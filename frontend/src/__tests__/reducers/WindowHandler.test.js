@@ -15,6 +15,7 @@ import reducer, {
   getProcessWidgetFields,
   isRelevantSaveError,
   computeModalIndicator,
+  computeSaveStatusFlags,
 } from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
 
@@ -296,6 +297,79 @@ describe('computeModalIndicator', () => {
         baseIndicator: IndicatorState.SAVED,
       })
     ).toBe(IndicatorState.SAVED);
+  });
+});
+
+describe('computeSaveStatusFlags — relevant save error surfacing (AC8)', () => {
+  // A complete, individually-valid document rejected by a server-side business rule /
+  // unique-index collision: error=true + userFriendly exception. For a NOT-yet-persisted
+  // (new) record the server reports presentInDatabase=false, so the legacy ERROR gate
+  // (isDocumentNotSaved && presentInDatabase) stays quiet and the reason is swallowed.
+  const relevantNewRecordError = {
+    saved: false,
+    error: true,
+    presentInDatabase: false,
+    reason: 'The date is already used in another version of this price list.',
+    exception: { userFriendlyError: true },
+  };
+
+  // Mandatory-missing / incomplete new record: error=true, presentInDatabase=false, but NO
+  // exception (a pure validation state). Must stay quiet — field-level cues already signal it.
+  const mandatoryMissingNewRecord = {
+    saved: false,
+    error: true,
+    presentInDatabase: false,
+    reason: 'Fill mandatory fields:  Price List Version',
+  };
+
+  it('surfaces (ERROR) a relevant save error on a NEW main-window (master) record', () => {
+    const { indicator } = computeSaveStatusFlags({
+      master: {
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.SAVED,
+        layout: { windowId: '143' },
+        docId: 'NEW',
+      },
+    });
+    expect(indicator).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT surface (keeps base) a mandatory-missing state on a NEW main-window record', () => {
+    const { indicator } = computeSaveStatusFlags({
+      master: {
+        saveStatus: mandatoryMissingNewRecord,
+        indicator: IndicatorState.SAVED,
+        layout: { windowId: '143' },
+        docId: 'NEW',
+      },
+    });
+    expect(indicator).toBe(IndicatorState.SAVED);
+  });
+
+  it('surfaces (ERROR) a relevant save error on a NEW window modal via the shared core', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'window',
+        windowId: '143',
+        docId: 'NEW',
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.SAVED,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT promote a process modal to ERROR on a relevant save error (Start button stays enabled)', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'process',
+        saveStatus: relevantNewRecordError,
+        indicator: IndicatorState.PENDING,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.PENDING);
   });
 });
 
