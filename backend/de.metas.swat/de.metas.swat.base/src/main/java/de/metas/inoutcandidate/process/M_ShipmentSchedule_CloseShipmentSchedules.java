@@ -54,6 +54,9 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
 
+	// Impl lives in de.metas.handlingunits.base (M_Picking_Job*), which swat.base does not depend on; resolved via Spring.
+	private final IShipmentSchedulePickingInfoService pickingInfoService = SpringContextHolder.instance.getBean(IShipmentSchedulePickingInfoService.class);
+
 	@Override
 	protected String doIt() throws Exception
 	{
@@ -66,7 +69,6 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		// unfinished (Drafted) picking job, reject the whole close and close NOTHING. The unfinished-picking check
 		// is a subquery filter folded into the selection query, so the offending schedules come from a single query
 		// (no id round-trip / in-memory intersection).
-		final IShipmentSchedulePickingInfoService pickingInfoService = SpringContextHolder.instance.getBean(IShipmentSchedulePickingInfoService.class);
 		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
 				.filter(pickingInfoService.newUnfinishedPickingFilter())
 				.create()
@@ -77,10 +79,14 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers).markAsUserValidationError();
 		}
 
-		// 2) Unchanged pre-existing eligibility: among the (now proven picking-clean) selection, only schedules
-		// with QtyPickList=0 are actually closed; schedules with picked-but-unshipped qty are silently skipped.
-		// Streamed (not materialized) to avoid loading a potentially large selection into memory.
+		// 2) Close the eligible schedules. Two guards, both as folded subquery filters so they re-evaluate against
+		// live DB state (this is a SEPARATE query execution from the check above — re-applying the unfinished-picking
+		// filter here, negated, closes the TOCTOU window: a schedule that becomes picking-busy between the two
+		// queries is safely skipped rather than wrongly closed, the very bug this process prevents). Among the
+		// picking-clean selection, only schedules with QtyPickList=0 are closed; picked-but-unshipped qty is skipped
+		// (the pre-existing eligibility rule). Streamed (not materialized) to avoid loading a large selection.
 		final Iterator<I_M_ShipmentSchedule> selectionIterator = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+				.filter(pickingInfoService.newUnfinishedPickingFilter().negate())
 				.create()
 				.iterate(I_M_ShipmentSchedule.class);
 
