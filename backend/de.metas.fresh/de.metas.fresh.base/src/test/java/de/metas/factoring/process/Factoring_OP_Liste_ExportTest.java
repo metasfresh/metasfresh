@@ -22,224 +22,170 @@
 
 package de.metas.factoring.process;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_C_BPartner;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for {@link Factoring_OP_Liste_Export}.
+ * Unit tests for the {@link Factoring_OP_Liste_Export} JavaProcess.
  *
- * <p>Uses the in-memory {@link AdempiereTestHelper} framework so no live database is required —
- * every metasfresh service call resolves against the POJO-backed test infra. The SQL function
- * ({@link FactoringOpListeRepository#loadOpListRows}) is mocked because {@code AdempiereTestHelper}
- * cannot execute Postgres plpgsql. The two SQL-function-native tests live in
- * {@code Factoring_OP_Liste_SqlFunctionIT} which does require a local Postgres.
+ * <p>Exercises the package-private {@code runExport(orgIdRepo, currencyIdRepo)} method — the
+ * same code path {@code doIt()} runs, but without needing a full {@code ProcessInfo}. The
+ * service is mocked with Mockito; the writer is exercised for real so byte-level CSV shape
+ * is validated end-to-end.
  */
 class Factoring_OP_Liste_ExportTest
 {
-	private static final int AD_CLIENT_ID = 1;
 	private static final int AD_ORG_ID_REPO = 100;
 	private static final OrgId AD_ORG_ID = OrgId.ofRepoId(AD_ORG_ID_REPO);
-	private static final int EUR_CURRENCY_ID = 102;
+	private static final int EUR_CURRENCY_ID_REPO = 102;
+	private static final CurrencyId EUR = CurrencyId.ofRepoId(EUR_CURRENCY_ID_REPO);
+	private static final LocalDate UPLOAD_DATE = LocalDate.of(2026, 7, 23);
+	private static final String UPLOAD_DATE_STR = "23.07.2026";
+	private static final String UPLOAD_DATE_FILENAME = "20260723";
 
-	private FactoringOpListeRepository repoMock;
+	private FactoringOpListeService serviceMock;
 	private Factoring_OP_Liste_Export process;
 
 	@BeforeEach
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		repoMock = mock(FactoringOpListeRepository.class);
+		serviceMock = mock(FactoringOpListeService.class);
 		process = new Factoring_OP_Liste_Export();
-		process.setFactoringRepoForTesting(repoMock);
-
-		// Seed the org referenced by AD_ORG_ID so resolveOrgName has a real name to return.
-		final I_AD_Org org = newInstance(I_AD_Org.class);
-		org.setAD_Org_ID(AD_ORG_ID_REPO);
-		org.setValue("TSTORG");
-		org.setName("Test Organisation");
-		save(org);
+		process.setServiceForTesting(serviceMock);
 	}
-
-	/** Creates + saves a factorer BPartner with the given field values. */
-	private I_C_BPartner insertFactorer(final String name, final String contractNo, final String clientAccountId)
-	{
-		final I_C_BPartner bp = newInstance(I_C_BPartner.class);
-		bp.setAD_Org_ID(AD_ORG_ID_REPO);
-		bp.setName(name);
-		bp.setValue(name);
-		bp.setIsFactorer(true);
-		bp.setFactoringContractNo(contractNo);
-		bp.setFactoringClientAccountId(clientAccountId);
-		save(bp);
-		return bp;
-	}
-
-	// -------------------------------------------------------------------------
-	// AC6 error paths — 5 tests
-	// -------------------------------------------------------------------------
 
 	@Test
-	void process_fails_when_role_scope_is_all_orgs()
+	void role_scope_all_orgs_is_rejected()
 	{
-		// orgId = 0 → role scope '*' (all orgs). Refused before any BP lookup.
-		assertThatThrownBy(() -> process.runExport(0, AD_CLIENT_ID, EUR_CURRENCY_ID))
+		assertThatThrownBy(() -> process.runExport(0, EUR_CURRENCY_ID_REPO))
 				.isInstanceOf(AdempiereException.class)
 				.hasMessageContaining("Factoring_OP_Liste_EXT_RoleScopeAllOrgs");
 	}
 
 	@Test
-	void process_fails_when_no_factorer_bp_for_org()
+	void no_factoring_customers_yields_AdempiereException()
 	{
-		// No factorer inserted. The DAO returns an empty list → AdempiereException.
-		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID))
+		when(serviceMock.buildExportData(any(OrgId.class), any(CurrencyId.class)))
+				.thenThrow(new FactoringOpListeService.NoFactoringDataException());
+
+		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO))
 				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Factoring_OP_Liste_EXT_NoFactorer");
+				.hasMessageContaining("Factoring_OP_Liste_EXT_NoFactoringCustomers");
 	}
 
 	@Test
-	void process_fails_when_multiple_factorer_bps_for_org()
+	void produces_expected_csv_byte_for_byte() throws Exception
 	{
-		insertFactorer("Faktoring Alpha GmbH", "DE-A001", "1111111111");
-		insertFactorer("Faktoring Beta GmbH", "DE-B001", "2222222222");
+		final ImmutableList<FactoringOpListeDetailRow> detail = ImmutableList.of(
+				row("CUST-AA3", "Alpha Kunde GmbH", "INV-AA3-001",
+						LocalDate.of(2025, 9, 1), LocalDate.of(2025, 10, 1),
+						new BigDecimal("1000.00"), new BigDecimal("750.00"),
+						FactoringOpListeDetailRow.DebitCreditFlag.D),
+				row("CUST-AA3", "Alpha Kunde GmbH", "CR-AA3-001",
+						LocalDate.of(2025, 9, 5), LocalDate.of(2025, 10, 1),
+						new BigDecimal("200.00"), new BigDecimal("200.00"),
+						FactoringOpListeDetailRow.DebitCreditFlag.C),
+				row("CUST-BB3", "Beta Kunde AG", "INV-BB3-001",
+						LocalDate.of(2025, 9, 1), LocalDate.of(2025, 10, 1),
+						new BigDecimal("500.00"), new BigDecimal("500.00"),
+						FactoringOpListeDetailRow.DebitCreditFlag.D),
+				row("CUST-BB3", "Beta Kunde AG", "CR-BB3-001",
+						LocalDate.of(2025, 9, 5), LocalDate.of(2025, 10, 1),
+						new BigDecimal("100.00"), new BigDecimal("100.00"),
+						FactoringOpListeDetailRow.DebitCreditFlag.C));
 
-		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Factoring_OP_Liste_EXT_MultipleFactorers")
-				.hasMessageContaining("Faktoring Alpha GmbH")
-				.hasMessageContaining("Faktoring Beta GmbH");
-	}
-
-	@Test
-	void process_fails_when_factorer_has_empty_contract_no()
-	{
-		insertFactorer("Faktoring Ohne Vertrag", null, "9999999999");
-
-		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingContractNo")
-				.hasMessageContaining("Faktoring Ohne Vertrag");
-	}
-
-	@Test
-	void process_fails_when_factorer_has_empty_client_account_id()
-	{
-		insertFactorer("Faktoring Ohne Konto", "DE-NOACCT", null);
-
-		assertThatThrownBy(() -> process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID))
-				.isInstanceOf(AdempiereException.class)
-				.hasMessageContaining("Factoring_OP_Liste_EXT_MissingClientAccountId")
-				.hasMessageContaining("Faktoring Ohne Konto");
-	}
-
-	// -------------------------------------------------------------------------
-	// Happy path: byte-exact CSV
-	// -------------------------------------------------------------------------
-
-	@Test
-	void process_produces_expected_csv_byte_for_byte() throws Exception
-	{
-		insertFactorer("Test-Factor GmbH", "DE00001", "2500000000");
-
-		final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-
-		// Repository is mocked — return the exact row-set the SQL function would produce for the fixture.
-		final List<String[]> fixtureRows = Arrays.asList(
-				// Header row: row_type + col_1..col_11
-				new String[] {"01", "SAF", "EFAG", "DE00001", "2500000000", "EUR", "", today, "5,00", "1500,00", "300,00", ""},
-				// 4 detail rows: row_type + col_1..col_11
-				new String[] {"02", "CUST-AA3", "Alpha Kunde GmbH", "INV-AA3-001", "01.09.2025", "01.10.2025", "EUR", "1000,00", "750,00", "D", "", ""},
-				new String[] {"02", "CUST-AA3", "Alpha Kunde GmbH", "CR-AA3-001", "05.09.2025", "01.10.2025", "EUR", "200,00", "200,00", "C", "", ""},
-				new String[] {"02", "CUST-BB3", "Beta Kunde AG", "INV-BB3-001", "01.09.2025", "01.10.2025", "EUR", "500,00", "500,00", "D", "", ""},
-				new String[] {"02", "CUST-BB3", "Beta Kunde AG", "CR-BB3-001", "05.09.2025", "01.10.2025", "EUR", "100,00", "100,00", "C", "", ""}
-		);
-		when(repoMock.loadOpListRows(EUR_CURRENCY_ID, AD_ORG_ID_REPO, AD_CLIENT_ID)).thenReturn(fixtureRows);
+		final FactoringOpListeExportData data = new FactoringOpListeExportData(
+				"DE00001", "2500000000", "EUR", UPLOAD_DATE, detail,
+				new BigDecimal("1500.00"), new BigDecimal("300.00"));
+		when(serviceMock.buildExportData(AD_ORG_ID, EUR)).thenReturn(data);
 
 		final Factoring_OP_Liste_Export.ExportResult result =
-				process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID);
+				process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO);
 
-		final String todayForFilename = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-		assertThat(result.filename)
-				.as("filename convention: <ContractNo>_INH_<yyyyMMdd>.csv")
-				.isEqualTo("DE00001_INH_" + todayForFilename + ".csv");
+		assertThat(result.getFilename()).isEqualTo("DE00001_INH_" + UPLOAD_DATE_FILENAME + ".csv");
+		assertThat(result.getDataRowCount()).isEqualTo(4);
 
-		final byte[] actualBytes = result.bytes;
+		final byte[] bytes = result.getBytes();
+		assertThat(bytes[0]).as("BOM 0").isEqualTo((byte) 0xEF);
+		assertThat(bytes[1]).as("BOM 1").isEqualTo((byte) 0xBB);
+		assertThat(bytes[2]).as("BOM 2").isEqualTo((byte) 0xBF);
 
-		// BOM check
-		assertThat(actualBytes).as("file has at least 3 bytes (BOM)").hasSizeGreaterThanOrEqualTo(3);
-		assertThat(actualBytes[0]).as("BOM byte 0 = 0xEF").isEqualTo((byte) 0xEF);
-		assertThat(actualBytes[1]).as("BOM byte 1 = 0xBB").isEqualTo((byte) 0xBB);
-		assertThat(actualBytes[2]).as("BOM byte 2 = 0xBF").isEqualTo((byte) 0xBF);
-
-		// Every LF must be paired with a preceding CR
-		for (int i = 0; i < actualBytes.length; i++)
+		for (int i = 0; i < bytes.length; i++)
 		{
-			if (actualBytes[i] == (byte) 0x0A)
+			if (bytes[i] == (byte) 0x0A)
 			{
-				assertThat(i).as("LF at position " + i + " must be preceded by CR").isGreaterThan(0);
-				assertThat(actualBytes[i - 1]).as("LF at position " + i + " preceded by CR").isEqualTo((byte) 0x0D);
+				assertThat(bytes[i - 1]).as("LF at " + i + " preceded by CR").isEqualTo((byte) 0x0D);
 			}
 		}
 
-		// Line-by-line content check
-		final String content = new String(actualBytes, 3, actualBytes.length - 3, java.nio.charset.StandardCharsets.UTF_8);
+		final String content = new String(bytes, 3, bytes.length - 3, java.nio.charset.StandardCharsets.UTF_8);
 		final String[] lines = content.split("\r\n", -1);
-		assertThat(lines).as("5 content lines + empty trailing element").hasSize(6);
-		assertThat(lines[5]).as("last element empty (trailing CRLF)").isEmpty();
+		assertThat(lines).hasSize(6);
+		assertThat(lines[5]).isEmpty();
 
-		// Header line — 11 tokens; header field 11 = sum C (300,00) so no trailing ';'
-		assertThat(lines[0]).as("header line").isEqualTo(
-				"01;SAF;EFAG;DE00001;2500000000;EUR;;" + today + ";5,00;1500,00;300,00");
-
-		// Detail rows — 11 tokens; detail field 11 = '' so trailing ';' after D/C flag
-		assertThat(lines[1]).as("detail 1")
-				.isEqualTo("02;CUST-AA3;Alpha Kunde GmbH;INV-AA3-001;01.09.2025;01.10.2025;EUR;1000,00;750,00;D;");
-		assertThat(lines[2]).as("detail 2")
-				.isEqualTo("02;CUST-AA3;Alpha Kunde GmbH;CR-AA3-001;05.09.2025;01.10.2025;EUR;200,00;200,00;C;");
-		assertThat(lines[3]).as("detail 3")
-				.isEqualTo("02;CUST-BB3;Beta Kunde AG;INV-BB3-001;01.09.2025;01.10.2025;EUR;500,00;500,00;D;");
-		assertThat(lines[4]).as("detail 4")
-				.isEqualTo("02;CUST-BB3;Beta Kunde AG;CR-BB3-001;05.09.2025;01.10.2025;EUR;100,00;100,00;C;");
-
-		assertThat(result.rowCount).as("data row count = total rows − 1 header").isEqualTo(4);
+		assertThat(lines[0]).isEqualTo(
+				"01;SAF;EFAG;DE00001;2500000000;EUR;;" + UPLOAD_DATE_STR + ";5,00;1500,00;300,00");
+		assertThat(lines[1]).isEqualTo(
+				"02;CUST-AA3;Alpha Kunde GmbH;INV-AA3-001;01.09.2025;01.10.2025;EUR;1000,00;750,00;D;");
+		assertThat(lines[2]).isEqualTo(
+				"02;CUST-AA3;Alpha Kunde GmbH;CR-AA3-001;05.09.2025;01.10.2025;EUR;200,00;200,00;C;");
+		assertThat(lines[3]).isEqualTo(
+				"02;CUST-BB3;Beta Kunde AG;INV-BB3-001;01.09.2025;01.10.2025;EUR;500,00;500,00;D;");
+		assertThat(lines[4]).isEqualTo(
+				"02;CUST-BB3;Beta Kunde AG;CR-BB3-001;05.09.2025;01.10.2025;EUR;100,00;100,00;C;");
 	}
 
 	@Test
-	void process_produces_header_only_csv_when_no_matching_rows() throws Exception
+	void produces_header_only_csv_when_no_matching_invoices() throws Exception
 	{
-		insertFactorer("Test-Factor GmbH", "DE00001", "2500000000");
-
-		final String today = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"));
-		final List<String[]> headerOnly = Collections.singletonList(
-				new String[] {"01", "SAF", "EFAG", "DE00001", "2500000000", "EUR", "", today, "1,00", "0,00", "0,00", ""}
-		);
-		when(repoMock.loadOpListRows(EUR_CURRENCY_ID, AD_ORG_ID_REPO, AD_CLIENT_ID)).thenReturn(headerOnly);
+		final FactoringOpListeExportData data = new FactoringOpListeExportData(
+				"DE00001", "2500000000", "EUR", UPLOAD_DATE,
+				ImmutableList.of(), BigDecimal.ZERO, BigDecimal.ZERO);
+		when(serviceMock.buildExportData(AD_ORG_ID, EUR)).thenReturn(data);
 
 		final Factoring_OP_Liste_Export.ExportResult result =
-				process.runExport(AD_ORG_ID_REPO, AD_CLIENT_ID, EUR_CURRENCY_ID);
+				process.runExport(AD_ORG_ID_REPO, EUR_CURRENCY_ID_REPO);
 
-		final String content = new String(result.bytes, 3, result.bytes.length - 3, java.nio.charset.StandardCharsets.UTF_8);
+		final byte[] bytes = result.getBytes();
+		final String content = new String(bytes, 3, bytes.length - 3, java.nio.charset.StandardCharsets.UTF_8);
 		final String[] lines = content.split("\r\n", -1);
-		assertThat(lines).hasSize(2); // 1 header + 1 empty trailing
-		assertThat(lines[0]).isEqualTo("01;SAF;EFAG;DE00001;2500000000;EUR;;" + today + ";1,00;0,00;0,00");
-		assertThat(lines[1]).isEmpty();
-		assertThat(result.rowCount).as("data row count = 0 when only header").isZero();
+		assertThat(lines).hasSize(2);
+		assertThat(lines[0]).isEqualTo("01;SAF;EFAG;DE00001;2500000000;EUR;;" + UPLOAD_DATE_STR + ";1,00;0,00;0,00");
+		assertThat(result.getDataRowCount()).isZero();
+	}
+
+	private static FactoringOpListeDetailRow row(final String value, final String name, final String documentNo,
+			final LocalDate dateInvoiced, final LocalDate dueDate,
+			final BigDecimal grandTotal, final BigDecimal openAmount,
+			final FactoringOpListeDetailRow.DebitCreditFlag dcFlag)
+	{
+		return FactoringOpListeDetailRow.builder()
+				.debitorNo(value)
+				.debitorName(name)
+				.contractNo("DE00001")
+				.clientAccountId("2500000000")
+				.documentNo(documentNo)
+				.dateInvoiced(dateInvoiced)
+				.dueDate(dueDate)
+				.currencyIso("EUR")
+				.grandTotal(grandTotal)
+				.openAmount(openAmount)
+				.debitCreditFlag(dcFlag)
+				.build();
 	}
 }
