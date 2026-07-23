@@ -25,6 +25,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobLine;
 import de.metas.handlingunits.picking.job.model.PickingJobLineId;
 import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
+import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.shipping.PackedHUProductItem;
 import de.metas.handlingunits.shipping.PackedHUShippingInfo;
 import de.metas.handlingunits.shipping.PackedHUShippingInfoService;
@@ -72,13 +73,6 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class PackedHUCarrierAdviseService
 {
-	/**
-	 * When set to 'Y', the legacy IsSelfPacked gate is restored: non-self-packed products return
-	 * {@link PackageDimensions#UNSPECIFIED} instead of using the product's named dimensions.
-	 * Default 'N' = flag-independent behaviour (current default).
-	 */
-	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
-
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
@@ -451,7 +445,7 @@ public class PackedHUCarrierAdviseService
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
 			// Use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
-			final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+			final boolean checkSelfPacked = sysConfigBL.getBooleanValue(IHUPackageBL.SYSCONFIG_CHECK_IS_SELF_PACKED, false);
 			if (checkSelfPacked && !product.isSelfPacked())
 			{
 				dimensions = PackageDimensions.UNSPECIFIED;
