@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.order.C_Order_StepDefData;
 import de.metas.inoutcandidate.CarrierGoodsTypeId;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.shipping.CarrierProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;

@@ -32,6 +32,7 @@ import org.springframework.stereotype.Repository;
 /**
  * Repository for {@link I_C_Order_Carrier_Service} bridge rows.
  * Repository Tables: C_Order_Carrier_Service
+ * Repository Cluster: C_OrderCarrierServiceRepository
  */
 @Repository
 public class C_OrderCarrierServiceRepository
