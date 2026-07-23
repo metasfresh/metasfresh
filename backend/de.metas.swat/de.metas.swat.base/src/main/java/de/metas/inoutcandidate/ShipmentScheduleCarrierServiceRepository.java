@@ -40,7 +40,9 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Repository that deals with {@link I_Carrier_Service} records assigned via {@link I_M_ShipmentSchedule_Carrier_Service}.
+ * Repository Tables: M_ShipmentSchedule_Carrier_Service
+ * Repository Cluster: ShipmentScheduleCarrierServiceRepository
+ * Callers: OrderLineShipmentScheduleHandler (carrier propagation from order on create/update)
  */
 @Repository
 public class ShipmentScheduleCarrierServiceRepository

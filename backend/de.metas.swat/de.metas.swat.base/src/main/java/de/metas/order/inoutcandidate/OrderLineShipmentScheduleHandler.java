@@ -187,7 +187,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			InterfaceWrapperHelper.save(newSched);
 
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(orderLine.getC_Order_ID());
+			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
 		}
 
@@ -221,7 +221,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			propagateCarrierFieldsFromOrder(shipmentSchedule, orderRecord, orderCarrierProductId);
 
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(orderLineRecord.getC_Order_ID());
+			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
 			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
 		}
 	}
@@ -373,11 +373,13 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	}
 
 	/**
-	 * Returns the {@link CarrierServiceId}s assigned to the given order via {@code C_Order_Carrier_Service}.
+	 * Returns the active {@link CarrierServiceId}s assigned to the given order via {@code C_Order_Carrier_Service}.
+	 * Soft-deleted (inactive) rows are excluded.
 	 */
-	private ImmutableSet<CarrierServiceId> getOrderCarrierServiceIds(final int orderId)
+	private ImmutableSet<CarrierServiceId> getOrderCarrierServiceIds(@NonNull final OrderId orderId)
 	{
 		return queryBL.createQueryBuilder(I_C_Order_Carrier_Service.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Order_Carrier_Service.COLUMNNAME_C_Order_ID, orderId)
 				.create()
 				.stream()

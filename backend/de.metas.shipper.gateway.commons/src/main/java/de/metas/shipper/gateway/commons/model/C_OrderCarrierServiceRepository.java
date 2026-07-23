@@ -22,6 +22,8 @@
 
 package de.metas.shipper.gateway.commons.model;
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.inoutcandidate.CarrierServiceId;
 import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -38,6 +40,21 @@ import org.springframework.stereotype.Repository;
 public class C_OrderCarrierServiceRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	/**
+	 * Returns the {@link CarrierServiceId}s assigned to the given order via {@link I_C_Order_Carrier_Service},
+	 * excluding soft-deleted (inactive) rows.
+	 */
+	public ImmutableSet<CarrierServiceId> getCarrierServiceIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_Carrier_Service.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_Carrier_Service.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.stream()
+				.map(row -> CarrierServiceId.ofRepoId(row.getCarrier_Service_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 
 	/**
 	 * Deletes all {@link I_C_Order_Carrier_Service} rows for the given order.
