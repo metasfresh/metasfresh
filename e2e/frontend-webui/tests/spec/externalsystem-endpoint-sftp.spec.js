@@ -347,15 +347,16 @@ OAuthTokenUrl is accepted and the record persists).
     await page.waitForTimeout(2000);
     await page.locator('.form-group').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    // Value is auto-generated (IsUseDocSequence=Y) — skip it
-    await selectListValue(page, 'Type', 'HTTP');
+    // Value is auto-generated (IsUseDocSequence=Y) — skip it.
+    // The legacy "Art" (Type) field was retired from this window (its AD_Field/AD_UI_Element are
+    // deactivated); TransportType is the single transport selector, so don't touch Type.
     await selectListValue(page, 'TransportType', 'HTTP');
     await selectListValue(page, 'AuthType', 'OAuth2');
     // OutboundHttpMethod is mandatory under HTTP and has NO default — must be set or the record stays invalid (never persists)
     await selectListValue(page, 'OutboundHttpMethod', 'POST');
 
-    // Fill the HTTP endpoint URL (mandatory for HTTP)
-    await fillTextField(page, 'OutboundHttpEP', 'https://dw.example.com/DocuWare/Platform/FileCabinets/abc/Documents');
+    // Fill the HTTP endpoint URL (mandatory for HTTP; column renamed OutboundHttpEP -> HttpEndPoint)
+    await fillTextField(page, 'HttpEndPoint', 'https://dw.example.com/DocuWare/Platform/FileCabinets/abc/Documents');
 
     // OAuth2 mandatory: token URL; plus the password-grant credentials
     await fillTextField(page, 'OAuthTokenUrl', 'https://dw.example.com/DocuWare/Platform/Identity/connect/token');

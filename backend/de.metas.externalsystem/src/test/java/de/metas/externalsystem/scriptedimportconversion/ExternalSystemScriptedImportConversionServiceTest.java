@@ -24,7 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointRepository;
@@ -60,7 +60,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 {
 	private ExternalSystemScriptedImportConversionService service;
 	private UserAuthTokenRepository userAuthTokenRepository;
-	private ExternalSystemConfigRepo externalSystemConfigRepo;
+	private ExternalSystemConfigRepository externalSystemConfigRepo;
 
 	@BeforeEach
 	void beforeEach()
@@ -68,7 +68,7 @@ class ExternalSystemScriptedImportConversionServiceTest
 		AdempiereTestHelper.get().init();
 
 		userAuthTokenRepository = new UserAuthTokenRepository();
-		externalSystemConfigRepo = ExternalSystemConfigRepo.newInstanceForUnitTesting();
+		externalSystemConfigRepo = ExternalSystemConfigRepository.newInstanceForUnitTesting();
 		service = new ExternalSystemScriptedImportConversionService(userAuthTokenRepository, new ExternalSystemEndpointRepository(), externalSystemConfigRepo);
 	}
 

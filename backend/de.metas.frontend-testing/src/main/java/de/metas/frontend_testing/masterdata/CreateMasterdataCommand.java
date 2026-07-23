@@ -117,10 +117,12 @@ public class CreateMasterdataCommand
 		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
 		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
 		linkProductsToCompensationGroupSchemas();
-		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
+		// Resources must be created AFTER workplaces: a workstation resource may reference a workplace
+		// by identifier (JsonCreateResourceRequest.workplace), resolved from the context populated here.
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();

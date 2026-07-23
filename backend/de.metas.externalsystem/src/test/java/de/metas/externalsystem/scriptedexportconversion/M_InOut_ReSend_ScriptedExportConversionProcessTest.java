@@ -63,16 +63,16 @@ import static org.mockito.Mockito.when;
 /**
  * Process-level test for {@link M_InOut_ReSend_ScriptedExportConversion}.
  *
- * <p>The process is thin glue: per selected M_InOut it resolves the config IDs (via
- * {@code getMatchingConfigIdsBySourceRecord} when {@code IsOnlyNotSentSuccessfully=N}, or
- * {@code getResendableConfigsBySourceRecord} when {@code =Y}) and delegates the whole per-config
- * re-send decision (relevance gate → DontSend-or-Pending+invoke) to
+ * <p>The process is thin glue: per selected M_InOut it resolves the config IDs for the requested mode
+ * ({@code IsOnlyNotSentSuccessfully=Y} → {@code getResendableConfigsBySourceRecord}; {@code =N} →
+ * {@code getMatchingConfigIdsBySourceRecord}) and delegates the whole per-config re-send decision
+ * (relevance gate → DontSend-or-Pending+invoke) to
  * {@link ExternalSystemScriptedExportConversionService#resendConfigIfRelevant}. So this test verifies
- * only the config-source selection + delegation + counting; the gate branch itself is unit-tested in
+ * the mode selection + delegation + counting; the gate branch itself is unit-tested in
  * {@code ExternalSystemScriptedExportConversionServiceResendTest}.
  * <ul>
- *   <li>Each resolved config is delegated once; the {@code @Processed@ #N} count reflects only the
- *       configs for which the service reported a send ({@code true}).</li>
+ *   <li>Each config is delegated once; the {@code @Processed@ #N} count reflects only the configs for
+ *       which the service reported a send ({@code true}).</li>
  *   <li>A config the service suppressed ({@code false} — nothing left to export) is excluded from the count.</li>
  *   <li>No configs → {@code @Processed@ #0}, no delegation.</li>
  * </ul>
@@ -99,7 +99,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 	// 1. Two matching configs, both sent → delegated once each, count = 2
 	// -----------------------------------------------------------------------
 	@Test
-	void doIt_twoConfigs_delegatedOncePerConfig()
+	void doIt_twoConfigs_bothSent_delegatedOncePerConfig()
 	{
 		final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
 		InterfaceWrapperHelper.saveRecord(inout);
@@ -110,7 +110,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		final ExternalSystemScriptedExportConversionConfigId configIdA = ExternalSystemScriptedExportConversionConfigId.ofRepoId(101);
 		final ExternalSystemScriptedExportConversionConfigId configIdB = ExternalSystemScriptedExportConversionConfigId.ofRepoId(102);
 
-		// isOnlyNotSentSuccessfully=false → getMatchingConfigIdsBySourceRecord
+		// isOnlyNotSentSuccessfully=false → all matching configs
 		when(scriptedExportServiceMock.getMatchingConfigIdsBySourceRecord(sourceRecord))
 				.thenReturn(Arrays.asList(configIdA, configIdB));
 
@@ -122,11 +122,11 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId));
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdB), any(TableRecordReference.class), eq(inoutId));
-		assertThat(result).contains("#2");
+		assertThat(result).contains("2");
 	}
 
 	// -----------------------------------------------------------------------
-	// 2. No matching configs → zero-count result, no delegation
+	// 2. No configs → zero-count result, no delegation
 	// -----------------------------------------------------------------------
 	@Test
 	void doIt_noConfigs_returnsZeroCount()
@@ -172,11 +172,11 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 		// both delegated once, but only the sent one counts
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdSent), any(TableRecordReference.class), eq(inoutId));
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdSuppressed), any(TableRecordReference.class), eq(inoutId));
-		assertThat(result).contains("#1");
+		assertThat(result).contains("1");
 	}
 
 	// -----------------------------------------------------------------------
-	// 4. isOnlyNotSentSuccessfully=true → uses getResendableConfigsBySourceRecord
+	// 4. isOnlyNotSentSuccessfully=true → uses getResendableConfigsBySourceRecord (not the all-matching path)
 	// -----------------------------------------------------------------------
 	@Test
 	void doIt_isOnlyNotSentSuccessfully_usesResendableConfigs()
@@ -195,7 +195,7 @@ public class M_InOut_ReSend_ScriptedExportConversionProcessTest
 
 		final String result = runProcess(inoutId, tableId, true /*isOnlyNotSentSuccessfully*/);
 
-		// Verify the filtered path was used, NOT the all-configs path
+		// Verify the filtered path was used, NOT the all-matching path
 		verify(scriptedExportServiceMock, times(1)).getResendableConfigsBySourceRecord(sourceRecord);
 		verify(scriptedExportServiceMock, times(0)).getMatchingConfigIdsBySourceRecord(any());
 		verify(scriptedExportServiceMock, times(1)).resendConfigIfRelevant(eq(configIdA), any(TableRecordReference.class), eq(inoutId));

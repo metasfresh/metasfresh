@@ -162,3 +162,112 @@ testCases.forEach(({ language, label }) => {
     });
   });
 });
+
+/**
+ * Product-only filter must show EVERY warehouse the product has stock/demand in — driven through the
+ * UI (the real filter panel → grid), so the recorded video shows the actual behavior.
+ *
+ * Regression guard: the selection factory persists the applied warehouse FILTER (null for a
+ * product-only filter), not the per-row warehouse, so the page render sources
+ * MD_Stock_PerWeek_fn(product, NULL) and restores every warehouse. A prior defect collapsed a
+ * product-only grid to one arbitrary warehouse.
+ *
+ * Setup: one product with an open sales-order line in EACH of two warehouses → Material Disposition
+ * creates candidates for the product in both → the product-filtered grid must span both warehouses.
+ *
+ * UI note (verified against the live window 542159 DOM): M_Product_ID is an IsSelectionColumn, so it
+ * lives in the combined "Default" filter panel — NOT a per-column facet button. There is no
+ * `filter-button-facet-M_Product_ID`. The real interaction is: open the Default panel (the generic
+ * "Filter" toggle in `.filters-not-frequent`), type into the Product lookup input
+ * (`.form-field-M_Product_ID input.input-field`), pick the option (`option-<M_Product_ID>` in the
+ * lookup dropdown), then Apply (`filter-apply-button`).
+ */
+test.describe('Stock per Week — product-only filter spans all warehouses', () => {
+  test('Filtering by product only shows rows from every warehouse the product is in', async ({ page }) => {
+    allure.epic('E0155: Material Disposition');
+    allure.tag('F19100: Stock per week');
+    allure.tag('F19100');
+    allure.story('Product-only filter shows all warehouses (not just one)');
+    allure.severity('critical');
+
+    test.setTimeout(300000); // SO completion + async dispo + UI filter retries
+
+    const masterdata = await Backend.createMasterdata({
+      request: {
+        login: { user: { language: 'de_DE', firstname: 'spw', lastname: 'multiwh' } },
+        bpartners: { CUSTOMER1: { isVendor: false, isCustomer: true, isSoPriceList: true, name: 'Customer' } },
+        products: { P1: { name: 'SPW_MULTIWH', type: 'Item', prices: [{ price: 30.0, currencyCode: 'EUR' }] } },
+        warehouses: { whA: {}, whB: {} },
+        salesOrders: {
+          SO_A: { bpartner: 'CUSTOMER1', warehouse: 'whA', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 5 }] },
+          SO_B: { bpartner: 'CUSTOMER1', warehouse: 'whB', datePromised: new Date().toISOString(), lines: [{ product: 'P1', qty: 7 }] },
+        },
+      },
+    });
+    allure.attachment('Test Data', JSON.stringify(masterdata, null, 2), 'application/json');
+    const productId = masterdata.products.P1.id;
+    const productName = masterdata.products.P1.productName || 'SPW_MULTIWH';
+    expect(productId, 'seeded product must expose its M_Product_ID').toBeTruthy();
+
+    await LoginPage.goto();
+    await LoginPage.login(masterdata.login.user);
+    await DashboardPage.expectVisible();
+
+    // Material Disposition materializes candidates asynchronously; give it a head start.
+    await page.waitForTimeout(12000);
+
+    // Open the window (standalone → empty) then apply the product filter via the Default filter panel,
+    // retrying to absorb async dispo. Read the warehouse the grid actually shows per row.
+    const distinctWarehouses = new Set();
+    for (let attempt = 1; attempt <= 8; attempt++) {
+      await page.goto(`${FRONTEND_BASE_URL}/window/${STOCK_PER_WEEK_WINDOW_ID}`);
+      await page.locator('.document-list-wrapper, .document-list').first()
+        .waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      // 1) open the combined "Default" filter panel (product is a selection column, not a facet)
+      const filterToggle = page.locator('.filters-not-frequent button.toggle-filters').first();
+      await filterToggle.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await filterToggle.click();
+      const filterPanel = page.locator('.filter-menu.filter-widget');
+      await filterPanel.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+
+      // 2) type the product name into the Product lookup (scoped to the panel) and pick the exact option
+      //    (option-<M_Product_ID>). Gate on the option becoming visible rather than a fixed sleep — the
+      //    lookup typeahead is async and can be slower than a flat timeout under CI load. Selecting by
+      //    exact M_Product_ID (not caption text) avoids picking a stale same-named product, since this
+      //    test seeds real masterdata with no teardown.
+      const prodInput = filterPanel.locator('.form-field-M_Product_ID input.input-field').first();
+      await prodInput.click();
+      await prodInput.fill(String(productName));
+      const productOption = page
+        .locator(`.input-dropdown-list [data-testid="option-${productId}"]`)
+        .first();
+      await productOption.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+      await productOption.click();
+
+      // 3) apply the product-only filter
+      await filterPanel.getByTestId('filter-apply-button').click();
+      await page.waitForTimeout(3000);
+      await page.locator('.indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+
+      const cells = await page.locator('table tbody tr [data-cy="cell-M_Warehouse_ID"]').allTextContents();
+      cells.map((c) => c.trim()).filter(Boolean).forEach((w) => distinctWarehouses.add(w));
+      console.log(`[INFO] attempt ${attempt}: distinct warehouses in grid = ${[...distinctWarehouses].join(' | ')}`);
+
+      if (distinctWarehouses.size >= 2) break;
+      distinctWarehouses.clear();
+      await page.waitForTimeout(10000); // let dispo catch up, then re-open + re-filter
+    }
+
+    allure.attachment('Filtered grid (product only)', await page.screenshot({ fullPage: true }), 'image/png');
+    allure.attachment('Distinct warehouses shown', JSON.stringify([...distinctWarehouses]), 'application/json');
+
+    expect(
+      distinctWarehouses.size,
+      'product-only filter must show rows for BOTH warehouses the product is stocked in (must not collapse to one)'
+    ).toBeGreaterThanOrEqual(2);
+
+    console.log('[PASS] Stock-per-week product-only filter spans all warehouses');
+  });
+});

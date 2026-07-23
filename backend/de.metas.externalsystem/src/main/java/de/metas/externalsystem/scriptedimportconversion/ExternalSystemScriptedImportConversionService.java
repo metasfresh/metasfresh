@@ -24,7 +24,7 @@ package de.metas.externalsystem.scriptedimportconversion;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpoint;
 import de.metas.externalsystem.endpoint.ExternalSystemEndpointId;
@@ -68,7 +68,7 @@ public class ExternalSystemScriptedImportConversionService
 	private final ExternalSystemEndpointRepository externalSystemEndpointRepository;
 
 	@NonNull
-	private final ExternalSystemConfigRepo externalSystemConfigRepo;
+	private final ExternalSystemConfigRepository externalSystemConfigRepo;
 
 	/**
 	 * Resolve the concrete camel command(s) for a Start/Stop run, per child, deriving REST vs SFTP

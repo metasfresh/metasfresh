@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements I_ExternalSystem_Endpoint, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 569918125L;
+	private static final long serialVersionUID = 272284119L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Endpoint (final Properties ctx, final int ExternalSystem_Endpoint_ID, @Nullable final String trxName)
@@ -184,6 +184,18 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
+	public void setIsFileUpload (final boolean IsFileUpload)
+	{
+		set_Value (COLUMNNAME_IsFileUpload, IsFileUpload);
+	}
+
+	@Override
+	public boolean isFileUpload() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFileUpload);
+	}
+
+	@Override
 	public void setLoginUsername (final @Nullable java.lang.String LoginUsername)
 	{
 		set_Value (COLUMNNAME_LoginUsername, LoginUsername);
@@ -196,54 +208,30 @@ public class X_ExternalSystem_Endpoint extends org.compiere.model.PO implements 
 	}
 
 	@Override
-	public void setOAuthTokenUrl (final @Nullable java.lang.String OAuthTokenUrl)
-	{
-		set_Value (COLUMNNAME_OAuthTokenUrl, OAuthTokenUrl);
-	}
-
-	@Override
-	public java.lang.String getOAuthTokenUrl()
-	{
-		return get_ValueAsString(COLUMNNAME_OAuthTokenUrl);
-	}
-
-	@Override
 	public void setOAuthScope (final @Nullable java.lang.String OAuthScope)
 	{
 		set_Value (COLUMNNAME_OAuthScope, OAuthScope);
 	}
 
 	@Override
-	public java.lang.String getOAuthScope()
+	public java.lang.String getOAuthScope() 
 	{
 		return get_ValueAsString(COLUMNNAME_OAuthScope);
 	}
 
 	@Override
-	public void setIsFileUpload (final boolean IsFileUpload)
+	public void setOAuthTokenUrl (final @Nullable java.lang.String OAuthTokenUrl)
 	{
-		set_Value (COLUMNNAME_IsFileUpload, IsFileUpload);
+		set_Value (COLUMNNAME_OAuthTokenUrl, OAuthTokenUrl);
 	}
 
 	@Override
-	public boolean isFileUpload()
+	public java.lang.String getOAuthTokenUrl() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsFileUpload);
+		return get_ValueAsString(COLUMNNAME_OAuthTokenUrl);
 	}
 
-	@Override
-	public void setOutboundHttpEP (final @Nullable java.lang.String OutboundHttpEP)
-	{
-		set_Value (COLUMNNAME_OutboundHttpEP, OutboundHttpEP);
-	}
-
-	@Override
-	public java.lang.String getOutboundHttpEP()
-	{
-		return get_ValueAsString(COLUMNNAME_OutboundHttpEP);
-	}
-
-	/**
+	/** 
 	 * OutboundHttpMethod AD_Reference_ID=541306
 	 * Reference name: Http_Method
 	 */
