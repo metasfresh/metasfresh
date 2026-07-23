@@ -13,14 +13,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(204)
 ;
 
--- 2026-07-22T08:07:57.198Z
-/* DDL */ SELECT public.db_alter_table('C_Customs_Invoice','ALTER TABLE public.C_Customs_Invoice ADD COLUMN C_PaymentTerm_ID NUMERIC(10)')
-;
-
--- 2026-07-22T08:07:57.275Z
-ALTER TABLE C_Customs_Invoice ADD CONSTRAINT CPaymentTerm_CCustomsInvoice FOREIGN KEY (C_PaymentTerm_ID) REFERENCES public.C_PaymentTerm DEFERRABLE INITIALLY DEFERRED
-;
-
 -- Field: Zollrechnung(540643,D) -> Zollrechnung(541767,D) -> Zahlungsbedingung
 -- Column: C_Customs_Invoice.C_PaymentTerm_ID
 -- 2026-07-22T08:10:48.909Z
