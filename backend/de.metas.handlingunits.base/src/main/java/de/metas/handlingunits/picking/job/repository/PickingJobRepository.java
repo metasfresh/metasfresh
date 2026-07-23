@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -24,6 +25,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
@@ -303,6 +306,51 @@ public class PickingJobRepository
 						step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()),
 						Collectors.mapping(step -> PickingJobId.ofRepoId(step.getM_Picking_Job_ID()),
 								Collectors.toList())));
+	}
+
+	/**
+	 * A filter matching every {@link I_M_ShipmentSchedule} that is referenced -- via {@link I_M_Picking_Job_Line} OR
+	 * {@link I_M_Picking_Job_Step} -- by a {@code Drafted} {@link I_M_Picking_Job}, i.e. still has an unfinished
+	 * picking job. Completed/Voided jobs (and schedules with no picking job at all) do not match.
+	 * <p>
+	 * Expressed as two {@code IN (subquery)} predicates OR'd together (Line- and Step-referenced) so the caller can
+	 * fold it into its own {@code M_ShipmentSchedule} selection query -- the offending schedules then come from a
+	 * single query, with no id round-trip. Unlike an {@code IN (id, id, ...)} list a subquery join has no JDBC
+	 * bind-parameter limit, so the caller's selection size is unbounded.
+	 */
+	@NonNull
+	public IQueryFilter<I_M_ShipmentSchedule> newUnfinishedPickingScheduleFilter()
+	{
+		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.create();
+
+		final IQuery<I_M_Picking_Job_Line> draftedJobLinesQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
+				.create();
+
+		final IQuery<I_M_Picking_Job_Step> draftedJobStepsQuery = queryBL
+				.createQueryBuilder(I_M_Picking_Job_Step.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
+				.create();
+
+		return queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+				.setJoinOr()
+				.addFilter(InSubQueryFilter.<I_M_ShipmentSchedule>builder()
+						.tableName(I_M_ShipmentSchedule.Table_Name)
+						.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID)
+						.subQuery(draftedJobLinesQuery)
+						.build())
+				.addFilter(InSubQueryFilter.<I_M_ShipmentSchedule>builder()
+						.tableName(I_M_ShipmentSchedule.Table_Name)
+						.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID)
+						.subQuery(draftedJobStepsQuery)
+						.build());
 	}
 
 	@NonNull
