@@ -174,7 +174,7 @@ public class CostingService implements ICostingService
 				.flatMap(handler -> {
 					try
 					{
-						// a handler returning null for a no-op path must not NPE the pipeline (me03#29817)
+						// a handler returning null for a no-op path must not NPE the pipeline
 						final CostDetailCreateResultsList results = handler.createOrUpdateCost(request);
 						return results != null ? results.stream() : Stream.empty();
 					}

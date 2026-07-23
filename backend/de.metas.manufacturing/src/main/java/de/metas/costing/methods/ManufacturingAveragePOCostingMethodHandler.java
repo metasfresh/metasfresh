@@ -281,7 +281,7 @@ public class ManufacturingAveragePOCostingMethodHandler implements CostingMethod
 			final CostDetailCreateRequest ignoredRequest,
 			final Duration ignoredTotalDuration)
 	{
-		// Activity-control costs are not tracked for this costing method -> post zero facts (me03#29817)
+		// Activity-control costs are not tracked for this costing method -> post zero facts
 		return null;
 	}
 

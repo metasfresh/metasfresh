@@ -269,7 +269,7 @@ public class ManufacturingLastPOCostingMethodHandler implements CostingMethodHan
 			final CostDetailCreateRequest request,
 			final Duration totalDuration)
 	{
-		// Activity-control costs are not tracked for this costing method -> post zero facts (me03#29817)
+		// Activity-control costs are not tracked for this costing method -> post zero facts
 		return null;
 	}
 

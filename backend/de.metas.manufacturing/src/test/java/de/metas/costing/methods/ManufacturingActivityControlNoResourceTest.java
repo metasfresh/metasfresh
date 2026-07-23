@@ -82,7 +82,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Covers the ActivityControl cost-collector posting path for the two production populations that
- * broke at Intercheese (me03#29817):
+ * must be graceful no-ops:
  * <ul>
  *     <li>the {@code S_Resource_ID = ResourceId.NO_RESOURCE} (540011) sentinel collision, which made
  *     {@code createCost} return {@code null} and NPE the pipeline, and</li>
@@ -226,7 +226,7 @@ public class ManufacturingActivityControlNoResourceTest
 	/**
 	 * Builds a resource whose id is the {@link ResourceId#NO_RESOURCE} sentinel (540011). No
 	 * {@code S_Resource} row is created on purpose: the sentinel is what the handler tests
-	 * {@code isNoResource()} against, exactly as the Intercheese collectors carried it.
+	 * {@code isNoResource()} against, exactly as the affected production collectors carried it.
 	 */
 	private static int noResourceSentinelId()
 	{
