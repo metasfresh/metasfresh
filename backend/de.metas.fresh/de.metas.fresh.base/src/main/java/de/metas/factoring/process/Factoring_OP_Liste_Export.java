@@ -181,7 +181,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 
 		if (factorers.isEmpty())
 		{
-			throw new AdempiereException(MSG_NoFactorer.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId))
+			throw new AdempiereException(MSG_NoFactorer.toAD_MessageWithMarkers() + " " + orgDAO.getOrgName(orgId))
 					.markAsUserValidationError();
 		}
 
@@ -197,7 +197,7 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 				names.append(fp.getName());
 			}
 			throw new AdempiereException(MSG_MultipleFactorers.toAD_MessageWithMarkers()
-					+ " " + resolveOrgName(orgId) + ": " + names)
+					+ " " + orgDAO.getOrgName(orgId) + ": " + names)
 					.markAsUserValidationError();
 		}
 
@@ -218,18 +218,6 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		return new FactorerBpInfo(factorer.getName(),
 				factorer.getFactoringContractNo(),
 				factorer.getFactoringClientAccountId());
-	}
-
-	private String resolveOrgName(@NonNull final OrgId orgId)
-	{
-		try
-		{
-			return orgDAO.getById(orgId).getName();
-		}
-		catch (final Exception e)
-		{
-			return String.valueOf(orgId.getRepoId());
-		}
 	}
 
 	// -------------------------------------------------------------------------
