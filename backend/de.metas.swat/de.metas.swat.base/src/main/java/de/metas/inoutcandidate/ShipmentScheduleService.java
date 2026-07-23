@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
@@ -50,6 +51,7 @@ import java.util.function.Consumer;
 public class ShipmentScheduleService
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	@NonNull private final ShipmentScheduleRepository shipmentScheduleRepository;
 	@NonNull private final ShipmentScheduleCarrierServiceRepository carrierServiceRepository;
@@ -210,7 +212,19 @@ public class ShipmentScheduleService
 		final ShipmentScheduleId shipmentScheduleId = request.getShipmentScheduleId();
 		if (shipmentScheduleId == null) {return true;}
 
-		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+		if (request.isAuto)
+		{
+			// AUTO: ineligible the moment a picking-job-schedule merely exists.
+			return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
+		}
+
+		// MANUAL: ineligible only once picking is actively started, i.e. an active, not-yet-shipped picked qty exists.
+		return !isPickingActivelyStarted(shipmentScheduleId);
+	}
+
+	private boolean isPickingActivelyStarted(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return shipmentScheduleAllocDAO.retrieveNotOnShipmentLineQty(shipmentScheduleId).signum() > 0;
 	}
 
 }
