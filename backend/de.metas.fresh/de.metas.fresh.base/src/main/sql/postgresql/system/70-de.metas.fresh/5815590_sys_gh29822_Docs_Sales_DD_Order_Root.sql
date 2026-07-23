@@ -1,3 +1,5 @@
+-- me03 #29822: Factoring - show factoring bank account on distribution order documents
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_DD_Order_Root (IN Record_ID numeric, IN AD_Language Character Varying(6))
 ;
 

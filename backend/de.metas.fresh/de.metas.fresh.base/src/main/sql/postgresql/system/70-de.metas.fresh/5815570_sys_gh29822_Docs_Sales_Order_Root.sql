@@ -1,7 +1,9 @@
+-- me03 #29822: Factoring - show factoring bank account on sales order documents (quotations, orders, order confirmations)
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6));
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_Root(IN p_record_id numeric, IN ad_language Character Varying (6))
-RETURNS TABLE 
+RETURNS TABLE
 	(
 	ad_org_id numeric(10,0),
 	docstatus character(2),
@@ -14,7 +16,7 @@ RETURNS TABLE
 	isFactoringPartner character(1)
 	)
 AS
-$$	
+$$
 
 SELECT
 	o.AD_Org_ID,
