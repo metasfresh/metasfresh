@@ -18,7 +18,6 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Column_ID, AD_Tab
                       EntityType, DisplayLength, DisplayLogic,
                       IsDisplayed, IsDisplayedGrid,
                       IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
-                      IsCentrallyMaintained,
                       SeqNo, SeqNoGrid)
 VALUES (0, 0, 781768 /*From ID Server*/, 592972, 220,
         TO_TIMESTAMP('2026-07-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
@@ -26,7 +25,6 @@ VALUES (0, 0, 781768 /*From ID Server*/, 592972, 220,
         'D', 20, '@IsFactorer@=''Y''',
         'Y', 'N',
         'N', 'N', 'N', 'N', 'N',
-        'Y',
         10, 0)
 ;
 
@@ -62,7 +60,6 @@ INSERT INTO AD_Field (AD_Client_ID, AD_Org_ID, AD_Field_ID, AD_Column_ID, AD_Tab
                       EntityType, DisplayLength, DisplayLogic,
                       IsDisplayed, IsDisplayedGrid,
                       IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine,
-                      IsCentrallyMaintained,
                       SeqNo, SeqNoGrid)
 VALUES (0, 0, 781769 /*From ID Server*/, 592973, 220,
         TO_TIMESTAMP('2026-07-22 10:00:01', 'YYYY-MM-DD HH24:MI:SS'), 100,
@@ -70,7 +67,6 @@ VALUES (0, 0, 781769 /*From ID Server*/, 592973, 220,
         'D', 20, '@IsFactorer@=''Y''',
         'Y', 'N',
         'N', 'N', 'N', 'N', 'N',
-        'Y',
         20, 0)
 ;
 
