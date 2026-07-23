@@ -65,7 +65,7 @@ class M_HU_PI_VersionInterceptorTest
 
 			assertThatThrownBy(() -> interceptor.rejectCalcMethodOnNonTUVersions(piVersion))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("PackageDimensionCalcMethod can only be set on Transport Unit (TU) packing instruction versions");
+					.hasMessageContaining("M_HU_PI_Version_CalcMethodOnlyOnTU");
 		}
 
 		/** VHU pi-version with a calc method set must throw — VHU is not TU. */
@@ -79,7 +79,7 @@ class M_HU_PI_VersionInterceptorTest
 
 			assertThatThrownBy(() -> interceptor.rejectCalcMethodOnNonTUVersions(piVersion))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("PackageDimensionCalcMethod can only be set on Transport Unit (TU) packing instruction versions");
+					.hasMessageContaining("M_HU_PI_Version_CalcMethodOnlyOnTU");
 		}
 
 		/** Null HU_UnitType with a calc method set must throw — null unit type is not TU. */
@@ -93,7 +93,7 @@ class M_HU_PI_VersionInterceptorTest
 
 			assertThatThrownBy(() -> interceptor.rejectCalcMethodOnNonTUVersions(piVersion))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("PackageDimensionCalcMethod can only be set on Transport Unit (TU) packing instruction versions");
+					.hasMessageContaining("M_HU_PI_Version_CalcMethodOnlyOnTU");
 		}
 
 		/**
@@ -110,7 +110,7 @@ class M_HU_PI_VersionInterceptorTest
 
 			assertThatThrownBy(() -> interceptor.rejectCalcMethodOnNonTUVersions(piVersion))
 					.isInstanceOf(AdempiereException.class)
-					.hasMessageContaining("PackageDimensionCalcMethod can only be set on Transport Unit (TU) packing instruction versions");
+					.hasMessageContaining("M_HU_PI_Version_CalcMethodOnlyOnTU");
 		}
 	}
 
