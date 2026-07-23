@@ -102,22 +102,25 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		return shipmentScheduleUpdater.isRunning();
 	}
 
-	/** A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change narrows to its own schedule. */
-	private boolean shouldNarrowToSelf(@NonNull final ProductId productId)
+	/**
+	 * A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change narrows to its own
+	 * schedule. A null product (product-less charge/freight line) narrows the same way, since {@link IProductBL#isStocked}
+	 * is null-safe and returns {@code false} for it.
+	 */
+	private boolean shouldNarrowToSelf(@Nullable final ProductId productId)
 	{
 		return !productBL.isStocked(productId);
 	}
 
 	/**
 	 * Narrow-decision from a raw {@code M_Product_ID} that may be 0: a charge/freight line has no product
-	 * ({@code M_Product_ID=0}; see {@code MOrderLine}/{@code MInOutLine} zeroing it when {@code C_Charge_ID} is set),
-	 * so it never competes for stock and narrows exactly like a non-stocked product. One raw-id entry point keeps every
-	 * product-bearing line type (inout line, order line, …) on the same null-safe path.
+	 * ({@code M_Product_ID=0}; see {@code MOrderLine}/{@code MInOutLine} zeroing it when {@code C_Charge_ID} is set).
+	 * One raw-id entry point keeps every product-bearing line type (inout line, order line, …) on the same
+	 * {@link #shouldNarrowToSelf(ProductId)} decision.
 	 */
 	private boolean shouldNarrowToSelfByProductRepoId(final int productRepoId)
 	{
-		// isStocked(null) == false, so a product-less charge line (repoId 0 → null) narrows just like a non-stocked product.
-		return !productBL.isStocked(ProductId.ofRepoIdOrNull(productRepoId));
+		return shouldNarrowToSelf(ProductId.ofRepoIdOrNull(productRepoId));
 	}
 
 	@Override
