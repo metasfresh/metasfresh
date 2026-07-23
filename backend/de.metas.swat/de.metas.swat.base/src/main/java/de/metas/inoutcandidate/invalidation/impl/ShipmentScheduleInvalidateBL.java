@@ -103,20 +103,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	}
 
 	/**
-	 * #31050 durable fix: a non-stocked (i.e. not Item+IsStocked, AC-D3) product that is also not a picking-BOM
-	 * component doesn't need the broad product+warehouse segment invalidation — there is no other shipment schedule
-	 * that could be affected by this product's change, so narrowing to the changed record itself is safe and avoids
-	 * needlessly invalidating unrelated schedules for the same product/warehouse.
-	 * <p>
-	 * A picking-BOM component is excluded from narrowing because its BOM-parent's schedules are only ever reached
-	 * via the broad segment + {@link #explodeByPickingBOMs(IShipmentScheduleSegment)}.
+	 * A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change to it can only
+	 * affect its own shipment schedule. Narrow the invalidation to that record instead of the whole
+	 * product+warehouse segment.
 	 */
 	private boolean shouldNarrowToSelf(@NonNull final ProductId productId)
 	{
-		return !productBL.isStocked(productId)
-				&& pickingBOMService.getPickingBOMsReversedIndex()
-						.getBOMProductIdsByComponentId(productId)
-						.isEmpty();
+		return !productBL.isStocked(productId);
 	}
 
 	@Override
@@ -199,11 +192,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			if (shouldNarrowToSelf(productId))
 			{
 				flagForRecompute(inoutLine);
-				continue;
 			}
-
-			final IShipmentScheduleSegment segment = createSegmentForInOutLine(bpartnerId, inoutLine);
-			segments.add(segment);
+			else
+			{
+				segments.add(createSegmentForInOutLine(bpartnerId, inoutLine));
+			}
 		}
 
 		notifySegmentsChanged(segments);
@@ -216,11 +209,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		if (shouldNarrowToSelf(productId))
 		{
 			flagForRecompute(shipmentLine);
-			return;
 		}
-
-		final IShipmentScheduleSegment segment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
-		notifySegmentChanged(segment);
+		else
+		{
+			notifySegmentChanged(createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine));
+		}
 	}
 
 	/**
@@ -253,11 +246,11 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		if (shouldNarrowToSelf(productId))
 		{
 			flagForRecompute(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
-			return;
 		}
-
-		final IShipmentScheduleSegment segment = createSegmentForShipmentSchedule(schedule);
-		notifySegmentChanged(segment);
+		else
+		{
+			notifySegmentChanged(createSegmentForShipmentSchedule(schedule));
+		}
 	}
 
 	@Override
@@ -294,19 +287,18 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		if (shouldNarrowToSelf(productId))
 		{
 			invalidateJustForOrderLine(orderLine);
-			return;
 		}
-
-		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
-		// So we have to notify *all* partners' segments.
-		final int bpartnerId = 0;
-		final IShipmentScheduleSegment segment = ShipmentScheduleSegments.builder()
-				.bpartnerId(bpartnerId)
-				.productId(orderLine.getM_Product_ID())
-				.warehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
-				.attributeSetInstanceId(orderLine.getM_AttributeSetInstance_ID())
-				.build();
-		notifySegmentChanged(segment);
+		else
+		{
+			// we can't restrict the segment to the order line's bpartner, because the qty could in theory be
+			// reallocated to a *different* partner, so we notify *all* partners' segments (bpartnerId 0).
+			notifySegmentChanged(ShipmentScheduleSegments.builder()
+					.bpartnerId(0)
+					.productId(orderLine.getM_Product_ID())
+					.warehouseIdIfNotNull(WarehouseId.ofRepoIdOrNull(orderLine.getM_Warehouse_ID()))
+					.attributeSetInstanceId(orderLine.getM_AttributeSetInstance_ID())
+					.build());
+		}
 	}
 
 	@Override

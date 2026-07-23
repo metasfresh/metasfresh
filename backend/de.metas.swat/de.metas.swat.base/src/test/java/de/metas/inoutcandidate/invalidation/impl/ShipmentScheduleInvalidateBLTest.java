@@ -158,17 +158,15 @@ class ShipmentScheduleInvalidateBLTest
 
 	/**
 	 * The three product-specific {@code notifySegmentChangedFor*} entry points (and the shipment-batch
-	 * {@code notifySegmentsChangedForShipment}) route a <b>non-stocked, non-picking-BOM-component</b> product
-	 * change to the already-existing self-by-id invalidation ({@link ShipmentScheduleInvalidateBL#invalidateJustForOrderLine},
+	 * {@code notifySegmentsChangedForShipment}) route a <b>non-stocked</b> product change to the already-existing
+	 * self-by-id invalidation ({@link ShipmentScheduleInvalidateBL#invalidateJustForOrderLine},
 	 * {@link ShipmentScheduleInvalidateBL#flagForRecompute(ShipmentScheduleId)}, {@link ShipmentScheduleInvalidateBL#flagForRecompute(I_M_InOutLine)})
 	 * instead of the broad product+warehouse segment ({@link ShipmentScheduleInvalidateBL#notifySegmentChanged(IShipmentScheduleSegment)}).
-	 * A non-stocked product that IS a picking-BOM component keeps the broad path, so the BOM-parent's schedules
-	 * are still reached via {@code explodeByPickingBOMs}.
+	 * A stocked product keeps the broad path.
 	 * <p>
-	 * The discriminator is {@code !IProductBL.isStocked(productId) && pickingBOMsReversedIndex.getBOMProductIdsByComponentId(productId).isEmpty()},
-	 * where {@code IProductBL.isStocked} is the composite Item-and-IsStocked check — never the raw
-	 * {@code M_Product.IsStocked} column alone (see {@code nonItemProductWithStockedColumn_*}, which a raw-column
-	 * reading would get wrong).
+	 * The discriminator is {@code !IProductBL.isStocked(productId)}, where {@code isStocked} is the composite
+	 * Item-and-IsStocked check — never the raw {@code M_Product.IsStocked} column alone (see
+	 * {@code nonItemProductWithStockedColumn_*}, which a raw-column reading would get wrong).
 	 * <p>
 	 * These tests verify ROUTING (which internal method fires), not the raw SQL side effects: the only real
 	 * collaborator boundary here is {@link PickingBOMService} (mocked, as in {@link ExplodeByPickingBOMs} above);
@@ -375,18 +373,20 @@ class ShipmentScheduleInvalidateBLTest
 		}
 
 		/**
-		 * Option-A carve-out guard: a non-stocked product that IS a picking-BOM component must KEEP the broad
-		 * segment path (NOT narrow to self) — otherwise the BOM-parent's shipment schedules would never be
-		 * re-invalidated via {@code explodeByPickingBOMs}.
+		 * A non-stocked product narrows to self even when it IS a picking-BOM component: it never competes for
+		 * stock, so it cannot constrain its BOM-parent's pickable qty either — the broad segment (and the
+		 * {@code explodeByPickingBOMs} parent re-invalidation it triggers) would achieve nothing. BOM membership
+		 * does not change the decision.
 		 */
 		@Test
-		void nonStocked_butPickingBOMComponent_orderLineChange_invalidatesFullSegment()
+		void nonStocked_pickingBOMComponent_orderLineChange_stillNarrowsToSelf()
 		{
 			final I_M_Product nonStockedBomComponent = createProduct("NonStockedBomComponent-OL", false, X_M_Product.PRODUCTTYPE_Item);
 			final ProductId componentProductId = ProductId.ofRepoId(nonStockedBomComponent.getM_Product_ID());
 			final I_M_Warehouse warehouse = createWarehouse("WH-NS-BOM-OL");
 			final I_C_OrderLine orderLine = createOrderLine(nonStockedBomComponent, warehouse);
 
+			// Registered as a picking-BOM component; it must STILL narrow (BOM membership is irrelevant).
 			final PickingBOMsReversedIndex reversedIndexWithComponent = PickingBOMsReversedIndex.ofBOMProductIdsByComponentId(
 					ImmutableSetMultimap.of(componentProductId, ProductId.ofRepoId(999_999)));
 			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(reversedIndexWithComponent);
@@ -396,9 +396,9 @@ class ShipmentScheduleInvalidateBLTest
 			bl.notifySegmentChangedForOrderLine(orderLine);
 
 			verify(bl, times(1))
-					.notifySegmentChanged(any());
+					.invalidateJustForOrderLine(orderLine);
 			verify(bl, never())
-					.invalidateJustForOrderLine(any());
+					.notifySegmentChanged(any());
 		}
 
 		/**
