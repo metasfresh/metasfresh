@@ -237,7 +237,7 @@ class ShipmentScheduleInvalidateBLTest
 			return orderLine;
 		}
 
-		/** A charge/freight sales-order line: {@code C_Charge_ID} set, {@code M_Product_ID} left 0 (see {@code MOrderLine#setC_Charge_ID}). */
+		/** A charge/freight sales-order line: {@code C_Charge_ID} set, {@code M_Product_ID} left 0 ({@code MOrderLine#beforeSave} zeroes it when a charge is set). */
 		private I_C_OrderLine createChargeOrderLine(final I_M_Warehouse warehouse)
 		{
 			final I_C_Charge charge = InterfaceWrapperHelper.newInstance(I_C_Charge.class);
