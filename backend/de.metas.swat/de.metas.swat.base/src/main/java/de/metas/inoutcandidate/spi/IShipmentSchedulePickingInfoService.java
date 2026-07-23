@@ -22,18 +22,23 @@ package de.metas.inoutcandidate.spi;
  * #L%
  */
 
-import de.metas.inout.ShipmentScheduleId;
-import lombok.NonNull;
-
-import java.util.Set;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import org.adempiere.ad.dao.IQueryFilter;
 
 /**
  * Reports whether a shipment schedule still has picking work in progress.
+ * <p>
+ * The bridge exists because {@code de.metas.swat.base} (where the close process lives) has no dependency on
+ * {@code de.metas.handlingunits.base} (where {@code M_Picking_Job} lives), so the close process cannot name the
+ * picking-job tables directly. The {@code @Service} implementation lives in the handlingunits module and is resolved
+ * via {@code SpringContextHolder}.
  */
 public interface IShipmentSchedulePickingInfoService
 {
 	/**
-	 * @return the subset of {@code scheduleIds} that have an unfinished (Drafted) picking job.
+	 * @return a filter matching every {@link I_M_ShipmentSchedule} that still has an unfinished (Drafted) picking job
+	 * 		(referenced via {@code M_Picking_Job_Line} OR {@code M_Picking_Job_Step}). Meant to be folded into the
+	 * 		caller's own selection query so the offending schedules come from a single query — no id round-trip.
 	 */
-	Set<ShipmentScheduleId> retrieveScheduleIdsWithUnfinishedPicking(@NonNull Set<ShipmentScheduleId> scheduleIds);
+	IQueryFilter<I_M_ShipmentSchedule> newUnfinishedPickingFilter();
 }

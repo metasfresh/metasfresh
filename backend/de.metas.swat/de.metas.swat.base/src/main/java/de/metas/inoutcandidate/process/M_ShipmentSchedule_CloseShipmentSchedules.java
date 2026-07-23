@@ -24,10 +24,10 @@ import java.math.BigDecimal;
  * #L%
  */
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryFilter;
@@ -41,7 +41,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -64,28 +63,41 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		// 1) Hard-block, all-or-nothing, over the FULL user selection: if any selected schedule still has an
-		// unfinished (Drafted) picking job, reject the whole close and close NOTHING.
-		final List<I_M_ShipmentSchedule> fullSelection = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+		// unfinished (Drafted) picking job, reject the whole close and close NOTHING. The unfinished-picking check
+		// is a subquery filter folded into the selection query, so the offending schedules come from a single query
+		// (no id round-trip / in-memory intersection).
+		final IShipmentSchedulePickingInfoService pickingInfoService = SpringContextHolder.instance.getBean(IShipmentSchedulePickingInfoService.class);
+		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+				.filter(pickingInfoService.newUnfinishedPickingFilter())
 				.create()
 				.list();
-		assertNoneHasUnfinishedPicking(fullSelection);
+		if (!offendingSchedules.isEmpty())
+		{
+			final String offendingIdentifiers = toHumanReadableIdentifiersCsv(offendingSchedules);
+			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers).markAsUserValidationError();
+		}
 
 		// 2) Unchanged pre-existing eligibility: among the (now proven picking-clean) selection, only schedules
 		// with QtyPickList=0 are actually closed; schedules with picked-but-unshipped qty are silently skipped.
-		// Derived in-memory from the already-loaded fullSelection (same base query) to avoid a second DB round-trip
-		// over a potentially large selection.
-		final List<I_M_ShipmentSchedule> schedulesToClose = fullSelection.stream()
-				.filter(M_ShipmentSchedule_CloseShipmentSchedules::isEligibleForClose)
-				.collect(Collectors.toList());
+		// Streamed (not materialized) to avoid loading a potentially large selection into memory.
+		final Iterator<I_M_ShipmentSchedule> selectionIterator = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+				.create()
+				.iterate(I_M_ShipmentSchedule.class);
 
-		if (schedulesToClose.isEmpty())
+		boolean anyClosed = false;
+		while (selectionIterator.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@");
+			final I_M_ShipmentSchedule schedule = selectionIterator.next();
+			if (isEligibleForClose(schedule))
+			{
+				shipmentScheduleBL.closeShipmentSchedule(schedule);
+				anyClosed = true;
+			}
 		}
 
-		for (final I_M_ShipmentSchedule schedule : schedulesToClose)
+		if (!anyClosed)
 		{
-			shipmentScheduleBL.closeShipmentSchedule(schedule);
+			throw new AdempiereException("@NoSelection@");
 		}
 
 		return MSG_OK;
@@ -102,33 +114,6 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	{
 		final BigDecimal qtyPickList = InterfaceWrapperHelper.getValueOrNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
 		return qtyPickList != null && qtyPickList.signum() == 0;
-	}
-
-	/**
-	 * Rejects the whole close (all-or-nothing) when at least one schedule in {@code fullSelection} is still
-	 * referenced by an unfinished (Drafted) picking job.
-	 */
-	private void assertNoneHasUnfinishedPicking(final List<I_M_ShipmentSchedule> fullSelection)
-	{
-		final ImmutableSet<ShipmentScheduleId> selectedScheduleIds = fullSelection.stream()
-				.map(schedule -> ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()))
-				.collect(ImmutableSet.toImmutableSet());
-
-		final IShipmentSchedulePickingInfoService pickingInfoService = SpringContextHolder.instance.getBean(IShipmentSchedulePickingInfoService.class);
-		final Set<ShipmentScheduleId> offendingScheduleIds = pickingInfoService.retrieveScheduleIdsWithUnfinishedPicking(selectedScheduleIds);
-
-		if (offendingScheduleIds.isEmpty())
-		{
-			return;
-		}
-
-		final List<I_M_ShipmentSchedule> offendingSchedules = fullSelection.stream()
-				.filter(schedule -> offendingScheduleIds.contains(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID())))
-				.collect(Collectors.toList());
-
-		final String offendingIdentifiers = toHumanReadableIdentifiersCsv(offendingSchedules);
-
-		throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers).markAsUserValidationError();
 	}
 
 	/**

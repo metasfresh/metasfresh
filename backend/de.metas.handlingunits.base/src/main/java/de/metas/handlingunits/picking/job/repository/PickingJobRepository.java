@@ -3,7 +3,6 @@ package de.metas.handlingunits.picking.job.repository;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import de.metas.bpartner.BPartnerId;
 import de.metas.dao.ValueRestriction;
 import de.metas.document.DocumentNoFilter;
@@ -17,6 +16,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobReferenceQuery;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -25,6 +25,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.InSubQueryFilter;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
@@ -34,7 +36,6 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,14 +57,6 @@ import java.util.stream.Stream;
 public class PickingJobRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	/**
-	 * PostgreSQL/JDBC caps bind parameters at {@code Short.MAX_VALUE} (32767) — a 2-byte slot per parameter. This
-	 * constant caps the number of {@code M_ShipmentSchedule_ID} values folded into a single {@code IN (...)} filter,
-	 * with headroom below that hard limit (mirrors
-	 * {@code de.metas.picking.job_schedule.repository.PickingJobScheduleRepository#MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY}).
-	 */
-	@VisibleForTesting static final int MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY = 30000;
 
 	@VisibleForTesting
 	public static PickingJobRepository newInstanceForUnitTesting()
@@ -316,44 +309,17 @@ public class PickingJobRepository
 	}
 
 	/**
-	 * Returns the subset of {@code scheduleIds} that are referenced -- via {@link I_M_Picking_Job_Line} OR
-	 * {@link I_M_Picking_Job_Step} -- by a {@code Drafted} {@link I_M_Picking_Job}, i.e. have an unfinished
-	 * picking job. Completed/Voided jobs (and schedules with no picking job at all) do not count.
+	 * A filter matching every {@link I_M_ShipmentSchedule} that is referenced -- via {@link I_M_Picking_Job_Line} OR
+	 * {@link I_M_Picking_Job_Step} -- by a {@code Drafted} {@link I_M_Picking_Job}, i.e. still has an unfinished
+	 * picking job. Completed/Voided jobs (and schedules with no picking job at all) do not match.
+	 * <p>
+	 * Expressed as two {@code IN (subquery)} predicates OR'd together (Line- and Step-referenced) so the caller can
+	 * fold it into its own {@code M_ShipmentSchedule} selection query -- the offending schedules then come from a
+	 * single query, with no id round-trip. Unlike an {@code IN (id, id, ...)} list a subquery join has no JDBC
+	 * bind-parameter limit, so the caller's selection size is unbounded.
 	 */
 	@NonNull
-	public ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob(@NonNull final Set<ShipmentScheduleId> scheduleIds)
-	{
-		return getScheduleIdsWithDraftedPickingJob(scheduleIds, MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY);
-	}
-
-	@NonNull
-	@VisibleForTesting
-	ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob(@NonNull final Set<ShipmentScheduleId> scheduleIds, final int maxIdsPerChunk)
-	{
-		if (scheduleIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-
-		if (scheduleIds.size() <= maxIdsPerChunk)
-		{
-			return getScheduleIdsWithDraftedPickingJob0(scheduleIds);
-		}
-
-		// Each chunk is a separate statement, so under READ COMMITTED there is no cross-chunk MVCC snapshot consistency for id
-		// sets > MAX_SHIPMENT_SCHEDULE_IDS_PER_QUERY. Acceptable here: the result is a Set, deduplicated across chunks, and the
-		// caller (the user-Close guard) only needs to know WHICH schedules currently have an unfinished picking job.
-		final Iterable<List<ShipmentScheduleId>> partitions = Iterables.partition(scheduleIds, maxIdsPerChunk);
-		final ImmutableSet.Builder<ShipmentScheduleId> result = ImmutableSet.builder();
-		for (final List<ShipmentScheduleId> chunk : partitions)
-		{
-			result.addAll(getScheduleIdsWithDraftedPickingJob0(chunk));
-		}
-		return result.build();
-	}
-
-	@NonNull
-	private ImmutableSet<ShipmentScheduleId> getScheduleIdsWithDraftedPickingJob0(@NonNull final Collection<ShipmentScheduleId> scheduleIds)
+	public IQueryFilter<I_M_ShipmentSchedule> newUnfinishedPickingScheduleFilter()
 	{
 		final IQuery<I_M_Picking_Job> draftedJobsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
@@ -361,26 +327,30 @@ public class PickingJobRepository
 				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
 				.create();
 
-		final Stream<ShipmentScheduleId> scheduleIdsFromLines = queryBL
+		final IQuery<I_M_Picking_Job_Line> draftedJobLinesQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job_Line.class)
-				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
-				.create()
-				.stream()
-				.map(line -> ShipmentScheduleId.ofRepoId(line.getM_ShipmentSchedule_ID()));
+				.create();
 
-		final Stream<ShipmentScheduleId> scheduleIdsFromSteps = queryBL
+		final IQuery<I_M_Picking_Job_Step> draftedJobStepsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job_Step.class)
-				.addInArrayFilter(I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_Picking_Job_Step.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, draftedJobsQuery)
-				.create()
-				.stream()
-				.map(step -> ShipmentScheduleId.ofRepoId(step.getM_ShipmentSchedule_ID()));
+				.create();
 
-		return Stream.concat(scheduleIdsFromLines, scheduleIdsFromSteps)
-				.collect(ImmutableSet.toImmutableSet());
+		return queryBL.createCompositeQueryFilter(I_M_ShipmentSchedule.class)
+				.setJoinOr()
+				.addFilter(InSubQueryFilter.<I_M_ShipmentSchedule>builder()
+						.tableName(I_M_ShipmentSchedule.Table_Name)
+						.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID)
+						.subQuery(draftedJobLinesQuery)
+						.build())
+				.addFilter(InSubQueryFilter.<I_M_ShipmentSchedule>builder()
+						.tableName(I_M_ShipmentSchedule.Table_Name)
+						.matchingColumnNames(I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID, I_M_Picking_Job_Step.COLUMNNAME_M_ShipmentSchedule_ID)
+						.subQuery(draftedJobStepsQuery)
+						.build());
 	}
 
 	@NonNull
