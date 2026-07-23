@@ -99,10 +99,14 @@ new child PLV.
     test.setTimeout(120000);
 
     // --- Network instrumentation on the PLV document path ---
-    //   notFoundResponses : any 404 (the bug signature — the dropdown/document GET that failed before the fix)
-    //   saveErrorReasons  : the failed colliding save (unique-index INSERT failure) — proves the bug condition was hit
+    //   notFoundResponses      : any 404 (the bug signature — the dropdown/document GET that failed before the fix)
+    //   saveErrorReasons       : the localized reason(s) of the failed save — for debug/allure context only
+    //   saveErrorFriendlyFlags : the language-invariant saveStatus.exception.userFriendlyError of each failed
+    //                            save — a true here proves the failure is a USER-VALIDATION (friendly) rejection
+    //                            (the bug condition), asserted instead of the localized reason text
     const notFoundResponses = [];
     const saveErrorReasons = [];
+    const saveErrorFriendlyFlags = [];
     page.on('response', async (resp) => {
       const u = resp.url();
       if (!u.includes(`/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}/`) || !u.includes(`/${PLV_TAB_ID}/`)) {
@@ -119,6 +123,7 @@ new child PLV.
           for (const d of docs) {
             if (d && d.saveStatus && d.saveStatus.error) {
               saveErrorReasons.push(d.saveStatus.reason || '(no reason)');
+              saveErrorFriendlyFlags.push(d.saveStatus.exception?.userFriendlyError === true);
             }
           }
         } catch (e) {
@@ -198,8 +203,13 @@ new child PLV.
       .catch(() => false);
 
     // --- Assertions ---
-    // (a) the bug condition was actually hit: the colliding save failed server-side with the friendly duplicate-date error
-    expect(saveErrorReasons.join(' | '), 'the colliding new PLV save failed on the unique index (friendly duplicate-date error)').toMatch(/Datum|date|Version/i);
+    // (a) the bug condition was actually hit: the colliding save failed server-side with a USER-VALIDATION
+    //     (friendly) rejection. Asserted via the language-invariant userFriendlyError flag, not the localized
+    //     reason text (reasons kept in the message for debug context only).
+    expect(
+      saveErrorFriendlyFlags.some((f) => f === true),
+      `the colliding new PLV save must fail with a user-validation (friendly) error. Reasons seen: ${JSON.stringify(saveErrorReasons)}`,
+    ).toBe(true);
     // (b) THE FIX: the document was NOT evicted → no 404 on the PLV document path (the exact symptom)
     expect(notFoundResponses, `no 404 on the PLV document path (the colliding-ValidFrom bug). Captured: ${JSON.stringify(notFoundResponses)}`).toEqual([]);
     // (c) user-visible proof: the Preislisten-Schema dropdown still opens after the failed save
@@ -228,7 +238,7 @@ with no 404 on that path.
     // Records EVERY response on the PLV path (PATCH saves + GET re-fetches) in arrival order, with the
     // server-side saveStatus.error of each returned document — so we can prove the post-failure GET retained
     // the error (the carve-out) rather than returning a clean, evicted-and-rebuilt document.
-    const events = [];      // { seq, method, status, error, reason, saved }
+    const events = [];      // { seq, method, status, error, userFriendlyError, reason, saved }
     const notFoundResponses = [];
     let seq = 0;
     page.on('response', async (resp) => {
@@ -254,6 +264,7 @@ with no 404 on that path.
               method,
               status,
               error: !!d.saveStatus.error,
+              userFriendlyError: d.saveStatus.exception?.userFriendlyError === true,
               reason: d.saveStatus.reason || null,
               saved: !!d.saveStatus.saved,
             });
@@ -336,20 +347,28 @@ with no 404 on that path.
 
     const postFailureGets = events.filter((e) => e.seq > failingPatch.seq && e.method === 'GET' && e.error !== null);
 
-    // 7. SECONDARY PROOF (best-effort, soft): the on-screen error indicator is still shown in the detail after
-    //    the network settles. Kept soft so a rendering-timing quirk never flakes the network-level proof.
+    // 7. SECONDARY PROOF (on screen): the window error indicator is shown AND stays shown after the network
+    //    settles. This is the user-visible half of the bug ("nicht oder nur sehr kurz angezeigt") — the error
+    //    must NOT flash and revert. Language-invariant selector: the Indicator component renders the ERROR
+    //    state as `<div class="bar error">` inside `.window-indicator-container` (IndicatorState.ERROR ===
+    //    'error'; see components/app/Indicator.js) — no localized text involved. toBeVisible auto-waits, so
+    //    this is a hard assertion that still tolerates render timing (no soft catch).
     await page.waitForLoadState('networkidle', { timeout: FAST_ACTION_TIMEOUT }).catch(() => {});
-    const onScreenErrorVisible = await page
-      .locator('.indicator-error, .form-field-ValidFrom .input-error, .meta-modal-header .indicator-error')
-      .first()
-      .isVisible()
-      .catch(() => false);
-    console.log(`[plv-edit-collision] on-screen error indicator visible (soft): ${onScreenErrorVisible}`);
-    allure.attachment('On-screen error indicator (soft check)', String(onScreenErrorVisible), 'text/plain');
+    // Persistence (no revert) is proven deterministically by assertion (b) below: the post-failure GET STILL
+    // reports error===true, so no clean document ever arrives to revert the render. Here we assert the user
+    // actually SEES the error indicator (the on-screen half of the bug), after the network has settled.
+    const errorIndicator = page.locator('.window-indicator-container .bar.error').first();
+    await expect(errorIndicator, 'the on-screen window error indicator must be shown after the failed edit').toBeVisible({
+      timeout: SLOW_ACTION_TIMEOUT,
+    });
 
     // --- Assertions ---
-    // (a) bug condition hit: the colliding edit failed server-side with the friendly duplicate-date reason.
-    expect(failingPatch.reason || '', 'the colliding edit failed on the unique index (friendly duplicate-date error)').toMatch(/Datum|date|Version/i);
+    // (a) bug condition hit: the colliding edit failed server-side with a USER-VALIDATION (friendly) rejection.
+    //     Asserted via the language-invariant userFriendlyError flag, not the localized reason (kept for debug).
+    expect(
+      failingPatch.userFriendlyError,
+      `the colliding edit must fail with a user-validation (friendly) error. Failing PATCH: ${JSON.stringify(failingPatch)}`,
+    ).toBe(true);
     // (b) THE CARVE-OUT: at least one post-failure GET on the PLV path retained error===true (not evicted / not reverted).
     expect(
       postFailureGets.some((e) => e.error === true),

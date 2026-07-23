@@ -633,8 +633,15 @@ public class DocumentCollection
 	 * explicit full-invalidation request — so this method can return {@code false} despite
 	 * {@code callerRequestedFullInvalidation == true}.
 	 *
+	 * @param callerRequestedFullInvalidation   the caller explicitly asked to fully invalidate the root (not
+	 *                                          just a child-triggered self-heal); still overridden by the
+	 *                                          unsaved-new-included-document guard (see note above)
+	 * @param rootHasSaveError                  the cached root currently carries a save error at all — the gate
+	 *                                          for the save-error eviction branch
 	 * @param rootSaveErrorIsUserValidation     the root's save error (if any) is a user-fixable business
 	 *                                          rejection, not a system/technical fault — kept, not evicted
+	 * @param rootValidStatusIsValid            the root's valid-status is currently valid; when {@code false}
+	 *                                          the invalid-valid-status eviction branch applies
 	 * @param rootValidStatusInvalidIsUserValidation the root's invalid valid-status (if any) is a user-fixable
 	 *                                          business rejection — kept, not evicted
 	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
