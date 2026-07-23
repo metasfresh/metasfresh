@@ -2166,16 +2166,21 @@ Feature: nShift Shipment
 
   @Id:S30591_TC4
   Scenario: M_ShipmentSchedule — order-header carrier product propagated to schedule as Manual; auto-advise leaves it unchanged
-    # When a C_Order carries a Carrier_Product_ID (goods-type-less, DHL-Freight style) with carrier services,
-    # completing the order must propagate those fields to the shipment schedule with status=Manual.
-    # A subsequent auto-advise must skip the schedule because Manual blocks isEligibleForAutoEnqueue.
-    Given metasfresh contains C_Orders:
+    # Goods type is always available for a carrier product. cp3 has a single goods-type allocation
+    # so the interceptor auto-sets cgt1 on the order when the carrier product is selected.
+    # Completing the order propagates carrier product + goods type to the shipment schedule with
+    # status=Manual. A subsequent auto-advise must skip the schedule because Manual blocks
+    # isEligibleForAutoEnqueue — so goods type stays on the schedule unchanged.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp3                | cgt1                  |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
       | so_tc4     | true    | customer      | 2025-04-01  | wh             | nShift       |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
       | so_tc4_l1  | so_tc4     | product      | 10         | product_TU_10CU         |
-    # cp3 has no Carrier_Product_GoodsType_Alloc rows → Carrier_Goods_Type_ID stays null (goods-type-less / DHL-Freight style)
+    # Single alloc for cp3 → interceptor auto-sets Carrier_Goods_Type_ID = cgt1
     When C_Order carrier product is set:
       | C_Order_ID | Carrier_Product_ID |
       | so_tc4     | cp3                |
@@ -2184,17 +2189,18 @@ Feature: nShift Shipment
       | so_tc4     | cs1                |
       | so_tc4     | cs2                |
     When the order identified by so_tc4 is completed
-    # Wait for recompute + assert propagation: cp3 + null goods type + Manual status
+    # Wait for recompute + assert propagation: cp3 + cgt1 (goods type always set) + Manual status
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
-      | ss_tc4     | so_tc4_l1      | N             | cp3                | null                  | MAN                     |
-    # Auto-advise must skip the schedule (Manual is ineligible for auto-enqueue)
+      | ss_tc4     | so_tc4_l1      | N             | cp3                | cgt1                  | MAN                     |
+    # Auto-advise must skip the schedule (Manual is ineligible for auto-enqueue);
+    # goods type must remain cgt1 — auto-advise does not overwrite a Manual schedule.
     And Process M_ShipmentSchedule_Advise is run
       | M_ShipmentSchedule_ID |
       | ss_tc4                |
     Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
-      | ss_tc4     | so_tc4_l1      | N             | cp3                | null                  | MAN                     |
+      | ss_tc4     | so_tc4_l1      | N             | cp3                | cgt1                  | MAN                     |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet
