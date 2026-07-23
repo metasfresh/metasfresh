@@ -36,10 +36,7 @@ import {
   handleProcessResponse,
 } from '../../actions/ProcessActions';
 import ChangeCurrentWorkplace from './ChangeCurrentWorkplace';
-import {
-  computeSaveStatusFlags,
-  computeModalIndicator,
-} from '../../reducers/windowHandler';
+import { computeSaveStatusFlags } from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
 import * as StaticModalType from '../../constants/StaticModalType';
 import { useWebsocket } from '../../hooks/useWebsocket';
@@ -964,17 +961,13 @@ const mapStateToProps = (state, props) => {
 
   const parentSelector = getSelection();
 
-  const { indicator: baseIndicator } = computeSaveStatusFlags({ modal });
-  // Surface a relevant server-side save rejection (a complete, individually-valid document
-  // refused by a business rule / unique index) in the open new-record window modal, which
-  // computeSaveStatusFlags otherwise keeps quiet (its ERROR gate needs presentInDatabase,
-  // false for a failed insert). computeModalIndicator scopes this to the window modal so
-  // process modals — whose Start button is disabled on ERROR — are unaffected.
-  const indicator = computeModalIndicator({
-    modalType: modal.modalType,
-    saveStatus: modal.saveStatus,
-    baseIndicator,
-  });
+  // computeSaveStatusFlags surfaces a relevant server-side save rejection (a complete,
+  // individually-valid document refused by a business rule / unique index) in the open
+  // new-record window modal as ERROR — its window-context branch covers this even though the
+  // legacy ERROR gate stays quiet for a not-yet-persisted insert (presentInDatabase=false).
+  // It scopes the promotion to the window modal, so process modals — whose Start button is
+  // disabled on ERROR — are unaffected.
+  const { indicator } = computeSaveStatusFlags({ modal });
 
   return {
     parentSelection: parentSelector(state, parentViewTableId),

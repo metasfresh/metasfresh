@@ -14,7 +14,6 @@ import reducer, {
   getProcessWidgetData,
   getProcessWidgetFields,
   isRelevantSaveError,
-  computeModalIndicator,
   computeSaveStatusFlags,
 } from '../../reducers/windowHandler';
 import * as IndicatorState from '../../constants/IndicatorState';
@@ -243,64 +242,7 @@ describe('isRelevantSaveError', () => {
   });
 });
 
-describe('computeModalIndicator', () => {
-  const relevantError = {
-    error: true,
-    reason: 'duplicate date',
-    exception: { userFriendlyError: true },
-  };
-
-  it('promotes a window modal to ERROR on a relevant save error', () => {
-    expect(
-      computeModalIndicator({
-        modalType: 'window',
-        saveStatus: relevantError,
-        baseIndicator: IndicatorState.SAVED,
-      })
-    ).toBe(IndicatorState.ERROR);
-  });
-
-  it('does NOT promote a process modal (leaves the base indicator)', () => {
-    expect(
-      computeModalIndicator({
-        modalType: 'process',
-        saveStatus: relevantError,
-        baseIndicator: IndicatorState.SAVED,
-      })
-    ).toBe(IndicatorState.SAVED);
-  });
-
-  it('does NOT promote a window modal on a non-relevant save state', () => {
-    // mandatory-missing: error but no userFriendly exception
-    expect(
-      computeModalIndicator({
-        modalType: 'window',
-        saveStatus: { error: true, reason: 'Fill mandatory fields' },
-        baseIndicator: IndicatorState.PENDING,
-      })
-    ).toBe(IndicatorState.PENDING);
-    // no error at all
-    expect(
-      computeModalIndicator({
-        modalType: 'window',
-        saveStatus: { saved: true },
-        baseIndicator: IndicatorState.SAVED,
-      })
-    ).toBe(IndicatorState.SAVED);
-  });
-
-  it('is null-safe (keeps the base indicator)', () => {
-    expect(
-      computeModalIndicator({
-        modalType: 'window',
-        saveStatus: undefined,
-        baseIndicator: IndicatorState.SAVED,
-      })
-    ).toBe(IndicatorState.SAVED);
-  });
-});
-
-describe('computeSaveStatusFlags — relevant save error surfacing (AC8)', () => {
+describe('computeSaveStatusFlags — relevant save error surfacing', () => {
   // A complete, individually-valid document rejected by a server-side business rule /
   // unique-index collision: error=true + userFriendly exception. For a NOT-yet-persisted
   // (new) record the server reports presentInDatabase=false, so the legacy ERROR gate
@@ -358,6 +300,20 @@ describe('computeSaveStatusFlags — relevant save error surfacing (AC8)', () =>
       },
     });
     expect(indicator).toBe(IndicatorState.ERROR);
+  });
+
+  it('does NOT surface (keeps base) a mandatory-missing state on a NEW window modal', () => {
+    const { indicator } = computeSaveStatusFlags({
+      modal: {
+        visible: true,
+        modalType: 'window',
+        windowId: '143',
+        docId: 'NEW',
+        saveStatus: mandatoryMissingNewRecord,
+        indicator: IndicatorState.SAVED,
+      },
+    });
+    expect(indicator).toBe(IndicatorState.SAVED);
   });
 
   it('does NOT promote a process modal to ERROR on a relevant save error (Start button stays enabled)', () => {

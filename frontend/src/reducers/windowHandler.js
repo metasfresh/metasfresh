@@ -365,21 +365,6 @@ export const isRelevantSaveError = (saveStatus) =>
   saveStatus?.error === true &&
   saveStatus?.exception?.userFriendlyError === true;
 
-/**
- * Indicator state for a new-record modal: promote to ERROR when a relevant save rejection holds
- * (see isRelevantSaveError), otherwise keep the base indicator from computeSaveStatusFlags.
- * Scoped to the window modal so process modals (whose Start button is disabled on ERROR) are
- * unaffected. Pure, so the promotion wiring is unit-testable independently of the connected Modal.
- */
-export const computeModalIndicator = ({
-  modalType,
-  saveStatus,
-  baseIndicator,
-}) =>
-  modalType === 'window' && isRelevantSaveError(saveStatus)
-    ? IndicatorState.ERROR
-    : baseIndicator;
-
 export const computeSaveStatusFlags = ({
   state,
   modal: modalParam,
@@ -454,7 +439,7 @@ export const computeSaveStatusFlags = ({
     // false, so the gate above stays quiet and the reason would be swallowed. Surface it here so
     // BOTH the main-window and window-modal paths raise the error. Incomplete/mandatory-missing
     // input carries error but no userFriendly exception -> isRelevantSaveError is false -> stays
-    // quiet (field-level cues already signal it), preserving AC3.
+    // quiet (field-level cues already signal it).
     indicator = IndicatorState.ERROR;
   }
 

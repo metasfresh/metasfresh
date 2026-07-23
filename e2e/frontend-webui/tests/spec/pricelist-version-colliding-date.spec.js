@@ -29,6 +29,58 @@ const PRICE_LIST_WINDOW_ID = 540321;
 const PRICE_LIST_RECORD_ID = 2008396; // "Testpreise Kunden (Deutschland)" — existing PLV dated 2015-01-01
 const PLV_TAB_ID = 'AD_Tab-540777';   // Versionen (M_PriceList_Version) included tab
 const COLLIDING_DATE = '01/01/2015';  // en_US MM/DD/YYYY — collides with the existing PLV's ValidFrom
+const PLV_SEED_VALIDFROM = '2015-01-01'; // the seed PLV's ValidFrom as returned in the row JSON (ISO)
+
+/**
+ * Normalise the target price list to its clean, CI-equivalent state: exactly the seed 2015-01-01 PLV.
+ * Call this in every test AFTER login and BEFORE touching the included tab — both tests here depend on it,
+ * so it must run at the start of each (the first test leaves a residual errored row the second must clear,
+ * and either test can inherit a wedge from a prior local run).
+ *
+ * A prior colliding run — or the manual UAT of this very fix — can leave a NON-seed PLV row cached with a
+ * KEPT user-validation error (an unsaved in-memory edit to a colliding date). That kept error is precisely
+ * the behaviour under test, so a plain webapi cache reset does NOT evict it (the carve-out keeps
+ * user-validation errors) — verified: resetByTable left the wedge in place. Such a wedged row sets
+ * allowCreateNew=false and hides the included-tab "Add new" button, blocking the run. Deleting every row
+ * that is not the CLEAN seed 2015 row — via the same WebUI rows endpoint the frontend uses (trailing slash
+ * + orderBy), so cached in-memory-errored rows are visible, unlike the plain rows GET — discards the wedge
+ * and restores the clean state. On a fresh seed DB (a clean CI shard) the GET returns only the seed row, so
+ * the loop deletes nothing; within this file the first test leaves a residual same-date errored row, which
+ * the second test's call then removes — so the loop does real work on the normal in-file run, not only on a
+ * wedged stack.
+ * NOTE: price list 2008396 ("Testpreise Kunden") is a dedicated automated-test fixture — this loop deletes
+ * every PLV on it that is not the clean 2015 seed; do not create unrelated PLVs there.
+ */
+const normalizePriceListToSeed = async (page) => {
+  const isCleanSeedRow = (r) => {
+    const validFrom = String((((r.fieldsByName || {}).ValidFrom) || {}).value || '');
+    return validFrom.startsWith(PLV_SEED_VALIDFROM) && (r.saveStatus || {}).error !== true;
+  };
+  const rowsResp = await page.request.get(
+    `${WEBAPI_BASE_URL}/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}/${PLV_TAB_ID}/?orderBy=-ValidFrom`
+  );
+  expect(rowsResp.ok(), `PLV rows GET should succeed (HTTP ${rowsResp.status()})`).toBe(true);
+  const rowsBody = await rowsResp.json();
+  const existingRows = Array.isArray(rowsBody) ? rowsBody : rowsBody.result || rowsBody.documents || [];
+  // Guard the self-heal: the clean 2015 seed PLV MUST be recognized before we delete anything. If a
+  // future backend change alters the row-value shape (adds a time/zone component, changes the envelope),
+  // isCleanSeedRow would stop matching the seed and the loop below would delete the shared fixture both
+  // tests depend on — with no failure pinpointing the cause. Fail loud here instead, before any delete.
+  expect(
+    existingRows.some(isCleanSeedRow),
+    'the clean 2015 seed PLV must be recognized before self-heal — else the delete loop would remove the shared fixture'
+  ).toBe(true);
+  for (const r of existingRows) {
+    const rid = String(r.rowId != null ? r.rowId : r.id);
+    if (!rid || rid === 'undefined' || isCleanSeedRow(r)) {
+      continue;
+    }
+    const del = await page.request.delete(
+      `${WEBAPI_BASE_URL}/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}/${PLV_TAB_ID}/${rid}`
+    );
+    expect(del.ok(), `deleting residue/wedged PLV row ${rid} should succeed (HTTP ${del.status()})`).toBe(true);
+  }
+};
 
 test.describe('PriceListVersion — colliding ValidFrom', () => {
   test('colliding new PLV: friendly error AND the Preislisten-Schema dropdown still resolves (no 404)', async ({ page }) => {
@@ -79,6 +131,11 @@ new child PLV.
     //    multi-role chooser by re-clicking — LoginPage.login waits for the wrong endpoint here.
     await loginWithMasterdataUser(page, { username: 'metasfresh', password: 'metasfresh' });
     await DashboardPage.expectVisible();
+
+    // 1b. Normalise the target price list to the clean seed state (clears any wedge — see helper).
+    //     Without this, a residual errored PLV from a prior run sets allowCreateNew=false and the
+    //     "Add new" button below never appears → the run times out. On a fresh CI DB this is a no-op.
+    await normalizePriceListToSeed(page);
 
     // 2. Open the price list record directly
     await page.goto(`${FRONTEND_BASE_URL}/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}`);
@@ -217,17 +274,8 @@ with no 404 on that path.
     await loginWithMasterdataUser(page, { username: 'metasfresh', password: 'metasfresh' });
     await DashboardPage.expectVisible();
 
-    // 1b. Self-heal the shared local webapi document cache before we start. A PRIOR colliding run (this
-    //     test, or the new-record test above running first in the same file) leaves the root price-list
-    //     document cached in a KEPT user-validation error state (that is exactly the fix under test — such
-    //     errors are no longer self-healed away). A left-over errored root hides the included-tab "Add new"
-    //     button, so the next run cannot start. A full cache invalidation evicts a persisted-error root
-    //     (the unsaved-new-included carve-out does not apply — there is no unsaved child here), giving a
-    //     clean starting document. On CI (clean seed cache) this is a harmless no-op.
-    for (const tableName of ['M_PriceList', 'M_PriceList_Version']) {
-      const reset = await page.request.get(`${WEBAPI_BASE_URL}/cache/resetByTable?tableName=${tableName}`);
-      expect(reset.ok(), `webapi cache reset for ${tableName} should succeed (HTTP ${reset.status()})`).toBe(true);
-    }
+    // 1b. Normalise the target price list to the clean seed state (clears any wedge — see helper).
+    await normalizePriceListToSeed(page);
 
     // 2. Open the price list record.
     await page.goto(`${FRONTEND_BASE_URL}/window/${PRICE_LIST_WINDOW_ID}/${PRICE_LIST_RECORD_ID}`);
@@ -248,10 +296,7 @@ with no 404 on that path.
     await page.locator('.rotating, .indicator-pending').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
     await page.locator('.form-field-ValidFrom input').first().waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
 
-    const plvRowId = (page.url().match(new RegExp(`/${PLV_TAB_ID}/(\\d+)`)) || [])[1];
-    expect(plvRowId, 'the add-new PLV row id must be resolvable from the URL').toBeTruthy();
-
-    // 3. Set the unique future ValidFrom and wait for the row to SAVE successfully (persisted, no error).
+    // 3b. Set the unique future ValidFrom and wait for the row to SAVE successfully (persisted, no error).
     //    This gives us an ALREADY-PERSISTED PLV to then edit into a collision.
     const beforeSaveSeq = seq;
     await DateWidget.setValue('ValidFrom', uniqueFutureDate);
