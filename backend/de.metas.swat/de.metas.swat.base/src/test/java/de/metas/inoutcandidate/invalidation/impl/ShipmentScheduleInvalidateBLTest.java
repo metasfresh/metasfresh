@@ -23,13 +23,26 @@ package de.metas.inoutcandidate.invalidation.impl;
  */
 
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.product.ProductId;
+import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Locator;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.X_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -38,7 +51,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -131,6 +150,228 @@ class ShipmentScheduleInvalidateBLTest
 			assertThat(bomParentSegment.isInvalid()).isFalse();
 			assertThat(bomParentSegment.getLocatorIds()).containsExactly(LOCATOR_ID);
 			assertThat(bomParentSegment.getWarehouseIds()).isEmpty();
+		}
+	}
+
+	/**
+	 * RED guard for #31050's durable fix (revised approach "Option A"): the three product-specific
+	 * {@code notifySegmentChangedFor*} entry points must route a <b>non-stocked, non-picking-BOM-component</b>
+	 * product change to the already-existing self-by-id invalidation ({@link ShipmentScheduleInvalidateBL#invalidateJustForOrderLine},
+	 * {@link ShipmentScheduleInvalidateBL#flagForRecompute(ShipmentScheduleId)}, {@link ShipmentScheduleInvalidateBL#flagForRecompute(I_M_InOutLine)})
+	 * instead of the broad product+warehouse segment ({@link ShipmentScheduleInvalidateBL#notifySegmentChanged(IShipmentScheduleSegment)}).
+	 * A non-stocked product that IS a picking-BOM component must keep the broad path (so the BOM-parent's
+	 * schedules are still reached via {@code explodeByPickingBOMs}).
+	 * <p>
+	 * Discriminator under test: {@code !IProductBL.isStocked(productId) && pickingBOMsReversedIndex.getBOMProductIdsByComponentId(productId).isEmpty()}
+	 * (AC-D3: the Item+IsStocked composite via {@code IProductBL}, never the raw {@code M_Product.IsStocked} column alone).
+	 * <p>
+	 * These tests verify ROUTING (which internal method fires), not the raw SQL side effects: {@code ShipmentScheduleInvalidateBL}'s
+	 * only real collaborator boundary in this test class is {@link PickingBOMService} (mocked, as in {@link ExplodeByPickingBOMs}
+	 * above); the broad/narrow terminal methods are stubbed out on a Mockito spy of the real instance so the guard's decision
+	 * is pinned without depending on the (non-hermetic, raw-SQL-backed) {@code IShipmentScheduleInvalidateRepository}.
+	 * <p>
+	 * FAILS on current code for the non-stocked (non-BOM-component) cases: {@code notifySegmentChangedFor*} unconditionally
+	 * takes the broad segment path today, regardless of {@code IsStocked}.
+	 */
+	@Nested
+	class NonStockedNarrowing
+	{
+		private final PickingBOMsReversedIndex NO_BOM_COMPONENTS =
+				PickingBOMsReversedIndex.ofBOMProductIdsByComponentId(ImmutableSetMultimap.of());
+
+		@BeforeEach
+		void registerNotRunningUpdater()
+		{
+			// notifySegmentChangedForShipmentSchedule early-exits when the shipment-schedule updater is running
+			// (ShipmentScheduleInvalidateBL#isShipmentScheduleUpdaterRunning, production line ~214). Stub it as
+			// NOT running so the routing under test (broad vs. self-by-id) is actually reached.
+			final IShipmentScheduleUpdater updater = mock(IShipmentScheduleUpdater.class);
+			when(updater.isRunning()).thenReturn(false);
+			Services.registerService(IShipmentScheduleUpdater.class, updater);
+		}
+
+		private I_M_Product createProduct(final String name, final boolean isStocked, final String productType)
+		{
+			final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+			product.setValue(name);
+			product.setName(name);
+			product.setProductType(productType);
+			product.setIsStocked(isStocked);
+			InterfaceWrapperHelper.save(product);
+			return product;
+		}
+
+		private I_M_Warehouse createWarehouse(final String name)
+		{
+			final I_M_Warehouse warehouse = InterfaceWrapperHelper.newInstance(I_M_Warehouse.class);
+			warehouse.setValue(name);
+			warehouse.setName(name);
+			InterfaceWrapperHelper.save(warehouse);
+			return warehouse;
+		}
+
+		private I_M_Locator createLocator(final I_M_Warehouse warehouse)
+		{
+			final I_M_Locator locator = InterfaceWrapperHelper.newInstance(I_M_Locator.class);
+			locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			locator.setValue(warehouse.getName() + "_Locator");
+			locator.setX("X");
+			locator.setY("Y");
+			locator.setZ("Z");
+			InterfaceWrapperHelper.save(locator);
+			return locator;
+		}
+
+		private I_C_OrderLine createOrderLine(final I_M_Product product, final I_M_Warehouse warehouse)
+		{
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(order);
+
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+			orderLine.setC_Order(order);
+			orderLine.setM_Product_ID(product.getM_Product_ID());
+			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			InterfaceWrapperHelper.save(orderLine);
+			return orderLine;
+		}
+
+		private I_M_ShipmentSchedule createShipmentSchedule(final I_M_Product product, final I_M_Warehouse warehouse)
+		{
+			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+			schedule.setM_Product_ID(product.getM_Product_ID());
+			schedule.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			InterfaceWrapperHelper.save(schedule);
+			return schedule;
+		}
+
+		private I_M_InOutLine createInOutLine(final I_M_Product product, final I_M_Locator locator)
+		{
+			final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+			inout.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(inout);
+
+			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			inoutLine.setM_InOut(inout);
+			inoutLine.setM_Product_ID(product.getM_Product_ID());
+			inoutLine.setM_Locator_ID(locator.getM_Locator_ID());
+			InterfaceWrapperHelper.save(inoutLine);
+			return inoutLine;
+		}
+
+		/** Fresh {@link ShipmentScheduleInvalidateBL} spy wired with the given picking-BOM reversed index. */
+		private ShipmentScheduleInvalidateBL newInvalidateBLSpy(final PickingBOMsReversedIndex reversedIndex)
+		{
+			final PickingBOMService pickingBOMService = mock(PickingBOMService.class);
+			when(pickingBOMService.getPickingBOMsReversedIndex()).thenReturn(reversedIndex);
+			return spy(new ShipmentScheduleInvalidateBL(pickingBOMService));
+		}
+
+		@Test
+		void nonStocked_orderLineChange_invalidatesOnlyOwnSchedule()
+		{
+			// IsStocked=false on an Item product: exercises the composite IProductBL#isStocked (AC-D3), not the raw column alone.
+			final I_M_Product nonStockedProduct = createProduct("NonStockedItem-OL", false, X_M_Product.PRODUCTTYPE_Item);
+			final I_M_Warehouse warehouse = createWarehouse("WH-NS-OL");
+			final I_C_OrderLine orderLine = createOrderLine(nonStockedProduct, warehouse);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).invalidateJustForOrderLine(any());
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForOrderLine(orderLine);
+
+			verify(bl, times(1))
+					.invalidateJustForOrderLine(orderLine);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		@Test
+		void nonStocked_shipmentScheduleChange_invalidatesOnlyOwnSchedule()
+		{
+			final I_M_Product nonStockedProduct = createProduct("NonStockedItem-Sched", false, X_M_Product.PRODUCTTYPE_Item);
+			final I_M_Warehouse warehouse = createWarehouse("WH-NS-Sched");
+			final I_M_ShipmentSchedule schedule = createShipmentSchedule(nonStockedProduct, warehouse);
+			final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID());
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).flagForRecompute(any(ShipmentScheduleId.class));
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForShipmentSchedule(schedule);
+
+			verify(bl, times(1))
+					.flagForRecompute(scheduleId);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		@Test
+		void nonStocked_shipmentLineChange_invalidatesOnlyOwnSchedule()
+		{
+			final I_M_Product nonStockedProduct = createProduct("NonStockedItem-Line", false, X_M_Product.PRODUCTTYPE_Item);
+			final I_M_Warehouse warehouse = createWarehouse("WH-NS-Line");
+			final I_M_Locator locator = createLocator(warehouse);
+			final I_M_InOutLine inoutLine = createInOutLine(nonStockedProduct, locator);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).flagForRecompute(any(I_M_InOutLine.class));
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForShipmentLine(inoutLine);
+
+			verify(bl, times(1))
+					.flagForRecompute(inoutLine);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		/** Control: a STOCKED product must keep the broad segment path (pre-existing behaviour, unchanged by Option A). */
+		@Test
+		void stocked_orderLineChange_invalidatesFullSegment()
+		{
+			final I_M_Product stockedProduct = createProduct("StockedItem-OL", true, X_M_Product.PRODUCTTYPE_Item);
+			final I_M_Warehouse warehouse = createWarehouse("WH-Stocked-OL");
+			final I_C_OrderLine orderLine = createOrderLine(stockedProduct, warehouse);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).invalidateJustForOrderLine(any());
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForOrderLine(orderLine);
+
+			verify(bl, times(1))
+					.notifySegmentChanged(any());
+			verify(bl, never())
+					.invalidateJustForOrderLine(any());
+		}
+
+		/**
+		 * Option-A carve-out guard: a non-stocked product that IS a picking-BOM component must KEEP the broad
+		 * segment path (NOT narrow to self) — otherwise the BOM-parent's shipment schedules would never be
+		 * re-invalidated via {@code explodeByPickingBOMs}.
+		 */
+		@Test
+		void nonStocked_butPickingBOMComponent_orderLineChange_invalidatesFullSegment()
+		{
+			final I_M_Product nonStockedBomComponent = createProduct("NonStockedBomComponent-OL", false, X_M_Product.PRODUCTTYPE_Item);
+			final ProductId componentProductId = ProductId.ofRepoId(nonStockedBomComponent.getM_Product_ID());
+			final I_M_Warehouse warehouse = createWarehouse("WH-NS-BOM-OL");
+			final I_C_OrderLine orderLine = createOrderLine(nonStockedBomComponent, warehouse);
+
+			final PickingBOMsReversedIndex reversedIndexWithComponent = PickingBOMsReversedIndex.ofBOMProductIdsByComponentId(
+					ImmutableSetMultimap.of(componentProductId, ProductId.ofRepoId(999_999)));
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(reversedIndexWithComponent);
+			doNothing().when(bl).invalidateJustForOrderLine(any());
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForOrderLine(orderLine);
+
+			verify(bl, times(1))
+					.notifySegmentChanged(any());
+			verify(bl, never())
+					.invalidateJustForOrderLine(any());
 		}
 	}
 }
