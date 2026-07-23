@@ -445,7 +445,6 @@ public class PackedHUCarrierAdviseService
 					.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
-			// Use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
 			if (isCheckSelfPacked() && !product.isSelfPacked())
 			{
 				dimensions = PackageDimensions.UNSPECIFIED;
