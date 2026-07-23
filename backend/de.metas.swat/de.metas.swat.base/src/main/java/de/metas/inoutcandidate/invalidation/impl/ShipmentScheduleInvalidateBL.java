@@ -115,6 +115,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		return productId == null || shouldNarrowToSelf(productId);
 	}
 
+	/** A charge/freight order line has no product ({@code M_Product_ID=0}, see {@code MOrderLine#setC_Charge_ID}) → narrows like a non-stocked product. */
+	private boolean shouldNarrowToSelf(@NonNull final I_C_OrderLine orderLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		return productId == null || shouldNarrowToSelf(productId);
+	}
+
 	@Override
 	public boolean isFlaggedForRecompute(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
@@ -284,8 +291,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
-		if (shouldNarrowToSelf(productId))
+		if (shouldNarrowToSelf(orderLine))
 		{
 			invalidateJustForOrderLine(orderLine);
 		}

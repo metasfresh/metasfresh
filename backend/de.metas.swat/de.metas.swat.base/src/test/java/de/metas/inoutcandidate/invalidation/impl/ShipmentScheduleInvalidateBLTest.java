@@ -237,6 +237,25 @@ class ShipmentScheduleInvalidateBLTest
 			return orderLine;
 		}
 
+		/** A charge/freight sales-order line: {@code C_Charge_ID} set, {@code M_Product_ID} left 0 (see {@code MOrderLine#setC_Charge_ID}). */
+		private I_C_OrderLine createChargeOrderLine(final I_M_Warehouse warehouse)
+		{
+			final I_C_Charge charge = InterfaceWrapperHelper.newInstance(I_C_Charge.class);
+			charge.setName("Freight-OL");
+			InterfaceWrapperHelper.save(charge);
+
+			final I_C_Order order = InterfaceWrapperHelper.newInstance(I_C_Order.class);
+			order.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(order);
+
+			final I_C_OrderLine orderLine = InterfaceWrapperHelper.newInstance(I_C_OrderLine.class);
+			orderLine.setC_Order(order);
+			orderLine.setC_Charge_ID(charge.getC_Charge_ID()); // charge line: no M_Product_ID
+			orderLine.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+			InterfaceWrapperHelper.save(orderLine);
+			return orderLine;
+		}
+
 		private I_M_ShipmentSchedule createShipmentSchedule(final I_M_Product product, final I_M_Warehouse warehouse)
 		{
 			final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
@@ -371,6 +390,28 @@ class ShipmentScheduleInvalidateBLTest
 
 			verify(bl, times(1))
 					.flagForRecompute(inoutLine);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		/**
+		 * A charge/freight order line ({@code M_Product_ID=0}) has no product stock to compete for, so it must narrow
+		 * to self exactly like a non-stocked product — and must NOT crash on {@code ProductId.ofRepoId(0)}.
+		 */
+		@Test
+		void chargeOrderLineChange_invalidatesOnlyOwnSchedule()
+		{
+			final I_M_Warehouse warehouse = createWarehouse("WH-Charge-OL");
+			final I_C_OrderLine chargeOrderLine = createChargeOrderLine(warehouse);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).invalidateJustForOrderLine(any());
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForOrderLine(chargeOrderLine);
+
+			verify(bl, times(1))
+					.invalidateJustForOrderLine(chargeOrderLine);
 			verify(bl, never())
 					.notifySegmentChanged(any());
 		}
