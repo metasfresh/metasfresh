@@ -42,6 +42,7 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingBOMsReversedIndex;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
+import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -80,6 +81,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	protected final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	protected final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final PickingBOMService pickingBOMService;
 
 	/**
@@ -98,6 +100,23 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
 		return shipmentScheduleUpdater.isRunning();
+	}
+
+	/**
+	 * #31050 durable fix: a non-stocked (i.e. not Item+IsStocked, AC-D3) product that is also not a picking-BOM
+	 * component doesn't need the broad product+warehouse segment invalidation — there is no other shipment schedule
+	 * that could be affected by this product's change, so narrowing to the changed record itself is safe and avoids
+	 * needlessly invalidating unrelated schedules for the same product/warehouse.
+	 * <p>
+	 * A picking-BOM component is excluded from narrowing because its BOM-parent's schedules are only ever reached
+	 * via the broad segment + {@link #explodeByPickingBOMs(IShipmentScheduleSegment)}.
+	 */
+	private boolean shouldNarrowToSelf(@NonNull final ProductId productId)
+	{
+		return !productBL.isStocked(productId)
+				&& pickingBOMService.getPickingBOMsReversedIndex()
+						.getBOMProductIdsByComponentId(productId)
+						.isEmpty();
 	}
 
 	@Override
@@ -176,6 +195,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
+			final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
+			if (shouldNarrowToSelf(productId))
+			{
+				flagForRecompute(inoutLine);
+				continue;
+			}
+
 			final IShipmentScheduleSegment segment = createSegmentForInOutLine(bpartnerId, inoutLine);
 			segments.add(segment);
 		}
@@ -186,6 +212,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
+		final ProductId productId = ProductId.ofRepoId(shipmentLine.getM_Product_ID());
+		if (shouldNarrowToSelf(productId))
+		{
+			flagForRecompute(shipmentLine);
+			return;
+		}
+
 		final IShipmentScheduleSegment segment = createSegmentForInOutLine(shipmentLine.getM_InOut().getC_BPartner_ID(), shipmentLine);
 		notifySegmentChanged(segment);
 	}
@@ -213,6 +246,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		// so there is NO need to invalidate it again.
 		if (isShipmentScheduleUpdaterRunning())
 		{
+			return;
+		}
+
+		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
+		if (shouldNarrowToSelf(productId))
+		{
+			flagForRecompute(ShipmentScheduleId.ofRepoId(schedule.getM_ShipmentSchedule_ID()));
 			return;
 		}
 
@@ -250,6 +290,13 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
+		final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
+		if (shouldNarrowToSelf(productId))
+		{
+			invalidateJustForOrderLine(orderLine);
+			return;
+		}
+
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;

@@ -47,8 +47,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.mockito.ArgumentCaptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
@@ -372,6 +375,52 @@ class ShipmentScheduleInvalidateBLTest
 					.notifySegmentChanged(any());
 			verify(bl, never())
 					.invalidateJustForOrderLine(any());
+		}
+
+		/**
+		 * {@code notifySegmentsChangedForShipment} builds one segment per shipment line and notifies them as a
+		 * batch; a mixed shipment can have both stocked and non-stocked lines, so the narrowing decision is
+		 * per-line: the non-stocked line must be routed via {@link ShipmentScheduleInvalidateBL#flagForRecompute(I_M_InOutLine)}
+		 * and excluded from the broad batch, while the stocked line must still go through the broad
+		 * {@link ShipmentScheduleInvalidateBL#notifySegmentsChanged(Collection)} path.
+		 */
+		@Test
+		void mixedShipment_nonStockedLineNarrowedPerLine_stockedLineKeepsSegment()
+		{
+			final I_M_Product stockedProduct = createProduct("StockedItem-Ship", true, X_M_Product.PRODUCTTYPE_Item);
+			final I_M_Product nonStockedProduct = createProduct("NonStockedItem-Ship", false, X_M_Product.PRODUCTTYPE_Item);
+
+			final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+			shipment.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(shipment);
+
+			final I_M_InOutLine stockedLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			stockedLine.setM_InOut(shipment);
+			stockedLine.setM_Product_ID(stockedProduct.getM_Product_ID());
+			InterfaceWrapperHelper.save(stockedLine);
+
+			final I_M_InOutLine nonStockedLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			nonStockedLine.setM_InOut(shipment);
+			nonStockedLine.setM_Product_ID(nonStockedProduct.getM_Product_ID());
+			InterfaceWrapperHelper.save(nonStockedLine);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).flagForRecompute(any(I_M_InOutLine.class));
+			doNothing().when(bl).notifySegmentsChanged(any());
+
+			bl.notifySegmentsChangedForShipment(shipment);
+
+			verify(bl, times(1))
+					.flagForRecompute(nonStockedLine);
+			verify(bl, never())
+					.flagForRecompute(stockedLine);
+
+			@SuppressWarnings("unchecked")
+			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> segmentsCaptor = ArgumentCaptor.forClass(Collection.class);
+			verify(bl, times(1)).notifySegmentsChanged(segmentsCaptor.capture());
+			assertThat(segmentsCaptor.getValue())
+					.as("only the stocked line's segment must reach the broad batch")
+					.hasSize(1);
 		}
 	}
 }
