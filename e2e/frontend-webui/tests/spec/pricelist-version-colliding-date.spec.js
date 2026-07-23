@@ -52,8 +52,10 @@ const isPlvPathResponse = (response) => {
  * truth both tests assert against — the failed save, whether it is a user-validation (friendly) rejection,
  * whether the post-failure GET still carries the error (the carve-out), and any 404 (the old bug symptom).
  *
- * Returns `{ recordedResponses, notFoundUrls }`, both live arrays that fill as responses arrive.
- * Each recorded entry: `{ seq, method, status, isError, isUserValidationError, reason, isSaved }`.
+ * Returns `{ recordedResponses, notFoundUrls, currentSeq }` — the two arrays fill live as responses
+ * arrive; `currentSeq()` returns the running arrival counter so a test can snapshot a "before this step"
+ * boundary and later filter by `entry.seq > snapshot` (robust to responses resolving out of arrival order,
+ * unlike slicing by array position). Each entry: `{ seq, method, status, isError, isUserValidationError, reason, isSaved }`.
  */
 const recordPlvPathResponses = (page) => {
   const recordedResponses = [];
@@ -94,7 +96,7 @@ const recordPlvPathResponses = (page) => {
     }
   });
 
-  return { recordedResponses, notFoundUrls };
+  return { recordedResponses, notFoundUrls, currentSeq: () => arrivalSequence };
 };
 
 const failedSaveResponses = (recordedResponses) =>
@@ -265,6 +267,7 @@ new child PLV.
     const dropdownOpened = await openSchemaDropdownAndAwaitList(page);
 
     const failedSaves = failedSaveResponses(recordedResponses);
+    console.log(`[plv-collision] failed saves: ${JSON.stringify(failedSaves)}`);
     allure.attachment('Failed PLV saves', JSON.stringify(failedSaves, null, 2), 'application/json');
 
     // (a) the bug condition was actually hit: the colliding save failed server-side with a USER-VALIDATION
@@ -297,35 +300,37 @@ with no 404 on that path.
 
     test.setTimeout(120000);
 
-    const { recordedResponses, notFoundUrls } = recordPlvPathResponses(page);
+    const { recordedResponses, notFoundUrls, currentSeq } = recordPlvPathResponses(page);
 
     await loginAndOpenCleanPriceList(page);
     await addNewPlvRow(page);
 
     // Give ourselves an ALREADY-PERSISTED PLV to then edit into a collision: set a unique future ValidFrom
-    // and wait for it to save successfully (persisted, no error).
+    // and wait for it to save successfully (persisted, no error). Boundaries are snapshotted via currentSeq()
+    // and filtered by entry.seq (not array position) so overlapping responses resolving out of order can't
+    // mis-attribute an entry to the wrong step.
     const persistedValidFrom = uniqueFarFutureValidFrom();
-    const beforePersistSeq = recordedResponses.length;
+    const beforePersistSeq = currentSeq();
     await setValidFrom(persistedValidFrom);
     await expect
-      .poll(() => recordedResponses.slice(beforePersistSeq).some((r) => r.method === 'PATCH' && r.isSaved === true && r.isError === false), {
+      .poll(() => recordedResponses.some((r) => r.seq > beforePersistSeq && r.method === 'PATCH' && r.isSaved === true && r.isError === false), {
         timeout: SLOW_ACTION_TIMEOUT,
         message: `the future-dated PLV (${persistedValidFrom}) should save successfully (persisted, no error)`,
       })
       .toBeTruthy();
 
     // Now EDIT that persisted PLV's ValidFrom to a colliding date (the edit-existing path the fix targets).
-    const beforeEditSeq = recordedResponses.length;
+    const beforeEditSeq = currentSeq();
     await setValidFrom(COLLIDING_DATE);
 
     // PRIMARY PROOF (a): the failing edit's PATCH reports a server-side error.
     await expect
-      .poll(() => recordedResponses.slice(beforeEditSeq).some((r) => r.method === 'PATCH' && r.isError === true), {
+      .poll(() => recordedResponses.some((r) => r.seq > beforeEditSeq && r.method === 'PATCH' && r.isError === true), {
         timeout: SLOW_ACTION_TIMEOUT,
         message: 'the colliding edit should fail server-side with the duplicate-date error',
       })
       .toBeTruthy();
-    const failingEditPatch = recordedResponses.slice(beforeEditSeq).filter((r) => r.method === 'PATCH' && r.isError === true).pop();
+    const failingEditPatch = recordedResponses.filter((r) => r.seq > beforeEditSeq && r.method === 'PATCH' && r.isError === true).pop();
 
     // PRIMARY PROOF (b) — THE CARVE-OUT: the document is NOT evicted. The stale-triggered re-fetch after the
     // failed save (frontend reacts to the websocket staleRootDocument event) issues a GET on the PLV document
@@ -338,6 +343,7 @@ with no 404 on that path.
       })
       .toBeTruthy();
 
+    console.log(`[plv-edit-collision] responses: ${JSON.stringify(recordedResponses)}`);
     allure.attachment('PLV-path responses (arrival order)', JSON.stringify(recordedResponses, null, 2), 'application/json');
     const postFailureGets = recordedResponses.filter((r) => r.seq > failingEditPatch.seq && r.method === 'GET' && r.isError !== null);
 
