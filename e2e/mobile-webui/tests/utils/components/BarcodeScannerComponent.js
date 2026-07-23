@@ -299,6 +299,23 @@ export const BarcodeScannerComponent = {
     // document creation, so it is in place when the frontend first requests the camera.
     // Keeps BOTH hardware and camera modes enabled — it makes the real camera path deterministic
     // rather than disabling it, so the hw↔camera toggle under test is still exercised end to end.
+    //
+    // RESIDUAL FLAKE the getUserMedia stub alone does NOT close (case 3, re-flaked on new_dawn_uat
+    // 2026-07-23 WITH this stub present). The only path that unmounts the `.camera-mode-panel`
+    // wrapper after the operator taps the toggle is CameraModePanel.onCancel, which fires only when
+    // ZXing's codeReader.decodeFromVideoDevice() REJECTS. That call awaits playVideoOnLoadAsync() →
+    // video.play() on the synthetic canvas captureStream: under CI-executor load the <video> can be
+    // readyState=HAVE_NOTHING at play() time (the 10fps repaint hasn't delivered a frame yet), so
+    // play() can reject — or stall past ZXing's 5s canplay deadline (which then rejects). Either
+    // rejection → decodeFromVideoDevice throws → startCamera's catch → onCancel → setActiveMode(
+    // hardware) → wrapper unmounts before the first poll → expectCameraModeActive() sees count 0 for
+    // the full 20s. (Local repro caveat: a fully frame-starved stream makes play() HANG rather than
+    // reject — the intermittent CI-load reject was reasoned from the ZXing source, not reproduced
+    // locally; validated instead by mobile-job green-stability across repeated CI runs.)
+    // Fix (below): force HTMLMediaElement.play() to a resolved no-op so ZXing's tryPlayVideo()
+    // returns true immediately — closing BOTH the reject and the stall/hang paths deterministically.
+    // Product code is untouched, the toggle→camera-mode transition is still exercised end-to-end,
+    // and the flat-grey stream still decodes to nothing (no false-positive teardown).
     stubCameraStream: async () => await test.step(`${NAME} - Stub getUserMedia (blank deterministic stream)`, async () => {
         await page.addInitScript(() => {
             const makeBlankStream = () => {
@@ -330,6 +347,19 @@ export const BarcodeScannerComponent = {
                 navigator.mediaDevices.enumerateDevices = () => Promise.resolve(
                     [{ kind: 'videoinput', deviceId: 'fake-cam', label: 'Fake Camera', groupId: 'g', toJSON() { return this; } }]);
             }
+            // Make video.play() a resolved no-op so ZXing's tryPlayVideo() returns true immediately
+            // and never hits the 5s `canplay`-wait reject that tears the camera panel down (see the
+            // RESIDUAL FLAKE note above). Still fire the real play() (fire-and-forget, rejection
+            // swallowed) so the feed renders when the environment allows — we only guarantee the
+            // promise ZXing awaits resolves.
+            const origPlay = window.HTMLMediaElement.prototype.play;
+            window.HTMLMediaElement.prototype.play = function () {
+                try {
+                    const p = origPlay.call(this);
+                    if (p && typeof p.catch === 'function') p.catch(() => {});
+                } catch (e) { /* ignore — deterministic-resolve is the point */ }
+                return Promise.resolve();
+            };
         });
     }),
 
