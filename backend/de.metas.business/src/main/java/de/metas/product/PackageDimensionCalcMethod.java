@@ -14,6 +14,15 @@ import javax.annotation.Nullable;
  * are packed into one Transport Unit (HU_UnitType=TU).
  *
  * <p>Values map to the {@code PackageDimensionCalcMethod} AD_Reference (ID 542122).</p>
+ *
+ * <p><b>Why literal codes instead of {@code X_M_HU_PI_Version.PACKAGEDIMENSIONCALCMETHOD_*}
+ * constants:</b> this enum lives in {@code de.metas.business}, which sits <i>below</i>
+ * {@code de.metas.handlingunits.base} in the module graph (handlingunits depends on business,
+ * not the other way round). The generated {@code X_M_HU_PI_Version} constants therefore cannot
+ * be imported here without introducing a reverse module dependency. So this enum is the
+ * source of truth for the codes, and the ref-list migration's {@code Value}s must match them
+ * (S / R / N). Handlingunits-side callers should reference the generated
+ * {@code X_M_HU_PI_Version.PACKAGEDIMENSIONCALCMETHOD_*} constants.</p>
  */
 @Getter
 @RequiredArgsConstructor

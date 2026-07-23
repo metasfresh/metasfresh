@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_PI_Version, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1616061275L;
+	private static final long serialVersionUID = -354333785L;
 
     /** Standard Constructor */
     public X_M_HU_PI_Version (final Properties ctx, final int M_HU_PI_Version_ID, @Nullable final String trxName)
@@ -167,12 +167,12 @@ public class X_M_HU_PI_Version extends org.compiere.model.PO implements I_M_HU_P
 	 * Reference name: PackageDimensionCalcMethod
 	 */
 	public static final int PACKAGEDIMENSIONCALCMETHOD_AD_Reference_ID=542122;
-	/** S = S */
-	public static final String PACKAGEDIMENSIONCALCMETHOD_S = "S";
-	/** R = R */
-	public static final String PACKAGEDIMENSIONCALCMETHOD_R = "R";
-	/** N = N */
-	public static final String PACKAGEDIMENSIONCALCMETHOD_N = "N";
+	/** Strapping = S */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Strapping = "S";
+	/** Repacking = R */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Repacking = "R";
+	/** Nesting = N */
+	public static final String PACKAGEDIMENSIONCALCMETHOD_Nesting = "N";
 	@Override
 	public void setPackageDimensionCalcMethod (final @Nullable java.lang.String PackageDimensionCalcMethod)
 	{

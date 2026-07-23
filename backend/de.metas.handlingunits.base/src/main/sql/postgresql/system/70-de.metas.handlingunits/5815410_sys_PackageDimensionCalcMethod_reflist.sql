@@ -5,9 +5,9 @@
 --
 -- IDs allocated from idserver.metas.de on 2026-07-22:
 --   AD_Reference  542122 /*From ID Server*/  (PackageDimensionCalcMethod list)
---   AD_Ref_List   544321 /*From ID Server*/  (S  = Strapping / Umreifung)
---   AD_Ref_List   544322 /*From ID Server*/  (R  = Repacking / Umpacken)
---   AD_Ref_List   544323 /*From ID Server*/  (N  = Nesting   / Schachteln)
+--   AD_Ref_List   544321 /*From ID Server*/  (S  = Strapping / Bändern)
+--   AD_Ref_List   544322 /*From ID Server*/  (R  = Repacking / Umverpacken)
+--   AD_Ref_List   544323 /*From ID Server*/  (N  = Nesting   / Verschachteln)
 
 -- ============================================================
 -- 1. AD_Reference (ValidationType='L')
@@ -70,7 +70,7 @@ VALUES
   (542122, 0, 0, 'Y',
    TO_TIMESTAMP('2026-07-22 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
    TO_TIMESTAMP('2026-07-22 10:00:03', 'YYYY-MM-DD HH24:MI:SS'), 100,
-   544321 /*From ID Server*/, 'S', 'S', 'Umreifung', NULL, 'D');
+   544321 /*From ID Server*/, 'S', 'Strapping', 'Bändern', 'TU-Maße: Stapelachse = Summe(kleinste Kante x Menge); übrige zwei Kanten = Maximum je Achse.', 'D');
 
 -- AD_Ref_List_Trl skeleton for Strapping
 INSERT INTO AD_Ref_List_Trl
@@ -100,6 +100,7 @@ WHERE AD_Ref_List_ID = 544321
 UPDATE AD_Ref_List_Trl
 SET IsTranslated = 'Y',
     Name         = 'Strapping',
+    Description  = 'TU dimensions: stacking axis = sum(smallest edge x qty); other two edges = max per axis.',
     Updated      = TO_TIMESTAMP('2026-07-22 10:00:05', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Ref_List_ID = 544321
@@ -116,7 +117,7 @@ VALUES
   (542122, 0, 0, 'Y',
    TO_TIMESTAMP('2026-07-22 10:00:06', 'YYYY-MM-DD HH24:MI:SS'), 100,
    TO_TIMESTAMP('2026-07-22 10:00:06', 'YYYY-MM-DD HH24:MI:SS'), 100,
-   544322 /*From ID Server*/, 'R', 'R', 'Umpacken', NULL, 'D');
+   544322 /*From ID Server*/, 'R', 'Repacking', 'Umverpacken', 'TU-Maße aus dem Gesamtvolumen (x 1,05) neu berechnet.', 'D');
 
 -- AD_Ref_List_Trl skeleton for Repacking
 INSERT INTO AD_Ref_List_Trl
@@ -146,6 +147,7 @@ WHERE AD_Ref_List_ID = 544322
 UPDATE AD_Ref_List_Trl
 SET IsTranslated = 'Y',
     Name         = 'Repacking',
+    Description  = 'TU dimensions recomputed from total volume (x 1.05).',
     Updated      = TO_TIMESTAMP('2026-07-22 10:00:08', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Ref_List_ID = 544322
@@ -162,7 +164,7 @@ VALUES
   (542122, 0, 0, 'Y',
    TO_TIMESTAMP('2026-07-22 10:00:09', 'YYYY-MM-DD HH24:MI:SS'), 100,
    TO_TIMESTAMP('2026-07-22 10:00:09', 'YYYY-MM-DD HH24:MI:SS'), 100,
-   544323 /*From ID Server*/, 'N', 'N', 'Schachteln', NULL, 'D');
+   544323 /*From ID Server*/, 'N', 'Nesting', 'Verschachteln', 'TU übernimmt die Maße des Artikels mit der größten Einzelkante.', 'D');
 
 -- AD_Ref_List_Trl skeleton for Nesting
 INSERT INTO AD_Ref_List_Trl
@@ -192,6 +194,7 @@ WHERE AD_Ref_List_ID = 544323
 UPDATE AD_Ref_List_Trl
 SET IsTranslated = 'Y',
     Name         = 'Nesting',
+    Description  = 'TU takes the dimensions of the item with the largest single edge.',
     Updated      = TO_TIMESTAMP('2026-07-22 10:00:11', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Ref_List_ID = 544323
