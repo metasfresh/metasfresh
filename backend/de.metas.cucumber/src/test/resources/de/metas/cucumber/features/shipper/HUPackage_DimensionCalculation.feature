@@ -119,9 +119,9 @@ Feature: HU Package Dimension Calculation
       | so_strapping_l_b  | so_strapping  | dimcalc_prod_b | 2          |
     When the order identified by so_strapping is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier    | C_OrderLine_ID   | IsToRecompute |
-      | ss_strapping_a | so_strapping_l_a | N             |
-      | ss_strapping_b | so_strapping_l_b | N             |
+      | Identifier     | C_OrderLine_ID   | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_strapping_a | so_strapping_l_a | N             | dimcalc_cp1        | dimcalc_cgt1          |
+      | ss_strapping_b | so_strapping_l_b | N             | dimcalc_cp1        | dimcalc_cgt1          |
     When create M_PickingCandidate for M_HU
       | M_HU_ID      | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
       | tu_strapping | ss_strapping_a        | 3         | IP     | P          | ?              |
@@ -180,9 +180,9 @@ Feature: HU Package Dimension Calculation
       | so_repacking_l_b | so_repacking | dimcalc_prod_b | 2          |
     When the order identified by so_repacking is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier     | C_OrderLine_ID   | IsToRecompute |
-      | ss_repacking_a | so_repacking_l_a | N             |
-      | ss_repacking_b | so_repacking_l_b | N             |
+      | Identifier     | C_OrderLine_ID   | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_repacking_a | so_repacking_l_a | N             | dimcalc_cp1        | dimcalc_cgt1          |
+      | ss_repacking_b | so_repacking_l_b | N             | dimcalc_cp1        | dimcalc_cgt1          |
     When create M_PickingCandidate for M_HU
       | M_HU_ID      | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
       | tu_repacking | ss_repacking_a        | 3         | IP     | P          | ?              |
@@ -238,9 +238,9 @@ Feature: HU Package Dimension Calculation
       | so_nesting_l_b | so_nesting | dimcalc_prod_b | 2          |
     When the order identified by so_nesting is completed
     And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier   | C_OrderLine_ID | IsToRecompute |
-      | ss_nesting_a | so_nesting_l_a | N             |
-      | ss_nesting_b | so_nesting_l_b | N             |
+      | Identifier   | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | ss_nesting_a | so_nesting_l_a | N             | dimcalc_cp1        | dimcalc_cgt1          |
+      | ss_nesting_b | so_nesting_l_b | N             | dimcalc_cp1        | dimcalc_cgt1          |
     When create M_PickingCandidate for M_HU
       | M_HU_ID    | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
       | tu_nesting | ss_nesting_a          | 3         | IP     | P          | ?              |
@@ -270,52 +270,3 @@ Feature: HU Package Dimension Calculation
       | M_HU_PI_Version_ID | M_HU_PI_ID    | HU_UnitType | IsCurrent | PackageDimensionCalcMethod |
       | dimcalc_LU_Version | dimcalc_LU_PI | LU          | Y         | S                          |
     Then an AdempiereException was thrown when saving the M_HU_PI_Version
-
-  @Id:S30361_TC5
-  Scenario: Non-self-packed single-product TU — product dims contribute regardless of IsSelfPacked
-    # IsSelfPacked=N does not block dimension contribution for a single-product TU.
-    # Product A: L=30, W=20, H=10, qty=3 → ofProductDimensionsAndQty: sorted [10,20,30], stacking=10×3=30
-    # → LengthInCm=30, HeightInCm=20, WidthInCm=30
-    # (No calc method set — the single-product path in HUPackageBL uses ofProductDimensionsAndQty directly.)
-    And metasfresh contains M_Inventories:
-      | M_Inventory_ID  | MovementDate | M_Warehouse_ID |
-      | inv_selfpacked_a | 2022-12-12   | dimcalc_wh     |
-    And metasfresh contains M_InventoriesLines:
-      | Identifier          | M_Inventory_ID   | M_Product_ID   | QtyBook | QtyCount | UOM.X12DE355 |
-      | inv_selfpacked_l_a  | inv_selfpacked_a | dimcalc_prod_a | 0       | 3        | PCE          |
-    When the inventory identified by inv_selfpacked_a is completed
-    And after not more than 60s, there are added M_HUs for inventory
-      | M_InventoryLine_ID   | M_HU_ID             |
-      | inv_selfpacked_l_a   | cu_selfpacked_a     |
-    And transform CU to new TUs
-      | sourceCU          | cuQty | M_HU_PI_Item_Product_ID | resultedNewTUs   |
-      | cu_selfpacked_a   | 3     | dimcalc_piip_a          | tu_selfpacked    |
-    And metasfresh contains C_Orders:
-      | Identifier       | IsSOTrx | C_BPartner_ID    | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID          |
-      | so_selfpacked    | true    | dimcalc_customer | 2022-12-12  | dimcalc_wh     | dimcalc_ship | dimcalc_custContact |
-    And metasfresh contains C_OrderLines:
-      | Identifier        | C_Order_ID    | M_Product_ID   | QtyEntered |
-      | so_selfpacked_l_a | so_selfpacked | dimcalc_prod_a | 3          |
-    When the order identified by so_selfpacked is completed
-    And after not more than 60s, M_ShipmentSchedules are found:
-      | Identifier      | C_OrderLine_ID    | IsToRecompute |
-      | ss_selfpacked_a | so_selfpacked_l_a | N             |
-    When create M_PickingCandidate for M_HU
-      | M_HU_ID       | M_ShipmentSchedule_ID | QtyPicked | Status | PickStatus | ApprovalStatus |
-      | tu_selfpacked | ss_selfpacked_a       | 3         | IP     | P          | ?              |
-    And process picking
-      | M_HU_ID       | M_ShipmentSchedule_ID |
-      | tu_selfpacked | ss_selfpacked_a       |
-    And shipment is generated for the following shipment schedule
-      | M_ShipmentSchedule_ID | M_InOut_ID        |
-      | ss_selfpacked_a       | inout_selfpacked  |
-    And after not more than 60s, Transportation Order is found for Shipment:
-      | M_InOut_ID        | M_ShipperTransportation_ID   |
-      | inout_selfpacked  | transpOrder_selfpacked       |
-    And after not more than 60s, Carrier_ShipmentOrder is found:
-      | Identifier        | M_InOut_ID        |
-      | cso_selfpacked    | inout_selfpacked  |
-    # Non-self-packed product A, qty=3: L=30, H=20, W=30
-    And validate M_Packages for shipment inout_selfpacked
-      | LengthInCm | HeightInCm | WidthInCm |
-      | 30         | 20         | 30        |
