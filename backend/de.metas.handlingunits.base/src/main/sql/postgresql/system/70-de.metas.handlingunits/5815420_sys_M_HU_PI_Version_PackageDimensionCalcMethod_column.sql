@@ -16,12 +16,13 @@
 INSERT INTO AD_Element
   (AD_Element_ID, AD_Client_ID, AD_Org_ID, IsActive,
    Created, CreatedBy, Updated, UpdatedBy,
-   ColumnName, Name, PrintName, EntityType)
+   ColumnName, Name, PrintName, Description, EntityType)
 VALUES
   (585123 /*From ID Server*/, 0, 0, 'Y',
    TO_TIMESTAMP('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
    TO_TIMESTAMP('2026-07-22 14:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
-   'PackageDimensionCalcMethod', 'Berechnungsmethode', 'Berechnungsmethode', 'D');
+   'PackageDimensionCalcMethod', 'Berechnungsmethode', 'Berechnungsmethode',
+   'Berechnungsmethode für die Verpackungsmaße einer Transporteinheit, wenn sie mehrere Artikel enthält (Bändern / Umverpacken / Verschachteln).', 'D');
 
 -- AD_Element_Trl skeleton for all active system languages
 INSERT INTO AD_Element_Trl
@@ -44,6 +45,9 @@ WHERE l.IsActive = 'Y'
 -- Mark de_DE and de_CH as translated (German is the base name)
 UPDATE AD_Element_Trl
 SET IsTranslated = 'Y',
+    Name         = 'Berechnungsmethode',
+    PrintName    = 'Berechnungsmethode',
+    Description  = 'Berechnungsmethode für die Verpackungsmaße einer Transporteinheit, wenn sie mehrere Artikel enthält (Bändern / Umverpacken / Verschachteln).',
     Updated      = TO_TIMESTAMP('2026-07-22 14:00:12', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Element_ID = 585123
@@ -54,6 +58,7 @@ UPDATE AD_Element_Trl
 SET IsTranslated = 'Y',
     Name         = 'Calc Method',
     PrintName    = 'Calc Method',
+    Description  = 'Calculation method for a Transport Unit''s package dimensions when it holds multiple items (Strapping / Repacking / Nesting).',
     Updated      = TO_TIMESTAMP('2026-07-22 14:00:18', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
 WHERE AD_Element_ID = 585123
@@ -102,10 +107,6 @@ WHERE l.IsActive = 'Y'
 -- New nullable column (no default). Routed through db_alter_table() so the function manages
 -- view dependencies (the bare-ALTER exception is only for NOT NULL DEFAULT backfill columns).
 SELECT public.db_alter_table('M_HU_PI_Version','ALTER TABLE public.M_HU_PI_Version ADD COLUMN IF NOT EXISTS PackageDimensionCalcMethod CHAR(1)');
-
--- Check constraint to enforce the ref-list values (also via db_alter_table for view-dependency safety)
-SELECT public.db_alter_table('M_HU_PI_Version','ALTER TABLE public.M_HU_PI_Version DROP CONSTRAINT IF EXISTS PackageDimensionCalcMethod_Check');
-SELECT public.db_alter_table('M_HU_PI_Version','ALTER TABLE public.M_HU_PI_Version ADD CONSTRAINT PackageDimensionCalcMethod_Check CHECK (PackageDimensionCalcMethod IN (''S'', ''R'', ''N''))');
 
 -- ============================================================
 -- 4. AD_Field — tab 540823 (window 540344, standalone Packvorschrift Version)

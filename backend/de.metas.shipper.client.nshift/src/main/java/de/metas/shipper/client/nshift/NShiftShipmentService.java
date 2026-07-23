@@ -227,9 +227,9 @@ public class NShiftShipmentService
 		// nShift expects weight in grams and dimensions in millimeters.
 		final int weightGrams = deliveryLine.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final JsonPackageDimensions dims = deliveryLine.getPackageDimensions();
-		if (dims.getLengthInCM() == 0 && dims.getWidthInCM() == 0 && dims.getHeightInCM() == 0)
+		if (dims.getLengthInCM() <= 0 && dims.getWidthInCM() <= 0 && dims.getHeightInCM() <= 0)
 		{
-			throw new IllegalStateException("Package dimensions are mandatory but were not specified (all dimensions are zero/unspecified).");
+			throw new IllegalStateException("Package dimensions are mandatory but were not specified (all dimensions are zero or unspecified).");
 		}
 		final int lengthMM = dims.getLengthInCM() * 10;
 		final int widthMM = dims.getWidthInCM() * 10;

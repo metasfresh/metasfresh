@@ -18,13 +18,6 @@ import java.util.Set;
 public interface IHUPackageBL extends ISingletonService
 {
 	/**
-	 * SysConfig (system level, default {@code N}): when {@code Y}, package-dimension resolution re-applies
-	 * the legacy {@code IsSelfPacked} gate (a non-self-packed product yields {@link PackageDimensions#UNSPECIFIED}).
-	 * Default {@code N} = product dimensions are used regardless of the flag.
-	 */
-	String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
-
-	/**
 	 * Unassign all HUs from given package
 	 */
 	void destroyHUPackage(I_M_Package mpackage);

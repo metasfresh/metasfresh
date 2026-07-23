@@ -17,8 +17,8 @@ INSERT INTO M_HU_PI
      IsActive, IsDefaultLU, IsDefaultForPicking,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540013 /*From ID Server*/, 'Dimension Calculation - Strapping',
-     'Inactive seed: TU packing instruction for Strapping dimension calculation mode. Activate and configure per deployment.',
+    (0, 0, 540013 /*From ID Server*/, 'Maßberechnung - Bändern',
+     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Bändern. Pro Deployment aktivieren und konfigurieren.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
      100,
@@ -32,8 +32,8 @@ INSERT INTO M_HU_PI_Version
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540013 /*From ID Server*/, 540013 /*M_HU_PI Strapping*/,
-     'Dimension Calculation - Strapping',
+    (0, 0, 540013 /*From ID Server*/, 540013 /*M_HU_PI Bändern*/,
+     'Maßberechnung - Bändern',
      'TU', 'S', 'N',
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:01', 'YYYY-MM-DD HH24:MI:SS'),
@@ -66,10 +66,10 @@ INSERT INTO M_HU_PI_Item_Product
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540023 /*From ID Server*/, 540018 /*Item Strapping*/,
+    (0, 0, 540023 /*From ID Server*/, 540018 /*Item Bändern*/,
      NULL, 0, 'Y', 'Y', 'N',
      'N',
-     'Dimension Calculation - Strapping', NULL,
+     'Maßberechnung - Bändern', NULL,
      TO_TIMESTAMP('2001-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:03', 'YYYY-MM-DD HH24:MI:SS'),
@@ -87,8 +87,8 @@ INSERT INTO M_HU_PI
      IsActive, IsDefaultLU, IsDefaultForPicking,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540014 /*From ID Server*/, 'Dimension Calculation - Repacking',
-     'Inactive seed: TU packing instruction for Repacking dimension calculation mode. Activate and configure per deployment.',
+    (0, 0, 540014 /*From ID Server*/, 'Maßberechnung - Umverpacken',
+     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Umverpacken. Pro Deployment aktivieren und konfigurieren.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:04', 'YYYY-MM-DD HH24:MI:SS'),
      100,
@@ -102,8 +102,8 @@ INSERT INTO M_HU_PI_Version
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540014 /*From ID Server*/, 540014 /*M_HU_PI Repacking*/,
-     'Dimension Calculation - Repacking',
+    (0, 0, 540014 /*From ID Server*/, 540014 /*M_HU_PI Umverpacken*/,
+     'Maßberechnung - Umverpacken',
      'TU', 'R', 'N',
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:05', 'YYYY-MM-DD HH24:MI:SS'),
@@ -136,10 +136,10 @@ INSERT INTO M_HU_PI_Item_Product
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540021 /*From ID Server*/, 540019 /*Item Repacking*/,
+    (0, 0, 540021 /*From ID Server*/, 540019 /*Item Umverpacken*/,
      NULL, 0, 'Y', 'Y', 'N',
      'N',
-     'Dimension Calculation - Repacking', NULL,
+     'Maßberechnung - Umverpacken', NULL,
      TO_TIMESTAMP('2001-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:07', 'YYYY-MM-DD HH24:MI:SS'),
@@ -157,8 +157,8 @@ INSERT INTO M_HU_PI
      IsActive, IsDefaultLU, IsDefaultForPicking,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540015 /*From ID Server*/, 'Dimension Calculation - Nesting',
-     'Inactive seed: TU packing instruction for Nesting dimension calculation mode. Activate and configure per deployment.',
+    (0, 0, 540015 /*From ID Server*/, 'Maßberechnung - Verschachteln',
+     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Verschachteln. Pro Deployment aktivieren und konfigurieren.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:08', 'YYYY-MM-DD HH24:MI:SS'),
      100,
@@ -172,8 +172,8 @@ INSERT INTO M_HU_PI_Version
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540015 /*From ID Server*/, 540015 /*M_HU_PI Nesting*/,
-     'Dimension Calculation - Nesting',
+    (0, 0, 540015 /*From ID Server*/, 540015 /*M_HU_PI Verschachteln*/,
+     'Maßberechnung - Verschachteln',
      'TU', 'N', 'N',
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:09', 'YYYY-MM-DD HH24:MI:SS'),
@@ -206,10 +206,10 @@ INSERT INTO M_HU_PI_Item_Product
      IsActive,
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
-    (0, 0, 540022 /*From ID Server*/, 540020 /*Item Nesting*/,
+    (0, 0, 540022 /*From ID Server*/, 540020 /*Item Verschachteln*/,
      NULL, 0, 'Y', 'Y', 'N',
      'N',
-     'Dimension Calculation - Nesting', NULL,
+     'Maßberechnung - Verschachteln', NULL,
      TO_TIMESTAMP('2001-01-01 00:00:00', 'YYYY-MM-DD HH24:MI:SS'),
      'N',
      TO_TIMESTAMP('2026-07-22 10:00:11', 'YYYY-MM-DD HH24:MI:SS'),

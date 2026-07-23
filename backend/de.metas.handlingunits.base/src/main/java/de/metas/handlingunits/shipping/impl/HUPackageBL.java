@@ -87,6 +87,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class HUPackageBL implements IHUPackageBL
 {
+	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -237,8 +239,8 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	/**
-	 * {@code true} if the {@value IHUPackageBL#SYSCONFIG_CHECK_IS_SELF_PACKED} SysConfig requires the
-	 * self-packed flag for dimension resolution (default {@code false} = flag-independent).
+	 * {@code true} if the {@value #SYSCONFIG_CHECK_IS_SELF_PACKED} SysConfig requires
+	 * the self-packed flag for dimension resolution (default {@code false} = flag-independent).
 	 */
 	private boolean isCheckSelfPacked()
 	{
@@ -248,7 +250,7 @@ public class HUPackageBL implements IHUPackageBL
 	/**
 	 * Single-unit dimensions: each parcel carries the product's named dimensions verbatim
 	 * (no qty-based sort/scale). Returns {@link PackageDimensions#UNSPECIFIED} when the product
-	 * has no dims. When {@value IHUPackageBL#SYSCONFIG_CHECK_IS_SELF_PACKED}='Y', also returns
+	 * has no dims. When {@value #SYSCONFIG_CHECK_IS_SELF_PACKED}='Y', also returns
 	 * {@link PackageDimensions#UNSPECIFIED} for a non-self-packed product.
 	 */
 	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
