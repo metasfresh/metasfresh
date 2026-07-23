@@ -28,10 +28,9 @@ import org.adempiere.ad.dao.IQueryFilter;
 /**
  * Reports whether a shipment schedule still has picking work in progress.
  * <p>
- * The bridge exists because {@code de.metas.swat.base} (where the close process lives) has no dependency on
- * {@code de.metas.handlingunits.base} (where {@code M_Picking_Job} lives), so the close process cannot name the
- * picking-job tables directly. The {@code @Service} implementation lives in the handlingunits module and is resolved
- * via {@code SpringContextHolder}.
+ * The bridge exists because the process that needs this filter lives in a module that has no dependency on the module
+ * owning the picking-job data, so it cannot query those tables directly; the implementation is resolved via Spring at
+ * runtime.
  */
 public interface IShipmentSchedulePickingInfoService
 {

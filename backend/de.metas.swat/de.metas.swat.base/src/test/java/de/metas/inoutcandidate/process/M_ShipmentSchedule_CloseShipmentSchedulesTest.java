@@ -25,14 +25,15 @@ package de.metas.inoutcandidate.process;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.IShipmentSchedulePickingInfoService;
 import de.metas.order.OrderId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +50,10 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 	void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		// The class under test resolves this bean eagerly in a field initializer (via SpringContextHolder), so
+		// instantiating it needs a registered bean. The stub's filter is never exercised by the helpers under test.
+		SpringContextHolder.registerJUnitBean(IShipmentSchedulePickingInfoService.class, () -> null);
 	}
 
 	private static I_M_ShipmentSchedule newSchedule(final int scheduleId, final OrderId orderId)
@@ -116,7 +121,7 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 				newSchedule(9101, order1),
 				newSchedule(9102, order2));
 
-		final String csv = M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifiersCsv(offendingSchedules);
+		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
 
 		assertThat(csv).isEqualTo("SO-2001, SO-2002");
 	}
@@ -130,7 +135,7 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 				newSchedule(9201, order1),
 				newSchedule(9202, null));
 
-		final String csv = M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifiersCsv(offendingSchedules);
+		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
 
 		assertThat(csv).isEqualTo("SO-3001, M_ShipmentSchedule_ID=9202");
 	}
@@ -145,36 +150,8 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 				newSchedule(9301, sharedOrder),
 				newSchedule(9302, sharedOrder));
 
-		final String csv = M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifiersCsv(offendingSchedules);
+		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
 
 		assertThat(csv).isEqualTo("SO-4001");
-	}
-
-	@Test
-	void isEligibleForClose_zeroQtyPickList_isEligible()
-	{
-		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-		schedule.setQtyPickList(BigDecimal.ZERO);
-
-		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isTrue();
-	}
-
-	@Test
-	void isEligibleForClose_nonZeroQtyPickList_isNotEligible()
-	{
-		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-		schedule.setQtyPickList(new BigDecimal("5"));
-
-		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isFalse();
-	}
-
-	@Test
-	void isEligibleForClose_nullQtyPickList_isNotEligible()
-	{
-		// QtyPickList left unset -> NULL. The pre-existing SQL filter `QtyPickList = 0` excludes NULL rows, so the
-		// in-memory eligibility must too (guards against getQtyPickList() masking NULL as ZERO and wrongly closing).
-		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
-
-		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.isEligibleForClose(schedule)).isFalse();
 	}
 }

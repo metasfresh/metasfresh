@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Order;
 
@@ -54,15 +53,15 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
 
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	// Impl lives in de.metas.handlingunits.base (M_Picking_Job*), which swat.base does not depend on; resolved via Spring.
 	private final IShipmentSchedulePickingInfoService pickingInfoService = SpringContextHolder.instance.getBean(IShipmentSchedulePickingInfoService.class);
 
 	@Override
 	protected String doIt() throws Exception
 	{
-		final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 		final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter = getProcessInfo().getQueryFilterOrElseFalse();
 
 		// 1) Hard-block, all-or-nothing, over the FULL user selection: if any selected schedule still has an
@@ -76,50 +75,33 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 		if (!offendingSchedules.isEmpty())
 		{
 			final String offendingIdentifiers = toHumanReadableIdentifiersCsv(offendingSchedules);
-			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers).markAsUserValidationError();
+			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, offendingIdentifiers);
 		}
 
-		// 2) Close the eligible schedules. Two guards, both as folded subquery filters so they re-evaluate against
+		// 2) Close the eligible schedules. Two guards, both as folded subquery/SQL filters so they re-evaluate against
 		// live DB state (this is a SEPARATE query execution from the check above — re-applying the unfinished-picking
 		// filter here, negated, closes the TOCTOU window: a schedule that becomes picking-busy between the two
 		// queries is safely skipped rather than wrongly closed, the very bug this process prevents). Among the
 		// picking-clean selection, only schedules with QtyPickList=0 are closed; picked-but-unshipped qty is skipped
-		// (the pre-existing eligibility rule). Streamed (not materialized) to avoid loading a large selection.
+		// (the pre-existing eligibility rule, expressed here as the SQL predicate QtyPickList=0 which correctly
+		// EXCLUDES NULL). Streamed (not materialized) to avoid loading a large selection.
 		final Iterator<I_M_ShipmentSchedule> selectionIterator = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_QtyPickList, BigDecimal.ZERO)
 				.filter(pickingInfoService.newUnfinishedPickingFilter().negate())
 				.create()
 				.iterate(I_M_ShipmentSchedule.class);
 
-		boolean anyClosed = false;
-		while (selectionIterator.hasNext())
-		{
-			final I_M_ShipmentSchedule schedule = selectionIterator.next();
-			if (isEligibleForClose(schedule))
-			{
-				shipmentScheduleBL.closeShipmentSchedule(schedule);
-				anyClosed = true;
-			}
-		}
-
-		if (!anyClosed)
+		if (!selectionIterator.hasNext())
 		{
 			throw new AdempiereException("@NoSelection@");
 		}
 
-		return MSG_OK;
-	}
+		while (selectionIterator.hasNext())
+		{
+			shipmentScheduleBL.closeShipmentSchedule(selectionIterator.next());
+		}
 
-	/**
-	 * Mirrors the pre-existing SQL {@code QtyPickList = 0} eligibility filter EXACTLY: only schedules whose
-	 * {@code QtyPickList} is set to zero are closed. A NULL {@code QtyPickList} is NOT eligible — the SQL {@code = 0}
-	 * predicate excludes NULLs — so the raw column value is read via {@link InterfaceWrapperHelper#getValueOrNull}:
-	 * the generated {@code getQtyPickList()} masks NULL as {@link BigDecimal#ZERO} and would wrongly include those rows.
-	 */
-	@VisibleForTesting
-	static boolean isEligibleForClose(final I_M_ShipmentSchedule schedule)
-	{
-		final BigDecimal qtyPickList = InterfaceWrapperHelper.getValueOrNull(schedule, I_M_ShipmentSchedule.COLUMNNAME_QtyPickList);
-		return qtyPickList != null && qtyPickList.signum() == 0;
+		return MSG_OK;
 	}
 
 	/**
@@ -128,14 +110,14 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	 * 		Orders are batch-loaded once (never one-by-one per schedule).
 	 */
 	@VisibleForTesting
-	static String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
+	String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
 	{
 		final ImmutableSet<OrderId> orderIds = offendingSchedules.stream()
 				.map(schedule -> OrderId.ofRepoIdOrNull(schedule.getC_Order_ID()))
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Map<OrderId, String> documentNoByOrderId = Services.get(IOrderDAO.class).getByIds(orderIds)
+		final Map<OrderId, String> documentNoByOrderId = orderDAO.getByIds(orderIds)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
 
