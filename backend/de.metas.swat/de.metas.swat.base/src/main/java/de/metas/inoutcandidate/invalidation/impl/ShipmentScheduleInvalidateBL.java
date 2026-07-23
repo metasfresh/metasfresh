@@ -102,14 +102,17 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		return shipmentScheduleUpdater.isRunning();
 	}
 
-	/**
-	 * A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change to it can only
-	 * affect its own shipment schedule. Narrow the invalidation to that record instead of the whole
-	 * product+warehouse segment.
-	 */
+	/** A non-stocked product (not Item+IsStocked) never competes for on-hand stock, so a change narrows to its own schedule. */
 	private boolean shouldNarrowToSelf(@NonNull final ProductId productId)
 	{
 		return !productBL.isStocked(productId);
+	}
+
+	/** A charge/freight line has no product ({@code M_Product_ID=0}) → no stock to compete for → narrows like a non-stocked product. */
+	private boolean shouldNarrowToSelf(@NonNull final I_M_InOutLine inoutLine)
+	{
+		final ProductId productId = ProductId.ofRepoIdOrNull(inoutLine.getM_Product_ID());
+		return productId == null || shouldNarrowToSelf(productId);
 	}
 
 	@Override
@@ -188,8 +191,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
-			final ProductId productId = ProductId.ofRepoId(inoutLine.getM_Product_ID());
-			if (shouldNarrowToSelf(productId))
+			if (shouldNarrowToSelf(inoutLine))
 			{
 				flagForRecompute(inoutLine);
 			}
@@ -205,8 +207,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
-		final ProductId productId = ProductId.ofRepoId(shipmentLine.getM_Product_ID());
-		if (shouldNarrowToSelf(productId))
+		if (shouldNarrowToSelf(shipmentLine))
 		{
 			flagForRecompute(shipmentLine);
 		}

@@ -35,6 +35,7 @@ import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
@@ -259,6 +260,28 @@ class ShipmentScheduleInvalidateBLTest
 			return inoutLine;
 		}
 
+		/**
+		 * A charge/freight shipment line: {@code M_Product_ID} is left 0 (the column is Mandatory:false) and a
+		 * {@code C_Charge_ID} is set instead, mirroring the callout that builds a charge line from a charge order line.
+		 */
+		private I_M_InOutLine createChargeInOutLine(final I_M_Locator locator)
+		{
+			final I_C_Charge charge = InterfaceWrapperHelper.newInstance(I_C_Charge.class);
+			charge.setName("Freight");
+			InterfaceWrapperHelper.save(charge);
+
+			final I_M_InOut inout = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+			inout.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(inout);
+
+			final I_M_InOutLine inoutLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			inoutLine.setM_InOut(inout);
+			inoutLine.setC_Charge_ID(charge.getC_Charge_ID()); // charge line: no M_Product_ID
+			inoutLine.setM_Locator_ID(locator.getM_Locator_ID());
+			InterfaceWrapperHelper.save(inoutLine);
+			return inoutLine;
+		}
+
 		/** Fresh {@link ShipmentScheduleInvalidateBL} spy wired with the given picking-BOM reversed index. */
 		private ShipmentScheduleInvalidateBL newInvalidateBLSpy(final PickingBOMsReversedIndex reversedIndex)
 		{
@@ -352,7 +375,81 @@ class ShipmentScheduleInvalidateBLTest
 					.notifySegmentChanged(any());
 		}
 
-		/** Control: a STOCKED product must keep the broad segment path (pre-existing behaviour, unchanged by Option A). */
+		/**
+		 * A charge/freight shipment line ({@code M_Product_ID=0}) has no product stock to compete for, so it must
+		 * narrow to self exactly like a non-stocked product — and must NOT crash on {@code ProductId.ofRepoId(0)}.
+		 */
+		@Test
+		void chargeLine_shipmentLineChange_narrowsToSelf()
+		{
+			final I_M_Warehouse warehouse = createWarehouse("WH-Charge-Line");
+			final I_M_Locator locator = createLocator(warehouse);
+			final I_M_InOutLine chargeLine = createChargeInOutLine(locator);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).flagForRecompute(any(I_M_InOutLine.class));
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForShipmentLine(chargeLine);
+
+			verify(bl, times(1))
+					.flagForRecompute(chargeLine);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		/**
+		 * {@code notifySegmentsChangedForShipment} over a shipment carrying a charge line ({@code M_Product_ID=0})
+		 * plus a stocked line: the charge line narrows to self (no crash), the stocked line keeps the broad segment,
+		 * and only the stocked product reaches the batch.
+		 */
+		@Test
+		void chargeLineInShipment_narrowedPerLine_stockedLineKeepsSegment()
+		{
+			final I_M_Product stockedProduct = createProduct("StockedItem-ChargeShip", true, X_M_Product.PRODUCTTYPE_Item);
+
+			final I_C_Charge charge = InterfaceWrapperHelper.newInstance(I_C_Charge.class);
+			charge.setName("Freight-Ship");
+			InterfaceWrapperHelper.save(charge);
+
+			final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+			shipment.setIsSOTrx(true);
+			InterfaceWrapperHelper.save(shipment);
+
+			final I_M_InOutLine chargeLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			chargeLine.setM_InOut(shipment);
+			chargeLine.setC_Charge_ID(charge.getC_Charge_ID()); // charge line: no M_Product_ID
+			InterfaceWrapperHelper.save(chargeLine);
+
+			final I_M_InOutLine stockedLine = InterfaceWrapperHelper.newInstance(I_M_InOutLine.class);
+			stockedLine.setM_InOut(shipment);
+			stockedLine.setM_Product_ID(stockedProduct.getM_Product_ID());
+			InterfaceWrapperHelper.save(stockedLine);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).flagForRecompute(any(I_M_InOutLine.class));
+			doNothing().when(bl).notifySegmentsChanged(any());
+
+			bl.notifySegmentsChangedForShipment(shipment);
+
+			verify(bl, times(1))
+					.flagForRecompute(chargeLine);
+			verify(bl, never())
+					.flagForRecompute(stockedLine);
+
+			@SuppressWarnings("unchecked")
+			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> segmentsCaptor = ArgumentCaptor.forClass(Collection.class);
+			verify(bl, times(1)).notifySegmentsChanged(segmentsCaptor.capture());
+			final Collection<IShipmentScheduleSegment> batchedSegments = segmentsCaptor.getValue();
+			assertThat(batchedSegments)
+					.as("only the stocked line's segment must reach the broad batch; the charge line is narrowed")
+					.hasSize(1);
+			assertThat(batchedSegments.iterator().next().getProductIds())
+					.as("the batched segment must carry the STOCKED product")
+					.contains(stockedProduct.getM_Product_ID());
+		}
+
+		/** Control: a STOCKED product must keep the broad segment path (pre-existing behaviour for stocked products is unchanged). */
 		@Test
 		void stocked_orderLineChange_invalidatesFullSegment()
 		{
