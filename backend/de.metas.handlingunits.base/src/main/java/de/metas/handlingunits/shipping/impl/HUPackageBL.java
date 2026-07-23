@@ -257,8 +257,8 @@ public class HUPackageBL implements IHUPackageBL
 		{
 			return PackageDimensions.UNSPECIFIED;
 		}
-		final PackageDimensions dims = product.getPackageDimensions();
-		return dims.isUnspecified() ? PackageDimensions.UNSPECIFIED : dims;
+		// dims already equals UNSPECIFIED when unspecified (value object) — return it directly.
+		return product.getPackageDimensions();
 	}
 
 	@Override
