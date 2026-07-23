@@ -50,8 +50,6 @@ public class FactoringOpListeDetailRow
 	@NonNull String documentNo;
 	@NonNull LocalDate dateInvoiced;
 	@NonNull LocalDate dueDate;
-	/** ISO3 code (e.g. {@code EUR}). */
-	@NonNull String currencyIso;
 	/** {@code C_Invoice.GrandTotal} — always positive, direction encoded in {@link #debitCreditFlag}. */
 	@NonNull BigDecimal grandTotal;
 	/** {@code C_Invoice.OpenAmt} — positive; non-zero for a row to be included. */
@@ -65,7 +63,7 @@ public class FactoringOpListeDetailRow
 
 		public static DebitCreditFlag fromDocBaseType(@NonNull final String docBaseType)
 		{
-			return "ARC".equals(docBaseType) ? C : D;
+			return org.compiere.model.X_C_DocType.DOCBASETYPE_ARCreditMemo.equals(docBaseType) ? C : D;
 		}
 	}
 }

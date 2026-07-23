@@ -32,14 +32,10 @@ import java.time.LocalDate;
 /**
  * The full set of typed rows that feed the CSV export — a header + a list of detail rows.
  *
- * <p>The header carries the single contract number + client-account-id used for the filename
- * and the header row of the CSV. Both are lifted from the first detail row: since all detail
- * rows in a single export share the same factoring customer's contract (each row's
- * {@code contractNo}/{@code clientAccountId} come from the invoice's BP), and the process is
- * scoped to one org + one currency, the values are consistent across all rows.
- *
- * <p>Aggregate totals (sumD / sumC) are computed by
- * {@link FactoringOpListeService#buildExportData}.
+ * <p>{@link #contractNo} and {@link #clientAccountId} are the tenant's per-org factoring
+ * configuration on the factorer BP ({@code IsFactorer='Y'}, unique per org) and drive the
+ * filename + header row of the CSV. Aggregate totals ({@link #sumD} / {@link #sumC}) are
+ * computed over the detail rows by {@link FactoringOpListeService#buildExportData}.
  */
 @Value
 public class FactoringOpListeExportData

@@ -239,7 +239,6 @@ class Factoring_OP_Liste_ExportTest
 				.documentNo(documentNo)
 				.dateInvoiced(dateInvoiced)
 				.dueDate(dueDate)
-				.currencyIso("EUR")
 				.grandTotal(grandTotal)
 				.openAmount(openAmount)
 				.debitCreditFlag(dcFlag)

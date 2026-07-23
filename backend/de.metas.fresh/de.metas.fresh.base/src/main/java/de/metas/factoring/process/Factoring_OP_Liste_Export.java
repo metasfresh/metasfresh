@@ -24,6 +24,7 @@ package de.metas.factoring.process;
 
 import com.google.common.base.Joiner;
 import de.metas.i18n.AdMessageKey;
+import de.metas.util.Check;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
@@ -73,7 +74,10 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 		}
 		catch (final Exception e)
 		{
-			// Spring context not available (unit-test env) — the test provides one via setServiceForTesting.
+			// No Spring context available (unit-test env) — the test provides a mock via
+			// setServiceForTesting. In production a genuine Spring misconfiguration lands here
+			// too; runExport's Check.assumeNotNull below surfaces that clearly at run time,
+			// citing the missing bean rather than throwing a downstream NPE.
 			this.service = null;
 		}
 	}
@@ -105,6 +109,8 @@ public class Factoring_OP_Liste_Export extends JavaProcess
 			throw new AdempiereException(MSG_RoleScopeAllOrgs.toAD_MessageWithMarkers())
 					.markAsUserValidationError();
 		}
+		Check.assumeNotNull(service, "FactoringOpListeService bean is not available — Spring context "
+				+ "is not initialised, or the bean is missing from the Spring configuration");
 		final OrgId orgId = OrgId.ofRepoId(orgIdRepo);
 		final CurrencyId currencyId = CurrencyId.ofRepoId(currencyIdRepo);
 

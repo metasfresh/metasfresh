@@ -46,10 +46,18 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.document.engine.IDocument;
+import org.compiere.model.X_C_DocType;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Loads and aggregates the Factoring OP-Liste export data using {@code IQueryBL}.
@@ -106,8 +114,7 @@ public class FactoringOpListeService
 		final CurrencyCode currencyCode = currencyRepo.getCurrencyCodeById(currencyId);
 		final String currencyIso = currencyCode.toThreeLetterCode();
 
-		final ImmutableList<FactoringOpListeDetailRow> detailRows =
-				loadDetailRows(orgId, currencyId, currencyIso);
+		final ImmutableList<FactoringOpListeDetailRow> detailRows = loadDetailRows(orgId, currencyId);
 
 		final BigDecimal sumD = detailRows.stream()
 				.filter(r -> r.getDebitCreditFlag() == FactoringOpListeDetailRow.DebitCreditFlag.D)
@@ -177,42 +184,66 @@ public class FactoringOpListeService
 
 	private ImmutableList<FactoringOpListeDetailRow> loadDetailRows(
 			@NonNull final OrgId orgId,
-			@NonNull final CurrencyId currencyId,
-			@NonNull final String currencyIso)
+			@NonNull final CurrencyId currencyId)
 	{
-		final IQueryBuilder<I_C_Invoice> invoiceQuery = queryBL
+		final List<I_C_Invoice> invoices = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_AD_Org_ID, orgId.getRepoId())
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Currency_ID, currencyId.getRepoId())
-				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_OpenAmt, BigDecimal.ZERO);
-
-		invoiceQuery.addInSubQueryFilter(
-				I_C_Invoice.COLUMNNAME_C_BPartner_ID,
-				I_C_BPartner.COLUMNNAME_C_BPartner_ID,
-				queryBL.createQueryBuilder(I_C_BPartner.class)
-						.addOnlyActiveRecordsFilter()
-						.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactoring, true)
-						.create());
-
-		final List<I_C_Invoice> invoices = invoiceQuery
-				.orderBy(I_C_Invoice.COLUMNNAME_DateInvoiced)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_DocStatus, IDocument.STATUS_Completed)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsSOTrx, true)
+				.addNotEqualsFilter(I_C_Invoice.COLUMNNAME_OpenAmt, BigDecimal.ZERO)
+				.addInSubQueryFilter(
+						I_C_Invoice.COLUMNNAME_C_BPartner_ID,
+						I_C_BPartner.COLUMNNAME_C_BPartner_ID,
+						queryBL.createQueryBuilder(I_C_BPartner.class)
+								.addOnlyActiveRecordsFilter()
+								.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactoring, true)
+								.create())
 				.create()
 				.list();
+
+		if (invoices.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		// Batch-load BPartners + DocTypes to avoid N+1 lookups inside the row-mapping loop.
+		final Set<BPartnerId> bpIds = invoices.stream()
+				.map(inv -> BPartnerId.ofRepoId(inv.getC_BPartner_ID()))
+				.collect(Collectors.toCollection(HashSet::new));
+		final Map<Integer, I_C_BPartner> bpById = bpartnerDAO.getByIds(bpIds).stream()
+				.collect(Collectors.toMap(I_C_BPartner::getC_BPartner_ID, java.util.function.Function.identity()));
+
+		final Set<Integer> docTypeIds = invoices.stream()
+				.map(I_C_Invoice::getC_DocType_ID)
+				.collect(Collectors.toCollection(HashSet::new));
+		final Map<Integer, I_C_DocType> docTypeById = queryBL.createQueryBuilder(I_C_DocType.class)
+				.addInArrayFilter(I_C_DocType.COLUMNNAME_C_DocType_ID, docTypeIds)
+				.create()
+				.list()
+				.stream()
+				.collect(Collectors.toMap(I_C_DocType::getC_DocType_ID, java.util.function.Function.identity()));
 
 		final List<FactoringOpListeDetailRow> rows = new java.util.ArrayList<>(invoices.size());
 		for (final I_C_Invoice invoice : invoices)
 		{
-			final I_C_BPartner bp = InterfaceWrapperHelper.load(invoice.getC_BPartner_ID(), I_C_BPartner.class);
-			final I_C_DocType docType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
+			final I_C_BPartner bp = bpById.get(invoice.getC_BPartner_ID());
+			final I_C_DocType docType = docTypeById.get(invoice.getC_DocType_ID());
+			final LocalDate dateInvoiced = TimeUtil.asLocalDate(invoice.getDateInvoiced());
+			final LocalDate dueDateRaw = TimeUtil.asLocalDate(invoice.getDueDate());
+			// C_Invoice.DueDate can legitimately be null (payment terms with net-0 days sometimes
+			// leave the column unset). The OP-Liste needs a due date column populated; fall back to
+			// dateInvoiced so the export completes rather than aborting mid-run for one bad invoice.
+			final LocalDate dueDate = dueDateRaw != null ? dueDateRaw : dateInvoiced;
 
 			rows.add(FactoringOpListeDetailRow.builder()
 					.debitorNo(StringUtils.trunc(Strings.nullToEmpty(bp.getValue()), 20))
 					.debitorName(StringUtils.trunc(Strings.nullToEmpty(bp.getName()), 50))
 					.documentNo(Strings.nullToEmpty(invoice.getDocumentNo()))
-					.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
-					.dueDate(TimeUtil.asLocalDate(invoice.getDueDate()))
-					.currencyIso(currencyIso)
+					.dateInvoiced(dateInvoiced)
+					.dueDate(dueDate)
 					.grandTotal(MoreObjects.firstNonNull(invoice.getGrandTotal(), BigDecimal.ZERO).abs())
 					.openAmount(MoreObjects.firstNonNull(invoice.getOpenAmt(), BigDecimal.ZERO).abs())
 					.debitCreditFlag(FactoringOpListeDetailRow.DebitCreditFlag.fromDocBaseType(
