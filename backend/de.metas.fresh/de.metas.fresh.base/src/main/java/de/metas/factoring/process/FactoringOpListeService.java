@@ -22,6 +22,8 @@
 
 package de.metas.factoring.process;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyCode;
@@ -30,7 +32,9 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -39,6 +43,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -135,7 +140,7 @@ public class FactoringOpListeService
 		if (factorers.isEmpty())
 		{
 			throw new AdempiereException(
-					MSG_NoFactorer.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId))
+					MSG_NoFactorer.toAD_MessageWithMarkers() + " " + orgDAO.getOrgName(orgId))
 					.markAsUserValidationError();
 		}
 		if (factorers.size() > 1)
@@ -145,18 +150,18 @@ public class FactoringOpListeService
 					.reduce((a, b) -> a + ", " + b)
 					.orElse("");
 			throw new AdempiereException(
-					MSG_MultipleFactorers.toAD_MessageWithMarkers() + " " + resolveOrgName(orgId) + ": " + names)
+					MSG_MultipleFactorers.toAD_MessageWithMarkers() + " " + orgDAO.getOrgName(orgId) + ": " + names)
 					.markAsUserValidationError();
 		}
 
 		final I_C_BPartner factorer = factorers.get(0);
-		if (isBlank(factorer.getFactoringContractNo()))
+		if (Check.isBlank(factorer.getFactoringContractNo()))
 		{
 			throw new AdempiereException(
 					MSG_MissingContractNo.toAD_MessageWithMarkers() + " " + factorer.getName())
 					.markAsUserValidationError();
 		}
-		if (isBlank(factorer.getFactoringClientAccountId()))
+		if (Check.isBlank(factorer.getFactoringClientAccountId()))
 		{
 			throw new AdempiereException(
 					MSG_MissingClientAccountId.toAD_MessageWithMarkers() + " " + factorer.getName())
@@ -164,18 +169,6 @@ public class FactoringOpListeService
 		}
 
 		return factorer;
-	}
-
-	private String resolveOrgName(@NonNull final OrgId orgId)
-	{
-		try
-		{
-			return orgDAO.getById(orgId).getName();
-		}
-		catch (final Exception e)
-		{
-			return String.valueOf(orgId.getRepoId());
-		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -214,16 +207,16 @@ public class FactoringOpListeService
 			final I_C_DocType docType = InterfaceWrapperHelper.load(invoice.getC_DocType_ID(), I_C_DocType.class);
 
 			rows.add(FactoringOpListeDetailRow.builder()
-					.debitorNo(safeLeft(bp.getValue(), 20))
-					.debitorName(safeLeft(bp.getName(), 50))
-					.documentNo(nullSafe(invoice.getDocumentNo()))
-					.dateInvoiced(toLocalDate(invoice.getDateInvoiced()))
-					.dueDate(toLocalDate(invoice.getDueDate()))
+					.debitorNo(StringUtils.trunc(Strings.nullToEmpty(bp.getValue()), 20))
+					.debitorName(StringUtils.trunc(Strings.nullToEmpty(bp.getName()), 50))
+					.documentNo(Strings.nullToEmpty(invoice.getDocumentNo()))
+					.dateInvoiced(TimeUtil.asLocalDate(invoice.getDateInvoiced()))
+					.dueDate(TimeUtil.asLocalDate(invoice.getDueDate()))
 					.currencyIso(currencyIso)
-					.grandTotal(nullToZero(invoice.getGrandTotal()).abs())
-					.openAmount(nullToZero(invoice.getOpenAmt()).abs())
+					.grandTotal(MoreObjects.firstNonNull(invoice.getGrandTotal(), BigDecimal.ZERO).abs())
+					.openAmount(MoreObjects.firstNonNull(invoice.getOpenAmt(), BigDecimal.ZERO).abs())
 					.debitCreditFlag(FactoringOpListeDetailRow.DebitCreditFlag.fromDocBaseType(
-							nullSafe(docType.getDocBaseType())))
+							Strings.nullToEmpty(docType.getDocBaseType())))
 					.build());
 		}
 
@@ -234,13 +227,4 @@ public class FactoringOpListeService
 		return ImmutableList.copyOf(rows);
 	}
 
-	// -------------------------------------------------------------------------
-	// Helpers
-	// -------------------------------------------------------------------------
-
-	private static String nullSafe(final String s) { return s != null ? s : ""; }
-	private static String safeLeft(final String s, final int max) { final String v = nullSafe(s); return v.length() <= max ? v : v.substring(0, max); }
-	private static BigDecimal nullToZero(final BigDecimal v) { return v != null ? v : BigDecimal.ZERO; }
-	private static LocalDate toLocalDate(final java.sql.Timestamp ts) { return ts != null ? ts.toLocalDateTime().toLocalDate() : LocalDate.now(); }
-	private static boolean isBlank(final String s) { return s == null || s.trim().isEmpty(); }
 }
