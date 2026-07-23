@@ -1,3 +1,8 @@
+-- me03 #29822: Factoring - show factoring bank account on customer-returns documents.
+-- This root function is shared by the sales customer-returns report and the purchase vendor-returns report.
+-- Only the customer-returns report passes IsFactoringPartner to the footer, so the vendor-returns report is unaffected.
+-- Also fixes a pre-existing malformed definition (missing comma before io.docstatus).
+
 DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric);
 
 CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric)
