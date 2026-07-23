@@ -94,7 +94,7 @@ public class HUPackageBL implements IHUPackageBL
 	 */
 	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	// services
@@ -221,7 +221,7 @@ public class HUPackageBL implements IHUPackageBL
 		}
 
 		// One parcel per unit: split the HU weight evenly across the N identical units, and use the
-		// product's SINGLE-unit dimensions when present, else UNSPECIFIED — IsSelfPacked is not checked.
+		// product's SINGLE-unit dimensions when present, else UNSPECIFIED (IsSelfPacked gate is SysConfig-controlled, default off).
 		final BigDecimal huWeightInKg = request.getWeightInKg();
 		final BigDecimal perUnitWeightInKg = huWeightInKg != null
 				? huWeightInKg.divide(BigDecimal.valueOf(parcelCount), 3, RoundingMode.HALF_UP)

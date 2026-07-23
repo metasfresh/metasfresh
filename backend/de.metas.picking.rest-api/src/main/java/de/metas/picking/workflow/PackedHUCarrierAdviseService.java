@@ -79,6 +79,8 @@ public class PackedHUCarrierAdviseService
 	 */
 	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
 	@NonNull private final ProductRepository productRepository;
@@ -449,7 +451,7 @@ public class PackedHUCarrierAdviseService
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
 			// Use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
-			final boolean checkSelfPacked = Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+			final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
 			if (checkSelfPacked && !product.isSelfPacked())
 			{
 				dimensions = PackageDimensions.UNSPECIFIED;
