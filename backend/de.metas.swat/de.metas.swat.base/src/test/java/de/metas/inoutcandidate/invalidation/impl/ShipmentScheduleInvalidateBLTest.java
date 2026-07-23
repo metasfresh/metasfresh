@@ -157,24 +157,23 @@ class ShipmentScheduleInvalidateBLTest
 	}
 
 	/**
-	 * RED guard for #31050's durable fix (revised approach "Option A"): the three product-specific
-	 * {@code notifySegmentChangedFor*} entry points must route a <b>non-stocked, non-picking-BOM-component</b>
-	 * product change to the already-existing self-by-id invalidation ({@link ShipmentScheduleInvalidateBL#invalidateJustForOrderLine},
+	 * The three product-specific {@code notifySegmentChangedFor*} entry points (and the shipment-batch
+	 * {@code notifySegmentsChangedForShipment}) route a <b>non-stocked, non-picking-BOM-component</b> product
+	 * change to the already-existing self-by-id invalidation ({@link ShipmentScheduleInvalidateBL#invalidateJustForOrderLine},
 	 * {@link ShipmentScheduleInvalidateBL#flagForRecompute(ShipmentScheduleId)}, {@link ShipmentScheduleInvalidateBL#flagForRecompute(I_M_InOutLine)})
 	 * instead of the broad product+warehouse segment ({@link ShipmentScheduleInvalidateBL#notifySegmentChanged(IShipmentScheduleSegment)}).
-	 * A non-stocked product that IS a picking-BOM component must keep the broad path (so the BOM-parent's
-	 * schedules are still reached via {@code explodeByPickingBOMs}).
+	 * A non-stocked product that IS a picking-BOM component keeps the broad path, so the BOM-parent's schedules
+	 * are still reached via {@code explodeByPickingBOMs}.
 	 * <p>
-	 * Discriminator under test: {@code !IProductBL.isStocked(productId) && pickingBOMsReversedIndex.getBOMProductIdsByComponentId(productId).isEmpty()}
-	 * (AC-D3: the Item+IsStocked composite via {@code IProductBL}, never the raw {@code M_Product.IsStocked} column alone).
+	 * The discriminator is {@code !IProductBL.isStocked(productId) && pickingBOMsReversedIndex.getBOMProductIdsByComponentId(productId).isEmpty()},
+	 * where {@code IProductBL.isStocked} is the composite Item-and-IsStocked check — never the raw
+	 * {@code M_Product.IsStocked} column alone (see {@code nonItemProductWithStockedColumn_*}, which a raw-column
+	 * reading would get wrong).
 	 * <p>
-	 * These tests verify ROUTING (which internal method fires), not the raw SQL side effects: {@code ShipmentScheduleInvalidateBL}'s
-	 * only real collaborator boundary in this test class is {@link PickingBOMService} (mocked, as in {@link ExplodeByPickingBOMs}
-	 * above); the broad/narrow terminal methods are stubbed out on a Mockito spy of the real instance so the guard's decision
+	 * These tests verify ROUTING (which internal method fires), not the raw SQL side effects: the only real
+	 * collaborator boundary here is {@link PickingBOMService} (mocked, as in {@link ExplodeByPickingBOMs} above);
+	 * the broad/narrow terminal methods are stubbed on a Mockito spy of the real instance so the guard's decision
 	 * is pinned without depending on the (non-hermetic, raw-SQL-backed) {@code IShipmentScheduleInvalidateRepository}.
-	 * <p>
-	 * FAILS on current code for the non-stocked (non-BOM-component) cases: {@code notifySegmentChangedFor*} unconditionally
-	 * takes the broad segment path today, regardless of {@code IsStocked}.
 	 */
 	@Nested
 	class NonStockedNarrowing
@@ -273,10 +272,35 @@ class ShipmentScheduleInvalidateBLTest
 		@Test
 		void nonStocked_orderLineChange_invalidatesOnlyOwnSchedule()
 		{
-			// IsStocked=false on an Item product: exercises the composite IProductBL#isStocked (AC-D3), not the raw column alone.
+			// IsStocked=false on an Item product: exercises the composite IProductBL#isStocked, not the raw column alone.
 			final I_M_Product nonStockedProduct = createProduct("NonStockedItem-OL", false, X_M_Product.PRODUCTTYPE_Item);
 			final I_M_Warehouse warehouse = createWarehouse("WH-NS-OL");
 			final I_C_OrderLine orderLine = createOrderLine(nonStockedProduct, warehouse);
+
+			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
+			doNothing().when(bl).invalidateJustForOrderLine(any());
+			doNothing().when(bl).notifySegmentChanged(any());
+
+			bl.notifySegmentChangedForOrderLine(orderLine);
+
+			verify(bl, times(1))
+					.invalidateJustForOrderLine(orderLine);
+			verify(bl, never())
+					.notifySegmentChanged(any());
+		}
+
+		/**
+		 * Pins the COMPOSITE {@code IProductBL.isStocked} semantics (Item AND IsStocked), not the raw
+		 * {@code M_Product.IsStocked} column: a non-Item product (a Service) whose IsStocked column is {@code true}
+		 * is still "not stocked" in the composite sense, so its order-line change must narrow to self. An
+		 * implementation reading the raw column would (wrongly) keep the broad segment here.
+		 */
+		@Test
+		void nonItemProductWithStockedColumn_orderLineChange_invalidatesOnlyOwnSchedule()
+		{
+			final I_M_Product serviceStockedColumn = createProduct("Service-StockedCol-OL", true, X_M_Product.PRODUCTTYPE_Service);
+			final I_M_Warehouse warehouse = createWarehouse("WH-Service-OL");
+			final I_C_OrderLine orderLine = createOrderLine(serviceStockedColumn, warehouse);
 
 			final ShipmentScheduleInvalidateBL bl = newInvalidateBLSpy(NO_BOM_COMPONENTS);
 			doNothing().when(bl).invalidateJustForOrderLine(any());
@@ -418,9 +442,14 @@ class ShipmentScheduleInvalidateBLTest
 			@SuppressWarnings("unchecked")
 			final ArgumentCaptor<Collection<IShipmentScheduleSegment>> segmentsCaptor = ArgumentCaptor.forClass(Collection.class);
 			verify(bl, times(1)).notifySegmentsChanged(segmentsCaptor.capture());
-			assertThat(segmentsCaptor.getValue())
+			final Collection<IShipmentScheduleSegment> batchedSegments = segmentsCaptor.getValue();
+			assertThat(batchedSegments)
 					.as("only the stocked line's segment must reach the broad batch")
 					.hasSize(1);
+			assertThat(batchedSegments.iterator().next().getProductIds())
+					.as("the batched segment must carry the STOCKED product, not the non-stocked one")
+					.contains(stockedProduct.getM_Product_ID())
+					.doesNotContain(nonStockedProduct.getM_Product_ID());
 		}
 	}
 }
