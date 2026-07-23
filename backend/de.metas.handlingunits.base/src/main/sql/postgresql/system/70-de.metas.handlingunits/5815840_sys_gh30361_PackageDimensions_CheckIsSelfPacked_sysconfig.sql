@@ -1,7 +1,6 @@
--- Insert AD_SysConfig row for the IsSelfPacked dimension gate.
--- Default Value='N' → gate is OFF → flag-independent behaviour (new default).
--- Set to 'Y' on a specific instance to restore the legacy gate
--- (non-self-packed products → PackageDimensions.UNSPECIFIED).
+-- AD_SysConfig row controlling the IsSelfPacked dimension gate.
+-- Value='N' → product dimensions are used regardless of the self-packed flag.
+-- Value='Y' → a non-self-packed product yields PackageDimensions.UNSPECIFIED.
 --
 -- ID allocated from idserver.metas.de on 2026-07-23:
 --   AD_SysConfig 541837
@@ -16,7 +15,7 @@ VALUES
     (541837 /*From ID Server*/, 0, 0,
      'de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked',
      'N',
-     'When Y, the legacy IsSelfPacked gate is active: non-self-packed products return PackageDimensions.UNSPECIFIED instead of using their named dimensions. Default N = flag-independent behaviour.',
+     'Controls the IsSelfPacked dimension gate. When Y, a non-self-packed product yields PackageDimensions.UNSPECIFIED; when N, product dimensions are used regardless of the self-packed flag.',
      'de.metas.handlingunits', 'S',
      'Y',
      TO_TIMESTAMP('2026-07-23 00:00:00', 'YYYY-MM-DD HH24:MI:SS'), 100,

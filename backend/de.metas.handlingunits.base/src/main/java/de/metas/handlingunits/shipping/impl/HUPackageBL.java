@@ -237,15 +237,23 @@ public class HUPackageBL implements IHUPackageBL
 	}
 
 	/**
+	 * {@code true} if the {@value IHUPackageBL#SYSCONFIG_CHECK_IS_SELF_PACKED} SysConfig requires the
+	 * self-packed flag for dimension resolution (default {@code false} = flag-independent).
+	 */
+	private boolean isCheckSelfPacked()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
+	}
+
+	/**
 	 * Single-unit dimensions: each parcel carries the product's named dimensions verbatim
 	 * (no qty-based sort/scale). Returns {@link PackageDimensions#UNSPECIFIED} when the product
 	 * has no dims. When {@value IHUPackageBL#SYSCONFIG_CHECK_IS_SELF_PACKED}='Y', also returns
-	 * {@link PackageDimensions#UNSPECIFIED} for non-self-packed products (legacy gate).
+	 * {@link PackageDimensions#UNSPECIFIED} for a non-self-packed product.
 	 */
 	private PackageDimensions resolveSingleUnitDimensions(@NonNull final Product product)
 	{
-		final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
-		if (checkSelfPacked && !product.isSelfPacked())
+		if (isCheckSelfPacked() && !product.isSelfPacked())
 		{
 			return PackageDimensions.UNSPECIFIED;
 		}
@@ -511,8 +519,7 @@ public class HUPackageBL implements IHUPackageBL
 			// Single-product: use product dims (IsSelfPacked gate is SysConfig-controlled, default off).
 			final IHUProductStorage singleHUProductStorage = productStorages.iterator().next();
 			final Product product = productRepository.getById(singleHUProductStorage.getProductId());
-			final boolean checkSelfPacked = sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
-			if (checkSelfPacked && !product.isSelfPacked())
+			if (isCheckSelfPacked() && !product.isSelfPacked())
 			{
 				return PackageDimensions.UNSPECIFIED;
 			}

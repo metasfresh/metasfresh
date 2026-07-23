@@ -115,19 +115,12 @@ public class NShiftUtil
 				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
 				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
 		final String attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
-		if (Check.isBlank(attention))
-		{
-			throw new IllegalStateException(role + " Attention is mandatory but was not resolved from mapping configs.");
-		}
-
-		if (contact == null || Check.isBlank(contact.getPhone()))
-		{
-			throw new IllegalStateException(role + " Phone is mandatory but is missing or blank.");
-		}
-		if (contact.getEmailAddress() == null || Check.isBlank(contact.getEmailAddress()))
-		{
-			throw new IllegalStateException(role + " Email is mandatory but is missing or blank.");
-		}
+		Check.assumeNotEmpty(attention, IllegalStateException.class,
+				role + " Attention is mandatory but was not resolved from mapping configs.");
+		Check.assumeNotEmpty(contact != null ? contact.getPhone() : null, IllegalStateException.class,
+				role + " Phone is mandatory but is missing or blank.");
+		Check.assumeNotEmpty(contact != null ? contact.getEmailAddress() : null, IllegalStateException.class,
+				role + " Email is mandatory but is missing or blank.");
 
 		return buildNShiftAddressBuilder(commonAddress, contact, kind)
 				.attention(attention)
