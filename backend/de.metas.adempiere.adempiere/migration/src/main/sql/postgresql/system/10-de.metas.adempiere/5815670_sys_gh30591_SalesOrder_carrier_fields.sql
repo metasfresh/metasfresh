@@ -94,6 +94,11 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781772
 
 -- 3d) Labels UI element on the host main tab (186), advanced edit group 540499. Type 'L'. --------
 --      LayoutFactory auto-hides the backing tab (549353) because this element IsDisplayed='Y'.
+--      NOTE: the Labels widget's DisplayLogic is NOT stored on this AD_UI_Element (there is no such
+--      column); it is read from the SELECTOR field (781772) by
+--      GridTabVOBasedDocumentEntityDescriptorFactory#extractLabelDisplayLogic. That is why the
+--      '@M_Shipper_ID@!0' DisplayLogic lives on AD_Field 781772 above (evaluated in the host
+--      C_Order document context), not here.
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,Labels_Selector_Field_ID,Labels_Tab_ID,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy)
 VALUES (0,0,186,652704 /*From ID Server*/,540499,'L',TO_TIMESTAMP('2026-07-23 10:04:30','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',781772,549353,0,'Lieferweg-Services',520,0,0,TO_TIMESTAMP('2026-07-23 10:04:30','YYYY-MM-DD HH24:MI:SS'),100)
 ;
