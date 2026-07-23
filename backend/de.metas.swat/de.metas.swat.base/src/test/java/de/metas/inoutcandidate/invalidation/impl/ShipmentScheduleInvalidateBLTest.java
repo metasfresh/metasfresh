@@ -184,7 +184,7 @@ class ShipmentScheduleInvalidateBLTest
 		void registerNotRunningUpdater()
 		{
 			// notifySegmentChangedForShipmentSchedule early-exits when the shipment-schedule updater is running
-			// (ShipmentScheduleInvalidateBL#isShipmentScheduleUpdaterRunning, production line ~214). Stub it as
+			// (ShipmentScheduleInvalidateBL#isShipmentScheduleUpdaterRunning). Stub it as
 			// NOT running so the routing under test (broad vs. self-by-id) is actually reached.
 			final IShipmentScheduleUpdater updater = mock(IShipmentScheduleUpdater.class);
 			when(updater.isRunning()).thenReturn(false);

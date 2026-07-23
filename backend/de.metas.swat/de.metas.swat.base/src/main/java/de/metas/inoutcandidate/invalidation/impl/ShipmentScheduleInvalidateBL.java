@@ -108,17 +108,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		return !productBL.isStocked(productId);
 	}
 
-	/** A charge/freight line has no product ({@code M_Product_ID=0}) → no stock to compete for → narrows like a non-stocked product. */
-	private boolean shouldNarrowToSelf(@NonNull final I_M_InOutLine inoutLine)
+	/**
+	 * Narrow-decision from a raw {@code M_Product_ID} that may be 0: a charge/freight line has no product
+	 * ({@code M_Product_ID=0}; see {@code MOrderLine}/{@code MInOutLine} zeroing it when {@code C_Charge_ID} is set),
+	 * so it never competes for stock and narrows exactly like a non-stocked product. One raw-id entry point keeps every
+	 * product-bearing line type (inout line, order line, …) on the same null-safe path.
+	 */
+	private boolean shouldNarrowToSelfByProductRepoId(final int productRepoId)
 	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(inoutLine.getM_Product_ID());
-		return productId == null || shouldNarrowToSelf(productId);
-	}
-
-	/** A charge/freight order line has no product ({@code M_Product_ID=0}, see {@code MOrderLine#setC_Charge_ID}) → narrows like a non-stocked product. */
-	private boolean shouldNarrowToSelf(@NonNull final I_C_OrderLine orderLine)
-	{
-		final ProductId productId = ProductId.ofRepoIdOrNull(orderLine.getM_Product_ID());
+		final ProductId productId = ProductId.ofRepoIdOrNull(productRepoId);
 		return productId == null || shouldNarrowToSelf(productId);
 	}
 
@@ -198,7 +196,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final int bpartnerId = shipment.getC_BPartner_ID();
 		for (final I_M_InOutLine inoutLine : inOutDAO.retrieveLines(shipment))
 		{
-			if (shouldNarrowToSelf(inoutLine))
+			if (shouldNarrowToSelfByProductRepoId(inoutLine.getM_Product_ID()))
 			{
 				flagForRecompute(inoutLine);
 			}
@@ -214,7 +212,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForShipmentLine(final I_M_InOutLine shipmentLine)
 	{
-		if (shouldNarrowToSelf(shipmentLine))
+		if (shouldNarrowToSelfByProductRepoId(shipmentLine.getM_Product_ID()))
 		{
 			flagForRecompute(shipmentLine);
 		}
@@ -250,6 +248,8 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 			return;
 		}
 
+		// M_ShipmentSchedule.M_Product_ID is Mandatory and never 0 (schedules are only created for real products),
+		// so — unlike the InOutLine/OrderLine siblings, which can be product-less charge lines — no charge-line guard is needed here.
 		final ProductId productId = ProductId.ofRepoId(schedule.getM_Product_ID());
 		if (shouldNarrowToSelf(productId))
 		{
@@ -291,7 +291,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-		if (shouldNarrowToSelf(orderLine))
+		if (shouldNarrowToSelfByProductRepoId(orderLine.getM_Product_ID()))
 		{
 			invalidateJustForOrderLine(orderLine);
 		}
