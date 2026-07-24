@@ -9,8 +9,8 @@
 
 -- de_DE
 UPDATE AD_Element_Trl
-SET Description = 'Kennzeichnet, dass der Kunde die Ware selbst verpackt und keine Verpackung durch den Spediteur erfolgt.',
-    Help        = 'Kennzeichnet, dass der Kunde die Ware selbst verpackt und keine Verpackung durch den Spediteur erfolgt.',
+SET Description = 'Kennzeichnet, dass die Ware bereits versandfertig verpackt ist und nicht zusätzlich verpackt werden muss.',
+    Help        = 'Kennzeichnet, dass die Ware bereits versandfertig verpackt ist und nicht zusätzlich verpackt werden muss.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:01', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -20,8 +20,8 @@ WHERE AD_Element_ID = 584203 AND AD_Language = 'de_DE';
 
 -- de_CH
 UPDATE AD_Element_Trl
-SET Description = 'Kennzeichnet, dass der Kunde die Ware selbst verpackt und keine Verpackung durch den Spediteur erfolgt.',
-    Help        = 'Kennzeichnet, dass der Kunde die Ware selbst verpackt und keine Verpackung durch den Spediteur erfolgt.',
+SET Description = 'Kennzeichnet, dass die Ware bereits versandfertig verpackt ist und nicht zusätzlich verpackt werden muss.',
+    Help        = 'Kennzeichnet, dass die Ware bereits versandfertig verpackt ist und nicht zusätzlich verpackt werden muss.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -31,8 +31,8 @@ WHERE AD_Element_ID = 584203 AND AD_Language = 'de_CH';
 
 -- en_US
 UPDATE AD_Element_Trl
-SET Description = 'Indicates that the customer packs the goods themselves; no packaging is done by the carrier.',
-    Help        = 'Indicates that the customer packs the goods themselves; no packaging is done by the carrier.',
+SET Description = 'Indicates that the goods are already packed ready to ship, so no additional packaging is needed.',
+    Help        = 'Indicates that the goods are already packed ready to ship, so no additional packaging is needed.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:03', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -50,8 +50,8 @@ WHERE AD_Element_ID = 584203 AND AD_Language = 'en_US';
 
 -- de_DE
 UPDATE AD_Element_Trl
-SET Description = 'Steuert, ob die Lieferweg-Abfrage beim Spediteur automatisch über die API erfolgt.',
-    Help        = 'Steuert, ob die Lieferweg-Abfrage beim Spediteur automatisch über die API erfolgt.',
+SET Description = 'Legt fest, ob die Lieferweg-Abfrage per nShift-API erfolgt; steuert damit die Anzeige der Lieferweg-Abfrage in der mobilen Kommissionierung.',
+    Help        = 'Legt fest, ob die Lieferweg-Abfrage per nShift-API erfolgt; steuert damit die Anzeige der Lieferweg-Abfrage in der mobilen Kommissionierung.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:11', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -61,8 +61,8 @@ WHERE AD_Element_ID = 584972 AND AD_Language = 'de_DE';
 
 -- de_CH
 UPDATE AD_Element_Trl
-SET Description = 'Steuert, ob die Lieferweg-Abfrage beim Spediteur automatisch über die API erfolgt.',
-    Help        = 'Steuert, ob die Lieferweg-Abfrage beim Spediteur automatisch über die API erfolgt.',
+SET Description = 'Legt fest, ob die Lieferweg-Abfrage per nShift-API erfolgt; steuert damit die Anzeige der Lieferweg-Abfrage in der mobilen Kommissionierung.',
+    Help        = 'Legt fest, ob die Lieferweg-Abfrage per nShift-API erfolgt; steuert damit die Anzeige der Lieferweg-Abfrage in der mobilen Kommissionierung.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:12', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -72,8 +72,8 @@ WHERE AD_Element_ID = 584972 AND AD_Language = 'de_CH';
 
 -- en_US
 UPDATE AD_Element_Trl
-SET Description = 'Controls whether the carrier advise is requested automatically from the carrier via the API.',
-    Help        = 'Controls whether the carrier advise is requested automatically from the carrier via the API.',
+SET Description = 'Determines whether the carrier advise is requested via the nShift API; this drives the Advise-Carrier button in mobile picking.',
+    Help        = 'Determines whether the carrier advise is requested via the nShift API; this drives the Advise-Carrier button in mobile picking.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:13', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -90,16 +90,16 @@ WHERE AD_Element_ID = 584972 AND AD_Language = 'en_US';
 -- ============================================================
 
 UPDATE AD_Process
-SET Description = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
-    Help        = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
+SET Description = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
+    Help        = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:21', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
 WHERE AD_Process_ID = 585524;
 
 -- de_DE
 UPDATE AD_Process_Trl
-SET Description  = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
-    Help         = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
+SET Description  = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
+    Help         = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-07-23 10:00:22', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
@@ -107,8 +107,8 @@ WHERE AD_Process_ID = 585524 AND AD_Language = 'de_DE';
 
 -- de_CH
 UPDATE AD_Process_Trl
-SET Description  = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
-    Help         = 'Stößt die Lieferweg-Abfrage beim Spediteur manuell für die ausgewählten Versanddispositionen an.',
+SET Description  = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
+    Help         = 'Legt den Lieferweg manuell über die Prozessparameter fest (ohne API-Abfrage) und setzt ihn als fixen Lieferweg für den Versand.',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-07-23 10:00:23', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
@@ -116,8 +116,8 @@ WHERE AD_Process_ID = 585524 AND AD_Language = 'de_CH';
 
 -- en_US
 UPDATE AD_Process_Trl
-SET Description  = 'Manually triggers the carrier advise at the carrier for the selected shipment schedules.',
-    Help         = 'Manually triggers the carrier advise at the carrier for the selected shipment schedules.',
+SET Description  = 'Sets the carrier manually via the process parameters (no API request) and fixes it as the carrier for the shipment.',
+    Help         = 'Sets the carrier manually via the process parameters (no API request) and fixes it as the carrier for the shipment.',
     IsTranslated = 'Y',
     Updated      = TO_TIMESTAMP('2026-07-23 10:00:24', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy    = 100
@@ -172,8 +172,8 @@ WHERE AD_Element_ID = 584199 AND AD_Language = 'en_US';
 
 -- de_DE
 UPDATE AD_Element_Trl
-SET Description = 'Das beim Spediteur gebuchte Lieferweg-Produkt für die Versandabwicklung.',
-    Help        = 'Das beim Spediteur gebuchte Lieferweg-Produkt für die Versandabwicklung.',
+SET Description = 'Lieferweg-Produkt für die Versandabwicklung.',
+    Help        = 'Lieferweg-Produkt für die Versandabwicklung.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:41', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -183,8 +183,8 @@ WHERE AD_Element_ID = 584116 AND AD_Language = 'de_DE';
 
 -- de_CH
 UPDATE AD_Element_Trl
-SET Description = 'Das beim Spediteur gebuchte Lieferweg-Produkt für die Versandabwicklung.',
-    Help        = 'Das beim Spediteur gebuchte Lieferweg-Produkt für die Versandabwicklung.',
+SET Description = 'Lieferweg-Produkt für die Versandabwicklung.',
+    Help        = 'Lieferweg-Produkt für die Versandabwicklung.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:42', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -194,8 +194,8 @@ WHERE AD_Element_ID = 584116 AND AD_Language = 'de_CH';
 
 -- en_US
 UPDATE AD_Element_Trl
-SET Description = 'The carrier product booked at the carrier for shipment handling.',
-    Help        = 'The carrier product booked at the carrier for shipment handling.',
+SET Description = 'The carrier product for shipment handling.',
+    Help        = 'The carrier product for shipment handling.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:00:43', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -254,8 +254,8 @@ WHERE AD_Element_ID = 584112 AND AD_Language = 'en_US';
 
 -- de_DE
 UPDATE AD_Element_Trl
-SET Description = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption) für das gewählte Lieferweg-Produkt.',
-    Help        = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption) für das gewählte Lieferweg-Produkt.',
+SET Description = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption oder ein Incoterm) für das gewählte Lieferweg-Produkt.',
+    Help        = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption oder ein Incoterm) für das gewählte Lieferweg-Produkt.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:01:01', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -265,8 +265,8 @@ WHERE AD_Element_ID = 584113 AND AD_Language = 'de_DE';
 
 -- de_CH
 UPDATE AD_Element_Trl
-SET Description = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption) für das gewählte Lieferweg-Produkt.',
-    Help        = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption) für das gewählte Lieferweg-Produkt.',
+SET Description = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption oder ein Incoterm) für das gewählte Lieferweg-Produkt.',
+    Help        = 'Ein zusätzlicher Lieferweg-Service (z. B. eine Zustelloption oder ein Incoterm) für das gewählte Lieferweg-Produkt.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:01:02', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100
@@ -276,8 +276,8 @@ WHERE AD_Element_ID = 584113 AND AD_Language = 'de_CH';
 
 -- en_US
 UPDATE AD_Element_Trl
-SET Description = 'An additional carrier service (e.g. a delivery option) for the selected carrier product.',
-    Help        = 'An additional carrier service (e.g. a delivery option) for the selected carrier product.',
+SET Description = 'An additional carrier service (e.g. a delivery option or an incoterm) for the selected carrier product.',
+    Help        = 'An additional carrier service (e.g. a delivery option or an incoterm) for the selected carrier product.',
     IsTranslated = 'Y',
     Updated     = TO_TIMESTAMP('2026-07-23 10:01:03', 'YYYY-MM-DD HH24:MI:SS'),
     UpdatedBy   = 100

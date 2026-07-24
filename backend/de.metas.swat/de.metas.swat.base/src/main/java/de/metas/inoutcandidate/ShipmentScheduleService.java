@@ -147,6 +147,7 @@ public class ShipmentScheduleService
 
 		boolean isAuto;
 		boolean isIncludeCarrierAdviseManual;
+		boolean usePickingStartedGate;
 
 		public static EligibleCarrierAdviseRequest of(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 		{
@@ -185,6 +186,22 @@ public class ShipmentScheduleService
 		return !isEligibleForCarrierAdvise(request.toBuilder().isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual).build());
 	}
 
+	/**
+	 * Used by the {@code M_ShipmentSchedule_Advise_Manual} process only.
+	 * Ineligible once picking is actively started (an active, un-shipped picked qty exists).
+	 * This is a <em>more lenient</em> gate than the picking-job-exists check used by the other
+	 * manual paths: the manual-set window stays open even after a picking job schedule exists,
+	 * closing only once actual qty has been picked.
+	 */
+	public boolean isNotEligibleForManualCarrierSet(@NonNull final ShipmentSchedule shipmentSchedule, final boolean isIncludeCarrierAdviseManual)
+	{
+		final EligibleCarrierAdviseRequest request = EligibleCarrierAdviseRequest.of(shipmentSchedule);
+		return !isEligibleForCarrierAdvise(request.toBuilder()
+				.isIncludeCarrierAdviseManual(isIncludeCarrierAdviseManual)
+				.usePickingStartedGate(true)
+				.build());
+	}
+
 	private boolean isEligibleForCarrierAdvise(@NonNull final EligibleCarrierAdviseRequest request)
 	{
 		// NOTE: no QtyToDeliver gate — the advise request is per-unit (numberOfItems=1), so it is independent of
@@ -218,8 +235,13 @@ public class ShipmentScheduleService
 			return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 		}
 
-		// MANUAL: ineligible only once picking is actively started, i.e. an active, not-yet-shipped picked qty exists.
-		return !isPickingActivelyStarted(shipmentScheduleId);
+		// MANUAL: when usePickingStartedGate is true, stay eligible until picking is actively
+		// started (qty picked > 0); otherwise use the stricter "any picking-job-schedule exists" gate.
+		if (request.isUsePickingStartedGate())
+		{
+			return !isPickingActivelyStarted(shipmentScheduleId);
+		}
+		return !pickingJobScheduleRepository.anyMatch(PickingJobScheduleQuery.builder().onlyShipmentScheduleId(shipmentScheduleId).build());
 	}
 
 	private boolean isPickingActivelyStarted(@NonNull final ShipmentScheduleId shipmentScheduleId)

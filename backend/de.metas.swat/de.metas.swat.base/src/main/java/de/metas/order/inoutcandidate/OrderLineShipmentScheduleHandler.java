@@ -2,7 +2,6 @@ package de.metas.order.inoutcandidate;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
@@ -27,7 +26,6 @@ import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.shipping.CarrierProductId;
-import org.compiere.model.I_C_Order_Carrier_Service;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -174,11 +172,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		InterfaceWrapperHelper.save(newSched);
 
-		// Propagate order-header carrier fields AFTER the initial save.
-		// The BEFORE_NEW interceptor (markAsCarrierAdviceRequested) fires during save and clears any carrier
-		// fields set before save when M_Shipper_ID changes on a new record. Setting them post-save avoids this:
-		// the next BEFORE_CHANGE will not see M_Shipper_ID as changed (it's already persisted), so the
-		// clearing block in the interceptor is skipped and the Manual status we set here survives.
+		// Post-save: the BEFORE_NEW interceptor clears carrier fields on first save when M_Shipper_ID changes;
+		// setting them after the initial save avoids that clearing pass (see de.metas.inoutcandidate/CLAUDE.md).
 		final I_C_Order orderRecordForCarrier = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
 		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(orderRecordForCarrier.getCarrier_Product_ID());
 		if (orderCarrierProductId != null)
@@ -187,7 +182,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 			InterfaceWrapperHelper.save(newSched);
 
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+			final Set<CarrierServiceId> orderServiceIds = shipmentScheduleCarrierServiceRepository.getCarrierServiceIdsByOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
 		}
 
@@ -209,19 +204,14 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLineRecord);
 
-		// Propagate order-header carrier fields for existing schedules.
-		// Unlike the CREATE path (where propagation must happen post-save to survive BEFORE_NEW),
-		// here the schedule already exists. The fields are set before the external save in ShipmentScheduleUpdater.
-		// BEFORE_CHANGE only clears carrier fields when M_Shipper_ID changes; if shipper is unchanged
-		// (the common case on recompute), our values survive to the final save.
+		// Carrier header fields are propagated during the order-header copy above; carrier services need
+		// the persisted ShipmentScheduleId, so they are assigned here after the schedule exists.
 		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()), I_C_Order.class);
 		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(orderRecord.getCarrier_Product_ID());
 		if (orderCarrierProductId != null)
 		{
-			propagateCarrierFieldsFromOrder(shipmentSchedule, orderRecord, orderCarrierProductId);
-
 			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = getOrderCarrierServiceIds(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
+			final Set<CarrierServiceId> orderServiceIds = shipmentScheduleCarrierServiceRepository.getCarrierServiceIdsByOrderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
 			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
 		}
 	}
@@ -351,6 +341,15 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setExternalSystem_ID(orderModel.getExternalSystem_ID());
 		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 		shipmentSchedule.setExternalHeaderId(orderModel.getExternalId());
+
+		// Propagate order-header carrier fields alongside other order-header→schedule copies.
+		// On UPDATE the outer save persists these fields; on CREATE they must be re-applied post-save
+		// (see the BEFORE_NEW interceptor caveat in de.metas.inoutcandidate/CLAUDE.md).
+		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(order.getCarrier_Product_ID());
+		if (orderCarrierProductId != null)
+		{
+			propagateCarrierFieldsFromOrder(shipmentSchedule, order, orderCarrierProductId);
+		}
 	}
 
 	/**
@@ -370,21 +369,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		final CarrierGoodsTypeId goodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(order.getCarrier_Goods_Type_ID());
 		shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(goodsTypeId));
 		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Manual.getCode());
-	}
-
-	/**
-	 * Returns the active {@link CarrierServiceId}s assigned to the given order via {@code C_Order_Carrier_Service}.
-	 * Soft-deleted (inactive) rows are excluded.
-	 */
-	private ImmutableSet<CarrierServiceId> getOrderCarrierServiceIds(@NonNull final OrderId orderId)
-	{
-		return queryBL.createQueryBuilder(I_C_Order_Carrier_Service.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Order_Carrier_Service.COLUMNNAME_C_Order_ID, orderId)
-				.create()
-				.stream()
-				.map(row -> CarrierServiceId.ofRepoId(row.getCarrier_Service_ID()))
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**

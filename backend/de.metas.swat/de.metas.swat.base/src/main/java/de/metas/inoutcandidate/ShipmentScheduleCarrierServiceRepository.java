@@ -26,6 +26,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -33,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_Carrier_Service;
+import org.compiere.model.I_C_Order_Carrier_Service;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
 import org.springframework.stereotype.Repository;
 
@@ -40,9 +42,13 @@ import java.util.Collection;
 import java.util.Set;
 
 /**
- * Repository Tables: M_ShipmentSchedule_Carrier_Service
- * Repository Cluster: ShipmentScheduleCarrierServiceRepository
+ * Repository Tables: M_ShipmentSchedule_Carrier_Service, C_Order_Carrier_Service
+ * Repository Cluster: ShipmentScheduleCarrierServiceRepository, C_OrderCarrierServiceRepository
  * Callers: OrderLineShipmentScheduleHandler (carrier propagation from order on create/update)
+ *
+ * <p>The C_Order_Carrier_Service read here mirrors {@code de.metas.shipper.gateway.commons}'s
+ * C_OrderCarrierServiceRepository. It is duplicated (not delegated) because de.metas.swat.base cannot
+ * depend on de.metas.shipper.gateway.commons without risking a module cycle. Same cluster ⇒ deliberate mirror.
  */
 @Repository
 public class ShipmentScheduleCarrierServiceRepository
@@ -57,6 +63,21 @@ public class ShipmentScheduleCarrierServiceRepository
 		//noinspection DataFlowIssue
 		return SpringContextHolder.getBeanOrSupply(ShipmentScheduleCarrierServiceRepository.class ,
 				ShipmentScheduleCarrierServiceRepository::new);
+	}
+
+	/**
+	 * Returns the active {@link CarrierServiceId}s assigned to the given order via {@code C_Order_Carrier_Service}.
+	 * Soft-deleted (inactive) rows are excluded.
+	 */
+	public ImmutableSet<CarrierServiceId> getCarrierServiceIdsByOrderId(@NonNull final OrderId orderId)
+	{
+		return queryBL.createQueryBuilder(I_C_Order_Carrier_Service.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Order_Carrier_Service.COLUMNNAME_C_Order_ID, orderId)
+				.create()
+				.stream()
+				.map(row -> CarrierServiceId.ofRepoId(row.getCarrier_Service_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public ImmutableSet<CarrierServiceId> getAssignedServiceIdsByShipmentScheduleId(@NonNull final ShipmentScheduleId shipmentScheduleId)

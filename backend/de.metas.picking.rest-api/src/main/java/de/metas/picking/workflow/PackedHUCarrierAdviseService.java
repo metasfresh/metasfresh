@@ -198,7 +198,10 @@ public class PackedHUCarrierAdviseService
 		}
 
 		final boolean noTarget = !hasExistingTarget(pickingJob, null);
-		final boolean readOnly = noTarget || pickingJob.isCarrierAdviseReadOnly();
+		// Also treat "target exists but nothing picked yet" as readOnly/noTarget: the parcel exists
+		// but is still empty — there is nothing meaningful to advise onto yet.
+		final boolean nothingPickedYet = !noTarget && pickingJob.isNothingPicked();
+		final boolean readOnly = noTarget || nothingPickedYet || pickingJob.isCarrierAdviseReadOnly();
 
 		// disabledReason: ReadOnly (manually locked carrier) takes priority over NoTarget when both apply, because
 		// it is the more specific reason the user should act on (the carrier is locked regardless of target state).

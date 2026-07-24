@@ -14,7 +14,7 @@
 -- Value: de.metas.picking.CarrierAdvise.Disabled.NoTarget
 -- 2026-07-23T10:10:00.000Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545786 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-23 10:10:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','Noch kein Kommissionierziel vorhanden – die Lieferweg-Abfrage ist erst nach dem Kommissionieren möglich.','I',TO_TIMESTAMP('2026-07-23 10:10:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise.Disabled.NoTarget')
+VALUES (0,545786 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-23 10:10:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','Kein Pickziel','I',TO_TIMESTAMP('2026-07-23 10:10:00','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise.Disabled.NoTarget')
 ;
 
 -- 2026-07-23T10:10:01.000Z
@@ -26,7 +26,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 ;
 
 -- 2026-07-23T10:10:02.000Z
-UPDATE AD_Message_Trl SET MsgText='No pick target yet – carrier advise is only available after picking.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-23 10:10:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545786
+UPDATE AD_Message_Trl SET MsgText='No pick target',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-23 10:10:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545786
 ;
 
 -- 2026-07-23T10:10:03.000Z
@@ -45,7 +45,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-23 10:1
 -- Value: de.metas.picking.CarrierAdvise.Disabled.ReadOnly
 -- 2026-07-23T10:10:10.000Z
 INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value)
-VALUES (0,545787 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-23 10:10:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','Der Lieferweg wurde bereits (manuell) festgelegt – eine erneute Abfrage ist nicht möglich.','I',TO_TIMESTAMP('2026-07-23 10:10:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise.Disabled.ReadOnly')
+VALUES (0,545787 /*From ID Server*/,0,TO_TIMESTAMP('2026-07-23 10:10:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.handlingunits','Y','Bereits festgelegt','I',TO_TIMESTAMP('2026-07-23 10:10:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.picking.CarrierAdvise.Disabled.ReadOnly')
 ;
 
 -- 2026-07-23T10:10:11.000Z
@@ -57,7 +57,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.
 ;
 
 -- 2026-07-23T10:10:12.000Z
-UPDATE AD_Message_Trl SET MsgText='The carrier has already been set (manually) – re-advising is not possible.',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-23 10:10:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545787
+UPDATE AD_Message_Trl SET MsgText='Already set',IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-23 10:10:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545787
 ;
 
 -- 2026-07-23T10:10:13.000Z

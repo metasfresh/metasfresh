@@ -34,12 +34,16 @@ import org.springframework.stereotype.Repository;
 /**
  * Repository for {@link I_C_Order_Carrier_Service} bridge rows.
  * Repository Tables: C_Order_Carrier_Service
- * Repository Cluster: C_OrderCarrierServiceRepository
+ * Repository Cluster: C_OrderCarrierServiceRepository, ShipmentScheduleCarrierServiceRepository
+ *
+ * <p>The read is mirrored in {@code de.metas.swat.base}'s {@link de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository}
+ * because that module cannot depend on this one (no de.metas.swat.base → de.metas.shipper.gateway.commons dependency; adding it
+ * would risk a module cycle). Same cluster ⇒ the overlap is deliberate, not a split-ownership bug.
  */
 @Repository
 public class C_OrderCarrierServiceRepository
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
 	 * Returns the {@link CarrierServiceId}s assigned to the given order via {@link I_C_Order_Carrier_Service},

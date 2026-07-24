@@ -127,8 +127,8 @@ class ShipmentScheduleServiceCarrierAdviseEligibilityTest
 		// no picked qty => picking NOT actively started
 
 		assertThat(shipmentScheduleService.isNotEligibleForManualCarrierAdvise(manualDomain(scheduleId), true))
-				.as("manual advise must be ALLOWED while a picking job schedule merely exists")
-				.isFalse();
+				.as("manual (Advise/Advise_Schedule) advise must be BLOCKED as soon as a picking job schedule exists (picking-job-exists gate)")
+				.isTrue();
 	}
 
 	@Test
@@ -140,6 +140,38 @@ class ShipmentScheduleServiceCarrierAdviseEligibilityTest
 
 		assertThat(shipmentScheduleService.isNotEligibleForManualCarrierAdvise(manualDomain(scheduleId), true))
 				.as("manual advise must be BLOCKED once picking is actively started")
+				.isTrue();
+	}
+
+	/**
+	 * Manual-SET path (Advise_Manual process, usePickingStartedGate=true):
+	 * ALLOWED while picking-job-schedule merely exists but nothing picked.
+	 */
+	@Test
+	void manualSet_allowed_while_pickingJobSchedule_merely_exists()
+	{
+		final ShipmentScheduleId scheduleId = createSchedule();
+		createPickingJobSchedule(scheduleId);
+		// no picked qty => picking NOT actively started
+
+		assertThat(shipmentScheduleService.isNotEligibleForManualCarrierSet(manualDomain(scheduleId), true))
+				.as("manual-set (Advise_Manual) must be ALLOWED while picking job schedule merely exists (picking-started gate)")
+				.isFalse();
+	}
+
+	/**
+	 * Manual-SET path (Advise_Manual process, usePickingStartedGate=true):
+	 * BLOCKED once picking is actively started.
+	 */
+	@Test
+	void manualSet_blocked_once_picking_actively_started()
+	{
+		final ShipmentScheduleId scheduleId = createSchedule();
+		createPickingJobSchedule(scheduleId);
+		createPickedQty(scheduleId, 3); // picking actively started
+
+		assertThat(shipmentScheduleService.isNotEligibleForManualCarrierSet(manualDomain(scheduleId), true))
+				.as("manual-set (Advise_Manual) must be BLOCKED once picking is actively started")
 				.isTrue();
 	}
 

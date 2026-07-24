@@ -301,6 +301,30 @@ class PackedHUCarrierAdviseServiceDisabledReasonTest
 			assertThat(info.isReadOnly()).isTrue();
 			assertThat(info.getDisabledReason()).isEqualTo(EXPECTED_NO_TARGET_REASON);
 		}
+
+		/**
+		 * Target exists but nothing picked yet: still read-only with NoTarget reason.
+		 * A pick target (parcel) was opened but no items have been picked into it —
+		 * there is nothing meaningful to advise onto, so the button is disabled (NoTarget).
+		 */
+		@Test
+		void mocked_withExistingTarget_nothingPicked_disabledReasonIsNoTarget()
+		{
+			final ShipperId shipperId = createShipper("nShift", true);
+			final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
+			final PickingJob job = mockJobLevelJobWithExistingLuTarget(
+					ImmutableList.of(mockApiAdviseLine(cp, false)));
+			when(job.getCarrierProductId()).thenReturn(cp.getId());
+			when(job.isCarrierAdviseReadOnly()).thenReturn(false);
+			// target exists but nothing picked yet
+			when(job.isNothingPicked()).thenReturn(true);
+
+			final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, AD_LANGUAGE);
+
+			assertThat(info.isAvailable()).isTrue();
+			assertThat(info.isReadOnly()).isTrue();
+			assertThat(info.getDisabledReason()).isEqualTo(EXPECTED_NO_TARGET_REASON);
+		}
 	}
 
 	// ------------------------------------------------------------------
