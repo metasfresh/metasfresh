@@ -2077,4 +2077,19 @@ public class BPartnerDAO implements IBPartnerDAO
 		if (bpLocation == null) {return null;}
 		return ShipperId.ofRepoIdOrNull(bpLocation.getM_Shipper_ID());
 	}
+
+	@Override
+	@NonNull
+	public List<I_C_BPartner> retrieveFactorerBPartnersForOrg(@NonNull final OrgId orgId)
+	{
+		// No IsActive filter — the DB partial unique index only enforces uniqueness among active rows,
+		// so a deactivated old factorer left alongside a new one yields two matches; we want to report
+		// that as ambiguity, not misdiagnose it as "no factorer configured" (mirrors CiiMapper.resolveFactorerIban).
+		return queryBL
+				.createQueryBuilder(I_C_BPartner.class)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_IsFactorer, true)
+				.addEqualsFilter(I_C_BPartner.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.list(I_C_BPartner.class);
+	}
 }

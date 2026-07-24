@@ -97,7 +97,7 @@ import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
 @RequiredArgsConstructor
 public class S_ExternalReference_StepDef
 {
-	private final OrgId defaultOrgId = OrgId.ofRepoId(1000000);
+	private final OrgId defaultOrgId = OrgId.MAIN;
 
 	private final AD_User_StepDefData userTable;
 	private final S_ExternalReference_StepDefData externalRefTable;
@@ -116,7 +116,7 @@ public class S_ExternalReference_StepDef
 
 	/**
 	 * Verifies that an {@code S_ExternalReference} record exists with the given field values,
-	 * and optionally asserts its {@code AD_Org_ID}.
+	 * scoped to a specific org.
 	 *
 	 * <p>Required columns:
 	 * <ul>
@@ -126,8 +126,9 @@ public class S_ExternalReference_StepDef
 	 *
 	 * <p>Optional columns (absent cell = not asserted):
 	 * {@code ExternalReference}, {@code ExternalReferenceURL},
-	 * {@code AD_Org_ID} – org identifier previously registered in {@link AD_Org_StepDefData}; asserts that
-	 * {@code S_ExternalReference.AD_Org_ID} matches the referenced org.
+	 * {@code AD_Org_ID} – org identifier previously registered in {@link AD_Org_StepDefData}; scopes the
+	 * lookup to that org (defaults to the main org when omitted). External references are unique per org,
+	 * so this lets the same reference be asserted independently for two different orgs.
 	 *
 	 * <p>Example:
 	 * <pre>
@@ -152,15 +153,13 @@ public class S_ExternalReference_StepDef
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					// scope by org so the same external reference can be asserted independently per org (defaults to the main org)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_AD_Org_ID,
+							row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID).map(orgTable::getId).orElse(OrgId.MAIN))
 					.create()
 					.firstOnlyOrNull(I_S_ExternalReference.class);
 
 			assertThat(externalRefRecord).as("S_ExternalReference exists for externalReference=%s", externalReference).isNotNull();
-
-			row.getAsOptionalIdentifier(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
-					.ifPresent(orgIdentifier -> assertThat(externalRefRecord.getAD_Org_ID())
-							.as(I_S_ExternalReference.COLUMNNAME_AD_Org_ID)
-							.isEqualTo(orgTable.getIdAsInt(orgIdentifier)));
 		});
 	}
 

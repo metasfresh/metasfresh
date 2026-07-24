@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 734953832L;
+	private static final long serialVersionUID = 573935048L;
 
     /** Standard Constructor */
     public X_C_BPartner (final Properties ctx, final int C_BPartner_ID, @Nullable final String trxName)
@@ -786,6 +786,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setFactoringClientAccountId (final @Nullable java.lang.String FactoringClientAccountId)
+	{
+		set_Value (COLUMNNAME_FactoringClientAccountId, FactoringClientAccountId);
+	}
+
+	@Override
+	public java.lang.String getFactoringClientAccountId() 
+	{
+		return get_ValueAsString(COLUMNNAME_FactoringClientAccountId);
+	}
+
+	@Override
+	public void setFactoringContractNo (final @Nullable java.lang.String FactoringContractNo)
+	{
+		set_Value (COLUMNNAME_FactoringContractNo, FactoringContractNo);
+	}
+
+	@Override
+	public java.lang.String getFactoringContractNo() 
+	{
+		return get_ValueAsString(COLUMNNAME_FactoringContractNo);
+	}
+
+	@Override
 	public void setFirstname (final @Nullable java.lang.String Firstname)
 	{
 		set_Value (COLUMNNAME_Firstname, Firstname);
@@ -1138,18 +1162,6 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isDiscountPrinted() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDiscountPrinted);
-	}
-
-	@Override
-	public void setIsEdiDesadvRecipient (final boolean IsEdiDesadvRecipient)
-	{
-		set_Value (COLUMNNAME_IsEdiDesadvRecipient, IsEdiDesadvRecipient);
-	}
-
-	@Override
-	public boolean isEdiDesadvRecipient() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsEdiDesadvRecipient);
 	}
 
 	@Override

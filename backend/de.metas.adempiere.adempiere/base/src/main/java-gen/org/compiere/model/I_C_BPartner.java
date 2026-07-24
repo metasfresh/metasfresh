@@ -1118,6 +1118,52 @@ public interface I_C_BPartner
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set Factoring Client Account ID.
+	 * Factoring client account ID at the factor
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFactoringClientAccountId (@Nullable java.lang.String FactoringClientAccountId);
+
+	/**
+	 * Get Factoring Client Account ID.
+	 * Factoring client account ID at the factor
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFactoringClientAccountId();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_FactoringClientAccountId = new ModelColumn<>(I_C_BPartner.class, "FactoringClientAccountId", null);
+	String COLUMNNAME_FactoringClientAccountId = "FactoringClientAccountId";
+
+	/**
+	 * Set Factoring Contract No..
+	 * Factoring contract number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFactoringContractNo (@Nullable java.lang.String FactoringContractNo);
+
+	/**
+	 * Get Factoring Contract No..
+	 * Factoring contract number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFactoringContractNo();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_FactoringContractNo = new ModelColumn<>(I_C_BPartner.class, "FactoringContractNo", null);
+	String COLUMNNAME_FactoringContractNo = "FactoringContractNo";
+
+	/**
 	 * Set Firstname.
 	 * Firstname
 	 *
@@ -1683,27 +1729,6 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
-	 * Set EDI DESADV Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsEdiDesadvRecipient (boolean IsEdiDesadvRecipient);
-
-	/**
-	 * Get EDI DESADV Receipient.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isEdiDesadvRecipient();
-
-	ModelColumn<I_C_BPartner, Object> COLUMN_IsEdiDesadvRecipient = new ModelColumn<>(I_C_BPartner.class, "IsEdiDesadvRecipient", null);
-	String COLUMNNAME_IsEdiDesadvRecipient = "IsEdiDesadvRecipient";
-
-	/**
 	 * Set e-invoice Receipient.
 	 *
 	 * <br>Type: YesNo
@@ -1903,8 +1928,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsOneTime = "IsOneTime";
 
 	/**
-	 * Set Package Licensing Exempt.
-	 * Vendor is exempt from package licensing (pre-licensed)
+	 * Set Verpackungslizenzierung befreit.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -1913,8 +1937,7 @@ public interface I_C_BPartner
 	void setIsPackageLicensingExempt (boolean IsPackageLicensingExempt);
 
 	/**
-	 * Get Package Licensing Exempt.
-	 * Vendor is exempt from package licensing (pre-licensed)
+	 * Get Verpackungslizenzierung befreit.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -2752,8 +2775,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_Old_Value_Vendor = "Old_Value_Vendor";
 
 	/**
-	 * Set Pkg. Lic. Exempt From.
-	 * Start date of vendor package licensing exemption
+	 * Set Verpackungsliz. befreit ab.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -2762,8 +2784,7 @@ public interface I_C_BPartner
 	void setPackageLicensingExemptFrom (@Nullable java.sql.Timestamp PackageLicensingExemptFrom);
 
 	/**
-	 * Get Pkg. Lic. Exempt From.
-	 * Start date of vendor package licensing exemption
+	 * Get Verpackungsliz. befreit ab.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -2775,8 +2796,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_PackageLicensingExemptFrom = "PackageLicensingExemptFrom";
 
 	/**
-	 * Set Pkg. Lic. Exempt To.
-	 * End date of vendor package licensing exemption
+	 * Set Verpackungsliz. befreit bis.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -2785,8 +2805,7 @@ public interface I_C_BPartner
 	void setPackageLicensingExemptTo (@Nullable java.sql.Timestamp PackageLicensingExemptTo);
 
 	/**
-	 * Get Pkg. Lic. Exempt To.
-	 * End date of vendor package licensing exemption
+	 * Get Verpackungsliz. befreit bis.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: false
@@ -3177,6 +3196,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Set Purchase Transport Days.
+	 * Vendor transport time in days
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -3186,6 +3206,7 @@ public interface I_C_BPartner
 
 	/**
 	 * Get Purchase Transport Days.
+	 * Vendor transport time in days
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
