@@ -8,7 +8,7 @@ INSERT INTO AD_Ref_List (AD_Client_ID, AD_Org_ID, AD_Ref_List_ID, AD_Reference_I
                          Updated, UpdatedBy, Value, ValueName)
 VALUES (0, 0, 544243 /*From ID Server*/, 542001,
         TO_TIMESTAMP('2026-06-03 10:00:57', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
-        NULL, 'D', 'Y', 'Voranmeldung DHL Freight (Auftrag)',
+        NULL, 'D', 'Y', 'Voranmeldung erforderlich (Auftrag)',
         TO_TIMESTAMP('2026-06-03 10:00:57', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
         'IsPreAdviceRequired', 'IsPreAdviceRequired');
 
@@ -19,7 +19,7 @@ INSERT INTO AD_Ref_List_Trl (AD_Client_ID, AD_Org_ID, AD_Language, AD_Ref_List_I
                               Updated, UpdatedBy)
 SELECT 0, 0, l.AD_Language, 544243 /*From ID Server*/,
        TO_TIMESTAMP('2026-06-03 10:00:58', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100,
-       NULL, 'Y', 'N', 'Voranmeldung DHL Freight (Auftrag)',
+       NULL, 'Y', 'N', 'Voranmeldung erforderlich (Auftrag)',
        TO_TIMESTAMP('2026-06-03 10:00:58', 'YYYY-MM-DD HH24:MI:SS')::timestamp without time zone AT TIME ZONE 'UTC', 100
 FROM AD_Language l WHERE l.IsActive = 'Y' AND l.IsSystemLanguage = 'Y'
   AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Ref_List_ID = 544243 AND tt.AD_Language = l.AD_Language);
