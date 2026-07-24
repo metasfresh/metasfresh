@@ -153,7 +153,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules_StepDef
 	 * rejection carries the given {@code ErrorCode}. The error code identifies which rejection message was raised:
 	 * {@code ShipmentSchedule_UnfinishedPicking} (exactly one offending schedule → the specific, order-naming message)
 	 * vs {@code ShipmentSchedule_UnfinishedPickings} (two or more offending schedules → the generic message that does
-	 * not enumerate the schedules).
+	 * not enumerate the schedules) vs {@code ShipmentSchedule_NotEligibleToClose} (no unfinished picking, but the whole
+	 * selection is ineligible: every schedule is already processed or still has a picked-but-unshipped qty).
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.depends StepDefData: none (reads the exception captured by the previous step)

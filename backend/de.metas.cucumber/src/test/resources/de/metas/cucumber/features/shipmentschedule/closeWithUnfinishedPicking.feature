@@ -229,12 +229,13 @@ Feature: Closing a shipment schedule with an unfinished picking order
       | shipmentSchedule                 | 12          | false        |
 
     # no Drafted picking job exists, so the all-or-nothing unfinished-picking guard does not fire; but
-    # QtyPickList > 0 makes the schedule ineligible, so the process closes nothing and ends with @NoSelection@
+    # QtyPickList > 0 makes the schedule ineligible, so the process closes nothing. Since the WHOLE selection
+    # is ineligible, the process is rejected with the friendly not-eligible message (not the misleading @NoSelection@)
     When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
       | M_ShipmentSchedule_ID |
       | shipmentSchedule      |
 
-    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code "ShipmentSchedule_NotEligibleToClose"
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyPickList | OPT.IsClosed |
       | shipmentSchedule                 | 12          | false        |

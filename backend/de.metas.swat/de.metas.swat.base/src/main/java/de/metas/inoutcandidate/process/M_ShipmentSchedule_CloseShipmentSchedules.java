@@ -53,6 +53,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
 	/** two-or-more offenders: the generic message that does NOT enumerate the schedules (huge-selection optimization) */
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKINGS = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPickings");
+	/** no unfinished picking, but the WHOLE selection is ineligible: every selected schedule is already processed or still has a picked-but-unshipped qty (QtyPickList &gt; 0) */
+	private static final AdMessageKey MSG_CANNOT_CLOSE_NOT_ELIGIBLE = AdMessageKey.of("M_ShipmentSchedule_CannotClose_NotEligible");
 
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -84,7 +86,11 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 
 		if (!selectionIterator.hasNext())
 		{
-			throw new AdempiereException("@NoSelection@");
+			// The user DID select schedules, but none is eligible to close: every selected schedule is either
+			// already processed (Processed=true, filtered out by the base selection query) or still has a
+			// picked-but-unshipped qty (QtyPickList > 0). "@NoSelection@" ("nothing selected") is misleading here,
+			// so raise a friendly message that explains why nothing was closed.
+			throw new AdempiereException(MSG_CANNOT_CLOSE_NOT_ELIGIBLE);
 		}
 
 		while (selectionIterator.hasNext())
