@@ -49,11 +49,8 @@ const CameraModePanel = ({ isProcessing, onBarcodeScanned, onCancel }) => {
       } catch (err) {
         // TEMP DIAGNOSTIC (flaky case 3 — DO NOT MERGE): surface the real throw before it is swallowed.
         // eslint-disable-next-line no-console
-        console.error(
-          `[case3-diag] decodeFromVideoDevice THREW name=${err && err.name} | message=${err && err.message} | stack=${
-            err && err.stack
-          }`
-        );
+        console.error('[case3-diag] decodeFromVideoDevice THREW name=', err && err.name,
+          '| message=', err && err.message, '| stack=', err && err.stack);
         if (cancelled) return;
         toastError({
           plainMessage: trl('components.BarcodeScannerComponent.cameraError'),
