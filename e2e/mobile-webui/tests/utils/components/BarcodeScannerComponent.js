@@ -325,11 +325,18 @@ export const BarcodeScannerComponent = {
                 });
                 return stream;
             };
-            if (navigator.mediaDevices) {
-                navigator.mediaDevices.getUserMedia = () => Promise.resolve(makeBlankStream());
-                navigator.mediaDevices.enumerateDevices = () => Promise.resolve(
-                    [{ kind: 'videoinput', deviceId: 'fake-cam', label: 'Fake Camera', groupId: 'g', toJSON() { return this; } }]);
+            // navigator.mediaDevices is a secure-context-only API: it is undefined when the page is
+            // served over an insecure origin (e.g. http://mobile in the E2E stack, unless the origin
+            // is whitelisted as secure). Production is always HTTPS, so it is always present there.
+            // Belt-and-suspenders: if it is absent, create it first (it is a read-only accessor on
+            // Navigator, so plain assignment is ignored — use Object.defineProperty), then attach the
+            // stubs unconditionally so the fake camera works even without the secure-context whitelist.
+            if (!navigator.mediaDevices) {
+                Object.defineProperty(navigator, 'mediaDevices', { value: {}, configurable: true, writable: true });
             }
+            navigator.mediaDevices.getUserMedia = () => Promise.resolve(makeBlankStream());
+            navigator.mediaDevices.enumerateDevices = () => Promise.resolve(
+                [{ kind: 'videoinput', deviceId: 'fake-cam', label: 'Fake Camera', groupId: 'g', toJSON() { return this; } }]);
         });
     }),
 
