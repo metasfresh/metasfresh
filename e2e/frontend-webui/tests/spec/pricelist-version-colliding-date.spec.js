@@ -377,15 +377,13 @@ with no 404 on that path.
     allure.story('Abandoning a failed colliding edit of an already-persisted PLV must NOT drop the persisted row from the parent grid');
     allure.severity('critical');
     allure.description(`
-Grid-refresh regression. After a NEW Price List Version auto-saves (real DB row), the user edits its
-ValidFrom to a colliding date -> the save fails with a KEPT user-validation error -> the user presses
-Done and accepts "abandon changes". The already-persisted row must REMAIN in the parent included-tab
-grid WITHOUT a browser reload (the DB row is never deleted). Root cause of the bug: Modal.state.isNew
-is computed once at construction (rowId==='NEW') and never updated after the auto-save re-points the
-modal to the real id, so MasterWindow.closeModalCallback treats the persisted row as new-to-discard
-and removes it from the grid without re-querying. This test asserts the FIXED behavior: (a) the row
-still exists server-side (DB intact - passes now), (b) it stays in the parent grid without a reload
-(FAILS now / RED - the bug removes it client-side).
+After a NEW Price List Version auto-saves (real DB row), the user edits its ValidFrom to a colliding
+date -> the save fails with a KEPT user-validation error -> the user presses Done and accepts
+"abandon changes". The already-persisted row must REMAIN in the parent included-tab grid WITHOUT a
+browser reload (the DB row is never deleted): abandoning re-queries the persisted row and reverts the
+grid row to its DB value in place, rather than dropping the persisted row client-side. This test
+asserts: (a) the row still exists server-side (DB intact), (b) it stays in the parent grid without a
+reload, showing its reverted DB value.
     `);
 
     test.setTimeout(120000);
@@ -434,10 +432,17 @@ still exists server-side (DB intact - passes now), (b) it stays in the parent gr
     // reflects the in-memory (colliding) edit, and the modal overlays it — so the far-future value is only
     // observable in the parent grid AFTER the modal closes. Hence all grid assertions are made post-Done.
     const gridRows = () => page.locator('.table tbody tr, table tbody tr');
+    // Scope the year match to the ValidFrom cell (data-cy="cell-<ColumnName>") rather than the whole
+    // row, so an incidental 4-digit match elsewhere in the row can't satisfy the locator.
+    const seedYear = PLV_SEED_VALIDFROM.slice(0, 4);
     const plvGridRowsWithYear = () =>
-      page.locator(`.table tbody tr:has-text("${persistedYear}"), table tbody tr:has-text("${persistedYear}")`);
+      page.locator(
+        `.table tbody tr:has([data-cy="cell-ValidFrom"]:has-text("${persistedYear}")), table tbody tr:has([data-cy="cell-ValidFrom"]:has-text("${persistedYear}"))`
+      );
     const plvGridRowsWithSeed = () =>
-      page.locator(`.table tbody tr:has-text("${PLV_SEED_VALIDFROM.slice(0, 4)}"), table tbody tr:has-text("${PLV_SEED_VALIDFROM.slice(0, 4)}")`);
+      page.locator(
+        `.table tbody tr:has([data-cy="cell-ValidFrom"]:has-text("${seedYear}")), table tbody tr:has([data-cy="cell-ValidFrom"]:has-text("${seedYear}"))`
+      );
 
     // (3) Press Done and ACCEPT the abandon-changes confirm (dirty window modal → window.confirm dialog).
     page.on('dialog', (dialog) => dialog.accept());
@@ -449,8 +454,8 @@ still exists server-side (DB intact - passes now), (b) it stays in the parent gr
 
     // ============ ASSERT THE FIXED (DESIRED) BEHAVIOR ============
     // (a) DATA IS INTACT: a direct rows GET on the PLV tab still returns the persisted row (DB row never deleted,
-    //     and it keeps its far-future ValidFrom because the colliding edit was rejected). PASSES now — the row is
-    //     only removed from the client-side grid, never from the DB.
+    //     and it keeps its far-future ValidFrom because the colliding edit was rejected — the abandon reverts the
+    //     document server-side but never deletes the DB row).
     const rowsResponse = await page.request.get(`${plvTabRowsUrl()}/?orderBy=-ValidFrom`);
     expect(rowsResponse.ok(), `PLV rows GET should succeed (HTTP ${rowsResponse.status()})`).toBe(true);
     const rowsBody = await rowsResponse.json();
@@ -471,8 +476,9 @@ still exists server-side (DB intact - passes now), (b) it stays in the parent gr
     console.log(`[plv-abandon-grid] grid rows after Done: ${JSON.stringify(await gridRows().allTextContents())}`);
     console.log(`[plv-abandon-grid] persisted far-future ValidFrom: ${persistedValidFrom} (ISO ${persistedValidFromIso}), grid rows carrying year ${persistedYear}: ${await plvGridRowsWithYear().count()}`);
 
-    // (b) THE FIX (RED now): without any reload the parent grid MUST still show the persisted row. The bug's
-    //     MasterWindow.closeModalCallback removes it client-side (stale Modal.state.isNew), so this FAILS today.
+    // (b) GRID RETAINS THE ROW: without any reload the parent grid MUST still show the persisted row —
+    //     MasterWindow.closeModalCallback re-queries the row and reverts it in place instead of removing it
+    //     client-side.
     await expect
       .poll(() => plvGridRowsWithYear().count(), {
         timeout: SLOW_ACTION_TIMEOUT,

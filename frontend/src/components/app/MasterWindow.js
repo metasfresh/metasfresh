@@ -4,6 +4,7 @@ import React, { PureComponent } from 'react';
 
 import { discardNewRequest, getRowsData } from '../../api';
 import { getTableId } from '../../reducers/tables';
+import { buildTabRowsDataUpdate } from '../../utils/tableHelpers';
 
 import { BlankPage } from '../BlankPage';
 import Container from '../Container';
@@ -91,7 +92,7 @@ export default class MasterWindow extends PureComponent {
       return undefined;
     }
 
-    const { updateTabRowsData } = this.props;
+    const { updateTabRowsData, onRefreshTab } = this.props;
     const tableId = getTableId({
       windowId: windowType,
       docId: documentId,
@@ -126,27 +127,26 @@ export default class MasterWindow extends PureComponent {
           docId: documentId,
           tabId,
           rows: [rowId],
-        }).then((response) => {
-          const { result, missingIds } = response.data;
-          const rowsChanged = {};
+        })
+          .then((response) => {
+            const rowsChanged = buildTabRowsDataUpdate(response.data);
 
-          if (missingIds && missingIds.length) {
-            rowsChanged.removed = {};
-            missingIds.forEach((id) => {
-              rowsChanged.removed[id] = true;
-            });
-          }
-          if (result && result.length) {
-            rowsChanged.changed = {};
-            result.forEach((row) => {
-              rowsChanged.changed[row.rowId] = { ...row };
-            });
-          }
-
-          if (rowsChanged.changed || rowsChanged.removed) {
-            updateTabRowsData(tableId, rowsChanged);
-          }
-        });
+            if (rowsChanged.changed || rowsChanged.removed) {
+              updateTabRowsData(tableId, rowsChanged);
+            }
+          })
+          .catch((error) => {
+            // The revert re-fetch failed: without a fallback the grid row would
+            // strand showing the stale abandoned value. Fall back to a full tab
+            // refresh so the grid reconciles with the DB.
+            console.error(
+              'closeModalCallback: re-fetch of the reverted row failed, falling back to a tab refresh',
+              error
+            );
+            if (onRefreshTab) {
+              onRefreshTab();
+            }
+          });
       }
     });
   };
