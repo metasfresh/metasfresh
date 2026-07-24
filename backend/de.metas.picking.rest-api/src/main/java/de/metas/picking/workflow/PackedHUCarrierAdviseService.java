@@ -177,9 +177,10 @@ public class PackedHUCarrierAdviseService
 	 *     <li><b>available</b> — any line carries an API-advise carrier product (the button is rendered);</li>
 	 *     <li><b>caption</b> — the header's persisted carrier product name, only when it is itself API-advise
 	 *         (a divergent/none header carrier ⇒ null ⇒ no single current carrier shown);</li>
-	 *     <li><b>readOnly</b> — no existing pick target (nothing to advise onto yet) OR the header is flagged
-	 *         read-only (a manual override the parcel carries);</li>
-	 *     <li><b>disabledReason</b> — translated human-readable reason when readOnly, null otherwise.</li>
+	 *     <li><b>readOnly</b> — no existing pick target, OR a target exists but nothing has been picked into
+	 *         it yet, OR the header is flagged read-only (a manual override the parcel carries);</li>
+	 *     <li><b>disabledReason</b> — translated human-readable reason when readOnly (NoTarget / EmptyTarget /
+	 *         ReadOnly), null otherwise.</li>
 	 * </ul>
 	 */
 	@NonNull
@@ -199,8 +200,8 @@ public class PackedHUCarrierAdviseService
 		}
 
 		final boolean noTarget = !hasExistingTarget(pickingJob, null);
-		// Also treat "target exists but nothing picked yet" as readOnly/noTarget: the parcel exists
-		// but is still empty — there is nothing meaningful to advise onto yet.
+		// Also treat "target exists but nothing picked yet" as read-only (→ EmptyTarget reason): the parcel
+		// exists but is still empty — there is nothing meaningful to advise onto yet.
 		final boolean nothingPickedYet = !noTarget && pickingJob.isNothingPicked();
 		final boolean readOnly = noTarget || nothingPickedYet || pickingJob.isCarrierAdviseReadOnly();
 
