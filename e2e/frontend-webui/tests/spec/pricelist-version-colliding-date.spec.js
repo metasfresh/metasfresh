@@ -369,4 +369,118 @@ with no 404 on that path.
     // (c) the exact old symptom must be absent: no 404 on the PLV document path.
     expect(notFoundUrls, `no 404 on the PLV document path. Captured: ${JSON.stringify(notFoundUrls)}`).toEqual([]);
   });
+
+  test('abandon after a persisted PLV colliding edit: the persisted row STAYS in the parent grid without reload (DB row intact)', async ({ page }) => {
+    allure.epic('E0260: Pricing');
+    allure.tag('F32070: Price List Copy using Price List Schema');
+    allure.tag('F32070');
+    allure.story('Abandoning a failed colliding edit of an already-persisted PLV must NOT drop the persisted row from the parent grid');
+    allure.severity('critical');
+    allure.description(`
+Grid-refresh regression. After a NEW Price List Version auto-saves (real DB row), the user edits its
+ValidFrom to a colliding date -> the save fails with a KEPT user-validation error -> the user presses
+Done and accepts "abandon changes". The already-persisted row must REMAIN in the parent included-tab
+grid WITHOUT a browser reload (the DB row is never deleted). Root cause of the bug: Modal.state.isNew
+is computed once at construction (rowId==='NEW') and never updated after the auto-save re-points the
+modal to the real id, so MasterWindow.closeModalCallback treats the persisted row as new-to-discard
+and removes it from the grid without re-querying. This test asserts the FIXED behavior: (a) the row
+still exists server-side (DB intact - passes now), (b) it stays in the parent grid without a reload
+(FAILS now / RED - the bug removes it client-side).
+    `);
+
+    test.setTimeout(120000);
+
+    const { recordedResponses, notFoundUrls, currentSeq } = recordPlvPathResponses(page);
+
+    await loginAndOpenCleanPriceList(page);
+    await addNewPlvRow(page);
+
+    // (1) Persist a NEW PLV at a unique far-future date (auto-save). This is the row that must survive.
+    const persistedValidFrom = uniqueFarFutureValidFrom();
+    const persistedYear = persistedValidFrom.slice(-4); // locale-independent anchor (year digits)
+    // MM/DD/YYYY (en_US widget input) -> YYYY-MM-DD (the ISO shape the rows GET returns in fieldsByName.ValidFrom.value).
+    const [pMonth, pDay, pYear] = persistedValidFrom.split('/');
+    const persistedValidFromIso = `${pYear}-${pMonth}-${pDay}`;
+    const beforePersistSeq = currentSeq();
+    await setValidFrom(persistedValidFrom);
+    await expect
+      .poll(() => recordedResponses.some((r) => r.seq > beforePersistSeq && r.method === 'PATCH' && r.isSaved === true && r.isError === false), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: `the future-dated PLV (${persistedValidFrom}) should save successfully (persisted, no error)`,
+      })
+      .toBeTruthy();
+
+    // The DB row is identified by its unique far-future ValidFrom (this build does NOT expose the child rowId
+    // in the modal URL — the URL stays /window/540321/2008396). We assert the DB row survives by matching this
+    // ValidFrom in the rows GET below; the colliding edit is rejected, so the DB keeps this far-future value.
+    const validFromOf = (row) => String((((row.fieldsByName || {}).ValidFrom) || {}).value || '');
+
+    // (2) Edit that persisted PLV to a COLLIDING date → save fails with a KEPT user-validation error.
+    const beforeEditSeq = currentSeq();
+    await setValidFrom(COLLIDING_DATE);
+    await expect
+      .poll(() => recordedResponses.some((r) => r.seq > beforeEditSeq && r.method === 'PATCH' && r.isError === true), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'the colliding edit should fail server-side with the duplicate-date error',
+      })
+      .toBeTruthy();
+    const failingEditPatch = recordedResponses.filter((r) => r.seq > beforeEditSeq && r.method === 'PATCH' && r.isError === true).pop();
+    expect(
+      failingEditPatch.isUserValidationError,
+      `the colliding edit must fail with a user-validation (friendly) error. Failing PATCH: ${JSON.stringify(failingEditPatch)}`,
+    ).toBe(true);
+
+    // The new PLV is created/edited in a record MODAL; while it is open the parent included-tab grid row
+    // reflects the in-memory (colliding) edit, and the modal overlays it — so the far-future value is only
+    // observable in the parent grid AFTER the modal closes. Hence all grid assertions are made post-Done.
+    const gridRows = () => page.locator('.table tbody tr, table tbody tr');
+    const plvGridRowsWithYear = () =>
+      page.locator(`.table tbody tr:has-text("${persistedYear}"), table tbody tr:has-text("${persistedYear}")`);
+    const plvGridRowsWithSeed = () =>
+      page.locator(`.table tbody tr:has-text("${PLV_SEED_VALIDFROM.slice(0, 4)}"), table tbody tr:has-text("${PLV_SEED_VALIDFROM.slice(0, 4)}")`);
+
+    // (3) Press Done and ACCEPT the abandon-changes confirm (dirty window modal → window.confirm dialog).
+    page.on('dialog', (dialog) => dialog.accept());
+    // Language-invariant Done/close button of the record modal (Modal.js — data-testid, translate('modal.actions.done')).
+    await page.locator('[data-testid="process-modal-cancel-button"]').first().click();
+    // Wait for the modal to close so the parent included-tab grid is the visible/queried DOM.
+    await page.locator('[data-testid="process-modal-cancel-button"]').first().waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
+    await waitForSpinnersToSettle(page);
+
+    // ============ ASSERT THE FIXED (DESIRED) BEHAVIOR ============
+    // (a) DATA IS INTACT: a direct rows GET on the PLV tab still returns the persisted row (DB row never deleted,
+    //     and it keeps its far-future ValidFrom because the colliding edit was rejected). PASSES now — the row is
+    //     only removed from the client-side grid, never from the DB.
+    const rowsResponse = await page.request.get(`${plvTabRowsUrl()}/?orderBy=-ValidFrom`);
+    expect(rowsResponse.ok(), `PLV rows GET should succeed (HTTP ${rowsResponse.status()})`).toBe(true);
+    const rowsBody = await rowsResponse.json();
+    const rows = Array.isArray(rowsBody) ? rowsBody : rowsBody.result || rowsBody.documents || [];
+    expect(
+      rows.some((r) => validFromOf(r).startsWith(persistedValidFromIso)),
+      `the persisted PLV row (ValidFrom ${persistedValidFromIso}) must still exist server-side (data not lost). Row ValidFroms: ${JSON.stringify(rows.map(validFromOf))}`,
+    ).toBe(true);
+
+    // Positive control: the parent grid IS rendered (the untouched 2015 seed row shows). This makes a 0-count on
+    // the far-future row below mean "row removed", not "grid never rendered / locator wrong".
+    await expect
+      .poll(() => plvGridRowsWithSeed().count(), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: 'the parent PLV grid must render (seed 2015 row present) after the modal closes',
+      })
+      .toBeGreaterThan(0);
+    console.log(`[plv-abandon-grid] grid rows after Done: ${JSON.stringify(await gridRows().allTextContents())}`);
+    console.log(`[plv-abandon-grid] persisted far-future ValidFrom: ${persistedValidFrom} (ISO ${persistedValidFromIso}), grid rows carrying year ${persistedYear}: ${await plvGridRowsWithYear().count()}`);
+
+    // (b) THE FIX (RED now): without any reload the parent grid MUST still show the persisted row. The bug's
+    //     MasterWindow.closeModalCallback removes it client-side (stale Modal.state.isNew), so this FAILS today.
+    await expect
+      .poll(() => plvGridRowsWithYear().count(), {
+        timeout: SLOW_ACTION_TIMEOUT,
+        message: `the persisted far-future PLV row (year ${persistedYear}) must STAY in the grid after Done, with no reload (fix under test)`,
+      })
+      .toBeGreaterThan(0);
+
+    // Regression guard for the sibling colliding-date fix: no 404 on the PLV document path throughout.
+    expect(notFoundUrls, `no 404 on the PLV document path. Captured: ${JSON.stringify(notFoundUrls)}`).toEqual([]);
+  });
 });
