@@ -133,6 +133,7 @@ const translations = {
       unPickBtn: 'Entpacken',
       target: 'Soll',
       picked: 'Ist',
+      available: 'Verfügbar',
       switchToManualInput: 'Manuell',
       switchToQrCodeInput: 'Scannen',
       scanSerialNo: 'Seriennummer scannen',

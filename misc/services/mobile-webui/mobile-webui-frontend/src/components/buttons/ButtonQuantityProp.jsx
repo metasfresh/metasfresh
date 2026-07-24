@@ -4,11 +4,24 @@ import PropTypes from 'prop-types';
 import { trl } from '../../utils/translations';
 import { formatQtyToHumanReadableStr } from '../../utils/qtys';
 
-const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, qtyCurrentCatchWeight, uom, applicationId, subtypeId }) => {
+const ButtonQuantityProp = ({
+  qtyTarget,
+  qtyCurrent,
+  qtyCurrentCatchWeight,
+  uom,
+  applicationId,
+  subtypeId,
+  qtyAvailable,
+  qtyAvailableUom,
+}) => {
   const qtyTargetStr = formatQtyToHumanReadableStr({ qty: qtyTarget, uom });
   const qtyCurrentStr = formatQtyToHumanReadableStr({ qty: qtyCurrent, uom });
   const qtyCurrentCatchWeightStr = qtyCurrentCatchWeight ?? '';
   const trlPrefix = `activities.${applicationId}${subtypeId ? `.${subtypeId}` : ''}`;
+  const isShowQtyAvailable = qtyAvailable != null;
+  const qtyAvailableStr = isShowQtyAvailable
+    ? formatQtyToHumanReadableStr({ qty: qtyAvailable, uom: qtyAvailableUom ?? uom })
+    : '';
 
   return (
     <div className="row is-full is-size-7">
@@ -25,6 +38,11 @@ const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, qtyCurrentCatchWeight, uom,
           {qtyCurrentStr}
           {qtyCurrentCatchWeightStr ? ` (${qtyCurrentCatchWeightStr})` : ''}
         </div>
+        {isShowQtyAvailable && (
+          <div className="picking-row-available" data-testid="picking-line-qty-available">
+            {`${trl(`${trlPrefix}.available`)}: ${qtyAvailableStr}`}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -37,6 +55,8 @@ ButtonQuantityProp.propTypes = {
   uom: PropTypes.string.isRequired,
   applicationId: PropTypes.string.isRequired,
   subtypeId: PropTypes.string,
+  qtyAvailable: PropTypes.number,
+  qtyAvailableUom: PropTypes.string,
 };
 
 export default ButtonQuantityProp;
