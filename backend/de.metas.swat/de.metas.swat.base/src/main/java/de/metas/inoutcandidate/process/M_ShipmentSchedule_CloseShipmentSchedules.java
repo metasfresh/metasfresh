@@ -134,7 +134,8 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	 * 		load): the schedule's order {@code DocumentNo} when it references an existing order, else an empty map so
 	 * 		{@link #toHumanReadableIdentifier(I_M_ShipmentSchedule, Map)} falls back to the {@code M_ShipmentSchedule_ID}.
 	 */
-	private Map<OrderId, String> resolveDocumentNoByOrderId(final I_M_ShipmentSchedule schedule)
+	@VisibleForTesting
+	Map<OrderId, String> resolveDocumentNoByOrderId(final I_M_ShipmentSchedule schedule)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
 		if (orderId == null)

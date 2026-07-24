@@ -238,3 +238,37 @@ Feature: Closing a shipment schedule with an unfinished picking order
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | QtyPickList | OPT.IsClosed |
       | shipmentSchedule                 | 12          | false        |
+
+  @Id:S30915_060
+  Scenario: Multi-selection with exactly one offender is rejected (all-or-nothing) with the specific message
+    # a selection of several schedules where only ONE still has an unfinished picking job: the offending-schedules
+    # query must narrow the multi-row selection to that single offender and raise the specific, order-naming message
+    When metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | SO1        | true    | customer                 | 2026-07-22  |
+      | SO2        | true    | customer                 | 2026-07-22  |
+    And metasfresh contains C_OrderLines:
+      | C_Order_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
+      | SO1                   | L1         | product                 | 160        | TUx4                                   |
+      | SO2                   | L2         | product                 | 160        | TUx4                                   |
+    And the order identified by SO1 is completed
+    And the order identified by SO2 is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
+      | busySchedule  | L1                        | N             |
+      | cleanSchedule | L2                        | N             |
+
+    # only SO1's schedule is still being picked; SO2's schedule has no picking job at all
+    And start picking job for sales order identified by SO1
+
+    When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
+      | M_ShipmentSchedule_ID |
+      | busySchedule          |
+      | cleanSchedule         |
+
+    # exactly one offending schedule in the selection => the specific, order-naming message
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code "ShipmentSchedule_UnfinishedPicking"
+    And after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
+      | busySchedule                     | false        |
+      | cleanSchedule                    | false        |

@@ -108,4 +108,28 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 
 		assertThat(identifier).isEqualTo("M_ShipmentSchedule_ID=9003");
 	}
+
+	@Test
+	void resolveDocumentNoByOrderId_orderFound_resolvesToOrderDocumentNo()
+	{
+		// the single-offender path: the order is resolved directly (no batch load) and the rejection message names it
+		final OrderId orderId = createOrder("SO-5001");
+		final I_M_ShipmentSchedule schedule = newSchedule(9401, orderId);
+
+		final Map<OrderId, String> documentNoByOrderId = new M_ShipmentSchedule_CloseShipmentSchedules().resolveDocumentNoByOrderId(schedule);
+
+		assertThat(documentNoByOrderId).hasSize(1).containsEntry(orderId, "SO-5001");
+		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifier(schedule, documentNoByOrderId)).isEqualTo("SO-5001");
+	}
+
+	@Test
+	void resolveDocumentNoByOrderId_noOrder_fallsBackToScheduleId()
+	{
+		final I_M_ShipmentSchedule schedule = newSchedule(9402, null);
+
+		final Map<OrderId, String> documentNoByOrderId = new M_ShipmentSchedule_CloseShipmentSchedules().resolveDocumentNoByOrderId(schedule);
+
+		assertThat(documentNoByOrderId).isEmpty();
+		assertThat(M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifier(schedule, documentNoByOrderId)).isEqualTo("M_ShipmentSchedule_ID=9402");
+	}
 }
