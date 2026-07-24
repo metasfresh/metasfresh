@@ -66,9 +66,13 @@ class PackedHUCarrierAdviseServiceDisabledReasonTest
 	 */
 	private static final String AD_LANGUAGE = "en_US";
 
-	/** Expected disabled-reason for the "no pick target yet" branch (PlainMsgBL: lang_key). */
+	/** Expected disabled-reason for the "no pick target at all" branch (PlainMsgBL: lang_key). */
 	private static final String EXPECTED_NO_TARGET_REASON =
 			AD_LANGUAGE + "_" + "de.metas.picking.CarrierAdvise.Disabled.NoTarget";
+
+	/** Expected disabled-reason for the "target exists but nothing picked yet" branch. */
+	private static final String EXPECTED_EMPTY_TARGET_REASON =
+			AD_LANGUAGE + "_" + "de.metas.picking.CarrierAdvise.Disabled.EmptyTarget";
 
 	/** Expected disabled-reason for the "manually set / read-only" branch. */
 	private static final String EXPECTED_READONLY_REASON =
@@ -303,12 +307,12 @@ class PackedHUCarrierAdviseServiceDisabledReasonTest
 		}
 
 		/**
-		 * Target exists but nothing picked yet: still read-only with NoTarget reason.
-		 * A pick target (parcel) was opened but no items have been picked into it —
-		 * there is nothing meaningful to advise onto, so the button is disabled (NoTarget).
+		 * Target exists but nothing picked yet: read-only with the EmptyTarget reason
+		 * (distinct from NoTarget) — a pick target (parcel) was opened but no items have been
+		 * picked into it, so there is nothing meaningful to advise onto.
 		 */
 		@Test
-		void mocked_withExistingTarget_nothingPicked_disabledReasonIsNoTarget()
+		void mocked_withExistingTarget_nothingPicked_disabledReasonIsEmptyTarget()
 		{
 			final ShipperId shipperId = createShipper("nShift", true);
 			final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Std Parcel");
@@ -323,7 +327,7 @@ class PackedHUCarrierAdviseServiceDisabledReasonTest
 
 			assertThat(info.isAvailable()).isTrue();
 			assertThat(info.isReadOnly()).isTrue();
-			assertThat(info.getDisabledReason()).isEqualTo(EXPECTED_NO_TARGET_REASON);
+			assertThat(info.getDisabledReason()).isEqualTo(EXPECTED_EMPTY_TARGET_REASON);
 		}
 	}
 

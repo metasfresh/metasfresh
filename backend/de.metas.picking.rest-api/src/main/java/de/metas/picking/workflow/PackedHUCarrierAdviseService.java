@@ -75,6 +75,7 @@ import java.util.Objects;
 public class PackedHUCarrierAdviseService
 {
 	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_NO_TARGET = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.NoTarget");
+	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_EMPTY_TARGET = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.EmptyTarget");
 	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_READONLY = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.ReadOnly");
 	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
 
@@ -203,8 +204,10 @@ public class PackedHUCarrierAdviseService
 		final boolean nothingPickedYet = !noTarget && pickingJob.isNothingPicked();
 		final boolean readOnly = noTarget || nothingPickedYet || pickingJob.isCarrierAdviseReadOnly();
 
-		// disabledReason: ReadOnly (manually locked carrier) takes priority over NoTarget when both apply, because
-		// it is the more specific reason the user should act on (the carrier is locked regardless of target state).
+		// disabledReason — one message per distinct state (each accurate on its own):
+		//   ReadOnly     : the carrier is manually locked — takes priority (locked regardless of target state).
+		//   EmptyTarget  : a target/parcel exists but nothing has been picked into it yet.
+		//   NoTarget     : no pick target exists at all.
 		final String disabledReason;
 		if (!readOnly)
 		{
@@ -213,6 +216,10 @@ public class PackedHUCarrierAdviseService
 		else if (pickingJob.isCarrierAdviseReadOnly())
 		{
 			disabledReason = msgBL.getMsg(adLanguage, MSG_CARRIER_ADVISE_DISABLED_READONLY);
+		}
+		else if (nothingPickedYet)
+		{
+			disabledReason = msgBL.getMsg(adLanguage, MSG_CARRIER_ADVISE_DISABLED_EMPTY_TARGET);
 		}
 		else
 		{
