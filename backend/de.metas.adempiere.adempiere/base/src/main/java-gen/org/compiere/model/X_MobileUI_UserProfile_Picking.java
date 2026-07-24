@@ -366,7 +366,7 @@ public class X_MobileUI_UserProfile_Picking extends org.compiere.model.PO implem
 	}
 
 	@Override
-	public boolean isShowQtyAvailableForLines() 
+	public boolean isShowQtyAvailableForLines()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShowQtyAvailableForLines);
 	}
