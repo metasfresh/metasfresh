@@ -59,13 +59,15 @@ import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
 
 import MasterWindow from '../../components/app/MasterWindow';
-import { discardNewRequest } from '../../api';
+import { discardNewRequest, getRowsData } from '../../api';
 
 // closeModalCallback calls discardNewRequest (from ../../api) and awaits its
-// promise before deciding whether to remove the row from the parent grid.
+// promise, then — for an already-persisted (numeric-id) abandoned row — re-fetches
+// that row via getRowsData and applies its reverted DB value to the parent grid.
 jest.mock('../../api', () => ({
   __esModule: true,
   discardNewRequest: jest.fn(() => Promise.resolve()),
+  getRowsData: jest.fn(() => Promise.resolve({ data: { result: [] } })),
 }));
 
 const middleware = [thunk, promiseMiddleware];
@@ -504,9 +506,28 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
 
   const getInstance = (props) => shallow(<MasterWindow {...props} />).instance();
 
+  // A realistic ?ids= re-fetch response: the persisted row, reverted server-side
+  // to its DB ValidFrom (a far-future year) after discardChanges — the abandoned
+  // in-memory colliding value (01/01/2015) is gone.
+  const PERSISTED_ROW_ID = '1234567';
+  const revertedRowsResponse = {
+    data: {
+      result: [
+        {
+          rowId: PERSISTED_ROW_ID,
+          fieldsByName: {
+            ValidFrom: { field: 'ValidFrom', value: '2053-11-30', widgetType: 'Date' },
+          },
+        },
+      ],
+    },
+  };
+
   beforeEach(() => {
     discardNewRequest.mockClear();
     discardNewRequest.mockResolvedValue();
+    getRowsData.mockClear();
+    getRowsData.mockResolvedValue(revertedRowsResponse);
   });
 
   // Case A - the bug: a modal auto-saved (rowId became a real numeric id) but
@@ -520,12 +541,13 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
       windowType: WINDOW_TYPE,
       documentId: DOCUMENT_ID,
       tabId: TAB_ID,
-      rowId: '1234567',
+      rowId: PERSISTED_ROW_ID,
       saveStatus: false,
     });
 
     const removedPersistedRow = props.updateTabRowsData.mock.calls.some(
-      ([, payload]) => payload && payload.removed && payload.removed['1234567']
+      ([, payload]) =>
+        payload && payload.removed && payload.removed[PERSISTED_ROW_ID]
     );
     expect(removedPersistedRow).toBe(false);
   });
@@ -552,6 +574,85 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
     });
     expect(props.updateTabRowsData).toHaveBeenCalledWith(expectedTableId, {
       removed: { NEW: true },
+    });
+  });
+
+  // Case C - the fix: abandoning an already-persisted (numeric rowId) row with a
+  // falsy saveStatus must re-fetch the row and UPDATE (not remove) it in the grid,
+  // so the retained row shows its reverted DB value without a browser reload.
+  it('re-fetches and UPDATES a persisted row with its reverted DB value on abandon', async () => {
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: PERSISTED_ROW_ID,
+      saveStatus: false,
+    });
+
+    const expectedTableId = getTableId({
+      windowId: WINDOW_TYPE,
+      docId: DOCUMENT_ID,
+      tabId: TAB_ID,
+    });
+
+    // the reverted DB row was re-fetched for exactly this persisted row
+    expect(getRowsData).toHaveBeenCalledWith(
+      expect.objectContaining({
+        entity: 'window',
+        docType: WINDOW_TYPE,
+        docId: DOCUMENT_ID,
+        tabId: TAB_ID,
+        rows: [PERSISTED_ROW_ID],
+      })
+    );
+
+    // it was applied as an UPDATE (changed), never a removal
+    const updateCall = props.updateTabRowsData.mock.calls.find(
+      ([, payload]) => payload && payload.changed && payload.changed[PERSISTED_ROW_ID]
+    );
+    expect(updateCall).toBeDefined();
+    expect(updateCall[0]).toBe(expectedTableId);
+    expect(updateCall[1].changed[PERSISTED_ROW_ID].fieldsByName.ValidFrom.value).toBe(
+      '2053-11-30'
+    );
+
+    const removedAny = props.updateTabRowsData.mock.calls.some(
+      ([, payload]) => payload && payload.removed
+    );
+    expect(removedAny).toBe(false);
+  });
+
+  // Case D - reconcile the deleted-row edge: if the persisted row was removed
+  // server-side between the abandon and the re-fetch, the ?ids= GET reports it in
+  // missingIds → the grid row must be removed (not left stranded).
+  it('removes a persisted row from the grid when the re-fetch reports it missing', async () => {
+    getRowsData.mockResolvedValue({
+      data: { result: [], missingIds: [PERSISTED_ROW_ID] },
+    });
+
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: PERSISTED_ROW_ID,
+      saveStatus: false,
+    });
+
+    const expectedTableId = getTableId({
+      windowId: WINDOW_TYPE,
+      docId: DOCUMENT_ID,
+      tabId: TAB_ID,
+    });
+    expect(props.updateTabRowsData).toHaveBeenCalledWith(expectedTableId, {
+      removed: { [PERSISTED_ROW_ID]: true },
     });
   });
 });
