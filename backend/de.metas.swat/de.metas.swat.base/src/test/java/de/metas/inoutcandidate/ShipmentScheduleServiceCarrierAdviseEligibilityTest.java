@@ -120,7 +120,7 @@ class ShipmentScheduleServiceCarrierAdviseEligibilityTest
 	}
 
 	@Test
-	void manual_allowed_while_pickingJobSchedule_merely_exists()
+	void manual_blocked_as_soon_as_pickingJobSchedule_exists()
 	{
 		final ShipmentScheduleId scheduleId = createSchedule();
 		createPickingJobSchedule(scheduleId);
