@@ -29,14 +29,20 @@ import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleService;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.organization.OrgId;
+import de.metas.product.PackageDimensions;
 import de.metas.product.ProductRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProduct;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
+import de.metas.util.Services;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -518,5 +524,75 @@ public class PackedHUCarrierAdviseServiceTest
 	private static ArgumentCaptor<UnaryOperator<PickingJobLine>> lineMapperCaptor()
 	{
 		return ArgumentCaptor.forClass((Class<UnaryOperator<PickingJobLine>>) (Class<?>) UnaryOperator.class);
+	}
+
+	/**
+	 * SysConfig gate for the single-CU baseline branch in {@link PackedHUCarrierAdviseService#buildRequestParcel}.
+	 * When {@code de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked=Y},
+	 * a non-self-packed single-CU HU with dims → {@link PackageDimensions#UNSPECIFIED}.
+	 * When absent / 'N' (default), dims are used.
+	 */
+	@Nested
+	class IsSelfPackedGate
+	{
+		private static final String SYSCONFIG_CHECK_IS_SELF_PACKED
+				= "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
+		@Test
+		public void whenSysConfigY_nonSelfPacked_singleCU_dimensionsUnspecified()
+		{
+			// Arrange: SysConfig Y → legacy gate active
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, true, ClientId.SYSTEM, OrgId.ANY);
+
+			// pSalad is NOT self-packed; give it dims
+			data.helper.pSalad.setIsSelfPacked(false);
+			data.helper.pSalad.setLengthInCm(10);
+			data.helper.pSalad.setWidthInCm(20);
+			data.helper.pSalad.setHeightInCm(30);
+			save(data.helper.pSalad);
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("1"), data.helper.uomEach);
+			final I_M_HU cu = producer.getCreatedHUs().get(0);
+
+			final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+			final JsonDeliveryAdvisorRequestParcel parcel = service.buildRequestParcel(
+					cu, ImmutableMap.of(SCHED_SALAD, saladSched));
+
+			// Gate active: non-self-packed → PackageDimensions.UNSPECIFIED → all three dims = -1
+			assertThat(parcel.getPackageDimensions()).isNotNull();
+			assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(-1);
+			assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(-1);
+			assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(-1);
+		}
+
+		@Test
+		public void whenSysConfigN_nonSelfPacked_singleCU_dimensionsReturned()
+		{
+			// Arrange: SysConfig N (default) → gate off
+			Services.get(ISysConfigBL.class).setValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false, ClientId.SYSTEM, OrgId.ANY);
+
+			data.helper.pSalad.setIsSelfPacked(false);
+			data.helper.pSalad.setLengthInCm(10);
+			data.helper.pSalad.setWidthInCm(20);
+			data.helper.pSalad.setHeightInCm(30);
+			save(data.helper.pSalad);
+
+			final HUProducerDestination producer = HUProducerDestination.ofVirtualPI();
+			producer.setLocatorId(data.defaultLocatorId);
+			data.helper.load(producer, data.helper.pSaladProductId, new BigDecimal("1"), data.helper.uomEach);
+			final I_M_HU cu = producer.getCreatedHUs().get(0);
+
+			final ShipmentSchedule saladSched = mockSchedule(SCHED_SALAD, data.helper.pSaladProductId);
+			final JsonDeliveryAdvisorRequestParcel parcel = service.buildRequestParcel(
+					cu, ImmutableMap.of(SCHED_SALAD, saladSched));
+
+			// Gate off: dims returned
+			assertThat(parcel.getPackageDimensions()).isNotNull();
+			assertThat(parcel.getPackageDimensions().getLengthInCM()).isEqualTo(10);
+			assertThat(parcel.getPackageDimensions().getWidthInCM()).isEqualTo(20);
+			assertThat(parcel.getPackageDimensions().getHeightInCM()).isEqualTo(30);
+		}
 	}
 }

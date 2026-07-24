@@ -228,6 +228,21 @@ export const PickingJobScreen = {
         }
     }),
 
+    // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
+    // `qtyAvailable` is the full expected text, e.g. 'Verfügbar: 10 Stk' / 'Verfügbar: 0 Stk'.
+    expectLineQtyAvailable: async ({ index, qtyAvailable }) => await step(`${NAME} - Expect line ${index} qty available '${qtyAvailable}'`, async () => {
+        const lineButton = locateLineButton({ index });
+        const qtyAvailableElement = lineButton.getByTestId('picking-line-qty-available');
+        await qtyAvailableElement.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+        await expect(qtyAvailableElement).toHaveText(qtyAvailable);
+    }),
+
+    // when the flag is off, no qty-available element must be rendered on the line at all.
+    expectLineQtyAvailableNotVisible: async ({ index }) => await step(`${NAME} - Expect line ${index} qty available not shown`, async () => {
+        const lineButton = locateLineButton({ index });
+        await lineButton.getByTestId('picking-line-qty-available').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
+    }),
+
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {
         const button = pickAllButton();
         await button.tap();

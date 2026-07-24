@@ -60,6 +60,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -75,6 +76,9 @@ public class PackedHUCarrierAdviseService
 {
 	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_NO_TARGET = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.NoTarget");
 	private static final AdMessageKey MSG_CARRIER_ADVISE_DISABLED_READONLY = AdMessageKey.of("de.metas.picking.CarrierAdvise.Disabled.ReadOnly");
+	private static final String SYSCONFIG_CHECK_IS_SELF_PACKED = "de.metas.handlingunits.PackageDimensions.CheckIsSelfPacked";
+
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull private final PackedHUShippingInfoService packedHUShippingInfoService;
 	@NonNull private final HUShipmentScheduleResolver huShipmentScheduleResolver;
@@ -479,9 +483,17 @@ public class PackedHUCarrierAdviseService
 					.map(weight -> uomConversionBL.convertToKilogram(weight, product.getId()))
 					.map(Quantity::getAsBigDecimal)
 					.orElse(BigDecimal.ZERO);
-			dimensions = product.isSelfPacked()
-					? product.getPackageDimensions()
-					: PackageDimensions.UNSPECIFIED;
+			if (isCheckSelfPacked() && !product.isSelfPacked())
+			{
+				dimensions = PackageDimensions.UNSPECIFIED;
+			}
+			else
+			{
+				final PackageDimensions productDims = product.getPackageDimensions();
+				dimensions = productDims.isUnspecified()
+						? PackageDimensions.UNSPECIFIED
+						: productDims;
+			}
 		}
 		else
 		{
@@ -567,6 +579,11 @@ public class PackedHUCarrierAdviseService
 				.shippedQuantity(shippedQuantity)
 				.totalWeightInKg(totalWeightInKgBD)
 				.build();
+	}
+
+	private boolean isCheckSelfPacked()
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_CHECK_IS_SELF_PACKED, false);
 	}
 
 	@NonNull
