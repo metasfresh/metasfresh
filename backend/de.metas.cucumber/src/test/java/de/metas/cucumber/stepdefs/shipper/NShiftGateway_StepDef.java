@@ -204,7 +204,7 @@ public class NShiftGateway_StepDef
 	/**
 	 * Asserts the {@link JsonDeliveryRequest} captured by the {@code ShipmentDispatchService} mock.
 	 * Carrier product / goods type / the two services are required; address / contact / EORI /
-	 * parcel columns are optional. {@code Parcel*} columns assume a single parcel.
+	 * {@code IsPreAdviceRequired} / parcel columns are optional. {@code Parcel*} columns assume a single parcel.
 	 * {@code ParcelItem_CountryOfOrigin} asserts the country of origin of the first item in the
 	 * single parcel (only evaluated when {@code NumParcels} is absent or 1).
 	 */
@@ -255,6 +255,9 @@ public class NShiftGateway_StepDef
 		row.getAsOptionalString("ReceiverEORI").ifPresent(expected -> softly
 				.assertThat(capturedShipmentRequest.getReceiverEORI())
 				.as("receiverEORI").isEqualTo(expected));
+		row.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
+				.assertThat(capturedShipmentRequest.getPreAdviceRequired())
+				.as("capturedShipmentRequest.preAdviceRequired").isEqualTo(expected));
 
 		// --- pickup (sender) address + contact ---
 		assertAddress(softly, capturedShipmentRequest.getPickupAddress(), row, "Sender", "pickupAddress");
@@ -438,6 +441,11 @@ public class NShiftGateway_StepDef
 				.as("packageDimensions.heightInCM")
 				.isEqualTo(expected));
 
+		firstRow.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getPreAdviceRequired())
+				.as("capturedAdvisorRequest.preAdviceRequired")
+				.isEqualTo(expected));
+
 		// --- per-item fields: match every row to its (distinct) item and assert ---
 		// matchedItemIndexes guards against two rows resolving to the same item, which would otherwise
 		// leave the other item(s) silently unasserted despite the row-count == item-count check above.
@@ -597,11 +605,6 @@ public class NShiftGateway_StepDef
 				softly.assertThat(actual).as("shipperConfig.ServiceLevel").isEqualTo(expected);
 			}
 		});
-
-		row.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
-				.assertThat(capturedAdvisorRequest.getPreAdviceRequired())
-				.as("capturedAdvisorRequest.preAdviceRequired")
-				.isEqualTo(expected));
 
 		softly.assertAll();
 	}
