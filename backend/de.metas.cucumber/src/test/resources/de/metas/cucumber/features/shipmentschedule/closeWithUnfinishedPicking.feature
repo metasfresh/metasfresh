@@ -99,7 +99,8 @@ Feature: Closing a shipment schedule with an unfinished picking order
       | M_ShipmentSchedule_ID |
       | shipmentSchedule      |
 
-    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
+    # exactly one offending schedule => the specific, order-naming message
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code "ShipmentSchedule_UnfinishedPicking"
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
       | shipmentSchedule                 | false        |
@@ -128,7 +129,7 @@ Feature: Closing a shipment schedule with an unfinished picking order
       | shipmentSchedule                 | true         |
 
   @Id:S30915_030
-  Scenario: Multi-selection is all-or-nothing when one of the selected schedules has an unfinished picking job
+  Scenario: Multi-selection with several unfinished pickings is rejected with the generic message (all-or-nothing)
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | SO1        | true    | customer                 | 2026-07-22  |
@@ -141,22 +142,24 @@ Feature: Closing a shipment schedule with an unfinished picking order
     And the order identified by SO2 is completed
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier    | C_OrderLine_ID.Identifier | IsToRecompute |
-      | busySchedule  | L1                        | N             |
-      | cleanSchedule | L2                        | N             |
+      | busySchedule1 | L1                        | N             |
+      | busySchedule2 | L2                        | N             |
 
-    # only SO1's schedule is still being picked; SO2's schedule has no picking job at all
+    # both selected schedules are still being picked (their picking jobs are Drafted)
     And start picking job for sales order identified by SO1
+    And start picking job for sales order identified by SO2
 
     When the M_ShipmentSchedule_CloseShipmentSchedules process is run for selection:
       | M_ShipmentSchedule_ID |
-      | busySchedule          |
-      | cleanSchedule         |
+      | busySchedule1         |
+      | busySchedule2         |
 
-    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
+    # two or more offending schedules => the generic message that does not enumerate them (huge-selection optimization)
+    Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code "ShipmentSchedule_UnfinishedPickings"
     And after not more than 60s, validate shipment schedules:
       | M_ShipmentSchedule_ID.Identifier | OPT.IsClosed |
-      | busySchedule                     | false        |
-      | cleanSchedule                    | false        |
+      | busySchedule1                    | false        |
+      | busySchedule2                    | false        |
 
   @Id:S30915_040
   Scenario: Automatic/system close paths are not affected by the user-Close guard

@@ -22,7 +22,6 @@ package de.metas.inoutcandidate.process;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.spi.IShipmentSchedulePickingInfoService;
@@ -34,15 +33,14 @@ import org.compiere.model.I_C_Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Covers the close-guard's message-formatting helpers ({@link M_ShipmentSchedule_CloseShipmentSchedules#toHumanReadableIdentifiersCsv}
- * / {@link M_ShipmentSchedule_CloseShipmentSchedules#toHumanReadableIdentifier}): order-found → order {@code DocumentNo};
- * fallback (no order) → {@code M_ShipmentSchedule_ID}; and dedup when several offending schedules share the same order.
+ * Covers the close-guard's single-schedule identifier helper
+ * ({@link M_ShipmentSchedule_CloseShipmentSchedules#toHumanReadableIdentifier}): order-found → order
+ * {@code DocumentNo}; fallback (no order, or order not in the resolved map) → {@code M_ShipmentSchedule_ID}.
  */
 class M_ShipmentSchedule_CloseShipmentSchedulesTest
 {
@@ -109,49 +107,5 @@ class M_ShipmentSchedule_CloseShipmentSchedulesTest
 		final String identifier = M_ShipmentSchedule_CloseShipmentSchedules.toHumanReadableIdentifier(schedule, documentNoByOrderId);
 
 		assertThat(identifier).isEqualTo("M_ShipmentSchedule_ID=9003");
-	}
-
-	@Test
-	void toHumanReadableIdentifiersCsv_ordersFound_batchLoadsAndJoinsDocumentNos()
-	{
-		final OrderId order1 = createOrder("SO-2001");
-		final OrderId order2 = createOrder("SO-2002");
-
-		final List<I_M_ShipmentSchedule> offendingSchedules = ImmutableList.of(
-				newSchedule(9101, order1),
-				newSchedule(9102, order2));
-
-		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
-
-		assertThat(csv).isEqualTo("SO-2001, SO-2002");
-	}
-
-	@Test
-	void toHumanReadableIdentifiersCsv_mixedOrderAndFallback_joinsBoth()
-	{
-		final OrderId order1 = createOrder("SO-3001");
-
-		final List<I_M_ShipmentSchedule> offendingSchedules = ImmutableList.of(
-				newSchedule(9201, order1),
-				newSchedule(9202, null));
-
-		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
-
-		assertThat(csv).isEqualTo("SO-3001, M_ShipmentSchedule_ID=9202");
-	}
-
-	@Test
-	void toHumanReadableIdentifiersCsv_sharedOrder_dedupsToOneIdentifier()
-	{
-		// two offending schedules on the SAME sales order -- the order's DocumentNo must appear only once
-		final OrderId sharedOrder = createOrder("SO-4001");
-
-		final List<I_M_ShipmentSchedule> offendingSchedules = ImmutableList.of(
-				newSchedule(9301, sharedOrder),
-				newSchedule(9302, sharedOrder));
-
-		final String csv = new M_ShipmentSchedule_CloseShipmentSchedules().toHumanReadableIdentifiersCsv(offendingSchedules);
-
-		assertThat(csv).isEqualTo("SO-4001");
 	}
 }

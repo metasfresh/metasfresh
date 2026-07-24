@@ -27,8 +27,6 @@ import java.math.BigDecimal;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
@@ -51,12 +49,10 @@ import de.metas.util.Services;
 
 public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
+	// exactly-one offender: the specific message that names the offending schedule's order
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
-
-	// The offending-schedules query feeds ONLY the rejection message, so it is capped: listing every schedule of a
-	// pathologically large selection would waste the query and produce an unreadable message. One offender is enough
-	// to reject the all-or-nothing close; the cap just bounds how many get named.
-	private static final int MAX_OFFENDING_SCHEDULES_TO_REPORT = 100;
+	// two-or-more offenders: the generic message that does NOT enumerate the schedules (huge-selection optimization)
+	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKINGS = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPickings");
 
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -102,43 +98,53 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	/**
 	 * Rejects the whole close (all-or-nothing) if any selected schedule still has an unfinished (Drafted) picking
 	 * job. The unfinished-picking check is a subquery filter folded into the selection query, so the offending
-	 * schedules come from a single query (no id round-trip / in-memory intersection); the query is capped at
-	 * {@link #MAX_OFFENDING_SCHEDULES_TO_REPORT} because it only feeds the rejection message.
+	 * schedules come from a single query (no id round-trip / in-memory intersection). The query is capped at 2
+	 * because the rejection message only needs to distinguish "exactly one" (named) from "two or more" (generic):
+	 * <ul>
+	 *     <li>none offending → do nothing;</li>
+	 *     <li>exactly one → the specific {@link #MSG_CANNOT_CLOSE_UNFINISHED_PICKING} naming that schedule's order;</li>
+	 *     <li>two or more → the generic {@link #MSG_CANNOT_CLOSE_UNFINISHED_PICKINGS}, which does NOT enumerate the
+	 *         schedules (the huge-selection optimization: no per-schedule order load for a potentially huge set).</li>
+	 * </ul>
 	 */
 	private void assertNoOffendingSchedules(final IQueryFilter<I_M_ShipmentSchedule> userSelectionFilter)
 	{
 		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
 				.filter(pickingInfoService.newUnfinishedPickingFilter())
-				.setLimit(MAX_OFFENDING_SCHEDULES_TO_REPORT)
+				.setLimit(2)
 				.create()
 				.list();
-		if (!offendingSchedules.isEmpty())
+
+		if (offendingSchedules.isEmpty())
 		{
-			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, toHumanReadableIdentifiersCsv(offendingSchedules));
+			return;
 		}
+
+		if (offendingSchedules.size() == 1)
+		{
+			final I_M_ShipmentSchedule offendingSchedule = offendingSchedules.get(0);
+			throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKING, toHumanReadableIdentifier(offendingSchedule, resolveDocumentNoByOrderId(offendingSchedule)));
+		}
+
+		throw new AdempiereException(MSG_CANNOT_CLOSE_UNFINISHED_PICKINGS);
 	}
 
 	/**
-	 * @return a comma-separated, human-readable identifier list for the offending schedules: each schedule's
-	 * 		order {@code DocumentNo} when it references one, else its {@code M_ShipmentSchedule_ID} as a fallback.
-	 * 		Orders are batch-loaded once (never one-by-one per schedule).
+	 * @return a one-entry {@code OrderId -> DocumentNo} map for the single offending schedule's order (never a batch
+	 * 		load): the schedule's order {@code DocumentNo} when it references an existing order, else an empty map so
+	 * 		{@link #toHumanReadableIdentifier(I_M_ShipmentSchedule, Map)} falls back to the {@code M_ShipmentSchedule_ID}.
 	 */
-	@VisibleForTesting
-	String toHumanReadableIdentifiersCsv(final List<I_M_ShipmentSchedule> offendingSchedules)
+	private Map<OrderId, String> resolveDocumentNoByOrderId(final I_M_ShipmentSchedule schedule)
 	{
-		final ImmutableSet<OrderId> orderIds = offendingSchedules.stream()
-				.map(schedule -> OrderId.ofRepoIdOrNull(schedule.getC_Order_ID()))
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
+		if (orderId == null)
+		{
+			return ImmutableMap.of();
+		}
 
-		final Map<OrderId, String> documentNoByOrderId = orderDAO.getByIds(orderIds)
+		return orderDAO.getByIds(ImmutableSet.of(orderId))
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(order -> OrderId.ofRepoId(order.getC_Order_ID()), I_C_Order::getDocumentNo));
-
-		return offendingSchedules.stream()
-				.map(schedule -> toHumanReadableIdentifier(schedule, documentNoByOrderId))
-				.distinct()
-				.collect(Collectors.joining(", "));
 	}
 
 	@VisibleForTesting

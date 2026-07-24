@@ -149,6 +149,33 @@ public class M_ShipmentSchedule_CloseShipmentSchedules_StepDef
 	}
 
 	/**
+	 * Asserts that the last {@code M_ShipmentSchedule_CloseShipmentSchedules} process run was rejected AND that the
+	 * rejection carries the given {@code ErrorCode}. The error code identifies which rejection message was raised:
+	 * {@code ShipmentSchedule_UnfinishedPicking} (exactly one offending schedule → the specific, order-naming message)
+	 * vs {@code ShipmentSchedule_UnfinishedPickings} (two or more offending schedules → the generic message that does
+	 * not enumerate the schedules).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.depends StepDefData: none (reads the exception captured by the previous step)
+	 * @cucumber.example
+	 * <pre>
+	 * Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code "ShipmentSchedule_UnfinishedPicking"
+	 * </pre>
+	 */
+	@Then("^the M_ShipmentSchedule_CloseShipmentSchedules process is rejected with error code \"([^\"]+)\"$")
+	public void assertCloseShipmentSchedulesProcessRejectedWithErrorCode(@NonNull final String expectedErrorCode)
+	{
+		assertThat(lastCloseProcessException)
+				.as("Closing a shipment schedule with an unfinished (Drafted) picking job must be rejected")
+				.isNotNull()
+				.isInstanceOf(AdempiereException.class);
+
+		assertThat(AdempiereException.extractErrorCodeOrNull(lastCloseProcessException))
+				.as("Close rejection must carry the expected ErrorCode")
+				.isEqualTo(expectedErrorCode);
+	}
+
+	/**
 	 * Asserts that the last {@code M_ShipmentSchedule_CloseShipmentSchedules} process run
 	 * ({@link #runCloseShipmentSchedulesProcess(DataTable)}) completed WITHOUT error (i.e. the close was accepted,
 	 * not refused).
