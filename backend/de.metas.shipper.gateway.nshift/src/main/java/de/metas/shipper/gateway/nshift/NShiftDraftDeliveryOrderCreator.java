@@ -53,6 +53,7 @@ import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.IOrderDAO;
+import de.metas.util.StringUtils;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -222,6 +223,8 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		{
 			builder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
 		}
+
+		builder.preAdviceRequired(StringUtils.ofBoolean(order.isPreAdviceRequired()));
 	}
 
 	@NonNull
