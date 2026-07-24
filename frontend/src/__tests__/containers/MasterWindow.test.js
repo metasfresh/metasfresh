@@ -1,6 +1,6 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { mount } from 'enzyme';
+import { mount, shallow } from 'enzyme';
 import nock from 'nock';
 import { Provider } from 'react-redux';
 import { applyMiddleware, combineReducers, createStore } from 'redux';
@@ -41,6 +41,7 @@ import viewHandler, {
 } from '../../reducers/viewHandler';
 import tables, {
   initialState as tablesHandlerState,
+  getTableId,
 } from '../../reducers/tables';
 
 import fixtures from '../../../test_setup/fixtures/master_window.json';
@@ -56,6 +57,16 @@ import topActionsFixtures
 import menuFixtures from '../../../test_setup/fixtures/master_window/menu.json';
 import userSessionData from '../../../test_setup/fixtures/user_session.json';
 import notificationsData from '../../../test_setup/fixtures/notifications.json';
+
+import MasterWindow from '../../components/app/MasterWindow';
+import { discardNewRequest } from '../../api';
+
+// closeModalCallback calls discardNewRequest (from ../../api) and awaits its
+// promise before deciding whether to remove the row from the parent grid.
+jest.mock('../../api', () => ({
+  __esModule: true,
+  discardNewRequest: jest.fn(() => Promise.resolve()),
+}));
 
 const middleware = [thunk, promiseMiddleware];
 const FIXTURES_PROPS = fixtures;
@@ -460,8 +471,87 @@ describe.skip('MasterWindowContainer', () => {
       await waitFor(async() => {
         wrapper.update();
         expect(wrapper.html()).toContain('2,888.60');
-      }, { timeout: 8000, interval: 500 });  
-    });     
+      }, { timeout: 8000, interval: 500 });
+    });
 
   }, 20000);
+});
+
+describe('MasterWindow.closeModalCallback - abandon must not drop a persisted new-record row', () => {
+  const WINDOW_TYPE = '540321';
+  const DOCUMENT_ID = 'd1';
+  const TAB_ID = 't1';
+
+  // Minimal props so shallow() can construct the instance without render throwing.
+  const buildProps = (overrides = {}) => ({
+    modal: { visible: false },
+    master: {
+      docId: DOCUMENT_ID,
+      data: { DocumentNo: undefined },
+      layout: {},
+      includedTabsInfo: {},
+      hasComments: false,
+    },
+    breadcrumb: [],
+    rawModal: {},
+    pluginModal: {},
+    me: {},
+    overlay: { data: {}, visible: false },
+    params: { windowId: WINDOW_TYPE, docId: DOCUMENT_ID },
+    updateTabRowsData: jest.fn(),
+    ...overrides,
+  });
+
+  const getInstance = (props) => shallow(<MasterWindow {...props} />).instance();
+
+  beforeEach(() => {
+    discardNewRequest.mockClear();
+    discardNewRequest.mockResolvedValue();
+  });
+
+  // Case A - the bug: a modal auto-saved (rowId became a real numeric id) but
+  // saveStatus stayed falsy. Abandon must NOT remove the now-persisted row.
+  it('does not remove a persisted (numeric rowId) row when saveStatus is falsy', async () => {
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: '1234567',
+      saveStatus: false,
+    });
+
+    const removedPersistedRow = props.updateTabRowsData.mock.calls.some(
+      ([, payload]) => payload && payload.removed && payload.removed['1234567']
+    );
+    expect(removedPersistedRow).toBe(false);
+  });
+
+  // Case B - regression guard: a genuinely unsaved new row (rowId === 'NEW')
+  // must still be discarded from the parent grid.
+  it('removes an unsaved new row (rowId === NEW) when saveStatus is falsy', async () => {
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: 'NEW',
+      saveStatus: false,
+    });
+
+    const expectedTableId = getTableId({
+      windowId: WINDOW_TYPE,
+      docId: DOCUMENT_ID,
+      tabId: TAB_ID,
+    });
+    expect(props.updateTabRowsData).toHaveBeenCalledWith(expectedTableId, {
+      removed: { NEW: true },
+    });
+  });
 });
