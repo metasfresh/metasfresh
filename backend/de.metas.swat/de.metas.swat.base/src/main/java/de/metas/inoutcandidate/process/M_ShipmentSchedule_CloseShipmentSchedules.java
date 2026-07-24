@@ -49,9 +49,9 @@ import de.metas.util.Services;
 
 public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 {
-	// exactly-one offender: the specific message that names the offending schedule's order
+	/** exactly-one offender: the specific message that names the offending schedule's order */
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKING = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPicking");
-	// two-or-more offenders: the generic message that does NOT enumerate the schedules (huge-selection optimization)
+	/** two-or-more offenders: the generic message that does NOT enumerate the schedules (huge-selection optimization) */
 	private static final AdMessageKey MSG_CANNOT_CLOSE_UNFINISHED_PICKINGS = AdMessageKey.of("M_ShipmentSchedule_CannotClose_UnfinishedPickings");
 
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
