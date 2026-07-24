@@ -370,8 +370,7 @@ public class Carrier_ShipmentOrder_StepDef
 			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_CustomerReference).ifPresent(expected -> softly
 					.assertThat(order.getCustomerReference()).as("customerReference").isEqualTo(expected));
 
-			// Persisted pre-advice flag: round-trips order.IsPreAdviceRequired -> Carrier_ShipmentOrder.IsPreAdviceRequired
-			// (write in createShipmentOrder) -> DeliveryOrder.preAdviceRequired "Y"/"N" (read in fromRecord).
+			// Asserts the PERSISTED pre-advice flag (loaded from the shipment-order record), not the emitted request.
 			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_IsPreAdviceRequired).ifPresent(expected -> softly
 					.assertThat(order.getPreAdviceRequired()).as("preAdviceRequired").isEqualTo(expected));
 
