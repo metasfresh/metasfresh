@@ -18,7 +18,7 @@ INSERT INTO M_HU_PI
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (0, 0, 540013 /*From ID Server*/, 'Maßberechnung - Bändern',
-     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Bändern. Pro Deployment aktivieren und konfigurieren.',
+     'TU-Packvorschrift für die Maßberechnungsmethode Bändern.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:00', 'YYYY-MM-DD HH24:MI:SS'),
      100,
@@ -88,7 +88,7 @@ INSERT INTO M_HU_PI
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (0, 0, 540014 /*From ID Server*/, 'Maßberechnung - Umverpacken',
-     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Umverpacken. Pro Deployment aktivieren und konfigurieren.',
+     'TU-Packvorschrift für die Maßberechnungsmethode Umverpacken.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:04', 'YYYY-MM-DD HH24:MI:SS'),
      100,
@@ -158,7 +158,7 @@ INSERT INTO M_HU_PI
      Created, CreatedBy, Updated, UpdatedBy)
 VALUES
     (0, 0, 540015 /*From ID Server*/, 'Maßberechnung - Verschachteln',
-     'Inaktiver Seed: TU-Packvorschrift für die Maßberechnungsmethode Verschachteln. Pro Deployment aktivieren und konfigurieren.',
+     'TU-Packvorschrift für die Maßberechnungsmethode Verschachteln.',
      'N', 'N', 'N',
      TO_TIMESTAMP('2026-07-22 10:00:08', 'YYYY-MM-DD HH24:MI:SS'),
      100,
