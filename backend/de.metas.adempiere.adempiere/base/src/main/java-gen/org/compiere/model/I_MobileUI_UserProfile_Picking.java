@@ -687,7 +687,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	 ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowQtyAvailableForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowQtyAvailableForLines", null);
 	 String COLUMNNAME_IsShowQtyAvailableForLines = "IsShowQtyAvailableForLines";
-	 *
+	 /*
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
@@ -726,7 +726,7 @@ public interface I_MobileUI_UserProfile_Picking
 
 	 ModelColumn<I_MobileUI_UserProfile_Picking, Object> COLUMN_IsShowQtyAvailableForLines = new ModelColumn<>(I_MobileUI_UserProfile_Picking.class, "IsShowQtyAvailableForLines", null);
 	 String COLUMNNAME_IsShowQtyAvailableForLines = "IsShowQtyAvailableForLines";
-	 *
+	 /*
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
