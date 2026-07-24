@@ -37,7 +37,6 @@ import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.CarrierProductId;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
-import de.metas.util.Services;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
