@@ -128,6 +128,7 @@ public class NShiftShipmentServiceTest
 			.customerReference("Customer reference")
 			.incotermsValue("DAP")
 			.externalSystemValue("Other")
+			.preAdviceRequired("Y")
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("1")
 					.grossWeightKg(BigDecimal.TEN)
