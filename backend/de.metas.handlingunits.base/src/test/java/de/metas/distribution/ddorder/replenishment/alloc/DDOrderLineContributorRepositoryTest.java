@@ -1,6 +1,7 @@
 package de.metas.distribution.ddorder.replenishment.alloc;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.picking.api.PickingJobScheduleId;
@@ -99,5 +100,37 @@ class DDOrderLineContributorRepositoryTest
 
 		assertThat(repository.getLineIdsByPickingJobScheduleId(scheduleId(10)))
 				.containsExactlyInAnyOrder(lineId(1), lineId(2));
+	}
+
+	/**
+	 * An empty {@code lineIds} collection must yield no contributor ids, even though a row exists that the query would
+	 * return if the {@code DD_OrderLine_ID} restriction were dropped. This guards {@code getContributorIds}' early
+	 * return: an empty IN-list renders as TRUE, so without that guard the call would collapse the line restriction and
+	 * wrongly report the assignment of the contributor created below as a contributor of "no lines".
+	 */
+	@Test
+	void getContributorIds_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(repository.getContributorIds(ImmutableSet.of())).isEmpty();
+	}
+
+	/**
+	 * An empty {@code lineIds} collection must delete nothing, even though a row exists that the delete would hit if the
+	 * {@code DD_OrderLine_ID} restriction were dropped. This guards {@code deleteByLineIds}' early return: an empty
+	 * IN-list renders as TRUE, so without that guard the call would collapse the line restriction and wipe every alloc
+	 * row in the table — including the unrelated contributor created below.
+	 */
+	@Test
+	void deleteByLineIds_deletesNothingForEmptyLineIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		repository.deleteByLineIds(ImmutableSet.of());
+
+		assertThat(repository.getContributors(lineId(1)))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
+				.containsExactly(scheduleId(10));
 	}
 }
