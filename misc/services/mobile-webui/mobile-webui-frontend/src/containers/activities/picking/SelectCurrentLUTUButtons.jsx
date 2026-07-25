@@ -115,14 +115,20 @@ const SelectCurrentLUTUButtons = ({ applicationId, wfProcessId, activityId, line
           disabled={!isUserEditable || isAdvising || isCarrierAdviseReadOnly}
           onClick={onAdviseCarrierClick}
         >
-          {carrierProductCaption && (
+          {(carrierProductCaption || carrierAdviseDisabledReason) && (
             <div className="row is-full is-size-7">
-              <span data-testid="carrier-product-caption">{carrierProductCaption}</span>
-            </div>
-          )}
-          {carrierAdviseDisabledReason && (
-            <div className="row is-full is-size-7 advise-carrier-disabled-reason">
-              <span data-testid="carrier-advise-disabled-reason">{carrierAdviseDisabledReason}</span>
+              <div className="carrier-advise-info">
+                {carrierProductCaption && (
+                  <div className="carrier-advise-line">
+                    <span data-testid="carrier-product-caption">{carrierProductCaption}</span>
+                  </div>
+                )}
+                {carrierAdviseDisabledReason && (
+                  <div className="carrier-advise-line advise-carrier-disabled-reason">
+                    <span data-testid="carrier-advise-disabled-reason">{carrierAdviseDisabledReason}</span>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </ButtonWithIndicator>
