@@ -128,11 +128,6 @@ public class ShipmentScheduleCarrierServiceRepository
 
 	public void assignServicesToShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, final @NonNull Set<CarrierServiceId> serviceIds)
 	{
-		if (serviceIds.isEmpty())
-		{
-			return;
-		}
-
 		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
