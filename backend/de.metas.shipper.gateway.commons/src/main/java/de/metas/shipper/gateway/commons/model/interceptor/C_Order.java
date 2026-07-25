@@ -69,11 +69,10 @@ public class C_Order
 	@Init
 	public void init()
 	{
-		// Register this class ALSO as a callout so the carrier-product change fires in the WebUI
-		// BEFORE save (goods-type auto-set + service reset). Needed because Carrier_Goods_Type_ID is
-		// mandatory once a carrier product is set (MandatoryLogic @Carrier_Product_ID@!0); on the
-		// initial selection the empty mandatory goods type blocks the save, so the BEFORE_CHANGE /
-		// BEFORE_NEW interceptor below would never fire and the user could not save.
+		// Needed because Carrier_Goods_Type_ID is mandatory once a carrier product is set
+		// (MandatoryLogic @Carrier_Product_ID@!0): on the initial selection the empty mandatory
+		// goods type blocks the save, so the @ModelChange interceptor below never fires. The
+		// callout fills the goods type in-UI first, before save.
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
 	}
 
@@ -83,30 +82,28 @@ public class C_Order
 			ifColumnsChanged = I_C_Order.COLUMNNAME_Carrier_Product_ID)
 	public void onCarrierProductChanged(@NonNull final I_C_Order order)
 	{
-		applyCarrierProductChange(order);
+		syncGoodsType(order);
+		deleteCarrierServices(order);
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_Carrier_Product_ID)
 	public void onCarrierProductChanged_callout(@NonNull final I_C_Order order)
 	{
-		applyCarrierProductChange(order);
+		// Callout path: mutate only the in-memory model (goods type). The C_Order_Carrier_Service
+		// reset is a DB delete and must NOT run here: a WebUI callout fires on field change, not inside
+		// the document's save transaction, so a delete would commit immediately and would not roll back
+		// if the user abandons the edit. The service reset runs on the save path (@ModelChange above).
+		syncGoodsType(order);
 	}
 
 	/**
-	 * Keeps {@code Carrier_Goods_Type_ID} and the {@code C_Order_Carrier_Service} bridge in sync with
-	 * the selected carrier product. Shared by the interceptor (every save path) and the callout (WebUI,
-	 * before save): clear the goods type, reset the services, then auto-set the goods type when the
-	 * product has exactly one allocated goods type.
+	 * Keeps {@code Carrier_Goods_Type_ID} in sync with the selected carrier product (no DB writes; one
+	 * repo read for the allocation): clear it, then auto-set it when the product has exactly one
+	 * allocated goods type. Shared by the interceptor (every save path) and the callout (WebUI, before save).
 	 */
-	private void applyCarrierProductChange(@NonNull final I_C_Order order)
+	private void syncGoodsType(@NonNull final I_C_Order order)
 	{
 		order.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
-
-		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
-		if (orderId != null)
-		{
-			orderCarrierServiceRepo.deleteByOrderId(orderId);
-		}
 
 		final CarrierProductId carrierProductId = CarrierProductId.ofRepoIdOrNull(order.getCarrier_Product_ID());
 		if (carrierProductId == null)
@@ -121,5 +118,19 @@ public class C_Order
 		}
 		// Multiple or zero allocations → leave Carrier_Goods_Type_ID unset;
 		// the column val rule (constrained by the carrier product) limits valid choices when there are several.
+	}
+
+	/**
+	 * Deletes the {@code C_Order_Carrier_Service} bridge rows for the order, so a changed or cleared
+	 * carrier product never keeps services belonging to a different product. Runs only on the save path
+	 * (interceptor), never in the callout — see {@link #onCarrierProductChanged_callout}.
+	 */
+	private void deleteCarrierServices(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(order.getC_Order_ID());
+		if (orderId != null)
+		{
+			orderCarrierServiceRepo.deleteByOrderId(orderId);
+		}
 	}
 }
