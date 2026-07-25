@@ -29,6 +29,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.PriorityRule;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
@@ -248,5 +249,14 @@ public class ShipmentScheduleEffectiveBL implements IShipmentScheduleEffectiveBL
 		}
 
 		return SystemTime.asZonedDateTime();
+	}
+
+	@Override
+	public PriorityRule getPriorityRule(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		return CoalesceUtil.coalesceNotNull(
+				PriorityRule.ofNullableCode(sched.getPriorityRule_Override()),
+				PriorityRule.ofNullableCode(sched.getPriorityRule()),
+				PriorityRule.Medium);
 	}
 }

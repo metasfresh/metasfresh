@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
+import de.metas.inout.PriorityRule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.order.DeliveryRule;
@@ -101,4 +102,11 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	 * If the given {@code sched} doesn't have an order, return the current time.,
 	 */
 	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule sched);
+
+	/**
+	 * Get the priority effective based on PriorityRule and PriorityRule_Override,
+	 * i.e. the java counterpart of {@code COALESCE(PriorityRule_Override, PriorityRule)}.
+	 * If none of them is set, falls back to {@link PriorityRule#Medium}.
+	 */
+	PriorityRule getPriorityRule(@NonNull I_M_ShipmentSchedule sched);
 }
