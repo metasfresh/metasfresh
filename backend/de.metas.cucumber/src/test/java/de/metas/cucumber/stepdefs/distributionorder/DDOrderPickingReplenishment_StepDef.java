@@ -96,9 +96,10 @@ public class DDOrderPickingReplenishment_StepDef
 	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 
 	/**
-	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} in
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)} in
 	 * {@code runInThreadInheritedTrx}, matching the transaction wrapping used by
-	 * {@code DDOrderReplenishmentEventHandler}.
+	 * {@code DDOrderReplenishmentEventHandler}. The reconcile is group-keyed, so this serves every contributor of the
+	 * named assignment's product group, not only that assignment.
 	 *
 	 * <p>Real-world trigger: in production this reconcile runs asynchronously when the
 	 * {@code M_Picking_Job_Schedule} interceptor publishes the after-commit {@code DDOrderPickingReconcile}
@@ -113,11 +114,11 @@ public class DDOrderPickingReplenishment_StepDef
 	public void process_reconcile_event(@NonNull final String pickingJobScheduleIdentifier)
 	{
 		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
-		trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(jobScheduleId));
+		trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcileGroupOf(jobScheduleId));
 	}
 
 	/**
-	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcile(PickingJobScheduleId)} and asserts it
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)} and asserts it
 	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
 	 * {@link AdempiereException} with {@code ErrorCode = DDOrderPickingReconcile_PickerBusy}.
 	 * The DD_Order is left unchanged.
@@ -125,7 +126,7 @@ public class DDOrderPickingReplenishment_StepDef
 	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
 	 * {@code M_Picking_Job_Schedule} interceptor ({@code M_Picking_Job_Schedule_DDOrderPickingInterceptor#scheduleReconcileAfterCommit})
 	 * publishes the after-commit reconcile event, the {@code DDOrderReplenishmentEventHandler} picks it up and calls
-	 * {@code replenishmentService.reconcile(jobScheduleId)}; this step asserts the service-side picker-busy guard rejects
+	 * {@code replenishmentService.reconcile(groupKey, clientAndOrgId)}; this step asserts the service-side picker-busy guard rejects
 	 * that reconcile when a picker has grabbed the job in the meantime. The step calls the service directly only to
 	 * control ordering for the deterministic race scenario — driving it through the real async bus would make the
 	 * picker-grabs-the-job-in-the-race-window timing non-deterministic and the test flaky.</p>
@@ -141,7 +142,7 @@ public class DDOrderPickingReplenishment_StepDef
 	{
 		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
 
-		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(jobScheduleId)))
+		assertThatThrownBy(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcileGroupOf(jobScheduleId)))
 				.as("Reconcile must be rejected while the picker is busy")
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())

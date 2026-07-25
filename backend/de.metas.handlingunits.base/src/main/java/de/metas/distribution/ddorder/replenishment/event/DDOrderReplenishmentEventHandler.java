@@ -44,11 +44,13 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 		try (final IAutoCloseable ignored = switchCtx(request))
 		{
-			final PickingJobScheduleId pickingJobScheduleId = request.getTriggeredBy();
-
+			// The request identifies the product GROUP, so N assignments of one group collapse into one reconcile and
+			// the reconcile serves every contributor of it. request.getTriggeredBy() is only the AD_EventLog record
+			// anchor (one arbitrary triggering assignment) — never the unit of work.
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
-					.invokaction(() -> trxManager.runInThreadInheritedTrx(() -> replenishmentService.reconcile(pickingJobScheduleId)))
+					.invokaction(() -> trxManager.runInThreadInheritedTrx(
+							() -> replenishmentService.reconcile(request.getGroupKey(), request.getClientAndOrgId())))
 					.build());
 		}
 	}

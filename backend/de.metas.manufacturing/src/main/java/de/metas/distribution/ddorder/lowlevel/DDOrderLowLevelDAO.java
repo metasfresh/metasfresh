@@ -11,6 +11,7 @@ import de.metas.material.planning.pporder.LiberoException;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -24,6 +25,7 @@ import org.adempiere.ad.persistence.ModelDynAttributeAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.eevolution.api.PPOrderId;
@@ -142,6 +144,56 @@ public class DDOrderLowLevelDAO
 				// the close-out / re-void the standalone job), so it is filtered out here.
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.create()
+				.list(I_DD_Order.class);
+	}
+
+	/**
+	 * Returns ALL live (Completed, active, not picking-disconnected) {@link I_DD_Order} records serving the given
+	 * picking-replenishment product group — the group key {@code (M_Product_ID, M_LocatorTo_ID, C_UOM_ID)} read off
+	 * the DD_OrderLine — ordered by {@code DD_Order_ID}.
+	 *
+	 * <p>The group-keyed counterpart of {@link #findActiveDDOrdersForPickingJobSchedule(PickingJobScheduleId)}: a
+	 * consolidated order serves several assignments, so no single {@code M_Picking_Job_Schedule_ID} identifies it.</p>
+	 *
+	 * <p>{@code replenishmentLineIdsQuery} is a sub-query reference over the alloc table
+	 * ({@code DD_OrderLine_PickingJobSchedule}), NOT a table this DAO owns — it is supplied by the reconcile flow in
+	 * {@code de.metas.handlingunits.base}, which is where that model interface lives (same pattern as
+	 * {@code PickingJobScheduleRepository.streamAssignmentsNeedingDDOrder} taking the DD_Order query from its caller).
+	 * It is what restricts the result to <b>replenishment</b> lines: the three group-key columns alone would also
+	 * match a manually created or MRP-generated DD_Order that happens to move the same product to the same locator,
+	 * and this reconcile voids what it does not need — it must never be able to void a foreign document.</p>
+	 */
+	public List<I_DD_Order> findActiveDDOrdersForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
+	{
+		final IQuery<I_DD_OrderLine> groupLinesQuery = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				// Same reason as findActiveDDOrdersForPickingJobSchedule: a disconnected DD_Order is the in-progress
+				// close-out disposition and must stay invisible to the guard and the reconcile.
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						groupLinesQuery)
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.list(I_DD_Order.class);

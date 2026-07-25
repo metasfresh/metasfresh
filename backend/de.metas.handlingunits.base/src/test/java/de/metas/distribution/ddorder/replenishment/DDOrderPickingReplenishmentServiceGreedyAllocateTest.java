@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.replenishment;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.DDOrderService;
@@ -7,13 +8,21 @@ import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService.AllocationResult;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributor;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributorRepository;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.picking.api.PickingJobScheduleId;
+import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.NoUOMConversionException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -30,9 +39,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -93,8 +104,47 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				mock(PickingJobScheduleService.class),
 				mock(WorkplaceService.class),
 				mock(DDOrderMoveScheduleService.class),
-				new WarehouseRepository()
+				new WarehouseRepository(),
+				mock(DDOrderLineContributorRepository.class)
 		);
+	}
+
+	private PickingJobSchedule contributor(final int jobScheduleRepoId, final String qtyToPickEach)
+	{
+		return PickingJobSchedule.builder()
+				.id(PickingJobScheduleId.ofRepoId(jobScheduleRepoId))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(1000000, 1000000))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(jobScheduleRepoId))
+				.workplaceId(WorkplaceId.ofRepoId(1000000))
+				.qtyToPick(each(qtyToPickEach))
+				.active(true)
+				.processed(false)
+				.build();
+	}
+
+	private static BigDecimal sumOf(@NonNull final Map<LocatorId, ImmutableList<DDOrderLineContributor>> attribution)
+	{
+		return attribution.values().stream()
+				.map(DDOrderPickingReplenishmentServiceGreedyAllocateTest::sumOf)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	private static BigDecimal sumOf(@NonNull final List<DDOrderLineContributor> rows)
+	{
+		return rows.stream()
+				.map(row -> row.getQty().toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	private static BigDecimal sumForContributor(
+			@NonNull final Map<LocatorId, ImmutableList<DDOrderLineContributor>> attribution,
+			@NonNull final PickingJobSchedule contributor)
+	{
+		return attribution.values().stream()
+				.flatMap(List::stream)
+				.filter(row -> row.getPickingJobScheduleId().equals(contributor.getId()))
+				.map(row -> row.getQty().toBigDecimal())
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	private Quantity each(final String qty) {return Quantity.of(qty, uomEach);}
@@ -313,5 +363,111 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 		assertThat(result.getAllocation()).isEmpty();
 		assertThat(result.getUncovered()).isEqualTo(each("5"));
+	}
+
+	// -----------------------------------------------------------------------------------------------------------------
+	// Attribution: splitting the group's per-locator chunks back across the contributing assignments.
+	//
+	// The greedy above answers "which source locators cover the GROUP's summed demand"; attribution answers "whose
+	// demand does each of those chunks serve". It is tested here rather than end-to-end because the combinatorial
+	// cases (N contributors x M locators, exhausted stock, a contributor spanning two locators) cannot be enumerated
+	// economically through the order -> shipment-schedule -> assignment chain — the cucumber asserts the resulting
+	// document, this asserts the pure split function (REQUIREMENTS.md § Acceptance Criteria).
+	// -----------------------------------------------------------------------------------------------------------------
+
+	/**
+	 * DESIGN.md §4 worked example: two customer deliveries in one group, P1 wants 10 and P2 wants 5; the greedy
+	 * covered them from L1 (12) and L2 (3). The first line's 12 therefore serves P1 in full and P2 partially, and P2's
+	 * remaining 3 come from the second line — i.e. one contributor legitimately spans two lines.
+	 */
+	@Test
+	void attribution_splitsChunksAcrossContributorsSequentially()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		final Map<LocatorId, Quantity> allocation = ImmutableMap.of(l1, each("12"), l2, each("3"));
+
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
+				service.attribute(ImmutableList.of(p1, p2), allocation);
+
+		assertThat(actual.get(l1))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 10), tuple(p2.getId(), 2));
+		assertThat(actual.get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p2.getId(), 3));
+	}
+
+	/**
+	 * AC7: contributors ahead in the attribution order are covered in full, so the shortfall falls on those last in
+	 * it. The shortfall itself stays DERIVED (DESIGN.md §4.1) — no row carries the missing quantity.
+	 */
+	@Test
+	void attribution_whenStockIsShort_theLastContributorInOrderBearsTheShortfall()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		// P1 wants 10, P2 wants 5, only 12 available -> P1 gets 10, P2 gets 2 and is short 3.
+		final Map<LocatorId, Quantity> allocation = ImmutableMap.of(l1, each("12"));
+
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
+				service.attribute(ImmutableList.of(p1, p2), allocation);
+
+		assertThat(actual.get(l1))
+				.extracting(c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(10, 2);
+		assertThat(sumOf(actual)).isEqualByComparingTo("12");
+	}
+
+	/**
+	 * The two invariants of DESIGN.md §4.1: EQUALITY per line (a line's quantity is exactly the sum of its
+	 * contributors' shares — otherwise the mover would carry quantity nobody asked for, or a contributor's share
+	 * would vanish), and INEQUALITY per contributor (partial coverage is allowed today, so a contributor may get
+	 * less than it demanded but never more).
+	 */
+	@Test
+	void attribution_perLineSumEqualsTheChunk_andPerContributorSumNeverExceedsDemand()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		final Map<LocatorId, Quantity> allocation = ImmutableMap.of(l1, each("12"), l2, each("3"));
+
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
+				service.attribute(ImmutableList.of(p1, p2), allocation);
+
+		assertThat(sumOf(actual.get(l1))).isEqualByComparingTo("12");
+		assertThat(sumOf(actual.get(l2))).isEqualByComparingTo("3");
+		assertThat(sumForContributor(actual, p1)).isLessThanOrEqualTo(p1.getQtyToPick().toBigDecimal());
+		assertThat(sumForContributor(actual, p2)).isLessThanOrEqualTo(p2.getQtyToPick().toBigDecimal());
+	}
+
+	/**
+	 * A contributor whose demand is already fully covered by the chunks ahead of it gets NO row at all — never a
+	 * {@code Qty=0} row (DESIGN.md §6, decided 2026-07-24). A zero row would make the alloc table claim the line
+	 * serves a delivery it does not, and the group's own settlement would then never resolve it.
+	 */
+	@Test
+	void attribution_contributorWithNoShare_getsNoRowAtAll()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		// Only 10 available: P1 takes all of it, P2 gets nothing.
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
+				service.attribute(ImmutableList.of(p1, p2), ImmutableMap.of(l1, each("10")));
+
+		assertThat(actual.get(l1))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
+				.containsExactly(p1.getId());
+		assertThat(sumForContributor(actual, p2)).isEqualByComparingTo("0");
 	}
 }

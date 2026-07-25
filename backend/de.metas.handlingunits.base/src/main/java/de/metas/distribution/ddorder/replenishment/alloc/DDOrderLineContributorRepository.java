@@ -122,4 +122,22 @@ public class DDOrderLineContributorRepository
 				.create()
 				.delete();
 	}
+
+	/**
+	 * Deletes every alloc row of the given assignments, whichever line they sit on.
+	 * <p>
+	 * Needed by the {@code afterDelete} path: {@code DD_OrderLine_PickingJobSchedule.M_Picking_Job_Schedule_ID} is a
+	 * DEFERRABLE INITIALLY DEFERRED foreign key to {@code M_Picking_Job_Schedule}, so an assignment that still has an
+	 * alloc row cannot be deleted — the constraint fires at commit of the user's delete transaction. The rows must
+	 * therefore go in that same transaction, exactly like the FK unlink on the voided DD_Order beside it.
+	 */
+	public void deleteByPickingJobScheduleIds(@NonNull final Collection<PickingJobScheduleId> pickingJobScheduleIds)
+	{
+		if (pickingJobScheduleIds.isEmpty()) {return;}
+
+		queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addInArrayFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleIds)
+				.create()
+				.delete();
+	}
 }
