@@ -60,6 +60,7 @@ public class JsonDeliveryRequest
 	@Nullable String customerReference;
 	@Nullable String incotermsValue;
 	@Nullable String externalSystemValue;
+	@Nullable String preAdviceRequired;
 	@NonNull @Singular ImmutableList<JsonDeliveryOrderParcel> deliveryOrderParcels;
 	@Nullable JsonShipperProduct shipperProduct;
 	@Nullable String shipperEORI;
@@ -126,6 +127,8 @@ public class JsonDeliveryRequest
 				return incotermsValue;
 			case DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE:
 				return externalSystemValue;
+			case DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED:
+				return preAdviceRequired;
 			default:
 				return null; // attribute not available at request level — filtered out by caller
 		}

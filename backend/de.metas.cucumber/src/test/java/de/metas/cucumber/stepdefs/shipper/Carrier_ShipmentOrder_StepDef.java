@@ -291,6 +291,26 @@ public class Carrier_ShipmentOrder_StepDef
 		});
 	}
 
+	/**
+	 * Validates the persisted {@link I_Carrier_ShipmentOrder} record (loaded as a {@link DeliveryOrder}
+	 * via {@code shipmentOrderRepository.getById}) against the expected column values.
+	 *
+	 * @cucumber.stepdef Validate a captured/persisted Carrier_ShipmentOrder.
+	 * @cucumber.columns
+	 *   <b>Carrier_ShipmentOrder_ID</b> — (required, identifier-ref) the shipment order to validate<br>
+	 *   <b>Shipper_Name1</b>, <b>Shipper_CountryISO2Code</b> — (optional) pickup address<br>
+	 *   <b>Receiver_Name1</b>, <b>Receiver_Name2</b>, <b>Receiver_StreetName1</b>, <b>Receiver_StreetName2</b>,
+	 *   <b>Receiver_StreetNumber</b>, <b>Receiver_ZipCode</b>, <b>Receiver_City</b>, <b>Receiver_CountryISO2Code</b> — (optional) delivery address<br>
+	 *   <b>Receiver_ContactName</b>, <b>Receiver_Phone</b>, <b>Receiver_Email</b> — (optional) delivery contact<br>
+	 *   <b>CustomerReference</b> — (optional)<br>
+	 *   <b>IsPreAdviceRequired</b> — (optional) expected persisted pre-advice flag as "Y"/"N"<br>
+	 * @cucumber.example
+	 * And validate Carrier_ShipmentOrder:
+	 *   | Carrier_ShipmentOrder_ID | Receiver_City | IsPreAdviceRequired |
+	 *   | cso_do                   | city          | Y                   |
+	 * @see #validateCarrierShipmentOrderParcels(DataTable)
+	 * @see #validateCarrierShipmentOrderItems(DataTable)
+	 */
 	@And("validate Carrier_ShipmentOrder:")
 	public void validateCarrierShipmentOrder(@NonNull final DataTable dataTable)
 	{
@@ -349,6 +369,10 @@ public class Carrier_ShipmentOrder_StepDef
 
 			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_CustomerReference).ifPresent(expected -> softly
 					.assertThat(order.getCustomerReference()).as("customerReference").isEqualTo(expected));
+
+			// Asserts the PERSISTED pre-advice flag (loaded from the shipment-order record), not the emitted request.
+			row.getAsOptionalString(I_Carrier_ShipmentOrder.COLUMNNAME_IsPreAdviceRequired).ifPresent(expected -> softly
+					.assertThat(order.getPreAdviceRequired()).as("preAdviceRequired").isEqualTo(expected));
 
 			softly.assertAll();
 		});

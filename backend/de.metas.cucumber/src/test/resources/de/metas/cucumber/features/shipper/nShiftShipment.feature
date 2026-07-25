@@ -46,8 +46,8 @@ Feature: nShift Shipment
       | Identifier | Value           | Name            | Name2                  | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | nshift_customer | nShift Customer | nShift Logistics Dept. | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention      |
-      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test |
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention      | IsPreAdviceRequired |
+      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test | Y                       |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -196,8 +196,8 @@ Feature: nShift Shipment
       | Identifier      | Name                    | C_BPartner_ID | EMail                       | Phone            |
       | customerContact | nShift Customer Contact | customer      | contact@nshift-test.example | +41 79 123 45 67 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
-      | so_do      | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      | IsPreAdviceRequired |
+      | so_do      | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact | Y                   |
     # Order line carries the 10-CU-per-TU packing (product_TU_10CU) so the on-the-fly pick packs the 10 CUs
     # into ONE real TU (not a loose VHU) — a TU ships as 1 parcel (loose CUs would split 1-label-per-CU).
     And metasfresh contains C_OrderLines:
@@ -222,8 +222,8 @@ Feature: nShift Shipment
       | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
       | cso_do                   | awb1 | trackingUrl1 | true        |
     And validate Carrier_ShipmentOrder:
-      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone | Receiver_Email              |
-      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41791234567   | contact@nshift-test.example |
+      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone | Receiver_Email              | IsPreAdviceRequired |
+      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41791234567   | contact@nshift-test.example | Y                   |
     # 10 PCE / 10 PCE-per-TU => 1 parcel; total weight = product.GrossWeight (2.1) × qty (10) = 21 kg.
     And validate Carrier_ShipmentOrder_Items:
       | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
@@ -231,11 +231,11 @@ Feature: nShift Shipment
     # advisor request carries the per-unit baseline (qty 1): totalValue=1×unitPrice=10, weight per-unit=3 —
     # unlike the shipment request below, which carries the full ordered qty 10 (totalValue 100, weight 21).
     And validate the captured nShift advisor request:
-      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | unitPrice | totalValue | shippedQuantity | customsTariff | totalWeightInKg |
-      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 10        | 10         | 1               | 12345678      | 3               |
+      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | IsPreAdviceRequired | unitPrice | totalValue | shippedQuantity | customsTariff | totalWeightInKg |
+      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | Y                   | 10        | 10         | 1               | 12345678      | 3               |
     And validate the captured nShift shipment request:
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        |
-      | cp1                | cgt1                  | cs1, cs2           | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | IsPreAdviceRequired |
+      | cp1                | cgt1                  | cs1, cs2           | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | Y                   |
     And validate the captured nShift shipment request parcels:
       | grossWeightKg |
       | 21            |
@@ -460,7 +460,7 @@ Feature: nShift Shipment
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp1                | cgt1                  | cs1, cs2           |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.ExternalSystem.Value |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | ExternalSystem.Value |
       | so_sl1     | true    | customer      | 2025-04-01  | wh             | nShift       | Shopware6                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
@@ -2099,6 +2099,108 @@ Feature: nShift Shipment
       | Carrier_Product_ID | Carrier_Goods_Type_ID | NumParcels |
       | cp1                | cgt1                  | 1          |
       | cp2                | cgt2                  | 1          |
+
+  @Id:S30591_TC1
+  Scenario: C_Order — single goods-type allocation auto-sets Carrier_Goods_Type_ID
+    # When a carrier product has exactly one allocated goods type, setting it on a draft order
+    # must auto-populate Carrier_Goods_Type_ID via the C_Order interceptor.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc1     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc1     | cp1                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc1     | cgt1                  |
+
+  @Id:S30591_TC2
+  Scenario: C_Order — multiple goods-type allocations leave Carrier_Goods_Type_ID unset
+    # When a carrier product has several allocated goods types, the interceptor must not
+    # auto-set Carrier_Goods_Type_ID (the user picks from the val-rule-constrained list).
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp2                | cgt1                  |
+      | cp2                | cgt2                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc2     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc2     | cp2                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc2     | null                  |
+
+  @Id:S30591_TC3
+  Scenario: C_Order — changing Carrier_Product_ID clears Carrier_Goods_Type_ID and bridge rows
+    # When Carrier_Product_ID is changed on a draft order, the interceptor must clear
+    # Carrier_Goods_Type_ID and delete any C_Order_Carrier_Service rows.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp1                | cgt1                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc3     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    # Pre-set cp1 → auto-sets cgt1
+    And C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc3     | cp1                |
+    # Pre-create a bridge service row to verify it gets cleared
+    And metasfresh contains C_Order_Carrier_Services:
+      | C_Order_ID | Carrier_Service_ID |
+      | so_tc3     | cs1                |
+    # Now change to cp3 (no goods-type alloc for cp3 → Carrier_Goods_Type_ID stays unset)
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc3     | cp3                |
+    Then C_Order carrier goods type is:
+      | C_Order_ID | Carrier_Goods_Type_ID |
+      | so_tc3     | null                  |
+    And C_Order has no carrier services assigned:
+      | C_Order_ID |
+      | so_tc3     |
+
+  @Id:S30591_TC4
+  Scenario: M_ShipmentSchedule — order-header carrier product propagated to schedule as Manual; auto-advise leaves it unchanged
+    # Goods type is always available for a carrier product. cp3 has a single goods-type allocation
+    # so the interceptor auto-sets cgt1 on the order when the carrier product is selected.
+    # Completing the order propagates carrier product + goods type to the shipment schedule with
+    # status=Manual. A subsequent auto-advise must skip the schedule because Manual blocks
+    # isEligibleForAutoEnqueue — so goods type stays on the schedule unchanged.
+    Given metasfresh contains Carrier_Product_GoodsType_Allocs:
+      | Carrier_Product_ID | Carrier_Goods_Type_ID |
+      | cp3                | cgt1                  |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID |
+      | so_tc4     | true    | customer      | 2025-04-01  | wh             | nShift       |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID | M_Product_ID | QtyEntered | M_HU_PI_Item_Product_ID |
+      | so_tc4_l1  | so_tc4     | product      | 10         | product_TU_10CU         |
+    # Single alloc for cp3 → interceptor auto-sets Carrier_Goods_Type_ID = cgt1
+    When C_Order carrier product is set:
+      | C_Order_ID | Carrier_Product_ID |
+      | so_tc4     | cp3                |
+    And metasfresh contains C_Order_Carrier_Services:
+      | C_Order_ID | Carrier_Service_ID |
+      | so_tc4     | cs1                |
+      | so_tc4     | cs2                |
+    When the order identified by so_tc4 is completed
+    # Wait for recompute + assert propagation: cp3 + cgt1 (goods type always set) + Manual status
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
+      | ss_tc4     | so_tc4_l1      | N             | cp3                | cgt1                  | MAN                     |
+    # Auto-advise must skip the schedule (Manual is ineligible for auto-enqueue);
+    # goods type must remain cgt1 — auto-advise does not overwrite a Manual schedule.
+    And Process M_ShipmentSchedule_Advise is run
+      | M_ShipmentSchedule_ID |
+      | ss_tc4                |
+    Then after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID | IsToRecompute | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Advising_Status |
+      | ss_tc4     | so_tc4_l1      | N             | cp3                | cgt1                  | MAN                     |
 
   Scenario: reset settings to default
     Given set sys config boolean value false for sys config de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet

@@ -22,6 +22,7 @@
 
 package de.metas.shipper.gateway.commons.mapping;
 
+import de.metas.common.delivery.v1.json.DeliveryMappingConstants;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
@@ -49,6 +50,7 @@ public enum AttributeValue implements ReferenceListAwareEnum
 	SHIPPER_EORI(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ShipperEORI),
 	RECEIVER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ReceiverBPartnerAttention),
 	SENDER_BPARTNER_ATTENTION(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_SenderBPartnerAttention),
+	IS_PRE_ADVICE_REQUIRED(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED),
 	INCOTERMS_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_IncotermsValue),
 	EXTERNAL_SYSTEM_VALUE(X_M_Shipper_Mapping_Config.MAPPINGATTRIBUTEVALUE_ExternalSystemValue),
 

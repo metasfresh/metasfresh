@@ -3,6 +3,8 @@ package de.metas.picking.workflow;
 import de.metas.business.BusinessTestHelper;
 import de.metas.currency.CurrencyRepository;
 import de.metas.customstariff.CustomsTariffRepository;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.impl.PlainMsgBL;
 import de.metas.money.MoneyService;
 import de.metas.handlingunits.picking.job.carrieradvise.HUShipmentScheduleResolver;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
@@ -22,6 +24,7 @@ import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
 import de.metas.shipping.ShipperId;
 import de.metas.shipping.ShipperRepository;
 import de.metas.user.UserId;
+import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
@@ -52,6 +55,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 	void beforeEach()
 	{
 		helper = new PickingJobTestHelper();
+		Services.registerService(IMsgBL.class, new PlainMsgBL());
 
 		carrierProductRepository = new CarrierProductRepository();
 		final ShipperRepository shipperRepository = new ShipperRepository();
@@ -113,7 +117,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final PickingJob job = createSalesOrderJobWithCarrier(cp, CarrierAdviseStatus.Completed);
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line, "en_US");
 
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
@@ -128,7 +132,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final PickingJob job = createSalesOrderJobWithCarrier(cp, CarrierAdviseStatus.Manual);
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line, "en_US");
 
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
@@ -144,7 +148,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final PickingJob job = createSalesOrderJobWithCarrier(cp, CarrierAdviseStatus.NotRequested);
 		final PickingJobLine line = CollectionUtils.singleElement(job.getLines());
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, line, "en_US");
 
 		assertThat(info.isAvailable()).isFalse();
 	}
@@ -192,7 +196,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		// the header carries the current (single, API-advise) carrier → its name is the caption
 		when(job.getCarrierProductId()).thenReturn(cp.getId());
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, "en_US");
 
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
@@ -209,7 +213,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		// the header carries the current (single, API-advise) carrier → its name is the caption
 		when(job.getCarrierProductId()).thenReturn(cp.getId());
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, "en_US");
 
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
@@ -227,7 +231,7 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(
 				mockApiAdviseLine(cp1, false), mockApiAdviseLine(cp2, false)));
 
-		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null);
+		final CarrierAdviseTargetInfo info = service.resolveInfo(job, null, "en_US");
 		assertThat(info.isAvailable()).isTrue();
 		assertThat(info.isReadOnly()).isTrue();
 		assertThat(info.getProductCaption()).isNull();
@@ -240,6 +244,6 @@ class PackedHUCarrierAdviseServiceResolveInfoTest
 		final CarrierProduct cp = carrierProductRepository.getOrCreateCarrierProduct(shipperId, "cp1", "Fallback");
 		final PickingJob job = mockJobLevelJob(ImmutableList.of(mockApiAdviseLine(cp, false)));
 
-		assertThat(service.resolveInfo(job, null).isAvailable()).isFalse();
+		assertThat(service.resolveInfo(job, null, "en_US").isAvailable()).isFalse();
 	}
 }
