@@ -28,8 +28,13 @@ import de.metas.order.OrderId;
 import de.metas.shipper.gateway.commons.model.C_OrderCarrierServiceRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductGoodsTypeAllocRepository;
 import de.metas.shipping.CarrierProductId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_C_Order;
@@ -55,16 +60,45 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 @Interceptor(I_C_Order.class)
+@Callout(I_C_Order.class)
 public class C_Order
 {
 	@NonNull private final CarrierProductGoodsTypeAllocRepository goodsTypeAllocRepo;
 	@NonNull private final C_OrderCarrierServiceRepository orderCarrierServiceRepo;
+
+	@Init
+	public void init()
+	{
+		// Register this class ALSO as a callout so the carrier-product change fires in the WebUI
+		// BEFORE save (goods-type auto-set + service reset). Needed because Carrier_Goods_Type_ID is
+		// mandatory once a carrier product is set (MandatoryLogic @Carrier_Product_ID@!0); on the
+		// initial selection the empty mandatory goods type blocks the save, so the BEFORE_CHANGE /
+		// BEFORE_NEW interceptor below would never fire and the user could not save.
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
 
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_C_Order.COLUMNNAME_Carrier_Product_ID)
 	public void onCarrierProductChanged(@NonNull final I_C_Order order)
+	{
+		applyCarrierProductChange(order);
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_Carrier_Product_ID)
+	public void onCarrierProductChanged_callout(@NonNull final I_C_Order order)
+	{
+		applyCarrierProductChange(order);
+	}
+
+	/**
+	 * Keeps {@code Carrier_Goods_Type_ID} and the {@code C_Order_Carrier_Service} bridge in sync with
+	 * the selected carrier product. Shared by the interceptor (every save path) and the callout (WebUI,
+	 * before save): clear the goods type, reset the services, then auto-set the goods type when the
+	 * product has exactly one allocated goods type.
+	 */
+	private void applyCarrierProductChange(@NonNull final I_C_Order order)
 	{
 		order.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(null));
 
