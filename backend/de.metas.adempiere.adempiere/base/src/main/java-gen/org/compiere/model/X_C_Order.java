@@ -253,6 +253,60 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
+	public org.compiere.model.I_Carrier_Goods_Type getCarrier_Goods_Type()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type(final org.compiere.model.I_Carrier_Goods_Type Carrier_Goods_Type)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Goods_Type_ID, org.compiere.model.I_Carrier_Goods_Type.class, Carrier_Goods_Type);
+	}
+
+	@Override
+	public void setCarrier_Goods_Type_ID (final int Carrier_Goods_Type_ID)
+	{
+		if (Carrier_Goods_Type_ID < 1)
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, null);
+		else
+			set_Value (COLUMNNAME_Carrier_Goods_Type_ID, Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public int getCarrier_Goods_Type_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Goods_Type_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_Carrier_Product getCarrier_Product()
+	{
+		return get_ValueAsPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class);
+	}
+
+	@Override
+	public void setCarrier_Product(final org.compiere.model.I_Carrier_Product Carrier_Product)
+	{
+		set_ValueFromPO(COLUMNNAME_Carrier_Product_ID, org.compiere.model.I_Carrier_Product.class, Carrier_Product);
+	}
+
+	@Override
+	public void setCarrier_Product_ID (final int Carrier_Product_ID)
+	{
+		if (Carrier_Product_ID < 1)
+			set_Value (COLUMNNAME_Carrier_Product_ID, null);
+		else
+			set_Value (COLUMNNAME_Carrier_Product_ID, Carrier_Product_ID);
+	}
+
+	@Override
+	public int getCarrier_Product_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Carrier_Product_ID);
+	}
+
+	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
 		if (C_Async_Batch_ID < 1) 
@@ -715,14 +769,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setC_PromotionCode2_ID (final int C_PromotionCode2_ID)
 	{
-		if (C_PromotionCode2_ID < 1) 
+		if (C_PromotionCode2_ID < 1)
 			set_Value (COLUMNNAME_C_PromotionCode2_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_PromotionCode2_ID, C_PromotionCode2_ID);
 	}
 
 	@Override
-	public int getC_PromotionCode2_ID() 
+	public int getC_PromotionCode2_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PromotionCode2_ID);
 	}
@@ -742,14 +796,14 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	@Override
 	public void setC_PromotionCode_ID (final int C_PromotionCode_ID)
 	{
-		if (C_PromotionCode_ID < 1) 
+		if (C_PromotionCode_ID < 1)
 			set_Value (COLUMNNAME_C_PromotionCode_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_PromotionCode_ID, C_PromotionCode_ID);
 	}
 
 	@Override
-	public int getC_PromotionCode_ID() 
+	public int getC_PromotionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_PromotionCode_ID);
 	}
@@ -1529,7 +1583,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 	}
 
 	@Override
-	public boolean isPreAdviceRequired() 
+	public boolean isPreAdviceRequired()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPreAdviceRequired);
 	}
@@ -2074,7 +2128,7 @@ public class X_C_Order extends org.compiere.model.PO implements I_C_Order, org.c
 		throw new IllegalArgumentException ("ProcessStatusColor_ID is virtual column");	}
 
 	@Override
-	public int getProcessStatusColor_ID() 
+	public int getProcessStatusColor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_ProcessStatusColor_ID);
 	}
