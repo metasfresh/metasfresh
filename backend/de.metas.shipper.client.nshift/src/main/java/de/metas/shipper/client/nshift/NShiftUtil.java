@@ -109,11 +109,21 @@ public class NShiftUtil
 			@NonNull final NShiftMappingConfigs mappingConfigs,
 			@NonNull final Function<String, String> valueProvider)
 	{
+		final String role = kind == JsonAddressKind.SENDER ? "Sender" : "Receiver";
+
 		final String attentionAttributeType = kind == JsonAddressKind.SENDER
 				? DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION
 				: DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION;
+		final String attention = mappingConfigs.getSingleValue(attentionAttributeType, valueProvider);
+		Check.assumeNotEmpty(attention, IllegalStateException.class,
+				role + " Attention is mandatory but was not resolved from mapping configs.");
+		Check.assumeNotEmpty(contact != null ? contact.getPhone() : null, IllegalStateException.class,
+				role + " Phone is mandatory but is missing or blank.");
+		Check.assumeNotEmpty(contact != null ? contact.getEmailAddress() : null, IllegalStateException.class,
+				role + " Email is mandatory but is missing or blank.");
+
 		return buildNShiftAddressBuilder(commonAddress, contact, kind)
-				.attention(mappingConfigs.getSingleValue(attentionAttributeType, valueProvider))
+				.attention(attention)
 				.build();
 	}
 
@@ -139,22 +149,24 @@ public class NShiftUtil
 			@NonNull final JsonDeliveryAdvisorRequest request,
 			@NonNull final NShiftMappingConfigs mappingConfigs)
 	{
+		if (request.getPackageDimensions() == null)
+		{
+			throw new IllegalStateException("Package dimensions are mandatory but were not specified (dimensions is null).");
+		}
+
 		final int weightGrams = request.getGrossWeightKg().multiply(BigDecimal.valueOf(1000)).intValue();
 		final Function<String, String> lineValueProvider = request::getValue;
-		final JsonLine.JsonLineBuilder lineBuilder = JsonLine.builder()
+		final int lengthMM = request.getPackageDimensions().getLengthInCM() * 10;
+		final int widthMM = request.getPackageDimensions().getWidthInCM() * 10;
+		final int heightMM = request.getPackageDimensions().getHeightInCM() * 10;
+		return JsonLine.builder()
 				.lineWeight(weightGrams)
-				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider));
-		if (request.getPackageDimensions() != null)
-		{
-			final int lengthMM = request.getPackageDimensions().getLengthInCM() * 10;
-			final int widthMM = request.getPackageDimensions().getWidthInCM() * 10;
-			final int heightMM = request.getPackageDimensions().getHeightInCM() * 10;
-			lineBuilder.number(1); // always 1: the advise carries a single physical HU / parcel
-			lineBuilder.length(lengthMM);
-			lineBuilder.width(widthMM);
-			lineBuilder.height(heightMM);
-		}
-		return lineBuilder.build();
+				.references(mappingConfigs.getReferences(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE, lineValueProvider))
+				.number(1) // always 1: the advise carries a single physical HU / parcel
+				.length(lengthMM)
+				.width(widthMM)
+				.height(heightMM)
+				.build();
 	}
 
 	/**
