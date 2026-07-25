@@ -1,5 +1,6 @@
 package de.metas.distribution.mobileui.job.service;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -27,6 +28,9 @@ import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromL
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
@@ -44,7 +48,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -60,6 +63,8 @@ public class DistributionRestService
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
+
+	private static final AdMessageKey MSG_OutstandingQtyToMove = AdMessageKey.of("MobileUI_Distribution_OutstandingQtyToMove");
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -256,20 +261,22 @@ public class DistributionRestService
 			return;
 		}
 
-		final String outstanding = linesNotFullyMoved.stream()
-				.map(DistributionRestService::formatQtyOutstanding)
-				.collect(Collectors.joining(", "));
+		final ITranslatableString outstanding = TranslatableStrings.joinList(", ", linesNotFullyMoved.stream()
+				.map(DistributionRestService::describeQtyOutstanding)
+				.collect(ImmutableList.toImmutableList()));
 
-		throw new AdempiereException("Cannot complete because there is still quantity to be moved: " + outstanding)
+		throw new AdempiereException(MSG_OutstandingQtyToMove, outstanding)
 				.setParameter("ddOrderId", job.getDdOrderId());
 	}
 
-	private static String formatQtyOutstanding(@NonNull final DistributionJobLine line)
+	private static ITranslatableString describeQtyOutstanding(@NonNull final DistributionJobLine line)
 	{
 		final Quantity qtyOutstanding = line.getQtyToMove().subtract(line.getQtyMoved());
-		return qtyOutstanding.toBigDecimal().stripTrailingZeros().toPlainString()
-				+ " " + qtyOutstanding.getUOMSymbol()
-				+ " " + line.getProduct().getCaption().getDefaultValue();
+		return TranslatableStrings.builder()
+				.appendQty(qtyOutstanding.toBigDecimal(), qtyOutstanding.getUOMSymbol())
+				.append(" ")
+				.append(line.getProduct().getCaption())
+				.build();
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
