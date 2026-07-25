@@ -141,8 +141,29 @@ public class DDOrderPickingReplenishmentService
 	{
 		trxManager.accumulateAndProcessAfterCommit(
 				TRX_PROPERTY_ScheduleReconcile,
-				ImmutableSet.of(DDOrderReplenishmentRequest.of(jobSchedule)),
+				ImmutableSet.of(toReplenishmentRequest(jobSchedule)),
 				reconciliationEventPublisher::publishAll);
+	}
+
+	/**
+	 * Builds the group-keyed reconcile request of the assignment's product group. Only this service can do it:
+	 * the group key needs the assignment's shipment schedule (product) and its workplace (target locator), both
+	 * of which the assignment merely points at.
+	 */
+	private DDOrderReplenishmentRequest toReplenishmentRequest(@NonNull final PickingJobSchedule jobSchedule)
+	{
+		final I_M_ShipmentSchedule schedule = shipmentScheduleBL.getById(jobSchedule.getShipmentScheduleId());
+		final Workplace workplace = workplaceService.getById(jobSchedule.getWorkplaceId());
+
+		return DDOrderReplenishmentRequest.builder()
+				.groupKey(DDOrderReplenishmentGroupKey.builder()
+						.productId(ProductId.ofRepoId(schedule.getM_Product_ID()))
+						.locatorToId(workplaceService.getPickFromLocatorIdOrWarehouseDefault(workplace))
+						.uomId(jobSchedule.getQtyToPick().getUomId())
+						.build())
+				.clientAndOrgId(jobSchedule.getClientAndOrgId())
+				.triggeredBy(jobSchedule.getId())
+				.build();
 	}
 
 	/**
@@ -829,7 +850,7 @@ public class DDOrderPickingReplenishmentService
 		final ProgressLogger progress = Loggables.get().newProgress();
 
 		streamAssignmentsNeedingDDOrder()
-				.map(DDOrderReplenishmentRequest::of)
+				.map(this::toReplenishmentRequest)
 				.distinct()
 				.peek(progress::itemProcessed)
 				.forEach(reconciliationEventPublisher::publishOne);

@@ -44,7 +44,7 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 		try (final IAutoCloseable ignored = switchCtx(request))
 		{
-			final PickingJobScheduleId pickingJobScheduleId = request.getPickingJobScheduleId();
+			final PickingJobScheduleId pickingJobScheduleId = request.getTriggeredBy();
 
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
