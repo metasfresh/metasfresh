@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -224,7 +225,51 @@ public class DistributionRestService
 	{
 		final DistributionJob job = getJobById(jobId);
 		job.assertCanEdit(callerId);
+		assertPlannedQtyFullyMoved(job);
 		return complete(job);
+	}
+
+	/**
+	 * Completes the job giving up whatever quantity is still outstanding: skips the
+	 * {@link #assertPlannedQtyFullyMoved(DistributionJob)} gate and closes the order short, i.e. exactly what an
+	 * unconditional complete did before that gate existed. Closing short is what re-arms the replenishment watchdog,
+	 * so the outstanding demand gets re-issued instead of being stuck on an order nobody can finish.
+	 */
+	public DistributionJob completeGivingUpRemainder(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+		return complete(job);
+	}
+
+	/**
+	 * Withholds completion while a line's planned quantity has not been moved. A distribution order can serve several
+	 * deliveries at once, so closing it short would dispose of the document while other contributors still have unmet
+	 * demand — silently dropping it. Throws before anything is mutated; the mover who really wants to stop short goes
+	 * through {@link #completeGivingUpRemainder(DistributionJobId, UserId)}.
+	 */
+	private static void assertPlannedQtyFullyMoved(@NonNull final DistributionJob job)
+	{
+		final List<DistributionJobLine> linesNotFullyMoved = job.getLinesNotFullyMoved();
+		if (linesNotFullyMoved.isEmpty())
+		{
+			return;
+		}
+
+		final String outstanding = linesNotFullyMoved.stream()
+				.map(DistributionRestService::formatQtyOutstanding)
+				.collect(Collectors.joining(", "));
+
+		throw new AdempiereException("Cannot complete because there is still quantity to be moved: " + outstanding)
+				.setParameter("ddOrderId", job.getDdOrderId());
+	}
+
+	private static String formatQtyOutstanding(@NonNull final DistributionJobLine line)
+	{
+		final Quantity qtyOutstanding = line.getQtyToMove().subtract(line.getQtyMoved());
+		return qtyOutstanding.toBigDecimal().stripTrailingZeros().toPlainString()
+				+ " " + qtyOutstanding.getUOMSymbol()
+				+ " " + line.getProduct().getCaption().getDefaultValue();
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

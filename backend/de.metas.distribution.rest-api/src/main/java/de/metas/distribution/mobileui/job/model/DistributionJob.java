@@ -186,6 +186,17 @@ public class DistributionJob
 		return lines.stream().allMatch(DistributionJobLine::isFullyMoved);
 	}
 
+	/**
+	 * The lines whose planned quantity has not been fully moved — see {@link DistributionJobLine#isPlannedQtyFullyMoved()}.
+	 * Quantity-based, so unlike {@link #isFullyMoved()} it also reports a line whose only step was dropped short.
+	 */
+	public ImmutableList<DistributionJobLine> getLinesNotFullyMoved()
+	{
+		return lines.stream()
+				.filter(line -> !line.isPlannedQtyFullyMoved())
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public boolean isInTransit()
 	{
 		return lines.stream().anyMatch(DistributionJobLine::isInTransit);

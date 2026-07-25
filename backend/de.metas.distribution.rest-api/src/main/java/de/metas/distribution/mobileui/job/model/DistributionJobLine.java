@@ -84,6 +84,32 @@ public class DistributionJobLine
 		return !steps.isEmpty() && steps.stream().allMatch(DistributionJobStep::isDroppedToLocator);
 	}
 
+	/**
+	 * Quantity actually moved: the picked quantity of the steps that were dropped at the destination locator.
+	 * Quantity still in transit does not count as moved.
+	 */
+	public Quantity getQtyMoved()
+	{
+		return steps.stream()
+				.filter(DistributionJobStep::isDroppedToLocator)
+				.map(DistributionJobStep::getQtyPicked)
+				.reduce(Quantity::add)
+				.orElseGet(qtyToMove::toZero);
+	}
+
+	/**
+	 * {@code true} when the line's whole planned {@link #qtyToMove} has been moved.
+	 *
+	 * <p>Not to be confused with {@link #isFullyMoved()}, which only asserts that every step that <i>exists</i> was
+	 * dropped: steps are created when the mover picks, so picking and dropping 6 of a planned 15 satisfies
+	 * {@code isFullyMoved()} but not this predicate. Use this one to decide whether the demand behind the line is
+	 * served; {@code isFullyMoved()} stays the drop-all path's auto-complete trigger.</p>
+	 */
+	public boolean isPlannedQtyFullyMoved()
+	{
+		return getQtyMoved().compareTo(qtyToMove) >= 0;
+	}
+
 	private static WFActivityStatus computeStatusFromSteps(final @NonNull List<DistributionJobStep> steps)
 	{
 		return steps.isEmpty()
