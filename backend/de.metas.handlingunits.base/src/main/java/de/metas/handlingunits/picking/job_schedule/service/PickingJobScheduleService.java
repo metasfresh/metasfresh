@@ -3,6 +3,7 @@ package de.metas.handlingunits.picking.job_schedule.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
+import de.metas.distribution.ddorder.replenishment.DDOrderReplenishmentGroupKey;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job_schedule.service.commands.CreateOrUpdatePickingJobSchedulesCommand;
@@ -24,7 +25,9 @@ import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceRepository;
+import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
@@ -183,5 +186,22 @@ public class PickingJobScheduleService
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
 	{
 		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);
+	}
+
+	/**
+	 * The contributor set of one picking-replenishment product group, i.e. the assignments whose demand is served by the
+	 * group's single DD_Order.
+	 * <p>
+	 * {@code workplaceIds} must be the workplaces whose effective pick-from locator is {@code groupKey}'s target locator
+	 * ({@link WorkplaceService#getWorkplaceIdsByEffectivePickFromLocatorId}); it is passed in rather than resolved here
+	 * because the caller already holds it (the same set keys the whole reconcile).
+	 *
+	 * @see PickingJobScheduleRepository#listContributorsOfGroup
+	 */
+	public ImmutableList<PickingJobSchedule> listContributorsOfGroup(
+			@NonNull final DDOrderReplenishmentGroupKey groupKey,
+			@NonNull final Set<WorkplaceId> workplaceIds)
+	{
+		return pickingJobScheduleRepository.listContributorsOfGroup(groupKey.getProductId(), groupKey.getUomId(), workplaceIds);
 	}
 }

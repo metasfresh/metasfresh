@@ -8,11 +8,13 @@ import com.google.common.collect.Streams;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
 import de.metas.picking.job_schedule.model.PickingJobScheduleCollection;
 import de.metas.picking.job_schedule.model.PickingJobScheduleQuery;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Loggables;
@@ -41,7 +43,8 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
- * Repository Tables: M_Picking_Job_Schedule (query owner); DD_Order (sub-query filter only — see {@link #streamAssignmentsNeedingDDOrder})
+ * Repository Tables: M_Picking_Job_Schedule (query owner); DD_Order (sub-query filter only — see {@link #streamAssignmentsNeedingDDOrder});
+ * M_ShipmentSchedule (sub-query filter only — see {@link #listContributorsOfGroup(ProductId, UomId, Set)})
  * Repository Cluster: PickingJobScheduleRepository
  */
 @Repository
@@ -260,6 +263,56 @@ public class PickingJobScheduleRepository
 		}
 
 		return queryBuilder.create();
+	}
+
+	/**
+	 * The contributor set of one picking-replenishment product group: every active, not-yet-processed assignment on one
+	 * of {@code workplaceIds} whose shipment schedule demands {@code productId}, in {@code uomId}.
+	 * <p>
+	 * {@code workplaceIds} are the workplaces whose effective pick-from locator IS the group's target locator, so the
+	 * three parameters together express the group key {@code (product, target locator, UOM)}.
+	 * <p>
+	 * <b>Unordered</b> on purpose: the attribution order is keyed on the contributor's effective {@code PriorityRule}
+	 * and preparation date, which live on {@code M_ShipmentSchedule}, so only the caller can establish it.
+	 * <p>
+	 * The {@code C_Workplace_ID} filter is what makes this lookup <b>index-served</b> — by the partial index
+	 * {@code m_picking_job_schedule (c_workplace_id) WHERE Processed = 'N'} — rather than a scan of the whole
+	 * open-assignment set. Any future variant of this query must keep both the workplace filter and the
+	 * {@code Processed = 'N'} predicate, or it falls back to that scan.
+	 */
+	public ImmutableList<PickingJobSchedule> listContributorsOfGroup(
+			@NonNull final ProductId productId,
+			@NonNull final UomId uomId,
+			@NonNull final Set<WorkplaceId> workplaceIds)
+	{
+		// An empty IN-list renders as TRUE (InArrayQueryFilter.defaultReturnWhenEmpty), so without this the query would
+		// silently drop the workplace restriction and pull EVERY open assignment of the product/UOM into the group —
+		// i.e. a target locator that no workplace points at would consolidate the whole instance into one DD_Order.
+		if (workplaceIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		// IsActive filtered as the shipment schedule's own repository does: a deactivated schedule carries no demand, so
+		// its assignment must not keep a share of the group's line.
+		final IQuery<I_M_ShipmentSchedule> shipmentSchedulesOfProduct = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
+				.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID, workplaceIds)
+				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID,
+						shipmentSchedulesOfProduct)
+				.create()
+				.stream()
+				.map(PickingJobScheduleRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	/**
