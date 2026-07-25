@@ -33,7 +33,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_Carrier_Service;
 import org.compiere.model.I_C_Order_Carrier_Service;
 import org.compiere.model.I_M_ShipmentSchedule_Carrier_Service;
 import org.springframework.stereotype.Repository;
@@ -123,12 +122,17 @@ public class ShipmentScheduleCarrierServiceRepository
 				.create()
 				.stream()
 				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
-						s -> ShipmentScheduleId.ofRepoId(s.getM_ShipmentSchedule_ID()),
-						s -> CarrierServiceId.ofRepoId(s.getCarrier_Service_ID())));
+						orderService -> ShipmentScheduleId.ofRepoId(orderService.getM_ShipmentSchedule_ID()),
+						orderService -> CarrierServiceId.ofRepoId(orderService.getCarrier_Service_ID())));
 	}
 
 	public void assignServicesToShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId, final @NonNull Set<CarrierServiceId> serviceIds)
 	{
+		if (serviceIds.isEmpty())
+		{
+			return;
+		}
+
 		queryBL.createQueryBuilder(I_M_ShipmentSchedule_Carrier_Service.class)
 				.addEqualsFilter(I_M_ShipmentSchedule_Carrier_Service.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()

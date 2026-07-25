@@ -11,11 +11,6 @@ import de.metas.document.DocBaseAndSubType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.location.DocumentLocation;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.CarrierAdviseStatus;
-import de.metas.inoutcandidate.CarrierGoodsTypeId;
-import de.metas.inoutcandidate.CarrierServiceId;
-import de.metas.inoutcandidate.ShipmentScheduleCarrierServiceRepository;
 import de.metas.inoutcandidate.api.IDeliverRequest;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
@@ -25,7 +20,6 @@ import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.inoutcandidate.picking_bom.PickingOrderConfig;
 import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.shipping.CarrierProductId;
 import de.metas.order.DeliveryRule;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
@@ -72,7 +66,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -97,19 +90,16 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	private final IWarehouseAdvisor warehouseAdvisor = Services.get(IWarehouseAdvisor.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final PickingBOMService pickingBOMService;
-	private final ShipmentScheduleCarrierServiceRepository shipmentScheduleCarrierServiceRepository;
 
 	private final OrderLineShipmentScheduleHandlerExtension extensions;
 
 	public OrderLineShipmentScheduleHandler(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
 			@NonNull final PickingBOMService pickingBOMService,
-			@NonNull final ShipmentScheduleCarrierServiceRepository shipmentScheduleCarrierServiceRepository,
 			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
 	{
 		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
 		this.pickingBOMService = pickingBOMService;
-		this.shipmentScheduleCarrierServiceRepository = shipmentScheduleCarrierServiceRepository;
 		this.extensions = CompositeOrderLineShipmentScheduleHandlerExtension.of(extensions);
 	}
 
@@ -118,7 +108,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		return new OrderLineShipmentScheduleHandler(
 				Services.get(IShipmentScheduleInvalidateBL.class),
 				new PickingBOMService(),
-				ShipmentScheduleCarrierServiceRepository.newInstanceForUnitTesting(),
 				Optional.empty());
 	}
 
@@ -172,20 +161,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 		InterfaceWrapperHelper.save(newSched);
 
-		// Post-save: the BEFORE_NEW interceptor clears carrier fields on first save when M_Shipper_ID changes;
-		// setting them after the initial save avoids that clearing pass (see de.metas.inoutcandidate/CLAUDE.md).
-		final I_C_Order orderRecordForCarrier = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()), I_C_Order.class);
-		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(orderRecordForCarrier.getCarrier_Product_ID());
-		if (orderCarrierProductId != null)
-		{
-			propagateCarrierFieldsFromOrder(newSched, orderRecordForCarrier, orderCarrierProductId);
-			InterfaceWrapperHelper.save(newSched);
-
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(newSched.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = shipmentScheduleCarrierServiceRepository.getCarrierServiceIdsByOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
-		}
-
 		// Note: AllowConsolidateInOut and PostageFreeAmt is set on the first update of this schedule
 		return newSched;
 	}
@@ -203,17 +178,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 				.getModel(I_C_OrderLine.class);
 
 		updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLineRecord);
-
-		// Carrier header fields are propagated during the order-header copy above; carrier services need
-		// the persisted ShipmentScheduleId, so they are assigned here after the schedule exists.
-		final I_C_Order orderRecord = orderDAO.getById(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()), I_C_Order.class);
-		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(orderRecord.getCarrier_Product_ID());
-		if (orderCarrierProductId != null)
-		{
-			final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-			final Set<CarrierServiceId> orderServiceIds = shipmentScheduleCarrierServiceRepository.getCarrierServiceIdsByOrderId(OrderId.ofRepoId(orderLineRecord.getC_Order_ID()));
-			shipmentScheduleCarrierServiceRepository.assignServicesToShipmentSchedule(shipmentScheduleId, orderServiceIds);
-		}
 	}
 
 	private void updateShipmentScheduleFromOrderLine(
@@ -341,34 +305,6 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setExternalSystem_ID(orderModel.getExternalSystem_ID());
 		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 		shipmentSchedule.setExternalHeaderId(orderModel.getExternalId());
-
-		// Propagate order-header carrier fields alongside other order-header→schedule copies.
-		// On UPDATE the outer save persists these fields; on CREATE they must be re-applied post-save
-		// (see the BEFORE_NEW interceptor caveat in de.metas.inoutcandidate/CLAUDE.md).
-		final CarrierProductId orderCarrierProductId = CarrierProductId.ofRepoIdOrNull(order.getCarrier_Product_ID());
-		if (orderCarrierProductId != null)
-		{
-			propagateCarrierFieldsFromOrder(shipmentSchedule, order, orderCarrierProductId);
-		}
-	}
-
-	/**
-	 * Copies Carrier_Product_ID, Carrier_Goods_Type_ID, and Carrier_Advising_Status=Manual from the order header
-	 * to the given shipment schedule.
-	 *
-	 * <p>Status Manual makes the schedule ineligible for auto-advise
-	 * ({@link CarrierAdviseStatus#isEligibleForAutoEnqueue()} returns false), so a subsequent automatic
-	 * carrier-advise pass will skip it.
-	 */
-	private void propagateCarrierFieldsFromOrder(
-			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
-			@NonNull final I_C_Order order,
-			@NonNull final CarrierProductId orderCarrierProductId)
-	{
-		shipmentSchedule.setCarrier_Product_ID(orderCarrierProductId.getRepoId());
-		final CarrierGoodsTypeId goodsTypeId = CarrierGoodsTypeId.ofRepoIdOrNull(order.getCarrier_Goods_Type_ID());
-		shipmentSchedule.setCarrier_Goods_Type_ID(CarrierGoodsTypeId.toRepoId(goodsTypeId));
-		shipmentSchedule.setCarrier_Advising_Status(CarrierAdviseStatus.Manual.getCode());
 	}
 
 	/**
