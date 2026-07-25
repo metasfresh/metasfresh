@@ -46,8 +46,8 @@ Feature: nShift Shipment
       | Identifier | Value           | Name            | Name2                  | IsVendor | IsCustomer | M_PricingSystem_ID |
       | customer   | nshift_customer | nShift Customer | nShift Logistics Dept. | N        | Y          | ps                 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention      |
-      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test |
+      | Identifier       | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault | Postal | City | Address1 | Address2 | Attention      | IsPreAdviceRequired |
+      | customerLocation | customer      | CH           | Y               | Y               | 12345  | city | street 1 | Floor 2  | Attention Test | Y                       |
     And load C_UOM:
       | C_UOM_ID.Identifier | X12DE355 |
       | cm                  | CM       |
@@ -196,8 +196,8 @@ Feature: nShift Shipment
       | Identifier      | Name                    | C_BPartner_ID | EMail                       | Phone            |
       | customerContact | nShift Customer Contact | customer      | contact@nshift-test.example | +41 79 123 45 67 |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      |
-      | so_do      | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | AD_User_ID      | IsPreAdviceRequired |
+      | so_do      | true    | customer      | 2025-04-01  | wh             | nShift       | customerContact | Y                   |
     # Order line carries the 10-CU-per-TU packing (product_TU_10CU) so the on-the-fly pick packs the 10 CUs
     # into ONE real TU (not a loose VHU) — a TU ships as 1 parcel (loose CUs would split 1-label-per-CU).
     And metasfresh contains C_OrderLines:
@@ -222,8 +222,8 @@ Feature: nShift Shipment
       | Carrier_ShipmentOrder_ID | awb  | TrackingURL  | HasPdfLabel |
       | cso_do                   | awb1 | trackingUrl1 | true        |
     And validate Carrier_ShipmentOrder:
-      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone | Receiver_Email              |
-      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41791234567   | contact@nshift-test.example |
+      | Carrier_ShipmentOrder_ID | Shipper_Name1 | Shipper_CountryISO2Code | Receiver_Name1  | Receiver_Name2         | Receiver_StreetName1 | Receiver_StreetName2 | Receiver_StreetNumber | Receiver_ZipCode | Receiver_City | Receiver_CountryISO2Code | Receiver_ContactName    | Receiver_Phone | Receiver_Email              | IsPreAdviceRequired |
+      | cso_do                   | metasfresh AG | DE                      | nShift Customer | nShift Logistics Dept. | street               | Floor 2              | 1                     | 12345            | city          | CH                       | nShift Customer Contact | +41791234567   | contact@nshift-test.example | Y                   |
     # 10 PCE / 10 PCE-per-TU => 1 parcel; total weight = product.GrossWeight (2.1) × qty (10) = 21 kg.
     And validate Carrier_ShipmentOrder_Items:
       | Carrier_ShipmentOrder_ID | ProductName    | ArticleValue   | CustomsTariffNumber | QtyShipped | Price | TotalPrice | TotalWeightInKg |
@@ -231,11 +231,11 @@ Feature: nShift Shipment
     # advisor request carries the per-unit baseline (qty 1): totalValue=1×unitPrice=10, weight per-unit=3 —
     # unlike the shipment request below, which carries the full ordered qty 10 (totalValue 100, weight 21).
     And validate the captured nShift advisor request:
-      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | unitPrice | totalValue | shippedQuantity | customsTariff | totalWeightInKg |
-      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | 10        | 10         | 1               | 12345678      | 3               |
+      | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | IsPreAdviceRequired | unitPrice | totalValue | shippedQuantity | customsTariff | totalWeightInKg |
+      | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | Y                   | 10        | 10         | 1               | 12345678      | 3               |
     And validate the captured nShift shipment request:
-      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        |
-      | cp1                | cgt1                  | cs1, cs2           | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example |
+      | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID | NumParcels | SenderCompanyName | SenderCountryCode | ReceiverCompanyName | ReceiverCompanyName2   | ReceiverStreet | ReceiverAdditionalAddressInfo | ReceiverHouseNo | ReceiverZip | ReceiverCity | ReceiverCountryCode | ReceiverAttention | ReceiverContactName     | ReceiverContactPhone | ReceiverContactEmail        | IsPreAdviceRequired |
+      | cp1                | cgt1                  | cs1, cs2           | 1          | metasfresh AG     | DE                | nShift Customer     | nShift Logistics Dept. | street         | Floor 2                       | 1               | 12345       | city         | CH                  | Attention Test    | nShift Customer Contact | +41791234567         | contact@nshift-test.example | Y                   |
     And validate the captured nShift shipment request parcels:
       | grossWeightKg |
       | 21            |
@@ -460,7 +460,7 @@ Feature: nShift Shipment
       | Carrier_Product_ID | Carrier_Goods_Type_ID | Carrier_Service_ID |
       | cp1                | cgt1                  | cs1, cs2           |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | OPT.ExternalSystem.Value |
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID | M_Shipper_ID | ExternalSystem.Value |
       | so_sl1     | true    | customer      | 2025-04-01  | wh             | nShift       | Shopware6                |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |

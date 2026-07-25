@@ -27,8 +27,11 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ListMultimap;
 import de.metas.adempiere.model.I_C_Order;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.bpartner.effective.BPartnerAddressEffective;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
@@ -154,6 +157,7 @@ class OLCandOrderFactory
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL = SpringContextHolder.instance.getBean(BPartnerAddressEffectiveBL.class);
 
 	private final OrderGroupRepository orderGroupsRepository = SpringContextHolder.instance.getBean(OrderGroupRepository.class);
 	private final OLCandValidatorService olCandValidatorService = SpringContextHolder.instance.getBean(OLCandValidatorService.class);
@@ -295,6 +299,16 @@ class OLCandOrderFactory
 		order.setC_PaymentTerm_ID(PaymentTermId.toRepoId(candidateOfGroup.getPaymentTermId()));
 		order.setM_PricingSystem_ID(PricingSystemId.toRepoId(candidateOfGroup.getPricingSystemId()));
 		order.setM_Shipper_ID(ShipperId.toRepoId(candidateOfGroup.getShipperId()));
+
+		final BPartnerLocationId dropShipLocationId = candidateOfGroup.getDropShipBPartnerInfo()
+				.map(BPartnerInfo::getBpartnerLocationId)
+				.orElse(null);
+		final BPartnerLocationId locationId = candidateOfGroup.getBPartnerInfo().getBpartnerLocationId();
+		if (locationId != null)
+		{
+			final BPartnerAddressEffective addressEffective = bpartnerAddressEffectiveBL.getDeliveryEffective(dropShipLocationId, locationId);
+			order.setIsPreAdviceRequired(addressEffective.isPreAdviceRequired());
+		}
 
 		final DocTypeId orderDocTypeId = candidateOfGroup.getOrderDocTypeId();
 		if (orderDocTypeId != null)

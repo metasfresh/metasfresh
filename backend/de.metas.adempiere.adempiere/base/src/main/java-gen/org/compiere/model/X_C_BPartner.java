@@ -1296,6 +1296,27 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsBoolean(COLUMNNAME_IsPOTaxExempt);
 	}
 
+	/** 
+	 * IsPreAdviceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPREADVICEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPREADVICEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISPREADVICEREQUIRED_No = "N";
+	@Override
+	public void setIsPreAdviceRequired (final @Nullable java.lang.String IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public java.lang.String getIsPreAdviceRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPreAdviceRequired);
+	}
+
 	@Override
 	public void setIsProspect (final boolean IsProspect)
 	{

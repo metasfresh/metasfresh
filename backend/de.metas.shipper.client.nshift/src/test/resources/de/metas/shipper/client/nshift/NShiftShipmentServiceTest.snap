@@ -298,6 +298,10 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
         {
           "Kind": 64,
           "Value": "Other"
+        },
+        {
+          "Kind": 65,
+          "Value": "Y"
         }
       ],
       "Services": [

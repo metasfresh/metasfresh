@@ -2192,6 +2192,27 @@ public interface I_C_Order
 	String COLUMNNAME_IsInvoiced = "IsInvoiced";
 
 	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (boolean IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	boolean isPreAdviceRequired();
+
+	ModelColumn<I_C_Order, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_Order.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
+
+	/**
 	 * Set Printed.
 	 * Indicates if this document / line is printed
 	 *

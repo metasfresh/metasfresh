@@ -1972,6 +1972,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsPOTaxExempt = "IsPOTaxExempt";
 
 	/**
+	 * Set Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	void setIsPreAdviceRequired (@Nullable java.lang.String IsPreAdviceRequired);
+
+	/**
+	 * Get Pre-Advice Required.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false (lazy loading)
+	 */
+	@Nullable java.lang.String getIsPreAdviceRequired();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsPreAdviceRequired = new ModelColumn<>(I_C_BPartner.class, "IsPreAdviceRequired", null);
+	String COLUMNNAME_IsPreAdviceRequired = "IsPreAdviceRequired";
+
+	/**
 	 * Set Prospect.
 	 * Indicates this is a Prospect
 	 *
