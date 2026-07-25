@@ -197,6 +197,26 @@ public class DistributionJob
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/** {@code true} while some line's planned quantity has not been moved, i.e. while an explicit Complete is refused. */
+	public boolean hasQtyOutstanding()
+	{
+		return !getLinesNotFullyMoved().isEmpty();
+	}
+
+	/**
+	 * What is still outstanding on this job: each line not fully moved as "&lt;qty&gt; &lt;uom&gt; &lt;product&gt;",
+	 * joined by ", ". Empty when {@link #hasQtyOutstanding()} is {@code false}.
+	 *
+	 * <p>Single source for both the withheld-completion refusal and the give-up-the-remainder affordance, so the mover
+	 * reads the very same wording whether the completion is refused or he is about to abandon the remainder.</p>
+	 */
+	public ITranslatableString getQtyOutstandingDescription()
+	{
+		return TranslatableStrings.joinList(", ", getLinesNotFullyMoved().stream()
+				.map(DistributionJobLine::describeQtyOutstanding)
+				.collect(ImmutableList.toImmutableList()));
+	}
+
 	public boolean isInTransit()
 	{
 		return lines.stream().anyMatch(DistributionJobLine::isInTransit);

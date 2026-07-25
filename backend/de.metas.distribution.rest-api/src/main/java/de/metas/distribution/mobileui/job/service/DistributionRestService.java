@@ -1,6 +1,5 @@
 package de.metas.distribution.mobileui.job.service;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefList;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -32,7 +31,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -230,6 +228,19 @@ public class DistributionRestService
 	{
 		final DistributionJob job = getJobById(jobId);
 		job.assertCanEdit(callerId);
+		return completeAssertingPlannedQtyFullyMoved(job);
+	}
+
+	/**
+	 * The gated completion: refuses while a line's planned quantity has not been moved, and closes the order only when
+	 * it has. This is what every <b>explicit</b> Complete of the mover goes through — the REST endpoint as well as the
+	 * Complete workflow activity's user confirmation.
+	 *
+	 * <p>Not to be confused with {@link #complete(DistributionJob)}, which closes unconditionally and stays the
+	 * drop-all path's auto-complete trigger with today's behaviour.</p>
+	 */
+	public DistributionJob completeAssertingPlannedQtyFullyMoved(@NonNull final DistributionJob job)
+	{
 		assertPlannedQtyFullyMoved(job);
 		return complete(job);
 	}
@@ -239,6 +250,9 @@ public class DistributionRestService
 	 * {@link #assertPlannedQtyFullyMoved(DistributionJob)} gate and closes the order short, i.e. exactly what an
 	 * unconditional complete did before that gate existed. Closing short is what re-arms the replenishment watchdog,
 	 * so the outstanding demand gets re-issued instead of being stuck on an order nobody can finish.
+	 *
+	 * <p>Reached only through its own REST route (<code>POST /distribution/job/{wfProcessId}/completeGivingUpRemainder</code>),
+	 * never as a fallback of a refused Complete: giving the remainder up has to be the mover's own, separate decision.</p>
 	 */
 	public DistributionJob completeGivingUpRemainder(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
 	{
@@ -255,28 +269,13 @@ public class DistributionRestService
 	 */
 	private static void assertPlannedQtyFullyMoved(@NonNull final DistributionJob job)
 	{
-		final List<DistributionJobLine> linesNotFullyMoved = job.getLinesNotFullyMoved();
-		if (linesNotFullyMoved.isEmpty())
+		if (!job.hasQtyOutstanding())
 		{
 			return;
 		}
 
-		final ITranslatableString outstanding = TranslatableStrings.joinList(", ", linesNotFullyMoved.stream()
-				.map(DistributionRestService::describeQtyOutstanding)
-				.collect(ImmutableList.toImmutableList()));
-
-		throw new AdempiereException(MSG_OutstandingQtyToMove, outstanding)
+		throw new AdempiereException(MSG_OutstandingQtyToMove, job.getQtyOutstandingDescription())
 				.setParameter("ddOrderId", job.getDdOrderId());
-	}
-
-	private static ITranslatableString describeQtyOutstanding(@NonNull final DistributionJobLine line)
-	{
-		final Quantity qtyOutstanding = line.getQtyToMove().subtract(line.getQtyMoved());
-		return TranslatableStrings.builder()
-				.appendQty(qtyOutstanding.toBigDecimal(), qtyOutstanding.getUOMSymbol())
-				.append(" ")
-				.append(line.getProduct().getCaption())
-				.build();
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)

@@ -59,6 +59,17 @@ export const completeDistributionJob = ({ wfProcessId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
+/**
+ * Completes the job and gives up the quantity that was not moved, closing the distribution order short.
+ * Deliberately its own endpoint, not a flag on completeDistributionJob: abandoning the remainder must be the
+ * operator's explicit decision, so no call can ever slip into it by default.
+ */
+export const completeDistributionJobGivingUpRemainder = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/distribution/job/${wfProcessId}/completeGivingUpRemainder`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
 export const switchDistributionPickFromLocatorToNext = ({ wfProcessId }) => {
   return axios
     .post(`${apiBasePath}/distribution/job/${wfProcessId}/switchPickFromLocatorToNext`)

@@ -7,11 +7,17 @@ import * as CompleteStatus from '../../../constants/CompleteStatus';
 import DistributionLineButton from './DistributionLineButton';
 import { getLinesArrayFromActivity } from '../../../reducers/wfProcesses';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ConfirmButton from '../../../components/buttons/ConfirmButton';
 import { trl } from '../../../utils/translations';
-import { distributionDropAllToScreenLocation, distributionPickFromScreenLocation } from '../../../routes/distribution';
+import {
+  distributionDropAllToScreenLocation,
+  distributionJobsListScreenLocation,
+  distributionPickFromScreenLocation,
+} from '../../../routes/distribution';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
 import { postDistributionSwitchPickFromLocatorThunk } from '../../../apps/distribution/redux/postDistributionSwitchPickFromLocatorThunk';
+import { completeDistributionJobGivingUpRemainder } from '../../../api/distribution';
 import { toastError } from '../../../utils/toast';
 
 const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, activityState }) => {
@@ -19,7 +25,7 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
   const dispatch = useDispatch();
   const lines = getLinesArrayFromActivity(activityState);
   const {
-    dataStored: { isUserEditable, hasLinesInTransit, canSwitchPickFromLocator },
+    dataStored: { isUserEditable, hasLinesInTransit, canSwitchPickFromLocator, qtyOutstanding },
   } = activityState;
 
   const onScannedCode = ({ scannedBarcode: huQRCode }) => {
@@ -40,6 +46,14 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
     dispatch(postDistributionSwitchPickFromLocatorThunk({ wfProcessId })).catch((axiosError) => {
       toastError({ axiosError });
     });
+  };
+
+  const onCompleteGivingUpRemainder = () => {
+    completeDistributionJobGivingUpRemainder({ wfProcessId })
+      .then(() => history.push(distributionJobsListScreenLocation()))
+      .catch((axiosError) => {
+        toastError({ axiosError });
+      });
   };
 
   return (
@@ -79,6 +93,18 @@ const DistributionMoveActivity = ({ applicationId, wfProcessId, activityId, acti
         disabled={!isUserEditable || !hasLinesInTransit}
         onClick={onDropAllToLocator}
       />
+      {/* Only while something is actually outstanding — Complete then refuses, and this is the way out.
+          The prompt names the very quantity that is abandoned, in the same wording as that refusal. */}
+      {qtyOutstanding && (
+        <ConfirmButton
+          id="complete-giving-up-remainder-button"
+          caption={trl('activities.distribution.completeGivingUpRemainder.caption')}
+          promptQuestion={trl('activities.distribution.completeGivingUpRemainder.question', { qtyOutstanding })}
+          isDangerousAction={true}
+          isUserEditable={isUserEditable}
+          onUserConfirmed={onCompleteGivingUpRemainder}
+        />
+      )}
     </div>
   );
 };

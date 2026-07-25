@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.mobileui.external_services.product.ProductInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
@@ -108,6 +110,26 @@ public class DistributionJobLine
 	public boolean isPlannedQtyFullyMoved()
 	{
 		return getQtyMoved().compareTo(qtyToMove) >= 0;
+	}
+
+	/** The planned quantity that was not moved. Zero or negative once {@link #isPlannedQtyFullyMoved()} holds. */
+	public Quantity getQtyOutstanding()
+	{
+		return qtyToMove.subtract(getQtyMoved());
+	}
+
+	/**
+	 * What is still outstanding on this line, as "&lt;qty&gt; &lt;uom&gt; &lt;product&gt;", in the reader's language.
+	 * Rendered on demand so the product caption is translated at render time, not in the base language.
+	 */
+	public ITranslatableString describeQtyOutstanding()
+	{
+		final Quantity qtyOutstanding = getQtyOutstanding();
+		return TranslatableStrings.builder()
+				.appendQty(qtyOutstanding.toBigDecimal(), qtyOutstanding.getUOMSymbol())
+				.append(" ")
+				.append(product.getCaption())
+				.build();
 	}
 
 	private static WFActivityStatus computeStatusFromSteps(final @NonNull List<DistributionJobStep> steps)

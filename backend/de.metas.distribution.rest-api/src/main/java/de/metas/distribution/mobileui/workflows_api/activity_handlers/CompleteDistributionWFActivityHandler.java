@@ -62,6 +62,9 @@ public class CompleteDistributionWFActivityHandler implements WFActivityHandler,
 	public WFProcess userConfirmed(final UserConfirmationRequest request)
 	{
 		request.assertActivityType(HANDLED_ACTIVITY_TYPE);
-		return DistributionMobileApplication.mapDocument(request.getWfProcess(), distributionRestService::complete);
+		// This is the mover's explicit Complete, so it goes through the gate: a job whose planned quantity was not
+		// moved is refused, naming what is outstanding. Giving that remainder up is a separate, explicit action
+		// (DistributionRestService.completeGivingUpRemainder), never a silent fallback of this one.
+		return DistributionMobileApplication.mapDocument(request.getWfProcess(), distributionRestService::completeAssertingPlannedQtyFullyMoved);
 	}
 }

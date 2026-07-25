@@ -58,6 +58,11 @@ class DistributionJobLinePlannedQtyTest
 
 		assertThat(line.isPlannedQtyFullyMoved()).isFalse();
 		assertThat(line.getQtyMoved().toBigDecimal()).isEqualByComparingTo("6");
+
+		// What the mover is told: both when the completion is refused and when the give-up affordance asks him to
+		// confirm, so the abandoned quantity is named the same way in both places.
+		assertThat(line.getQtyOutstanding().toBigDecimal()).isEqualByComparingTo("9");
+		assertThat(line.describeQtyOutstanding().getDefaultValue()).contains("9").contains("P1");
 	}
 
 	@Test
