@@ -23,11 +23,8 @@
 package de.metas.ordercandidate.api;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.impl.BPartnerBL;
-import de.metas.order.BPartnerOrderParamsRepository;
 import de.metas.ordercandidate.api.impl.OLCandBL;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -68,9 +65,7 @@ class OLCandBLGetWarehouseIdTest
 
 		// Register the real WarehouseAdvisor so evaluateCustomerPickingWarehouse works
 		Services.registerService(IWarehouseAdvisor.class, new WarehouseAdvisor());
-
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		olCandBL = new OLCandBL(bpartnerBL, BPartnerOrderParamsRepository.newInstanceForUnitTesting());
+		olCandBL = OLCandBL.newInstanceForUnitTesting();
 	}
 
 	@Nested
