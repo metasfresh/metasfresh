@@ -104,9 +104,10 @@ class DDOrderLineContributorRepositoryTest
 
 	/**
 	 * An empty {@code lineIds} collection must yield no contributor ids, even though a row exists that the query would
-	 * return if the {@code DD_OrderLine_ID} restriction were dropped. This guards {@code getContributorIds}' early
-	 * return: an empty IN-list renders as TRUE, so without that guard the call would collapse the line restriction and
-	 * wrongly report the assignment of the contributor created below as a contributor of "no lines".
+	 * return if the {@code DD_OrderLine_ID} restriction were dropped. Pins the "empty input selects nothing" contract
+	 * every caller relies on — a widening of the restriction (e.g. swapping {@code addInArrayFilter} for
+	 * {@code addInArrayOrAllFilter}, which renders an empty IN-list as {@code 1=1} instead of {@code 1=0}) would
+	 * otherwise report the assignment of the contributor created below as a contributor of "no lines".
 	 */
 	@Test
 	void getContributorIds_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
@@ -116,11 +117,37 @@ class DDOrderLineContributorRepositoryTest
 		assertThat(repository.getContributorIds(ImmutableSet.of())).isEmpty();
 	}
 
+	@Test
+	void getLineIdsByPickingJobScheduleIds_resolvesTheNavigationDirectionForSeveralAssignmentsAtOnce()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(3))));
+		repository.replaceContributors(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(3))));
+
+		assertThat(repository.getLineIdsByPickingJobScheduleIds(ImmutableSet.of(scheduleId(10), scheduleId(20))))
+				.containsExactlyInAnyOrder(lineId(1), lineId(2));
+	}
+
+	/**
+	 * An empty {@code pickingJobScheduleIds} collection must yield no line ids, even though a row exists that the query
+	 * would return if the {@code M_Picking_Job_Schedule_ID} restriction were dropped. Pins the "empty input selects
+	 * nothing" contract of the batched lookup: its caller feeds the result straight into the obsolete-alloc-row delete,
+	 * so a widened restriction would drop every alloc row in the table.
+	 */
+	@Test
+	void getLineIdsByPickingJobScheduleIds_returnsEmptyForEmptyIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(repository.getLineIdsByPickingJobScheduleIds(ImmutableSet.of())).isEmpty();
+	}
+
 	/**
 	 * An empty {@code lineIds} collection must delete nothing, even though a row exists that the delete would hit if the
-	 * {@code DD_OrderLine_ID} restriction were dropped. This guards {@code deleteByLineIds}' early return: an empty
-	 * IN-list renders as TRUE, so without that guard the call would collapse the line restriction and wipe every alloc
-	 * row in the table — including the unrelated contributor created below.
+	 * {@code DD_OrderLine_ID} restriction were dropped. Pins the "empty input deletes nothing" contract: a widening of
+	 * the restriction (e.g. swapping {@code addInArrayFilter} for {@code addInArrayOrAllFilter}, which renders an empty
+	 * IN-list as {@code 1=1} instead of {@code 1=0}) would wipe every alloc row in the table — including the unrelated
+	 * contributor created below.
 	 */
 	@Test
 	void deleteByLineIds_deletesNothingForEmptyLineIds_evenWhenMatchingContributorExists()
@@ -128,6 +155,24 @@ class DDOrderLineContributorRepositoryTest
 		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
 		repository.deleteByLineIds(ImmutableSet.of());
+
+		assertThat(repository.getContributors(lineId(1)))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
+				.containsExactly(scheduleId(10));
+	}
+
+	/**
+	 * The assignment-keyed sibling of the test above, and the one with the widest blast radius: an empty
+	 * {@code pickingJobScheduleIds} collection must delete nothing, even though a row exists that the delete would hit
+	 * if the {@code M_Picking_Job_Schedule_ID} restriction were dropped. Were it dropped, EVERY alloc row in the table
+	 * would go and every consolidated line would serve nobody — silently, with the suite otherwise still green.
+	 */
+	@Test
+	void deleteByPickingJobScheduleIds_deletesNothingForEmptyIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		repository.deleteByPickingJobScheduleIds(ImmutableSet.of());
 
 		assertThat(repository.getContributors(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
