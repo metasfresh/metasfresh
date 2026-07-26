@@ -117,6 +117,51 @@ Feature: DD_Order replenishment — one distribution order per product group
     And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
 
   @from:cucumber
+  Scenario: The mover walks the route once, and the single move settles both deliveries
+    # The pay-off of consolidating, and the half of it that the generation-side scenarios cannot show: ONE physical
+    # trip must settle EVERY delivery behind the shared order. The mover opens the consolidated replenishment on the
+    # mobile app, scans the source HU and drops it at the workstation — after which the goods are at the shared
+    # pick-from locator and the record of who gets how much of them is still complete and exact.
+    #
+    # A contributor lost anywhere along that path is silent and expensive: its demand has been served physically
+    # while the system no longer knows it, so the replenishment keeps considering it unserved and sends the mover
+    # back for goods that are already standing at the station.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    # The mover's real path: start the job on the shared order, scan the source HU, drop it at the workstation. The
+    # whole consolidated quantity moves in one go — the source locator holds exactly the group's 15 PCE on one HU.
+    When Start distribution job for dd_order identified by groupDDOrder
+      | DD_Order_ID  |
+      | groupDDOrder |
+    And Pick HU for distribution job line
+      | M_HU_ID        |
+      | stockProductHU |
+    And Drop HU for distribution job line
+
+    # The goods have arrived where both deliveries will be picked from — the workstation's pick-from locator.
+    Then M_HU are validated:
+      | M_HU_ID        | HUStatus | IsActive | M_Locator_ID   |
+      | stockProductHU | A        | true     | packingLocator |
+
+    # Still ONE order of 15 for the group: the move did not cause a second replenishment to be planned for either
+    # delivery, and it did not shrink the one that served them.
+    And after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    # The COMPLETE contributor set survived the move, each delivery still carrying its own share of what was moved:
+    # 10 for the first, 5 for the second. The assertion is exact-set, so a contributor dropped by the move fails it
+    # just as loudly as one invented for a delivery that contributed nothing.
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+    # And neither delivery is left dangling (no order at all) nor served twice (a second order).
+    And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
+
+  @from:cucumber
   Scenario: One drift-rebuild pass serves every contributor of a product group
     # The rebuild collapses a group's assignments into ONE reconcile request — the request identifies the product
     # group, not the assignment. That single reconcile must still serve EVERY contributor: a member dropped here
