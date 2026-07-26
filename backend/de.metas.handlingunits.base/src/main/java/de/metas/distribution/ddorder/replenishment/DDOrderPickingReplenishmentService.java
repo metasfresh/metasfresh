@@ -646,6 +646,10 @@ public class DDOrderPickingReplenishmentService
 		/**
 		 * Frozen source locator → the quantity {@link #updateDDOrderLineQtyInPlace} refuses to write there. Empty in
 		 * the ordinary case, and then {@link #attribution} covers every required locator.
+		 * <p>
+		 * It is the quantity from the round that first refused the locator, and deliberately not recomputed later: a
+		 * frozen locator is out of every subsequent round's attribution, so no later round produces a quantity for it
+		 * at all. This value only reaches the refusal log.
 		 */
 		@NonNull Map<LocatorId, Quantity> refusedQtyByLocator;
 
@@ -1162,8 +1166,8 @@ public class DDOrderPickingReplenishmentService
 
 	/**
 	 * Whether {@link #updateDDOrderLineQtyInPlace} would leave the line at its old quantity: goods have started moving
-	 * and the new quantity is lower than the ordered one. Shared with the reconcile's frozen-line pre-pass so the
-	 * decision is taken once and the attribution and the write can never disagree about it.
+	 * and the new quantity is lower than the ordered one. Shared with {@link #computeFrozenSplit}'s fixed-point loop,
+	 * so the attribution and the write can never disagree about which lines are frozen.
 	 */
 	private static boolean isShrinkRefusedByDeliveredQty(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
