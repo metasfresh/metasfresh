@@ -5,6 +5,7 @@ import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.distributionorder.DD_Order_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.workplace.C_Workplace_StepDefData;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
@@ -27,6 +28,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.eevolution.model.I_DD_Order;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -51,6 +53,8 @@ public class M_Picking_Job_Schedule_StepDef
 	@NonNull private final M_Picking_Job_Schedule_StepDefData jobScheduleTable;
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final C_Workplace_StepDefData workplaceTable;
+	/** Only needed to resolve the {@code Blocking_DD_Order_ID} column of the refusal-message assertion. */
+	@NonNull private final DD_Order_StepDefData ddOrderTable;
 
 	/**
 	 * @cucumber.stepdef Creates or updates a {@code M_Picking_Job_Schedule} workstation assignment for the given
@@ -147,11 +151,21 @@ public class M_Picking_Job_Schedule_StepDef
 	 *   <li>{@code QtyToPick} — the attempted new quantity</li>
 	 *   <li>{@code ErrorCode} — expected {@code AdempiereException} error code (e.g. {@code DDOrderPickingReconcile_PickerBusy})</li>
 	 * </ul>
+	 * Optional columns — the blocking work the refusal must NAME. A consolidated replenishment serves several
+	 * deliveries, so the work that blocks the edit usually belongs to somebody else; a refusal that does not
+	 * identify it is unactionable for the traffic manager. Each given column asserts that its resolved value
+	 * appears in the rendered (translated) exception message:
+	 * <ul>
+	 *   <li>{@code Blocking_M_Picking_Job_Schedule_ID} — identifier of the assignment named as blocking</li>
+	 *   <li>{@code Blocking_M_ShipmentSchedule_ID} — identifier of that assignment's shipment schedule</li>
+	 *   <li>{@code Blocking_DD_Order_ID} — identifier of the distribution order the refusal is about</li>
+	 *   <li>{@code Blocking_QtyMoved} — the quantity already in transit or delivered</li>
+	 * </ul>
 	 * @cucumber.example
 	 * <pre>
 	 * Then changing the picking job schedule quantity is rejected:
-	 *   | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                           |
-	 *   | jobSchedule               | 8         | DDOrderPickingReconcile_PickerBusy  |
+	 *   | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                          | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID |
+	 *   | jobScheduleA              | 8         | DDOrderPickingReconcile_PickerBusy | jobScheduleB                       | shipmentScheduleB              | groupDDOrder         |
 	 * </pre>
 	 */
 	@And("^changing the picking job schedule quantity is rejected:$")
@@ -173,12 +187,47 @@ public class M_Picking_Job_Schedule_StepDef
 				.isInstanceOf(AdempiereException.class)
 				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
 						.as("AdempiereException.ErrorCode")
-						.isEqualTo(expectedErrorCode));
+						.isEqualTo(expectedErrorCode))
+				.satisfies(ex -> assertBlockingWorkIsNamed(row, ex.getLocalizedMessage()));
 
 		// Reload and assert the persisted QtyToPick is unchanged (the rolled-back save left no mark).
 		assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())
 				.as("M_Picking_Job_Schedule.QtyToPick must be unchanged after the rejected save")
 				.isEqualByComparingTo(originalQty);
+	}
+
+	/**
+	 * Asserts the rendered refusal message names each piece of blocking work the row asks for.
+	 *
+	 * <p>The record ids are matched as plain text because that is exactly what the traffic manager reads: the
+	 * message is an {@code AD_Message} whose placeholders the service fills with the repository ids. Matching the
+	 * id keeps the assertion independent of the UI language, which is what makes it safe to run against either the
+	 * German base text or its English translation.</p>
+	 */
+	private void assertBlockingWorkIsNamed(@NonNull final DataTableRow row, @NonNull final String message)
+	{
+		row.getAsOptionalIdentifier("Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.map(identifier -> identifier.lookupNotNullIn(jobScheduleTable).getId().getRepoId())
+				.ifPresent(blockingJobScheduleId -> assertThat(message)
+						.as("The refusal must name the blocking M_Picking_Job_Schedule_ID")
+						.contains(String.valueOf(blockingJobScheduleId)));
+
+		row.getAsOptionalIdentifier("Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID)
+				.map(identifier -> identifier.lookupNotNullIdIn(shipmentScheduleTable).getRepoId())
+				.ifPresent(blockingShipmentScheduleId -> assertThat(message)
+						.as("The refusal must name the blocking M_ShipmentSchedule_ID")
+						.contains(String.valueOf(blockingShipmentScheduleId)));
+
+		row.getAsOptionalIdentifier("Blocking_" + I_DD_Order.COLUMNNAME_DD_Order_ID)
+				.map(identifier -> identifier.lookupNotNullIn(ddOrderTable).getDD_Order_ID())
+				.ifPresent(ddOrderId -> assertThat(message)
+						.as("The refusal must name the DD_Order it is about")
+						.contains(String.valueOf(ddOrderId)));
+
+		row.getAsOptionalBigDecimal("Blocking_QtyMoved")
+				.ifPresent(qtyMoved -> assertThat(message)
+						.as("The refusal must name the quantity already moved")
+						.contains(qtyMoved.stripTrailingZeros().toPlainString()));
 	}
 
 	/**
