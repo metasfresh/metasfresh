@@ -19,6 +19,23 @@ export const setCurrentPage = (currentPage) => {
     page = currentPage;
 }
 
+// Capture mode — OFF by default. When the env flag UAT_CAPTURE is set, the run is a deliberate
+// recording run for a UAT/documentation video; otherwise this is a no-op and the test runs at
+// full speed. The test's normal/CI speed is never affected.
+// See skill playwright-video-delivery § "Test speed vs. recording speed".
+export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
+
+// Hold the currently-painted screen on the video recorder long enough for the freshly-entered
+// values to be captured as a clear, deliberate freeze (the recorder samples ~25 fps and Playwright
+// otherwise fills + confirms within a single frame, so the values are never recorded). NO-OP unless
+// UAT_CAPTURE is set — so this can only ever slow a deliberate capture run, never a normal/CI run;
+// the value is therefore generous for legibility, not a marginal minimum.
+const CAPTURE_HOLD_MS = 500;
+export const holdForCaptureIfEnabled = async () => {
+    if (!UAT_CAPTURE || page == null) return;
+    await page.waitForTimeout(CAPTURE_HOLD_MS);
+};
+
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
 /**
@@ -155,23 +172,5 @@ export const expectErrorToast = async (title, func, toastValidator) => {
             // console.log(`Stop expecting errors (watcherId=${watcherId}), set back previous watcher id (${prevWatcherId})`);
         }
     });
-};
-
-/**
- * Hold the painted screen briefly, but ONLY in a deliberate capture run (`UAT_CAPTURE=1`).
- *
- * Some states the test passes through are never recorded: a confirmation dialog answered within a
- * single ~40ms recorder frame is in no captured frame at all, and post-production cannot conjure a
- * frame that was never recorded. An assertion is no substitute — it resolves the instant its
- * condition holds, which is exactly why the frame is missed.
- *
- * Unset flag => no-op, so a normal or CI run pays zero wall-clock. Call it ONLY from a screen
- * object, never from a spec: a scenario must read as the real workflow.
- */
-export const holdForCaptureIfEnabled = async (millis = 500) => {
-    if (!process.env.UAT_CAPTURE) {
-        return;
-    }
-    await page.waitForTimeout(millis);
 };
 

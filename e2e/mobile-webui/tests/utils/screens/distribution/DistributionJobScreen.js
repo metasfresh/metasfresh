@@ -109,9 +109,7 @@ export const DistributionJobScreen = {
         await expect(button).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
         await button.tap();
         await YesNoDialog.waitForDialog();
-        if (expectedQtyOutstanding !== undefined) {
-            await YesNoDialog.expectQuestion({ contains: expectedQtyOutstanding });
-        }
+        await YesNoDialog.expectQuestion({ contains: expectedQtyOutstanding });
         // The prompt names the quantity about to be abandoned; it is answered within a single
         // recorder frame, so a capture run needs a hold to get it on the video at all.
         await holdForCaptureIfEnabled();

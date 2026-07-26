@@ -23,21 +23,25 @@ const createMasterdata = async () => {
     return await Backend.createMasterdata({
         language: 'en_US',
         request: {
-            login: { user: { language: 'en_US' } },
+            login: { user: { language: 'en_US', workplace: 'workplace1' } },
             // The mover taps Complete himself — no auto-complete after the drop, so the completion
             // this spec is about is the mover's own explicit decision.
             mobileConfig: { distribution: { completeJobAutomatically: false } },
+            // The mover works at the target warehouse, so only this test's job is offered to him.
+            workplaces: { workplace1: { warehouse: 'wh2', pickFromLocator: 'wh2_l1' } },
             resources: { plantId: { type: 'PT' } },
             products: { P1: {} },
             warehouses: {
-                wh1: {},
-                wh2: {},
+                wh1: { locators: { wh1_l1: {} } },
+                wh2: { locators: { wh2_l1: {} } },
                 whInTransit: { inTransit: true },
             },
             handlingUnits: {
-                // The whole planned quantity is on the shelf, so nothing but the mover's own decision
-                // limits how much he moves.
-                HU1: { product: 'P1', warehouse: 'wh1', qty: PLANNED_QTY },
+                // The whole planned quantity is on the shelf, in two handling units, so nothing but
+                // the mover's own decision limits how much he moves — and each unit can be followed
+                // to where it ended up.
+                HU_MOVED: { product: 'P1', warehouse: 'wh1', qty: MOVED_QTY },
+                HU_REST: { product: 'P1', warehouse: 'wh1', qty: OUTSTANDING_QTY },
             },
             distributionOrders: {
                 DD1: {
@@ -60,19 +64,18 @@ const openTheJob = async (masterdata) => {
     await ApplicationsListScreen.expectVisible();
     await ApplicationsListScreen.startApplication('distribution');
     await DistributionJobsListScreen.waitForScreen();
-    await DistributionJobsListScreen.filterByFacetId({ facetId: masterdata.distributionOrders.DD1.warehouseFromFacetId });
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
 };
 
-const moveQty = async ({ masterdata, qty, expectedQtyStillToMove }) => {
+/** The mover takes one handling unit off the source shelf and drops it at the target locator. */
+const moveHandlingUnit = async ({ masterdata, hu, qty }) => {
     await DistributionJobScreen.clickLineButton({ index: 1 });
     await DistributionLineScreen.scanHUToMove({
-        huQRCode: masterdata.handlingUnits.HU1.qrCode,
-        qtyToMove: String(qty),
-        expectedQtyToMove: String(expectedQtyStillToMove),
+        huQRCode: masterdata.handlingUnits[hu].qrCode,
+        expectedQtyToMove: String(qty),
     });
     await DistributionLineScreen.goBack();
-    await DistributionJobScreen.dropAllTo({ dropToLocatorQRCode: masterdata.warehouses.wh2.locatorQRCode });
+    await DistributionJobScreen.dropAllTo({ dropToLocatorQRCode: masterdata.warehouses.wh2.locators.wh2_l1.qrCode });
 };
 
 // noinspection JSUnusedLocalSymbols
@@ -90,8 +93,15 @@ test('Completion is withheld while quantity is still to be moved, and succeeds o
 
     await test.step(`Move ${MOVED_QTY} of the planned ${PLANNED_QTY} to the target locator`, async () => {
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: `${PLANNED_QTY} Stk`, qtyPicked: '0 Stk' });
-        await moveQty({ masterdata, qty: MOVED_QTY, expectedQtyStillToMove: PLANNED_QTY });
+        await moveHandlingUnit({ masterdata, hu: 'HU_MOVED', qty: MOVED_QTY });
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: `${PLANNED_QTY} Stk`, qtyPicked: `${MOVED_QTY} Stk` });
+        await Backend.expect({
+            title: `The ${MOVED_QTY} arrived at the target, the rest is still on the source shelf`,
+            hus: {
+                HU_MOVED: { huStatus: 'A', warehouse: 'wh2', storages: { P1: `${MOVED_QTY} PCE` } },
+                HU_REST: { huStatus: 'A', warehouse: 'wh1', storages: { P1: `${OUTSTANDING_QTY} PCE` } },
+            },
+        });
     });
 
     await test.step(`Complete is refused and names the ${OUTSTANDING_QTY} that are still to be moved`, async () => {
@@ -103,18 +113,19 @@ test('Completion is withheld while quantity is still to be moved, and succeeds o
     });
 
     await test.step(`Move the remaining ${OUTSTANDING_QTY} and complete`, async () => {
-        await moveQty({ masterdata, qty: OUTSTANDING_QTY, expectedQtyStillToMove: OUTSTANDING_QTY });
+        await moveHandlingUnit({ masterdata, hu: 'HU_REST', qty: OUTSTANDING_QTY });
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: `${PLANNED_QTY} Stk`, qtyPicked: `${PLANNED_QTY} Stk` });
         // Nothing outstanding any more, so giving the remainder up is no longer offered.
         await DistributionJobScreen.expectGiveUpRemainderButton({ visible: false });
 
         await DistributionJobScreen.complete();
         await DistributionJobsListScreen.expectJobButtons([]);
-        // The source shelf is empty: what was left on it after the first move followed to the target.
+        // The whole planned quantity is at the target: both handling units, not just the last one.
         await Backend.expect({
-            title: `The rest of the planned quantity followed to wh2`,
+            title: `All ${PLANNED_QTY} arrived at the target warehouse`,
             hus: {
-                HU1: { huStatus: 'A', warehouse: 'wh2', storages: { P1: `${OUTSTANDING_QTY} PCE` } },
+                HU_MOVED: { huStatus: 'A', warehouse: 'wh2', storages: { P1: `${MOVED_QTY} PCE` } },
+                HU_REST: { huStatus: 'A', warehouse: 'wh2', storages: { P1: `${OUTSTANDING_QTY} PCE` } },
             },
         });
     });
@@ -134,7 +145,7 @@ test('The mover gives the remainder up and the order is finished short', async (
     await openTheJob(masterdata);
 
     await test.step(`Move only ${MOVED_QTY} of the planned ${PLANNED_QTY} — the rest cannot be moved`, async () => {
-        await moveQty({ masterdata, qty: MOVED_QTY, expectedQtyStillToMove: PLANNED_QTY });
+        await moveHandlingUnit({ masterdata, hu: 'HU_MOVED', qty: MOVED_QTY });
         await DistributionJobScreen.expectLineButton({ index: 1, qtyToPick: `${PLANNED_QTY} Stk`, qtyPicked: `${MOVED_QTY} Stk` });
     });
 
@@ -146,9 +157,10 @@ test('The mover gives the remainder up and the order is finished short', async (
         // moved arrived at the target.
         await DistributionJobsListScreen.expectJobButtons([]);
         await Backend.expect({
-            title: `Only the ${MOVED_QTY} that were really moved arrived in wh2`,
+            title: `Only the ${MOVED_QTY} that were really moved arrived at the target; the ${OUTSTANDING_QTY} stayed behind`,
             hus: {
-                HU1: { huStatus: 'A', warehouse: 'wh1', storages: { P1: `${OUTSTANDING_QTY} PCE` } },
+                HU_MOVED: { huStatus: 'A', warehouse: 'wh2', storages: { P1: `${MOVED_QTY} PCE` } },
+                HU_REST: { huStatus: 'A', warehouse: 'wh1', storages: { P1: `${OUTSTANDING_QTY} PCE` } },
             },
         });
     });
