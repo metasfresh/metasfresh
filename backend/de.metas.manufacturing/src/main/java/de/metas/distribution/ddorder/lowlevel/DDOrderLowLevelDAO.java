@@ -5,7 +5,6 @@ import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
 import de.metas.picking.api.PickingJobScheduleId;
@@ -43,7 +42,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -105,23 +103,6 @@ public class DDOrderLowLevelDAO
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
 				.create();
-	}
-
-	/**
-	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
-	 * or empty if none exists.
-	 */
-	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
-	{
-		return queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.create()
-				.firstOptional(I_DD_Order.class)
-				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	/**
@@ -197,18 +178,6 @@ public class DDOrderLowLevelDAO
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
 				.create()
 				.list(I_DD_Order.class);
-	}
-
-	/**
-	 * Returns the {@link ShipmentScheduleId} linked to the given DD_Order.
-	 */
-	public ShipmentScheduleId getShipmentScheduleId(@NonNull final DDOrderId ddOrderId)
-	{
-		final I_DD_Order record = queryBL.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, ddOrderId.getRepoId())
-				.create()
-				.firstOnlyNotNull(I_DD_Order.class);
-		return ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID());
 	}
 
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)

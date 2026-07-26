@@ -285,9 +285,11 @@ public class PickingJobScheduleRepository
 			@NonNull final UomId uomId,
 			@NonNull final Set<WorkplaceId> workplaceIds)
 	{
-		// An empty IN-list renders as TRUE (InArrayQueryFilter.defaultReturnWhenEmpty), so without this the query would
-		// silently drop the workplace restriction and pull EVERY open assignment of the product/UOM into the group —
-		// i.e. a target locator that no workplace points at would consolidate the whole instance into one DD_Order.
+		// No workplace points at that target locator, so the group has no contributor: skip the round-trip. (The
+		// restriction itself is safe when empty - every addInArrayFilter overload sets defaultReturnWhenEmpty=false,
+		// so an empty IN-list renders as "1=0". It is addInArrayOrAllFilter that renders "1=1"; swapping to it here
+		// WOULD drop the workplace restriction and consolidate every open assignment of the product/UOM instance-wide
+		// into one DD_Order, which is what this early return also documents against.)
 		if (workplaceIds.isEmpty())
 		{
 			return ImmutableList.of();

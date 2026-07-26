@@ -36,6 +36,7 @@ import org.compiere.util.DB;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,9 +75,30 @@ public class PickingJobRepository
 	 * Returns {@code true} iff at least one active {@link I_M_Picking_Job_Line} row references
 	 * the given shipment schedule AND belongs to an in-progress (not voided/completed) picking job —
 	 * i.e. a picker is actively working on it.
+	 *
+	 * <p>The single-schedule form of {@link #retrieveScheduleIdsWithActivePickingJobLine(Collection)}; the
+	 * "which doc statuses count as busy" semantics live there and are pinned by this method's unit tests.</p>
 	 */
 	public boolean existsActivePickingJobLineForSchedule(@NonNull final ShipmentScheduleId scheduleId)
 	{
+		return !retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)).isEmpty();
+	}
+
+	/**
+	 * The subset of the given shipment schedules a picker is working on right now: those with an active
+	 * {@link I_M_Picking_Job_Line} on a picking job that is neither Voided nor Completed.
+	 *
+	 * <p>Batched because the caller asks for a whole consolidated distribution order's contributor set at once —
+	 * one such order can serve up to 52 deliveries (measured), and the guard runs on every reconcile, so the
+	 * per-schedule form would be one round-trip each.</p>
+	 */
+	public ImmutableSet<ShipmentScheduleId> retrieveScheduleIdsWithActivePickingJobLine(@NonNull final Collection<ShipmentScheduleId> scheduleIds)
+	{
+		if (scheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		final IQuery<I_M_Picking_Job> inProgressJobsQuery = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
 				.addOnlyActiveRecordsFilter()
@@ -87,11 +109,11 @@ public class PickingJobRepository
 
 		return queryBL
 				.createQueryBuilder(I_M_Picking_Job_Line.class)
-				.addEqualsFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
+				.addInArrayFilter(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, scheduleIds)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(I_M_Picking_Job_Line.COLUMNNAME_M_Picking_Job_ID, I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, inProgressJobsQuery)
 				.create()
-				.anyMatch();
+				.listDistinctAsImmutableSet(I_M_Picking_Job_Line.COLUMNNAME_M_ShipmentSchedule_ID, ShipmentScheduleId.class);
 	}
 
 	/**

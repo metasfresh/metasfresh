@@ -158,10 +158,28 @@ public class DDOrderPickingReplenishment_StepDef
 	 * {@code DDOrderPickingReplenishmentService.assertCanChange}.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment whose
-	 * DD_OrderLines should be marked in transit.</p>
+	 * DD_OrderLines should be marked in transit. To put a different quantity in transit, use the
+	 * {@code simulate goods in transit of &lt;qty&gt; on ...} form below.</p>
 	 */
 	@When("^simulate goods in transit on DD_Order linked to picking job schedule (.*)$")
 	public void simulate_goods_in_transit(@NonNull final String pickingJobScheduleIdentifier)
+	{
+		simulate_goods_in_transit(BigDecimal.ONE.toPlainString(), pickingJobScheduleIdentifier);
+	}
+
+	/**
+	 * The quantity-carrying form of {@code simulate goods in transit on DD_Order linked to picking job schedule}.
+	 *
+	 * <p>Needed wherever a scenario asserts that the refusal message REPORTS the moved quantity: with the default
+	 * quantity of 1, "the message contains the moved quantity" is indistinguishable from "the message contains the
+	 * leading digit of any record id", so the assertion would hold even if the quantity were missing entirely.
+	 * Give such a scenario a quantity that cannot be mistaken for part of an id (e.g. {@code 7.5}).</p>
+	 *
+	 * <p>Params: the quantity to put in transit, and the identifier (from {@code M_Picking_Job_Schedule_StepDefData})
+	 * of the assignment whose DD_OrderLines should be marked in transit.</p>
+	 */
+	@When("^simulate goods in transit of (.*) on DD_Order linked to picking job schedule (.*)$")
+	public void simulate_goods_in_transit(@NonNull final String qtyInTransit, @NonNull final String pickingJobScheduleIdentifier)
 	{
 		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
 
@@ -176,7 +194,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 		for (final I_DD_OrderLine line : lines)
 		{
-			line.setQtyInTransit(BigDecimal.ONE);
+			line.setQtyInTransit(new BigDecimal(qtyInTransit.trim()));
 			InterfaceWrapperHelper.save(line);
 		}
 	}

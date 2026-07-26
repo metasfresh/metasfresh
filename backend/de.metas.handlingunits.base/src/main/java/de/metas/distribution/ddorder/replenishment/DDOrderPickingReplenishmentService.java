@@ -38,6 +38,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.model.PickingJobSchedule;
+import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
@@ -50,6 +51,7 @@ import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.NoUOMConversionException;
@@ -111,6 +113,24 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
+	/**
+	 * Refuses a change to a workstation assignment whose product group is already being replenished — the same rule
+	 * as before consolidation, evaluated over the group instead of over the single assignment.
+	 *
+	 * <p><b>Why the group.</b> A consolidated DD_Order carries the back-reference of exactly ONE of its contributors,
+	 * so a lookup keyed on the changed assignment finds nothing for every other contributor and the guard passes
+	 * silently — that assignment could be re-planned while the shared goods are in transit or a picker is working on
+	 * them. The unit is therefore the group: once any contributor's goods are moving, the whole group is frozen for
+	 * re-planning. That cost (p95 13, max 52 contributors measured) is deliberate; the refusal is not scoped per
+	 * contributor.</p>
+	 *
+	 * <p>The group is resolved from the record's current values and, when a group-key column is being changed, also
+	 * from its previous ones: the group the assignment is LEAVING is the one that may be frozen, and it is exactly
+	 * the group the former single-owner lookup used to find.</p>
+	 *
+	 * <p>The shipment close-out ({@code Processed -> Y}) stays exempt: it is a fulfilment event, not a user re-plan,
+	 * and packing must never be blocked by a replenishment.</p>
+	 */
 	public void assertCanChange(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
 		if (!isOnAutoDistributionOrder(jobSchedule))
@@ -125,22 +145,75 @@ public class DDOrderPickingReplenishmentService
 			return;
 		}
 
-		final PickingJobScheduleId jobScheduleId = PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID());
-		for (final I_DD_Order ddOrder : ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId))
+		final BlockingWork changedAssignment = BlockingWork.of(
+				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()),
+				ShipmentScheduleId.ofRepoId(jobSchedule.getM_ShipmentSchedule_ID()));
+
+		for (final I_DD_Order ddOrder : findLiveDDOrdersOfAffectedGroups(jobSchedule))
 		{
 			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
-			if (isPickerBusy(ddOrderId))
+
+			final BlockingWork busyPicker = findBlockingPickingWork(ddOrder);
+			if (busyPicker != null)
 			{
-				throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, ddOrderId);
+				throw pickerBusyException(ddOrderId, busyPicker);
 			}
 			for (final I_DD_OrderLine line : ddOrderLowLevelDAO.retrieveLines(ddOrder))
 			{
-				if (line.getQtyInTransit().signum() > 0 || line.getQtyDelivered().signum() > 0)
+				final BigDecimal qtyMoved = line.getQtyInTransit().add(line.getQtyDelivered());
+				if (qtyMoved.signum() > 0)
 				{
-					throw new AdempiereException(MSG_DDOrderPickingReplenishment_MovementStarted, ddOrderId);
+					final DDOrderLineId lineId = DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID());
+					final BlockingWork blocking = findBlockingMovedWork(lineId, changedAssignment);
+					throw new AdempiereException(
+							MSG_DDOrderPickingReplenishment_MovementStarted,
+							asMessageValue(ddOrderId.getRepoId()),
+							qtyMoved.stripTrailingZeros().toPlainString(),
+							asMessageValue(blocking.getJobScheduleId().getRepoId()),
+							asMessageValue(blocking.getShipmentScheduleId().getRepoId()));
 				}
 			}
 		}
+	}
+
+	/**
+	 * The live DD_Orders the change has to be guarded against: those of the group the assignment belongs to, plus —
+	 * when the change moves it between groups — those of the group it is leaving. Deduplicated, because an unchanged
+	 * group key yields the same group twice.
+	 */
+	private ImmutableList<I_DD_Order> findLiveDDOrdersOfAffectedGroups(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	{
+		final LinkedHashMap<DDOrderId, I_DD_Order> ddOrdersById = new LinkedHashMap<>();
+		for (final DDOrderReplenishmentGroupKey groupKey : affectedGroupKeys(jobSchedule))
+		{
+			final List<I_DD_Order> ddOrders = ddOrderLowLevelDAO.findActiveDDOrdersForReplenishmentGroup(
+					groupKey.getProductId(),
+					groupKey.getLocatorToId(),
+					groupKey.getUomId(),
+					contributorRepository.queryAll());
+			ddOrders.forEach(ddOrder -> ddOrdersById.putIfAbsent(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()), ddOrder));
+		}
+		return ImmutableList.copyOf(ddOrdersById.values());
+	}
+
+	private ImmutableSet<DDOrderReplenishmentGroupKey> affectedGroupKeys(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	{
+		final ImmutableSet.Builder<DDOrderReplenishmentGroupKey> groupKeys = ImmutableSet.builder();
+		groupKeys.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(jobSchedule)).getGroupKey());
+
+		// Changing any column the group key is built from moves the assignment out of one group and into another. The
+		// group it is leaving is the one that may already be under way, so it has to be guarded too - and it is
+		// precisely the group the pre-consolidation single-owner lookup would have found.
+		if (InterfaceWrapperHelper.isValueChanged(jobSchedule,
+				I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID,
+				I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID,
+				I_M_Picking_Job_Schedule.COLUMNNAME_C_UOM_ID))
+		{
+			final I_M_Picking_Job_Schedule oldRecord = InterfaceWrapperHelper.createOld(jobSchedule, I_M_Picking_Job_Schedule.class);
+			groupKeys.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(oldRecord)).getGroupKey());
+		}
+
+		return groupKeys.build();
 	}
 
 	public void scheduleReconcileAfterCommit(@NonNull final PickingJobSchedule jobSchedule)
@@ -488,10 +561,10 @@ public class DDOrderPickingReplenishmentService
 		// Picker-busy guard: refuse the whole reconcile before mutating anything if any existing DD_Order is busy.
 		for (final I_DD_Order existingDDOrder : existingDDOrders)
 		{
-			final DDOrderId existingDDOrderId = DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID());
-			if (isPickerBusy(existingDDOrderId))
+			final BlockingWork busyPicker = findBlockingPickingWork(existingDDOrder);
+			if (busyPicker != null)
 			{
-				throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
+				throw pickerBusyException(DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID()), busyPicker);
 			}
 		}
 
@@ -1237,11 +1310,22 @@ public class DDOrderPickingReplenishmentService
 		return ddOrderLine;
 	}
 
+	/**
+	 * Voids the DD_Order, refusing while ANY of its contributors is being picked.
+	 *
+	 * <p>Widening that refusal from the order's single back-referenced delivery to its whole contributor set makes
+	 * disposals fail where they used to succeed — notably deleting a workstation assignment whose shared order another
+	 * delivery's picker is working on. That is the intended outcome, not a side effect: the alternative is voiding a
+	 * document out from under a picker who is mid-job on it, which is the very thing this guard exists to prevent. The
+	 * traffic manager waits for that picking to finish or aborts it, exactly as they already do when the picker
+	 * happens to be on the back-referenced delivery.</p>
+	 */
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
 	{
-		if (isPickerBusy(existingDDOrderId))
+		final BlockingWork busyPicker = findBlockingPickingWork(ddOrderLowLevelDAO.getById(existingDDOrderId));
+		if (busyPicker != null)
 		{
-			throw new AdempiereException(MSG_DDOrderPickingReplenishment_PickerBusy, existingDDOrderId);
+			throw pickerBusyException(existingDDOrderId, busyPicker);
 		}
 		ddOrderService.voidIt(existingDDOrderId);
 		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
@@ -1421,10 +1505,116 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	public boolean isPickerBusy(@NonNull final DDOrderId ddOrderId)
+	/**
+	 * The work a refusal has to name so the reader can go and resolve it: the blocking workstation assignment and the
+	 * delivery behind it. On a consolidated order that is usually somebody else's assignment, which is exactly why it
+	 * has to be spelled out.
+	 */
+	@Value(staticConstructor = "of")
+	private static class BlockingWork
 	{
-		final ShipmentScheduleId scheduleId = ddOrderLowLevelDAO.getShipmentScheduleId(ddOrderId);
-		return pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId);
+		@NonNull PickingJobScheduleId jobScheduleId;
+		@NonNull ShipmentScheduleId shipmentScheduleId;
+	}
+
+	/**
+	 * The contributor of the given DD_Order whose delivery a picker is working on right now, or {@code null} when
+	 * nobody is.
+	 *
+	 * <p>Evaluated over the order's COMPLETE contributor set. Reading the order's own single
+	 * {@code M_ShipmentSchedule_ID} sees only the one contributor whose back-reference the consolidated order happens
+	 * to carry, so a picker working on any other delivery of the same order stays invisible and the reconcile mutates
+	 * or voids the document under them.</p>
+	 *
+	 * <p>An order carrying no contributor row at all reports nobody busy — that is the state of an order created
+	 * before the contributor association existed, until the rollout backfill populates it.</p>
+	 */
+	@Nullable
+	private BlockingWork findBlockingPickingWork(@NonNull final I_DD_Order ddOrder)
+	{
+		final ImmutableList<PickingJobSchedule> contributors = contributorsOf(lineIdsOf(ImmutableList.of(ddOrder)));
+		if (contributors.isEmpty())
+		{
+			return null;
+		}
+
+		final ImmutableSet<ShipmentScheduleId> busyScheduleIds = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(
+				contributors.stream()
+						.map(PickingJobSchedule::getShipmentScheduleId)
+						.collect(ImmutableSet.toImmutableSet()));
+
+		for (final PickingJobSchedule contributor : contributors)
+		{
+			if (busyScheduleIds.contains(contributor.getShipmentScheduleId()))
+			{
+				return BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId());
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * The contributor a "goods already moved" refusal names. The movement belongs to the whole shared line, so any of
+	 * its contributors is a truthful answer; one that is NOT the assignment being edited is picked first, because
+	 * telling the editor about their own assignment says nothing about who else is on the document. A line with no
+	 * contributor row left falls back to the edited assignment itself, which is what the single-delivery case
+	 * reported before consolidation.
+	 */
+	@NonNull
+	private BlockingWork findBlockingMovedWork(
+			@NonNull final DDOrderLineId lineId,
+			@NonNull final BlockingWork changedAssignment)
+	{
+		BlockingWork blocking = null;
+		for (final PickingJobSchedule contributor : contributorsOf(ImmutableSet.of(lineId)))
+		{
+			if (blocking == null)
+			{
+				blocking = BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId());
+			}
+			if (!contributor.getId().equals(changedAssignment.getJobScheduleId()))
+			{
+				return BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId());
+			}
+		}
+		return blocking != null ? blocking : changedAssignment;
+	}
+
+	/**
+	 * The assignments contributing to the given lines, ordered by {@code M_Picking_Job_Schedule_ID} so that the
+	 * contributor a refusal names is the same on every run — an error message that changes between two identical
+	 * situations is not something an operator can report.
+	 */
+	private ImmutableList<PickingJobSchedule> contributorsOf(@NonNull final Set<DDOrderLineId> lineIds)
+	{
+		final ImmutableSet<PickingJobScheduleId> contributorIds = contributorRepository.getContributorIds(lineIds);
+		if (contributorIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return pickingJobScheduleService.getByIds(contributorIds).stream()
+				.sorted(Comparator.comparing(contributor -> contributor.getId().getRepoId()))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private AdempiereException pickerBusyException(@NonNull final DDOrderId ddOrderId, @NonNull final BlockingWork blocking)
+	{
+		return new AdempiereException(
+				MSG_DDOrderPickingReplenishment_PickerBusy,
+				asMessageValue(ddOrderId.getRepoId()),
+				asMessageValue(blocking.getJobScheduleId().getRepoId()),
+				asMessageValue(blocking.getShipmentScheduleId().getRepoId()));
+	}
+
+	/**
+	 * Record ids go into an AD_Message as text, never as a number: the message is rendered through
+	 * {@code MessageFormat}, which would push an {@code Integer} through the reader's locale number format and turn
+	 * the id into "1.234.567" — no longer the value they can search the system for.
+	 */
+	private static String asMessageValue(final int repoId)
+	{
+		return String.valueOf(repoId);
 	}
 
 	private WarehouseId getFirstSourceWarehouseIdOrThrow(

@@ -148,16 +148,23 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | groupDDOrderLine | jobScheduleA              | 10  |
       | groupDDOrderLine | jobScheduleB              | 5   |
 
-    # The mover has dispatched the consolidated replenishment: 1 PCE of the shared line is between the source
-    # locator and the workstation.
-    When simulate goods in transit on DD_Order linked to picking job schedule jobScheduleA
+    # The mover has dispatched part of the consolidated replenishment: 7.5 PCE of the shared line are between the
+    # source locator and the workstation. The odd quantity is deliberate — with 1 PCE, "the message reports the moved
+    # quantity" would be satisfied by the leading digit of any seven-digit record id already in the message.
+    When simulate goods in transit of 7.5 on DD_Order linked to picking job schedule jobScheduleA
 
     # The traffic manager now tries to re-plan the OTHER delivery — the one the shared order does not name.
     # The refusal must reach them anyway, and it must say whose work is in the way: the moved quantity is not
     # theirs, and neither is the assignment that the order names.
+    #
+    # The named assignment is jobScheduleA because the moved goods sit on the SHARED line and therefore belong to no
+    # single delivery: the message names a contributor of that line OTHER than the one being edited (lowest
+    # M_Picking_Job_Schedule_ID first, so it is the same on every run). It is resolved through the contributor
+    # association, never through the order's single M_Picking_Job_Schedule_ID back-reference — that column names one
+    # arbitrary contributor and is being removed.
     Then changing the picking job schedule quantity is rejected:
       | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                               | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID | Blocking_QtyMoved |
-      | jobScheduleB              | 2         | DDOrderPickingReconcile_MovementStarted | jobScheduleA                       | shipmentScheduleA              | groupDDOrder         | 1                 |
+      | jobScheduleB              | 2         | DDOrderPickingReconcile_MovementStarted | jobScheduleA                       | shipmentScheduleA              | groupDDOrder         | 7.5               |
 
     # Nothing was re-planned around the refusal: same order, same quantity, same contributor set.
     And after not more than 10s, exactly one live DD_Order exists for the product group:

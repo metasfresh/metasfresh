@@ -34,7 +34,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.math.BigDecimal;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 
 /**
  * Step definitions for {@code M_Picking_Job_Schedule} — workstation assignment lifecycle.
@@ -161,6 +163,15 @@ public class M_Picking_Job_Schedule_StepDef
 	 *   <li>{@code Blocking_DD_Order_ID} — identifier of the distribution order the refusal is about</li>
 	 *   <li>{@code Blocking_QtyMoved} — the quantity already in transit or delivered</li>
 	 * </ul>
+	 * Which assignment counts as "the blocking one" is the production rule, restated here because the table only
+	 * shows its outcome: a <b>picker-busy</b> refusal names the contributor whose delivery is actually being picked;
+	 * a <b>movement-started</b> refusal names a contributor of the moving line other than the one being edited
+	 * (lowest {@code M_Picking_Job_Schedule_ID} first, so the message is reproducible), because the moved goods
+	 * belong to the shared line rather than to any one delivery. Both are resolved through the contributor
+	 * association — NEVER through {@code DD_Order.M_Picking_Job_Schedule_ID}, which names one arbitrary contributor
+	 * and is on its way out.
+	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData, M_ShipmentSchedule_StepDefData,
+	 * DD_Order_StepDefData
 	 * @cucumber.example
 	 * <pre>
 	 * Then changing the picking job schedule quantity is rejected:
@@ -196,38 +207,67 @@ public class M_Picking_Job_Schedule_StepDef
 				.isEqualByComparingTo(originalQty);
 	}
 
+	private static final String COLUMN_Blocking_QtyMoved = "Blocking_QtyMoved";
+	private static final String COLUMN_Blocking_M_Picking_Job_Schedule_ID = "Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID;
+	private static final String COLUMN_Blocking_M_ShipmentSchedule_ID = "Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID;
+	private static final String COLUMN_Blocking_DD_Order_ID = "Blocking_" + I_DD_Order.COLUMNNAME_DD_Order_ID;
+
+	private static final ImmutableSet<String> KNOWN_Blocking_COLUMNS = ImmutableSet.of(
+			COLUMN_Blocking_M_Picking_Job_Schedule_ID,
+			COLUMN_Blocking_M_ShipmentSchedule_ID,
+			COLUMN_Blocking_DD_Order_ID,
+			COLUMN_Blocking_QtyMoved);
+
 	/**
 	 * Asserts the rendered refusal message names each piece of blocking work the row asks for.
 	 *
-	 * <p>The record ids are matched as plain text because that is exactly what the traffic manager reads: the
-	 * message is an {@code AD_Message} whose placeholders the service fills with the repository ids. Matching the
-	 * id keeps the assertion independent of the UI language, which is what makes it safe to run against either the
-	 * German base text or its English translation.</p>
+	 * <p>The record ids and the quantity are matched as plain text because that is exactly what the traffic manager
+	 * reads: the message is an {@code AD_Message} whose placeholders the service fills with them. Matching the value
+	 * rather than the wording keeps the assertion independent of the UI language, which is what makes it safe to run
+	 * against either the German base text or its English translation.</p>
+	 *
+	 * <p>Each match is anchored on digit boundaries. A bare substring match is worthless here: every repo id in a
+	 * cucumber database is a seven-digit number starting with {@code 1}, so {@code contains("1")} would be satisfied
+	 * by any id in the message and would still pass with the asserted value entirely absent.</p>
 	 */
 	private void assertBlockingWorkIsNamed(@NonNull final DataTableRow row, @NonNull final String message)
 	{
-		row.getAsOptionalIdentifier("Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+		// An unrecognised Blocking_ column would otherwise be read by nobody and its assertion would silently not
+		// exist — the row would look like it pins the message while pinning only the error code.
+		final Set<String> unknownBlockingColumns = row.asMap().keySet().stream()
+				.filter(columnName -> columnName.startsWith("Blocking_"))
+				.filter(columnName -> !KNOWN_Blocking_COLUMNS.contains(columnName))
+				.collect(ImmutableSet.toImmutableSet());
+		assertThat(unknownBlockingColumns)
+				.as("Unknown Blocking_* column(s) — nothing would assert them; known columns are %s", KNOWN_Blocking_COLUMNS)
+				.isEmpty();
+
+		row.getAsOptionalIdentifier(COLUMN_Blocking_M_Picking_Job_Schedule_ID)
 				.map(identifier -> identifier.lookupNotNullIn(jobScheduleTable).getId().getRepoId())
-				.ifPresent(blockingJobScheduleId -> assertThat(message)
-						.as("The refusal must name the blocking M_Picking_Job_Schedule_ID")
-						.contains(String.valueOf(blockingJobScheduleId)));
+				.ifPresent(blockingJobScheduleId -> assertMessageNames(
+						message, String.valueOf(blockingJobScheduleId), "the blocking M_Picking_Job_Schedule_ID"));
 
-		row.getAsOptionalIdentifier("Blocking_" + I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID)
+		row.getAsOptionalIdentifier(COLUMN_Blocking_M_ShipmentSchedule_ID)
 				.map(identifier -> identifier.lookupNotNullIdIn(shipmentScheduleTable).getRepoId())
-				.ifPresent(blockingShipmentScheduleId -> assertThat(message)
-						.as("The refusal must name the blocking M_ShipmentSchedule_ID")
-						.contains(String.valueOf(blockingShipmentScheduleId)));
+				.ifPresent(blockingShipmentScheduleId -> assertMessageNames(
+						message, String.valueOf(blockingShipmentScheduleId), "the blocking M_ShipmentSchedule_ID"));
 
-		row.getAsOptionalIdentifier("Blocking_" + I_DD_Order.COLUMNNAME_DD_Order_ID)
+		row.getAsOptionalIdentifier(COLUMN_Blocking_DD_Order_ID)
 				.map(identifier -> identifier.lookupNotNullIn(ddOrderTable).getDD_Order_ID())
-				.ifPresent(ddOrderId -> assertThat(message)
-						.as("The refusal must name the DD_Order it is about")
-						.contains(String.valueOf(ddOrderId)));
+				.ifPresent(ddOrderId -> assertMessageNames(
+						message, String.valueOf(ddOrderId), "the DD_Order the refusal is about"));
 
-		row.getAsOptionalBigDecimal("Blocking_QtyMoved")
-				.ifPresent(qtyMoved -> assertThat(message)
-						.as("The refusal must name the quantity already moved")
-						.contains(qtyMoved.stripTrailingZeros().toPlainString()));
+		row.getAsOptionalBigDecimal(COLUMN_Blocking_QtyMoved)
+				.ifPresent(qtyMoved -> assertMessageNames(
+						message, qtyMoved.stripTrailingZeros().toPlainString(), "the quantity already moved"));
+	}
+
+	/** Asserts {@code expected} occurs in the message as a standalone number, not as a digit run inside a longer one. */
+	private static void assertMessageNames(@NonNull final String message, @NonNull final String expected, @NonNull final String what)
+	{
+		assertThat(message)
+				.as("The refusal must name %s (%s)", what, expected)
+				.containsPattern("(?<![0-9.])" + Pattern.quote(expected) + "(?![0-9])");
 	}
 
 	/**
