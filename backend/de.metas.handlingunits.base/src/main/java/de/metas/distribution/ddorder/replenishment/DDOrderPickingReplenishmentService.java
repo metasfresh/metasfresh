@@ -512,21 +512,13 @@ public class DDOrderPickingReplenishmentService
 					.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
 		}
 
-		// Decide the FROZEN lines BEFORE attributing anything. A line the already-delivered guard refuses to shrink
-		// keeps its old quantity AND its old shares, so its chunk must be taken out of the attribution input and the
-		// shares it still serves subtracted from their contributors' demand. Attributing over the full allocation
-		// first and skipping the frozen locator afterwards silently shifts that chunk onto the next line, and the
-		// contributor then carries more than it demanded.
-		final ImmutableSet<LocatorId> frozenLocatorIds = findFrozenLocatorIds(requiredByLocator, existingLineByLocator);
-		final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor = sharesOfFrozenLines(frozenLocatorIds, existingLineByLocator);
-		final Map<LocatorId, Quantity> attributableByLocator = requiredByLocator.entrySet().stream()
-				.filter(entry -> !frozenLocatorIds.contains(entry.getKey()))
-				.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		// THEN SPLIT: attribute each attributable source-locator chunk back across the contributors, in the
-		// attribution order and net of what the frozen lines already serve.
-		final ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution =
-				attribute(contributorsInOrder, attributableByLocator, alreadyServedByContributor);
+		// THEN SPLIT — but the frozen lines have to be settled first, and settling them IS the split (see
+		// computeFrozenSplit): a line the already-delivered guard refuses to shrink keeps its old quantity AND its old
+		// shares, so its chunk must be out of the attribution input and the shares it still serves netted off their
+		// contributors' demand.
+		final FrozenSplit split = computeFrozenSplit(contributorsInOrder, requiredByLocator, existingLineByLocator);
+		final Map<LocatorId, Quantity> refusedQtyByLocator = split.getRefusedQtyByLocator();
+		final ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution = split.getAttribution();
 
 		final DocTypeId docTypeId = docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
@@ -554,11 +546,12 @@ public class DDOrderPickingReplenishmentService
 			final LocatorId sourceLocatorId = entry.getKey();
 			final I_DD_OrderLine existingLine = existingLineByLocator.get(sourceLocatorId);
 
-			if (frozenLocatorIds.contains(sourceLocatorId))
+			final Quantity refusedQty = refusedQtyByLocator.get(sourceLocatorId);
+			if (refusedQty != null)
 			{
-				// Re-run the guard so the refusal is logged with its numbers; it leaves the line at its old quantity,
-				// whose old shares are still exactly what it carries.
-				updateDDOrderLineQtyInPlace(existingLine, entry.getValue());
+				// Re-run the guard with the quantity it was refused for, so the refusal reaches the log with its real
+				// numbers. The line stays at its old quantity, whose old shares are still exactly what it carries.
+				updateDDOrderLineQtyInPlace(existingLine, refusedQty);
 				survivingLineIds.add(DDOrderLineId.ofRepoId(existingLine.getDD_OrderLine_ID()));
 				continue;
 			}
@@ -643,21 +636,81 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * The required source locators whose existing line the already-delivered guard will refuse to shrink. Decided up
-	 * front so the attribution can exclude them; the same predicate then fires inside
-	 * {@link #updateDDOrderLineQtyInPlace}, which owns the refusal and its log entry.
+	 * The outcome of {@link #computeFrozenSplit}: which source locators the already-delivered guard freezes (and at
+	 * which quantity it refused them), plus the attribution of everything that is left.
 	 */
-	private static ImmutableSet<LocatorId> findFrozenLocatorIds(
+	@lombok.Value
+	@VisibleForTesting
+	static class FrozenSplit
+	{
+		/**
+		 * Frozen source locator → the quantity {@link #updateDDOrderLineQtyInPlace} refuses to write there. Empty in
+		 * the ordinary case, and then {@link #attribution} covers every required locator.
+		 */
+		@NonNull Map<LocatorId, Quantity> refusedQtyByLocator;
+
+		/**
+		 * Contributor shares per source locator, over the NON-frozen locators only.
+		 */
+		@NonNull ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution;
+	}
+
+	/**
+	 * Decides the frozen source locators and attributes what is left, as one fixed point.
+	 *
+	 * <p><b>Why this cannot be a single pre-pass.</b> The guard's answer depends on the quantity a line will actually
+	 * be written with — which is the sum of its attributed shares, not its raw stock chunk. That sum in turn depends
+	 * on which OTHER locators are frozen, because their shares are netted off their contributors' demand. So a line
+	 * whose raw chunk is a growth (guard silent) can still come out of the split as a shrink once the netting is
+	 * applied, and a pre-pass probing the raw chunk would miss it: the split would walk contributor demand through
+	 * that locator, the write would then be refused and the shares discarded, and the demand spent on it would be
+	 * lost to the locators after it in the pick order — permanently, since the same inputs reproduce every pass.</p>
+	 *
+	 * <p>So the split is recomputed until no further line turns out to be refused. The frozen set only grows and is
+	 * bounded by the group's existing lines (one per source locator), so this terminates in at most that many rounds;
+	 * the ordinary case exits after the first, with nothing frozen.</p>
+	 */
+	@VisibleForTesting
+	FrozenSplit computeFrozenSplit(
+			@NonNull final List<PickingJobSchedule> contributorsInOrder,
 			@NonNull final Map<LocatorId, Quantity> requiredByLocator,
 			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator)
 	{
-		return requiredByLocator.entrySet().stream()
-				.filter(entry -> {
-					final I_DD_OrderLine existingLine = existingLineByLocator.get(entry.getKey());
-					return existingLine != null && isShrinkRefusedByDeliveredQty(existingLine, entry.getValue());
-				})
-				.map(Map.Entry::getKey)
-				.collect(ImmutableSet.toImmutableSet());
+		final LinkedHashMap<LocatorId, Quantity> refusedQtyByLocator = new LinkedHashMap<>();
+
+		while (true)
+		{
+			final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor =
+					sharesOfFrozenLines(refusedQtyByLocator.keySet(), existingLineByLocator);
+			final ImmutableMap<LocatorId, Quantity> attributableByLocator = requiredByLocator.entrySet().stream()
+					.filter(entry -> !refusedQtyByLocator.containsKey(entry.getKey()))
+					.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
+
+			final ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution =
+					attribute(contributorsInOrder, attributableByLocator, alreadyServedByContributor);
+
+			final LinkedHashMap<LocatorId, Quantity> newlyRefused = new LinkedHashMap<>();
+			for (final Map.Entry<LocatorId, Quantity> entry : attributableByLocator.entrySet())
+			{
+				final I_DD_OrderLine existingLine = existingLineByLocator.get(entry.getKey());
+				if (existingLine == null)
+				{
+					continue; // a locator that is newly required has no line to refuse anything
+				}
+
+				final Quantity plannedQty = sumOfShares(attribution.get(entry.getKey()), entry.getValue());
+				if (isShrinkRefusedByDeliveredQty(existingLine, plannedQty))
+				{
+					newlyRefused.put(entry.getKey(), plannedQty);
+				}
+			}
+
+			if (newlyRefused.isEmpty())
+			{
+				return new FrozenSplit(ImmutableMap.copyOf(refusedQtyByLocator), attribution);
+			}
+			refusedQtyByLocator.putAll(newlyRefused);
+		}
 	}
 
 	/**
@@ -673,14 +726,14 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableMap.of();
 		}
 
+		final ImmutableSet<DDOrderLineId> frozenLineIds = frozenLocatorIds.stream()
+				.map(locatorId -> DDOrderLineId.ofRepoId(existingLineByLocator.get(locatorId).getDD_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
 		final LinkedHashMap<PickingJobScheduleId, Quantity> result = new LinkedHashMap<>();
-		for (final LocatorId frozenLocatorId : frozenLocatorIds)
+		for (final DDOrderLineContributor share : contributorRepository.getContributorsOfLines(frozenLineIds))
 		{
-			final DDOrderLineId lineId = DDOrderLineId.ofRepoId(existingLineByLocator.get(frozenLocatorId).getDD_OrderLine_ID());
-			for (final DDOrderLineContributor share : contributorRepository.getContributors(lineId))
-			{
-				result.merge(share.getPickingJobScheduleId(), share.getQty(), Quantity::add);
-			}
+			result.merge(share.getPickingJobScheduleId(), share.getQty(), Quantity::add);
 		}
 		return result;
 	}

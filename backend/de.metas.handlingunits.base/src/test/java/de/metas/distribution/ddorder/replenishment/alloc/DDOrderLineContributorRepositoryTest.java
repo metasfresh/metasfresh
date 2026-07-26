@@ -118,6 +118,33 @@ class DDOrderLineContributorRepositoryTest
 	}
 
 	@Test
+	void getContributorsOfLines_returnsEveryRowOfEveryGivenLine()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(
+				DDOrderLineContributor.of(scheduleId(10), qty(10)),
+				DDOrderLineContributor.of(scheduleId(20), qty(2))));
+		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(3))));
+		repository.replaceContributors(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(7))));
+
+		assertThat(repository.getContributorsOfLines(ImmutableSet.of(lineId(1), lineId(2))))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactlyInAnyOrder(tuple(scheduleId(10), 10), tuple(scheduleId(20), 2), tuple(scheduleId(10), 3));
+	}
+
+	/**
+	 * Pins the "empty input selects nothing" contract of the batched contributor read: its caller sums the result into
+	 * the demand each assignment is already served, so a widened restriction would net EVERY alloc row in the instance
+	 * off the group's demand and plan nothing at all.
+	 */
+	@Test
+	void getContributorsOfLines_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(repository.getContributorsOfLines(ImmutableSet.of())).isEmpty();
+	}
+
+	@Test
 	void getLineIdsByPickingJobScheduleIds_resolvesTheNavigationDirectionForSeveralAssignmentsAtOnce()
 	{
 		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));

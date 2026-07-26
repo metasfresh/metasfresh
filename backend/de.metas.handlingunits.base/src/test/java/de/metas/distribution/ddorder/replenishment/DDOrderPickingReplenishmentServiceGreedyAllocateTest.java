@@ -2,7 +2,9 @@ package de.metas.distribution.ddorder.replenishment;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
@@ -33,6 +35,7 @@ import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.eevolution.model.I_DD_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,6 +48,7 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Focused unit tests for the per-locator greedy allocation, covering both the locator pick order
@@ -68,6 +72,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	private int warehouseId;
 
 	private DDOrderPickingReplenishmentService service;
+	private DDOrderLineContributorRepository contributorRepository;
 
 	private I_C_UOM uomEach;   // product stocking UOM (e.g. PCE)
 	private I_C_UOM uomCase;   // assignment / demand UOM (e.g. a 6-pack case)
@@ -81,6 +86,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		contributorRepository = mock(DDOrderLineContributorRepository.class);
 
 		uomEach = BusinessTestHelper.createUOM("Each", 0, 0);
 		uomCase = BusinessTestHelper.createUOM("Case", 0, 0);
@@ -105,7 +111,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				mock(WorkplaceService.class),
 				mock(DDOrderMoveScheduleService.class),
 				new WarehouseRepository(),
-				mock(DDOrderLineContributorRepository.class)
+				contributorRepository
 		);
 	}
 
@@ -163,6 +169,22 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		loc.setIsActive(true);
 		InterfaceWrapperHelper.saveRecord(loc);
 		return LocatorId.ofRepoId(warehouseId, loc.getM_Locator_ID());
+	}
+
+	/**
+	 * A real in-memory {@code DD_OrderLine} under the given id, so the already-delivered guard runs against actual
+	 * record state rather than a stub of itself.
+	 */
+	private static I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final String qtyDelivered)
+	{
+		final I_DD_OrderLine line = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class);
+		line.setDD_OrderLine_ID(lineRepoId);
+		line.setQtyEntered(new BigDecimal(qtyOrdered));
+		line.setQtyOrdered(new BigDecimal(qtyOrdered));
+		line.setTargetQty(new BigDecimal(qtyOrdered));
+		line.setQtyDelivered(new BigDecimal(qtyDelivered));
+		InterfaceWrapperHelper.saveRecord(line);
+		return line;
 	}
 
 	/**
@@ -495,6 +517,43 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 		assertThat(actual.get(l2)).isEmpty();
 		assertThat(sumForContributor(actual, p1)).isEqualByComparingTo("0");
+	}
+
+	/**
+	 * The freeze set is a FIXED POINT, not a single pre-pass.
+	 *
+	 * <p>L1 is refused on the first look (its chunk 5 is a shrink against an ordered 10 that is part-delivered). L2's
+	 * chunk 15 is a GROWTH against its ordered 12, so probing the raw chunk clears it — but once L1's shares are netted
+	 * off, only 10 of demand is left to attribute, so L2 would be written with 10 and refused after all. L2 must
+	 * therefore end up frozen too: attributing 10 to a line that then refuses them discards those shares, and the
+	 * demand walked through L2 is lost to every locator behind it in the pick order, on every future pass alike.
+	 */
+	@Test
+	void frozenSplit_freezesALineThatOnlyTurnsIntoAShrinkAfterAnotherFrozenLineIsNettedOff()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "10");
+
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "4");  // ordered 10, delivered 4
+		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", "3");  // ordered 12, delivered 3
+		// L1 historically serves 6 of P1 and 4 of P2 — more than the 5 its fresh chunk would give it.
+		final ImmutableList<DDOrderLineContributor> sharesOfL1 = ImmutableList.of(
+				DDOrderLineContributor.of(p1.getId(), each("6")),
+				DDOrderLineContributor.of(p2.getId(), each("4")));
+		when(contributorRepository.getContributorsOfLines(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+				.thenReturn(sharesOfL1);
+		when(contributorRepository.getContributorsOfLines(ImmutableSet.of(DDOrderLineId.ofRepoId(101), DDOrderLineId.ofRepoId(102))))
+				.thenReturn(sharesOfL1);
+
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1, p2),
+				ImmutableMap.of(l1, each("5"), l2, each("15")),
+				ImmutableMap.of(l1, lineL1, l2, lineL2));
+
+		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1, l2);
+		assertThat(split.getAttribution()).isEmpty();
 	}
 
 	/**

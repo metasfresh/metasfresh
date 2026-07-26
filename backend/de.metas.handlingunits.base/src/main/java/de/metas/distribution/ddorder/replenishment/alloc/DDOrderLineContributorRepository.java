@@ -82,6 +82,25 @@ public class DDOrderLineContributorRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	/**
+	 * Every contributor row of the given lines, in one query. The rows are NOT grouped by line: the caller that needs
+	 * this (the reconcile, summing what the frozen lines already serve per assignment) only ever aggregates across
+	 * them, and keeping it flat avoids inventing a grouping nobody reads.
+	 */
+	public ImmutableList<DDOrderLineContributor> getContributorsOfLines(@NonNull final Collection<DDOrderLineId> lineIds)
+	{
+		if (lineIds.isEmpty()) {return ImmutableList.of();}
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineIds)
+				.orderBy(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.create()
+				.stream()
+				.map(DDOrderLineContributorRepository::fromRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	public ImmutableSet<PickingJobScheduleId> getContributorIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
 		if (lineIds.isEmpty()) {return ImmutableSet.of();}
