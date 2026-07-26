@@ -157,3 +157,21 @@ export const expectErrorToast = async (title, func, toastValidator) => {
     });
 };
 
+/**
+ * Hold the painted screen briefly, but ONLY in a deliberate capture run (`UAT_CAPTURE=1`).
+ *
+ * Some states the test passes through are never recorded: a confirmation dialog answered within a
+ * single ~40ms recorder frame is in no captured frame at all, and post-production cannot conjure a
+ * frame that was never recorded. An assertion is no substitute — it resolves the instant its
+ * condition holds, which is exactly why the frame is missed.
+ *
+ * Unset flag => no-op, so a normal or CI run pays zero wall-clock. Call it ONLY from a screen
+ * object, never from a spec: a scenario must read as the real workflow.
+ */
+export const holdForCaptureIfEnabled = async (millis = 500) => {
+    if (!process.env.UAT_CAPTURE) {
+        return;
+    }
+    await page.waitForTimeout(millis);
+};
+

@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToast, FAST_ACTION_TIMEOUT, holdForCaptureIfEnabled, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step, VERY_FAST_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { DistributionLineScreen } from './DistributionLineScreen';
 import { YesNoDialog } from '../../dialogs/YesNoDialog';
 import { DistributionJobsListScreen } from './DistributionJobsListScreen';
@@ -74,6 +74,47 @@ export const DistributionJobScreen = {
     complete: async () => await test.step(`${NAME} - Complete`, async () => {
         await clickCompleteButton();
         await YesNoDialog.waitForDialog();
+        await YesNoDialog.clickYesButton();
+        await DistributionJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
+    }),
+
+    // Complete on a job whose planned quantity has not been moved: the completion is withheld and the
+    // mover is told what is still to be moved. He stays on the job, which is still his to finish.
+    completeExpectingRefusal: async ({ expectedQtyOutstanding }) => await test.step(`${NAME} - Complete, expecting to be told '${expectedQtyOutstanding}' is still to be moved`, async () => {
+        await expectErrorToast(
+            `Completion withheld, still to move: ${expectedQtyOutstanding}`,
+            async () => {
+                await clickCompleteButton();
+                await YesNoDialog.waitForDialog();
+                await YesNoDialog.clickYesButton();
+            },
+            async ({ toast }) => await expect(toast).toContainText(expectedQtyOutstanding)
+        );
+        await DistributionJobScreen.waitForScreen();
+    }),
+
+    expectGiveUpRemainderButton: async ({ visible }) => await test.step(`${NAME} - Expect 'give up remainder' button visible=${visible}`, async () => {
+        const button = giveUpRemainderButtonLocator();
+        if (visible) {
+            await expect(button).toBeVisible({ timeout: FAST_ACTION_TIMEOUT });
+        } else {
+            await expect(button).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+        }
+    }),
+
+    // The mover cannot move the rest (empty shelf) and decides to finish the job short, giving the
+    // remainder up. The confirmation names the quantity he is about to abandon.
+    completeGivingUpRemainder: async ({ expectedQtyOutstanding }) => await test.step(`${NAME} - Complete, giving up '${expectedQtyOutstanding}'`, async () => {
+        const button = giveUpRemainderButtonLocator();
+        await expect(button).toBeEnabled({ timeout: FAST_ACTION_TIMEOUT });
+        await button.tap();
+        await YesNoDialog.waitForDialog();
+        if (expectedQtyOutstanding !== undefined) {
+            await YesNoDialog.expectQuestion({ contains: expectedQtyOutstanding });
+        }
+        // The prompt names the quantity about to be abandoned; it is answered within a single
+        // recorder frame, so a capture run needs a hold to get it on the video at all.
+        await holdForCaptureIfEnabled();
         await YesNoDialog.clickYesButton();
         await DistributionJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     }),
@@ -172,6 +213,11 @@ const dropAllButtonLocator = () => {
 
 const switchPickFromLocatorButtonLocator = () => {
     return page.getByTestId('switchPickFromLocator-button');
+};
+
+// Offered only while some planned quantity is still unmoved, i.e. exactly while Complete is refused.
+const giveUpRemainderButtonLocator = () => {
+    return page.locator('#complete-giving-up-remainder-button');
 };
 
 const clickCompleteButton = async () => await test.step(`${NAME} - Click Complete button`, async () => {
