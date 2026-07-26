@@ -25,6 +25,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -229,6 +230,46 @@ public class M_Picking_Job_Schedule_StepDef
 				.collect(ImmutableSet.toImmutableSet());
 		
 		pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIds);
+	}
+
+	/**
+	 * @cucumber.stepdef Deactivates an existing workstation assignment ({@code IsActive=N}), keyed by the assignment's
+	 * stored identifier. The record is kept, so the {@code beforeChange} guard and the {@code afterChange} after-commit
+	 * reconcile fire — this is a plain change, NOT the {@code afterDelete} path of {@code delete picking job schedules}.
+	 * <p>
+	 * Real-world trigger: a traffic manager deactivates the assignment record instead of deleting it, and any data fix
+	 * that does the same. A deactivated assignment carries no demand: it drops out of the product group's contributor
+	 * set ({@code PickingJobScheduleRepository.listContributorsOfGroup} filters {@code IsActive}), so the group's
+	 * consolidated quantity shrinks to the remaining contributors' sum — and once the last contributor leaves this way
+	 * the group's DD_Order is voided (an un-assignment, not a shipment close-out).
+	 * <p>
+	 * @cucumber.columns
+	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the existing assignment to deactivate<br>
+	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the picking job schedule is deactivated:
+	 *   | M_Picking_Job_Schedule_ID |
+	 *   | jobScheduleA              |
+	 * </pre>
+	 */
+	@And("^the picking job schedule is deactivated:$")
+	public void deactivate(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::deactivate);
+	}
+
+	private void deactivate(final DataTableRow row)
+	{
+		final PickingJobScheduleId jobScheduleId = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.lookupNotNullIn(jobScheduleTable)
+				.getId();
+
+		// Written through the record because the assignment repository has no IsActive-aware save: its
+		// updateRecord(...) copies only the business columns, so a domain-object round-trip would not deactivate.
+		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.load(jobScheduleId, I_M_Picking_Job_Schedule.class);
+		record.setIsActive(false);
+		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	/**
