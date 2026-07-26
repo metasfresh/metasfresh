@@ -254,6 +254,27 @@ public interface I_M_HU_PI_Version
 	String COLUMNNAME_Name = "Name";
 
 	/**
+	 * Set Calc Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPackageDimensionCalcMethod (@Nullable java.lang.String PackageDimensionCalcMethod);
+
+	/**
+	 * Get Calc Method.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPackageDimensionCalcMethod();
+
+	ModelColumn<I_M_HU_PI_Version, Object> COLUMN_PackageDimensionCalcMethod = new ModelColumn<>(I_M_HU_PI_Version.class, "PackageDimensionCalcMethod", null);
+	String COLUMNNAME_PackageDimensionCalcMethod = "PackageDimensionCalcMethod";
+
+	/**
 	 * Get Updated.
 	 * Date this record was updated
 	 *

@@ -198,6 +198,7 @@ const mergeActivityDataStoredAndAllocateAlternatives = ({ draftActivityDataStore
   draftActivityDataStored.carrierAdviseAvailable = fromPickingJob.carrierAdviseAvailable;
   draftActivityDataStored.carrierAdviseReadOnly = fromPickingJob.carrierAdviseReadOnly;
   draftActivityDataStored.carrierProductCaption = fromPickingJob.carrierProductCaption;
+  draftActivityDataStored.carrierAdviseDisabledReason = fromPickingJob.carrierAdviseDisabledReason;
   draftActivityDataStored.allowedPickToStructures = fromPickingJob.allowedPickToStructures;
   draftActivityDataStored.readAttributes = fromPickingJob.readAttributes ?? [];
   draftActivityDataStored.isAllowSkippingRejectedReason = fromPickingJob.allowSkippingRejectedReason;

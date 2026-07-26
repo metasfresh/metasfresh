@@ -17,4 +17,7 @@ public class CarrierAdviseTargetInfo
 	boolean available;
 	boolean readOnly;
 	@Nullable String productCaption;
+	/** Translated human-readable reason why the "Advise Carrier" button is disabled (shown but non-clickable).
+	 * {@code null} when the button is enabled OR when carrier advise is not available ({@code available=false}). */
+	@Nullable String disabledReason;
 }

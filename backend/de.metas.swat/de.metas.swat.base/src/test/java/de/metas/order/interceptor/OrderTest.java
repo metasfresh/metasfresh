@@ -24,26 +24,16 @@ package de.metas.order.interceptor;
 
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.BPartnerSupplierApprovalRepository;
-import de.metas.bpartner.BPartnerSupplierApprovalService;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.doctype.CopyDescriptionAndDocumentNote;
 import de.metas.document.DocBaseType;
 import de.metas.document.DocSubType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParamsRepository;
-import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.order.model.interceptor.C_Order;
-import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
-import de.metas.shipping.PurchaseOrderToShipperTransportationService;
-import de.metas.user.UserGroupRepository;
-import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
 import org.adempiere.exceptions.AdempiereException;
@@ -78,14 +68,7 @@ public class OrderTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 		SpringContextHolder.registerJUnitBean(BPartnerOrderParamsRepository.newInstanceForUnitTesting());
 
-		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerEffectiveBL bpartnerEffectiveBL = BPartnerEffectiveBL.newInstanceForUnitTesting();
-		final DocumentLocationBL documentLocationBL = DocumentLocationBL.newInstanceForUnitTesting();
-		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
-		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		final PurchaseOrderToShipperTransportationService purchaseOrderToShipperTransportationService = PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting();
-		final OrderPayScheduleService orderPayScheduleService = OrderPayScheduleService.newInstanceForUnitTesting();
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, bpartnerEffectiveBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, purchaseOrderToShipperTransportationService, orderPayScheduleService));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(C_Order.newInstanceForUnitTesting());
 
 		defaultIncoterm = newInstance(I_C_Incoterms.class);
 		defaultIncoterm.setName("System Default Incoterm");

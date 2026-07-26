@@ -82,6 +82,7 @@ public class DeliveryOrder
 
 	@Nullable String incotermsValue;
 	@Nullable String externalSystemValue;
+	@Nullable String preAdviceRequired;
 
 	/**
 	 * @deprecated This class has a bad data structure and should not be used in the future. Please use instead {@link #deliveryOrderParcels}.
