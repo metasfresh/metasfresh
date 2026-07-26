@@ -53,7 +53,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * The query is index-served by the partial index {@code m_picking_job_schedule (c_workplace_id) WHERE processed = 'N'}:
  * {@code C_Workplace_ID} is the leading (and only) indexed column and the {@code Processed = 'N'} predicate is present,
  * so the workplace set — not the open-assignment set — bounds the scan. An in-memory test cannot show a query plan;
- * the {@code EXPLAIN} evidence for AC14 is produced against the target instance.
+ * the {@code EXPLAIN} evidence is produced against the target instance.
  */
 class PickingJobScheduleGroupLookupTest
 {
@@ -148,7 +148,7 @@ class PickingJobScheduleGroupLookupTest
 
 	/**
 	 * Two assignments on the same workplace whose shipment schedules carry the same product, in the same UOM, are BOTH
-	 * contributors of the group — that is the consolidation input (AC1). An assignment of the same group on a workplace
+	 * contributors of the group — that is the consolidation input. An assignment of the same group on a workplace
 	 * outside the requested set belongs to another group's target locator and must not be pulled in.
 	 */
 	@Test

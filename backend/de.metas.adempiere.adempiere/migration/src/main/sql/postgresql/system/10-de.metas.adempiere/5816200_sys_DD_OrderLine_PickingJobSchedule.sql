@@ -1,8 +1,8 @@
 -- Picking-replenishment aggregation — add the DD_OrderLine_PickingJobSchedule association table.
 -- Carries each contributing M_Picking_Job_Schedule (workstation assignment)'s planned quantity
 -- share of one DD_OrderLine, once demand is aggregated by product group instead of by assignment.
--- No unique index and no cascade delete by design (DESIGN.md §5): the group reconcile is the
--- single writer that inserts/deletes these rows; nothing else may mutate them.
+-- No unique index and no cascade delete by design: the group reconcile is the single writer that
+-- re-plans these rows; nothing else may mutate them.
 --
 -- IDs allocated from idserver.metas.de on 2026-07-25:
 --   AD_MigrationScript  5816200 (this script)
@@ -18,18 +18,17 @@
 --   AD_Column           593032  (UpdatedBy)
 --   AD_Column           593033  (DD_OrderLine_ID) -- reuses existing AD_Element 53313
 --   AD_Column           593034  (M_Picking_Job_Schedule_ID) -- reuses existing AD_Element 583882
---   AD_Column           593035  (Qty) -- reuses existing AD_Element 526 ("Menge"); PLAN.md assumed
---                                        this element did not yet exist, but AD_Element 526 was
---                                        found live on the DB — reused per "check before creating".
+--   AD_Column           593035  (Qty) -- reuses existing AD_Element 526 ("Menge"), found live on the
+--                                        DB — reused rather than created, per "check before creating".
 --   AD_Column           593036  (C_UOM_ID) -- reuses existing AD_Element 215
 --
--- EntityType deviation from PLAN.md: the plan specified 'de.metas.distribution', which does not
--- exist in AD_EntityType (verified live). This table physically lives in the same module
--- (de.metas.handlingunits.base) as its closest sibling DD_Order_MoveSchedule, which uses
--- EntityType 'de.metas.handlingunits' — reused here instead of inventing a value.
+-- EntityType: 'de.metas.distribution' does not exist in AD_EntityType (verified live). This table
+-- physically lives in the same module (de.metas.handlingunits.base) as its closest sibling
+-- DD_Order_MoveSchedule, which uses EntityType 'de.metas.handlingunits' — reused here instead of
+-- inventing a value.
 --
 -- Translation judgment: this table has no window/tab/field (not user-facing — internal planning
--- state, see PLAN.md Task 1 "Field classification"). Its exact sibling table in the same
+-- state). Its exact sibling table in the same
 -- subsystem, DD_Order_MoveSchedule, uses a plain English AD_Table.Name/AD_Element.Name with
 -- IsTranslated='N' in every language (verified: AD_Element 580264). No end user ever sees this
 -- name, so the same technical-English, untranslated convention is followed here rather than
@@ -242,7 +241,7 @@ VALUES (593032 /*From ID Server*/, 0, 0, 'Y',
         'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
--- DD_OrderLine_ID (FK, no cascade delete — DESIGN.md §5 Rule 4)
+-- DD_OrderLine_ID (FK, no cascade delete — see the CREATE TABLE below)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        Created, CreatedBy, Updated, UpdatedBy,
                        Name, AD_Table_ID, AD_Element_ID, ColumnName,
@@ -261,7 +260,7 @@ VALUES (593033 /*From ID Server*/, 0, 0, 'Y',
         'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
--- M_Picking_Job_Schedule_ID (FK, no cascade delete — DESIGN.md §5 Rule 4)
+-- M_Picking_Job_Schedule_ID (FK, no cascade delete — see the CREATE TABLE below)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        Created, CreatedBy, Updated, UpdatedBy,
                        Name, AD_Table_ID, AD_Element_ID, ColumnName,
@@ -280,7 +279,7 @@ VALUES (593034 /*From ID Server*/, 0, 0, 'Y',
         'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
--- Qty (the contributor's share of this line's quantity — DESIGN.md §2.2)
+-- Qty (the contributor's share of this line's quantity)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        Created, CreatedBy, Updated, UpdatedBy,
                        Name, AD_Table_ID, AD_Element_ID, ColumnName,
@@ -299,7 +298,7 @@ VALUES (593035 /*From ID Server*/, 0, 0, 'Y',
         'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
--- C_UOM_ID (paired with Qty — DESIGN.md §2.2)
+-- C_UOM_ID (paired with Qty)
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        Created, CreatedBy, Updated, UpdatedBy,
                        Name, AD_Table_ID, AD_Element_ID, ColumnName,
@@ -362,9 +361,11 @@ CREATE TABLE DD_OrderLine_PickingJobSchedule
     Qty                                numeric                            NOT NULL,
     C_UOM_ID                           numeric(10)                        NOT NULL,
     CONSTRAINT ddorderline_pickingjobschedule_key PRIMARY KEY (DD_OrderLine_PickingJobSchedule_ID),
-    -- NO cascade delete on either FK: the group reconcile is the ONLY writer that deletes these rows
-    -- (DESIGN.md §5, Rule 4). A cascade would let a second writer (the assignment delete) mutate the
-    -- association behind the reconcile's back, so the line qty and the alloc rows could disagree.
+    -- NO cascade delete on either FK. The group reconcile is the only writer that RE-PLANS these rows;
+    -- the assignment delete removes its own rows synchronously (it has to — the FK below is deferrable,
+    -- so a surviving row would fail the delete at commit). A cascade would additionally let the delete
+    -- reach rows of OTHER assignments behind the reconcile's back, and the line qty and the alloc rows
+    -- could then disagree with nobody noticing.
     CONSTRAINT ddorderline_pjs_ddorderline FOREIGN KEY (DD_OrderLine_ID)
         REFERENCES DD_OrderLine (DD_OrderLine_ID) DEFERRABLE INITIALLY DEFERRED,
     CONSTRAINT ddorderline_pjs_pickingjobsched FOREIGN KEY (M_Picking_Job_Schedule_ID)
