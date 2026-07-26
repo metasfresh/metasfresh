@@ -285,7 +285,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	@Test
 	void priorityWins_lowerPriorityNoConsumedFirst_regardlessOfValue()
 	{
-		// AC2: B has the lower PriorityNo (10 < 50) but the HIGHER Value -> B must be consumed first.
+		// B has the lower PriorityNo (10 < 50) but the HIGHER Value -> B must be consumed first.
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 10);
 
@@ -308,7 +308,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	@Test
 	void samePriority_tieBreaksByValue()
 	{
-		// AC3: equal PriorityNo -> the lower Value (A "10-A") is consumed first.
+		// Equal PriorityNo -> the lower Value (A "10-A") is consumed first.
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
@@ -372,11 +372,11 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	// demand does each of those chunks serve". It is tested here rather than end-to-end because the combinatorial
 	// cases (N contributors x M locators, exhausted stock, a contributor spanning two locators) cannot be enumerated
 	// economically through the order -> shipment-schedule -> assignment chain — the cucumber asserts the resulting
-	// document, this asserts the pure split function (REQUIREMENTS.md § Acceptance Criteria).
+	// document, this asserts the pure split function.
 	// -----------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * DESIGN.md §4 worked example: two customer deliveries in one group, P1 wants 10 and P2 wants 5; the greedy
+	 * Worked example: two customer deliveries in one group, P1 wants 10 and P2 wants 5; the greedy
 	 * covered them from L1 (12) and L2 (3). The first line's 12 therefore serves P1 in full and P2 partially, and P2's
 	 * remaining 3 come from the second line — i.e. one contributor legitimately spans two lines.
 	 */
@@ -402,8 +402,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	}
 
 	/**
-	 * AC7: contributors ahead in the attribution order are covered in full, so the shortfall falls on those last in
-	 * it. The shortfall itself stays DERIVED (DESIGN.md §4.1) — no row carries the missing quantity.
+	 * Contributors ahead in the attribution order are covered in full, so the shortfall falls on those last in it.
+	 * The shortfall itself stays DERIVED — no row carries the missing quantity.
 	 */
 	@Test
 	void attribution_whenStockIsShort_theLastContributorInOrderBearsTheShortfall()
@@ -425,7 +425,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	}
 
 	/**
-	 * The two invariants of DESIGN.md §4.1: EQUALITY per line (a line's quantity is exactly the sum of its
+	 * The two invariants of the split: EQUALITY per line (a line's quantity is exactly the sum of its
 	 * contributors' shares — otherwise the mover would carry quantity nobody asked for, or a contributor's share
 	 * would vanish), and INEQUALITY per contributor (partial coverage is allowed today, so a contributor may get
 	 * less than it demanded but never more).
@@ -451,7 +451,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 	/**
 	 * A contributor whose demand is already fully covered by the chunks ahead of it gets NO row at all — never a
-	 * {@code Qty=0} row (DESIGN.md §6, decided 2026-07-24). A zero row would make the alloc table claim the line
+	 * {@code Qty=0} row. A zero row would make the alloc table claim the line
 	 * serves a delivery it does not, and the group's own settlement would then never resolve it.
 	 */
 	@Test
@@ -469,5 +469,53 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
 				.containsExactly(p1.getId());
 		assertThat(sumForContributor(actual, p2)).isEqualByComparingTo("0");
+	}
+
+	/**
+	 * A line the already-delivered guard FROZE keeps its old quantity and its old shares, so the reconcile drops that
+	 * locator's chunk from the attribution input and subtracts the frozen shares from their contributors' demand.
+	 * Without the subtraction the frozen chunk is silently attributed a second time on the next locator.
+	 *
+	 * <p>Here P1 demands 10; an earlier reconcile put all 10 on L1 and the mover has partially delivered it, so L1 is
+	 * frozen at 10. Stock shifted and the new allocation is {@code L1=6, L2=4}: L1's 6 is excluded, and P1's demand is
+	 * already met by what the frozen line carries, so L2 must attribute NOTHING. Attributing its 4 to P1 would leave
+	 * P1 carrying 14 against a demand of 10, with no exception and no log line.
+	 */
+	@Test
+	void attribution_aFrozenLineDoesNotShiftItsChunkOntoTheNextLine()
+	{
+		createLocator("10-A", 50); // L1 — frozen, therefore NOT part of the attribution input
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual = service.attribute(
+				ImmutableList.of(p1),
+				ImmutableMap.of(l2, each("4")),
+				ImmutableMap.of(p1.getId(), each("10")));
+
+		assertThat(actual.get(l2)).isEmpty();
+		assertThat(sumForContributor(actual, p1)).isEqualByComparingTo("0");
+	}
+
+	/**
+	 * The partial-freeze case of the test above: the frozen line covers only part of the contributor's demand, so the
+	 * remaining locators attribute exactly the rest — never the full demand again.
+	 */
+	@Test
+	void attribution_aPartiallyFrozenContributorIsOnlyAttributedItsRemainingDemand()
+	{
+		createLocator("10-A", 50); // L1 — frozen at 6 of P1's 10
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual = service.attribute(
+				ImmutableList.of(p1, p2),
+				ImmutableMap.of(l2, each("9")),
+				ImmutableMap.of(p1.getId(), each("6")));
+
+		assertThat(actual.get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 4), tuple(p2.getId(), 5));
 	}
 }
