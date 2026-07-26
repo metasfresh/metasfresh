@@ -175,7 +175,10 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	{
 		if (!shippingRulesActive)
 		{
-			return request;
+			//needs to be changed to false for manual case
+			final JsonShipperConfig patchedConfig = request.getShipperConfig()
+					.withAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES, Boolean.FALSE.toString());
+			return request.toBuilder().shipperConfig(patchedConfig).build();
 		}
 
 		final ExternalSystemId externalSystemId = schedules.stream()
