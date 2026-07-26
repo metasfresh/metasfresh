@@ -122,11 +122,13 @@ Feature: DD_Order replenishment — one distribution order per product group
     # group, not the assignment. That single reconcile must still serve EVERY contributor: a member dropped here
     # ends up with no distribution order, no exception and no log entry.
     #
-    # Wait for both reconciles to have finished, so whatever they produced is committed before the drift below.
-    Given after not more than 60s, an AD_EventLog_Entry for the replenishment event handler is found:
-      | M_Picking_Job_Schedule_ID | IsError |
-      | jobScheduleA              | false   |
-      | jobScheduleB              | false   |
+    # Wait for the group to be planned, so whatever the reconcile produced is committed before the drift below. Gated
+    # on the observable outcome, NOT on one event-log entry per assignment: the whole point of the group key is that N
+    # same-group requests dedup to ONE event, so a per-assignment gate would break the moment two creations land in one
+    # transaction — and it would time out with a message about the event log rather than about the missing order.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
 
     # Simulate the drift the watchdog exists for (event lost, node restarted): the group's orders are gone, so BOTH
     # assignments are unserved and one rebuild pass has to plan the whole group.
@@ -358,3 +360,38 @@ Feature: DD_Order replenishment — one distribution order per product group
       | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
       | groupDDOrderLine | jobScheduleB              | 5   |
     And each of jobScheduleB resolves to the DD_Order identified by groupDDOrder
+
+  @from:cucumber
+  Scenario: Deleting the last contributor disposes of the shared order it no longer owns the back-reference of
+    # A consolidated order carries the back-reference of ONE of its contributors. Once that one has left, the order can
+    # only be reached through its contributor association — and the un-assignment that removes the last association row
+    # is the very transaction that would make it unreachable. If the order is not disposed of there and then, it stays
+    # Completed for a demand nobody has, invisible to every group-keyed lookup and to the drift watchdog alike, and the
+    # mover keeps being sent to fetch it.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    # The first delivery ships, so it leaves the group and the order is rewritten to serve only the second one — while
+    # still carrying the departed first delivery's assignment as its back-reference.
+    When shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_Picking_Job_Schedule_ID |
+      | shipmentScheduleA     | jobScheduleA              |
+    And the reconcile event for M_Picking_Job_Schedule jobScheduleB is processed
+
+    Then after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 5          |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+    # The traffic manager un-assigns the last remaining delivery by deleting its workstation assignment.
+    When delete picking job schedules
+      | M_ShipmentSchedule_ID |
+      | shipmentScheduleB     |
+
+    # Nothing is left to replenish, so nothing may be left planned.
+    Then after not more than 60s, no live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |

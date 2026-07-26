@@ -139,6 +139,45 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 				.ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, singleLineOf(ddOrder)));
 	}
 
+	/**
+	 * @cucumber.stepdef Polls until NO live (DocStatus != Voided) DD_Order is left for the given product group.
+	 * <p>
+	 * The counterpart of {@code exactly one live DD_Order exists for the product group}, for the disposal outcomes: the
+	 * group's last contributor left, so nothing may still be planned for it. Group-keyed for the same reason — a
+	 * consolidated order has no single owning assignment to look it up by, and an order that lost its last contributor
+	 * cannot even be reached through the association any more.
+	 * <p>
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
+	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 60s, no live DD_Order exists for the product group:
+	 *   | M_Product_ID | M_LocatorTo_ID |
+	 *   | product      | packingLocator |
+	 * </pre>
+	 */
+	@Then("^after not more than (.*)s, no live DD_Order exists for the product group:$")
+	public void assertNoLiveDDOrderForProductGroup(final int timeoutSec, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> assertNoLiveDDOrderForProductGroup(timeoutSec, row));
+	}
+
+	private void assertNoLiveDDOrderForProductGroup(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final ProductId productId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		final LocatorId locatorToId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID).lookupNotNullIdIn(locatorTable);
+
+		StepDefUtil.<List<I_DD_Order>>tryAndWaitForData(() -> liveDDOrdersOfProductGroup(productId, locatorToId))
+				.validateUsingConsumer(liveDDOrders -> assertThat(liveDDOrders)
+						.as("live (DocStatus != Voided) DD_Orders of the product group")
+						.isEmpty())
+				.maxWaitSeconds(timeoutSec)
+				.checkingIntervalMs(1000L)
+				.execute();
+	}
+
 	private void validateSingleDDOrderOfProductGroup(@NonNull final List<I_DD_Order> liveDDOrders, @NonNull final DataTableRow expected)
 	{
 		// The group's demand is served by ONE order — not one per contributing assignment.
