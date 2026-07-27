@@ -159,14 +159,22 @@ BEGIN
                 --        LastInvoiceCostingMethodHandler.createCostForMatchInvoice_MaterialCosts), so averaging
                 --        would silently write a WRONG CurrentCostPrice. Example: prevPrice=20, prevQty=10,
                 --        inbound qty=10 amt=400 -> replace gives 40, averaging gives 600/20 = 30.
-                --        CAVEAT for 'p': ManufacturingLastPOCostingMethodHandler.createMainProductOrCoProductReceipt
-                --        DOES call addWeightedAverage for a PP_Cost_Collector main/co-product receipt - but there
-                --        amt = currentCostPrice*qty, so that average is a no-op (same shape as 'S'). So 'p' behaves
-                --        two ways depending on the DOCUMENT, and a costingmethod-only gate cannot separate them;
-                --        'p' is therefore excluded wholesale, which is safe for BOTH sub-cases. Known residual
-                --        gap: a 'p' element whose last pre-range detail is a PP_Cost_Collector receipt still
-                --        RAISEs instead of being reconstructed. Widening the gate to a (method, document) key
-                --        would close it - deliberately out of scope here.
+                --        CAVEAT - 'p' is NOT uniform: it has at least three reachable shapes, because the
+                --        manufacturing handler (ManufacturingLastPOCostingMethodHandler) overrides the base one.
+                --          (1) M_MatchPO                       -> REPLACE with amt/qty (base handler, above).
+                --          (2) PP_Cost_Collector main/co-product receipt (createMainProductOrCoProductReceipt)
+                --              -> addWeightedAverage, but with amt = currentCostPrice*qty, so a no-op.
+                --          (3) PP_Cost_Collector component-issue REVERSAL (createComponentIssue, isReversal)
+                --              -> addWeightedAverage on the reversal's own amt/qty. An issue is outbound, so its
+                --                 reversal is qty>0 with ischangingcosts='Y' and no inventory line - it reaches
+                --                 this branch shape - and amt/qty is the price at the ORIGINAL issue, which need
+                --                 NOT equal the current price. That one is a GENUINE average, not a no-op.
+                --        So do NOT read the (2) no-op as licence to add 'p' to the gate. Excluding 'p' wholesale
+                --        is safe for a different and stronger reason: the ONLY fallback is the loud RAISE below,
+                --        never a silently wrong CurrentCostPrice - which holds for every shape, including (3).
+                --        Known residual gap: a 'p' element whose last pre-range detail is any PP_Cost_Collector
+                --        row therefore still RAISEs instead of being reconstructed. Closing it needs a
+                --        (method, document) key, not a method-only one - deliberately out of scope here.
                 --   'L' Lifo / 'F' Fifo / 'U' UserDefined / 'x' ExternalProcessing are likewise excluded.
                 -- Everything excluded falls through to the RAISE below - i.e. exactly the behaviour those
                 -- methods already have today - so this change can never turn a loud abort into a silent
