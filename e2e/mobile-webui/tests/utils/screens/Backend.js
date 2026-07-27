@@ -153,6 +153,12 @@ export const Backend = {
         let line;
         if (lineId != null) {
             line = lines.find((candidate) => String(candidate.lineId) === String(lineId));
+            if (!line) {
+                throw new Error(
+                    `wfProcess "${wfProcessId}" has no distribution line "${lineId}"; available lineIds:\n` +
+                    JSON.stringify(lines.map((l) => l.lineId), null, 2)
+                );
+            }
         } else if (lines.length === 1) {
             line = lines[0];
         } else {
