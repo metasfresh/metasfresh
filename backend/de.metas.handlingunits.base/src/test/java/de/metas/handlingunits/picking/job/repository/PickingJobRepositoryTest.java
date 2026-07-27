@@ -220,45 +220,45 @@ class PickingJobRepositoryTest
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_voidedJob_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_voidedJob_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(101);
 		createPickingJobWithLine(PickingJobDocStatus.Voided, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a voided picking job must NOT count as busy")
-				.isFalse();
+				.isEmpty();
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_completedJob_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_completedJob_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(102);
 		createPickingJobWithLine(PickingJobDocStatus.Completed, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a completed picking job must NOT count as busy")
-				.isFalse();
+				.isEmpty();
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_draftedJob_isBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_draftedJob_isBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(103);
 		createPickingJobWithLine(PickingJobDocStatus.Drafted, scheduleId);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("a drafted (in-progress) picking job must count as busy")
-				.isTrue();
+				.containsExactly(scheduleId);
 	}
 
 	@Test
-	void existsActivePickingJobLineForSchedule_noLine_isNotBusy()
+	void retrieveScheduleIdsWithActivePickingJobLine_noLine_isNotBusy()
 	{
 		final ShipmentScheduleId scheduleId = ShipmentScheduleId.ofRepoId(104);
 
-		Assertions.assertThat(pickingJobRepository.existsActivePickingJobLineForSchedule(scheduleId))
+		Assertions.assertThat(pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(ImmutableSet.of(scheduleId)))
 				.as("no picking job line for the schedule must NOT count as busy")
-				.isFalse();
+				.isEmpty();
 	}
 }
