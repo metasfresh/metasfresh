@@ -42,7 +42,8 @@ import java.util.regex.Pattern;
  * Step definitions for {@code M_Picking_Job_Schedule} — workstation assignment lifecycle.
  *
  * <p>Covers creating/updating assignments, changing or attempting to change quantities (including
- * the picker-busy rejection path), deleting assignments, and polling for persisted assignment records.</p>
+ * the picker-busy rejection path), deleting assignments (including the refused-disposal path), and polling for
+ * persisted assignment records.</p>
  *
  * @see de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService
  */
@@ -312,13 +313,76 @@ public class M_Picking_Job_Schedule_StepDef
 	private void delete(final DataTableRow row)
 	{
 		final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
-		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
+
+		pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIdsOf(shipmentScheduleId));
+	}
+
+	/**
+	 * @cucumber.stepdef Attempts to delete the given shipment schedule's workstation assignments and asserts the
+	 * {@code afterDelete} disposal REFUSES it. Asserts the thrown exception is an
+	 * {@link org.adempiere.exceptions.AdempiereException} whose {@code ErrorCode} matches the expected value, and that
+	 * the assignments are still there afterwards — the refusal rolls the whole delete transaction back.
+	 * <p>
+	 * The delete counterpart of {@code changing the picking job schedule quantity is rejected}. It exists because the
+	 * departure of a shared replenishment's LAST contributor <b>disposes of</b> (voids) that replenishment, and a
+	 * disposal is exactly as destructive to a picker mid-job on it as a re-plan is: the document they are working on
+	 * would be voided under them. A consolidated order names only one of its contributors, so the departing one is
+	 * usually not the one the order back-references — which is why the refusal is resolved through the contributor
+	 * association, never through {@code DD_Order.M_Picking_Job_Schedule_ID}.
+	 * <p>
+	 * @cucumber.columns
+	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule whose assignments to delete<br>
+	 *   <b>ErrorCode</b> — (required) expected {@code AdempiereException} error code, e.g.
+	 *   {@code DDOrderPickingReconcile_PickerBusy}<br>
+	 *   <b>Blocking_M_Picking_Job_Schedule_ID</b>, <b>Blocking_M_ShipmentSchedule_ID</b>,
+	 *   <b>Blocking_DD_Order_ID</b>, <b>Blocking_QtyMoved</b> — (optional) the blocking work the refusal must NAME,
+	 *   asserted exactly as documented on {@code changing the picking job schedule quantity is rejected}<br>
+	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData, M_ShipmentSchedule_StepDefData,
+	 * DD_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then deleting the picking job schedules is rejected:
+	 *   | M_ShipmentSchedule_ID | ErrorCode                          | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID |
+	 *   | shipmentScheduleB     | DDOrderPickingReconcile_PickerBusy | jobScheduleB                       | shipmentScheduleB              | groupDDOrder         |
+	 * </pre>
+	 */
+	@And("^deleting the picking job schedules is rejected:$")
+	public void deleteIsRejected(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::deleteIsRejected);
+	}
+
+	private void deleteIsRejected(final DataTableRow row)
+	{
+		final ShipmentScheduleId shipmentScheduleId = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID).lookupNotNullIdIn(shipmentScheduleTable);
+		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = jobScheduleIdsOf(shipmentScheduleId);
+		assertThat(jobScheduleIds)
+				.as("There must be at least one assignment to attempt deleting for M_ShipmentSchedule_ID=%s", shipmentScheduleId)
+				.isNotEmpty();
+
+		final String expectedErrorCode = row.getAsString("ErrorCode");
+
+		assertThatThrownBy(() -> pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIds))
+				.as("Deleting the assignment must be refused while its replenishment is being picked")
+				.isInstanceOf(AdempiereException.class)
+				.satisfies(ex -> assertThat(((AdempiereException)ex).getErrorCode())
+						.as("AdempiereException.ErrorCode")
+						.isEqualTo(expectedErrorCode))
+				.satisfies(ex -> assertBlockingWorkIsNamed(row, ex.getLocalizedMessage()));
+
+		// Re-read: the refused delete rolled its transaction back, so every assignment is still there.
+		assertThat(jobScheduleIdsOf(shipmentScheduleId))
+				.as("The assignments must still exist after the rejected delete")
+				.containsExactlyInAnyOrderElementsOf(jobScheduleIds);
+	}
+
+	private ImmutableSet<PickingJobScheduleId> jobScheduleIdsOf(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		return pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
 						.onlyShipmentScheduleId(shipmentScheduleId)
 						.build())
 				.map(PickingJobSchedule::getId)
 				.collect(ImmutableSet.toImmutableSet());
-		
-		pickingJobScheduleService.deleteJobSchedulesById(jobScheduleIds);
 	}
 
 	/**

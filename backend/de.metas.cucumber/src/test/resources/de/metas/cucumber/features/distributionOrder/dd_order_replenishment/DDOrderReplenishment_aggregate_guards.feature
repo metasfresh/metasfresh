@@ -213,3 +213,64 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
       | groupDDOrderLine | jobScheduleA              | 10  |
       | groupDDOrderLine | jobScheduleB              | 5   |
+
+  @from:cucumber
+  Scenario: A picker working on the last contributor's delivery refuses the DISPOSAL that un-assigning it would cause
+    # The two scenarios above are re-plan refusals — a CHANGE to a surviving assignment. This one is the DISPOSAL:
+    # the departure of the LAST contributor is what voids a consolidated replenishment, and voiding it is at least as
+    # destructive to a picker mid-job on it as re-planning it would be. The order is the very document they are
+    # working on, so the un-assignment has to be refused too.
+    #
+    # The un-assignment is done by DELETING the workstation assignment, which is the route where the order can no
+    # longer be reached through its own back-reference: it names the contributor that left first, and the departing
+    # one is somebody else entirely. Only the contributor association still connects the two.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+    # The FIRST delivery — the one whose assignment the shared order back-references — is un-assigned, so the order is
+    # shrunk to serve only the second one while still carrying the departed assignment as its back-reference. The
+    # second delivery is now the group's last contributor.
+    When the picking job schedule is deactivated:
+      | M_Picking_Job_Schedule_ID |
+      | jobScheduleA              |
+    And the reconcile event for M_Picking_Job_Schedule jobScheduleB is processed
+    Then after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 5          |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+    # A picker starts the REAL mobile picking workflow for that last remaining delivery. With IsAllowPickingAnyHU=Y
+    # the start call alone creates the in-progress M_Picking_Job_Line the busy guard checks.
+    Given create JsonWFProcessStartRequest for picking and store it in context as request payload:
+      | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier |
+      | orderB                | customer                 | customerLocation                  |
+    And the metasfresh REST-API endpoint path 'api/v2/userWorkflows/wfProcess/start' receives a 'POST' request with the payload from context and responds with '200' status code
+    And process response and extract picking step and main HU picking candidate:
+      | WorkflowProcess.Identifier | WorkflowActivity.Identifier | PickingLine.Identifier |
+      | pickingWF                  | pickingActivity             | pickingLine            |
+
+    # Deleting that last assignment would void the shared order out from under the picker. It is refused instead, and
+    # the refusal names the delivery being picked so the traffic manager can go and resolve it.
+    Then deleting the picking job schedules is rejected:
+      | M_ShipmentSchedule_ID | ErrorCode                          | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID |
+      | shipmentScheduleB     | DDOrderPickingReconcile_PickerBusy | jobScheduleB                       | shipmentScheduleB              | groupDDOrder         |
+
+    # Release the picker through the real abort endpoint, then assert the shared order — and the association that is
+    # the only remaining way to reach it — survived the refused disposal intact.
+    Given store workflow endpointPath api/v2/userWorkflows/wfProcess/@pickingWF@/abort in context
+    And a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
+    Then after not more than 10s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 5          |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+    # ... and it is the SAME order, still reachable from the assignment that was not deleted.
+    And each of jobScheduleB resolves to the DD_Order identified by groupDDOrder
