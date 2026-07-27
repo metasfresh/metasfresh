@@ -227,4 +227,41 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
 
     consoleErrorSpy.mockRestore();
   });
+
+  // Case F - the discard call itself fails. discardNewRequest is the FIRST async
+  // step of the chain; if it rejects (network error, 500 from /discardChanges) the
+  // whole reconcile branch never runs, so without a fallback the grid strands on
+  // the abandoned in-memory value exactly as in Case E. Modal.closeModal() does not
+  // await this callback, so an unhandled rejection would also surface no error at
+  // all. The same tab-refresh fallback must fire, and the returned promise must
+  // settle rather than reject.
+  it('falls back to a tab refresh when the discard request itself fails', async () => {
+    discardNewRequest.mockRejectedValue(new Error('discard failed'));
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await expect(
+      instance.closeModalCallback({
+        isNew: true,
+        windowType: WINDOW_TYPE,
+        documentId: DOCUMENT_ID,
+        tabId: TAB_ID,
+        rowId: PERSISTED_ROW_ID,
+        saveStatus: false,
+      })
+    ).resolves.toBeUndefined();
+
+    // the discard rejected, so no re-fetch was attempted ...
+    expect(getRowsData).not.toHaveBeenCalled();
+    // ... and no grid update was applied ...
+    expect(props.updateTabRowsData).not.toHaveBeenCalled();
+    // ... but the grid was still reconciled with the DB via a full tab refresh
+    expect(props.onRefreshTab).toHaveBeenCalledTimes(1);
+
+    consoleErrorSpy.mockRestore();
+  });
 });
