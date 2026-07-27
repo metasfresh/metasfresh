@@ -163,8 +163,9 @@ public class DDOrderPickingReplenishmentService
 	private ImmutableList<I_DD_Order> findLiveDDOrdersOfAffectedGroups(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
 		final LinkedHashMap<DDOrderId, I_DD_Order> ddOrdersById = new LinkedHashMap<>();
-		for (final DDOrderReplenishmentGroupKey groupKey : affectedGroupKeys(jobSchedule))
+		for (final DDOrderReplenishmentRequest request : affectedReplenishmentRequests(jobSchedule))
 		{
+			final DDOrderReplenishmentGroupKey groupKey = request.getGroupKey();
 			final List<I_DD_Order> ddOrders = ddOrderLowLevelDAO.findActiveDDOrdersForReplenishmentGroup(
 					groupKey.getProductId(),
 					groupKey.getLocatorToId(),
@@ -175,22 +176,22 @@ public class DDOrderPickingReplenishmentService
 		return ImmutableList.copyOf(ddOrdersById.values());
 	}
 
-	private ImmutableSet<DDOrderReplenishmentGroupKey> affectedGroupKeys(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	/** The assignment's current group plus, when a group-key column changed, the group it is moving OUT of. Requires the CHANGED record: only it carries the old values. */
+	private ImmutableSet<DDOrderReplenishmentRequest> affectedReplenishmentRequests(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
-		final ImmutableSet.Builder<DDOrderReplenishmentGroupKey> groupKeys = ImmutableSet.builder();
-		groupKeys.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(jobSchedule)).getGroupKey());
+		final ImmutableSet.Builder<DDOrderReplenishmentRequest> requests = ImmutableSet.builder();
+		requests.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(jobSchedule)));
 
-		// The group a changed group-key column moves the assignment OUT of may already be under way, so guard it too.
 		if (InterfaceWrapperHelper.isValueChanged(jobSchedule,
 				I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID,
 				I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID,
 				I_M_Picking_Job_Schedule.COLUMNNAME_C_UOM_ID))
 		{
 			final I_M_Picking_Job_Schedule oldRecord = InterfaceWrapperHelper.createOld(jobSchedule, I_M_Picking_Job_Schedule.class);
-			groupKeys.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(oldRecord)).getGroupKey());
+			requests.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(oldRecord)));
 		}
 
-		return groupKeys.build();
+		return requests.build();
 	}
 
 	public void scheduleReconcileAfterCommit(@NonNull final PickingJobSchedule jobSchedule)
@@ -198,6 +199,15 @@ public class DDOrderPickingReplenishmentService
 		trxManager.accumulateAndProcessAfterCommit(
 				TRX_PROPERTY_ScheduleReconcile,
 				ImmutableSet.of(toReplenishmentRequest(jobSchedule)),
+				reconciliationEventPublisher::publishAll);
+	}
+
+	/** For a CHANGED assignment: the group it left is reconciled too, else that group's order keeps a line sized for a contributor that has moved away. */
+	public void scheduleReconcileOfAffectedGroupsAfterCommit(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
+	{
+		trxManager.accumulateAndProcessAfterCommit(
+				TRX_PROPERTY_ScheduleReconcile,
+				affectedReplenishmentRequests(jobSchedule),
 				reconciliationEventPublisher::publishAll);
 	}
 
@@ -529,12 +539,25 @@ public class DDOrderPickingReplenishmentService
 
 		// A DD_Order voided OUTSIDE the reconcile leaves its alloc rows behind; without this drop, the contributor
 		// would keep resolving to that dead order alongside the fresh one.
-		obsoleteLineIds.addAll(contributorRepository.getLineIdsByPickingJobScheduleIds(
-				contributorsInOrder.stream()
-						.map(PickingJobSchedule::getId)
-						.collect(ImmutableSet.toImmutableSet())));
+		contributorRepository.getLineIdsByPickingJobScheduleIds(
+						contributorsInOrder.stream()
+								.map(PickingJobSchedule::getId)
+								.collect(ImmutableSet.toImmutableSet()))
+				.stream()
+				// A contributor that arrived from ANOTHER group still has a row there, and that group's line is still
+				// serving its own remaining contributors; dropping it by line id would wipe them too.
+				.filter(lineId -> isLineOfGroup(lineId, groupKey))
+				.forEach(obsoleteLineIds::add);
 		obsoleteLineIds.removeAll(survivingLineIds);
 		contributorRepository.deleteByLineIds(obsoleteLineIds);
+	}
+
+	private boolean isLineOfGroup(@NonNull final DDOrderLineId lineId, @NonNull final DDOrderReplenishmentGroupKey groupKey)
+	{
+		final I_DD_OrderLine line = ddOrderLowLevelDAO.getLineById(lineId);
+		return line.getM_Product_ID() == groupKey.getProductId().getRepoId()
+				&& line.getM_LocatorTo_ID() == groupKey.getLocatorToId().getRepoId()
+				&& line.getC_UOM_ID() == groupKey.getUomId().getRepoId();
 	}
 
 	@lombok.Value

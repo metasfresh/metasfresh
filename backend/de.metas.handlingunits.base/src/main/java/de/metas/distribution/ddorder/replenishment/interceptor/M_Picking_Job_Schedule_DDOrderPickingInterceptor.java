@@ -49,10 +49,17 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 		replenishmentService.assertCanChange(jobSchedule);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void scheduleReconcileAfterCommit(@NonNull final I_M_Picking_Job_Schedule record)
 	{
 		replenishmentService.scheduleReconcileAfterCommit(PickingJobScheduleRepository.fromRecord(record));
+	}
+
+	/** Separate from the afterNew timing: a brand-new assignment has no old values, so asking for the group it left would read a group key of zeroes. */
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE })
+	public void scheduleReconcileOfAffectedGroupsAfterCommit(@NonNull final I_M_Picking_Job_Schedule record)
+	{
+		replenishmentService.scheduleReconcileOfAffectedGroupsAfterCommit(record);
 	}
 
 	/**
