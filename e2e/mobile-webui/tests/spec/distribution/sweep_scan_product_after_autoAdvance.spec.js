@@ -6,6 +6,7 @@ import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScre
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
+import { DistributionUtils } from '../../utils/screens/distribution/DistributionUtils';
 import { generateEAN13 } from '../../utils/ean13';
 
 //
@@ -24,7 +25,7 @@ import { generateEAN13 } from '../../utils/ean13';
 //   orderBys: 'Priority, LocatorPriority'         — offer orders sorted by priority, then source-locator priority
 //
 
-const N = 3;
+const ORDER_COUNT = 3;
 
 // Plenty of qty on the staging LU so every DD order below is a small, partial pick off it.
 const LU_QTY = 1000;
@@ -33,7 +34,7 @@ const createMasterdata = async () => {
     const luExternalBarcode = `EXT-SWEEP-${Date.now()}`;
 
     const distributionOrders = {};
-    for (let i = 1; i <= N; i++) {
+    for (let i = 1; i <= ORDER_COUNT; i++) {
         distributionOrders[`DD${i}`] = {
             seqNo: i * 10,
             warehouseFrom: "wh",
@@ -143,7 +144,7 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
     });
 
     await test.step('Backend: the DD2 pick landed (the moved qty of P is on the split-off HU)', async () => {
-        const pickedHUQRCode = await Backend.getDistributionPickedHUQRCode({
+        const pickedHUQRCode = await DistributionUtils.getPickedHUQRCode({
             wfProcessId: `distribution-${masterdata.distributionOrders.DD2.jobId}`,
         });
         await Backend.expect({
