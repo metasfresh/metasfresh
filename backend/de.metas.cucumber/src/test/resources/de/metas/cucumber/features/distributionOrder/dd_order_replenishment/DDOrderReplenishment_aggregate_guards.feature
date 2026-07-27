@@ -274,3 +274,45 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | groupDDOrderLine | jobScheduleB              | 5   |
     # ... and it is the SAME order, still reachable from the assignment that was not deleted.
     And each of jobScheduleB resolves to the DD_Order identified by groupDDOrder
+
+  @from:cucumber
+  Scenario: Un-assigning the delivery whose back-reference the shared order carries leaves the order to its sibling
+    # The counterpart of the disposal above, with the picker deliberately out of the picture: nobody is picking
+    # anything here, so nothing but the contributor count decides whether the document lives.
+    #
+    # What departs is the FIRST delivery — the one whose assignment the shared order's M_Picking_Job_Schedule_ID
+    # happens to name — and it departs by DELETE, the route that has to satisfy the deferrable FK on that very
+    # column inside the delete transaction. The SECOND delivery is untouched and still needs its goods, so the
+    # shared document must survive and simply shrink: disposal is the departure of the LAST contributor, never of
+    # the arbitrary one the back-reference points at.
+    #
+    # Voiding it here would take the mover's only document for a demand nobody cancelled, silently — and nothing
+    # would notice until the drift watchdog re-issues it as a second, un-netted physical move.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+    When delete picking job schedules
+      | M_ShipmentSchedule_ID |
+      | shipmentScheduleA     |
+
+    # The document the surviving delivery depends on is still there. Asserted through the identifier bound above, so
+    # a re-created replacement order cannot satisfy it — only the very order that was shared.
+    Then after not more than 10s, following DD_Orders are found
+      | Identifier   | DocStatus | IsPickingDisconnected |
+      | groupDDOrder | CO        | false                 |
+
+    # The group reconcile driven from the surviving contributor then rewrites that same order down to what that one
+    # delivery alone needs, exactly as it does after every other departure route.
+    When the reconcile event for M_Picking_Job_Schedule jobScheduleB is processed
+    Then after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 5          |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+    And each of jobScheduleB resolves to the DD_Order identified by groupDDOrder
