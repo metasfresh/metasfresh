@@ -1,13 +1,18 @@
 package de.metas.distribution.ddorder.replenishment.alloc;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.DDOrderLineId;
+import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.junit.jupiter.api.BeforeEach;
@@ -89,6 +94,59 @@ class DDOrderLineContributorRepositoryTest
 		repository.replaceContributors(lineId(1), ImmutableList.of());
 
 		assertThat(repository.getContributors(lineId(2))).hasSize(1);
+	}
+
+	/**
+	 * Row identity is the observable proof that a rewrite reconciles instead of re-creating: a contributor that survives
+	 * the rewrite must keep its {@code DD_OrderLine_PickingJobSchedule_ID} (it was UPDATEd), a departed one's row must be
+	 * gone, and a joined one must get a row that did not exist before.
+	 *
+	 * <p>The contributor-set assertions above cannot see this — delete-all-then-insert-all yields the exact same set,
+	 * only with every row re-created (a DELETE + INSERT per contributor per reconcile pass, on a table the reconcile
+	 * rewrites on every pass).</p>
+	 */
+	@Test
+	void replaceContributors_keepsTheRowOfASurvivingContributor()
+	{
+		repository.replaceContributors(lineId(1), ImmutableList.of(
+				DDOrderLineContributor.of(scheduleId(10), qty(10)),
+				DDOrderLineContributor.of(scheduleId(20), qty(2)),
+				DDOrderLineContributor.of(scheduleId(40), qty(4))));
+
+		final ImmutableMap<PickingJobScheduleId, Integer> rowIdsBefore = rowIdsByPickingJobScheduleId(lineId(1));
+		assertThat(rowIdsBefore).containsOnlyKeys(scheduleId(10), scheduleId(20), scheduleId(40));
+
+		repository.replaceContributors(lineId(1), ImmutableList.of(
+				DDOrderLineContributor.of(scheduleId(10), qty(10)),  // survives with an unchanged qty
+				DDOrderLineContributor.of(scheduleId(20), qty(7)),   // survives with a changed qty
+				DDOrderLineContributor.of(scheduleId(30), qty(5)))); // joins; scheduleId(40) departed
+
+		final ImmutableMap<PickingJobScheduleId, Integer> rowIdsAfter = rowIdsByPickingJobScheduleId(lineId(1));
+
+		assertThat(rowIdsAfter).as("departed contributor's row is gone, joined one's row is there")
+				.containsOnlyKeys(scheduleId(10), scheduleId(20), scheduleId(30));
+		assertThat(rowIdsAfter.get(scheduleId(10))).as("unchanged contributor keeps its row")
+				.isEqualTo(rowIdsBefore.get(scheduleId(10)));
+		assertThat(rowIdsAfter.get(scheduleId(20))).as("re-quantified contributor keeps its row")
+				.isEqualTo(rowIdsBefore.get(scheduleId(20)));
+		assertThat(rowIdsAfter.get(scheduleId(30))).as("joined contributor gets a new row")
+				.isNotIn(rowIdsBefore.values());
+
+		assertThat(repository.getContributors(lineId(1)))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(scheduleId(10), 10), tuple(scheduleId(20), 7), tuple(scheduleId(30), 5));
+	}
+
+	private static ImmutableMap<PickingJobScheduleId, Integer> rowIdsByPickingJobScheduleId(@NonNull final DDOrderLineId lineId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineId)
+				.create()
+				.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						record -> PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()),
+						I_DD_OrderLine_PickingJobSchedule::getDD_OrderLine_PickingJobSchedule_ID));
 	}
 
 	@Test
