@@ -1,9 +1,7 @@
 package de.metas.distribution.ddorder.replenishment;
 
 import de.metas.document.DocTypeId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import lombok.Builder;
@@ -27,8 +25,6 @@ import java.time.Instant;
 @Builder
 public class CreateDDOrderReplenishmentRequest
 {
-	@NonNull PickingJobScheduleId pickingJobScheduleId;
-	@NonNull ShipmentScheduleId shipmentScheduleId;
 	@NonNull WarehouseId sourceWarehouseId;
 	@NonNull WarehouseId targetWarehouseId;
 	@NonNull WarehouseId inTransitWarehouseId;

@@ -79,7 +79,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -399,11 +398,8 @@ public class DDOrderPickingReplenishmentService
 				.reduce(Quantity::add)
 				.orElseThrow(() -> new AdempiereException("Caller guarantees at least one contributor"));
 
-		// A consolidated order has no single owning delivery, so delivery-scoped header columns come from the first
-		// contributor in the attribution order: arbitrary, but deterministic.
-		// TODO: stop writing M_Picking_Job_Schedule_ID / M_ShipmentSchedule_ID here once their last reader is gone.
-		final PickingJobSchedule firstContributor = contributorsInOrder.get(0);
-		final I_M_ShipmentSchedule firstSchedule = shipmentScheduleBL.getById(firstContributor.getShipmentScheduleId());
+		// Every contributor of the group delivers to the same locator, so any of them resolves the same target warehouse.
+		final I_M_ShipmentSchedule firstSchedule = shipmentScheduleBL.getById(contributorsInOrder.get(0).getShipmentScheduleId());
 
 		final WarehouseId targetWarehouseId = shipmentScheduleEffectiveBL.getWarehouseId(firstSchedule);
 		final Warehouse targetWarehouse = warehouseRepository.getById(targetWarehouseId);
@@ -499,8 +495,6 @@ public class DDOrderPickingReplenishmentService
 			else
 			{
 				final I_DD_OrderLine createdLine = saveDraftDDOrder(CreateDDOrderReplenishmentRequest.builder()
-						.pickingJobScheduleId(firstContributor.getId())
-						.shipmentScheduleId(firstContributor.getShipmentScheduleId())
 						.sourceWarehouseId(sourceWarehouseId)
 						.targetWarehouseId(targetWarehouseId)
 						.inTransitWarehouseId(inTransitWarehouseId)
@@ -933,7 +927,7 @@ public class DDOrderPickingReplenishmentService
 		final OrgId orgId = request.getOrgId();
 
 		//
-		// Header — built here rather than in DDOrderLowLevelDAO, whose module cannot see I_M_Picking_Job_Schedule.
+		// Header
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		// The order serves several customers at once, so it belongs to the org itself - as for every other internal DD_Order.
@@ -947,8 +941,6 @@ public class DDOrderPickingReplenishmentService
 		// Without it the libero DD_OrderLine interceptor logs a benign "@NotFound@ @PP_Plant_ID@" WARN.
 		warehouseRepository.getPlantId(request.getTargetWarehouseId())
 				.ifPresent(plantId -> ddOrder.setPP_Plant_ID(plantId.getRepoId()));
-		ddOrder.setM_Picking_Job_Schedule_ID(request.getPickingJobScheduleId().getRepoId());
-		ddOrder.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
 		ddOrder.setDateOrdered(TimeUtil.asTimestamp(request.getDatePromised()));
 		ddOrder.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
 		ddOrder.setMRP_Generated(true);
@@ -975,8 +967,6 @@ public class DDOrderPickingReplenishmentService
 		ddOrderLine.setTargetQty(request.getQty().toBigDecimal());
 		ddOrderLine.setM_Locator_ID(request.getLocatorFromId().getRepoId());
 		ddOrderLine.setM_LocatorTo_ID(request.getLocatorToId().getRepoId());
-		ddOrderLine.setM_Picking_Job_Schedule_ID(request.getPickingJobScheduleId().getRepoId());
-		ddOrderLine.setM_ShipmentSchedule_ID(request.getShipmentScheduleId().getRepoId());
 		ddOrderLine.setIsInvoiced(false);
 		ddOrderLowLevelDAO.save(ddOrderLine);
 
@@ -993,23 +983,9 @@ public class DDOrderPickingReplenishmentService
 		}
 		ddOrderService.voidIt(existingDDOrderId);
 		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
-
-		detachFromPickingJobSchedule(ddOrderLowLevelDAO.getById(existingDDOrderId));
 	}
 
-	/** Mandatory for every order naming an assignment being deleted: the deferrable FK {@code mpickingjobschedule_ddorder} is checked at commit of the delete transaction. */
-	private void detachFromPickingJobSchedule(@NonNull final I_DD_Order ddOrder)
-	{
-		ddOrder.setM_Picking_Job_Schedule_ID(-1);
-		ddOrderLowLevelDAO.save(ddOrder);
-		for (final I_DD_OrderLine ddOrderLine : ddOrderLowLevelDAO.retrieveLines(ddOrder))
-		{
-			ddOrderLine.setM_Picking_Job_Schedule_ID(-1);
-			ddOrderLowLevelDAO.save(ddOrderLine);
-		}
-	}
-
-	/** Runs in the delete transaction: both {@code mpickingjobschedule_ddorder} and the alloc rows' FK are DEFERRABLE INITIALLY DEFERRED, so anything left pointing at the assignment fails at commit. */
+	/** Runs in the delete transaction: the alloc rows' {@code M_Picking_Job_Schedule_ID} is DEFERRABLE INITIALLY DEFERRED, so anything left pointing at the assignment fails at commit. */
 	public void voidDDOrdersForDeletedAssignment(@NonNull final PickingJobSchedule deletedAssignment)
 	{
 		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = ImmutableSet.of(deletedAssignment.getId());
@@ -1019,7 +995,7 @@ public class DDOrderPickingReplenishmentService
 		// often the one being picked — is no longer resolvable, and the set would report nobody busy.
 		final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture = findBlockingPickingWorkByLineId(servedLineIds, deletedAssignment);
 
-		final boolean sharedOrderSurvived = disposeOfOrDetachBackReferencingDDOrders(deletedAssignment, blockingBeforeDeparture);
+		final boolean sharedOrderSurvived = servesContributorsOtherThan(servedLineIds, deletedAssignment.getId());
 		contributorRepository.deleteByPickingJobScheduleIds(jobScheduleIds);
 
 		voidDDOrdersLeftWithoutContributor(servedLineIds, blockingBeforeDeparture);
@@ -1033,61 +1009,15 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Whether an order survives the departure is decided by its contributor set, not by the back-reference — that
-	 * column names one arbitrary contributor, usually not the last one to go.
+	 * Asked while the departing assignment's own alloc rows are still there, which is why it has to be excluded explicitly.
 	 *
-	 * @return whether at least one order outlived the departure and now carries more than the group still demands.
+	 * @return whether at least one served line keeps a contributor, i.e. its order outlives the departure and now carries more than the group still demands.
 	 */
-	private boolean disposeOfOrDetachBackReferencingDDOrders(
-			@NonNull final PickingJobSchedule deletedAssignment,
-			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
-	{
-		boolean anySurvived = false;
-		for (final I_DD_Order ddOrder : ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(deletedAssignment.getId()))
-		{
-			if (servesContributorsOtherThan(ddOrder, deletedAssignment.getId()))
-			{
-				detachFromPickingJobSchedule(ddOrder);
-				anySurvived = true;
-				Loggables.addLog(
-						"DD_Order picking replenishment: DD_Order_ID={0} still serves other contributors, so the departure of"
-								+ " M_Picking_Job_Schedule_ID={1} only cleared its back-reference; the order lives on",
-						ddOrder.getDD_Order_ID(),
-						deletedAssignment.getId().getRepoId());
-			}
-			else
-			{
-				final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
-				final BlockingWork busyPicker = firstBlockingWorkOf(ddOrder, blockingBeforeDeparture);
-				if (busyPicker != null)
-				{
-					throw newPickerBusyException(ddOrderId, busyPicker);
-				}
-
-				voidDDOrderFor(ddOrderId);
-			}
-		}
-		return anySurvived;
-	}
-
-	@Nullable
-	private BlockingWork firstBlockingWorkOf(
-			@NonNull final I_DD_Order ddOrder,
-			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
-	{
-		return lineIdsOf(ImmutableList.of(ddOrder)).stream()
-				.map(blockingBeforeDeparture::get)
-				.filter(Objects::nonNull)
-				.findFirst()
-				.orElse(null);
-	}
-
-	/** Asked while the departing assignment's own alloc rows are still there, which is why it has to be excluded explicitly. */
 	private boolean servesContributorsOtherThan(
-			@NonNull final I_DD_Order ddOrder,
+			@NonNull final Set<DDOrderLineId> servedLineIds,
 			@NonNull final PickingJobScheduleId departingAssignmentId)
 	{
-		return contributorRepository.getPickingJobScheduleIds(lineIdsOf(ImmutableList.of(ddOrder)))
+		return contributorRepository.getPickingJobScheduleIds(servedLineIds)
 				.stream()
 				.anyMatch(contributorId -> !contributorId.equals(departingAssignmentId));
 	}
@@ -1161,14 +1091,14 @@ public class DDOrderPickingReplenishmentService
 				ddOrderId.getRepoId());
 	}
 
-	/** The guard/reconcile lookups stop seeing it, while its FKs and DistributionJob assignment are retained for the worker to finish. */
+	/** The guard/reconcile lookups stop seeing it, while its contributor rows and DistributionJob assignment are retained for the worker to finish. */
 	private void disconnectDDOrderFor(@NonNull final DDOrderId ddOrderId)
 	{
 		ddOrderService.markAsPickingDisconnected(ddOrderId);
 
 		Loggables.addLog(
 				"DD_Order picking replenishment: disconnected (IsPickingDisconnected=Y) in-progress replenishment"
-						+ " DD_Order_ID={0} on shipment close-out; FKs retained, DistributionJob stays live for the worker",
+						+ " DD_Order_ID={0} on shipment close-out; contributor rows retained, DistributionJob stays live for the worker",
 				ddOrderId.getRepoId());
 	}
 

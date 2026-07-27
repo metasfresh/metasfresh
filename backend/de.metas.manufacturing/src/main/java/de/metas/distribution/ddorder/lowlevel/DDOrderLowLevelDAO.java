@@ -7,7 +7,6 @@ import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -114,22 +113,6 @@ public class DDOrderLowLevelDAO
 				.create();
 	}
 
-	/** ALL of them: the stock-aware split creates one DD_Order per contributing source locator. */
-	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
-	{
-		return queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				// A disconnected order is a standalone replenishment the worker still finishes; the guard and the
-				// reconcile must not see it, or they re-block the close-out.
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.create()
-				.list(I_DD_Order.class);
-	}
-
 	/**
 	 * {@code replenishmentLineIdsQuery} restricts to actual replenishment lines — the group-key columns alone could also match a foreign manual/MRP DD_Order, which this reconcile must never void.
 	 */
@@ -154,7 +137,8 @@ public class DDOrderLowLevelDAO
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				// Same reason as findActiveDDOrdersForPickingJobSchedule (see there).
+				// A disconnected order is a standalone replenishment the worker still finishes; the guard and the
+				// reconcile must not see it, or they re-block the close-out.
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(
