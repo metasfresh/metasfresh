@@ -44,8 +44,7 @@ export const DistributionUtils = {
      */
     getPickedHUQRCode: async ({ wfProcessId, lineId }) => await test.step(`Backend: get distribution picked HU QR code for wfProcess "${wfProcessId}"${lineId != null ? ` line "${lineId}"` : ''}`, async () => {
         const wfProcess = await Backend.getWFProcess({ wfProcessId });
-        const moveActivity = wfProcess.activities?.find((activity) => activity.componentProps?.job?.lines != null);
-        const lines = moveActivity?.componentProps?.job?.lines ?? [];
+        const lines = getJobLines({ wfProcess });
 
         let line;
         if (lineId != null) {
@@ -73,4 +72,35 @@ export const DistributionUtils = {
         }
         return qrCode;
     }),
+
+    /**
+     * Assert the given distribution job carries NO pre-allocated move plan: it has lines, but not a
+     * single step. That is exactly what the backend builds when allowPickingAnyHU=true
+     * (DistributionJobCreateCommand skips createPlan), so there is no fixed source HU per step and the
+     * operator is free to serve the order from any HU.
+     *
+     * Why an E2E asserts this and not just the screen: after an auto-advance, landing on the "Scan HU"
+     * prompt is ALSO what happens when the carry-forward's HU re-resolution merely FAILS
+     * (postDistributionPickFromThunk's getResolvedHUQR swallows the error and returns null, whose safe
+     * default is likewise "Scan HU"). Proving the next job genuinely has no steps is what distinguishes
+     * "the empty-move-plan branch was taken" from that look-alike failure path.
+     */
+    expectNoPreAllocatedMovePlan: async ({ wfProcessId }) => await test.step(`Backend: expect NO pre-allocated move plan (no steps) for wfProcess "${wfProcessId}"`, async () => {
+        const wfProcess = await Backend.getWFProcess({ wfProcessId });
+        const lines = getJobLines({ wfProcess });
+
+        // Guard against a vacuous pass: if the response shape ever changes and the traversal finds no
+        // lines at all, "no steps" would be trivially true and the assertion below would prove nothing.
+        expect(lines.length, `wfProcess "${wfProcessId}" has no distribution lines:\n` + JSON.stringify(wfProcess, null, 2)).toBeGreaterThan(0);
+
+        const steps = lines.flatMap((line) => line.steps ?? []);
+        expect(steps, `wfProcess "${wfProcessId}" was expected to have NO pre-allocated steps`).toEqual([]);
+    }),
+};
+
+// The distribution job's lines, read off the wfProcess JSON's move activity (the one activity that
+// carries `componentProps.job.lines`).
+const getJobLines = ({ wfProcess }) => {
+    const moveActivity = wfProcess.activities?.find((activity) => activity.componentProps?.job?.lines != null);
+    return moveActivity?.componentProps?.job?.lines ?? [];
 };
