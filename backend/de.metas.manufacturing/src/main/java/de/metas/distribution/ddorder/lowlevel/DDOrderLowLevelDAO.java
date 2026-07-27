@@ -1,5 +1,6 @@
 package de.metas.distribution.ddorder.lowlevel;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Repository;
 import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -165,6 +167,44 @@ public class DDOrderLowLevelDAO
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
 		{
 			ddOrderLine.setDD_Order(ddOrder);
+		}
+
+		return ddOrderLines;
+	}
+
+	/**
+	 * The batch flavour of {@link #retrieveLines(I_DD_Order)}: ONE query for all the given orders instead of one per order.
+	 * <p>
+	 * The result is ordered by {@code DD_Order_ID}, then exactly as the single-order flavour orders within an order, so
+	 * it equals the concatenation of the per-order results taken in ascending order id.
+	 */
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final Set<I_DD_Order> ddOrders)
+	{
+		final ImmutableSet<DDOrderId> ddOrderIds = ddOrders.stream()
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (ddOrderIds.isEmpty())
+		{
+			// An empty IN-array filter would match every line, so the query must not be run at all.
+			return ImmutableList.of();
+		}
+
+		final List<I_DD_OrderLine> ddOrderLines = queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrderIds)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_Order_ID)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_Line)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.list();
+
+		// Optimization: set DD_Order_ID link, as the single-order flavour does.
+		final HashMap<Integer, I_DD_Order> ddOrderById = new HashMap<>();
+		ddOrders.forEach(ddOrder -> ddOrderById.putIfAbsent(ddOrder.getDD_Order_ID(), ddOrder));
+		for (final I_DD_OrderLine ddOrderLine : ddOrderLines)
+		{
+			ddOrderLine.setDD_Order(ddOrderById.get(ddOrderLine.getDD_Order_ID()));
 		}
 
 		return ddOrderLines;
