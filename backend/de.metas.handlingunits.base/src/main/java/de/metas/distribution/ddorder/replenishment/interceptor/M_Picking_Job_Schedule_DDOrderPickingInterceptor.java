@@ -24,7 +24,6 @@ package de.metas.distribution.ddorder.replenishment.interceptor;
 
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.job_schedule.repository.PickingJobScheduleRepository;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -70,10 +69,14 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 		replenishmentService.scheduleReconcileAfterCommit(PickingJobScheduleRepository.fromRecord(record));
 	}
 
+	/**
+	 * The deleted assignment is handed over as a domain object, not as an id: its row is already gone by now, so the
+	 * record passed in here is the last place its delivery can be read from — and the disposal needs that delivery to
+	 * tell whether a picker is working on it.
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void voidDDOrderOnDelete(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
-		replenishmentService.voidDDOrdersForDeletedAssignment(
-				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()));
+		replenishmentService.voidDDOrdersForDeletedAssignment(PickingJobScheduleRepository.fromRecord(jobSchedule));
 	}
 }

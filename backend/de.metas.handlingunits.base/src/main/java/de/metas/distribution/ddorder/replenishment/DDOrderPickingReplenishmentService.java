@@ -1319,6 +1319,10 @@ public class DDOrderPickingReplenishmentService
 	 * document out from under a picker who is mid-job on it, which is the very thing this guard exists to prevent. The
 	 * traffic manager waits for that picking to finish or aborts it, exactly as they already do when the picker
 	 * happens to be on the back-referenced delivery.</p>
+	 *
+	 * <p>The guard here reads the contributor set as it stands NOW, so it cannot serve the one disposal that runs
+	 * after the last contributor's alloc row is already gone — that caller takes the same verdict before the delete
+	 * and refuses on its own (see {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}).</p>
 	 */
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
 	{
@@ -1364,23 +1368,44 @@ public class DDOrderPickingReplenishmentService
 	 * the alloc-row delete below is mandatory (the deferrable FK). Left alone, a line whose LAST contributor is the
 	 * deleted assignment would keep a live DD_Order that no group-keyed lookup can reach any more, and no rebuild
 	 * enumerates orphaned orders: the mover would see that replenishment forever, for demand nobody has.</p>
+	 *
+	 * <p><b>The two facts the last-contributor disposal needs sit on opposite sides of that alloc-row delete, so one
+	 * of them is captured before it.</b> Whether a picker is busy has to be read from the contributor set as it stood
+	 * BEFORE the departure — the departing assignment's own delivery is very often the one being picked. Whether the
+	 * departure disposes of the order at all is the emptiness of that same set AFTER the delete. Reading both from one
+	 * post-delete query answers the second question and silently always answers "nobody busy" to the first, which is
+	 * how a shared DD_Order gets voided out from under an active picker.</p>
+	 *
+	 * <p>The departing assignment arrives as a domain object rather than as an id because by {@code afterDelete} its
+	 * row is already gone: no lookup can still give this method the delivery behind it, and that delivery is precisely
+	 * the one the busy check must cover. The alloc rows outlive the row (no cascade), so every OTHER contributor is
+	 * still resolvable from the database.</p>
 	 */
-	public void voidDDOrdersForDeletedAssignment(@NonNull final PickingJobScheduleId jobScheduleId)
+	public void voidDDOrdersForDeletedAssignment(@NonNull final PickingJobSchedule deletedAssignment)
 	{
-		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = ImmutableSet.of(jobScheduleId);
+		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = ImmutableSet.of(deletedAssignment.getId());
 		final ImmutableSet<DDOrderLineId> servedLineIds = contributorRepository.getLineIdsByPickingJobScheduleIds(jobScheduleIds);
 
-		voidAllDDOrders(ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(jobScheduleId));
+		// Captured while the departing assignment is still a contributor — see the class of failure in the javadoc above.
+		final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture = findBlockingPickingWorkByLineId(servedLineIds, deletedAssignment);
+
+		voidAllDDOrders(ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(deletedAssignment.getId()));
 		contributorRepository.deleteByPickingJobScheduleIds(jobScheduleIds);
 
-		voidDDOrdersLeftWithoutContributor(servedLineIds);
+		voidDDOrdersLeftWithoutContributor(servedLineIds, blockingBeforeDeparture);
 	}
 
 	/**
 	 * Voids every still-live DD_Order among the given lines' orders that no longer has a single contributor — the
 	 * departure of the last contributor is what disposes of a consolidated order.
+	 *
+	 * <p>{@code blockingBeforeDeparture} is the picker-busy verdict taken before the departing assignment's alloc rows
+	 * were deleted, keyed by line. It cannot be recomputed here: reaching this point means the line's contributor set
+	 * is already empty, and an empty set has nobody busy in it by definition.</p>
 	 */
-	private void voidDDOrdersLeftWithoutContributor(@NonNull final Set<DDOrderLineId> lineIds)
+	private void voidDDOrdersLeftWithoutContributor(
+			@NonNull final Set<DDOrderLineId> lineIds,
+			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
 	{
 		for (final DDOrderLineId lineId : lineIds)
 		{
@@ -1397,6 +1422,12 @@ public class DDOrderPickingReplenishmentService
 					|| ddOrder.isPickingDisconnected())
 			{
 				continue;
+			}
+
+			final BlockingWork busyPicker = blockingBeforeDeparture.get(lineId);
+			if (busyPicker != null)
+			{
+				throw pickerBusyException(ddOrderId, busyPicker);
 			}
 
 			voidDDOrderFor(ddOrderId);
@@ -1576,6 +1607,65 @@ public class DDOrderPickingReplenishmentService
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * The per-LINE form of {@link #findBlockingPickingWork(I_DD_Order)}: for each given line, the contributor of that
+	 * line whose delivery a picker is working on right now. Lines with nobody busy are absent from the result.
+	 *
+	 * <p>Keyed on the line rather than on the order because the caller
+	 * ({@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}) has to take this verdict BEFORE it mutates
+	 * anything, and at that point it holds line ids — the orders behind them are only resolved afterwards, one disposal
+	 * at a time. A consolidated order has exactly one line per source locator, so per line and per order are the same
+	 * set of contributors.</p>
+	 *
+	 * <p>{@code departingAssignment} is folded into every line's contributor set: the caller derived {@code lineIds}
+	 * from that assignment's own alloc rows, so it contributes to each of them, but its {@code M_Picking_Job_Schedule}
+	 * row is already deleted and no longer resolvable — leave it out and the one delivery most likely to be under a
+	 * picker is the one nobody checks. Ordering by {@code M_Picking_Job_Schedule_ID} matches
+	 * {@link #contributorsOf(Set)}, so the assignment a refusal names is the same on every run.</p>
+	 *
+	 * <p>The expensive part — "is any of these deliveries being picked?" — stays a SINGLE query over the union of all
+	 * the lines' contributors, for the same reason {@code retrieveScheduleIdsWithActivePickingJobLine} is batched at
+	 * all.</p>
+	 */
+	private ImmutableMap<DDOrderLineId, BlockingWork> findBlockingPickingWorkByLineId(
+			@NonNull final Set<DDOrderLineId> lineIds,
+			@NonNull final PickingJobSchedule departingAssignment)
+	{
+		if (lineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap<DDOrderLineId, ImmutableList<PickingJobSchedule>> contributorsByLineId = lineIds.stream()
+				.collect(ImmutableMap.toImmutableMap(
+						lineId -> lineId,
+						lineId -> Stream.concat(contributorsOf(ImmutableSet.of(lineId)).stream(), Stream.of(departingAssignment))
+								.sorted(Comparator.comparingInt(contributor -> contributor.getId().getRepoId()))
+								.collect(ImmutableList.toImmutableList())));
+
+		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = contributorsByLineId.values().stream()
+				.flatMap(List::stream)
+				.map(PickingJobSchedule::getShipmentScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableSet<ShipmentScheduleId> busyScheduleIds = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(shipmentScheduleIds);
+		if (busyScheduleIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<DDOrderLineId, BlockingWork> result = ImmutableMap.builder();
+		contributorsByLineId.forEach((lineId, contributors) -> contributors.stream()
+				.filter(contributor -> busyScheduleIds.contains(contributor.getShipmentScheduleId()))
+				.findFirst()
+				.ifPresent(contributor -> result.put(lineId, BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId()))));
+		return result.build();
 	}
 
 	/**
