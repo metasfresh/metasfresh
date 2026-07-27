@@ -135,20 +135,38 @@ export const Backend = {
 
     /**
      * Resolves the QR code (global QR code JSON string) of the HU that a distribution `pickFrom`
-     * event picked, for a single-line distribution job's LAST recorded step. Used to assert the
-     * backend end-state of a distribution pick when the picked HU has no masterdata identifier — a
-     * partial pick off a shared staging LU creates a NEW split HU only at pick time, so it can only
-     * be referenced via the QR code the job step reports (`Backend.expect`'s HU matcher resolves a
-     * raw QR-code-JSON string as a fallback identifier).
+     * event picked, for the LAST recorded step of the given line. Used to assert the backend
+     * end-state of a distribution pick when the picked HU has no masterdata identifier — a partial
+     * pick off a shared staging LU creates a NEW split HU only at pick time, so it can only be
+     * referenced via the QR code the job step reports (`Backend.expect`'s HU matcher resolves a raw
+     * QR-code-JSON string as a fallback identifier).
+     *
+     * A distribution job can have several lines (one per DD Order line), so `lineId` is REQUIRED
+     * whenever the job has more than one line; it may be omitted only for a genuinely single-line
+     * job (this throws rather than silently guessing the wrong line's steps otherwise).
      */
-    getDistributionPickedHUQRCode: async ({ wfProcessId }) => await test.step(`Backend: get distribution picked HU QR code for wfProcess "${wfProcessId}"`, async () => {
+    getDistributionPickedHUQRCode: async ({ wfProcessId, lineId }) => await test.step(`Backend: get distribution picked HU QR code for wfProcess "${wfProcessId}"${lineId != null ? ` line "${lineId}"` : ''}`, async () => {
         const wfProcess = await Backend.getWFProcess({ wfProcessId });
         const moveActivity = wfProcess.activities?.find((activity) => activity.componentProps?.job?.lines != null);
-        const steps = moveActivity?.componentProps?.job?.lines?.[0]?.steps ?? [];
+        const lines = moveActivity?.componentProps?.job?.lines ?? [];
+
+        let line;
+        if (lineId != null) {
+            line = lines.find((candidate) => String(candidate.lineId) === String(lineId));
+        } else if (lines.length === 1) {
+            line = lines[0];
+        } else {
+            throw new Error(
+                `wfProcess "${wfProcessId}" has ${lines.length} distribution lines; pass "lineId" to disambiguate:\n` +
+                JSON.stringify(lines.map((l) => l.lineId), null, 2)
+            );
+        }
+
+        const steps = line?.steps ?? [];
         const lastStep = steps[steps.length - 1];
         const qrCode = lastStep?.pickFromHU?.qrCode?.code;
         if (!qrCode) {
-            throw new Error(`No picked HU found for wfProcess "${wfProcessId}":\n` + JSON.stringify(wfProcess, null, 2));
+            throw new Error(`No picked HU found for wfProcess "${wfProcessId}"${lineId != null ? ` line "${lineId}"` : ''}:\n` + JSON.stringify(wfProcess, null, 2));
         }
         return qrCode;
     }),
