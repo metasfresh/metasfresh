@@ -115,10 +115,15 @@ Feature: Recompute Costs - last pre-range cost detail is a weighted-average Matc
       | Identifier | C_OrderLine_ID |
       | mpo2       | po2_l1         |
     And Wait until M_MatchPO mpo2 is posted
+    # Each purchase receipt books TWO AveragePO cost details: the cost-changing M_MatchPO (which drives
+    # the average) and a non-cost-changing M_InOutLine for the same amount and qty. Both are listed
+    # because this step asserts the COMPLETE set of cost details for the product and cost element.
     And after not more than 10s, M_CostDetails are found for product product and cost element AveragePO
-      | TableName | Record_ID | IsSOTrx | Amt     | Qty    | IsChangingCosts |
-      | M_MatchPO | mpo1      | N       | 200 CHF | 10 PCE | Y               |
-      | M_MatchPO | mpo2      | N       | 400 CHF | 10 PCE | Y               |
+      | TableName   | Record_ID      | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_MatchPO   | mpo1           | N       | 200 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt1_line1 | N       | 200 CHF | 10 PCE | N               |
+      | M_MatchPO   | mpo2           | N       | 400 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt2_line1 | N       | 400 CHF | 10 PCE | N               |
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty |
       | acctSchema      | product      | AveragePO        | 30 CHF           | 20 PCE     |

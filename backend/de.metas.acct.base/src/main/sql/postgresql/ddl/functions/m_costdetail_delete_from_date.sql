@@ -34,9 +34,17 @@ DECLARE
     v_next_cumulatedamt       numeric;
     v_next_cumulatedqty       numeric;
     v_m_cost_id               numeric;
+    v_costingmethod           char(1);
 BEGIN
     RAISE DEBUG 'm_costdetail_delete_from_date: p_C_AcctSchema_ID=%, p_M_CostElement_ID=%, p_M_Product_ID=%, p_AD_Org_ID=%, p_StartDateAcct=%, p_DryRun=%',
         p_C_AcctSchema_ID, p_M_CostElement_ID, p_M_Product_ID, p_AD_Org_ID, p_StartDateAcct, p_DryRun;
+
+    -- The cost element's costing method decides HOW a changing-costs inbound moves the current cost
+    -- price, so case 2.5 below can only reconstruct that price for the methods that average (see there).
+    SELECT ce.costingmethod
+    INTO v_costingmethod
+    FROM m_costelement ce
+    WHERE ce.m_costelement_id = p_M_CostElement_ID;
 
     --
     -- Compute current cost prices at target date
@@ -125,7 +133,8 @@ BEGIN
                 v_next_currentqty := v_firstCostDetail.prev_currentqty + v_firstCostDetail.qty;
                 v_next_cumulatedamt := v_firstCostDetail.prev_cumulatedamt + v_firstCostDetail.amt;
                 v_next_cumulatedqty := v_firstCostDetail.prev_cumulatedqty + v_firstCostDetail.qty;
-            ELSIF (v_firstCostDetail.qty > 0 AND v_firstCostDetail.ischangingcosts = 'Y') THEN
+            ELSIF (v_firstCostDetail.qty > 0 AND v_firstCostDetail.ischangingcosts = 'Y'
+                AND v_costingmethod IN ('A', 'I', 'M', 'S')) THEN
                 -- case 2.5: inbound trx (qty > 0) that changed the cost price but is NOT an inventory line
                 -- (M_MatchPO, M_InOutLine non-material costs, PP_Cost_Collector receipts, ...).
                 -- Unlike case 2.4 (inventory lines post at the unchanged current price), these inbounds
@@ -135,8 +144,24 @@ BEGIN
                 -- M_CostDetail stores no resulting price, so it must be recomputed here; copying case 2.4
                 -- verbatim would leave M_Cost.CurrentCostPrice stale and mis-value the repost.
                 -- NOTE: this reconstructs the price from the stored prev_* / amt / qty of the cost detail, exactly
-                -- like the surrounding cases; it stays correct for Standard costing too, because a Standard-cost
-                -- changing-costs inbound records amt = prevPrice*qty, so the weighted average reproduces prevPrice.
+                -- like the surrounding cases.
+                --
+                -- The costing-method gate is REQUIRED: only the averaging methods move the price this way.
+                --   'A' AveragePO / 'I' AverageInvoice / 'M' MovingAverageInvoice
+                --        -> their handlers call CurrentCost.addWeightedAverage, so the formula matches.
+                --   'S' StandardCosting
+                --        -> a changing-costs inbound records amt = prevPrice*qty
+                --           (StandardCostingMethodHandler.createCostForMaterialReceipt), so the weighted
+                --           average provably reproduces prevPrice: it is a no-op, not an approximation.
+                --   'p' LastPOPrice / 'i' LastInvoice are DELIBERATELY EXCLUDED: their handlers REPLACE the
+                --        price with amt/qty (LastPOCostingMethodHandler.createCostForMatchPO,
+                --        LastInvoiceCostingMethodHandler.createCostForMatchInvoice_MaterialCosts), so averaging
+                --        would silently write a WRONG CurrentCostPrice. Example: prevPrice=20, prevQty=10,
+                --        inbound qty=10 amt=400 -> replace gives 40, averaging gives 600/20 = 30.
+                --   'L' Lifo / 'F' Fifo / 'U' UserDefined / 'x' ExternalProcessing are likewise excluded.
+                -- Everything excluded falls through to the RAISE below - i.e. exactly the behaviour those
+                -- methods already have today - so this change can never turn a loud abort into a silent
+                -- mis-valuation.
                 v_next_costs_found := TRUE;
                 v_next_costs_debugInfo := 'case 2.5: based on prev costs of last cost details (inbound trx, weighted average), with changing costs';
                 v_next_currentqty   := v_firstCostDetail.prev_currentqty   + v_firstCostDetail.qty;
@@ -153,8 +178,8 @@ BEGIN
                     v_next_currentcostprice := v_firstCostDetail.prev_currentcostprice;
                 END IF;
                 v_next_currentcostpricell := v_firstCostDetail.prev_currentcostpricell; -- LL untouched by addWeightedAverage
-            ELSE -- (v_firstCostDetail.qty > 0) THEN
-                RAISE EXCEPTION 'Extracting current costs from an inbound transaction is not implemented (%)', v_firstCostDetail;
+            ELSE -- (v_firstCostDetail.qty > 0), or a costing method case 2.5 must not average for
+                RAISE EXCEPTION 'Extracting current costs from an inbound transaction is not implemented (costing method %) (%)', v_costingmethod, v_firstCostDetail;
             END IF;
         ELSE
             v_next_costs_found := FALSE;
