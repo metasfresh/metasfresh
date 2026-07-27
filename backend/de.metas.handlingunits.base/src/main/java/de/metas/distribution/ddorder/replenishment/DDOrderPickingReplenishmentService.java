@@ -77,6 +77,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -1320,9 +1321,11 @@ public class DDOrderPickingReplenishmentService
 	 * traffic manager waits for that picking to finish or aborts it, exactly as they already do when the picker
 	 * happens to be on the back-referenced delivery.</p>
 	 *
-	 * <p>The guard here reads the contributor set as it stands NOW, so it cannot serve the one disposal that runs
-	 * after the last contributor's alloc row is already gone — that caller takes the same verdict before the delete
-	 * and refuses on its own (see {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}).</p>
+	 * <p>The guard here reads the contributor set as it stands NOW, so it cannot serve either disposal of the
+	 * delete→void path: by then the departing assignment's {@code M_Picking_Job_Schedule} row (and, on the second
+	 * pass, its alloc rows too) are already gone, and a contributor set missing the very delivery most likely to be
+	 * under a picker reports nobody busy. Both those callers take the verdict before the departure and refuse on
+	 * their own — see {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}.</p>
 	 */
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
 	{
@@ -1384,7 +1387,7 @@ public class DDOrderPickingReplenishmentService
 	 *
 	 * <p><b>Whether the departure DISPOSES of an order is decided by the contributor set, on both passes.</b> The
 	 * back-reference tells which orders must let go of the assignment, never which orders die with it — see
-	 * {@link #disposeOfOrDetachBackReferencingDDOrders(PickingJobSchedule)}.</p>
+	 * {@link #disposeOfOrDetachBackReferencingDDOrders(PickingJobSchedule, ImmutableMap)}.</p>
 	 *
 	 * <p><b>The two facts the last-contributor disposal needs sit on opposite sides of that alloc-row delete, so one
 	 * of them is captured before it.</b> Whether a picker is busy has to be read from the contributor set as it stood
@@ -1406,7 +1409,7 @@ public class DDOrderPickingReplenishmentService
 		// Captured while the departing assignment is still a contributor — see the class of failure in the javadoc above.
 		final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture = findBlockingPickingWorkByLineId(servedLineIds, deletedAssignment);
 
-		final boolean sharedOrderSurvived = disposeOfOrDetachBackReferencingDDOrders(deletedAssignment);
+		final boolean sharedOrderSurvived = disposeOfOrDetachBackReferencingDDOrders(deletedAssignment, blockingBeforeDeparture);
 		contributorRepository.deleteByPickingJobScheduleIds(jobScheduleIds);
 
 		voidDDOrdersLeftWithoutContributor(servedLineIds, blockingBeforeDeparture);
@@ -1440,10 +1443,25 @@ public class DDOrderPickingReplenishmentService
 	 * left" for every order — the same dead read that makes a post-delete picker-busy check always say "nobody
 	 * busy".</p>
 	 *
+	 * <p><b>And that is why the disposal below refuses on {@code blockingBeforeDeparture} rather than letting
+	 * {@link #voidDDOrderFor(DDOrderId)} resolve the picker-busy verdict itself</b> — exactly as
+	 * {@link #voidDDOrdersLeftWithoutContributor(Set, ImmutableMap)} already does. The failure it prevents needs the
+	 * departing assignment to be BOTH the order's back-reference owner (so this pass reaches the order at all) AND its
+	 * last contributor (so this pass takes the void branch), with a picker on that assignment's OWN delivery: its
+	 * {@code M_Picking_Job_Schedule} row is already deleted by {@code afterDelete}, so re-resolving the contributors
+	 * here returns an EMPTY set, an empty set has nobody busy in it, and the document the picker is working on is
+	 * voided under them with no refusal at all. Every other combination still has a resolvable contributor through
+	 * which the guard sees the picker, which is why only this one slipped through.</p>
+	 *
+	 * @param blockingBeforeDeparture the picker-busy verdict per line, taken by
+	 * {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)} while the departing assignment was still
+	 * resolvable.
 	 * @return whether at least one order outlived the departure, i.e. whether the group still has a document whose
 	 * quantity now has to be shrunk to the remaining contributors' sum.
 	 */
-	private boolean disposeOfOrDetachBackReferencingDDOrders(@NonNull final PickingJobSchedule deletedAssignment)
+	private boolean disposeOfOrDetachBackReferencingDDOrders(
+			@NonNull final PickingJobSchedule deletedAssignment,
+			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
 	{
 		boolean anySurvived = false;
 		for (final I_DD_Order ddOrder : ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(deletedAssignment.getId()))
@@ -1460,10 +1478,35 @@ public class DDOrderPickingReplenishmentService
 			}
 			else
 			{
-				voidDDOrderFor(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+				final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+				final BlockingWork busyPicker = firstBlockingWorkOf(ddOrder, blockingBeforeDeparture);
+				if (busyPicker != null)
+				{
+					throw pickerBusyException(ddOrderId, busyPicker);
+				}
+
+				voidDDOrderFor(ddOrderId);
 			}
 		}
 		return anySurvived;
+	}
+
+	/**
+	 * The pre-departure picker-busy verdict for the given order: the first of its lines somebody was busy on. Null when
+	 * nobody was — see the class of failure in {@link #disposeOfOrDetachBackReferencingDDOrders} for why this is not
+	 * re-resolved from the (by now incomplete) contributor set. A consolidated order has one line per source locator
+	 * and all of them share the group's contributors, so which line answers is immaterial.
+	 */
+	@Nullable
+	private BlockingWork firstBlockingWorkOf(
+			@NonNull final I_DD_Order ddOrder,
+			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
+	{
+		return lineIdsOf(ImmutableList.of(ddOrder)).stream()
+				.map(blockingBeforeDeparture::get)
+				.filter(Objects::nonNull)
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
