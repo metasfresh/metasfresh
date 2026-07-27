@@ -184,7 +184,7 @@ public class PurchaseOrderToShipperTransportationService
 
 		if (order.getM_Shipper_ID() > 0 && shipperId.getRepoId() != order.getM_Shipper_ID())
 		{
-			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getM_Shipper_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
+			Loggables.addLog("Ignoring C_Order.M_Shipper_ID={} of C_Order_ID={}, because M_ShipperTransportation_ID={} takes precedence", order.getM_Shipper_ID(), order.getC_Order_ID(), ShipperTransportationId.toRepoId(shipperTransportationId));
 		}
 
 		final List<I_C_OrderLine> orderLines = orderDAO.retrieveOrderLines(order);
@@ -309,6 +309,9 @@ public class PurchaseOrderToShipperTransportationService
 		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
 		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
 
+		// Intentionally re-query ALL of the order's lines rather than reusing the caller's list: addOrderLinesToShipperTransportation()
+		// passes only a SELECTED subset of lines, and the spec requires the vendor delivery time of the PO's *first* line (lowest Line).
+		// This runs once per transport order (first-order assignment only), so the extra query is negligible.
 		return orderDAO.retrieveOrderLines(order)
 				.stream()
 				.filter(ol -> ol.getM_Product_ID() > 0)
