@@ -35,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  * Exhaustive status x action matrix test for {@link BBSStatus#isAllowed(ProductLifeCycleAction)}.
  * <p>
- * Matrix (source of truth: ai-work/31039/DESIGN.md):
+ * Matrix (see also {@link BBSStatus} class javadoc):
  * <pre>
  * | Action      | O (OK) | A (Auslauf) | G (Gesperrt) | N (Lieferstopp) |
  * |-------------|:------:|:-----------:|:------------:|:---------------:|

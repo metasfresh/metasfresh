@@ -33,6 +33,7 @@ import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 
 /**
  * Product life-cycle status ("BBS-Status" in the UI), backed by the {@code M_Product.ProductLifeCycleStatus}
@@ -51,6 +52,7 @@ import lombok.NonNull;
  * {@code OK} (and a {@code null} status, via {@link #ofNullableCode(String)}) is fully permissive by design
  * (self-gating; no {@code SysConfig} needed).
  */
+@RequiredArgsConstructor
 public enum BBSStatus implements ReferenceListAwareEnum
 {
 	/** Fully allowed. */
@@ -69,15 +71,11 @@ public enum BBSStatus implements ReferenceListAwareEnum
 	private static final ValuesIndex<BBSStatus> typesByCode = ReferenceListAwareEnums.index(values());
 
 	@Getter
+	@NonNull
 	private final String code;
 
+	@NonNull
 	private final ImmutableSet<ProductLifeCycleAction> blockedActions;
-
-	BBSStatus(@NonNull final String code, @NonNull final ImmutableSet<ProductLifeCycleAction> blockedActions)
-	{
-		this.code = code;
-		this.blockedActions = blockedActions;
-	}
 
 	/**
 	 * @return {@code true} if the given action is allowed while the product is in this status.
@@ -90,7 +88,7 @@ public enum BBSStatus implements ReferenceListAwareEnum
 	@Nullable
 	public static BBSStatus ofNullableCode(@Nullable final String code)
 	{
-		return code != null && !code.isEmpty() ? ofCode(code) : null;
+		return typesByCode.ofNullableCode(code);
 	}
 
 	public static BBSStatus ofCode(@NonNull final String code)
