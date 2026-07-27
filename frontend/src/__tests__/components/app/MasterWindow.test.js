@@ -41,7 +41,8 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
     ...overrides,
   });
 
-  const getInstance = (props) => shallow(<MasterWindow {...props} />).instance();
+  const getInstance = (props) =>
+    shallow(<MasterWindow {...props} />).instance();
 
   // A realistic ?ids= re-fetch response: the persisted row, reverted server-side
   // to its DB ValidFrom (a far-future year) after discardChanges — the abandoned
@@ -53,7 +54,11 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
         {
           rowId: PERSISTED_ROW_ID,
           fieldsByName: {
-            ValidFrom: { field: 'ValidFrom', value: '2053-11-30', widgetType: 'Date' },
+            ValidFrom: {
+              field: 'ValidFrom',
+              value: '2053-11-30',
+              widgetType: 'Date',
+            },
           },
         },
       ],
@@ -149,13 +154,14 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
 
     // it was applied as an UPDATE (changed), never a removal
     const updateCall = props.updateTabRowsData.mock.calls.find(
-      ([, payload]) => payload && payload.changed && payload.changed[PERSISTED_ROW_ID]
+      ([, payload]) =>
+        payload && payload.changed && payload.changed[PERSISTED_ROW_ID]
     );
     expect(updateCall).toBeDefined();
     expect(updateCall[0]).toBe(expectedTableId);
-    expect(updateCall[1].changed[PERSISTED_ROW_ID].fieldsByName.ValidFrom.value).toBe(
-      '2053-11-30'
-    );
+    expect(
+      updateCall[1].changed[PERSISTED_ROW_ID].fieldsByName.ValidFrom.value
+    ).toBe('2053-11-30');
 
     const removedAny = props.updateTabRowsData.mock.calls.some(
       ([, payload]) => payload && payload.removed
@@ -263,5 +269,50 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
     expect(props.onRefreshTab).toHaveBeenCalledTimes(1);
 
     consoleErrorSpy.mockRestore();
+  });
+
+  // Case G - guard branch: a modal that is not a new-record modal is none of this
+  // callback's business. It must short-circuit before any server call, so an
+  // ordinary edit-modal close cannot discard the document or disturb the grid.
+  it('does nothing at all when the modal is not a new-record modal', async () => {
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    const result = instance.closeModalCallback({
+      isNew: false,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: PERSISTED_ROW_ID,
+      saveStatus: false,
+    });
+
+    expect(result).toBeUndefined();
+    expect(discardNewRequest).not.toHaveBeenCalled();
+    expect(getRowsData).not.toHaveBeenCalled();
+    expect(props.updateTabRowsData).not.toHaveBeenCalled();
+    expect(props.onRefreshTab).not.toHaveBeenCalled();
+  });
+
+  // Case H - a saved modal owns no abandoned in-memory change, so there is nothing
+  // to reconcile: the discard still runs, but the grid must be left untouched (no
+  // re-fetch, no row update, no removal).
+  it('leaves the grid untouched when the modal was saved (saveStatus truthy)', async () => {
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: PERSISTED_ROW_ID,
+      saveStatus: true,
+    });
+
+    expect(discardNewRequest).toHaveBeenCalledTimes(1);
+    expect(getRowsData).not.toHaveBeenCalled();
+    expect(props.updateTabRowsData).not.toHaveBeenCalled();
+    expect(props.onRefreshTab).not.toHaveBeenCalled();
   });
 });

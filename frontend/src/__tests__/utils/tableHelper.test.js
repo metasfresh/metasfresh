@@ -348,7 +348,9 @@ describe('Table helpers', () => {
     });
 
     it('omits the `changed`/`removed` keys when the corresponding input is empty or absent', () => {
-      expect(buildTabRowsDataUpdate({ result: [], missingIds: [] })).toEqual({});
+      expect(buildTabRowsDataUpdate({ result: [], missingIds: [] })).toEqual(
+        {}
+      );
       expect(buildTabRowsDataUpdate({})).toEqual({});
       expect(buildTabRowsDataUpdate()).toEqual({});
       expect(buildTabRowsDataUpdate({ missingIds: ['5'] })).toEqual({
