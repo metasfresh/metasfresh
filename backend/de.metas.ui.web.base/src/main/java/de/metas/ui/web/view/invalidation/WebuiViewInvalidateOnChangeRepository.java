@@ -45,6 +45,9 @@ import java.util.Set;
  * {@link ConfiguredViewInvalidationListener} is a total no-op.
  * <p>
  * Pattern mirrors {@code de.metas.incoterms.IncotermsRepository}.
+ *
+ * Repository Tables: WEBUI_ViewInvalidateOnChange
+ * Repository Cluster: WebuiViewInvalidateOnChangeRepository
  */
 @Repository
 public class WebuiViewInvalidateOnChangeRepository
