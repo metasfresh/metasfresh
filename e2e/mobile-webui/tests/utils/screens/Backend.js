@@ -133,6 +133,26 @@ export const Backend = {
         return { shipmentId: shipment.id, documentNo: shipment.documentNo };
     }),
 
+    /**
+     * Resolves the QR code (global QR code JSON string) of the HU that a distribution `pickFrom`
+     * event picked, for a single-line distribution job's LAST recorded step. Used to assert the
+     * backend end-state of a distribution pick when the picked HU has no masterdata identifier — a
+     * partial pick off a shared staging LU creates a NEW split HU only at pick time, so it can only
+     * be referenced via the QR code the job step reports (`Backend.expect`'s HU matcher resolves a
+     * raw QR-code-JSON string as a fallback identifier).
+     */
+    getDistributionPickedHUQRCode: async ({ wfProcessId }) => await test.step(`Backend: get distribution picked HU QR code for wfProcess "${wfProcessId}"`, async () => {
+        const wfProcess = await Backend.getWFProcess({ wfProcessId });
+        const moveActivity = wfProcess.activities?.find((activity) => activity.componentProps?.job?.lines != null);
+        const steps = moveActivity?.componentProps?.job?.lines?.[0]?.steps ?? [];
+        const lastStep = steps[steps.length - 1];
+        const qrCode = lastStep?.pickFromHU?.qrCode?.code;
+        if (!qrCode) {
+            throw new Error(`No picked HU found for wfProcess "${wfProcessId}":\n` + JSON.stringify(wfProcess, null, 2));
+        }
+        return qrCode;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
