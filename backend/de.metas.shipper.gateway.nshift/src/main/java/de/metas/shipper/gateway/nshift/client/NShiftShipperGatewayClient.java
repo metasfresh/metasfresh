@@ -166,7 +166,7 @@ public class NShiftShipperGatewayClient implements ShipperGatewayClient
 	}
 
 	/**
-	 * Patches the shipper config of the given request with UseShippingRules and ServiceLevel
+	 * Patches the shipper config of the given request with isManual, isSelectionRules and ServiceLevel
 	 * when shipping rules are active (see {@link #isManual}).
 	 */
 	private JsonDeliveryRequest applyShippingRuleOptions(

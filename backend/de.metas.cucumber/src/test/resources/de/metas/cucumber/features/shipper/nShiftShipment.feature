@@ -275,7 +275,7 @@ Feature: nShift Shipment
       | 1             | 3             | 30         | 20        | 10         |
 
   @Id:S0355_DeliveryOrder_170
-  Scenario: nShift Delivery Order — UseShippingRules=true when shipper has IsApiCarrierAdvise and schedule is non-Manual
+  Scenario: nShift Delivery Order — IsSelectionRules=true when shipper has IsSelectionRules and schedule is non-Manual
     # When a schedule goes through the automatic advise flow (status Completed, not Manual),
     # the gateway patches the shipment request with UseShippingRules=true plus the effective ServiceLevel.
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
@@ -307,11 +307,11 @@ Feature: nShift Shipment
       | Identifier | M_InOut_ID |
       | cso_ac6    | inout_ac6  |
     Then validate the captured nShift shipment request options:
-      | UseShippingRules | ServiceLevel |
-      | true             | STANDARD     |
+      | IsManual | IsSelectionRules | ServiceLevel |
+      | false    | true             | STANDARD     |
 
   @Id:S0355_DeliveryOrder_180
-  Scenario: nShift Delivery Order — UseShippingRules absent when all schedules have Manual advising status
+  Scenario: nShift Delivery Order — IsSelectionRules=false when shipper has IsSelectionRules and schedules have any manual
     # When every schedule linked to the delivery order was advised manually,
     # the gateway must NOT set UseShippingRules, so nShift uses its own shipment rules.
     Given set sys config boolean value true for sys config de.metas.handlingunits.picking.addToDailyShipperTransportationOrder
@@ -347,8 +347,8 @@ Feature: nShift Shipment
       | Identifier          | M_InOut_ID          |
       | cso_manual_advise   | inout_manual_advise |
     Then validate the captured nShift shipment request options:
-      | UseShippingRules |
-      | -                |
+      | IsSelectionRules |
+      | false            |
 
   @Id:S0355_DeliveryOrder_TC1
   Scenario: nShift Delivery Order exported via Historical Shipments JSON includes parcel tracking

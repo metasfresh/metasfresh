@@ -238,7 +238,7 @@ public class NShiftShipmentServiceTest
 	}
 
 	@Test
-	void buildShipmentRequest_withShippingRules_omitsProductGoodsTypeAndServices()
+	void buildShipmentRequest_withSelectionRules_omitsProductGoodsTypeAndServices()
 	{
 		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
 				.shipperConfig(DELIVERY_REQUEST.getShipperConfig().withAdditionalProperty(NShiftConstants.SELECTION_RULES, "Y"))
