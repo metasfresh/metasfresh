@@ -9,7 +9,7 @@
 INSERT INTO AD_SysConfig (AD_Client_ID, AD_Org_ID, AD_SysConfig_ID, ConfigurationLevel,
                           Created, CreatedBy, Updated, UpdatedBy,
                           EntityType, IsActive, Name, Value, Description)
-VALUES (0, 0, 541839 /*From ID Server*/, 'O',
+VALUES (0, 0, 541839 /*From ID Server*/, 'S',
         TO_TIMESTAMP('2026-07-27 12:05:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         TO_TIMESTAMP('2026-07-27 12:05:00', 'YYYY-MM-DD HH24:MI:SS'), 100,
         'D', 'Y',

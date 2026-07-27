@@ -107,7 +107,8 @@ class C_Invoice_CreditMemoReasonTest
 		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
 
 		assertThatThrownBy(() -> interceptor.validateCreditMemoReason(invoice))
-				.isInstanceOf(AdempiereException.class);
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("20"); // the offending line number
 	}
 
 	@Test

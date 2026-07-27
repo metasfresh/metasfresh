@@ -579,9 +579,10 @@ public class C_Invoice // 03771
 			return;
 		}
 
+		// I_C_InvoiceLine (de.metas.adempiere.model) extends org.compiere.model.I_C_InvoiceLine, so
+		// getLine_CreditMemoReason()/getLine() are inherited directly — no re-wrapping needed.
 		final String linesWithoutReason = invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.stream()
-				.map(line -> InterfaceWrapperHelper.create(line, org.compiere.model.I_C_InvoiceLine.class))
 				.filter(line -> Check.isBlank(line.getLine_CreditMemoReason()))
 				.map(line -> Integer.toString(line.getLine()))
 				.collect(Collectors.joining(", "));
