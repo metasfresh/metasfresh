@@ -38,8 +38,8 @@ UPDATE AD_Reference_Trl SET IsTranslated='Y', Name='Product Life Cycle Status',U
 ;
 
 -- Reference Item: Value O (OK)
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542123,544324 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','OK',TO_TIMESTAMP('2026-07-27 14:00:04','YYYY-MM-DD HH24:MI:SS'),100,'O','O')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
+VALUES (0,0,542123,544324 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:04','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','OK',TO_TIMESTAMP('2026-07-27 14:00:04','YYYY-MM-DD HH24:MI:SS'),100,'O')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -58,8 +58,8 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='OK',Updated=TO_TIMESTAMP('202
 ;
 
 -- Reference Item: Value A (Auslauf / Phase-out)
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542123,544325 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:08','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Auslauf',TO_TIMESTAMP('2026-07-27 14:00:08','YYYY-MM-DD HH24:MI:SS'),100,'A','A')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
+VALUES (0,0,542123,544325 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:08','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Auslauf',TO_TIMESTAMP('2026-07-27 14:00:08','YYYY-MM-DD HH24:MI:SS'),100,'A')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -78,8 +78,8 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Phase-out',Updated=TO_TIMESTA
 ;
 
 -- Reference Item: Value G (Gesperrt / Blocked)
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542123,544326 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Gesperrt',TO_TIMESTAMP('2026-07-27 14:00:12','YYYY-MM-DD HH24:MI:SS'),100,'G','G')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
+VALUES (0,0,542123,544326 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:12','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Gesperrt',TO_TIMESTAMP('2026-07-27 14:00:12','YYYY-MM-DD HH24:MI:SS'),100,'G')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -98,8 +98,8 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Blocked',Updated=TO_TIMESTAMP
 ;
 
 -- Reference Item: Value N (Lieferstopp / Delivery stop)
-INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName)
-VALUES (0,0,542123,544327 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Lieferstopp',TO_TIMESTAMP('2026-07-27 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'N','N')
+INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value)
+VALUES (0,0,542123,544327 /*From ID Server*/,TO_TIMESTAMP('2026-07-27 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Lieferstopp',TO_TIMESTAMP('2026-07-27 14:00:16','YYYY-MM-DD HH24:MI:SS'),100,'N')
 ;
 
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -119,7 +119,7 @@ UPDATE AD_Ref_List_Trl SET IsTranslated='Y', Name='Delivery stop',Updated=TO_TIM
 
 -- Element: ProductLifeCycleStatus
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy)
-VALUES (0,585137 /*From ID Server*/,0,'ProductLifeCycleStatus',TO_TIMESTAMP('2026-07-27 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','BBS-Status','BBS-Status',TO_TIMESTAMP('2026-07-27 14:00:20','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,585137 /*From ID Server*/,0,'ProductLifeCycleStatus',TO_TIMESTAMP('2026-07-27 14:00:20','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Produktlebenszyklus-Status','Produktlebenszyklus-Status',TO_TIMESTAMP('2026-07-27 14:00:20','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -147,7 +147,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Product Life Cycle Status', Pr
 
 -- Column: M_Product.ProductLifeCycleStatus
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,PersonalDataCategory,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
-VALUES (0,593038 /*From ID Server*/,585137,0,17,542123,208,'ProductLifeCycleStatus',TO_TIMESTAMP('2026-07-27 14:00:24','YYYY-MM-DD HH24:MI:SS'),100,'N','O','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'BBS-Status','NP',0,0,TO_TIMESTAMP('2026-07-27 14:00:24','YYYY-MM-DD HH24:MI:SS'),100,0)
+VALUES (0,593038 /*From ID Server*/,585137,0,17,542123,208,'ProductLifeCycleStatus',TO_TIMESTAMP('2026-07-27 14:00:24','YYYY-MM-DD HH24:MI:SS'),100,'N','O','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Produktlebenszyklus-Status','NP',0,0,TO_TIMESTAMP('2026-07-27 14:00:24','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -162,10 +162,10 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=593038 AND 
 /* DDL */ SELECT public.db_alter_table('M_Product','ALTER TABLE public.M_Product ADD COLUMN ProductLifeCycleStatus VARCHAR(1) DEFAULT ''O''')
 ;
 
--- Field: Produkt(140,D) -> Produkt(180,D) -> BBS-Status
+-- Field: Produkt(140,D) -> Produkt(180,D) -> Produktlebenszyklus-Status
 -- Column: M_Product.ProductLifeCycleStatus
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy)
-VALUES (0,593038,781848 /*From ID Server*/,0,180,0,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','N','N','N','N','N','N','BBS-Status',0,0,0,1,1,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,593038,781848 /*From ID Server*/,0,180,0,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','N','N','N','N','N','N','Produktlebenszyklus-Status',0,0,0,1,1,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -183,8 +183,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781848
 /* DDL */ select AD_Element_Link_Create_Missing_Field(781848)
 ;
 
--- UI Element: Produkt(140,D) -> Produkt(180,D) -> No -> 75 -> BBS-Status
+-- UI Element: Produkt(140,D) -> Produkt(180,D) -> No -> 75 -> Produktlebenszyklus-Status
 -- Column: M_Product.ProductLifeCycleStatus
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,781848,0,180,1000015,652772 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'BBS-Status',75,0,0,TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,781848,0,180,1000015,652772 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Produktlebenszyklus-Status',75,0,0,TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
