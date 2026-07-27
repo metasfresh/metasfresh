@@ -228,17 +228,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return toWFProcess(job);
 	}
 
-	/**
-	 * Completes the job and gives up the quantity that was not moved, closing the distribution order short.
-	 * A separate action from {@link #complete(WFProcessId, UserId)}, which refuses precisely that: the mover has to
-	 * decide to abandon the remainder, it never happens implicitly.
-	 */
-	public WFProcess completeGivingUpRemainder(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
-	{
-		final DistributionJob job = distributionRestService.completeGivingUpRemainder(DistributionJobId.ofWFProcessId(wfProcessId), callerId);
-		return toWFProcess(job);
-	}
-
 	public WFProcess switchPickFromLocatorToNext(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
 		final DistributionJob job = distributionRestService.switchPickFromLocatorToNext(DistributionJobId.ofWFProcessId(wfProcessId), callerId);

@@ -197,10 +197,6 @@ const translations = {
       scanHU: 'Scan HU',
       scanProduct: 'Artikel scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',
-      completeGivingUpRemainder: {
-        caption: 'Abschließen, Restmenge aufgeben',
-        question: '%(qtyOutstanding)s aufgeben und abschließen?',
-      },
       switchPickFromLocator: 'Lagerort leer',
       invalidLocatorQRCode: 'Lagerplatz QR ungültig',
       invalidQtyToMove: 'Bewegungsmenge ungültig',

@@ -192,10 +192,6 @@ const translations = {
       scanHU: 'Scan pick from HU',
       scanProduct: 'Scan Product',
       scanDropToLocator: 'Scan drop to Locator',
-      completeGivingUpRemainder: {
-        caption: 'Complete, give up remainder',
-        question: 'Give up %(qtyOutstanding)s and complete?',
-      },
       switchPickFromLocator: 'Locator empty',
       invalidLocatorQRCode: 'Invalid locator QR code',
       invalidQtyToMove: 'Invalid qty to move',

@@ -130,8 +130,6 @@ const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
   draftActivityDataStored.isCompleteJobAutomatically = job.completeJobAutomatically;
   draftActivityDataStored.isNavigateToJobsListAfterPickFromComplete = job.navigateToJobsListAfterPickFromComplete;
   draftActivityDataStored.canSwitchPickFromLocator = !!job.canSwitchPickFromLocator;
-  // Non-null only while some planned quantity is still unmoved, i.e. while Complete would be refused.
-  draftActivityDataStored.qtyOutstanding = job.qtyOutstanding ?? null;
   draftActivityDataStored.qtyRejectedReasons = job.qtyRejectedReasons;
 
   //

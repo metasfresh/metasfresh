@@ -85,18 +85,6 @@ public class DistributionRestController
 		return distributionMobileApplication.complete(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
 	}
 
-	/**
-	 * Own route on purpose: giving the remainder up is a different decision from completing, so it cannot be reached by
-	 * flipping a flag on the request the mover's Complete already sends — and no existing client starts closing orders
-	 * short because a new field defaulted the wrong way.
-	 */
-	@PostMapping("/job/{wfProcessId}/completeGivingUpRemainder")
-	public WFProcess completeGivingUpRemainder(@PathVariable("wfProcessId") final String wfProcessIdStr)
-	{
-		assertApplicationAccess();
-		return distributionMobileApplication.completeGivingUpRemainder(WFProcessId.ofString(wfProcessIdStr), getLoggedUserId());
-	}
-
 	@PostMapping("/job/{wfProcessId}/switchPickFromLocatorToNext")
 	public JsonWFProcess switchPickFromLocatorToNext(@PathVariable("wfProcessId") final String wfProcessIdStr)
 	{
