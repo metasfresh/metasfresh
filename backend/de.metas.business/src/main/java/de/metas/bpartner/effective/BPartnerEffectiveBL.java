@@ -22,15 +22,21 @@
 
 package de.metas.bpartner.effective;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.freighcost.FreightCostRule;
 import de.metas.incoterms.Incoterms;
 import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.IncotermsRepository;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -39,6 +45,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.repository.IPaymentTermRepository;
 import de.metas.pricing.PricingSystemId;
+import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -47,10 +54,14 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.X_C_Order;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +85,26 @@ public class BPartnerEffectiveBL
 
 	@NonNull private final IncotermsRepository incotermsRepository;
 
+	/**
+	 * Caches the computed effective values keyed by partner. The effective value cascades over the partner,
+	 * its BP group (+ parent group) and org/system defaults, so the cache is reset on any change to the tables
+	 * feeding that cascade. Whole-cache reset (no per-key mapper): a cache keyed by {@link BPartnerId} cannot map
+	 * a {@link I_C_BP_Group}/{@link I_AD_OrgInfo}/{@link I_AD_SysConfig} change back to the affected partners, so
+	 * any change to a registered table wipes the (bounded) cache and entries recompute lazily.
+	 */
+	private final CCache<BPartnerId, BPartnerEffective> cache = CCache.<BPartnerId, BPartnerEffective>builder()
+			.tableName(I_C_BPartner.Table_Name)
+			.additionalTableNamesToResetFor(ImmutableList.of(
+					I_C_BP_Group.Table_Name,
+					I_C_PaymentTerm.Table_Name,
+					I_AD_OrgInfo.Table_Name,
+					I_C_Incoterms.Table_Name,
+					I_AD_SysConfig.Table_Name))
+			.cacheMapType(CCache.CacheMapType.LRU)
+			.maximumSize(500)
+			.build();
+
+	@VisibleForTesting
 	public static BPartnerEffectiveBL newInstanceForUnitTesting()
 	{
 		Adempiere.assertUnitTestMode();
@@ -82,7 +113,12 @@ public class BPartnerEffectiveBL
 
 	public BPartnerEffective getById(@NonNull final BPartnerId bPartnerId)
 	{
-		return getByRecord(bpartnerDAO.getById(bPartnerId));
+		return cache.getOrLoad(bPartnerId, this::loadAndCompute);
+	}
+
+	private BPartnerEffective loadAndCompute(@NonNull final BPartnerId bPartnerId)
+	{
+		return computeEffective(bpartnerDAO.getById(bPartnerId));
 	}
 
 	/**
@@ -105,15 +141,15 @@ public class BPartnerEffectiveBL
 	 */
 	public Optional<Integer> getPurchaseTransportDaysIfSet(@NonNull final BPartnerId bPartnerId)
 	{
-		return bpartnerDAO.getPurchaseTransportDays(bPartnerId);
+		return getById(bPartnerId).getPurchaseTransportDaysIfSet();
 	}
 
 	public int getPurchaseTransportDays(@NonNull final BPartnerId bPartnerId)
 	{
-		return getPurchaseTransportDaysIfSet(bPartnerId).orElse(0);
+		return getById(bPartnerId).getPurchaseTransportDays();
 	}
 
-	public BPartnerEffective getByRecord(@NonNull final I_C_BPartner bPartnerRecord)
+	private BPartnerEffective computeEffective(@NonNull final I_C_BPartner bPartnerRecord)
 	{
 		final I_C_BP_Group bpGroup = bpGroupDAO.getById(BPGroupId.ofRepoId(bPartnerRecord.getC_BP_Group_ID()));
 		final I_C_BP_Group bpParentGroup = getParentGroup(bpGroup);
@@ -211,10 +247,22 @@ public class BPartnerEffectiveBL
 				I_C_BP_Group::getPO_IncotermLocation,
 				bPartnerBuilder::poIncoterms);
 
-		bPartnerBuilder.purchaseTransportDays(
-				bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(0));
+		bPartnerBuilder.purchaseTransportDays(bpartnerDAO.getPurchaseTransportDays(bPartnerRecord).orElse(null));
+		bPartnerBuilder.shipperId(ShipperId.ofRepoIdOrNull(bPartnerRecord.getM_Shipper_ID()));
+
+		bPartnerBuilder.isPreAdviceRequired(Boolean.TRUE.equals(getEffectiveValue(
+				bPartnerRecord, bpGroup, bpParentGroup,
+				I_C_BPartner::getIsPreAdviceRequired,
+				I_C_BP_Group::getIsPreAdviceRequired,
+				(v) -> StringUtils.toBoolean(v, null),
+				() -> false)));
 
 		bPartnerBuilder.salesRepId(UserId.ofRepoIdOrNull(bPartnerRecord.getSalesRep_ID()));
+
+		bPartnerBuilder.freightCostRule(FreightCostRule.ofNullableCode(bPartnerRecord.getFreightCostRule()));
+		bPartnerBuilder.deliveryRule(DeliveryRule.ofNullableCode(bPartnerRecord.getDeliveryRule()));
+		bPartnerBuilder.deliveryViaRule(DeliveryViaRule.ofNullableCode(bPartnerRecord.getDeliveryViaRule()));
+		bPartnerBuilder.poDeliveryViaRule(DeliveryViaRule.ofNullableCode(bPartnerRecord.getPO_DeliveryViaRule()));
 
 		return bPartnerBuilder.build();
 	}
@@ -378,7 +426,6 @@ public class BPartnerEffectiveBL
 
 		incotermsConsumer.accept(incoterms.withLocationEffective(location));
 	}
-
 
 	@Nullable
 	private Incoterms getIncoterms(final int incotermsId)

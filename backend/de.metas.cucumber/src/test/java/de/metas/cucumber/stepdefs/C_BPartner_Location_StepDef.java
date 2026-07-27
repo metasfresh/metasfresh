@@ -248,6 +248,9 @@ public class C_BPartner_Location_StepDef
 		tableRow.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
 				.ifPresent(bPartnerLocationRecord::setAttention);
 
+		tableRow.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_IsPreAdviceRequired)
+				.ifPresent(bPartnerLocationRecord::setIsPreAdviceRequired);
+
 		final Integer bpartnerLocationId = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID);
 		if (bpartnerLocationId != null && bpartnerLocationId > 0)
 		{
@@ -377,6 +380,10 @@ public class C_BPartner_Location_StepDef
 			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_Attention)
 					.map(DataTableUtil::nullToken2Null)
 					.ifPresent(v -> softly.assertThat(bpLocation.getAttention()).as("Attention").isEqualTo(v));
+
+			row.getAsOptionalString(I_C_BPartner_Location.COLUMNNAME_IsPreAdviceRequired)
+					.map(DataTableUtil::nullToken2Null)
+					.ifPresent(v -> softly.assertThat(bpLocation.getIsPreAdviceRequired()).as("IsPreAdviceRequired").isEqualTo(v));
 
 			softly.assertAll();
 		});

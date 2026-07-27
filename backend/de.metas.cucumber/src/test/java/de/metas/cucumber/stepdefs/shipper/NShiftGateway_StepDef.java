@@ -204,7 +204,7 @@ public class NShiftGateway_StepDef
 	/**
 	 * Asserts the {@link JsonDeliveryRequest} captured by the {@code ShipmentDispatchService} mock.
 	 * Carrier product / goods type / the two services are required; address / contact / EORI /
-	 * parcel columns are optional. {@code Parcel*} columns assume a single parcel.
+	 * {@code IsPreAdviceRequired} / parcel columns are optional. {@code Parcel*} columns assume a single parcel.
 	 * {@code ParcelItem_CountryOfOrigin} asserts the country of origin of the first item in the
 	 * single parcel (only evaluated when {@code NumParcels} is absent or 1).
 	 */
@@ -255,6 +255,9 @@ public class NShiftGateway_StepDef
 		row.getAsOptionalString("ReceiverEORI").ifPresent(expected -> softly
 				.assertThat(capturedShipmentRequest.getReceiverEORI())
 				.as("receiverEORI").isEqualTo(expected));
+		row.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
+				.assertThat(capturedShipmentRequest.getPreAdviceRequired())
+				.as("capturedShipmentRequest.preAdviceRequired").isEqualTo(expected));
 
 		// --- pickup (sender) address + contact ---
 		assertAddress(softly, capturedShipmentRequest.getPickupAddress(), row, "Sender", "pickupAddress");
@@ -365,6 +368,7 @@ public class NShiftGateway_StepDef
 	 *   <b>ReceiverContactName</b>            — (optional) delivery contact name<br>
 	 *   <b>ReceiverContactPhone</b>           — (optional) delivery contact phone<br>
 	 *   <b>ReceiverContactEmail</b>           — (optional) delivery contact e-mail<br>
+	 *   <b>IsPreAdviceRequired</b>            — (optional) expected request.preAdviceRequired<br>
 	 *   <b>grossWeightKg</b>     — (optional) expected request.grossWeightKg (parcel-level, per-unit, rounded up — request-level, taken from the first row)<br>
 	 *   <b>lengthInCM</b>        — (optional) expected request.packageDimensions.lengthInCM (parcel-level — request-level, taken from the first row)<br>
 	 *   <b>widthInCM</b>         — (optional) expected request.packageDimensions.widthInCM (parcel-level — request-level, taken from the first row)<br>
@@ -381,6 +385,11 @@ public class NShiftGateway_StepDef
 	 *   of items. With a single item the row is matched by index; with multiple items each row is matched by its
 	 *   {@code productName} / {@code productValue} discriminator. The request-level address / contact / parcel
 	 *   columns are asserted once, from the first row.
+	 * <p>
+	 * Note: attention reflects the raw value from {@code C_BPartner_Location.Attention} as carried
+	 * in the {@link JsonDeliveryAdvisorRequest} — not the post-mapping concatenation produced by
+	 * {@link de.metas.shipper.client.nshift.NShiftShipAdvisorService#buildRequest}, which is
+	 * verified by {@code NShiftShipAdvisorServiceTest}.
 	 */
 	@And("validate the captured nShift advisor request:")
 	public void validateCapturedNShiftAdvisorRequest(@NonNull final DataTable dataTable)
@@ -430,6 +439,11 @@ public class NShiftGateway_StepDef
 				.assertThat(capturedAdvisorRequest.getPackageDimensions() != null
 						? capturedAdvisorRequest.getPackageDimensions().getHeightInCM() : null)
 				.as("packageDimensions.heightInCM")
+				.isEqualTo(expected));
+
+		firstRow.getAsOptionalString("IsPreAdviceRequired").ifPresent(expected -> softly
+				.assertThat(capturedAdvisorRequest.getPreAdviceRequired())
+				.as("capturedAdvisorRequest.preAdviceRequired")
 				.isEqualTo(expected));
 
 		// --- per-item fields: match every row to its (distinct) item and assert ---
@@ -568,15 +582,27 @@ public class NShiftGateway_StepDef
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final SoftAssertions softly = new SoftAssertions();
 
-		row.getAsOptionalString("UseShippingRules").ifPresent(expected -> {
-			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("UseShippingRules");
+		row.getAsOptionalString("IsManual").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("IsManual");
 			if (DataTableUtil.isNullPlaceholder(expected))
 			{
-				softly.assertThat(actual).as("shipperConfig.UseShippingRules should be absent").isNull();
+				softly.assertThat(actual).as("shipperConfig.IsManual should be absent").isNull();
 			}
 			else
 			{
-				softly.assertThat(actual).as("shipperConfig.UseShippingRules").isEqualTo(expected);
+				softly.assertThat(actual).as("shipperConfig.IsManual").isEqualTo(expected);
+			}
+		});
+
+		row.getAsOptionalString("IsSelectionRules").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("IsSelectionRules");
+			if (DataTableUtil.isNullPlaceholder(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.IsSelectionRules should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.IsSelectionRules").isEqualTo(expected);
 			}
 		});
 

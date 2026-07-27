@@ -141,6 +141,9 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	@NonNull
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
