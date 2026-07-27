@@ -1000,6 +1000,9 @@ public class DDOrderPickingReplenishmentService
 
 		voidDDOrdersLeftWithoutContributor(servedLineIds, blockingBeforeDeparture);
 
+		// Orders created before this rollout still carry the legacy FK, which voiding does not clear.
+		ddOrderLowLevelDAO.clearPickingJobScheduleReferences(deletedAssignment.getId());
+
 		if (sharedOrderSurvived)
 		{
 			// The watchdog only looks for deliveries with NO document, so a surviving order that is merely too big for
