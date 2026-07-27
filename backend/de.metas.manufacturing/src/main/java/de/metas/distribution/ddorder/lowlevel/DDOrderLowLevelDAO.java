@@ -7,7 +7,6 @@ import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.lowlevel.model.I_DD_OrderLine_Or_Alternative;
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.material.planning.pporder.LiberoException;
-import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
@@ -112,30 +111,6 @@ public class DDOrderLowLevelDAO
 						I_DD_Order.COLUMNNAME_DD_Order_ID,
 						queryCompletedDDOrders())
 				.create();
-	}
-
-	/** Transitional until {@code M_Picking_Job_Schedule_ID} and its DEFERRABLE constraints are dropped: a row left pointing at a deleted assignment fails the check at that delete's commit. */
-	public void clearPickingJobScheduleReferences(@NonNull final PickingJobScheduleId pickingJobScheduleId)
-	{
-		for (final I_DD_Order ddOrder : queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
-				.create()
-				.list(I_DD_Order.class))
-		{
-			ddOrder.setM_Picking_Job_Schedule_ID(-1);
-			save(ddOrder);
-		}
-
-		for (final I_DD_OrderLine ddOrderLine : queryBL
-				.createQueryBuilder(I_DD_OrderLine.class)
-				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
-				.create()
-				.list(I_DD_OrderLine.class))
-		{
-			ddOrderLine.setM_Picking_Job_Schedule_ID(-1);
-			save(ddOrderLine);
-		}
 	}
 
 	/**
