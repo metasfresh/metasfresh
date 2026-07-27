@@ -24,13 +24,6 @@ public class JsonDistributionJob
 	boolean canSwitchPickFromLocator;
 	@NonNull JsonRejectReasonsList qtyRejectedReasons;
 
-	/**
-	 * What is still to be moved, as "&lt;qty&gt; &lt;uom&gt; &lt;product&gt;" per line, or {@code null} when every
-	 * line's planned quantity was moved. Non-null is what tells the mobile UI that Complete will be refused and that
-	 * the give-up-the-remainder action applies — and it spells out exactly which quantity would be abandoned.
-	 */
-	@Nullable String qtyOutstanding;
-
 	public static JsonDistributionJob.JsonDistributionJobBuilder builderFrom(
 			@NonNull final DistributionJob job,
 			@NonNull final JsonOpts jsonOpts)
@@ -38,7 +31,6 @@ public class JsonDistributionJob
 		return builder()
 				.pickingInstruction(job.getPickingInstruction().translate(jsonOpts.getAdLanguage()))
 				.canSwitchPickFromLocator(job.canSwitchPickFromLocator())
-				.qtyOutstanding(job.hasQtyOutstanding() ? job.getQtyOutstandingDescription().translate(jsonOpts.getAdLanguage()) : null)
 				.lines(job.getLines()
 						.stream()
 						.map(line -> JsonDistributionJobLine.of(line, job, jsonOpts))
