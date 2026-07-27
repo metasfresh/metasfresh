@@ -174,26 +174,14 @@ public class PickingJobScheduleService
 				.execute();
 	}
 
-	/**
-	 * Streams the active, not-yet-processed picking-job-schedule assignments that still need a DD_Order.
-	 * <p>
-	 * {@code servedAssignmentsQuery} is a sub-query reference (the assignments a live DD_Order already serves,
-	 * read off the {@code DD_OrderLine_PickingJobSchedule} association), NOT a managed-entity query of this
-	 * service — it is used as an anti-join filter on {@code M_Picking_Job_Schedule_ID}. It is supplied by the
-	 * DD_Order reconcile flow because the "needs a DD_Order" predicate is only meaningful in that context.
-	 */
+	/** {@code servedAssignmentsQuery} is an anti-join filter on {@code M_Picking_Job_Schedule_ID}, supplied by the DD_Order reconcile flow. */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<?> servedAssignmentsQuery)
 	{
 		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(servedAssignmentsQuery);
 	}
 
 	/**
-	 * The contributor set of one picking-replenishment product group, i.e. the assignments whose demand is served by the
-	 * group's single DD_Order.
-	 * <p>
-	 * {@code workplaceIds} must be the workplaces whose effective pick-from locator is {@code groupKey}'s target locator
-	 * ({@link WorkplaceService#getWorkplaceIdsByEffectivePickFromLocatorId}); it is passed in rather than resolved here
-	 * because the caller already holds it (the same set keys the whole reconcile).
+	 * {@code workplaceIds} must be the workplaces whose effective pick-from locator is {@code groupKey}'s target locator ({@link WorkplaceService#getWorkplaceIdsByEffectivePickFromLocatorId}).
 	 *
 	 * @see PickingJobScheduleRepository#listContributorsOfGroup
 	 */

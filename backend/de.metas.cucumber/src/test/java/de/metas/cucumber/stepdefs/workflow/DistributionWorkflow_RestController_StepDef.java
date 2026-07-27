@@ -125,10 +125,7 @@ public class DistributionWorkflow_RestController_StepDef
 					final WFActivityId wfActivityId = WFActivityId.ofString(activityNode.at("/activityId").asText());
 					result.wfActivityId(wfActivityId);
 
-					// The move activity's properties carry ONE "job" object (MoveWFActivityHandler#getUIComponent puts
-					// a whole JsonDistributionJob under that key); the lines live inside it, not directly under
-					// componentProps. Reading the old flat path silently yields a MissingNode of size 0 rather than an
-					// error, so the assertion below reports "expected 1 but was 0" as if the job had no line at all.
+					// The lines live under /componentProps/job/lines, not directly under componentProps — a wrong path silently yields an empty node instead of erroring.
 					final JsonNode linesArrayNode = activityNode.at("/componentProps/job/lines");
 					assertThat(linesArrayNode.size()).as("lines of the distribution move activity").isOne();
 					final JsonNode lineNode = linesArrayNode.get(0);

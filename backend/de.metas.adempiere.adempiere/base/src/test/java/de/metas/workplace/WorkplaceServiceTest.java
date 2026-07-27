@@ -98,12 +98,6 @@ class WorkplaceServiceTest
 				.containsExactly(configured);
 	}
 
-	/**
-	 * The warehouse's default locator must also find the workplaces that have NO configured pick-from locator: they
-	 * deliver there via the fallback in {@link WorkplaceService#getPickFromLocatorIdOrWarehouseDefault(Workplace)}, and
-	 * so they share one replenishment group with a workplace configured on that same locator. A workplace of another
-	 * warehouse falls back to that warehouse's own default and must not be pulled in.
-	 */
 	@Test
 	void getWorkplaceIdsByEffectivePickFromLocatorId_includesWorkplacesFallingBackToTheWarehouseDefault()
 	{

@@ -114,20 +114,7 @@ public class WorkplaceService
 	}
 
 	/**
-	 * The active workplaces whose <b>effective</b> pick-from locator is {@code locatorId} — the inverse of
-	 * {@link #getPickFromLocatorIdOrWarehouseDefault(Workplace)}: workplaces with {@code PickFrom_Locator_ID} set to
-	 * this locator, <b>plus</b> the workplaces of this locator's warehouse that have none, when it is that warehouse's
-	 * default locator.
-	 * <p>
-	 * The fallback half is reproduced on purpose, by resolving through that same accessor: several workplaces of one
-	 * warehouse with no configured pick-from locator all resolve to the same effective locator, so they must all appear
-	 * here together. Answering this question with a plain {@code PickFrom_Locator_ID = ?} lookup instead would make the
-	 * two directions disagree — a workplace would deliver to a locator that this method claims does not serve it.
-	 * <p>
-	 * Only the locator's own warehouse is considered, which loses nothing: a configured pick-from locator is asserted to
-	 * belong to the workplace's warehouse ({@link Workplace}), and a workplace without one falls back to its own
-	 * warehouse's default — so no workplace of another warehouse can resolve to this locator. It also keeps
-	 * {@link IWarehouseBL#getOrCreateDefaultLocatorId(WarehouseId)} from being asked about unrelated warehouses.
+	 * Filters to the locator's own warehouse only — safe because a configured pick-from locator is asserted to belong to its workplace's warehouse, so no other warehouse's workplace can resolve to this locator.
 	 */
 	@NonNull
 	public ImmutableSet<WorkplaceId> getWorkplaceIdsByEffectivePickFromLocatorId(@NonNull final LocatorId locatorId)

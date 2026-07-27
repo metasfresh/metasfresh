@@ -39,11 +39,8 @@ import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 /**
- * Step definitions for {@code M_Picking_Job_Schedule} — workstation assignment lifecycle.
- *
- * <p>Covers creating/updating assignments, changing or attempting to change quantities (including
- * the picker-busy rejection path), deleting assignments (including the refused-disposal path), and polling for
- * persisted assignment records.</p>
+ * Step definitions for {@code M_Picking_Job_Schedule} — workstation assignment lifecycle (create/update, quantity
+ * change incl. picker-busy rejection, delete incl. refused-disposal, and polling for persisted records).
  *
  * @see de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService
  */
@@ -61,9 +58,7 @@ public class M_Picking_Job_Schedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Creates or updates a {@code M_Picking_Job_Schedule} workstation assignment for the given
-	 * shipment schedule and workplace. If a matching assignment already exists it is updated in place; otherwise a new
-	 * one is created. Triggers the {@code afterNew}/{@code afterChange} interceptor (async reconcile → DD_Order create
-	 * or void+recreate).
+	 * shipment schedule and workplace, triggering the {@code afterNew}/{@code afterChange} interceptor.
 	 * <p>
 	 * Required columns:
 	 * <ul>
@@ -99,7 +94,6 @@ public class M_Picking_Job_Schedule_StepDef
 						.build()
 		);
 
-		// Store the just-created/updated assignment under its row identifier so later steps can reference it.
 		row.getAsOptionalIdentifier().ifPresent(identifier -> {
 			final PickingJobSchedule jobSchedule = pickingJobScheduleService.stream(PickingJobScheduleQuery.builder()
 							.onlyShipmentScheduleId(shipmentScheduleId)
@@ -112,11 +106,9 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Changes an existing workstation assignment's {@code QtyToPick} in place (keyed by the
-	 * assignment's stored identifier), so the {@code M_Picking_Job_Schedule} interceptor fires
-	 * ({@code beforeChange} picker-busy guard + {@code afterChange} after-commit reconcile). On a packing
-	 * warehouse with no busy picker the reconcile voids the old DD_Order and recreates a fresh one with the new
-	 * quantity (single-locator RECREATE); {@code QtyToPick=0} downgrades to a VOID with no replacement.
+	 * @cucumber.stepdef Changes an existing workstation assignment's {@code QtyToPick} in place, keyed by the
+	 * assignment's stored identifier, triggering the {@code M_Picking_Job_Schedule} interceptor's picker-busy
+	 * guard and after-commit reconcile.
 	 * <p>
 	 * Required columns:
 	 * <ul>
@@ -144,9 +136,7 @@ public class M_Picking_Job_Schedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Attempts to change an existing assignment's {@code QtyToPick} and asserts the
-	 * {@code beforeChange} interceptor REJECTS the save. Asserts the thrown exception is an
-	 * {@link org.adempiere.exceptions.AdempiereException} whose {@code ErrorCode} matches the expected value.
-	 * The assignment is reloaded and asserted unchanged.
+	 * {@code beforeChange} interceptor REJECTS the save, leaving the assignment unchanged.
 	 * <p>
 	 * Required columns:
 	 * <ul>
@@ -154,23 +144,13 @@ public class M_Picking_Job_Schedule_StepDef
 	 *   <li>{@code QtyToPick} — the attempted new quantity</li>
 	 *   <li>{@code ErrorCode} — expected {@code AdempiereException} error code (e.g. {@code DDOrderPickingReconcile_PickerBusy})</li>
 	 * </ul>
-	 * Optional columns — the blocking work the refusal must NAME. A consolidated replenishment serves several
-	 * deliveries, so the work that blocks the edit usually belongs to somebody else; a refusal that does not
-	 * identify it is unactionable for the traffic manager. Each given column asserts that its resolved value
-	 * appears in the rendered (translated) exception message:
+	 * Optional columns — each asserts that its resolved value appears in the rendered (translated) exception message:
 	 * <ul>
 	 *   <li>{@code Blocking_M_Picking_Job_Schedule_ID} — identifier of the assignment named as blocking</li>
 	 *   <li>{@code Blocking_M_ShipmentSchedule_ID} — identifier of that assignment's shipment schedule</li>
 	 *   <li>{@code Blocking_DD_Order_ID} — identifier of the distribution order the refusal is about</li>
 	 *   <li>{@code Blocking_QtyMoved} — the quantity already in transit or delivered</li>
 	 * </ul>
-	 * Which assignment counts as "the blocking one" is the production rule, restated here because the table only
-	 * shows its outcome: a <b>picker-busy</b> refusal names the contributor whose delivery is actually being picked;
-	 * a <b>movement-started</b> refusal names a contributor of the moving line other than the one being edited
-	 * (lowest {@code M_Picking_Job_Schedule_ID} first, so the message is reproducible), because the moved goods
-	 * belong to the shared line rather than to any one delivery. Both are resolved through the contributor
-	 * association — NEVER through {@code DD_Order.M_Picking_Job_Schedule_ID}, which names one arbitrary contributor
-	 * and is on its way out.
 	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData, M_ShipmentSchedule_StepDefData,
 	 * DD_Order_StepDefData
 	 * @cucumber.example
@@ -202,7 +182,6 @@ public class M_Picking_Job_Schedule_StepDef
 						.isEqualTo(expectedErrorCode))
 				.satisfies(ex -> assertBlockingWorkIsNamed(row, ex.getLocalizedMessage()));
 
-		// Reload and assert the persisted QtyToPick is unchanged (the rolled-back save left no mark).
 		assertThat(pickingJobScheduleService.getById(jobScheduleId).getQtyToPick().toBigDecimal())
 				.as("M_Picking_Job_Schedule.QtyToPick must be unchanged after the rejected save")
 				.isEqualByComparingTo(originalQty);
@@ -219,22 +198,9 @@ public class M_Picking_Job_Schedule_StepDef
 			COLUMN_Blocking_DD_Order_ID,
 			COLUMN_Blocking_QtyMoved);
 
-	/**
-	 * Asserts the rendered refusal message names each piece of blocking work the row asks for.
-	 *
-	 * <p>The record ids and the quantity are matched as plain text because that is exactly what the traffic manager
-	 * reads: the message is an {@code AD_Message} whose placeholders the service fills with them. Matching the value
-	 * rather than the wording keeps the assertion independent of the UI language, which is what makes it safe to run
-	 * against either the German base text or its English translation.</p>
-	 *
-	 * <p>Each match is anchored on digit boundaries. A bare substring match is worthless here: every repo id in a
-	 * cucumber database is a seven-digit number starting with {@code 1}, so {@code contains("1")} would be satisfied
-	 * by any id in the message and would still pass with the asserted value entirely absent.</p>
-	 */
+	/** Asserts the rendered refusal message names each piece of blocking work the row asks for. */
 	private void assertBlockingWorkIsNamed(@NonNull final DataTableRow row, @NonNull final String message)
 	{
-		// An unrecognised Blocking_ column would otherwise be read by nobody and its assertion would silently not
-		// exist — the row would look like it pins the message while pinning only the error code.
 		final Set<String> unknownBlockingColumns = row.asMap().keySet().stream()
 				.filter(columnName -> columnName.startsWith("Blocking_"))
 				.filter(columnName -> !KNOWN_Blocking_COLUMNS.contains(columnName))
@@ -271,11 +237,7 @@ public class M_Picking_Job_Schedule_StepDef
 				.containsPattern("(?<![0-9.])" + Pattern.quote(expected) + "(?![0-9])");
 	}
 
-	/**
-	 * Updates an existing assignment's QtyToPick in place by passing its {@link PickingJobScheduleId} (not just
-	 * the shipment-schedule id) into {@code createOrUpdate}, so the command takes the UPDATE branch
-	 * ({@code updateByIds}) rather than creating a second assignment.
-	 */
+	/** Updates in place: passing the existing {@link PickingJobScheduleId} into {@code createOrUpdate} takes the UPDATE branch instead of creating a second assignment. */
 	private void updateQtyInPlace(@NonNull final PickingJobSchedule jobSchedule, @NonNull final BigDecimal newQtyToPick)
 	{
 		pickingJobScheduleService.createOrUpdate(
@@ -287,9 +249,8 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
-	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule. Triggers
-	 * the {@code afterDelete} interceptor which synchronously voids and unlinks any live DD_Orders linked to the
-	 * deleted assignments (satisfying the deferrable FK constraint within the same transaction).
+	 * @cucumber.stepdef Deletes all {@code M_Picking_Job_Schedule} records for the given shipment schedule,
+	 * triggering the {@code afterDelete} interceptor which synchronously voids and unlinks any live DD_Orders.
 	 * <p>
 	 * Required columns:
 	 * <ul>
@@ -319,17 +280,7 @@ public class M_Picking_Job_Schedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Attempts to delete the given shipment schedule's workstation assignments and asserts the
-	 * {@code afterDelete} disposal REFUSES it. Asserts the thrown exception is an
-	 * {@link org.adempiere.exceptions.AdempiereException} whose {@code ErrorCode} matches the expected value, and that
-	 * the assignments are still there afterwards — the refusal rolls the whole delete transaction back.
-	 * <p>
-	 * The delete counterpart of {@code changing the picking job schedule quantity is rejected}. It exists because the
-	 * departure of a shared replenishment's LAST contributor <b>disposes of</b> (voids) that replenishment, and a
-	 * disposal is exactly as destructive to a picker mid-job on it as a re-plan is: the document they are working on
-	 * would be voided under them. A consolidated order names only one of its contributors, so the departing one is
-	 * usually not the one the order back-references — which is why the refusal is resolved through the contributor
-	 * association, never through {@code DD_Order.M_Picking_Job_Schedule_ID}.
-	 * <p>
+	 * {@code afterDelete} disposal REFUSES it, leaving the assignments unchanged.
 	 * @cucumber.columns
 	 *   <b>M_ShipmentSchedule_ID</b> — (required, identifier-ref) the shipment schedule whose assignments to delete<br>
 	 *   <b>ErrorCode</b> — (required) expected {@code AdempiereException} error code, e.g.
@@ -370,7 +321,6 @@ public class M_Picking_Job_Schedule_StepDef
 						.isEqualTo(expectedErrorCode))
 				.satisfies(ex -> assertBlockingWorkIsNamed(row, ex.getLocalizedMessage()));
 
-		// Re-read: the refused delete rolled its transaction back, so every assignment is still there.
 		assertThat(jobScheduleIdsOf(shipmentScheduleId))
 				.as("The assignments must still exist after the rejected delete")
 				.containsExactlyInAnyOrderElementsOf(jobScheduleIds);
@@ -387,15 +337,8 @@ public class M_Picking_Job_Schedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Deactivates an existing workstation assignment ({@code IsActive=N}), keyed by the assignment's
-	 * stored identifier. The record is kept, so the {@code beforeChange} guard and the {@code afterChange} after-commit
-	 * reconcile fire — this is a plain change, NOT the {@code afterDelete} path of {@code delete picking job schedules}.
-	 * <p>
-	 * Real-world trigger: a traffic manager deactivates the assignment record instead of deleting it, and any data fix
-	 * that does the same. A deactivated assignment carries no demand: it drops out of the product group's contributor
-	 * set ({@code PickingJobScheduleRepository.listContributorsOfGroup} filters {@code IsActive}), so the group's
-	 * consolidated quantity shrinks to the remaining contributors' sum — and once the last contributor leaves this way
-	 * the group's DD_Order is voided (an un-assignment, not a shipment close-out).
-	 * <p>
+	 * stored identifier, triggering the {@code beforeChange}/{@code afterChange} interceptor (not the
+	 * {@code afterDelete} path of {@code delete picking job schedules}).
 	 * @cucumber.columns
 	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the existing assignment to deactivate<br>
 	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData
@@ -418,17 +361,15 @@ public class M_Picking_Job_Schedule_StepDef
 				.lookupNotNullIn(jobScheduleTable)
 				.getId();
 
-		// Written through the record because the assignment repository has no IsActive-aware save: its
-		// updateRecord(...) copies only the business columns, so a domain-object round-trip would not deactivate.
+		// Written through the record directly: the repository's updateRecord(...) copies only business columns, so it wouldn't deactivate.
 		final I_M_Picking_Job_Schedule record = InterfaceWrapperHelper.load(jobScheduleId, I_M_Picking_Job_Schedule.class);
 		record.setIsActive(false);
 		InterfaceWrapperHelper.saveRecord(record);
 	}
 
 	/**
-	 * @cucumber.stepdef Polls until a {@code M_Picking_Job_Schedule} with the given attributes is found, or the
-	 * timeout is exceeded. Used to assert that an assignment has been persisted (e.g. after the interceptor fires
-	 * asynchronously).
+	 * @cucumber.stepdef Polls until a {@code M_Picking_Job_Schedule} with the given attributes is found, asserting
+	 * it was persisted (e.g. after the interceptor fires asynchronously).
 	 * <p>
 	 * Required columns:
 	 * <ul>

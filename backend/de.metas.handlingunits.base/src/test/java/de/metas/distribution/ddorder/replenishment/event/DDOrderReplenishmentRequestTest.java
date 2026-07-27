@@ -10,12 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Pins the identity of the group-keyed reconcile request: the group key is the identity, the triggering
- * assignment ({@code triggeredBy}) is payload only.
- *
- * <p>Pure value-object tests — no DB, no {@code AdempiereTestHelper} harness needed.</p>
- */
 class DDOrderReplenishmentRequestTest
 {
 	private static final DDOrderReplenishmentGroupKey GROUP_KEY = DDOrderReplenishmentGroupKey.builder()
@@ -37,10 +31,6 @@ class DDOrderReplenishmentRequestTest
 	@Test
 	void twoRequestsDifferingOnlyInTriggeredBy_areEqual()
 	{
-		// Guards the group dedup: DDOrderReplenishmentRequest is a Lombok @Value, so without
-		// @EqualsAndHashCode.Exclude on triggeredBy the generated equals() would make two requests of the
-		// SAME group unequal, and scheduleReconcileAfterCommit's ImmutableSet / rebuildDrift's .distinct()
-		// would silently stop collapsing N contributors into 1 reconcile.
 		assertThat(request(10)).isEqualTo(request(20));
 		assertThat(request(10)).hasSameHashCodeAs(request(20));
 	}

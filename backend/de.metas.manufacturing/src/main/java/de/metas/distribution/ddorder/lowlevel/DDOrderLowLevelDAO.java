@@ -89,13 +89,7 @@ public class DDOrderLowLevelDAO
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
 	}
 
-	/**
-	 * Returns a sub-query selecting all live (Completed), active {@link I_DD_Order} records.
-	 *
-	 * <p>Intended to be consumed by callers as an {@code IN}/{@code NOT IN} sub-query filter
-	 * (e.g. "shipment schedules that have / have no live DD_Order"). The cross-model join is
-	 * composed in the caller's service; this DAO owns only the DD_Order side of the query.</p>
-	 */
+	/** This DAO owns the DD_Order side only; the caller's service composes the cross-model join. */
 	public IQuery<I_DD_Order> queryCompletedDDOrders()
 	{
 		return queryBL
@@ -106,12 +100,7 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns a sub-query selecting the active {@link I_DD_OrderLine}s of {@link #queryCompletedDDOrders()}.
-	 *
-	 * <p>The line-level entry point into the same live-DD_Order set: whatever hangs off a line — such as the
-	 * assignments a consolidated line serves — can only be restricted to live orders by going through the lines
-	 * first. Same composition rule as {@link #queryCompletedDDOrders()}: this DAO owns the DD_Order/DD_OrderLine
-	 * side only, and the caller's service joins it to whatever it needs.</p>
+	 * This DAO owns the DD_Order/DD_OrderLine side only; the caller's service joins the result to whatever else it needs.
 	 */
 	public IQuery<I_DD_OrderLine> queryCompletedDDOrderLines()
 	{
@@ -125,24 +114,15 @@ public class DDOrderLowLevelDAO
 				.create();
 	}
 
-	/**
-	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
-	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
-	 *
-	 * <p>The stock-aware split creates one DD_Order per contributing source locator, so an assignment can have
-	 * several live DD_Orders. The per-locator diff matches each returned DD_Order to a required source locator via
-	 * its line's {@code DD_OrderLine.M_Locator_ID}.</p>
-	 */
+	/** ALL of them: the stock-aware split creates one DD_Order per contributing source locator. */
 	public List<I_DD_Order> findActiveDDOrdersForPickingJobSchedule(@NonNull final PickingJobScheduleId pickingJobScheduleId)
 	{
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleId)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				// A disconnected DD_Order (IsPickingDisconnected=Y) is the in-progress close-out disposition: the
-				// shipment schedule was already closed out, the DD_Order survives as a standalone replenishment the
-				// worker finishes. The picker-busy guard and the reconcile must NOT see it (else they would re-block
-				// the close-out / re-void the standalone job), so it is filtered out here.
+				// A disconnected order is a standalone replenishment the worker still finishes; the guard and the
+				// reconcile must not see it, or they re-block the close-out.
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
@@ -151,21 +131,7 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * Returns ALL live (Completed, active, not picking-disconnected) {@link I_DD_Order} records serving the given
-	 * picking-replenishment product group — the group key {@code (M_Product_ID, M_LocatorTo_ID, C_UOM_ID)} read off
-	 * the DD_OrderLine — ordered by {@code DD_Order_ID}.
-	 *
-	 * <p>The group-keyed counterpart of {@link #findActiveDDOrdersForPickingJobSchedule(PickingJobScheduleId)}: a
-	 * consolidated order serves several assignments, so no single {@code M_Picking_Job_Schedule_ID} identifies it.</p>
-	 *
-	 * <p>{@code replenishmentLineIdsQuery} is a sub-query reference over the alloc table
-	 * ({@code DD_OrderLine_PickingJobSchedule}), NOT a table this DAO owns — it is supplied by the reconcile flow in
-	 * {@code de.metas.handlingunits.base}, which is where that model interface lives (same pattern as
-	 * {@code PickingJobScheduleRepository.streamAssignmentsNeedingDDOrder} taking its served-assignment query from
-	 * its caller).
-	 * It is what restricts the result to <b>replenishment</b> lines: the three group-key columns alone would also
-	 * match a manually created or MRP-generated DD_Order that happens to move the same product to the same locator,
-	 * and this reconcile voids what it does not need — it must never be able to void a foreign document.</p>
+	 * {@code replenishmentLineIdsQuery} restricts to actual replenishment lines — the group-key columns alone could also match a foreign manual/MRP DD_Order, which this reconcile must never void.
 	 */
 	public List<I_DD_Order> findActiveDDOrdersForReplenishmentGroup(
 			@NonNull final ProductId productId,
@@ -188,8 +154,7 @@ public class DDOrderLowLevelDAO
 		return queryBL
 				.createQueryBuilder(I_DD_Order.class)
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				// Same reason as findActiveDDOrdersForPickingJobSchedule: a disconnected DD_Order is the in-progress
-				// close-out disposition and must stay invisible to the guard and the reconcile.
+				// Same reason as findActiveDDOrdersForPickingJobSchedule (see there).
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
 				.addOnlyActiveRecordsFilter()
 				.addInSubQueryFilter(

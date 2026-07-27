@@ -20,14 +20,7 @@ public class DDOrderReplenishmentRequest
 	@NonNull ClientAndOrgId clientAndOrgId;
 
 	/**
-	 * One of the triggering assignments, not the owner - when N requests dedup to one, the surviving stamp is
-	 * arbitrary. Payload only: it anchors the resulting AD_EventLog record so an operator can zoom from the
-	 * assignment to its reconcile log.
-	 *
-	 * <p>Excluded from equals/hashCode on purpose: the group key IS the identity. Without the exclusion, N
-	 * requests of the same group would be N distinct requests, and the dedup in
-	 * {@code DDOrderPickingReplenishmentService.scheduleReconcileAfterCommit} (an {@code ImmutableSet}) and
-	 * {@code rebuildDrift()} (a {@code .distinct()}) would silently stop collapsing them into one reconcile.
+	 * One of the triggering assignments (arbitrary once requests dedup); excluded from equals/hashCode since the group key is the identity.
 	 */
 	@NonNull @EqualsAndHashCode.Exclude PickingJobScheduleId triggeredBy;
 }

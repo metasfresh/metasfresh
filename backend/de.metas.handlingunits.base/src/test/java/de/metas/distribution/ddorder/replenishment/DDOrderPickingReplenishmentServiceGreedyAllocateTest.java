@@ -51,20 +51,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Focused unit tests for the per-locator greedy allocation, covering both the locator pick order
- * (by {@code M_Locator.PriorityNo} then {@code M_Locator.Value}) and the cross-UOM case: the on-hand
- * quantities arrive in the product STOCKING UOM while the demand is in the assignment UOM, so each
- * locator's available qty must be converted into the demand UOM before it is compared/subtracted —
- * otherwise {@link de.metas.quantity.Quantity}'s arithmetic throws because the UOMs do not match.
- *
- * <p>Ordering is exercised against the real {@code IWarehouseBL.getLocatorById} path using real
- * in-memory {@code M_Locator} records (it works in the {@link AdempiereTestHelper} harness — no direct
- * SQL). The UOM conversion is injected into {@code greedyAllocate} because driving a non-stocking
- * assignment UOM end-to-end through the order → shipment-schedule → assignment chain requires a
- * contrived, fractional-case product setup (priced + stocked + ordered in different UOMs) that the real
- * warehouse workflow would never produce; the conversion + greedy logic is the thing under test and is
- * proven deterministically here. The existing 16 cucumber scenarios (assignment UOM == stocking UOM)
- * continue to cover the common end-to-end path.</p>
+ * Unit tests for the per-locator greedy allocation and the contributor attribution built on top of it. The UOM
+ * conversion is injected because a non-stocking assignment UOM cannot be reached through the real warehouse workflow.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class DDOrderPickingReplenishmentServiceGreedyAllocateTest
@@ -171,10 +159,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		return LocatorId.ofRepoId(warehouseId, loc.getM_Locator_ID());
 	}
 
-	/**
-	 * A real in-memory {@code DD_OrderLine} under the given id, so the already-delivered guard runs against actual
-	 * record state rather than a stub of itself.
-	 */
 	private static I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final String qtyDelivered)
 	{
 		final I_DD_OrderLine line = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class);
@@ -307,7 +291,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	@Test
 	void priorityWins_lowerPriorityNoConsumedFirst_regardlessOfValue()
 	{
-		// B has the lower PriorityNo (10 < 50) but the HIGHER Value -> B must be consumed first.
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 10);
 
@@ -330,7 +313,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	@Test
 	void samePriority_tieBreaksByValue()
 	{
-		// Equal PriorityNo -> the lower Value (A "10-A") is consumed first.
 		final LocatorId locatorA = createLocator("10-A", 50);
 		final LocatorId locatorB = createLocator("20-B", 50);
 
@@ -387,21 +369,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(result.getUncovered()).isEqualTo(each("5"));
 	}
 
-	// -----------------------------------------------------------------------------------------------------------------
-	// Attribution: splitting the group's per-locator chunks back across the contributing assignments.
-	//
-	// The greedy above answers "which source locators cover the GROUP's summed demand"; attribution answers "whose
-	// demand does each of those chunks serve". It is tested here rather than end-to-end because the combinatorial
-	// cases (N contributors x M locators, exhausted stock, a contributor spanning two locators) cannot be enumerated
-	// economically through the order -> shipment-schedule -> assignment chain — the cucumber asserts the resulting
-	// document, this asserts the pure split function.
-	// -----------------------------------------------------------------------------------------------------------------
-
-	/**
-	 * Worked example: two customer deliveries in one group, P1 wants 10 and P2 wants 5; the greedy
-	 * covered them from L1 (12) and L2 (3). The first line's 12 therefore serves P1 in full and P2 partially, and P2's
-	 * remaining 3 come from the second line — i.e. one contributor legitimately spans two lines.
-	 */
 	@Test
 	void attribution_splitsChunksAcrossContributorsSequentially()
 	{
@@ -423,10 +390,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				.containsExactly(tuple(p2.getId(), 3));
 	}
 
-	/**
-	 * Contributors ahead in the attribution order are covered in full, so the shortfall falls on those last in it.
-	 * The shortfall itself stays DERIVED — no row carries the missing quantity.
-	 */
 	@Test
 	void attribution_whenStockIsShort_theLastContributorInOrderBearsTheShortfall()
 	{
@@ -434,7 +397,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final PickingJobSchedule p1 = contributor(1, "10");
 		final PickingJobSchedule p2 = contributor(2, "5");
 
-		// P1 wants 10, P2 wants 5, only 12 available -> P1 gets 10, P2 gets 2 and is short 3.
 		final Map<LocatorId, Quantity> allocation = ImmutableMap.of(l1, each("12"));
 
 		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
@@ -446,12 +408,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(sumOf(actual)).isEqualByComparingTo("12");
 	}
 
-	/**
-	 * The two invariants of the split: EQUALITY per line (a line's quantity is exactly the sum of its
-	 * contributors' shares — otherwise the mover would carry quantity nobody asked for, or a contributor's share
-	 * would vanish), and INEQUALITY per contributor (partial coverage is allowed today, so a contributor may get
-	 * less than it demanded but never more).
-	 */
 	@Test
 	void attribution_perLineSumEqualsTheChunk_andPerContributorSumNeverExceedsDemand()
 	{
@@ -471,11 +427,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(sumForContributor(actual, p2)).isLessThanOrEqualTo(p2.getQtyToPick().toBigDecimal());
 	}
 
-	/**
-	 * A contributor whose demand is already fully covered by the chunks ahead of it gets NO row at all — never a
-	 * {@code Qty=0} row. A zero row would make the alloc table claim the line
-	 * serves a delivery it does not, and the group's own settlement would then never resolve it.
-	 */
 	@Test
 	void attribution_contributorWithNoShare_getsNoRowAtAll()
 	{
@@ -483,7 +434,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final PickingJobSchedule p1 = contributor(1, "10");
 		final PickingJobSchedule p2 = contributor(2, "5");
 
-		// Only 10 available: P1 takes all of it, P2 gets nothing.
 		final Map<LocatorId, ImmutableList<DDOrderLineContributor>> actual =
 				service.attribute(ImmutableList.of(p1, p2), ImmutableMap.of(l1, each("10")));
 
@@ -493,16 +443,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(sumForContributor(actual, p2)).isEqualByComparingTo("0");
 	}
 
-	/**
-	 * A line the already-delivered guard FROZE keeps its old quantity and its old shares, so the reconcile drops that
-	 * locator's chunk from the attribution input and subtracts the frozen shares from their contributors' demand.
-	 * Without the subtraction the frozen chunk is silently attributed a second time on the next locator.
-	 *
-	 * <p>Here P1 demands 10; an earlier reconcile put all 10 on L1 and the mover has partially delivered it, so L1 is
-	 * frozen at 10. Stock shifted and the new allocation is {@code L1=6, L2=4}: L1's 6 is excluded, and P1's demand is
-	 * already met by what the frozen line carries, so L2 must attribute NOTHING. Attributing its 4 to P1 would leave
-	 * P1 carrying 14 against a demand of 10, with no exception and no log line.
-	 */
 	@Test
 	void attribution_aFrozenLineDoesNotShiftItsChunkOntoTheNextLine()
 	{
@@ -519,15 +459,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(sumForContributor(actual, p1)).isEqualByComparingTo("0");
 	}
 
-	/**
-	 * The freeze set is a FIXED POINT, not a single pre-pass.
-	 *
-	 * <p>L1 is refused on the first look (its chunk 5 is a shrink against an ordered 10 that is part-delivered). L2's
-	 * chunk 15 is a GROWTH against its ordered 12, so probing the raw chunk clears it — but once L1's shares are netted
-	 * off, only 10 of demand is left to attribute, so L2 would be written with 10 and refused after all. L2 must
-	 * therefore end up frozen too: attributing 10 to a line that then refuses them discards those shares, and the
-	 * demand walked through L2 is lost to every locator behind it in the pick order, on every future pass alike.
-	 */
 	@Test
 	void frozenSplit_freezesALineThatOnlyTurnsIntoAShrinkAfterAnotherFrozenLineIsNettedOff()
 	{
@@ -536,9 +467,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final PickingJobSchedule p1 = contributor(1, "10");
 		final PickingJobSchedule p2 = contributor(2, "10");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "4");  // ordered 10, delivered 4
-		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", "3");  // ordered 12, delivered 3
-		// L1 historically serves 6 of P1 and 4 of P2 — more than the 5 its fresh chunk would give it.
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "4");
+		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", "3");
 		final ImmutableList<DDOrderLineContributor> sharesOfL1 = ImmutableList.of(
 				DDOrderLineContributor.of(p1.getId(), each("6")),
 				DDOrderLineContributor.of(p2.getId(), each("4")));
@@ -556,10 +486,6 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(split.getAttribution()).isEmpty();
 	}
 
-	/**
-	 * The partial-freeze case of the test above: the frozen line covers only part of the contributor's demand, so the
-	 * remaining locators attribute exactly the rest — never the full demand again.
-	 */
 	@Test
 	void attribution_aPartiallyFrozenContributorIsOnlyAttributedItsRemainingDemand()
 	{

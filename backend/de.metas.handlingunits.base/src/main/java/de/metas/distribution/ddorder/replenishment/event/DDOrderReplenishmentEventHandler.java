@@ -44,9 +44,7 @@ public class DDOrderReplenishmentEventHandler implements IEventListener
 
 		try (final IAutoCloseable ignored = switchCtx(request))
 		{
-			// The request identifies the product GROUP, so N assignments of one group collapse into one reconcile and
-			// the reconcile serves every contributor of it. request.getTriggeredBy() is only the AD_EventLog record
-			// anchor (one arbitrary triggering assignment) — never the unit of work.
+			// request.getTriggeredBy() is only the AD_EventLog anchor, not the unit of work: the reconcile runs on the whole product group.
 			eventLogUserService.invokeHandlerAndLog(EventLogUserService.InvokeHandlerAndLogRequest.builder()
 					.handlerClass(DDOrderReplenishmentEventHandler.class)
 					.invokaction(() -> trxManager.runInThreadInheritedTrx(

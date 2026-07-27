@@ -6,9 +6,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 /**
- * One workstation assignment's share of a consolidated {@code DD_OrderLine}.
- * <p>
- * Persisted as a {@code DD_OrderLine_PickingJobSchedule} row by {@link DDOrderLineContributorRepository}.
+ * One workstation assignment's share of a consolidated {@code DD_OrderLine}, persisted as a {@code DD_OrderLine_PickingJobSchedule} row by {@link DDOrderLineContributorRepository}.
  */
 @Value(staticConstructor = "of")
 public class DDOrderLineContributor

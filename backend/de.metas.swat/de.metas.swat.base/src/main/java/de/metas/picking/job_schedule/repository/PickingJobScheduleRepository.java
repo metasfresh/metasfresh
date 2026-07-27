@@ -112,13 +112,7 @@ public class PickingJobScheduleRepository
 		record.setProcessed(from.isProcessed());
 	}
 
-	/**
-	 * Boundary factory: maps an already-loaded {@link I_M_Picking_Job_Schedule} record to its domain object.
-	 * <p>
-	 * Public so that a model interceptor that already holds the record (e.g. {@code M_Picking_Job_Schedule_DDOrderPickingInterceptor})
-	 * can build the domain object without a redundant {@link #getById} reload. Callers that do NOT already hold the record
-	 * must go through {@link #getById}/{@link #findByIdOrNull} rather than loading the record themselves.
-	 */
+	/** Public only for a caller that ALREADY holds the record (a model interceptor); everybody else goes through {@link #getById}. */
 	public static PickingJobSchedule fromRecord(final I_M_Picking_Job_Schedule record)
 	{
 		return PickingJobSchedule.builder()
@@ -265,37 +259,22 @@ public class PickingJobScheduleRepository
 	}
 
 	/**
-	 * The contributor set of one picking-replenishment product group: every active, not-yet-processed assignment on one
-	 * of {@code workplaceIds} whose shipment schedule demands {@code productId}, in {@code uomId}.
-	 * <p>
-	 * {@code workplaceIds} are the workplaces whose effective pick-from locator IS the group's target locator, so the
-	 * three parameters together express the group key {@code (product, target locator, UOM)}.
-	 * <p>
-	 * <b>Unordered</b> on purpose: the attribution order is keyed on the contributor's effective {@code PriorityRule}
-	 * and preparation date, which live on {@code M_ShipmentSchedule}, so only the caller can establish it.
-	 * <p>
-	 * The {@code C_Workplace_ID} filter is what makes this lookup <b>index-served</b> — by the partial index
-	 * {@code m_picking_job_schedule (c_workplace_id) WHERE Processed = 'N'} — rather than a scan of the whole
-	 * open-assignment set. Any future variant of this query must keep both the workplace filter and the
-	 * {@code Processed = 'N'} predicate, or it falls back to that scan.
+	 * Unordered on purpose (the caller establishes attribution order via {@code PriorityRule}/prep-date); the {@code C_Workplace_ID} filter
+	 * is what keeps this index-served by the partial index on {@code (c_workplace_id) WHERE Processed = 'N'} — a future variant must keep both filters.
 	 */
 	public ImmutableList<PickingJobSchedule> listContributorsOfGroup(
 			@NonNull final ProductId productId,
 			@NonNull final UomId uomId,
 			@NonNull final Set<WorkplaceId> workplaceIds)
 	{
-		// No workplace points at that target locator, so the group has no contributor: skip the round-trip. (The
-		// restriction itself is safe when empty - every addInArrayFilter overload sets defaultReturnWhenEmpty=false,
-		// so an empty IN-list renders as "1=0". It is addInArrayOrAllFilter that renders "1=1"; swapping to it here
-		// WOULD drop the workplace restriction and consolidate every open assignment of the product/UOM instance-wide
-		// into one DD_Order, which is what this early return also documents against.)
+		// Empty workplaceIds already renders "1=0" via addInArrayFilter — do not swap to addInArrayOrAllFilter (renders "1=1"),
+		// which would drop the workplace restriction and consolidate every open assignment instance-wide.
 		if (workplaceIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}
 
-		// IsActive filtered as the shipment schedule's own repository does: a deactivated schedule carries no demand, so
-		// its assignment must not keep a share of the group's line.
+		// Deactivated schedules carry no demand, so their assignment must not keep a share of the group's line.
 		final IQuery<I_M_ShipmentSchedule> shipmentSchedulesOfProduct = queryBL.createQueryBuilder(I_M_ShipmentSchedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID, productId)
@@ -317,19 +296,8 @@ public class PickingJobScheduleRepository
 	}
 
 	/**
-	 * Cross-entity anti-join: streams the active, not-yet-processed assignments that no live DD_Order serves yet
-	 * ({@code M_Picking_Job_Schedule} LEFT-anti-JOIN {@code servedAssignmentsQuery} on
-	 * {@code M_Picking_Job_Schedule_ID}).
-	 * <p>
-	 * Served-ness is decided by the caller-supplied set, which resolves it through the <b>contributor
-	 * association</b> — not through a single-owner back-reference column on the {@code DD_Order}. A consolidated
-	 * order serves several assignments, so such a column can name only one of them; every other contributor would
-	 * be reported unserved here and the whole group re-planned on every watchdog pass.
-	 * <p>
-	 * {@code servedAssignmentsQuery} is passed in rather than built here for the same reason the DD_Order query
-	 * always was: both the association and {@code DD_Order} live in modules that depend on this one, so only the
-	 * caller (the DD_Order reconcile flow) can compose them. Its {@code M_Picking_Job_Schedule_ID} column names the
-	 * served assignment.
+	 * Anti-join against the caller-supplied {@code servedAssignmentsQuery} (its {@code M_Picking_Job_Schedule_ID} column) — passed in because
+	 * the contributor association and {@code DD_Order} live in modules that depend on this one.
 	 */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<?> servedAssignmentsQuery)
 	{

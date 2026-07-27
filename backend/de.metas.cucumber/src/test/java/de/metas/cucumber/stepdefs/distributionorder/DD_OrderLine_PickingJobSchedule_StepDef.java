@@ -65,13 +65,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 /**
- * Step definitions for {@code DD_OrderLine_PickingJobSchedule} — which workstation assignments a consolidated
- * {@code DD_OrderLine} serves, and with how much each.
- *
- * <p>Covers the product-group view of the picking replenishment: the single live DD_Order of a product group, the
- * complete contributor set of one of its lines, and the contributor → DD_Order navigation. All of these are
- * group-level concepts that no single assignment owns, which is why they live here rather than on
- * {@code DD_Order_StepDef} (whose steps are keyed on one owning {@code M_Picking_Job_Schedule}).</p>
+ * Step definitions for {@code DD_OrderLine_PickingJobSchedule} — the product-group view of picking replenishment
+ * (single live DD_Order per group, its line's contributor set, and contributor → DD_Order navigation).
  */
 @RequiredArgsConstructor
 public class DD_OrderLine_PickingJobSchedule_StepDef
@@ -90,10 +85,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	/**
 	 * @cucumber.stepdef Polls until EXACTLY ONE live (DocStatus != Voided) DD_Order exists for the given product
 	 * group and validates its header plus its single line.
-	 * <p>
-	 * The group is resolved through the line's own {@code M_Product_ID} + {@code M_LocatorTo_ID}, never through an
-	 * owning {@code M_Picking_Job_Schedule}: an order that serves several assignments has no single owner to key on.
-	 * <p>
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
 	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator, i.e. the workstation's
@@ -123,9 +114,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 		final ProductId productId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 		final LocatorId locatorToId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID).lookupNotNullIdIn(locatorTable);
 
-		// The whole group picture is polled (order count AND the line quantity), not just the count: an in-flight
-		// reconcile can transiently show one order whose quantity is not yet the group's sum, and binding on the
-		// count alone would grab that stale record.
+		// Polls order count AND line quantity together — count alone could match a stale order with the wrong quantity.
 		final List<I_DD_Order> ddOrders = StepDefUtil.<List<I_DD_Order>>tryAndWaitForData(() -> liveDDOrdersOfProductGroup(productId, locatorToId))
 				.validateUsingConsumer(liveDDOrders -> validateSingleDDOrderOfProductGroup(liveDDOrders, row))
 				.maxWaitSeconds(timeoutSec)
@@ -141,12 +130,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Polls until NO live (DocStatus != Voided) DD_Order is left for the given product group.
-	 * <p>
-	 * The counterpart of {@code exactly one live DD_Order exists for the product group}, for the disposal outcomes: the
-	 * group's last contributor left, so nothing may still be planned for it. Group-keyed for the same reason — a
-	 * consolidated order has no single owning assignment to look it up by, and an order that lost its last contributor
-	 * cannot even be reached through the association any more.
-	 * <p>
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
 	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
@@ -180,7 +163,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 
 	private void validateSingleDDOrderOfProductGroup(@NonNull final List<I_DD_Order> liveDDOrders, @NonNull final DataTableRow expected)
 	{
-		// The group's demand is served by ONE order — not one per contributing assignment.
 		assertThat(liveDDOrders)
 				.as("live (DocStatus != Voided) DD_Orders of the product group")
 				.hasSize(1);
@@ -207,19 +189,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 		softly.assertAll();
 	}
 
-	/**
-	 * The live (DocStatus != Voided) DD_Orders serving the given product group, ordered by id so the result is
-	 * stable across polls.
-	 * <p>
-	 * Deliberately NOT expressed through {@code DDOrderService.streamDDOrders(DDOrderQuery)}, even though that query
-	 * has both a {@code productIds} and a {@code locatorToIds} field: it applies them as TWO INDEPENDENT
-	 * {@code DD_Order_ID IN (…)} sub-queries over {@code DD_OrderLine} ({@code DDOrderLowLevelDAO.toSqlQuery}, the
-	 * "Locator To" block and the "Line level filters" block), so it matches an order that has ONE line with the
-	 * product and ANOTHER line to the target locator. The group predicate needs a SINGLE line carrying both, which
-	 * is what the sub-query below expresses. Its {@code docStatus} field is likewise a single-value equals and
-	 * cannot say "not Voided". Fold this into the domain query only once {@code DDOrderQuery} can state a combined
-	 * line-level predicate — replacing it as-is would silently widen the group.
-	 */
+	/** The live (DocStatus != Voided) DD_Orders serving the given product group, ordered by id so the result is stable across polls. */
 	private List<I_DD_Order> liveDDOrdersOfProductGroup(@NonNull final ProductId productId, @NonNull final LocatorId locatorToId)
 	{
 		final IQuery<I_DD_OrderLine> groupLinesQuery = queryBL.createQueryBuilder(I_DD_OrderLine.class)
@@ -241,8 +211,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	{
 		final List<I_DD_OrderLine> lines = ddOrderService.retrieveLines(ddOrder);
 
-		// One consolidated line carries the whole group's demand for one source locator; more than one line would
-		// mean the demand was split per contributor again, which is what the aggregation removes.
+		// Exactly one line per group: more than one would mean the aggregation didn't consolidate the demand.
 		assertThat(lines)
 				.as("lines of DD_Order_ID=%s", ddOrder.getDD_Order_ID())
 				.hasSize(1);
@@ -253,12 +222,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	/**
 	 * @cucumber.stepdef Asserts the COMPLETE {@code DD_OrderLine_PickingJobSchedule} contributor set of the given
 	 * line(s) — every contributing workstation assignment with its own quantity, and no other row.
-	 * <p>
-	 * The assertion is exact-set: a contributor silently dropped from a consolidated line (its demand then has no
-	 * document at all) and a contributor invented for a line it does not feed both fail it.
-	 * <p>
-	 * Rows are grouped by {@code DD_OrderLine_ID}, so one invocation can assert several lines of a multi-line group.
-	 * <p>
 	 * @cucumber.columns
 	 *   <b>DD_OrderLine_ID</b> — (required, identifier-ref) the consolidated line whose contributors are asserted<br>
 	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the contributing workstation assignment<br>
@@ -298,11 +261,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 				});
 	}
 
-	/**
-	 * Renders a quantity so that two {@code BigDecimal}s differing only in scale compare equal inside an AssertJ
-	 * {@code extracting(...)} tuple (which uses {@code equals}, and {@code BigDecimal.equals} is scale-sensitive:
-	 * the DB returns {@code 10.000000} where the DataTable says {@code 10}).
-	 */
+	/** Strips trailing zeros so BigDecimals differing only in scale (DB {@code 10.000000} vs DataTable {@code 10}) compare equal in AssertJ's equals-based tuple matching. */
 	private static String asComparableQty(@NonNull final BigDecimal qty)
 	{
 		return qty.stripTrailingZeros().toPlainString();
@@ -310,12 +269,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Asserts that each of the given workstation assignments is served by EXACTLY the given
-	 * DD_Order — resolved through its {@code DD_OrderLine_PickingJobSchedule} rows, i.e. the navigation that
-	 * replaces the single-owner foreign key.
-	 * <p>
-	 * Both directions of the settlement are covered: an assignment that resolves to no order was left dangling, and
-	 * one that resolves to a second order is served twice.
-	 * <p>
+	 * DD_Order — resolved through its {@code DD_OrderLine_PickingJobSchedule} rows.
 	 * Params: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers, and the DD_Order identifier all
 	 * of them must resolve to.
 	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData, DD_Order_StepDefData
@@ -350,12 +304,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	/**
 	 * @cucumber.stepdef Voids every live (DocStatus != Voided) DD_Order of the given product group, outside the
 	 * reconcile flow, and asserts none is left.
-	 * <p>
-	 * Real-world trigger: the drift the {@code DD_Order_Picking_Rebuild} watchdog exists for — a reconcile event
-	 * lost between commit and publish, a node restart, or an order voided by hand. The group-scoped form is needed
-	 * because a consolidated order belongs to no single shipment schedule, so the per-schedule
-	 * {@code the DD_Order linked to M_ShipmentSchedule <x> is voided directly} cannot address it.
-	 * <p>
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
 	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
@@ -376,8 +324,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 
 			final List<I_DD_Order> liveDDOrders = liveDDOrdersOfProductGroup(productId, locatorToId);
 
-			// Voiding nothing would leave the group served, and the rebuild that follows would then be asserted
-			// against the orders the interceptor had already created instead of the ones the rebuild produces.
 			assertThat(liveDDOrders)
 					.as("live DD_Orders of the product group (must exist before the drift can be simulated)")
 					.isNotEmpty();

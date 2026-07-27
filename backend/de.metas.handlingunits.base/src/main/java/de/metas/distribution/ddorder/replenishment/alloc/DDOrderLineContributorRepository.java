@@ -21,11 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
+ * Manages the {@code DD_OrderLine_PickingJobSchedule} alloc rows: each row is one workstation assignment's share of a consolidated {@code DD_OrderLine}.
+ *
  * Repository Tables: DD_OrderLine_PickingJobSchedule
  * Repository Cluster: DDOrderLineContributorRepository
- * <p>
- * Each row is one workstation assignment's share of a consolidated {@code DD_OrderLine}, i.e. the answer to
- * "which assignments does this line serve, and with how much each".
  */
 @Repository
 public class DDOrderLineContributorRepository
@@ -33,16 +32,7 @@ public class DDOrderLineContributorRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * Rewrites the given line's complete contributor set to exactly the given contributors. An empty list leaves the
-	 * line with no contributors.
-	 * <p>
-	 * Reconciles rather than re-creates: the line's existing rows are indexed by {@code M_Picking_Job_Schedule_ID}, a
-	 * contributor that is still there UPDATEs its row, a new one INSERTs, and only the rows of departed contributors are
-	 * DELETEd. The group reconcile rewrites this set on every pass, and across passes the set is mostly stable — so the
-	 * naive delete-all-then-insert-all churned every row of every consolidated line each time.
-	 * <p>
-	 * Runs in the caller's transaction and deliberately does NOT open its own — the group reconcile writes the alloc
-	 * rows and the line quantity atomically, and it is the single writer of both.
+	 * Runs in the caller's transaction (no {@code @Transactional} of its own) so the alloc rows commit atomically with the line quantity write.
 	 */
 	public void replaceByLineId(@NonNull final DDOrderLineId lineId, @NonNull final List<DDOrderLineContributor> contributors)
 	{
@@ -53,9 +43,7 @@ public class DDOrderLineContributorRepository
 			final PickingJobScheduleId pickingJobScheduleId = PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID());
 			if (reusableRecords.putIfAbsent(pickingJobScheduleId, record) != null)
 			{
-				// The table has no unique constraint on (DD_OrderLine_ID, M_Picking_Job_Schedule_ID), so a second row
-				// for one assignment is physically possible. Only one of them can be reused; the surplus must still go,
-				// because the delete-then-insert this replaces removed it too.
+				// No unique constraint on (DD_OrderLine_ID, M_Picking_Job_Schedule_ID): a duplicate row is possible and must still be deleted.
 				obsoleteRecords.add(record);
 			}
 		}
@@ -77,8 +65,7 @@ public class DDOrderLineContributorRepository
 
 	private ImmutableList<I_DD_OrderLine_PickingJobSchedule> retrieveRecordsByLineId(@NonNull final DDOrderLineId lineId)
 	{
-		// Deliberately NOT restricted to active records: the delete-then-insert this read replaced was active-blind
-		// too, so an inactive row must still be reconciled away instead of surviving as a second row of the line.
+		// Deliberately not filtered to active records: an inactive row must still be reconciled, not left behind as a duplicate.
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineId)
 				.create()
@@ -105,10 +92,6 @@ public class DDOrderLineContributorRepository
 				Quantitys.of(record.getQty(), UomId.ofRepoId(record.getC_UOM_ID())));
 	}
 
-	/**
-	 * The line's contributors, ordered by {@code M_Picking_Job_Schedule_ID} so that callers (and their assertions)
-	 * see a stable order.
-	 */
 	public ImmutableList<DDOrderLineContributor> getByLineId(@NonNull final DDOrderLineId lineId)
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
@@ -121,11 +104,6 @@ public class DDOrderLineContributorRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Every contributor row of the given lines, in one query. The rows are NOT grouped by line: the caller that needs
-	 * this (the reconcile, summing what the frozen lines already serve per assignment) only ever aggregates across
-	 * them, and keeping it flat avoids inventing a grouping nobody reads.
-	 */
 	public ImmutableList<DDOrderLineContributor> getByLineIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
 		if (lineIds.isEmpty()) {return ImmutableList.of();}
@@ -160,15 +138,9 @@ public class DDOrderLineContributorRepository
 				.listDistinctAsImmutableSet(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
 	}
 
-	/**
-	 * The batched form of {@link #getLineIdsByPickingJobScheduleId(PickingJobScheduleId)}: every line any of the given
-	 * assignments sits on, in one query. The group reconcile asks this once per pass for the whole contributor set
-	 * (p95 13, max 52 contributors measured), so the per-contributor form would be one round-trip each.
-	 */
 	public ImmutableSet<DDOrderLineId> getLineIdsByPickingJobScheduleIds(@NonNull final Collection<PickingJobScheduleId> pickingJobScheduleIds)
 	{
-		// No assignment can own a line, so skip the round-trip. (The restriction itself is safe when empty:
-		// addInArrayFilter renders an empty IN-list as "1=0" — it is addInArrayOrAllFilter that renders "1=1".)
+		// Optimization only: addInArrayFilter already renders an empty IN-list as "1=0" (addInArrayOrAllFilter would render "1=1").
 		if (pickingJobScheduleIds.isEmpty()) {return ImmutableSet.of();}
 
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
@@ -178,10 +150,6 @@ public class DDOrderLineContributorRepository
 				.listDistinctAsImmutableSet(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
 	}
 
-	/**
-	 * All active alloc rows, for use as a sub-query filter (e.g. the drift watchdog's anti-join that finds
-	 * {@code DD_OrderLine}s without any contributor).
-	 */
 	public IQuery<I_DD_OrderLine_PickingJobSchedule> queryAll()
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
@@ -189,14 +157,6 @@ public class DDOrderLineContributorRepository
 				.create();
 	}
 
-	/**
-	 * The active alloc rows sitting on the given {@code DD_OrderLine}s, for use as a sub-query filter whose
-	 * {@code M_Picking_Job_Schedule_ID} column is the set of assignments those lines serve.
-	 * <p>
-	 * Handed the lines of the live DD_Orders, this is the drift watchdog's "already served" set — the association's
-	 * answer to a question a single-owner back-reference column can only answer for one contributor of a
-	 * consolidated order.
-	 */
 	public IQuery<I_DD_OrderLine_PickingJobSchedule> queryByLines(@NonNull final IQuery<I_DD_OrderLine> ddOrderLinesQuery)
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
@@ -219,12 +179,7 @@ public class DDOrderLineContributorRepository
 	}
 
 	/**
-	 * Deletes every alloc row of the given assignments, whichever line they sit on.
-	 * <p>
-	 * Needed by the {@code afterDelete} path: {@code DD_OrderLine_PickingJobSchedule.M_Picking_Job_Schedule_ID} is a
-	 * DEFERRABLE INITIALLY DEFERRED foreign key to {@code M_Picking_Job_Schedule}, so an assignment that still has an
-	 * alloc row cannot be deleted — the constraint fires at commit of the user's delete transaction. The rows must
-	 * therefore go in that same transaction, exactly like the FK unlink on the voided DD_Order beside it.
+	 * {@code M_Picking_Job_Schedule_ID} is a DEFERRABLE INITIALLY DEFERRED FK, so this must run in the same transaction as the assignment delete.
 	 */
 	public void deleteByPickingJobScheduleIds(@NonNull final Collection<PickingJobScheduleId> pickingJobScheduleIds)
 	{

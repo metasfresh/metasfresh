@@ -104,9 +104,7 @@ public interface IShipmentScheduleEffectiveBL extends ISingletonService
 	ZonedDateTime getPreparationDate(@NonNull I_M_ShipmentSchedule sched);
 
 	/**
-	 * Get the priority effective based on PriorityRule and PriorityRule_Override,
-	 * i.e. the java counterpart of {@code COALESCE(PriorityRule_Override, PriorityRule)}.
-	 * If none of them is set, falls back to {@link PriorityRule#Medium}.
+	 * {@code COALESCE(PriorityRule_Override, PriorityRule)}, falling back to {@link PriorityRule#Medium} if neither is set.
 	 */
 	PriorityRule getPriorityRule(@NonNull I_M_ShipmentSchedule sched);
 }

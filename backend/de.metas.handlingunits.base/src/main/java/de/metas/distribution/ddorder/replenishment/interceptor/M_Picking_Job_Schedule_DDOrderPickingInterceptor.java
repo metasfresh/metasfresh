@@ -70,9 +70,7 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 	}
 
 	/**
-	 * The deleted assignment is handed over as a domain object, not as an id: its row is already gone by now, so the
-	 * record passed in here is the last place its delivery can be read from — and the disposal needs that delivery to
-	 * tell whether a picker is working on it.
+	 * Passed as a domain object, not an id: AFTER_DELETE means the row is already gone, so this record is the last place its delivery can be read from.
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void voidDDOrderOnDelete(@NonNull final I_M_Picking_Job_Schedule jobSchedule)

@@ -45,16 +45,6 @@ import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Covers {@link PickingJobScheduleRepository#listContributorsOfGroup(ProductId, UomId, java.util.Set)}: the lookup that
- * collects every workstation assignment contributing to one picking-replenishment product group
- * {@code (product, target locator, UOM)} — the group being served by a single consolidated DD_Order.
- * <p>
- * The query is index-served by the partial index {@code m_picking_job_schedule (c_workplace_id) WHERE processed = 'N'}:
- * {@code C_Workplace_ID} is the leading (and only) indexed column and the {@code Processed = 'N'} predicate is present,
- * so the workplace set — not the open-assignment set — bounds the scan. An in-memory test cannot show a query plan;
- * the {@code EXPLAIN} evidence is produced against the target instance.
- */
 class PickingJobScheduleGroupLookupTest
 {
 	private static final BigDecimal QTY_TO_PICK = new BigDecimal("10");
@@ -146,11 +136,6 @@ class PickingJobScheduleGroupLookupTest
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Two assignments on the same workplace whose shipment schedules carry the same product, in the same UOM, are BOTH
-	 * contributors of the group — that is the consolidation input. An assignment of the same group on a workplace
-	 * outside the requested set belongs to another group's target locator and must not be pulled in.
-	 */
 	@Test
 	void listContributorsOfGroup_returnsEverySameGroupAssignmentOfTheRequestedWorkplaces()
 	{
@@ -161,10 +146,6 @@ class PickingJobScheduleGroupLookupTest
 		assertThat(listContributorIds()).containsExactlyInAnyOrder(contributor1, contributor2);
 	}
 
-	/**
-	 * The group key is {@code (product, target locator, UOM)}: an assignment whose shipment schedule carries a different
-	 * product, and one carrying the group's product in a different UOM, are separate groups and get their own DD_Order.
-	 */
 	@Test
 	void listContributorsOfGroup_excludesOtherGroups()
 	{
@@ -175,10 +156,6 @@ class PickingJobScheduleGroupLookupTest
 		assertThat(listContributorIds()).containsExactly(contributor);
 	}
 
-	/**
-	 * A processed assignment has had its shipment closed out; it no longer demands replenishment, and it is also the
-	 * assignment state the serving partial index excludes.
-	 */
 	@Test
 	void listContributorsOfGroup_excludesProcessed()
 	{
@@ -198,11 +175,6 @@ class PickingJobScheduleGroupLookupTest
 		assertThat(listContributorIds()).containsExactly(contributor);
 	}
 
-	/**
-	 * An assignment whose shipment schedule was deactivated (a user action; no production code does it) no longer
-	 * carries demand, so it must not keep a share of the group's DD_Order — and the sub-query, like the shipment
-	 * schedule's own repository, therefore has to filter on {@code IsActive}.
-	 */
 	@Test
 	void listContributorsOfGroup_excludesAssignmentsOfAnInactiveShipmentSchedule()
 	{
@@ -212,12 +184,6 @@ class PickingJobScheduleGroupLookupTest
 		assertThat(listContributorIds()).containsExactly(contributor);
 	}
 
-	/**
-	 * An empty {@code workplaceIds} set must return no contributors, even though a matching contributor exists for the
-	 * requested product/UOM. This guards {@code PickingJobScheduleRepository}'s early return: an empty IN-list renders
-	 * as TRUE, so without that guard this call would collapse the workplace restriction and wrongly return the
-	 * contributor created below.
-	 */
 	@Test
 	void listContributorsOfGroup_returnsEmptyForEmptyWorkplaceSet_evenWhenMatchingContributorExists()
 	{

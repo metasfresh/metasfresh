@@ -16,7 +16,6 @@ class DDOrderReplenishmentRequestConverter
 	private static final String EVENT_NAME = "DDOrderPickingReconcile";
 	private static final String PROPERTY_M_Product_ID = "M_Product_ID";
 	private static final String PROPERTY_M_LocatorTo_ID = "M_LocatorTo_ID";
-	// LocatorId carries its warehouse, so the warehouse has to travel with the locator to rebuild it.
 	private static final String PROPERTY_M_WarehouseTo_ID = "M_WarehouseTo_ID";
 	private static final String PROPERTY_C_UOM_ID = "C_UOM_ID";
 	private static final String PROPERTY_triggeredBy = "triggeredBy_M_Picking_Job_Schedule_ID";
