@@ -46,6 +46,7 @@ import de.metas.uom.UOMConversionContext;
 import de.metas.util.Loggables;
 import de.metas.util.ProgressLogger;
 import de.metas.util.Services;
+import de.metas.util.lang.RepoIdAware;
 import de.metas.workplace.Workplace;
 import de.metas.workplace.WorkplaceId;
 import de.metas.workplace.WorkplaceService;
@@ -93,8 +94,6 @@ public class DDOrderPickingReplenishmentService
 	@VisibleForTesting
 	static final AdMessageKey MSG_DDOrderPickingReplenishment_QtyZero = AdMessageKey.of("DDOrderPickingReconcile_QtyZero");
 
-	// FQN trx-property key: avoids collisions with any other service that might register an
-	// after-commit accumulator under a shorter, easier-to-clash name.
 	private static final String TRX_PROPERTY_ScheduleReconcile = "de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishment";
 
 	@NonNull private final PickingJobRepository pickingJobRepository;
@@ -114,24 +113,7 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
-	/**
-	 * Refuses a change to a workstation assignment whose product group is already being replenished — the same rule
-	 * as before consolidation, evaluated over the group instead of over the single assignment.
-	 *
-	 * <p><b>Why the group.</b> A consolidated DD_Order carries the back-reference of exactly ONE of its contributors,
-	 * so a lookup keyed on the changed assignment finds nothing for every other contributor and the guard passes
-	 * silently — that assignment could be re-planned while the shared goods are in transit or a picker is working on
-	 * them. The unit is therefore the group: once any contributor's goods are moving, the whole group is frozen for
-	 * re-planning. That cost (p95 13, max 52 contributors measured) is deliberate; the refusal is not scoped per
-	 * contributor.</p>
-	 *
-	 * <p>The group is resolved from the record's current values and, when a group-key column is being changed, also
-	 * from its previous ones: the group the assignment is LEAVING is the one that may be frozen, and it is exactly
-	 * the group the former single-owner lookup used to find.</p>
-	 *
-	 * <p>The shipment close-out ({@code Processed -> Y}) stays exempt: it is a fulfilment event, not a user re-plan,
-	 * and packing must never be blocked by a replenishment.</p>
-	 */
+	/** Refuses re-planning a workstation assignment while any contributor of its product group is already being replenished. */
 	public void assertCanChange(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
 		if (!isOnAutoDistributionOrder(jobSchedule))
@@ -157,7 +139,7 @@ public class DDOrderPickingReplenishmentService
 			final BlockingWork busyPicker = findBlockingPickingWork(ddOrder);
 			if (busyPicker != null)
 			{
-				throw pickerBusyException(ddOrderId, busyPicker);
+				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
 			for (final I_DD_OrderLine line : ddOrderLowLevelDAO.retrieveLines(ddOrder))
 			{
@@ -168,20 +150,15 @@ public class DDOrderPickingReplenishmentService
 					final BlockingWork blocking = findBlockingMovedWork(lineId, changedAssignment);
 					throw new AdempiereException(
 							MSG_DDOrderPickingReplenishment_MovementStarted,
-							asMessageValue(ddOrderId.getRepoId()),
+							asMessageValue(ddOrderId),
 							qtyMoved.stripTrailingZeros().toPlainString(),
-							asMessageValue(blocking.getJobScheduleId().getRepoId()),
-							asMessageValue(blocking.getShipmentScheduleId().getRepoId()));
+							asMessageValue(blocking.getJobScheduleId()),
+							asMessageValue(blocking.getShipmentScheduleId()));
 				}
 			}
 		}
 	}
 
-	/**
-	 * The live DD_Orders the change has to be guarded against: those of the group the assignment belongs to, plus —
-	 * when the change moves it between groups — those of the group it is leaving. Deduplicated, because an unchanged
-	 * group key yields the same group twice.
-	 */
 	private ImmutableList<I_DD_Order> findLiveDDOrdersOfAffectedGroups(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
 		final LinkedHashMap<DDOrderId, I_DD_Order> ddOrdersById = new LinkedHashMap<>();
@@ -202,9 +179,7 @@ public class DDOrderPickingReplenishmentService
 		final ImmutableSet.Builder<DDOrderReplenishmentGroupKey> groupKeys = ImmutableSet.builder();
 		groupKeys.add(toReplenishmentRequest(PickingJobScheduleRepository.fromRecord(jobSchedule)).getGroupKey());
 
-		// Changing any column the group key is built from moves the assignment out of one group and into another. The
-		// group it is leaving is the one that may already be under way, so it has to be guarded too - and it is
-		// precisely the group the pre-consolidation single-owner lookup would have found.
+		// The group a changed group-key column moves the assignment OUT of may already be under way, so guard it too.
 		if (InterfaceWrapperHelper.isValueChanged(jobSchedule,
 				I_M_Picking_Job_Schedule.COLUMNNAME_M_ShipmentSchedule_ID,
 				I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID,
@@ -225,30 +200,18 @@ public class DDOrderPickingReplenishmentService
 				reconciliationEventPublisher::publishAll);
 	}
 
-	/**
-	 * Builds the group-keyed reconcile request of the assignment's product group. Only this service can do it:
-	 * the group key needs the assignment's shipment schedule (product) and its workplace (target locator), both
-	 * of which the assignment merely points at.
-	 */
 	private DDOrderReplenishmentRequest toReplenishmentRequest(@NonNull final PickingJobSchedule jobSchedule)
 	{
 		return toReplenishmentRequest(jobSchedule, shipmentScheduleBL.getById(jobSchedule.getShipmentScheduleId()));
 	}
 
-	/**
-	 * The overload for callers that have already batch-loaded the shipment schedules — see {@link #rebuildDrift()},
-	 * which builds one request per open assignment and must not issue a single-record load for each of them.
-	 */
+	/** For callers that have already batch-loaded the shipment schedules. */
 	private DDOrderReplenishmentRequest toReplenishmentRequest(
 			@NonNull final PickingJobSchedule jobSchedule,
 			@NonNull final I_M_ShipmentSchedule schedule)
 	{
 		final Workplace workplace = workplaceService.getById(jobSchedule.getWorkplaceId());
 
-		// Target locator = the workstation's configured pick-from locator; if unset, fall back to the workplace
-		// warehouse's default locator (getOrCreateDefaultLocatorId always yields one). There is therefore no
-		// "no pick-from locator" skip — the goods always have a delivery target. The fallback is logged so an
-		// operator can see the goods were routed to the warehouse default rather than a configured pick shelf.
 		final LocatorId locatorToId = workplaceService.getPickFromLocatorIdOrWarehouseDefault(workplace);
 		if (workplace.getPickFromLocatorId() == null)
 		{
@@ -271,40 +234,7 @@ public class DDOrderPickingReplenishmentService
 				.build();
 	}
 
-	/**
-	 * Reconciles ONE picking-replenishment product group: the demand that shares
-	 * {@code (product, target locator, UOM)} is planned as a single {@code DD_Order} per contributing source locator,
-	 * carrying the <b>summed</b> quantity of the group's contributing assignments.
-	 *
-	 * <p><b>Every contributor of the group is processed, not just the assignment that triggered the event.</b> The
-	 * reconcile request identifies the group, so N assignments of one group collapse into ONE request; the contributor
-	 * set is therefore re-read here, from the database. A reconcile keyed on a single assignment would leave every
-	 * other member of a dedup'd group with no DD_Order, no exception and no log line.</p>
-	 *
-	 * <p><b>Aggregate first, then split</b>: the group's demand is summed BEFORE the unchanged
-	 * stock-aware greedy runs over it, so one pass cannot claim the same on-hand units twice — that is what makes
-	 * over-allocation impossible by construction rather than by a new guard.</p>
-	 *
-	 * <p>The action follows today's four-outcome truth table, now evaluated over the group's SURVIVING contributor
-	 * set instead of one assignment's state:</p>
-	 * <pre>
-	 * live contributors | group has a live DD_Order | action
-	 * some              | no                        | CREATE
-	 * some              | yes                       | RECREATE (recompute the group)
-	 * none              | no                        | NONE
-	 * none              | yes                       | CLOSE when every FORMER contributor is Processed=Y
-	 *                   |                           | (shipment close-out), else VOID
-	 * </pre>
-	 *
-	 * <p>A contributor drops out of the live set exactly where today's per-assignment classification returned
-	 * something other than CREATE/RECREATE: deleted, {@code IsActive=N}, {@code Processed=Y}, its warehouse is not
-	 * {@code IsAutoDistributionOrder}, or {@code QtyToPick <= 0}. So for the single-contributor case — the only case
-	 * that exists before this change — the outcome is identical to today's.</p>
-	 *
-	 * <p><b>No transaction boundary here.</b> The VOID-then-CREATE of the RECREATE branch, and the line quantity
-	 * together with its contributor rows, are only atomic if the caller wraps this call in a transaction. The caller
-	 * ({@code DDOrderReplenishmentEventHandler}) wraps it in {@code trxManager.runInThreadInheritedTrx(...)}.</p>
-	 */
+	/** Reconciles one product group: its summed demand is planned as one DD_Order per contributing source locator. The caller must provide the transaction. */
 	public void reconcile(
 			@NonNull final DDOrderReplenishmentGroupKey groupKey,
 			@NonNull final ClientAndOrgId clientAndOrgId)
@@ -320,26 +250,20 @@ public class DDOrderPickingReplenishmentService
 		switch (action)
 		{
 			case NONE:
-				// Nothing demands the replenishment and nothing exists to dispose of.
 				return;
 			case CREATE:
 			case RECREATE:
-				// Both are the same per-locator reconcile: compute the required (source locator -> qty) split from
-				// current stock, then update / void / create per locator. With no existing DD_Order this degenerates
-				// to pure creation.
 				reconcileRequiredVsExisting(groupKey, clientAndOrgId, contributors, existingDDOrders);
 				return;
 			case CLOSE:
 				disposeCloseOut(existingDDOrders);
-				// Alloc rows are deliberately KEPT on this path, mirroring the FK retention of closeDDOrderFor /
-				// disconnectDDOrderFor: the close-out stays traceable and an in-progress move stays pickable.
+				// Alloc rows are kept so the close-out stays traceable and an in-progress move stays pickable.
 				return;
 			case VOID:
 			{
 				final ImmutableSet<DDOrderLineId> lineIds = lineIdsOf(existingDDOrders);
 				voidAllDDOrders(existingDDOrders);
-				// The orders are dead, so their contributor rows are too — a voided order must not still answer
-				// "which DD_Order serves this delivery?".
+				// A voided order must not still answer "which DD_Order serves this delivery?".
 				contributorRepository.deleteByLineIds(lineIds);
 				return;
 			}
@@ -348,15 +272,6 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * Decides what the group reconcile does, per the truth table in {@link #reconcile}.
-	 *
-	 * <p>Unlike the per-assignment {@code classifyAction} it replaces, this is NOT a pure decision method: telling a
-	 * shipment close-out (CLOSE) apart from a genuine un-assignment (VOID) requires the group's <b>former</b>
-	 * contributors — the assignments that still hold alloc rows on the group's live orders but are no longer
-	 * contributors — because a group reconcile does not know which single event fired. That question
-	 * only the database can answer, and it is asked only on the branch that needs it.</p>
-	 */
 	private DDOrderReplenishmentAction classifyGroupAction(
 			@NonNull final List<PickingJobSchedule> contributors,
 			@NonNull final List<I_DD_Order> existingDDOrders)
@@ -378,27 +293,13 @@ public class DDOrderPickingReplenishmentService
 				: DDOrderReplenishmentAction.VOID;
 	}
 
-	/**
-	 * Reconciles the product group the given assignment belongs to.
-	 *
-	 * <p>The deterministic entry point for tests and operations; production always goes through the event topic, whose
-	 * payload already carries the group key. Since the reconcile is group-keyed, this serves EVERY contributor of that
-	 * assignment's group, not only the assignment named here.</p>
-	 */
+	/** Entry point for tests and operations; production goes through the event topic, whose payload already carries the group key. */
 	public void reconcileGroupOf(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		final DDOrderReplenishmentRequest request = toReplenishmentRequest(pickingJobScheduleService.getById(jobScheduleId));
 		reconcile(request.getGroupKey(), request.getClientAndOrgId());
 	}
 
-	/**
-	 * The group's live contributors, in the attribution order of {@link #attributionOrder(Map)}.
-	 *
-	 * <p>The lookup itself ({@code PickingJobScheduleService.listContributorsOfGroup}) is deliberately unordered and
-	 * already excludes deleted, {@code IsActive=N} and {@code Processed=Y} assignments. Two further drop-out reasons
-	 * are applied here because they need the shipment schedule: a warehouse that is no longer
-	 * {@code IsAutoDistributionOrder}, and a non-positive {@code QtyToPick}.</p>
-	 */
 	private ImmutableList<PickingJobSchedule> listContributorsInAttributionOrder(@NonNull final DDOrderReplenishmentGroupKey groupKey)
 	{
 		final ImmutableSet<WorkplaceId> workplaceIds = workplaceService.getWorkplaceIdsByEffectivePickFromLocatorId(groupKey.getLocatorToId());
@@ -420,12 +321,6 @@ public class DDOrderPickingReplenishmentService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	/**
-	 * Zero-qty soft no-op: an assignment whose {@code QtyToPick} is {@code <= 0} demands nothing, so it drops out of
-	 * the group entirely and its alloc row is DELETED rather than kept at {@code Qty=0} — a zero row would still
-	 * answer "this delivery is served by that order". An
-	 * informational entry goes to the Event Log so operators can see why that delivery got no share.
-	 */
 	private boolean hasDemandToPlan(@NonNull final PickingJobSchedule candidate)
 	{
 		final BigDecimal qtyToPick = candidate.getQtyToPick().toBigDecimal();
@@ -442,34 +337,16 @@ public class DDOrderPickingReplenishmentService
 		return false;
 	}
 
-	/**
-	 * The order in which the group's contributors are served: effective {@code PriorityRule},
-	 * then effective {@code PreparationDate}, then the older assignment. Contributors ahead in it are covered in full,
-	 * so when stock is short the shortfall falls on those last.
-	 *
-	 * <p>Both date and priority MUST be resolved through {@link IShipmentScheduleEffectiveBL} — it is what applies
-	 * {@code COALESCE(<x>_Override, <x>)} plus the {@code PriorityRule.Medium} default. Reading
-	 * {@code M_ShipmentSchedule.PriorityRule} directly would silently ignore an override and order the contributors
-	 * wrongly, with no error and no failing test. The codes are {@code Urgent=1 … Minor=9}, so ascending code IS
-	 * ascending urgency — the same direction {@code PackagingDAO} orders the picking queue in.</p>
-	 *
-	 * <p>The {@code M_Picking_Job_Schedule_ID} tiebreak is load-bearing, not insurance: 1799 of 2100 measured open
-	 * assignments tie on the first two keys, so without it the hourly rebuild would rewrite the alloc rows of 86% of
-	 * all contributors on every pass while the line quantities stayed correct.</p>
-	 */
+	/** The id tiebreak keeps the order stable across passes, so a group whose demand did not change does not rewrite its alloc rows. */
 	private Comparator<PickingJobSchedule> attributionOrder(@NonNull final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedules)
 	{
 		return Comparator
 				.comparing((final PickingJobSchedule contributor) -> shipmentScheduleEffectiveBL.getPriorityRule(schedules.get(contributor.getShipmentScheduleId())).getCode())
 				.thenComparing(contributor -> shipmentScheduleEffectiveBL.getPreparationDate(schedules.get(contributor.getShipmentScheduleId())))
-				.thenComparing(contributor -> contributor.getId().getRepoId());
+				.thenComparing(contributor -> contributor.getId());
 	}
 
-	/**
-	 * Whether every former contributor of the group left because its shipment was closed out ({@code Processed = Y}) —
-	 * the group's replenishment is then obsolete and its orders are closed rather than voided. An empty set means the
-	 * group's orders carry no alloc row at all, which is not a close-out.
-	 */
+	/** An empty set means the group's orders carry no alloc row at all, which is not a close-out. */
 	private boolean isEveryFormerContributorProcessed(@NonNull final Set<PickingJobScheduleId> formerContributorIds)
 	{
 		if (formerContributorIds.isEmpty())
@@ -504,23 +381,6 @@ public class DDOrderPickingReplenishmentService
 		return warehouse.isAutoDistributionOrder();
 	}
 
-	/**
-	 * Reconciles the required per-locator stock-aware split against the product group's existing live DD_Orders.
-	 *
-	 * <p>Sums the group's demand, computes the required {@code (source locator -> qty)} allocation from current on-hand
-	 * stock over that <b>sum</b> (greedy, in the locator pick order defined by {@link #buildLocatorSortKey}), then for
-	 * each locator:</p>
-	 * <ul>
-	 *   <li>in BOTH required and existing → <b>update the existing DD_Order line qty in place</b> (no void/recreate);</li>
-	 *   <li>in EXISTING only (no longer contributes) → <b>void</b> that DD_Order (+ unlink back-ref);</li>
-	 *   <li>in REQUIRED only (newly contributes) → <b>create</b> a new Completed DD_Order + line.</li>
-	 * </ul>
-	 * and rewrites that line's complete contributor set — the per-delivery shares of {@link #attribute} — in the SAME
-	 * transaction as the line quantity.
-	 *
-	 * <p>The picker-busy guard is checked once up front: if any existing DD_Order's picker is busy, the whole
-	 * reconcile is refused (nothing is mutated).</p>
-	 */
 	private void reconcileRequiredVsExisting(
 			@NonNull final DDOrderReplenishmentGroupKey groupKey,
 			@NonNull final ClientAndOrgId clientAndOrgId,
@@ -531,22 +391,15 @@ public class DDOrderPickingReplenishmentService
 		final LocatorId locatorToId = groupKey.getLocatorToId();
 		final OrgId orgId = clientAndOrgId.getOrgId();
 
-		// AGGREGATE FIRST: the group's summed demand. Every contributor is in groupKey's UOM by construction of the
-		// group key (the contributor lookup filters C_UOM_ID), so the addition can never hit a UOM mismatch.
-		// Computed before anything else reads the list, so an empty contributor set fails HERE, by name, rather than
-		// with an IndexOutOfBoundsException from the first-contributor lookup below.
+		// Every contributor is in groupKey's UOM by construction, so the addition cannot hit a UOM mismatch.
 		final Quantity groupDemand = contributorsInOrder.stream()
 				.map(PickingJobSchedule::getQtyToPick)
 				.reduce(Quantity::add)
 				.orElseThrow(() -> new AdempiereException("Caller guarantees at least one contributor"));
 
-		// Header attributes that belong to a single DELIVERY rather than to the group are taken from the first
-		// contributor in the attribution order: a consolidated order has no single owning delivery, so the choice is
-		// arbitrary but deterministic. The single-owner FK columns are on their way out, and C_BPartner_ID /
-		// M_Warehouse_To_ID are decoration on an internal stock move.
-		// TODO: stop writing M_Picking_Job_Schedule_ID / M_ShipmentSchedule_ID here once their last reader is gone — the
-		// complete contributor set now lives in DD_OrderLine_PickingJobSchedule, which is what the navigation and the
-		// guards read.
+		// A consolidated order has no single owning delivery, so delivery-scoped header columns come from the first
+		// contributor in the attribution order: arbitrary, but deterministic.
+		// TODO: stop writing M_Picking_Job_Schedule_ID / M_ShipmentSchedule_ID here once their last reader is gone.
 		final PickingJobSchedule firstContributor = contributorsInOrder.get(0);
 		final I_M_ShipmentSchedule firstSchedule = shipmentScheduleBL.getById(firstContributor.getShipmentScheduleId());
 
@@ -554,31 +407,27 @@ public class DDOrderPickingReplenishmentService
 		final Warehouse targetWarehouse = warehouseRepository.getById(targetWarehouseId);
 		final WarehouseId sourceWarehouseId = getFirstSourceWarehouseIdOrThrow(targetWarehouse, productId);
 
-		// Stock-aware split of the SUM: required (source locator -> qty), greedy in the locator pick order, partial
-		// coverage allowed. Running once over the sum is what makes over-allocation impossible — two
-		// deliveries can no longer each claim the same on-hand units.
+		// Running the greedy once over the SUM is what makes over-allocation impossible: two deliveries can no longer
+		// each claim the same on-hand units.
 		final Map<LocatorId, Quantity> requiredByLocator = computeRequiredAllocation(groupKey, sourceWarehouseId, productId, groupDemand);
 
-		// Picker-busy guard: refuse the whole reconcile before mutating anything if any existing DD_Order is busy.
+		// Refuse the whole reconcile before mutating anything.
 		for (final I_DD_Order existingDDOrder : existingDDOrders)
 		{
 			final BlockingWork busyPicker = findBlockingPickingWork(existingDDOrder);
 			if (busyPicker != null)
 			{
-				throw pickerBusyException(DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID()), busyPicker);
+				throw newPickerBusyException(DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID()), busyPicker);
 			}
 		}
 
-		// Index the existing live DD_Orders' (single) lines by their source locator. The line is kept (not just the
-		// header) so the update-in-place path does not re-fetch it.
 		final ExistingLineIndex existingLines = indexExistingBySourceLocator(existingDDOrders);
 		final Map<LocatorId, I_DD_OrderLine> existingLineByLocator = existingLines.getByLocator();
 
 		final HashSet<DDOrderLineId> obsoleteLineIds = new HashSet<>();
 
-		// An order the index could not key on a source locator is disposed of rather than dropped: it is in neither
-		// the update nor the void branch below, yet the stale-alloc cleanup at the end removes its alloc rows — after
-		// which nothing can reach it any more and it sits in the mover's list forever.
+		// Left live, an unkeyable order would lose its alloc rows to the cleanup below and become unreachable, while
+		// still sitting in the mover's list.
 		for (final I_DD_Order unkeyableDDOrder : existingLines.getUnkeyable())
 		{
 			voidDDOrderFor(DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID()));
@@ -586,10 +435,6 @@ public class DDOrderPickingReplenishmentService
 					.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
 		}
 
-		// THEN SPLIT — but the frozen lines have to be settled first, and settling them IS the split (see
-		// computeFrozenSplit): a line the already-delivered guard refuses to shrink keeps its old quantity AND its old
-		// shares, so its chunk must be out of the attribution input and the shares it still serves netted off their
-		// contributors' demand.
 		final FrozenSplit split = computeFrozenSplit(contributorsInOrder, requiredByLocator, existingLineByLocator);
 		final Map<LocatorId, Quantity> refusedQtyByLocator = split.getRefusedQtyByLocator();
 		final ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution = split.getAttribution();
@@ -602,7 +447,6 @@ public class DDOrderPickingReplenishmentService
 						.build());
 		final WarehouseId inTransitWarehouseId = warehouseRepository.getInTransitWarehouseId(orgId);
 
-		// EXISTING-only locators (no longer contribute) → void.
 		for (final Map.Entry<LocatorId, I_DD_OrderLine> entry : existingLineByLocator.entrySet())
 		{
 			if (!requiredByLocator.containsKey(entry.getKey()))
@@ -614,7 +458,6 @@ public class DDOrderPickingReplenishmentService
 
 		final HashSet<DDOrderLineId> survivingLineIds = new HashSet<>();
 
-		// REQUIRED locators → update-in-place (if still contributing) or create (if newly contributing).
 		for (final Map.Entry<LocatorId, Quantity> entry : requiredByLocator.entrySet())
 		{
 			final LocatorId sourceLocatorId = entry.getKey();
@@ -623,17 +466,14 @@ public class DDOrderPickingReplenishmentService
 			final Quantity refusedQty = refusedQtyByLocator.get(sourceLocatorId);
 			if (refusedQty != null)
 			{
-				// Re-run the guard with the quantity it was refused for, so the refusal reaches the log with its real
-				// numbers. The line stays at its old quantity, whose old shares are still exactly what it carries.
+				// Re-run the guard with the quantity it was refused for, so the refusal reaches the log with its real numbers.
 				updateDDOrderLineQtyInPlace(existingLine, refusedQty);
 				survivingLineIds.add(DDOrderLineId.ofRepoId(existingLine.getDD_OrderLine_ID()));
 				continue;
 			}
 
-			// The line quantity is the SUM OF ITS SHARES, not the raw chunk. The two are the same whenever nothing is
-			// frozen (the chunks never exceed the group's demand, so every chunk is attributed in full); they differ
-			// exactly when a frozen line already serves part of that demand, and then the chunk is more than anybody
-			// still needs.
+			// The line quantity is the sum of its shares, not the raw chunk: they differ exactly when a frozen line
+			// already serves part of the demand, and then the chunk is more than anybody still needs.
 			final ImmutableList<DDOrderLineContributor> shares = attribution.get(sourceLocatorId);
 			final Quantity locatorQty = sumOfShares(shares, entry.getValue());
 			if (locatorQty.signum() <= 0)
@@ -685,10 +525,6 @@ public class DDOrderPickingReplenishmentService
 						contributorsInOrder.size());
 			}
 
-			// The line quantity and its contributor shares are one fact written in one transaction: a line whose
-			// contributors say something else is a settlement that resolves nobody. When the
-			// already-delivered guard left the line at its old quantity, its old shares stay too — see
-			// updateDDOrderLineQtyInPlace.
 			if (lineCarriesTheRequiredQty)
 			{
 				contributorRepository.replaceByLineId(lineId, shares);
@@ -696,11 +532,8 @@ public class DDOrderPickingReplenishmentService
 			survivingLineIds.add(lineId);
 		}
 
-		// Finally drop every alloc row of a live contributor that does NOT sit on one of the group's surviving lines.
-		// Concrete scenario this exists for: the drift the watchdog exists for — a DD_Order voided OUTSIDE the reconcile
-		// (event lost between commit and publish, node restart, an operator voiding by hand) leaves its alloc rows
-		// behind, so without this the contributor would keep resolving to that dead order alongside the fresh one and
-		// the shipment-schedule -> DD_Order navigation would answer with two documents.
+		// A DD_Order voided OUTSIDE the reconcile leaves its alloc rows behind; without this drop, the contributor
+		// would keep resolving to that dead order alongside the fresh one.
 		obsoleteLineIds.addAll(contributorRepository.getLineIdsByPickingJobScheduleIds(
 				contributorsInOrder.stream()
 						.map(PickingJobSchedule::getId)
@@ -709,45 +542,17 @@ public class DDOrderPickingReplenishmentService
 		contributorRepository.deleteByLineIds(obsoleteLineIds);
 	}
 
-	/**
-	 * The outcome of {@link #computeFrozenSplit}: which source locators the already-delivered guard freezes (and at
-	 * which quantity it refused them), plus the attribution of everything that is left.
-	 */
 	@lombok.Value
 	@VisibleForTesting
 	static class FrozenSplit
 	{
-		/**
-		 * Frozen source locator → the quantity {@link #updateDDOrderLineQtyInPlace} refuses to write there. Empty in
-		 * the ordinary case, and then {@link #attribution} covers every required locator.
-		 * <p>
-		 * It is the quantity from the round that first refused the locator, and deliberately not recomputed later: a
-		 * frozen locator is out of every subsequent round's attribution, so no later round produces a quantity for it
-		 * at all. This value only reaches the refusal log.
-		 */
+		/** Frozen source locator → the quantity {@link #updateDDOrderLineQtyInPlace} refuses to write there; only the refusal log reads it. */
 		@NonNull Map<LocatorId, Quantity> refusedQtyByLocator;
 
-		/**
-		 * Contributor shares per source locator, over the NON-frozen locators only.
-		 */
 		@NonNull ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution;
 	}
 
-	/**
-	 * Decides the frozen source locators and attributes what is left, as one fixed point.
-	 *
-	 * <p><b>Why this cannot be a single pre-pass.</b> The guard's answer depends on the quantity a line will actually
-	 * be written with — which is the sum of its attributed shares, not its raw stock chunk. That sum in turn depends
-	 * on which OTHER locators are frozen, because their shares are netted off their contributors' demand. So a line
-	 * whose raw chunk is a growth (guard silent) can still come out of the split as a shrink once the netting is
-	 * applied, and a pre-pass probing the raw chunk would miss it: the split would walk contributor demand through
-	 * that locator, the write would then be refused and the shares discarded, and the demand spent on it would be
-	 * lost to the locators after it in the pick order — permanently, since the same inputs reproduce every pass.</p>
-	 *
-	 * <p>So the split is recomputed until no further line turns out to be refused. The frozen set only grows and is
-	 * bounded by the group's existing lines (one per source locator), so this terminates in at most that many rounds;
-	 * the ordinary case exits after the first, with nothing frozen.</p>
-	 */
+	/** Iterated to a fixed point: freezing one locator nets its shares off their contributors, which can turn another locator's growth into a shrink. */
 	@VisibleForTesting
 	FrozenSplit computeFrozenSplit(
 			@NonNull final List<PickingJobSchedule> contributorsInOrder,
@@ -773,7 +578,7 @@ public class DDOrderPickingReplenishmentService
 				final I_DD_OrderLine existingLine = existingLineByLocator.get(entry.getKey());
 				if (existingLine == null)
 				{
-					continue; // a locator that is newly required has no line to refuse anything
+					continue;
 				}
 
 				final Quantity plannedQty = sumOfShares(attribution.get(entry.getKey()), entry.getValue());
@@ -791,10 +596,7 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * How much each contributor is already served by the frozen lines — summed, because one contributor can hold a
-	 * share on more than one of them.
-	 */
+	/** Summed, because one contributor can hold a share on more than one frozen line. */
 	private Map<PickingJobScheduleId, Quantity> sharesOfFrozenLines(
 			@NonNull final Set<LocatorId> frozenLocatorIds,
 			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator)
@@ -816,10 +618,7 @@ public class DDOrderPickingReplenishmentService
 		return result;
 	}
 
-	/**
-	 * The quantity a line must carry so that "line quantity == sum of contributor shares" holds. {@code chunkQty} only
-	 * supplies the UOM for the empty case.
-	 */
+	/** {@code chunkQty} only supplies the UOM for the empty case. */
 	private static Quantity sumOfShares(@NonNull final List<DDOrderLineContributor> shares, @NonNull final Quantity chunkQty)
 	{
 		return shares.stream()
@@ -828,23 +627,7 @@ public class DDOrderPickingReplenishmentService
 				.orElseGet(chunkQty::toZero);
 	}
 
-	/**
-	 * Computes the stock-aware per-locator allocation of {@code demandQty}.
-	 *
-	 * <p>Gets the source warehouse's locators, queries Active on-hand per locator via the shared
-	 * {@link ProductAvailableStockPerLocator} helper, keeps the contributing locators (qty &gt; 0) in the locator
-	 * pick order (see {@link #buildLocatorSortKey}), and greedily allocates the demand across them. Returns an
-	 * insertion-ordered map {@code (source locator -> allocated qty)}. Partial coverage is allowed: if total on-hand
-	 * &lt; demand, the uncovered remainder is logged and left unfulfilled (no fallback default-locator line). Empty
-	 * map if no locator has stock.</p>
-	 *
-	 * <p>The on-hand quantities returned by {@link ProductAvailableStockPerLocator} are in the product's stocking UOM,
-	 * whereas {@code demandQty} is in the assignment's UOM. Each locator's available qty is therefore converted into
-	 * the demand UOM (via the product UOM conversion) before it is compared/subtracted, so the allocation and the
-	 * created lines stay in the demand UOM. When the two UOMs already match the conversion is a no-op. A locator whose
-	 * available qty cannot be converted is skipped (logged, treated as non-contributing) rather than aborting the whole
-	 * reconcile.</p>
-	 */
+	/** Partial coverage is allowed: an uncovered remainder is logged and left unfulfilled rather than routed to a fallback locator. */
 	private Map<LocatorId, Quantity> computeRequiredAllocation(
 			@NonNull final DDOrderReplenishmentGroupKey groupKey,
 			@NonNull final WarehouseId sourceWarehouseId,
@@ -859,9 +642,7 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableMap.of();
 		}
 
-		// Sort the source locators in the locator pick order BEFORE streaming their on-hand qty, so the
-		// lazy chunked stream yields the highest-priority locators first; once the greedy loop has covered
-		// the demand it stops pulling, and no further locator chunks are queried for stock.
+		// Sorted BEFORE the on-hand stream is opened, so the greedy loop can stop pulling chunks once the demand is covered.
 		final List<LocatorId> sourceLocatorIdsInPickOrder = sourceLocatorIds.stream()
 				.sorted(Comparator.comparing(this::getLocatorSortKey))
 				.collect(ImmutableList.toImmutableList());
@@ -885,8 +666,6 @@ public class DDOrderPickingReplenishmentService
 
 		if (result.getUncovered().signum() > 0)
 		{
-			// Partial coverage: the uncovered remainder is left unfulfilled (no fallback default-locator line);
-			// the drift watchdog retries the assignment as stock becomes available.
 			Loggables.addLog(
 					"DD_Order picking replenishment: on-hand stock for M_Product_ID={0} in source M_Warehouse_ID={1}"
 							+ " covers only part of the summed demand of the product group targeting M_Locator_ID={2};"
@@ -900,17 +679,7 @@ public class DDOrderPickingReplenishmentService
 		return result.getAllocation();
 	}
 
-	/**
-	 * Greedy allocation of {@code demandQty} across the contributing locators of {@code qtyOnHandByLocator}.
-	 *
-	 * <p>Orders the positive-on-hand locators in the locator pick order ({@link #buildLocatorSortKey}, via
-	 * {@link #getLocatorSortKey}), converts each locator's on-hand qty (in the product stocking UOM) into the
-	 * demand UOM via {@code convertToDemandUom} (a no-op when the UOMs already match), and greedily fills the
-	 * demand. A locator whose qty cannot be converted ({@link NoUOMConversionException}) is skipped (reported via
-	 * {@code onSkippedLocator}, treated as non-contributing). Returns the insertion-ordered allocation and the
-	 * uncovered remainder. Only the UOM conversion is injected — so a contrived cross-UOM case the real warehouse
-	 * workflow could not produce can be unit-tested deterministically; locator ordering uses the real warehouse data.</p>
-	 */
+	/** The pre-materialised-map variant of {@link #greedyAllocateOrdered}; only the UOM conversion is injected, so a cross-UOM case can be unit-tested. */
 	@VisibleForTesting
 	AllocationResult greedyAllocate(
 			@NonNull final Quantity demandQty,
@@ -918,19 +687,13 @@ public class DDOrderPickingReplenishmentService
 			@NonNull final ConvertToDemandUom convertToDemandUom,
 			@NonNull final java.util.function.BiConsumer<LocatorId, Quantity> onSkippedLocator)
 	{
-		// Pre-materialised map variant: sort contributing locators in the locator pick order, then delegate
-		// to the streaming core. Production goes through greedyAllocateOrdered directly with a lazy stream.
 		final Stream<LocatorIdAndQty> orderedNonEmpty = qtyOnHandByLocator.streamNonEmptyLocatorIds()
 				.sorted(Comparator.comparing(this::getLocatorSortKey))
 				.map(locatorId -> LocatorIdAndQty.of(locatorId, qtyOnHandByLocator.getQty(locatorId)));
 		return greedyAllocateOrdered(demandQty, orderedNonEmpty, convertToDemandUom, onSkippedLocator);
 	}
 
-	/**
-	 * Greedy allocation core: consumes {@code orderedNonEmpty} (already in the locator pick order and only
-	 * positive-on-hand entries) via an iterator so the stream's lazy upstream (chunked locator-stock fetch)
-	 * is short-circuited as soon as {@code remaining <= 0}.
-	 */
+	/** Consumed through an iterator so the stream's lazy chunked stock fetch is short-circuited once the demand is covered. */
 	private AllocationResult greedyAllocateOrdered(
 			@NonNull final Quantity demandQty,
 			@NonNull final Stream<LocatorIdAndQty> orderedNonEmpty,
@@ -947,8 +710,6 @@ public class DDOrderPickingReplenishmentService
 			{
 				final LocatorIdAndQty locatorAndQty = iter.next();
 
-				// Convert the locator's on-hand qty (product stocking UOM) into the demand UOM before comparing/allocating.
-				// A no-op when the UOMs already match. If no conversion exists, skip this locator (non-contributing).
 				final Quantity availableStockingUom = locatorAndQty.getQty();
 				final Quantity available;
 				try
@@ -970,18 +731,14 @@ public class DDOrderPickingReplenishmentService
 		return new AllocationResult(allocation, remaining);
 	}
 
-	/**
-	 * Converts a locator's on-hand qty (product stocking UOM) into the demand UOM; may throw {@link NoUOMConversionException}.
-	 */
+	/** Converts a locator's on-hand qty (product stocking UOM) into the demand UOM; may throw {@link NoUOMConversionException}. */
 	@FunctionalInterface
 	interface ConvertToDemandUom
 	{
 		Quantity convert(@NonNull Quantity availableStockingUom);
 	}
 
-	/**
-	 * Result of {@link #greedyAllocate}: the per-locator allocation (insertion-ordered) and the uncovered demand remainder.
-	 */
+	/** The per-locator allocation (insertion-ordered) and the uncovered demand remainder. */
 	@lombok.Value
 	@VisibleForTesting
 	static class AllocationResult
@@ -990,29 +747,7 @@ public class DDOrderPickingReplenishmentService
 		@NonNull Quantity uncovered;
 	}
 
-	/**
-	 * Splits the group's per-source-locator allocation chunks back across the contributing assignments — the "then
-	 * split" half of the aggregate-then-split reconcile. Returns, per source locator, the complete contributor set of the {@code DD_OrderLine}
-	 * that locator produces.
-	 *
-	 * <p><b>Sequential, not proportional</b> (decided 2026-07-24): the chunks are walked in the locator pick order
-	 * ({@code allocation} is insertion-ordered by the greedy) and filled from {@code contributorsInOrder}, advancing to
-	 * the next contributor once the current one's demand is exhausted. That is what today's per-assignment behaviour
-	 * already does — each assignment takes greedily in locator pick order; only the netting between contributors is
-	 * new. Proportional splitting was rejected: it yields fractional quantities on piece goods and has no precedent
-	 * here.</p>
-	 *
-	 * <p>Two consequences worth stating, both intended:</p>
-	 * <ul>
-	 *   <li>one contributor can span two lines (its demand runs past the end of a locator's chunk), and one line can
-	 *       serve several contributors — the two axes cross, they do not nest;</li>
-	 *   <li>a contributor the chunks never reach (stock ran out ahead of it) gets NO row rather than a {@code Qty=0}
-	 *       row, so the shortfall stays derived and is recomputed by the next reconcile.</li>
-	 * </ul>
-	 *
-	 * <p>Per line the shares sum EXACTLY to the chunk; per contributor they sum to at most its {@code QtyToPick}
-	 * (partial coverage is allowed today). Every quantity is in the group key's UOM.</p>
-	 */
+	/** Splits the allocation chunks back across the contributors, sequentially rather than proportionally: fractional shares are not wanted on piece goods. */
 	@VisibleForTesting
 	ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribute(
 			@NonNull final List<PickingJobSchedule> contributorsInOrder,
@@ -1021,12 +756,7 @@ public class DDOrderPickingReplenishmentService
 		return attribute(contributorsInOrder, allocation, ImmutableMap.of());
 	}
 
-	/**
-	 * The overload the reconcile actually calls: {@code alreadyServedByContributor} carries the shares a FROZEN line
-	 * still holds for a contributor (see {@link #updateDDOrderLineQtyInPlace}), which are subtracted from that
-	 * contributor's demand before anything is attributed. Without that subtraction the frozen line's chunk would be
-	 * attributed a second time on the next locator, and the contributor would end up carrying more than it demanded.
-	 */
+	/** {@code alreadyServedByContributor} is subtracted first, so a frozen line's shares are not attributed a second time on the next locator. */
 	@VisibleForTesting
 	ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribute(
 			@NonNull final List<PickingJobSchedule> contributorsInOrder,
@@ -1065,10 +795,7 @@ public class DDOrderPickingReplenishmentService
 		return result.build();
 	}
 
-	/**
-	 * The contributor's demand minus whatever a frozen line already serves for it, floored at zero (a frozen line can
-	 * carry MORE than the contributor still demands — that is precisely why the reconcile refuses to shrink it).
-	 */
+	/** Floored at zero: a frozen line can carry MORE than the contributor still demands. */
 	private static Quantity remainingDemandOf(
 			@NonNull final PickingJobSchedule contributor,
 			@NonNull final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor)
@@ -1089,52 +816,23 @@ public class DDOrderPickingReplenishmentService
 		return buildLocatorSortKey(loc.getPriorityNo(), loc.getValue());
 	}
 
-	/**
-	 * Single source of truth for the DD_Order picking-replenishment locator pick order. Builds a composite sort key
-	 * that yields PriorityNo ASC, then Value ASC under plain lexicographic order. To change the pick order, change
-	 * this method only — every caller orders by the key it returns and does not restate the order itself.
-	 *
-	 * <p>The key format is {@code zeroPad(priorityNo, 10) + "|" + value}. The pad width 10 matches
-	 * {@code M_Locator.PriorityNo numeric(10,0)}. Both inputs are NOT NULL in production
-	 * ({@code M_Locator.Value} NOT NULL; {@code PriorityNo numeric(10,0) NOT NULL DEFAULT 50}).
-	 * Non-negative PriorityNo values are assumed (negative values would sort incorrectly as strings).</p>
-	 */
+	/** Yields PriorityNo ASC then Value ASC under plain lexicographic order; the pad width 10 matches {@code M_Locator.PriorityNo numeric(10,0)}, and negative values are not supported. */
 	@VisibleForTesting
 	static String buildLocatorSortKey(final int priorityNo, @NonNull final String value)
 	{
 		return Strings.padStart(Integer.toString(priorityNo), 10, '0') + "|" + value;
 	}
 
-	/**
-	 * Result of {@link #indexExistingBySourceLocator}: the orders the per-locator diff can work with, plus the ones it
-	 * cannot key. Both halves must be consumed — see {@code unkeyable}.
-	 */
 	@lombok.Value
 	private static class ExistingLineIndex
 	{
-		/**
-		 * The group's live DD_Order lines by source locator, at most one per locator.
-		 */
 		@NonNull Map<LocatorId, I_DD_OrderLine> byLocator;
 
-		/**
-		 * Live DD_Orders of the group that could NOT be placed in {@code byLocator}: no line at all, a line without a
-		 * source locator, or a second order on a locator another order already holds (the realistic producer being two
-		 * reconciles racing on one group). They match no required locator and no existing locator, so leaving them out
-		 * of both branches would leave them live while the stale-alloc cleanup removes their alloc rows — after which
-		 * no group-keyed lookup can reach them again. The caller disposes of them instead.
-		 */
+		/** Orders no source locator could be resolved for; the caller must still dispose of them, or they outlive their alloc rows unreachably. */
 		@NonNull List<I_DD_Order> unkeyable;
 	}
 
-	/**
-	 * Indexes the given live DD_Orders' single line by its source locator ({@code DD_OrderLine.M_Locator_ID}).
-	 * Each reconcile DD_Order has exactly one line, so the mapping is 1:1. The line (which carries its parent
-	 * {@code DD_Order} via {@link DDOrderLowLevelDAO#retrieveLines}) is kept so the update path does not re-fetch it.
-	 *
-	 * <p>The input is ordered by {@code DD_Order_ID}, so on a locator collision the OLDER order keeps the locator —
-	 * the one a mover may already be working — and the newer duplicate is handed back as unkeyable.</p>
-	 */
+	/** On a locator collision the OLDER order keeps the locator — the one a mover may already be working. */
 	private ExistingLineIndex indexExistingBySourceLocator(@NonNull final List<I_DD_Order> existingDDOrders)
 	{
 		final LinkedHashMap<LocatorId, I_DD_OrderLine> byLocator = new LinkedHashMap<>();
@@ -1149,9 +847,8 @@ public class DDOrderPickingReplenishmentService
 				continue;
 			}
 			final I_DD_OrderLine line = lines.get(0);
-			// Resolve the source LocatorId from the locator record (authoritative warehouse) rather than the line's
-			// M_Warehouse_ID, which is not reliably populated on a programmatically-built DD_OrderLine.
-			// A line whose source locator is unset cannot be keyed: getLocatorByRepoId throws on a 0/unknown id.
+			// Resolved from the locator record rather than the line's M_Warehouse_ID, which a programmatically-built
+			// DD_OrderLine does not reliably carry.
 			final int sourceLocatorRepoId = line.getM_Locator_ID();
 			if (sourceLocatorRepoId <= 0)
 			{
@@ -1177,29 +874,17 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Updates the given existing (Completed) DD_Order line's quantity in place to {@code newQty}: a still-contributing
-	 * locator keeps its DD_Order, only the qty is adjusted — no void/recreate. Header quantities live on the line;
-	 * {@code QtyEntered == QtyOrdered == TargetQty} as in the create path.
-	 *
-	 * <p>Data-consistency guard: if the line already has a positive {@code QtyDelivered} (goods have started moving),
-	 * the qty is NOT shrunk in place — that would silently strand the already-delivered surplus. Such a line is left
-	 * untouched and the situation is logged; the operator resolves it (the watchdog/reconcile retries once delivery
-	 * progresses or the demand is restored).</p>
-	 *
-	 * @return {@code true} when the line now carries {@code newQty}, {@code false} when the guard above left it at its
-	 * old quantity. The caller must then leave the line's contributor set alone as well: rewriting it against a
-	 * quantity the line does not carry would break the "line quantity == sum of contributor shares" invariant
-	 * and hand the mover a document nobody's demand adds up to.
+	 * @return {@code false} when the already-delivered guard left the line at its old quantity; the caller must then
+	 * leave the line's contributor set alone too, so line quantity and shares stay in sync.
 	 */
 	private boolean updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
 		final BigDecimal newQtyBD = newQty.toBigDecimal();
 		if (alreadyCarriesQty(line, newQtyBD))
 		{
-			return true; // already at the target qty; nothing to do
+			return true;
 		}
 
-		// Guard: never shrink a line that already has delivered qty in place — leave it untouched and log.
 		if (isShrinkRefusedByDeliveredQty(line, newQty))
 		{
 			Loggables.addLog(
@@ -1226,11 +911,6 @@ public class DDOrderPickingReplenishmentService
 		return true;
 	}
 
-	/**
-	 * Builds exactly one {@link I_DD_Order} (with a single {@link I_DD_OrderLine}) for the picking-reconcile flow,
-	 * persists both records (header then line) via {@link DDOrderLowLevelDAO}, and returns the saved (Drafted) LINE —
-	 * the caller needs its id to write the line's contributor set, and the header is reachable through it.
-	 */
 	private static boolean alreadyCarriesQty(@NonNull final I_DD_OrderLine line, @NonNull final BigDecimal qty)
 	{
 		return line.getQtyEntered().compareTo(qty) == 0
@@ -1238,11 +918,7 @@ public class DDOrderPickingReplenishmentService
 				&& line.getTargetQty().compareTo(qty) == 0;
 	}
 
-	/**
-	 * Whether {@link #updateDDOrderLineQtyInPlace} would leave the line at its old quantity: goods have started moving
-	 * and the new quantity is lower than the ordered one. Shared with {@link #computeFrozenSplit}'s fixed-point loop,
-	 * so the attribution and the write can never disagree about which lines are frozen.
-	 */
+	/** Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are frozen. */
 	private static boolean isShrinkRefusedByDeliveredQty(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
 		final BigDecimal newQtyBD = newQty.toBigDecimal();
@@ -1256,10 +932,7 @@ public class DDOrderPickingReplenishmentService
 		final OrgId orgId = request.getOrgId();
 
 		//
-		// Header — newInstance() is here (not in DDOrderLowLevelDAO) because this service is in
-		// de.metas.handlingunits.base (which has de.metas.swat.base and can see I_M_Picking_Job_Schedule),
-		// while DDOrderLowLevelDAO is in de.metas.manufacturing (which does NOT have that dependency).
-		// The creation half stays here; save() is delegated to the DAO.
+		// Header — built here rather than in DDOrderLowLevelDAO, whose module cannot see I_M_Picking_Job_Schedule.
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
 		if (request.getBpartnerId() != null)
@@ -1270,8 +943,7 @@ public class DDOrderPickingReplenishmentService
 		ddOrder.setM_Warehouse_ID(request.getInTransitWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_From_ID(request.getSourceWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_To_ID(request.getTargetWarehouseId().getRepoId());
-		// PP_Plant from the target warehouse (mirrors HUs2DDOrderProducer) — the libero DD_OrderLine interceptor
-		// derives PP_Plant_From_ID from it; without it that interceptor logs a benign "@NotFound@ @PP_Plant_ID@" WARN.
+		// Without it the libero DD_OrderLine interceptor logs a benign "@NotFound@ @PP_Plant_ID@" WARN.
 		warehouseRepository.getPlantId(request.getTargetWarehouseId())
 				.ifPresent(plantId -> ddOrder.setPP_Plant_ID(plantId.getRepoId()));
 		ddOrder.setM_Picking_Job_Schedule_ID(request.getPickingJobScheduleId().getRepoId());
@@ -1296,8 +968,7 @@ public class DDOrderPickingReplenishmentService
 		ddOrderLine.setDatePromised(ddOrder.getDatePromised());
 		ddOrderLine.setM_Product_ID(request.getProductId().getRepoId());
 		ddOrderLine.setC_UOM_ID(request.getQty().getUomId().getRepoId());
-		// This flow operates in the assignment's UOM (internal pick-to-packing move):
-		// QtyEntered == QtyOrdered == TargetQty intentionally.
+		// This flow operates in the assignment's UOM, so QtyEntered == QtyOrdered == TargetQty.
 		ddOrderLine.setQtyEntered(request.getQty().toBigDecimal());
 		ddOrderLine.setQtyOrdered(request.getQty().toBigDecimal());
 		ddOrderLine.setTargetQty(request.getQty().toBigDecimal());
@@ -1311,28 +982,13 @@ public class DDOrderPickingReplenishmentService
 		return ddOrderLine;
 	}
 
-	/**
-	 * Voids the DD_Order, refusing while ANY of its contributors is being picked.
-	 *
-	 * <p>Widening that refusal from the order's single back-referenced delivery to its whole contributor set makes
-	 * disposals fail where they used to succeed — notably deleting a workstation assignment whose shared order another
-	 * delivery's picker is working on. That is the intended outcome, not a side effect: the alternative is voiding a
-	 * document out from under a picker who is mid-job on it, which is the very thing this guard exists to prevent. The
-	 * traffic manager waits for that picking to finish or aborts it, exactly as they already do when the picker
-	 * happens to be on the back-referenced delivery.</p>
-	 *
-	 * <p>The guard here reads the contributor set as it stands NOW, so it cannot serve either disposal of the
-	 * delete→void path: by then the departing assignment's {@code M_Picking_Job_Schedule} row (and, on the second
-	 * pass, its alloc rows too) are already gone, and a contributor set missing the very delivery most likely to be
-	 * under a picker reports nobody busy. Both those callers take the verdict before the departure and refuse on
-	 * their own — see {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}.</p>
-	 */
+	/** Refuses while ANY contributor of the order is being picked. The verdict is read as it stands NOW, so the delete→void callers must take their own beforehand. */
 	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
 	{
 		final BlockingWork busyPicker = findBlockingPickingWork(ddOrderLowLevelDAO.getById(existingDDOrderId));
 		if (busyPicker != null)
 		{
-			throw pickerBusyException(existingDDOrderId, busyPicker);
+			throw newPickerBusyException(existingDDOrderId, busyPicker);
 		}
 		ddOrderService.voidIt(existingDDOrderId);
 		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
@@ -1340,19 +996,7 @@ public class DDOrderPickingReplenishmentService
 		detachFromPickingJobSchedule(ddOrderLowLevelDAO.getById(existingDDOrderId));
 	}
 
-	/**
-	 * Clears the {@code M_Picking_Job_Schedule_ID} back-reference on the given DD_Order header and on its lines.
-	 *
-	 * <p>Mandatory for every order that names an assignment being deleted, whether that order is voided by the
-	 * departure or outlives it: the deferrable FK {@code mpickingjobschedule_ddorder} (DD_Order/DD_OrderLine →
-	 * M_Picking_Job_Schedule) is checked at the commit of the delete transaction, so a back-reference left pointing at
-	 * the deleted row fails that commit. {@code voidIt} does not clear it, and an order that survives the departure
-	 * never goes through {@code voidIt} at all.</p>
-	 *
-	 * <p>The column is not re-pointed at a surviving contributor: it names one arbitrary contributor of a consolidated
-	 * order and nothing resolves an order through it any more — served-ness, the group lookup and the guards all go
-	 * through {@code DD_OrderLine_PickingJobSchedule}.</p>
-	 */
+	/** Mandatory for every order naming an assignment being deleted: the deferrable FK {@code mpickingjobschedule_ddorder} is checked at commit of the delete transaction. */
 	private void detachFromPickingJobSchedule(@NonNull final I_DD_Order ddOrder)
 	{
 		ddOrder.setM_Picking_Job_Schedule_ID(-1);
@@ -1364,49 +1008,14 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * Synchronous VOID + unlink for the delete→void path (afterDelete of {@link I_M_Picking_Job_Schedule}).
-	 *
-	 * <p>Unlike the create/update flow (which reconciles after-commit), the delete must void and unlink the linked
-	 * DD_Order(s) <b>in the current (delete) transaction</b>, before the assignment row is flushed. Otherwise the
-	 * deferrable FK {@code mpickingjobschedule_ddorder} (DD_Order/DD_OrderLine → M_Picking_Job_Schedule) still
-	 * references the deleted assignment and fails at commit.</p>
-	 *
-	 * <p>Its {@code DD_OrderLine_PickingJobSchedule} alloc rows must go in that same transaction and for the same
-	 * reason: {@code DD_OrderLine_PickingJobSchedule.M_Picking_Job_Schedule_ID} is a second DEFERRABLE INITIALLY
-	 * DEFERRED foreign key to the assignment, so a surviving alloc row makes the delete fail at commit.</p>
-	 *
-	 * <p>No live DD_Order linked → still deletes the alloc rows, then a clean no-op.</p>
-	 *
-	 * <p><b>The orders the deleted assignment shares are resolved through the ASSOCIATION, before its rows go.</b> A
-	 * consolidated order's {@code M_Picking_Job_Schedule_ID} names one arbitrary contributor, so an order shared with
-	 * a since-departed assignment is not returned by {@code findActiveDDOrdersForPickingJobSchedule} at all — while
-	 * the alloc-row delete below is mandatory (the deferrable FK). Left alone, a line whose LAST contributor is the
-	 * deleted assignment would keep a live DD_Order that no group-keyed lookup can reach any more, and no rebuild
-	 * enumerates orphaned orders: the mover would see that replenishment forever, for demand nobody has.</p>
-	 *
-	 * <p><b>Whether the departure DISPOSES of an order is decided by the contributor set, on both passes.</b> The
-	 * back-reference tells which orders must let go of the assignment, never which orders die with it — see
-	 * {@link #disposeOfOrDetachBackReferencingDDOrders(PickingJobSchedule, ImmutableMap)}.</p>
-	 *
-	 * <p><b>The two facts the last-contributor disposal needs sit on opposite sides of that alloc-row delete, so one
-	 * of them is captured before it.</b> Whether a picker is busy has to be read from the contributor set as it stood
-	 * BEFORE the departure — the departing assignment's own delivery is very often the one being picked. Whether the
-	 * departure disposes of the order at all is the emptiness of that same set AFTER the delete. Reading both from one
-	 * post-delete query answers the second question and silently always answers "nobody busy" to the first, which is
-	 * how a shared DD_Order gets voided out from under an active picker.</p>
-	 *
-	 * <p>The departing assignment arrives as a domain object rather than as an id because by {@code afterDelete} its
-	 * row is already gone: no lookup can still give this method the delivery behind it, and that delivery is precisely
-	 * the one the busy check must cover. The alloc rows outlive the row (no cascade), so every OTHER contributor is
-	 * still resolvable from the database.</p>
-	 */
+	/** Runs in the delete transaction: both {@code mpickingjobschedule_ddorder} and the alloc rows' FK are DEFERRABLE INITIALLY DEFERRED, so anything left pointing at the assignment fails at commit. */
 	public void voidDDOrdersForDeletedAssignment(@NonNull final PickingJobSchedule deletedAssignment)
 	{
 		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = ImmutableSet.of(deletedAssignment.getId());
 		final ImmutableSet<DDOrderLineId> servedLineIds = contributorRepository.getLineIdsByPickingJobScheduleIds(jobScheduleIds);
 
-		// Captured while the departing assignment is still a contributor — see the class of failure in the javadoc above.
+		// Captured while the departing assignment is still a contributor: after the delete its own delivery — very
+		// often the one being picked — is no longer resolvable, and the set would report nobody busy.
 		final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture = findBlockingPickingWorkByLineId(servedLineIds, deletedAssignment);
 
 		final boolean sharedOrderSurvived = disposeOfOrDetachBackReferencingDDOrders(deletedAssignment, blockingBeforeDeparture);
@@ -1416,48 +1025,17 @@ public class DDOrderPickingReplenishmentService
 
 		if (sharedOrderSurvived)
 		{
-			// A surviving order still carries the departed delivery's share, and nothing else would ever take it off
-			// again: the drift watchdog only looks for deliveries with NO document, so a document that is merely too
-			// big for what is left of the group stays too big — the mover would keep fetching the departed delivery's
-			// quantity. The other departure routes get this group reconcile from the afterChange interceptor; the
-			// delete has to ask for it itself.
+			// The watchdog only looks for deliveries with NO document, so a surviving order that is merely too big for
+			// what is left of the group would stay too big.
 			scheduleReconcileAfterCommit(deletedAssignment);
 		}
 	}
 
 	/**
-	 * The back-reference pass: every live DD_Order whose {@code M_Picking_Job_Schedule_ID} names the departing
-	 * assignment has to let go of it inside this transaction (the deferrable FK), and each one either survives that
-	 * departure or is disposed of by it.
+	 * Whether an order survives the departure is decided by its contributor set, not by the back-reference — that
+	 * column names one arbitrary contributor, usually not the last one to go.
 	 *
-	 * <p><b>Which of the two happens is decided by the contributor set, never by the back-reference itself.</b> That
-	 * column names ONE arbitrary contributor — written when the line was created and never reassigned as contributors
-	 * join or leave — so the assignment it names is usually not the last one to go. An order whose lines still serve
-	 * somebody else is therefore only DETACHED: voiding it would discard the surviving deliveries' only replenishment
-	 * document for demand nobody cancelled, silently, and the drift watchdog would re-issue it at best an hour later as
-	 * a second, un-netted physical move. Only an order nobody is left on is voided — and there the detach is what the
-	 * void does anyway.</p>
-	 *
-	 * <p>The "does anybody else still contribute?" question is asked BEFORE the alloc rows go, so the departing
-	 * assignment is still in the set and is subtracted explicitly. Asking it after the delete would answer "nobody
-	 * left" for every order — the same dead read that makes a post-delete picker-busy check always say "nobody
-	 * busy".</p>
-	 *
-	 * <p><b>And that is why the disposal below refuses on {@code blockingBeforeDeparture} rather than letting
-	 * {@link #voidDDOrderFor(DDOrderId)} resolve the picker-busy verdict itself</b> — exactly as
-	 * {@link #voidDDOrdersLeftWithoutContributor(Set, ImmutableMap)} already does. The failure it prevents needs the
-	 * departing assignment to be BOTH the order's back-reference owner (so this pass reaches the order at all) AND its
-	 * last contributor (so this pass takes the void branch), with a picker on that assignment's OWN delivery: its
-	 * {@code M_Picking_Job_Schedule} row is already deleted by {@code afterDelete}, so re-resolving the contributors
-	 * here returns an EMPTY set, an empty set has nobody busy in it, and the document the picker is working on is
-	 * voided under them with no refusal at all. Every other combination still has a resolvable contributor through
-	 * which the guard sees the picker, which is why only this one slipped through.</p>
-	 *
-	 * @param blockingBeforeDeparture the picker-busy verdict per line, taken by
-	 * {@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)} while the departing assignment was still
-	 * resolvable.
-	 * @return whether at least one order outlived the departure, i.e. whether the group still has a document whose
-	 * quantity now has to be shrunk to the remaining contributors' sum.
+	 * @return whether at least one order outlived the departure and now carries more than the group still demands.
 	 */
 	private boolean disposeOfOrDetachBackReferencingDDOrders(
 			@NonNull final PickingJobSchedule deletedAssignment,
@@ -1482,7 +1060,7 @@ public class DDOrderPickingReplenishmentService
 				final BlockingWork busyPicker = firstBlockingWorkOf(ddOrder, blockingBeforeDeparture);
 				if (busyPicker != null)
 				{
-					throw pickerBusyException(ddOrderId, busyPicker);
+					throw newPickerBusyException(ddOrderId, busyPicker);
 				}
 
 				voidDDOrderFor(ddOrderId);
@@ -1491,12 +1069,6 @@ public class DDOrderPickingReplenishmentService
 		return anySurvived;
 	}
 
-	/**
-	 * The pre-departure picker-busy verdict for the given order: the first of its lines somebody was busy on. Null when
-	 * nobody was — see the class of failure in {@link #disposeOfOrDetachBackReferencingDDOrders} for why this is not
-	 * re-resolved from the (by now incomplete) contributor set. A consolidated order has one line per source locator
-	 * and all of them share the group's contributors, so which line answers is immaterial.
-	 */
 	@Nullable
 	private BlockingWork firstBlockingWorkOf(
 			@NonNull final I_DD_Order ddOrder,
@@ -1509,11 +1081,7 @@ public class DDOrderPickingReplenishmentService
 				.orElse(null);
 	}
 
-	/**
-	 * Whether the given order still serves an assignment other than the departing one, resolved through the
-	 * contributor association. Asked while the departing assignment's own alloc rows are still there, which is exactly
-	 * why it has to be excluded explicitly.
-	 */
+	/** Asked while the departing assignment's own alloc rows are still there, which is why it has to be excluded explicitly. */
 	private boolean servesContributorsOtherThan(
 			@NonNull final I_DD_Order ddOrder,
 			@NonNull final PickingJobScheduleId departingAssignmentId)
@@ -1523,14 +1091,7 @@ public class DDOrderPickingReplenishmentService
 				.anyMatch(contributorId -> !contributorId.equals(departingAssignmentId));
 	}
 
-	/**
-	 * Voids every still-live DD_Order among the given lines' orders that no longer has a single contributor — the
-	 * departure of the last contributor is what disposes of a consolidated order.
-	 *
-	 * <p>{@code blockingBeforeDeparture} is the picker-busy verdict taken before the departing assignment's alloc rows
-	 * were deleted, keyed by line. It cannot be recomputed here: reaching this point means the line's contributor set
-	 * is already empty, and an empty set has nobody busy in it by definition.</p>
-	 */
+	/** {@code blockingBeforeDeparture} cannot be recomputed here: reaching a line at all means its contributor set is empty, and an empty set has nobody busy in it. */
 	private void voidDDOrdersLeftWithoutContributor(
 			@NonNull final Set<DDOrderLineId> lineIds,
 			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
@@ -1539,7 +1100,7 @@ public class DDOrderPickingReplenishmentService
 		{
 			if (!contributorRepository.getByLineId(lineId).isEmpty())
 			{
-				continue; // still serves someone
+				continue;
 			}
 
 			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrderLowLevelDAO.getLineById(lineId).getDD_Order_ID());
@@ -1555,17 +1116,13 @@ public class DDOrderPickingReplenishmentService
 			final BlockingWork busyPicker = blockingBeforeDeparture.get(lineId);
 			if (busyPicker != null)
 			{
-				throw pickerBusyException(ddOrderId, busyPicker);
+				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
 
 			voidDDOrderFor(ddOrderId);
 		}
 	}
 
-	/**
-	 * Voids every DD_Order in the given list — each one detached from its {@code M_Picking_Job_Schedule_ID} back-ref
-	 * (header + lines) by {@link #voidDDOrderFor(DDOrderId)}. Empty list → clean no-op.
-	 */
 	private void voidAllDDOrders(@NonNull final List<I_DD_Order> ddOrders)
 	{
 		for (final I_DD_Order ddOrder : ddOrders)
@@ -1574,10 +1131,7 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * Close-out disposition: CLOSE when no replenishment move is in progress, or DISCONNECT when a move is in
-	 * progress (closing would hit the {@code BEFORE_CLOSE clearSchedules} guard and corrupt the half-done move).
-	 */
+	/** An in-progress move is DISCONNECTed rather than closed: closing would hit the {@code BEFORE_CLOSE clearSchedules} guard and corrupt the half-done move. */
 	private void disposeCloseOut(@NonNull final List<I_DD_Order> ddOrders)
 	{
 		for (final I_DD_Order ddOrder : ddOrders)
@@ -1594,10 +1148,7 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * Closes the obsolete replenishment DD_Order (moved stock preserved, open remainder closed off) and releases the
-	 * picker so the DD_Order-backed mobile DistributionJob retires from the launcher.
-	 */
+	/** The responsible user is released too, so the DD_Order-backed mobile DistributionJob retires from the launcher. */
 	private void closeDDOrderFor(@NonNull final DDOrderId ddOrderId)
 	{
 		ddOrderService.close(ddOrderId);
@@ -1609,11 +1160,7 @@ public class DDOrderPickingReplenishmentService
 				ddOrderId.getRepoId());
 	}
 
-	/**
-	 * Disconnects the in-progress replenishment DD_Order ({@code IsPickingDisconnected=Y}) instead of closing it, so
-	 * the guard/reconcile lookup stops seeing it while the FKs and the DistributionJob assignment are retained for
-	 * the worker to finish.
-	 */
+	/** The guard/reconcile lookups stop seeing it, while its FKs and DistributionJob assignment are retained for the worker to finish. */
 	private void disconnectDDOrderFor(@NonNull final DDOrderId ddOrderId)
 	{
 		ddOrderService.markAsPickingDisconnected(ddOrderId);
@@ -1628,10 +1175,8 @@ public class DDOrderPickingReplenishmentService
 	{
 		final ProgressLogger progress = Loggables.get().newProgress();
 
-		// The assignments are materialised and their shipment schedules loaded in ONE batch before the requests are
-		// built: the request needs the schedule's product, and mapping a per-assignment getById over the stream is a
-		// single-record load per open assignment (~2100 measured) on every hourly pass — before .distinct() has even
-		// collapsed them to one request per group (~570).
+		// The shipment schedules are loaded in ONE batch, because the request needs the schedule's product and a
+		// per-assignment load would be one round-trip per open assignment on every pass.
 		final ImmutableList<PickingJobSchedule> assignments = streamAssignmentsNeedingDDOrder().collect(ImmutableList.toImmutableList());
 		if (!assignments.isEmpty())
 		{
@@ -1650,30 +1195,23 @@ public class DDOrderPickingReplenishmentService
 		progress.done("Enqueued {} requests");
 	}
 
-	/**
-	 * The assignments {@link #rebuildDrift()} currently considers unserved, i.e. the watchdog's input set.
-	 *
-	 * <p>The read-only diagnostic seam over the served-ness predicate: "which deliveries does the watchdog think
-	 * still have no distribution order?" is otherwise only observable indirectly, through the documents a rebuild
-	 * pass happens to produce — and on an already-served group a pass produces nothing at all, so the predicate
-	 * cannot be told apart from an idempotent reconcile by looking at the outcome.</p>
-	 */
-	public ImmutableSet<PickingJobScheduleId> getAssignmentIdsNeedingDDOrder()
+	/** Which of {@code assignmentIds} the watchdog still considers unserved. Restricted to the caller's ids so the result stays bounded. */
+	public ImmutableSet<PickingJobScheduleId> retainAssignmentsNeedingDDOrder(@NonNull final Set<PickingJobScheduleId> assignmentIds)
 	{
+		if (assignmentIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
 		try (final Stream<PickingJobSchedule> assignments = streamAssignmentsNeedingDDOrder())
 		{
-			return assignments.map(PickingJobSchedule::getId).collect(ImmutableSet.toImmutableSet());
+			return assignments.map(PickingJobSchedule::getId)
+					.filter(assignmentIds::contains)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 
-	/**
-	 * The assignments no live DD_Order serves yet.
-	 *
-	 * <p>Served-ness is resolved through the contributor association: the assignments named by the alloc rows of the
-	 * lines of the live DD_Orders. A back-reference column on the {@code DD_Order} cannot answer this — a
-	 * consolidated order carries only ONE of its contributors there, so every other contributor of an
-	 * already-served group would be streamed on every hourly pass and the whole group re-planned.</p>
-	 */
+	/** Served-ness is resolved through the contributor association; a back-reference column names only one contributor of a consolidated order. */
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
 	{
 		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(
@@ -1688,11 +1226,6 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * The work a refusal has to name so the reader can go and resolve it: the blocking workstation assignment and the
-	 * delivery behind it. On a consolidated order that is usually somebody else's assignment, which is exactly why it
-	 * has to be spelled out.
-	 */
 	@Value(staticConstructor = "of")
 	private static class BlockingWork
 	{
@@ -1700,18 +1233,7 @@ public class DDOrderPickingReplenishmentService
 		@NonNull ShipmentScheduleId shipmentScheduleId;
 	}
 
-	/**
-	 * The contributor of the given DD_Order whose delivery a picker is working on right now, or {@code null} when
-	 * nobody is.
-	 *
-	 * <p>Evaluated over the order's COMPLETE contributor set. Reading the order's own single
-	 * {@code M_ShipmentSchedule_ID} sees only the one contributor whose back-reference the consolidated order happens
-	 * to carry, so a picker working on any other delivery of the same order stays invisible and the reconcile mutates
-	 * or voids the document under them.</p>
-	 *
-	 * <p>An order carrying no contributor row at all reports nobody busy — that is the state of an order created
-	 * before the contributor association existed, until the rollout backfill populates it.</p>
-	 */
+	/** Evaluated over the order's COMPLETE contributor set; an order carrying no contributor row at all reports nobody busy. */
 	@Nullable
 	private BlockingWork findBlockingPickingWork(@NonNull final I_DD_Order ddOrder)
 	{
@@ -1736,26 +1258,7 @@ public class DDOrderPickingReplenishmentService
 		return null;
 	}
 
-	/**
-	 * The per-LINE form of {@link #findBlockingPickingWork(I_DD_Order)}: for each given line, the contributor of that
-	 * line whose delivery a picker is working on right now. Lines with nobody busy are absent from the result.
-	 *
-	 * <p>Keyed on the line rather than on the order because the caller
-	 * ({@link #voidDDOrdersForDeletedAssignment(PickingJobSchedule)}) has to take this verdict BEFORE it mutates
-	 * anything, and at that point it holds line ids — the orders behind them are only resolved afterwards, one disposal
-	 * at a time. A consolidated order has exactly one line per source locator, so per line and per order are the same
-	 * set of contributors.</p>
-	 *
-	 * <p>{@code departingAssignment} is folded into every line's contributor set: the caller derived {@code lineIds}
-	 * from that assignment's own alloc rows, so it contributes to each of them, but its {@code M_Picking_Job_Schedule}
-	 * row is already deleted and no longer resolvable — leave it out and the one delivery most likely to be under a
-	 * picker is the one nobody checks. Ordering by {@code M_Picking_Job_Schedule_ID} matches
-	 * {@link #contributorsOf(Set)}, so the assignment a refusal names is the same on every run.</p>
-	 *
-	 * <p>The expensive part — "is any of these deliveries being picked?" — stays a SINGLE query over the union of all
-	 * the lines' contributors, for the same reason {@code retrieveScheduleIdsWithActivePickingJobLine} is batched at
-	 * all.</p>
-	 */
+	/** The per-line form of {@link #findBlockingPickingWork(I_DD_Order)}; {@code departingAssignment} is folded in because its own row is already deleted and no longer resolvable. */
 	private ImmutableMap<DDOrderLineId, BlockingWork> findBlockingPickingWorkByLineId(
 			@NonNull final Set<DDOrderLineId> lineIds,
 			@NonNull final PickingJobSchedule departingAssignment)
@@ -1769,7 +1272,7 @@ public class DDOrderPickingReplenishmentService
 				.collect(ImmutableMap.toImmutableMap(
 						lineId -> lineId,
 						lineId -> Stream.concat(contributorsOf(ImmutableSet.of(lineId)).stream(), Stream.of(departingAssignment))
-								.sorted(Comparator.comparingInt(contributor -> contributor.getId().getRepoId()))
+								.sorted(Comparator.comparing(PickingJobSchedule::getId))
 								.collect(ImmutableList.toImmutableList())));
 
 		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = contributorsByLineId.values().stream()
@@ -1795,13 +1298,7 @@ public class DDOrderPickingReplenishmentService
 		return result.build();
 	}
 
-	/**
-	 * The contributor a "goods already moved" refusal names. The movement belongs to the whole shared line, so any of
-	 * its contributors is a truthful answer; one that is NOT the assignment being edited is picked first, because
-	 * telling the editor about their own assignment says nothing about who else is on the document. A line with no
-	 * contributor row left falls back to the edited assignment itself, which is what the single-delivery case
-	 * reported before consolidation.
-	 */
+	/** A contributor that is NOT the assignment being edited is preferred, because telling the editor about their own assignment says nothing about who else is on the document. */
 	@NonNull
 	private BlockingWork findBlockingMovedWork(
 			@NonNull final DDOrderLineId lineId,
@@ -1822,11 +1319,7 @@ public class DDOrderPickingReplenishmentService
 		return blocking != null ? blocking : changedAssignment;
 	}
 
-	/**
-	 * The assignments contributing to the given lines, ordered by {@code M_Picking_Job_Schedule_ID} so that the
-	 * contributor a refusal names is the same on every run — an error message that changes between two identical
-	 * situations is not something an operator can report.
-	 */
+	/** Ordered so that the contributor a refusal names is the same on every run — an operator cannot report a message that changes between two identical situations. */
 	private ImmutableList<PickingJobSchedule> contributorsOf(@NonNull final Set<DDOrderLineId> lineIds)
 	{
 		final ImmutableSet<PickingJobScheduleId> contributorIds = contributorRepository.getPickingJobScheduleIds(lineIds);
@@ -1836,27 +1329,23 @@ public class DDOrderPickingReplenishmentService
 		}
 
 		return pickingJobScheduleService.getByIds(contributorIds).stream()
-				.sorted(Comparator.comparing(contributor -> contributor.getId().getRepoId()))
+				.sorted(Comparator.comparing(PickingJobSchedule::getId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	private AdempiereException pickerBusyException(@NonNull final DDOrderId ddOrderId, @NonNull final BlockingWork blocking)
+	private AdempiereException newPickerBusyException(@NonNull final DDOrderId ddOrderId, @NonNull final BlockingWork blocking)
 	{
 		return new AdempiereException(
 				MSG_DDOrderPickingReplenishment_PickerBusy,
-				asMessageValue(ddOrderId.getRepoId()),
-				asMessageValue(blocking.getJobScheduleId().getRepoId()),
-				asMessageValue(blocking.getShipmentScheduleId().getRepoId()));
+				asMessageValue(ddOrderId),
+				asMessageValue(blocking.getJobScheduleId()),
+				asMessageValue(blocking.getShipmentScheduleId()));
 	}
 
-	/**
-	 * Record ids go into an AD_Message as text, never as a number: the message is rendered through
-	 * {@code MessageFormat}, which would push an {@code Integer} through the reader's locale number format and turn
-	 * the id into "1.234.567" — no longer the value they can search the system for.
-	 */
-	private static String asMessageValue(final int repoId)
+	/** A record id goes into an AD_Message as text: {@code MessageFormat} would push a number through the reader's locale format and render it as "1.234.567". */
+	private static String asMessageValue(@NonNull final RepoIdAware id)
 	{
-		return String.valueOf(repoId);
+		return String.valueOf(id.getRepoId());
 	}
 
 	private WarehouseId getFirstSourceWarehouseIdOrThrow(

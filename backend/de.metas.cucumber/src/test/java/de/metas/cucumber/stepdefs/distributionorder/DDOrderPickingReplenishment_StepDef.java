@@ -62,18 +62,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Step definitions specific to the DD_Order picking-replenishment flow
- * (see {@code DDOrderPickingReplenishmentService}).
- *
- * <p>Covers the reconcile-only assertions that have no home in a single domain step-def class:
- * changing a schedule quantity (and asserting the picker-busy rejection), directly driving the service
- * ({@code reconcile} / {@code rebuildDrift}) for deterministic race / watchdog scenarios, running the
- * {@code DD_Order_Picking_Rebuild} process, and inspecting the reconcile
- * {@code AD_EventLog} / {@code AD_EventLog_Entry} / {@code AD_Issue} outcomes.</p>
- *
- * <p>The picker is made busy / released through the REAL mobile picking workflow (REST: start the
- * wfProcess + scan the picking slot to create an in-progress {@code M_Picking_Job_Line}, then abort the
- * wfProcess to void it) — see the {@code DDOrderReplenishment_picker_busy.feature} for the end-to-end flow.</p>
+ * Step definitions for the DD_Order picking-replenishment flow (see {@code DDOrderPickingReplenishmentService}) —
+ * schedule-quantity change / picker-busy rejection, direct {@code reconcile}/{@code rebuildDrift} driving,
+ * running the {@code DD_Order_Picking_Rebuild} process, and inspecting the reconcile
+ * {@code AD_EventLog}/{@code AD_EventLog_Entry}/{@code AD_Issue} outcomes.
  */
 @RequiredArgsConstructor
 public class DDOrderPickingReplenishment_StepDef
@@ -98,17 +90,8 @@ public class DDOrderPickingReplenishment_StepDef
 	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
 
 	/**
-	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)} in
-	 * {@code runInThreadInheritedTrx}, matching the transaction wrapping used by
-	 * {@code DDOrderReplenishmentEventHandler}. The reconcile is group-keyed, so this serves every contributor of the
-	 * named assignment's product group, not only that assignment.
-	 *
-	 * <p>Real-world trigger: in production this reconcile runs asynchronously when the
-	 * {@code M_Picking_Job_Schedule} interceptor publishes the after-commit {@code DDOrderPickingReconcile}
-	 * event (on a new / changed / deleted assignment), or when the {@code DD_Order_Picking_Rebuild} watchdog
-	 * reposts it. The step calls the service directly only to control ordering for the deterministic race
-	 * scenario — driving it through the real async bus would make the picker-grabs-the-job-in-the-race-window
-	 * timing non-deterministic and the test flaky.</p>
+	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)}, serving
+	 * every contributor of the named assignment's product group.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment to reconcile.</p>
 	 */
@@ -121,21 +104,8 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)} and asserts it
-	 * FAILS while the picker is busy (the service-side definitive guard). Asserts the thrown exception is an
-	 * {@link AdempiereException} with {@code ErrorCode = DDOrderPickingReconcile_PickerBusy}.
-	 * The DD_Order is left unchanged.
-	 *
-	 * <p>Real-world trigger: same async reconcile as {@code process_reconcile_event} — in production the
-	 * {@code M_Picking_Job_Schedule} interceptor ({@code M_Picking_Job_Schedule_DDOrderPickingInterceptor#scheduleReconcileAfterCommit})
-	 * publishes the after-commit reconcile event, the {@code DDOrderReplenishmentEventHandler} picks it up and calls
-	 * {@code replenishmentService.reconcile(groupKey, clientAndOrgId)}; this step asserts the service-side picker-busy guard rejects
-	 * that reconcile when a picker has grabbed the job in the meantime. The step calls the service directly only to
-	 * control ordering for the deterministic race scenario — driving it through the real async bus would make the
-	 * picker-grabs-the-job-in-the-race-window timing non-deterministic and the test flaky.</p>
-	 *
-	 * <p>Note: this step drives the service directly (not via the async event handler) so no
-	 * {@code AD_EventLog_Entry} is produced. The handler-level error-recording path (IsError=true in
-	 * AD_EventLog_Entry) is covered by the scenario that goes through the real async event flow.</p>
+	 * FAILS with {@code ErrorCode = DDOrderPickingReconcile_PickerBusy} while the picker is busy, leaving the DD_Order
+	 * unchanged.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment.</p>
 	 */
@@ -153,15 +123,11 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Test seam: directly sets {@code QtyInTransit=1} on every {@code DD_OrderLine} linked to the given
-	 * picking job schedule, simulating the state after a movement document has been dispatched from the
-	 * DD_Order (goods are in transit from the source warehouse toward the target warehouse) without running
-	 * the full movement-processing flow. Used to exercise the movement-started guard in
-	 * {@code DDOrderPickingReplenishmentService.assertCanChange}.
+	 * Test seam: sets {@code QtyInTransit=1} on every {@code DD_OrderLine} linked to the given picking job schedule,
+	 * simulating dispatched-movement state without running the movement-processing flow.
 	 *
-	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment whose
-	 * DD_OrderLines should be marked in transit. To put a different quantity in transit, use the
-	 * {@code simulate goods in transit of &lt;qty&gt; on ...} form below.</p>
+	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment. For a different
+	 * quantity, use the {@code simulate goods in transit of &lt;qty&gt; on ...} form below.</p>
 	 */
 	@When("^simulate goods in transit on DD_Order linked to picking job schedule (.*)$")
 	public void simulate_goods_in_transit(@NonNull final String pickingJobScheduleIdentifier)
@@ -171,11 +137,8 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * The quantity-carrying form of {@code simulate goods in transit on DD_Order linked to picking job schedule}.
-	 *
-	 * <p>Needed wherever a scenario asserts that the refusal message REPORTS the moved quantity: with the default
-	 * quantity of 1, "the message contains the moved quantity" is indistinguishable from "the message contains the
-	 * leading digit of any record id", so the assertion would hold even if the quantity were missing entirely.
-	 * Give such a scenario a quantity that cannot be mistaken for part of an id (e.g. {@code 7.5}).</p>
+	 * Use when a scenario asserts the refusal message REPORTS the moved quantity — pick a value that can't be
+	 * mistaken for a record-id digit (e.g. {@code 7.5}).
 	 *
 	 * <p>Params: the quantity to put in transit, and the identifier (from {@code M_Picking_Job_Schedule_StepDefData})
 	 * of the assignment whose DD_OrderLines should be marked in transit.</p>
@@ -201,13 +164,7 @@ public class DDOrderPickingReplenishment_StepDef
 		}
 	}
 
-	/**
-	 * Runs the drift-rebuild that the {@code DD_Order_Picking_Rebuild} {@code AD_Process} performs.
-	 *
-	 * <p>Real-world trigger: a user (or a scheduler) runs the {@code DD_Order_Picking_Rebuild} process from the
-	 * application; it republishes a reconcile event for every schedule that has drifted from its DD_Order. The
-	 * step invokes {@code rebuildDrift} directly to keep the watchdog scenario deterministic.</p>
-	 */
+	/** Runs the drift-rebuild that the {@code DD_Order_Picking_Rebuild} {@code AD_Process} performs. */
 	@When("the DD_Order_Picking_Rebuild process is run")
 	public void run_rebuild_process()
 	{
@@ -215,22 +172,14 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Asserts the drift rebuild recognises each of the given workstation assignments as ALREADY SERVED, i.e. none of
-	 * them is in {@code DDOrderPickingReplenishmentService.getAssignmentIdsNeedingDDOrder()} — the set a rebuild pass
-	 * would re-plan.
-	 *
-	 * <p>This is the watchdog's "is this delivery already served?" question itself, and it has to be asserted
-	 * directly: on an already-served group the answer is invisible in the documents, because a re-plan of a group
-	 * that is already correct produces the same order again. An assignment that is served by a SHARED order — i.e.
-	 * every contributor but the one the order happens to point back at — must still be recognised, or the watchdog
-	 * re-plans the whole group on every hourly pass.</p>
+	 * Asserts the drift rebuild recognises each of the given workstation assignments as ALREADY SERVED.
 	 *
 	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
 	 */
 	@Then("^the drift rebuild considers (.*) already served$")
 	public void assert_assignments_considered_served(@NonNull final String pickingJobScheduleIdentifiers)
 	{
-		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder();
+		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder(pickingJobScheduleIdentifiers);
 
 		for (final StepDefDataIdentifier identifier : StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers))
 		{
@@ -246,16 +195,12 @@ public class DDOrderPickingReplenishment_StepDef
 	 * The counterpart of {@code the drift rebuild considers ... already served}: asserts each of the given
 	 * assignments IS in the rebuild's unserved set, so a pass will re-plan it.
 	 *
-	 * <p>Needed wherever a scenario simulates the drift the watchdog exists for: it pins that the served-ness
-	 * predicate really lets go of an assignment whose order died, rather than the rebuild happening to re-plan it for
-	 * some other reason.</p>
-	 *
 	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
 	 */
 	@Then("^the drift rebuild considers (.*) to still need a DD_Order$")
 	public void assert_assignments_considered_unserved(@NonNull final String pickingJobScheduleIdentifiers)
 	{
-		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder();
+		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder(pickingJobScheduleIdentifiers);
 
 		for (final StepDefDataIdentifier identifier : StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers))
 		{
@@ -267,21 +212,17 @@ public class DDOrderPickingReplenishment_StepDef
 		}
 	}
 
-	private ImmutableSet<PickingJobScheduleId> assignmentIdsNeedingDDOrder()
+	private ImmutableSet<PickingJobScheduleId> assignmentIdsNeedingDDOrder(@NonNull final String pickingJobScheduleIdentifiers)
 	{
-		return trxManager.callInThreadInheritedTrx(replenishmentService::getAssignmentIdsNeedingDDOrder);
+		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers)
+				.stream()
+				.map(pickingJobScheduleTable::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		return trxManager.callInThreadInheritedTrx(() -> replenishmentService.retainAssignmentsNeedingDDOrder(jobScheduleIds));
 	}
 
-	/**
-	 * Asserts the {@code DD_Order_Picking_Rebuild} {@code AD_Process} is registered (its Value resolves to an
-	 * {@code AdProcessId}).
-	 *
-	 * <p>Real-world trigger: this is the {@code AD_Process} backing the {@code DD_Order_Picking_Rebuild}
-	 * {@code JavaProcess} that a warehouse supervisor runs manually from the WebUI (or a scheduler runs
-	 * periodically) to re-reconcile schedules that have drifted from their DD_Order; its {@code doIt} calls
-	 * {@code replenishmentService.rebuildDrift()}. The step guards against the process row going missing (a
-	 * deleted/renamed AD_Process record would silently disable the watchdog in production).</p>
-	 */
+	/** Asserts the {@code DD_Order_Picking_Rebuild} {@code AD_Process} is registered (its Value resolves to an {@code AdProcessId}). */
 	@Then("the DD_Order_Picking_Rebuild process exists")
 	public void rebuild_process_exists()
 	{
@@ -294,13 +235,7 @@ public class DDOrderPickingReplenishment_StepDef
 
 	/**
 	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler for a SPECIFIC
-	 * shipment schedule, with the expected error state and (optionally) a message fragment
-	 * (network gap ends the event in Error; also covers the Done outcome of the watchdog rebuild).
-	 *
-	 * <p>The entry is tied to its originating schedule via the parent {@code AD_EventLog}'s source record
-	 * reference ({@code AD_Table_ID}=M_ShipmentSchedule + {@code Record_ID}=the schedule), which the
-	 * {@code DDOrderReplenishmentEventPublisher} now sets. This prevents matching a stale entry left behind
-	 * by a previous scenario (false-green isolation bug).</p>
+	 * shipment schedule, with the expected error state and (optionally) a message fragment.
 	 *
 	 * <p>Columns:</p>
 	 * <ul>
@@ -316,9 +251,7 @@ public class DDOrderPickingReplenishment_StepDef
 			final boolean expectedError = row.getAsBoolean(I_AD_EventLog_Entry.COLUMNNAME_IsError);
 			final String msgTextFragment = row.getAsOptionalString(I_AD_EventLog_Entry.COLUMNNAME_MsgText).orElse(null);
 
-			// The entry is pinned to its originating record via the parent AD_EventLog's source record reference
-			// (set by DDOrderReplenishmentEventPublisher). The trigger record is the workstation assignment
-			// (M_Picking_Job_Schedule) for the assignment-driven flow, or the shipment schedule for the legacy flow.
+			// Pinned via the parent AD_EventLog's source record reference (assignment for the new flow, shipment schedule for the legacy one).
 			final IQuery<I_AD_EventLog> eventLogsSubQuery = row.getAsOptionalIdentifier(de.metas.inoutcandidate.model.I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
 					.map(identifier -> eventLogsForPickingJobSchedule(identifier.lookupNotNullIdIn(pickingJobScheduleTable).getRepoId()))
 					.orElseGet(() -> {
@@ -353,10 +286,7 @@ public class DDOrderPickingReplenishment_StepDef
 		});
 	}
 
-	/**
-	 * Builds the sub-query selecting the {@code AD_EventLog} records whose source record reference points to the
-	 * given workstation assignment (set by {@code DDOrderReplenishmentEventPublisher}).
-	 */
+	/** Sub-query selecting the {@code AD_EventLog} records whose source record reference points to the given workstation assignment. */
 	private IQuery<I_AD_EventLog> eventLogsForPickingJobSchedule(final int pickingJobScheduleId)
 	{
 		final TableRecordReference ref =
@@ -367,10 +297,7 @@ public class DDOrderPickingReplenishment_StepDef
 				.create();
 	}
 
-	/**
-	 * Builds the sub-query selecting the {@code AD_EventLog} records whose source record reference points to the
-	 * given shipment schedule (set by {@code DDOrderReplenishmentEventPublisher}).
-	 */
+	/** Sub-query selecting the {@code AD_EventLog} records whose source record reference points to the given shipment schedule. */
 	private IQuery<I_AD_EventLog> eventLogsForSchedule(final int shipmentScheduleId)
 	{
 		final TableRecordReference scheduleRef =
@@ -382,13 +309,8 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached
-	 * (network-gap soft-fail logs an AD_Issue), pinned to a SPECIFIC workstation assignment.
-	 *
-	 * <p>The entry is tied to its originating assignment via the parent {@code AD_EventLog}'s source record
-	 * reference ({@code AD_Table_ID}=M_Picking_Job_Schedule + {@code Record_ID}=the assignment), which the
-	 * {@code DDOrderReplenishmentEventPublisher} sets. This prevents matching a stale Error+AD_Issue entry left
-	 * behind by a previous scenario on a multi-scenario DB run (false-green isolation bug).</p>
+	 * Polls for an Error {@code AD_EventLog_Entry} from the reconcile handler that has an {@code AD_Issue} attached,
+	 * pinned to a SPECIFIC workstation assignment.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment that triggered
 	 * the reconcile (required).</p>
