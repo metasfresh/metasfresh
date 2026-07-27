@@ -93,7 +93,7 @@ public class BBSStatusTest
 	@EnumSource(BBSStatus.class)
 	public void everyStatus_hasTheExactCodeFromXMProduct(final BBSStatus status)
 	{
-		// codes must be exactly O/A/G/N to match the AD_Ref_List values from Task 2 (X_M_Product constants)
+		// codes must match the AD_Ref_List values (X_M_Product.PRODUCTLIFECYCLESTATUS_* constants)
 		assertThat(status.getCode()).isIn("O", "A", "G", "N");
 	}
 

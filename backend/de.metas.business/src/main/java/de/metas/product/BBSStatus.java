@@ -70,12 +70,9 @@ public enum BBSStatus implements ReferenceListAwareEnum
 
 	private static final ValuesIndex<BBSStatus> typesByCode = ReferenceListAwareEnums.index(values());
 
-	@Getter
-	@NonNull
-	private final String code;
+	@Getter @NonNull private final String code;
 
-	@NonNull
-	private final ImmutableSet<ProductLifeCycleAction> blockedActions;
+	@NonNull private final ImmutableSet<ProductLifeCycleAction> blockedActions;
 
 	/**
 	 * @return {@code true} if the given action is allowed while the product is in this status.
