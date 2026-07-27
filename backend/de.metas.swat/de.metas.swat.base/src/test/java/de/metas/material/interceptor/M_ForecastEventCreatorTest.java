@@ -1,6 +1,5 @@
 package de.metas.material.interceptor;
 
-import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.forecast.ForecastCreatedEvent;
 import org.adempiere.ad.modelvalidator.DocTimingType;
@@ -9,8 +8,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_M_Forecast;
 import org.compiere.model.I_M_ForecastLine;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,17 +64,7 @@ public class M_ForecastEventCreatorTest
 		// forecast HAS a line, so absent the IsBudgetForecast guard, buildForecast() would NOT
 		// take the "no lines" early-return and would produce a present event; only the guard
 		// makes this case return empty despite the line existing.
-		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-		final I_M_Product product = newInstance(I_M_Product.class);
-		save(product);
-
-		final I_M_ForecastLine forecastLineRecord = newInstance(I_M_ForecastLine.class);
-		forecastLineRecord.setM_Forecast(forecastModel);
-		forecastLineRecord.setDatePromised(TimeUtil.asTimestamp(java.time.Instant.now()));
-		forecastLineRecord.setQty(new BigDecimal("21"));
-		forecastLineRecord.setM_Product_ID(product.getM_Product_ID());
-		forecastLineRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		final I_M_ForecastLine forecastLineRecord = ForecastLineTestFixture.newForecastLine(forecastModel, new BigDecimal("21"));
 		save(forecastLineRecord);
 
 		final Optional<ForecastCreatedEvent> result = forecastEventCreator.createEventWithLinesAndTiming(
@@ -94,17 +81,7 @@ public class M_ForecastEventCreatorTest
 		forecastModel.setIsBudgetForecast(false);
 		save(forecastModel);
 
-		final I_M_Warehouse warehouse = newInstance(I_M_Warehouse.class);
-		save(warehouse);
-		final I_M_Product product = newInstance(I_M_Product.class);
-		save(product);
-
-		final I_M_ForecastLine forecastLineRecord = newInstance(I_M_ForecastLine.class);
-		forecastLineRecord.setM_Forecast(forecastModel);
-		forecastLineRecord.setDatePromised(TimeUtil.asTimestamp(java.time.Instant.now()));
-		forecastLineRecord.setQty(new BigDecimal("21"));
-		forecastLineRecord.setM_Product_ID(product.getM_Product_ID());
-		forecastLineRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		final I_M_ForecastLine forecastLineRecord = ForecastLineTestFixture.newForecastLine(forecastModel, new BigDecimal("21"));
 		save(forecastLineRecord);
 
 		final Optional<ForecastCreatedEvent> result = forecastEventCreator.createEventWithLinesAndTiming(
