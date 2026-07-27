@@ -24,6 +24,8 @@ package de.metas.shipper.gateway.nshift.client;
 
 import de.metas.common.delivery.v1.json.request.JsonDeliveryRequest;
 import de.metas.common.delivery.v1.json.response.JsonDeliveryResponse;
+import de.metas.common.util.StringUtils;
+import de.metas.shipper.client.nshift.NShiftConstants;
 import de.metas.shipper.client.nshift.NShiftShipmentService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,11 @@ public class ShipmentDispatchService
 			case SHIP:
 				return shipmentService.createShipment(deliveryRequest);
 			case ORDER:
+				// order doesn't support manual carrier selection
+				if(StringUtils.toBoolean(deliveryRequest.getShipperConfig().getAdditionalProperty(NShiftConstants.MANUAL), false))
+				{
+					return shipmentService.createShipment(deliveryRequest);
+				}
 				return shipmentService.createShipmentViaOrderAdvice(deliveryRequest);
 			default:
 				throw new AdempiereException("Unhandled " + ShipType.class.getSimpleName() + ": " + shipType);
