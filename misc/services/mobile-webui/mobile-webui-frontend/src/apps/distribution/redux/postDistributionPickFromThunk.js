@@ -82,12 +82,13 @@ export const postDistributionPickFromThunk =
 //
 
 // Re-resolve the operator's scan to its CURRENT backend-normalized HU identity — a fresh lookup, not
-// a cached/plan-snapshot value. This matters because picking can split the source HU internally (the
-// remaining portion gets a NEW internal HU identity — see DDOrderMovePlanCreateCommand, which always
-// allocates the whole top-level HU, and DistributionHUService.resolveHUQRCode's fresh-by-barcode
-// lookup), while the operator's scanned barcode (an external label in the sweep case) keeps
-// referring to the SAME physical HU throughout. Comparing a stale plan-time pickFromHU against the
-// next order's freshly-built plan would never match even for the genuinely-same physical HU.
+// a cached/plan-snapshot value. This matters because on a PARTIAL pick the just-completed step's own
+// pickFromHU is overwritten to report the ephemeral split HU that the picked/moved portion is packed
+// into (see DistributionJobPickFromCommand.splitQty), NOT the stable source LU that stays at the
+// source locator. So reading that step's pickFromHU.qrCode after the pick would read the moved piece
+// and never match nextOrderHUQRs — even for the genuinely-same source LU. Re-resolving the scanned
+// barcode (an external label in the sweep case) reflects what was actually scanned, the same way the
+// backend's resolveHuIdToPick does, so it compares ground truth against the next order's freshly-built plan.
 const getResolvedHUQR = async ({ scannedCode }) => {
   try {
     const { qrCode } = await getDistributionScannedHUQRCodeInfo({ qrCode: toQRCodeString(scannedCode) });
