@@ -144,7 +144,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 			final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 			if (actualResourceId.isNoResource())
 			{
-				return null;
+				return CostDetailCreateResultsList.EMPTY;
 			}
 
 			final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId).orElse(null);
@@ -169,7 +169,7 @@ public class ManufacturingStandardCostingMethodHandler implements CostingMethodH
 				final ResourceId actualResourceId = ResourceId.ofRepoId(cc.getS_Resource_ID());
 				if (actualResourceId.isNoResource())
 				{
-					return null;
+					return CostDetailCreateResultsList.EMPTY;
 				}
 
 				final ProductId actualResourceProductId = resourceProductService.getProductIdByResourceId(actualResourceId)
