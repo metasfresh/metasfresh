@@ -357,6 +357,36 @@ public class DD_Order_StepDef
 	}
 
 	/**
+	 * @cucumber.stepdef Asserts the DD_Order's {@code C_BPartner_ID} is none of the given business partners.
+	 * @cucumber.columns
+	 *   <b>C_BPartner_ID</b> — (required, identifier-ref) a business partner the DD_Order must NOT name<br>
+	 * @cucumber.depends StepDefData: DD_Order_StepDefData, C_BPartner_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the DD_Order identified by groupDDOrder names none of these business partners:
+	 *   | C_BPartner_ID |
+	 *   | customerA     |
+	 *   | customerB     |
+	 * </pre>
+	 */
+	@Then("^the DD_Order identified by (.*) names none of these business partners:$")
+	public void assertDDOrderNamesNoneOfTheseBPartners(@NonNull final String ddOrderIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+		final BPartnerId actualBPartnerId = BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID());
+
+		final SoftAssertions softly = new SoftAssertions();
+		DataTableRows.of(dataTable).forEach(row -> {
+			final StepDefDataIdentifier identifier = row.getAsIdentifier(I_DD_Order.COLUMNNAME_C_BPartner_ID);
+			softly.assertThat(actualBPartnerId)
+					.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_ID must not be C_BPartner %s",
+							ddOrderIdentifier, ddOrder.getDD_Order_ID(), identifier)
+					.isNotEqualTo(identifier.lookupNotNullIdIn(bPartnerTable));
+		});
+		softly.assertAll();
+	}
+
+	/**
 	 * @cucumber.stepdef Polls for the single live (DocStatus != Voided) DD_Order linked to a shipment schedule via
 	 * {@code DD_Order.M_ShipmentSchedule_ID}, asserts exactly one is found, and validates header + line.
 	 * <p>
