@@ -173,7 +173,8 @@ public class NShiftShipmentService
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
-				.orderNo(String.valueOf(deliveryRequest.getDeliveryOrderId()))
+				// nShift requires OrderNo (its refNo) to be 8..35 chars long; a delivery-order id is an int (<= 10 digits), so left-pad with zeros to reach the 8-char minimum
+				.orderNo(String.format("%08d", deliveryRequest.getDeliveryOrderId()))
 				.pickupDt(LocalDate.parse(deliveryRequest.getPickupDate()));
 
 		// With shipping rules active (non-manual) nShift re-resolves product / goods type / services from the rules,
