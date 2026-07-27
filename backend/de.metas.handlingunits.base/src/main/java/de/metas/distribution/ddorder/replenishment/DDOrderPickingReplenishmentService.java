@@ -1334,11 +1334,24 @@ public class DDOrderPickingReplenishmentService
 		ddOrderService.voidIt(existingDDOrderId);
 		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
 
-		// Null the back-reference to M_Picking_Job_Schedule on the (now voided) DD_Order header and its lines.
-		// voidIt does NOT clear it, so when the void runs synchronously inside the assignment's delete transaction
-		// (afterDelete -> voidDDOrdersForDeletedAssignment) the deferrable FK mpickingjobschedule_ddorder would still
-		// point at the about-to-be-deleted assignment and fail at commit. Unlinking here makes that delete clean.
-		final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(existingDDOrderId);
+		detachFromPickingJobSchedule(ddOrderLowLevelDAO.getById(existingDDOrderId));
+	}
+
+	/**
+	 * Clears the {@code M_Picking_Job_Schedule_ID} back-reference on the given DD_Order header and on its lines.
+	 *
+	 * <p>Mandatory for every order that names an assignment being deleted, whether that order is voided by the
+	 * departure or outlives it: the deferrable FK {@code mpickingjobschedule_ddorder} (DD_Order/DD_OrderLine →
+	 * M_Picking_Job_Schedule) is checked at the commit of the delete transaction, so a back-reference left pointing at
+	 * the deleted row fails that commit. {@code voidIt} does not clear it, and an order that survives the departure
+	 * never goes through {@code voidIt} at all.</p>
+	 *
+	 * <p>The column is not re-pointed at a surviving contributor: it names one arbitrary contributor of a consolidated
+	 * order and nothing resolves an order through it any more — served-ness, the group lookup and the guards all go
+	 * through {@code DD_OrderLine_PickingJobSchedule}.</p>
+	 */
+	private void detachFromPickingJobSchedule(@NonNull final I_DD_Order ddOrder)
+	{
 		ddOrder.setM_Picking_Job_Schedule_ID(-1);
 		ddOrderLowLevelDAO.save(ddOrder);
 		for (final I_DD_OrderLine ddOrderLine : ddOrderLowLevelDAO.retrieveLines(ddOrder))
@@ -1369,6 +1382,10 @@ public class DDOrderPickingReplenishmentService
 	 * deleted assignment would keep a live DD_Order that no group-keyed lookup can reach any more, and no rebuild
 	 * enumerates orphaned orders: the mover would see that replenishment forever, for demand nobody has.</p>
 	 *
+	 * <p><b>Whether the departure DISPOSES of an order is decided by the contributor set, on both passes.</b> The
+	 * back-reference tells which orders must let go of the assignment, never which orders die with it — see
+	 * {@link #disposeOfOrDetachBackReferencingDDOrders(PickingJobSchedule)}.</p>
+	 *
 	 * <p><b>The two facts the last-contributor disposal needs sit on opposite sides of that alloc-row delete, so one
 	 * of them is captured before it.</b> Whether a picker is busy has to be read from the contributor set as it stood
 	 * BEFORE the departure — the departing assignment's own delivery is very often the one being picked. Whether the
@@ -1389,10 +1406,78 @@ public class DDOrderPickingReplenishmentService
 		// Captured while the departing assignment is still a contributor — see the class of failure in the javadoc above.
 		final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture = findBlockingPickingWorkByLineId(servedLineIds, deletedAssignment);
 
-		voidAllDDOrders(ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(deletedAssignment.getId()));
+		final boolean sharedOrderSurvived = disposeOfOrDetachBackReferencingDDOrders(deletedAssignment);
 		contributorRepository.deleteByPickingJobScheduleIds(jobScheduleIds);
 
 		voidDDOrdersLeftWithoutContributor(servedLineIds, blockingBeforeDeparture);
+
+		if (sharedOrderSurvived)
+		{
+			// A surviving order still carries the departed delivery's share, and nothing else would ever take it off
+			// again: the drift watchdog only looks for deliveries with NO document, so a document that is merely too
+			// big for what is left of the group stays too big — the mover would keep fetching the departed delivery's
+			// quantity. The other departure routes get this group reconcile from the afterChange interceptor; the
+			// delete has to ask for it itself.
+			scheduleReconcileAfterCommit(deletedAssignment);
+		}
+	}
+
+	/**
+	 * The back-reference pass: every live DD_Order whose {@code M_Picking_Job_Schedule_ID} names the departing
+	 * assignment has to let go of it inside this transaction (the deferrable FK), and each one either survives that
+	 * departure or is disposed of by it.
+	 *
+	 * <p><b>Which of the two happens is decided by the contributor set, never by the back-reference itself.</b> That
+	 * column names ONE arbitrary contributor — written when the line was created and never reassigned as contributors
+	 * join or leave — so the assignment it names is usually not the last one to go. An order whose lines still serve
+	 * somebody else is therefore only DETACHED: voiding it would discard the surviving deliveries' only replenishment
+	 * document for demand nobody cancelled, silently, and the drift watchdog would re-issue it at best an hour later as
+	 * a second, un-netted physical move. Only an order nobody is left on is voided — and there the detach is what the
+	 * void does anyway.</p>
+	 *
+	 * <p>The "does anybody else still contribute?" question is asked BEFORE the alloc rows go, so the departing
+	 * assignment is still in the set and is subtracted explicitly. Asking it after the delete would answer "nobody
+	 * left" for every order — the same dead read that makes a post-delete picker-busy check always say "nobody
+	 * busy".</p>
+	 *
+	 * @return whether at least one order outlived the departure, i.e. whether the group still has a document whose
+	 * quantity now has to be shrunk to the remaining contributors' sum.
+	 */
+	private boolean disposeOfOrDetachBackReferencingDDOrders(@NonNull final PickingJobSchedule deletedAssignment)
+	{
+		boolean anySurvived = false;
+		for (final I_DD_Order ddOrder : ddOrderLowLevelDAO.findActiveDDOrdersForPickingJobSchedule(deletedAssignment.getId()))
+		{
+			if (servesContributorsOtherThan(ddOrder, deletedAssignment.getId()))
+			{
+				detachFromPickingJobSchedule(ddOrder);
+				anySurvived = true;
+				Loggables.addLog(
+						"DD_Order picking replenishment: DD_Order_ID={0} still serves other contributors, so the departure of"
+								+ " M_Picking_Job_Schedule_ID={1} only cleared its back-reference; the order lives on",
+						ddOrder.getDD_Order_ID(),
+						deletedAssignment.getId().getRepoId());
+			}
+			else
+			{
+				voidDDOrderFor(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+			}
+		}
+		return anySurvived;
+	}
+
+	/**
+	 * Whether the given order still serves an assignment other than the departing one, resolved through the
+	 * contributor association. Asked while the departing assignment's own alloc rows are still there, which is exactly
+	 * why it has to be excluded explicitly.
+	 */
+	private boolean servesContributorsOtherThan(
+			@NonNull final I_DD_Order ddOrder,
+			@NonNull final PickingJobScheduleId departingAssignmentId)
+	{
+		return contributorRepository.getContributorIds(lineIdsOf(ImmutableList.of(ddOrder)))
+				.stream()
+				.anyMatch(contributorId -> !contributorId.equals(departingAssignmentId));
 	}
 
 	/**
@@ -1435,9 +1520,8 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Voids every DD_Order in the given list (and unlinks each one's {@code M_Picking_Job_Schedule_ID} back-ref on
-	 * header + lines, so the deferrable FK passes when this runs synchronously inside the assignment's delete trx).
-	 * Empty list → clean no-op.
+	 * Voids every DD_Order in the given list — each one detached from its {@code M_Picking_Job_Schedule_ID} back-ref
+	 * (header + lines) by {@link #voidDDOrderFor(DDOrderId)}. Empty list → clean no-op.
 	 */
 	private void voidAllDDOrders(@NonNull final List<I_DD_Order> ddOrders)
 	{

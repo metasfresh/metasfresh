@@ -306,9 +306,10 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | Identifier   | DocStatus | IsPickingDisconnected |
       | groupDDOrder | CO        | false                 |
 
-    # The group reconcile driven from the surviving contributor then rewrites that same order down to what that one
-    # delivery alone needs, exactly as it does after every other departure route.
-    When the reconcile event for M_Picking_Job_Schedule jobScheduleB is processed
+    # ... and it does not stay planned for the delivery that left: the un-assignment asks for the group reconcile
+    # itself (no step drives it here — this is the real after-commit event), which rewrites that same order down to
+    # what the one remaining delivery needs. Nothing else ever would: the drift watchdog only looks for deliveries
+    # with no document at all.
     Then after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
       | product      | packingLocator | CO        | stockWH             | 5          |
