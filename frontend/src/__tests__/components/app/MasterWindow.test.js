@@ -37,6 +37,7 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
     overlay: { data: {}, visible: false },
     params: { windowId: WINDOW_TYPE, docId: DOCUMENT_ID },
     updateTabRowsData: jest.fn(),
+    onRefreshTab: jest.fn(),
     ...overrides,
   });
 
@@ -190,5 +191,40 @@ describe('MasterWindow.closeModalCallback - abandon must not drop a persisted ne
     expect(props.updateTabRowsData).toHaveBeenCalledWith(expectedTableId, {
       removed: { [PERSISTED_ROW_ID]: true },
     });
+  });
+
+  // Case E - the .catch() fallback: if the revert re-fetch itself fails, the grid
+  // row would otherwise strand showing the stale abandoned value. The fallback must
+  // fire a full tab refresh (onRefreshTab) and must NOT apply any re-fetched row
+  // update to the grid.
+  it('falls back to a tab refresh (and does not update the grid) when the revert re-fetch fails', async () => {
+    getRowsData.mockRejectedValue(new Error('re-fetch failed'));
+    // the fallback intentionally logs the failure — silence it to keep the suite output clean
+    const consoleErrorSpy = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
+
+    const props = buildProps();
+    const instance = getInstance(props);
+
+    await instance.closeModalCallback({
+      isNew: true,
+      windowType: WINDOW_TYPE,
+      documentId: DOCUMENT_ID,
+      tabId: TAB_ID,
+      rowId: PERSISTED_ROW_ID,
+      saveStatus: false,
+    });
+
+    // the re-fetch was attempted for the persisted row
+    expect(getRowsData).toHaveBeenCalledWith(
+      expect.objectContaining({ rows: [PERSISTED_ROW_ID] })
+    );
+    // the fallback fired
+    expect(props.onRefreshTab).toHaveBeenCalledTimes(1);
+    // no re-fetch-derived grid update was applied (the fetch rejected)
+    expect(props.updateTabRowsData).not.toHaveBeenCalled();
+
+    consoleErrorSpy.mockRestore();
   });
 });
