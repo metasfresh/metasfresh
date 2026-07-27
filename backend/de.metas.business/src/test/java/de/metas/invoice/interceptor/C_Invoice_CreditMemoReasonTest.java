@@ -112,6 +112,20 @@ class C_Invoice_CreditMemoReasonTest
 	}
 
 	@Test
+	void creditMemo_docTypeConfigured_lineWithWhitespaceReason_blocks()
+	{
+		stubSysConfig(CONFIGURED_DOCTYPE_IDS);
+		stubCreditMemo(true);
+		stubLines(line(10, "   ")); // whitespace-only is still blank per Check.isBlank
+
+		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
+
+		assertThatThrownBy(() -> interceptor.validateCreditMemoReason(invoice))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("10");
+	}
+
+	@Test
 	void creditMemo_docTypeConfigured_allLinesWithReason_passes()
 	{
 		stubSysConfig(CONFIGURED_DOCTYPE_IDS);

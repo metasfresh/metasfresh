@@ -565,15 +565,15 @@ public class C_Invoice // 03771
 			return;
 		}
 
-		final ImmutableSet<Integer> mandatoryDocTypeIds = getCreditMemoReasonMandatoryDocTypeIds();
+		final ImmutableSet<DocTypeId> mandatoryDocTypeIds = getCreditMemoReasonMandatoryDocTypeIds();
 		if (mandatoryDocTypeIds.isEmpty())
 		{
 			return; // validation disabled
 		}
 
 		// Match either the effective or the target doc type (the latter covers the pre-complete state).
-		final boolean docTypeMatches = mandatoryDocTypeIds.contains(invoice.getC_DocType_ID())
-				|| mandatoryDocTypeIds.contains(invoice.getC_DocTypeTarget_ID());
+		final boolean docTypeMatches = mandatoryDocTypeIds.contains(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()))
+				|| mandatoryDocTypeIds.contains(DocTypeId.ofRepoIdOrNull(invoice.getC_DocTypeTarget_ID()));
 		if (!docTypeMatches)
 		{
 			return;
@@ -594,7 +594,7 @@ public class C_Invoice // 03771
 		}
 	}
 
-	private ImmutableSet<Integer> getCreditMemoReasonMandatoryDocTypeIds()
+	private ImmutableSet<DocTypeId> getCreditMemoReasonMandatoryDocTypeIds()
 	{
 		final String value = sysConfigBL.getValue(SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, "");
 		return Splitter.on(',')
@@ -608,11 +608,11 @@ public class C_Invoice // 03771
 	}
 
 	@Nullable
-	private Integer parseDocTypeIdOrNull(@NonNull final String token)
+	private DocTypeId parseDocTypeIdOrNull(@NonNull final String token)
 	{
 		try
 		{
-			return Integer.valueOf(token);
+			return DocTypeId.ofRepoIdOrNull(Integer.parseInt(token));
 		}
 		catch (final NumberFormatException ex)
 		{
