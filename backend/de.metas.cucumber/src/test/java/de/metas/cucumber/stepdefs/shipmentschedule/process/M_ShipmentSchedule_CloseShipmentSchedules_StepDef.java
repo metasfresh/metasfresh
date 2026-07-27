@@ -128,27 +128,6 @@ public class M_ShipmentSchedule_CloseShipmentSchedules_StepDef
 	}
 
 	/**
-	 * Asserts that the last {@code M_ShipmentSchedule_CloseShipmentSchedules} process run
-	 * ({@link #runCloseShipmentSchedulesProcess(DataTable)}) was rejected with an {@link AdempiereException}
-	 * (i.e. the close was refused, not silently applied).
-	 *
-	 * @cucumber.stepdef
-	 * @cucumber.depends StepDefData: none (reads the exception captured by the previous step)
-	 * @cucumber.example
-	 * <pre>
-	 * Then the M_ShipmentSchedule_CloseShipmentSchedules process is rejected
-	 * </pre>
-	 */
-	@Then("^the M_ShipmentSchedule_CloseShipmentSchedules process is rejected$")
-	public void assertCloseShipmentSchedulesProcessRejected()
-	{
-		assertThat(lastCloseProcessException)
-				.as("Closing a shipment schedule with an unfinished (Drafted) picking job must be rejected")
-				.isNotNull()
-				.isInstanceOf(AdempiereException.class);
-	}
-
-	/**
 	 * Asserts that the last {@code M_ShipmentSchedule_CloseShipmentSchedules} process run was rejected AND that the
 	 * rejection carries the given {@code ErrorCode}. The error code identifies which rejection message was raised:
 	 * {@code ShipmentSchedule_UnfinishedPicking} (exactly one offending schedule → the specific, order-naming message)
