@@ -195,7 +195,6 @@ const translations = {
       target: 'Soll',
       picked: 'Ist',
       scanHU: 'Scan HU',
-      scanProduct: 'Artikel scannen',
       scanHUBarcodePlaceholder: 'HU-Barcode scannen',
       scanProductGtinPlaceholder: 'Artikel (GTIN) scannen',
       scanDropToLocator: 'Ziel-Lagerplatz scannen',

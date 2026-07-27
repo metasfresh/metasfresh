@@ -190,7 +190,6 @@ const translations = {
       target: 'To Move',
       picked: 'Picked',
       scanHU: 'Scan pick from HU',
-      scanProduct: 'Scan Product',
       scanHUBarcodePlaceholder: 'Scan HU barcode',
       scanProductGtinPlaceholder: 'Scan product (GTIN)',
       scanDropToLocator: 'Scan drop to Locator',
