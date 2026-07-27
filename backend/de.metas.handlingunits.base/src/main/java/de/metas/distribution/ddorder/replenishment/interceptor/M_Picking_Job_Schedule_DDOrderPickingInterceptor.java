@@ -65,7 +65,7 @@ public class M_Picking_Job_Schedule_DDOrderPickingInterceptor
 	/**
 	 * Passed as a domain object, not an id: AFTER_DELETE means the row is already gone, so this record is the last place its delivery can be read from.
 	 */
-	// Must stay synchronous: the deferrable FK mpickingjobschedule_ddorder is checked at this transaction's commit.
+	// Must stay synchronous: the deferrable FK ddorderline_pjs_pickingjobsched is checked at this transaction's commit.
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void voidDDOrderOnDelete(@NonNull final I_M_Picking_Job_Schedule jobSchedule)
 	{
