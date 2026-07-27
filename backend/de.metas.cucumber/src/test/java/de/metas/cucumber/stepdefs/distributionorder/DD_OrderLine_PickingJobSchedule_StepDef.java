@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
@@ -38,7 +39,12 @@ import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributor;
 import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributorRepository;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.references.related_documents.POZoomSource;
+import de.metas.document.references.related_documents.RelatedDocumentsFactory;
+import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
+import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -48,6 +54,10 @@ import io.cucumber.java.en.When;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
@@ -74,6 +84,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final DDOrderLineContributorRepository contributorRepository = SpringContextHolder.instance.getBean(DDOrderLineContributorRepository.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	@NonNull private final RelatedDocumentsFactory relatedDocumentsFactory = SpringContextHolder.instance.getBean(RelatedDocumentsFactory.class);
 
 	@NonNull private final M_Product_StepDefData productTable;
 	@NonNull private final M_Locator_StepDefData locatorTable;
@@ -81,6 +92,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	@NonNull private final DD_Order_StepDefData ddOrderTable;
 	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 	@NonNull private final M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	/**
 	 * @cucumber.stepdef Polls until EXACTLY ONE live (DocStatus != Voided) DD_Order exists for the given product
@@ -299,6 +311,85 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 							identifier, jobScheduleId.getRepoId())
 					.containsExactly(expectedDDOrderId);
 		}
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that each of the given shipment schedules reaches EXACTLY the given DD_Order through
+	 * the "Related Documents" mechanism — the navigation a user follows from a delivery to the order replenishing it.
+	 * Params: a comma-separated list of {@code M_ShipmentSchedule} identifiers, and the DD_Order identifier each of
+	 * them must reach.
+	 * @cucumber.depends StepDefData: M_ShipmentSchedule_StepDefData, DD_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then each of shipmentScheduleA, shipmentScheduleB reaches the DD_Order identified by groupDDOrder as related document
+	 * </pre>
+	 */
+	@Then("^each of (.*) reaches the DD_Order identified by (.*) as related document$")
+	public void assertShipmentSchedulesReachDDOrder(
+			@NonNull final String shipmentScheduleIdentifiers,
+			@NonNull final String ddOrderIdentifier)
+	{
+		final int expectedDDOrderId = ddOrderTable.get(ddOrderIdentifier).getDD_Order_ID();
+
+		for (final StepDefDataIdentifier identifier : StepDefUtil.extractIdentifiers(shipmentScheduleIdentifiers))
+		{
+			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(identifier);
+
+			assertThat(relatedDocumentRecordIds(shipmentSchedule, I_DD_Order.class))
+					.as("DD_Orders reachable as related documents of M_ShipmentSchedule %s (M_ShipmentSchedule_ID=%s)",
+							identifier, shipmentSchedule.getM_ShipmentSchedule_ID())
+					.containsExactly(expectedDDOrderId);
+		}
+	}
+
+	/**
+	 * @cucumber.stepdef Asserts that the given DD_Order reaches EXACTLY the given shipment schedules through the
+	 * "Related Documents" mechanism — every delivery contributing to a consolidated order, not just one of them.
+	 * Params: the DD_Order identifier, and a comma-separated list of the {@code M_ShipmentSchedule} identifiers it
+	 * must reach.
+	 * @cucumber.depends StepDefData: DD_Order_StepDefData, M_ShipmentSchedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the DD_Order identified by groupDDOrder reaches shipmentScheduleA, shipmentScheduleB as related documents
+	 * </pre>
+	 */
+	@Then("^the DD_Order identified by (.*) reaches (.*) as related documents$")
+	public void assertDDOrderReachesShipmentSchedules(
+			@NonNull final String ddOrderIdentifier,
+			@NonNull final String shipmentScheduleIdentifiers)
+	{
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+
+		final ImmutableSet<Integer> expectedShipmentScheduleIds = StepDefUtil.extractIdentifiers(shipmentScheduleIdentifiers)
+				.stream()
+				.map(identifier -> shipmentScheduleTable.get(identifier).getM_ShipmentSchedule_ID())
+				.collect(ImmutableSet.toImmutableSet());
+
+		assertThat(relatedDocumentRecordIds(ddOrder, I_M_ShipmentSchedule.class))
+				.as("M_ShipmentSchedules reachable as related documents of DD_Order %s (DD_Order_ID=%s)",
+						ddOrderIdentifier, ddOrder.getDD_Order_ID())
+				.containsExactlyInAnyOrderElementsOf(expectedShipmentScheduleIds);
+	}
+
+	/** The record ids the source record's related documents of the target table actually select. */
+	private <T> ImmutableSet<Integer> relatedDocumentRecordIds(@NonNull final Object sourceRecord, @NonNull final Class<T> targetModelClass)
+	{
+		final String targetTableName = InterfaceWrapperHelper.getTableName(targetModelClass);
+		final AdWindowId targetWindowId = RecordWindowFinder.findAdWindowId(targetTableName)
+				.orElseThrow(() -> new AdempiereException("No AD_Window found for " + targetTableName));
+
+		return relatedDocumentsFactory
+				.retrieveRelatedDocuments(
+						POZoomSource.of(InterfaceWrapperHelper.getPO(sourceRecord)),
+						RelatedDocumentsPermissionsFactory.allowAll())
+				.stream()
+				.filter(relatedDocuments -> AdWindowId.equals(relatedDocuments.getAdWindowId(), targetWindowId))
+				.flatMap(relatedDocuments -> queryBL.createQueryBuilder(targetModelClass)
+						.filter(TypedSqlQueryFilter.<T>of(relatedDocuments.getQuery().getWhereClause()))
+						.create()
+						.listIds()
+						.stream())
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	/**

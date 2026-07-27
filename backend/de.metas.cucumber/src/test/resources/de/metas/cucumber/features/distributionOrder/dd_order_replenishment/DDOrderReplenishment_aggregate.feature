@@ -107,6 +107,15 @@ Feature: DD_Order replenishment — one distribution order per product group
     And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
 
   @from:cucumber
+  Scenario: Both deliveries sharing the consolidated order stay reachable from it, and it from each of them
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    Then each of shipmentScheduleA, shipmentScheduleB reaches the DD_Order identified by groupDDOrder as related document
+    And the DD_Order identified by groupDDOrder reaches shipmentScheduleA, shipmentScheduleB as related documents
+
+  @from:cucumber
   Scenario: The mover walks the route once, and the single move settles both deliveries
     Given after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
