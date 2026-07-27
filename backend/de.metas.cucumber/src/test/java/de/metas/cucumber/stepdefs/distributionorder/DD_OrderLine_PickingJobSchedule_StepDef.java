@@ -288,7 +288,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 									asComparableQty(row.getAsBigDecimal(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_Qty))))
 							.collect(ImmutableList.toImmutableList());
 
-					assertThat(contributorRepository.getContributors(lineId))
+					assertThat(contributorRepository.getByLineId(lineId))
 							.as("complete DD_OrderLine_PickingJobSchedule contributor set of DD_OrderLine %s (DD_OrderLine_ID=%s)",
 									lineIdentifier, lineId.getRepoId())
 							.extracting(

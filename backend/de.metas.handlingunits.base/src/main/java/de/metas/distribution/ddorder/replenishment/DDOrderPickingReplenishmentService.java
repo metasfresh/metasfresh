@@ -373,7 +373,7 @@ public class DDOrderPickingReplenishmentService
 			return DDOrderReplenishmentAction.NONE;
 		}
 
-		return isEveryFormerContributorProcessed(contributorRepository.getContributorIds(lineIdsOf(existingDDOrders)))
+		return isEveryFormerContributorProcessed(contributorRepository.getPickingJobScheduleIds(lineIdsOf(existingDDOrders)))
 				? DDOrderReplenishmentAction.CLOSE
 				: DDOrderReplenishmentAction.VOID;
 	}
@@ -691,7 +691,7 @@ public class DDOrderPickingReplenishmentService
 			// updateDDOrderLineQtyInPlace.
 			if (lineCarriesTheRequiredQty)
 			{
-				contributorRepository.replaceContributors(lineId, shares);
+				contributorRepository.replaceByLineId(lineId, shares);
 			}
 			survivingLineIds.add(lineId);
 		}
@@ -809,7 +809,7 @@ public class DDOrderPickingReplenishmentService
 				.collect(ImmutableSet.toImmutableSet());
 
 		final LinkedHashMap<PickingJobScheduleId, Quantity> result = new LinkedHashMap<>();
-		for (final DDOrderLineContributor share : contributorRepository.getContributorsOfLines(frozenLineIds))
+		for (final DDOrderLineContributor share : contributorRepository.getByLineIds(frozenLineIds))
 		{
 			result.merge(share.getPickingJobScheduleId(), share.getQty(), Quantity::add);
 		}
@@ -1518,7 +1518,7 @@ public class DDOrderPickingReplenishmentService
 			@NonNull final I_DD_Order ddOrder,
 			@NonNull final PickingJobScheduleId departingAssignmentId)
 	{
-		return contributorRepository.getContributorIds(lineIdsOf(ImmutableList.of(ddOrder)))
+		return contributorRepository.getPickingJobScheduleIds(lineIdsOf(ImmutableList.of(ddOrder)))
 				.stream()
 				.anyMatch(contributorId -> !contributorId.equals(departingAssignmentId));
 	}
@@ -1537,7 +1537,7 @@ public class DDOrderPickingReplenishmentService
 	{
 		for (final DDOrderLineId lineId : lineIds)
 		{
-			if (!contributorRepository.getContributors(lineId).isEmpty())
+			if (!contributorRepository.getByLineId(lineId).isEmpty())
 			{
 				continue; // still serves someone
 			}
@@ -1677,7 +1677,7 @@ public class DDOrderPickingReplenishmentService
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
 	{
 		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(
-				contributorRepository.queryContributorsOfLines(ddOrderLowLevelDAO.queryCompletedDDOrderLines()));
+				contributorRepository.queryByLines(ddOrderLowLevelDAO.queryCompletedDDOrderLines()));
 	}
 
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
@@ -1829,7 +1829,7 @@ public class DDOrderPickingReplenishmentService
 	 */
 	private ImmutableList<PickingJobSchedule> contributorsOf(@NonNull final Set<DDOrderLineId> lineIds)
 	{
-		final ImmutableSet<PickingJobScheduleId> contributorIds = contributorRepository.getContributorIds(lineIds);
+		final ImmutableSet<PickingJobScheduleId> contributorIds = contributorRepository.getPickingJobScheduleIds(lineIds);
 		if (contributorIds.isEmpty())
 		{
 			return ImmutableList.of();

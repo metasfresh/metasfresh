@@ -542,9 +542,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final ImmutableList<DDOrderLineContributor> sharesOfL1 = ImmutableList.of(
 				DDOrderLineContributor.of(p1.getId(), each("6")),
 				DDOrderLineContributor.of(p2.getId(), each("4")));
-		when(contributorRepository.getContributorsOfLines(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
 				.thenReturn(sharesOfL1);
-		when(contributorRepository.getContributorsOfLines(ImmutableSet.of(DDOrderLineId.ofRepoId(101), DDOrderLineId.ofRepoId(102))))
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101), DDOrderLineId.ofRepoId(102))))
 				.thenReturn(sharesOfL1);
 
 		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(

@@ -30,7 +30,7 @@ import static org.assertj.core.api.Assertions.tuple;
  * stay navigable in both directions (line → contributors, assignment → lines).
  *
  * <p>Unit-level on purpose: the reconcile's cucumber scenarios assert the resulting contributor set, but they
- * cannot pin the repository's own rewrite semantics (delete-then-insert, per-line isolation) precisely — a
+ * cannot pin the repository's own rewrite semantics (row-level reconcile, per-line isolation) precisely — a
  * repository that accumulated rows would still produce a plausible aggregate in an end-to-end run.</p>
  */
 @ExtendWith(AdempiereTestWatcher.class)
@@ -54,46 +54,46 @@ class DDOrderLineContributorRepositoryTest
 	private static PickingJobScheduleId scheduleId(final int repoId) {return PickingJobScheduleId.ofRepoId(repoId);}
 
 	@Test
-	void replaceContributors_insertsRows()
+	void replaceByLineId_insertsRows()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(
+		repository.replaceByLineId(lineId(1), ImmutableList.of(
 				DDOrderLineContributor.of(scheduleId(10), qty(10)),
 				DDOrderLineContributor.of(scheduleId(20), qty(2))));
 
-		assertThat(repository.getContributors(lineId(1)))
+		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(tuple(scheduleId(10), 10), tuple(scheduleId(20), 2));
 	}
 
 	@Test
-	void replaceContributors_isIdempotentAndDoesNotAccumulate()
+	void replaceByLineId_isIdempotentAndDoesNotAccumulate()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(7))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(7))));
 
-		assertThat(repository.getContributors(lineId(1)))
+		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(7);
 	}
 
 	@Test
-	void replaceContributors_withEmptyList_removesAll()
+	void replaceByLineId_withEmptyList_removesAll()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
-		repository.replaceContributors(lineId(1), ImmutableList.of());
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of());
 
-		assertThat(repository.getContributors(lineId(1))).isEmpty();
+		assertThat(repository.getByLineId(lineId(1))).isEmpty();
 	}
 
 	@Test
-	void replaceContributors_doesNotTouchOtherLines()
+	void replaceByLineId_doesNotTouchOtherLines()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
-		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(5))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(5))));
 
-		repository.replaceContributors(lineId(1), ImmutableList.of());
+		repository.replaceByLineId(lineId(1), ImmutableList.of());
 
-		assertThat(repository.getContributors(lineId(2))).hasSize(1);
+		assertThat(repository.getByLineId(lineId(2))).hasSize(1);
 	}
 
 	/**
@@ -106,9 +106,9 @@ class DDOrderLineContributorRepositoryTest
 	 * rewrites on every pass).</p>
 	 */
 	@Test
-	void replaceContributors_keepsTheRowOfASurvivingContributor()
+	void replaceByLineId_keepsTheRowOfASurvivingContributor()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(
+		repository.replaceByLineId(lineId(1), ImmutableList.of(
 				DDOrderLineContributor.of(scheduleId(10), qty(10)),
 				DDOrderLineContributor.of(scheduleId(20), qty(2)),
 				DDOrderLineContributor.of(scheduleId(40), qty(4))));
@@ -116,7 +116,7 @@ class DDOrderLineContributorRepositoryTest
 		final ImmutableMap<PickingJobScheduleId, Integer> rowIdsBefore = rowIdsByPickingJobScheduleId(lineId(1));
 		assertThat(rowIdsBefore).containsOnlyKeys(scheduleId(10), scheduleId(20), scheduleId(40));
 
-		repository.replaceContributors(lineId(1), ImmutableList.of(
+		repository.replaceByLineId(lineId(1), ImmutableList.of(
 				DDOrderLineContributor.of(scheduleId(10), qty(10)),  // survives with an unchanged qty
 				DDOrderLineContributor.of(scheduleId(20), qty(7)),   // survives with a changed qty
 				DDOrderLineContributor.of(scheduleId(30), qty(5)))); // joins; scheduleId(40) departed
@@ -132,7 +132,7 @@ class DDOrderLineContributorRepositoryTest
 		assertThat(rowIdsAfter.get(scheduleId(30))).as("joined contributor gets a new row")
 				.isNotIn(rowIdsBefore.values());
 
-		assertThat(repository.getContributors(lineId(1)))
+		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(tuple(scheduleId(10), 10), tuple(scheduleId(20), 7), tuple(scheduleId(30), 5));
 	}
@@ -152,9 +152,9 @@ class DDOrderLineContributorRepositoryTest
 	@Test
 	void getLineIdsByPickingJobScheduleId_resolvesTheNavigationDirection()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
-		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(3))));
-		repository.replaceContributors(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(3))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(3))));
+		repository.replaceByLineId(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(3))));
 
 		assertThat(repository.getLineIdsByPickingJobScheduleId(scheduleId(10)))
 				.containsExactlyInAnyOrder(lineId(1), lineId(2));
@@ -168,23 +168,23 @@ class DDOrderLineContributorRepositoryTest
 	 * otherwise report the assignment of the contributor created below as a contributor of "no lines".
 	 */
 	@Test
-	void getContributorIds_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
+	void getPickingJobScheduleIds_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
-		assertThat(repository.getContributorIds(ImmutableSet.of())).isEmpty();
+		assertThat(repository.getPickingJobScheduleIds(ImmutableSet.of())).isEmpty();
 	}
 
 	@Test
-	void getContributorsOfLines_returnsEveryRowOfEveryGivenLine()
+	void getByLineIds_returnsEveryRowOfEveryGivenLine()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(
+		repository.replaceByLineId(lineId(1), ImmutableList.of(
 				DDOrderLineContributor.of(scheduleId(10), qty(10)),
 				DDOrderLineContributor.of(scheduleId(20), qty(2))));
-		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(3))));
-		repository.replaceContributors(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(7))));
+		repository.replaceByLineId(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(3))));
+		repository.replaceByLineId(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(7))));
 
-		assertThat(repository.getContributorsOfLines(ImmutableSet.of(lineId(1), lineId(2))))
+		assertThat(repository.getByLineIds(ImmutableSet.of(lineId(1), lineId(2))))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactlyInAnyOrder(tuple(scheduleId(10), 10), tuple(scheduleId(20), 2), tuple(scheduleId(10), 3));
 	}
@@ -195,19 +195,19 @@ class DDOrderLineContributorRepositoryTest
 	 * off the group's demand and plan nothing at all.
 	 */
 	@Test
-	void getContributorsOfLines_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
+	void getByLineIds_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
-		assertThat(repository.getContributorsOfLines(ImmutableSet.of())).isEmpty();
+		assertThat(repository.getByLineIds(ImmutableSet.of())).isEmpty();
 	}
 
 	@Test
 	void getLineIdsByPickingJobScheduleIds_resolvesTheNavigationDirectionForSeveralAssignmentsAtOnce()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
-		repository.replaceContributors(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(3))));
-		repository.replaceContributors(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(3))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(20), qty(3))));
+		repository.replaceByLineId(lineId(3), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(3))));
 
 		assertThat(repository.getLineIdsByPickingJobScheduleIds(ImmutableSet.of(scheduleId(10), scheduleId(20))))
 				.containsExactlyInAnyOrder(lineId(1), lineId(2));
@@ -222,7 +222,7 @@ class DDOrderLineContributorRepositoryTest
 	@Test
 	void getLineIdsByPickingJobScheduleIds_returnsEmptyForEmptyIds_evenWhenMatchingContributorExists()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
 		assertThat(repository.getLineIdsByPickingJobScheduleIds(ImmutableSet.of())).isEmpty();
 	}
@@ -237,11 +237,11 @@ class DDOrderLineContributorRepositoryTest
 	@Test
 	void deleteByLineIds_deletesNothingForEmptyLineIds_evenWhenMatchingContributorExists()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
 		repository.deleteByLineIds(ImmutableSet.of());
 
-		assertThat(repository.getContributors(lineId(1)))
+		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
 				.containsExactly(scheduleId(10));
 	}
@@ -255,11 +255,11 @@ class DDOrderLineContributorRepositoryTest
 	@Test
 	void deleteByPickingJobScheduleIds_deletesNothingForEmptyIds_evenWhenMatchingContributorExists()
 	{
-		repository.replaceContributors(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
 		repository.deleteByPickingJobScheduleIds(ImmutableSet.of());
 
-		assertThat(repository.getContributors(lineId(1)))
+		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId)
 				.containsExactly(scheduleId(10));
 	}

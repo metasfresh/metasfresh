@@ -15,7 +15,9 @@ import org.compiere.model.IQuery;
 import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Repository;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -31,22 +33,56 @@ public class DDOrderLineContributorRepository
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	/**
-	 * Rewrites the given line's complete contributor set: the line's existing rows are deleted and the given ones
-	 * inserted. An empty list leaves the line with no contributors.
+	 * Rewrites the given line's complete contributor set to exactly the given contributors. An empty list leaves the
+	 * line with no contributors.
+	 * <p>
+	 * Reconciles rather than re-creates: the line's existing rows are indexed by {@code M_Picking_Job_Schedule_ID}, a
+	 * contributor that is still there UPDATEs its row, a new one INSERTs, and only the rows of departed contributors are
+	 * DELETEd. The group reconcile rewrites this set on every pass, and across passes the set is mostly stable — so the
+	 * naive delete-all-then-insert-all churned every row of every consolidated line each time.
 	 * <p>
 	 * Runs in the caller's transaction and deliberately does NOT open its own — the group reconcile writes the alloc
 	 * rows and the line quantity atomically, and it is the single writer of both.
 	 */
-	public void replaceContributors(@NonNull final DDOrderLineId lineId, @NonNull final List<DDOrderLineContributor> contributors)
+	public void replaceByLineId(@NonNull final DDOrderLineId lineId, @NonNull final List<DDOrderLineContributor> contributors)
 	{
-		deleteByLineIds(ImmutableSet.of(lineId));
+		final HashMap<PickingJobScheduleId, I_DD_OrderLine_PickingJobSchedule> reusableRecords = new HashMap<>();
+		final ArrayList<I_DD_OrderLine_PickingJobSchedule> obsoleteRecords = new ArrayList<>();
+		for (final I_DD_OrderLine_PickingJobSchedule record : retrieveRecordsByLineId(lineId))
+		{
+			final PickingJobScheduleId pickingJobScheduleId = PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID());
+			if (reusableRecords.putIfAbsent(pickingJobScheduleId, record) != null)
+			{
+				// The table has no unique constraint on (DD_OrderLine_ID, M_Picking_Job_Schedule_ID), so a second row
+				// for one assignment is physically possible. Only one of them can be reused; the surplus must still go,
+				// because the delete-then-insert this replaces removed it too.
+				obsoleteRecords.add(record);
+			}
+		}
 
 		for (final DDOrderLineContributor contributor : contributors)
 		{
-			final I_DD_OrderLine_PickingJobSchedule record = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_PickingJobSchedule.class);
+			I_DD_OrderLine_PickingJobSchedule record = reusableRecords.remove(contributor.getPickingJobScheduleId());
+			if (record == null)
+			{
+				record = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_PickingJobSchedule.class);
+			}
 			updateRecord(record, lineId, contributor);
 			InterfaceWrapperHelper.saveRecord(record);
 		}
+
+		obsoleteRecords.addAll(reusableRecords.values());
+		InterfaceWrapperHelper.deleteAll(obsoleteRecords);
+	}
+
+	private ImmutableList<I_DD_OrderLine_PickingJobSchedule> retrieveRecordsByLineId(@NonNull final DDOrderLineId lineId)
+	{
+		// Deliberately NOT restricted to active records: the delete-then-insert this read replaced was active-blind
+		// too, so an inactive row must still be reconciled away instead of surviving as a second row of the line.
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineId)
+				.create()
+				.listImmutable(I_DD_OrderLine_PickingJobSchedule.class);
 	}
 
 	private static void updateRecord(
@@ -58,6 +94,8 @@ public class DDOrderLineContributorRepository
 		record.setM_Picking_Job_Schedule_ID(from.getPickingJobScheduleId().getRepoId());
 		record.setQty(from.getQty().toBigDecimal());
 		record.setC_UOM_ID(from.getQty().getUomId().getRepoId());
+		// A reused row must end up as active as a freshly inserted one would have been; see retrieveRecordsByLineId.
+		record.setIsActive(true);
 	}
 
 	private static DDOrderLineContributor fromRecord(@NonNull final I_DD_OrderLine_PickingJobSchedule record)
@@ -71,7 +109,7 @@ public class DDOrderLineContributorRepository
 	 * The line's contributors, ordered by {@code M_Picking_Job_Schedule_ID} so that callers (and their assertions)
 	 * see a stable order.
 	 */
-	public ImmutableList<DDOrderLineContributor> getContributors(@NonNull final DDOrderLineId lineId)
+	public ImmutableList<DDOrderLineContributor> getByLineId(@NonNull final DDOrderLineId lineId)
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -88,7 +126,7 @@ public class DDOrderLineContributorRepository
 	 * this (the reconcile, summing what the frozen lines already serve per assignment) only ever aggregates across
 	 * them, and keeping it flat avoids inventing a grouping nobody reads.
 	 */
-	public ImmutableList<DDOrderLineContributor> getContributorsOfLines(@NonNull final Collection<DDOrderLineId> lineIds)
+	public ImmutableList<DDOrderLineContributor> getByLineIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
 		if (lineIds.isEmpty()) {return ImmutableList.of();}
 
@@ -102,7 +140,7 @@ public class DDOrderLineContributorRepository
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableSet<PickingJobScheduleId> getContributorIds(@NonNull final Collection<DDOrderLineId> lineIds)
+	public ImmutableSet<PickingJobScheduleId> getPickingJobScheduleIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
 		if (lineIds.isEmpty()) {return ImmutableSet.of();}
 
@@ -159,7 +197,7 @@ public class DDOrderLineContributorRepository
 	 * answer to a question a single-owner back-reference column can only answer for one contributor of a
 	 * consolidated order.
 	 */
-	public IQuery<I_DD_OrderLine_PickingJobSchedule> queryContributorsOfLines(@NonNull final IQuery<I_DD_OrderLine> ddOrderLinesQuery)
+	public IQuery<I_DD_OrderLine_PickingJobSchedule> queryByLines(@NonNull final IQuery<I_DD_OrderLine> ddOrderLinesQuery)
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
