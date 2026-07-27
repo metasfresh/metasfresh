@@ -165,6 +165,31 @@ Feature: DD_Order replenishment — one distribution order per product group
     And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
 
   @from:cucumber
+  Scenario: One rebuild pass costs one reconcile per group needing work, not one per contributor
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    # Both contributors are served, so the group needs no work and the pass costs nothing.
+    Then one DD_Order_Picking_Rebuild pass publishes exactly 0 reconcile requests for M_Picking_Job_Schedules jobScheduleA, jobScheduleB
+
+    When every live DD_Order for the product group is voided directly:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |
+    Then the drift rebuild considers jobScheduleA, jobScheduleB to still need a DD_Order
+
+    # Two contributors now need work; they share one group key, so the pass publishes ONE request, not two.
+    Then one DD_Order_Picking_Rebuild pass publishes exactly 1 reconcile request for M_Picking_Job_Schedules jobScheduleA, jobScheduleB
+
+    And after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+  @from:cucumber
   Scenario: Re-running the rebuild against an unchanged group changes nothing
     Given after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |

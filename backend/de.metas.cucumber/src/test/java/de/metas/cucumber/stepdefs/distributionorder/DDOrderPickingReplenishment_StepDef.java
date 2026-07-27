@@ -257,6 +257,49 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
+	 * Runs one {@code rebuildDrift} pass and asserts how many reconcile requests it published for the given
+	 * assignments; the count is a per-pass delta, so the pass and its before/after counts belong to one step.
+	 *
+	 * <p>Params: the expected request count, then a comma-separated list of {@code M_Picking_Job_Schedule}
+	 * identifiers the published requests are counted over.</p>
+	 *
+	 * <p>Example:</p>
+	 * <pre>
+	 * Then one DD_Order_Picking_Rebuild pass publishes exactly 1 reconcile request for M_Picking_Job_Schedules jobScheduleA, jobScheduleB
+	 * </pre>
+	 */
+	@Then("^one DD_Order_Picking_Rebuild pass publishes exactly (\\d+) reconcile requests? for M_Picking_Job_Schedules (.*)$")
+	public void assert_reconcile_requests_published_by_one_pass(
+			final int expectedRequestCount,
+			@NonNull final String pickingJobScheduleIdentifiers)
+	{
+		final ImmutableSet<Integer> assignmentIds = StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers)
+				.stream()
+				.map(pickingJobScheduleTable::getId)
+				.map(PickingJobScheduleId::getRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		// AD_EventLog is written synchronously by the publish (EventBus.enqueueEvent -> EventLogService.saveEvent),
+		// so the delta across the pass is the published-request count and needs no polling.
+		final IQuery<I_AD_EventLog> reconcileEvents = reconcileEventsTriggeredBy(assignmentIds);
+		final int countBefore = reconcileEvents.count();
+
+		trxManager.runInThreadInheritedTrx(replenishmentService::rebuildDrift);
+
+		assertThat(reconcileEvents.count() - countBefore)
+				.as("Reconcile requests published by one rebuild pass for M_Picking_Job_Schedule_IDs=%s", assignmentIds)
+				.isEqualTo(expectedRequestCount);
+	}
+
+	private IQuery<I_AD_EventLog> reconcileEventsTriggeredBy(@NonNull final ImmutableSet<Integer> pickingJobScheduleIds)
+	{
+		return queryBL.createQueryBuilder(I_AD_EventLog.class)
+				.addEqualsFilter(I_AD_EventLog.COLUMNNAME_EventName, REPLENISHMENT_EVENT_NAME)
+				.addInArrayFilter(I_AD_EventLog.COLUMNNAME_Record_ID, pickingJobScheduleIds)
+				.create();
+	}
+
+	/**
 	 * Polls for an {@code AD_EventLog_Entry} produced by the reconcile event handler for a SPECIFIC
 	 * shipment schedule, with the expected error state and (optionally) a message fragment.
 	 *
