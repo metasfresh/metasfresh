@@ -5,7 +5,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
@@ -110,6 +111,7 @@ public class DDOrderPickingReplenishmentService
 	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
@@ -509,7 +511,6 @@ public class DDOrderPickingReplenishmentService
 						.qty(locatorQty)
 						.orgId(orgId)
 						.datePromised(SystemTime.asInstant())
-						.bpartnerId(BPartnerId.ofRepoIdOrNull(firstSchedule.getC_BPartner_ID()))
 						.build());
 				lineId = DDOrderLineId.ofRepoId(createdLine.getDD_OrderLine_ID());
 				lineCarriesTheRequiredQty = true;
@@ -935,10 +936,10 @@ public class DDOrderPickingReplenishmentService
 		// Header — built here rather than in DDOrderLowLevelDAO, whose module cannot see I_M_Picking_Job_Schedule.
 		final I_DD_Order ddOrder = InterfaceWrapperHelper.newInstance(I_DD_Order.class);
 		ddOrder.setAD_Org_ID(orgId.getRepoId());
-		if (request.getBpartnerId() != null)
-		{
-			ddOrder.setC_BPartner_ID(request.getBpartnerId().getRepoId());
-		}
+		// The order serves several customers at once, so it belongs to the org itself - as for every other internal DD_Order.
+		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
+		ddOrder.setC_BPartner_ID(orgBPLocationId != null ? orgBPLocationId.getBpartnerId().getRepoId() : -1);
+		ddOrder.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(orgBPLocationId));
 		ddOrder.setC_DocType_ID(DocTypeId.toRepoId(request.getDocTypeId()));
 		ddOrder.setM_Warehouse_ID(request.getInTransitWarehouseId().getRepoId());
 		ddOrder.setM_Warehouse_From_ID(request.getSourceWarehouseId().getRepoId());
