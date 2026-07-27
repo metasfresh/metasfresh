@@ -94,6 +94,7 @@ const getResolvedHUQR = async ({ scannedCode }) => {
     const { qrCode } = await getDistributionScannedHUQRCodeInfo({ qrCode: toQRCodeString(scannedCode) });
     return toQRCodeString(qrCode);
   } catch (e) {
+    console.warn('Failed to resolve scanned HU QR for auto-advance carry-forward; defaulting to Scan-HU', e);
     return null; // unresolvable -> no match below -> safe default (Scan-HU)
   }
 };

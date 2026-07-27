@@ -46,8 +46,8 @@ const DistributionStepPickFromScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={toQRCodeString(huQRCode)}
-      scanHUPlaceholderText={trl('activities.distribution.scanHU')}
-      scanProductPlaceholderText={trl('activities.distribution.scanProduct')}
+      scanHUPlaceholderText={trl('activities.distribution.scanHUBarcodePlaceholder')}
+      scanProductPlaceholderText={trl('activities.distribution.scanProductGtinPlaceholder')}
       qtyTargetCaption={trl('general.QtyToMove')}
       onResult={onResult}
     />
