@@ -1,5 +1,7 @@
 package de.metas.invoice.interceptor;
 
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
@@ -41,6 +43,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -66,6 +70,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Interceptor(I_C_Invoice.class)
 @Component
@@ -78,6 +83,18 @@ public class C_Invoice // 03771
 	 * Error key for the readonly-after-Complete guard on IsPartialInvoice.
 	 */
 	static final AdMessageKey MSG_IsPartialInvoiceReadOnlyAfterComplete = AdMessageKey.of("de.metas.invoice.IsPartialInvoiceReadOnlyAfterComplete");
+
+	/**
+	 * Error shown when a credit memo is completed while at least one line is missing its {@code Line_CreditMemoReason}.
+	 * The single parameter is the comma-separated list of offending line numbers.
+	 */
+	static final AdMessageKey MSG_CreditMemoReasonMandatory = AdMessageKey.of("de.metas.invoice.CreditMemoReasonMandatory");
+
+	/**
+	 * CSV of {@code C_DocType_ID}s for which the {@code Line_CreditMemoReason} is mandatory before a credit memo can be
+	 * completed. Empty/unset (the core default) disables the validation entirely.
+	 */
+	static final String SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs = "C_Invoice.CreditMemoReasonMandatory_DocTypeIDs";
 
 	@NonNull private final PaymentReservationService paymentReservationService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -95,6 +112,7 @@ public class C_Invoice // 03771
 	@NonNull private final IAllocationDAO allocationDAO = Services.get(IAllocationDAO.class);
 	@NonNull private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	@NonNull private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	// ==========================================================================
 	// Default IsPartialInvoice from C_DocType on BEFORE_NEW
@@ -528,6 +546,61 @@ public class C_Invoice // 03771
 	public void onDocTypeChange(@NonNull final I_C_Invoice invoice)
 	{
 		invoice.setIsFinancial(invoiceBL.getInvoiceDocBaseType(invoice).isFinancial());
+	}
+
+	/**
+	 * Blocks completing a credit memo while any of its lines is missing the {@code Line_CreditMemoReason}.
+	 * <p>
+	 * Only applies to credit memos ({@code DocBaseType} ARC/APC) whose document type is listed in the
+	 * {@link #SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs} SysConfig. The SysConfig is empty by default, so the
+	 * validation is disabled unless an instance explicitly opts in (see dt204/me03#31242).
+	 */
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	public void validateCreditMemoReason(@NonNull final I_C_Invoice invoice)
+	{
+		if (!invoiceBL.isCreditMemo(invoice))
+		{
+			return;
+		}
+
+		final ImmutableSet<Integer> mandatoryDocTypeIds = getCreditMemoReasonMandatoryDocTypeIds();
+		if (mandatoryDocTypeIds.isEmpty())
+		{
+			return; // validation disabled
+		}
+
+		// Match either the effective or the target doc type (the latter covers the pre-complete state).
+		final boolean docTypeMatches = mandatoryDocTypeIds.contains(invoice.getC_DocType_ID())
+				|| mandatoryDocTypeIds.contains(invoice.getC_DocTypeTarget_ID());
+		if (!docTypeMatches)
+		{
+			return;
+		}
+
+		final String linesWithoutReason = invoiceBL.getLines(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+				.stream()
+				.map(line -> InterfaceWrapperHelper.create(line, org.compiere.model.I_C_InvoiceLine.class))
+				.filter(line -> Check.isBlank(line.getLine_CreditMemoReason()))
+				.map(line -> Integer.toString(line.getLine()))
+				.collect(Collectors.joining(", "));
+
+		if (!linesWithoutReason.isEmpty())
+		{
+			throw new AdempiereException(MSG_CreditMemoReasonMandatory, linesWithoutReason)
+					.markAsUserValidationError();
+		}
+	}
+
+	private ImmutableSet<Integer> getCreditMemoReasonMandatoryDocTypeIds()
+	{
+		final String value = sysConfigBL.getValue(SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, "");
+		return Splitter.on(',')
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(value)
+				.stream()
+				.map(Integer::parseInt)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
