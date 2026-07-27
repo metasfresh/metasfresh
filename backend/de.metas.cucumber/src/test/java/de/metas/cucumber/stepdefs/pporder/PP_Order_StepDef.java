@@ -361,7 +361,7 @@ public class PP_Order_StepDef
 		}
 	}
 
-	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed|closed)$")
 	public void order_action(
 			@NonNull final String orderIdentifier,
 			@NonNull final String action)
@@ -377,6 +377,11 @@ public class PP_Order_StepDef
 			case completed:
 				orderRecord.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case closed:
+				// Closing reports the not-yet-started routing activities, which creates the ActivityControl cost collectors.
+				orderRecord.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled PP_Order action")
