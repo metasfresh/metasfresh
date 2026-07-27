@@ -27,8 +27,8 @@ import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromL
 import de.metas.distribution.mobileui.rest_api.json.JsonGetNextEligiblePickFromLineResponse;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -59,6 +59,8 @@ public class DistributionRestService
 	@NonNull private final DistributionWarehouseService warehouseService;
 	@NonNull private final DistributionProductService productService;
 	@NonNull private final NextPickFromLocatorResolver nextPickFromLocatorResolver;
+
+	private static final AdMessageKey MSG_OutstandingQtyToMove = AdMessageKey.of("MobileUI_Distribution_OutstandingQtyToMove");
 
 	public MobileUIDistributionConfig getConfig() {return configRepository.getConfig();}
 
@@ -224,7 +226,54 @@ public class DistributionRestService
 	{
 		final DistributionJob job = getJobById(jobId);
 		job.assertCanEdit(callerId);
+		return completeAssertingPlannedQtyFullyMoved(job);
+	}
+
+	/**
+	 * The gated completion: refuses while a line's planned quantity has not been moved, and closes the order only when
+	 * it has. This is what every <b>explicit</b> Complete of the mover goes through — the REST endpoint as well as the
+	 * Complete workflow activity's user confirmation.
+	 *
+	 * <p>Not to be confused with {@link #complete(DistributionJob)}, which closes unconditionally and stays the
+	 * drop-all path's auto-complete trigger with today's behaviour.</p>
+	 */
+	public DistributionJob completeAssertingPlannedQtyFullyMoved(@NonNull final DistributionJob job)
+	{
+		assertPlannedQtyFullyMoved(job);
 		return complete(job);
+	}
+
+	/**
+	 * Completes the job giving up whatever quantity is still outstanding: skips the
+	 * {@link #assertPlannedQtyFullyMoved(DistributionJob)} gate and closes the order short, i.e. exactly what an
+	 * unconditional complete did before that gate existed. Closing short is what re-arms the replenishment watchdog,
+	 * so the outstanding demand gets re-issued instead of being stuck on an order nobody can finish.
+	 *
+	 * <p>Reached only through its own REST route (<code>POST /distribution/job/{wfProcessId}/completeGivingUpRemainder</code>),
+	 * never as a fallback of a refused Complete: giving the remainder up has to be the mover's own, separate decision.</p>
+	 */
+	public DistributionJob completeGivingUpRemainder(@NonNull final DistributionJobId jobId, @NonNull final UserId callerId)
+	{
+		final DistributionJob job = getJobById(jobId);
+		job.assertCanEdit(callerId);
+		return complete(job);
+	}
+
+	/**
+	 * Withholds completion while a line's planned quantity has not been moved. A distribution order can serve several
+	 * deliveries at once, so closing it short would dispose of the document while other contributors still have unmet
+	 * demand — silently dropping it. Throws before anything is mutated; the mover who really wants to stop short goes
+	 * through {@link #completeGivingUpRemainder(DistributionJobId, UserId)}.
+	 */
+	private static void assertPlannedQtyFullyMoved(@NonNull final DistributionJob job)
+	{
+		if (!job.hasQtyOutstanding())
+		{
+			return;
+		}
+
+		throw new AdempiereException(MSG_OutstandingQtyToMove, job.getQtyOutstandingDescription())
+				.setParameter("ddOrderId", job.getDdOrderId());
 	}
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
