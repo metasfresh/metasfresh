@@ -25,13 +25,20 @@ package de.metas.cucumber.stepdefs.distributionorder;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.event.model.I_AD_EventLog;
 import de.metas.event.model.I_AD_EventLog_Entry;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.X_DD_Order;
+import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -39,6 +46,7 @@ import de.metas.logging.LogManager;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -55,7 +63,10 @@ import org.compiere.model.IQuery;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -85,9 +96,14 @@ public class DDOrderPickingReplenishment_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final DDOrderPickingReplenishmentService replenishmentService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
+	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
+	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final M_Locator_StepDefData locatorTable;
+	@NonNull private final DD_Order_StepDefData ddOrderTable;
+	@NonNull private final DD_OrderLine_StepDefData ddOrderLineTable;
 
 	/**
 	 * Directly invokes {@link DDOrderPickingReplenishmentService#reconcileGroupOf(PickingJobScheduleId)}, serving
@@ -337,6 +353,133 @@ public class DDOrderPickingReplenishment_StepDef
 				.anyMatch();
 
 		StepDefUtil.tryAndWait(timeoutSec, 1000, issueLogged, this::logCurrentEventLogEntries);
+	}
+
+	/**
+	 * @cucumber.stepdef Polls until the COMPLETED DD_Orders of the product group source from EXACTLY the given
+	 * locators, each line carrying the given quantity — the group's summed demand as the stock-aware split left it.
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
+	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
+	 *   <b>M_Locator_ID</b> — (required, identifier-ref) the source locator this row's line sources from<br>
+	 *   <b>QtyEntered</b> — (required) the quantity allocated to that source locator<br>
+	 *   <b>DD_OrderLine_ID</b> — (optional) stores the matched line under this identifier<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Locator_StepDefData, DD_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 120s, the product group's completed DD_Orders source from:
+	 *   | M_Product_ID | M_LocatorTo_ID | M_Locator_ID | QtyEntered | DD_OrderLine_ID |
+	 *   | product      | packingLocator | locatorA     | 8          | lineFromA       |
+	 *   | product      | packingLocator | locatorB     | 4          | lineFromB       |
+	 * </pre>
+	 */
+	@Then("^after not more than (.*)s, the product group's completed DD_Orders source from:$")
+	public void assert_completed_DDOrders_of_product_group(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		final DataTableRow firstRow = rows.get(0);
+		final ProductId productId = firstRow.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		final LocatorId locatorToId = firstRow.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID).lookupNotNullIdIn(locatorTable);
+
+		final LinkedHashMap<Integer, BigDecimal> expectedQtyBySourceLocatorId = new LinkedHashMap<>();
+		for (final DataTableRow row : rows)
+		{
+			expectedQtyBySourceLocatorId.put(sourceLocatorRepoId(row), row.getAsBigDecimal(I_DD_OrderLine.COLUMNNAME_QtyEntered));
+		}
+
+		StepDefUtil.tryAndWait(
+				timeoutSec,
+				1000,
+				() -> matchesExpectedSplit(expectedQtyBySourceLocatorId, completedGroupLinesBySourceLocatorId(productId, locatorToId)),
+				() -> logCurrentGroupLines(productId, locatorToId));
+
+		final Map<Integer, List<I_DD_OrderLine>> lines = completedGroupLinesBySourceLocatorId(productId, locatorToId);
+		for (final DataTableRow row : rows)
+		{
+			final I_DD_OrderLine line = lines.get(sourceLocatorRepoId(row)).get(0);
+			row.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+					.ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, line));
+		}
+	}
+
+	private int sourceLocatorRepoId(@NonNull final DataTableRow row)
+	{
+		return row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Locator_ID).lookupNotNullIdIn(locatorTable).getRepoId();
+	}
+
+	/** Stateless, so the poll can re-evaluate it on every pass. */
+	private static boolean matchesExpectedSplit(
+			@NonNull final Map<Integer, BigDecimal> expectedQtyBySourceLocatorId,
+			@NonNull final Map<Integer, List<I_DD_OrderLine>> actualLinesBySourceLocatorId)
+	{
+		if (!actualLinesBySourceLocatorId.keySet().equals(expectedQtyBySourceLocatorId.keySet()))
+		{
+			return false;
+		}
+
+		for (final Map.Entry<Integer, BigDecimal> expected : expectedQtyBySourceLocatorId.entrySet())
+		{
+			final List<I_DD_OrderLine> lines = actualLinesBySourceLocatorId.get(expected.getKey());
+			if (lines.size() != 1 || lines.get(0).getQtyEntered().compareTo(expected.getValue()) != 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Keyed by source locator, with the lines as a LIST: an in-flight reconcile can transiently leave two completed
+	 * orders on one locator, and the poll above must see that as "not settled yet" rather than fail.
+	 */
+	private Map<Integer, List<I_DD_OrderLine>> completedGroupLinesBySourceLocatorId(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId)
+	{
+		final IQuery<I_DD_Order> completedDDOrders = queryBL.createQueryBuilder(I_DD_Order.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, false)
+				.create();
+
+		final LinkedHashMap<Integer, List<I_DD_OrderLine>> linesBySourceLocatorId = new LinkedHashMap<>();
+		queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addInSubQueryFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, I_DD_Order.COLUMNNAME_DD_Order_ID, completedDDOrders)
+				.orderBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.create()
+				.stream(I_DD_OrderLine.class)
+				.forEach(line -> linesBySourceLocatorId
+						.computeIfAbsent(line.getM_Locator_ID(), sourceLocatorId -> new ArrayList<>())
+						.add(line));
+
+		return linesBySourceLocatorId;
+	}
+
+	private void logCurrentGroupLines(@NonNull final ProductId productId, @NonNull final LocatorId locatorToId)
+	{
+		final StringBuilder sb = new StringBuilder("Current completed DD_OrderLines of the product group:\n");
+		completedGroupLinesBySourceLocatorId(productId, locatorToId)
+				.forEach((sourceLocatorId, lines) -> lines.forEach(line -> sb
+						.append(" source M_Locator_ID=").append(sourceLocatorId)
+						.append(" DD_Order_ID=").append(line.getDD_Order_ID())
+						.append(" DD_OrderLine_ID=").append(line.getDD_OrderLine_ID())
+						.append(" QtyEntered=").append(line.getQtyEntered()).append("\n")));
+		logger.error("*** Waiting for the product group's completed DD_Orders, current context:\n{}", sb);
+	}
+
+	/**
+	 * Closes the shared DD_Order exactly as the mover's mobile completion does ({@code DistributionRestService.complete}
+	 * → {@code DDOrderService.close}). Called directly because this scenario needs the give-up close on a quantity
+	 * deliberately left unmoved, which no mobile workflow session here has picked against.
+	 */
+	@When("^the mover gives up the remaining quantity and completes the distribution job of DD_Order (.*)$")
+	public void close_DDOrder_short(@NonNull final String ddOrderIdentifier)
+	{
+		final DDOrderId ddOrderId = ddOrderTable.getId(ddOrderIdentifier);
+		trxManager.runInThreadInheritedTrx(() -> ddOrderService.close(ddOrderId));
 	}
 
 	private void logCurrentEventLogEntries()
