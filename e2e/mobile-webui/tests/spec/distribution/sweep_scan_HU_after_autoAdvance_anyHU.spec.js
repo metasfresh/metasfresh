@@ -10,35 +10,17 @@ import { DistributionUtils } from '../../utils/screens/distribution/Distribution
 import { generateEAN13 } from '../../utils/ean13';
 
 //
-// Auto-advance carry-forward, the "pick any HU" case.
+// The "sweep" distribution flow when the operator may serve an order from ANY handling unit: small
+// quantities are picked off ONE staging LU at a ground locator, order after order, as the app
+// auto-advances. Because such an order has no source HU assigned to it up front, the app never assumes
+// the next order will be served from the LU just scanned — so on every auto-advanced order the operator
+// scans the staging LU again, then the product code.
 //
-// When a distribution job is fully picked, the app auto-starts the next offered order and jumps
-// straight to its Pick-From screen. Whether the just-scanned source HU is carried forward to that
-// screen (skipping the HU scan) is decided by HU identity — see postDistributionPickFromThunk.js.
-// Three cases:
-//   1. The next order's pre-allocated move plan draws from the SAME physical HU -> carry forward,
-//      the operator only scans the product (covered by sweep_scan_product_after_autoAdvance.spec.js).
-//   2. The next order's plan draws from a DIFFERENT HU -> omit it, the operator re-scans the HU
-//      (covered by packingTable_navigateToNextOrder.spec.js).
-//   3. THIS SPEC: allowPickingAnyHU=true, so the next order has NO pre-allocated move plan at all
-//      (the backend skips createPlan, see DistributionJobCreateCommand) -> the set of the next
-//      order's source HUs is EMPTY, nothing can match, so no HU is carried forward and the operator
-//      lands on the "Scan HU" prompt. Safe default: never assume it is the same HU.
-//
-// The fixture is deliberately IDENTICAL to sweep_scan_product_after_autoAdvance.spec.js — ONE staging
-// LU at a ground locator that every DD order draws from — so the ONLY difference between the two
-// specs is allowPickingAnyHU. That is what makes this test discriminating: with the flag false the
-// very same data lands the operator on the PRODUCT scan (case 1); it is the flag, not the data, that
-// produces the HU scan here. A fixture with a distinct HU per order would land on "Scan HU" too, but
-// via case 2 — i.e. it would prove nothing about case 3.
-//
-// Mobile distribution profile:
-//   navigateToJobsListAfterPickFromComplete: true — auto-advance to the next order after pick-from
-//   requireScanningProductCode: true              — operator must scan the product GTIN
-//   completeJobAutomatically: true                — auto-complete a job once fully moved
-//   allowStartNextJobOnly: true                   — start jobs strictly in offered order
-//   allowPickingAnyHU: true                       — THE case under test: no move plan is built
-//   orderBys: 'Priority, LocatorPriority'         — offer orders sorted by priority, then source-locator priority
+// The fixture is deliberately field-identical to sweep_scan_product_after_autoAdvance.spec.js apart
+// from the barcode prefix, the workplace key and allowPickingAnyHU: with that flag off, the very same
+// data lands the operator on the PRODUCT scan instead. That contrast is what makes this spec
+// discriminating, so keep the two fixtures in sync. The carry-forward rule itself is owned by
+// postDistributionPickFromThunk.js.
 //
 
 const ORDER_COUNT = 3;
@@ -73,13 +55,8 @@ const createMasterdata = async () => {
                     completeJobAutomatically: true,
                     requireScanningProductCode: true,
                     allowStartNextJobOnly: true,
-                    // THE flag under test. With it true the backend builds no pre-allocated move plan
-                    // for a started order, so the auto-advanced order has no source HU to compare
-                    // against and nothing can be carried forward. It must be set here explicitly for a
-                    // second reason too: it is a sticky, global, unscoped config row
-                    // (MobileConfigDistributionCommand keeps the previous value when omitted, unlike
-                    // its siblings which reset to false), so relying on whatever an earlier spec left
-                    // behind would make this scenario order-dependent.
+                    // THE flag under test, and sticky — see e2e/mobile-webui/CLAUDE.md § "Debugging
+                    // Flaky Tests" rule 3: always set, never inherited.
                     allowPickingAnyHU: true,
                     orderBys: 'Priority, LocatorPriority',
                     // Job-level caption (asserted nowhere here, but kept consistent with the mirror
@@ -115,12 +92,12 @@ const createMasterdata = async () => {
 };
 
 // noinspection JSUnusedLocalSymbols
-test('Pick-any-HU: after auto-advance, the operator is asked to scan the HU (nothing is carried forward)', async ({ page }) => {
+test('Sweep: after auto-advance, the operator scans the staging LU again (it does not carry forward)', async ({ page }) => {
     // === ALLURE METADATA ===
     allure.epic('E0370: Intralogistic (HUs)');
     allure.tag('F5114: MobileUI Distribution');
     allure.tag('F5114');
-    allure.story('With allowPickingAnyHU, the auto-advanced order has no move plan, so the operator scans the source HU again');
+    allure.story('Sweep: when an order may be served from any HU, the operator scans the staging LU again on each auto-advanced order, then the product code');
     allure.severity('critical');
 
     const masterdata = await createMasterdata();
@@ -145,21 +122,47 @@ test('Pick-any-HU: after auto-advance, the operator is asked to scan the HU (not
     });
 
     // *** THE ASSERTION THIS SPEC EXISTS FOR ***
-    // DD2 has no pre-allocated move plan, so the app cannot know which HU will serve it — not even
-    // though the staging LU the operator just scanned holds plenty of stock for DD2 as well. The
-    // operator is therefore asked to scan the source HU, instead of being dropped on the product scan
-    // with an assumed-but-unverified HU already applied.
-    await test.step('On the auto-advanced DD2: the screen asks for the HU scan (no HU carried forward)', async () => {
+    // No HU is assigned to DD2, so the app cannot know which one will serve it — not even though the
+    // staging LU the operator just scanned holds plenty of stock for DD2 as well. The operator is
+    // therefore asked to scan the source HU, instead of being dropped on the product scan with an
+    // assumed-but-unverified HU already applied.
+    await test.step('On the auto-advanced DD2: the screen asks for the HU scan', async () => {
         await DistributionLinePickFromScreen.expectHUScanReady();
-        await DistributionLinePickFromScreen.expectProductScanNotReady();
     });
 
-    // Anti-false-positive: "Scan HU" is also what the operator gets when the carry-forward's HU
-    // re-resolution merely fails (the thunk's getResolvedHUQR swallows the error and returns null).
-    // Assert DD2 genuinely has no steps, so we know the empty-move-plan branch is the one that ran.
-    await test.step('Backend: DD2 was started WITHOUT a pre-allocated move plan (no steps)', async () => {
-        await DistributionUtils.expectNoPreAllocatedMovePlan({
+    // The screen alone cannot show WHY it asks: an app that had simply failed to recognise the LU just
+    // picked from would land the operator on exactly the same prompt. The two checks below rule that
+    // look-alike out — one on the app's own diagnostics, one on the job the backend actually built.
+    await test.step('Diagnostic: the HU scan is not the fallback of a failed HU lookup', async () => {
+        await DistributionLinePickFromScreen.expectHUScanNotCausedByFailedHULookup();
+    });
+
+    await test.step('Backend: DD2 was started in pick-any-HU mode, without a pre-allocated move plan', async () => {
+        await DistributionUtils.expectPickAnyHUJobWithoutMovePlan({
             wfProcessId: `distribution-${masterdata.distributionOrders.DD2.jobId}`,
+        });
+    });
+
+    await test.step('Scan the staging LU + product P for DD2 (confirm qty 20) → auto-advance to DD3, asking for the HU again', async () => {
+        await DistributionLinePickFromScreen.scanHUToMove({
+            huQRCode: masterdata.luExternalBarcode,
+            productScannedCode: masterdata.products.P.gtin,
+            expectedQtyToMove: 20,
+            expectNextScreen: 'DistributionLinePickFromScreen',
+        });
+        await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD3.jobId });
+        await DistributionLinePickFromScreen.expectHUScanReady();
+    });
+
+    await test.step('Backend: the DD2 pick landed (the moved qty of P is on the split-off HU)', async () => {
+        const pickedHUQRCode = await DistributionUtils.getPickedHUQRCode({
+            wfProcessId: `distribution-${masterdata.distributionOrders.DD2.jobId}`,
+        });
+        await Backend.expect({
+            title: 'DD2 pick landed',
+            hus: {
+                [pickedHUQRCode]: { huStatus: 'A', warehouse: 'whInTransit', storages: { P: '20 PCE' } },
+            },
         });
     });
 });

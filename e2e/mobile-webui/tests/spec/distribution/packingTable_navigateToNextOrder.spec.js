@@ -188,6 +188,10 @@ test('Packing-table operator: orders sorted by priority then locator priority an
     for (let i = 2; i < N; i++) {
         const next = i + 1;
         await test.step(`Pick DD${i} (scan HU${i} + product P${i}, confirm qty ${i * 10}) → auto-advance to DD${next} pick-from (assert DD${next} header)`, async () => {
+            // Every order here is served from its OWN HU, so the one just picked is never the right
+            // source for the order the app advanced to: the operator must be asked to scan this
+            // order's HU rather than being dropped on the product scan with the previous HU applied.
+            await DistributionLinePickFromScreen.expectHUScanReady();
             await DistributionLinePickFromScreen.scanHUToMove({
                 huQRCode: masterdata.externalBarcodes[i],
                 productScannedCode: masterdata.products[`P${i}`].gtin,

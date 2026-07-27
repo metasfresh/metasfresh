@@ -1,4 +1,5 @@
 import { test } from '../../playwright.config';
+import { expect } from '@playwright/test';
 import { ErrorScreen } from './screens/ErrorScreen';
 import { ErrorToast } from './dialogs/ErrorToast';
 
@@ -15,9 +16,32 @@ export const ID_BACK_BUTTON = '#Back-button';
 
 export let page = null;
 
+// Every browser console message of the CURRENT test, in order.
+// Some app code paths are invisible on screen but log a diagnostic before falling back to a state that
+// looks exactly like the normal one; the logged line is then the only observable that tells the two
+// apart (see DistributionLinePickFromScreen.expectHUScanNotCausedByFailedHULookup). Recording is armed
+// with the page fixture, so no spec has to set anything up and a normal run pays no timing cost.
+let consoleMessages = [];
+const MAX_RECORDED_CONSOLE_MESSAGES = 5000;
+
 export const setCurrentPage = (currentPage) => {
     page = currentPage;
+    consoleMessages = [];
+    currentPage.on('console', (message) => {
+        if (consoleMessages.length < MAX_RECORDED_CONSOLE_MESSAGES) {
+            consoleMessages.push(`${message.type()}: ${message.text()}`);
+        }
+    });
 }
+
+/**
+ * Assert the app did NOT log a console message matching `pattern` so far in this test.
+ * Not a polling assertion: use it only for a message the app would have logged *before* a state you
+ * have already awaited (otherwise it can pass simply because the log has not happened yet).
+ */
+export const expectNoConsoleMessageMatching = ({ pattern, because }) => {
+    expect(consoleMessages.filter((message) => pattern.test(message)), because).toEqual([]);
+};
 
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 

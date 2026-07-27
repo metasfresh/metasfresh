@@ -1,6 +1,12 @@
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
-import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
+import {
+    expectNoConsoleMessageMatching,
+    FAST_ACTION_TIMEOUT,
+    ID_BACK_BUTTON,
+    page,
+    SLOW_ACTION_TIMEOUT,
+} from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { GetQuantityDialog } from '../picking/GetQuantityDialog';
 import { DistributionUtils } from './DistributionUtils';
@@ -43,27 +49,29 @@ export const DistributionLinePickFromScreen = {
             await expect(page.getByTestId('scanProductCode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         }),
 
-        // Mirror image of expectProductScanReady: the screen renders EXACTLY ONE of "Scan HU" /
-        // "Scan product", so asserting the HU-scan input is `visible` also proves the product-scan
-        // input is NOT the one showing. Used to guard the auto-advance case where the next order has
-        // NO pre-allocated move plan (allowPickingAnyHU=true): the operator must be asked to scan the
-        // source HU, because the app cannot know which HU the next order will be served from.
-        expectHUScanReady: async () => await test.step(`${NAME} - Expect ready for HU scan (nothing carried forward, operator must scan the source HU)`, async () => {
+        // Mirror image of expectProductScanReady: the operator is asked to (re-)scan the source HU
+        // because the app has no HU to work from yet. The product-scan input must be gone; that is
+        // asserted here rather than in a separate method because the check is only meaningful AFTER
+        // the HU input is visible — while the component is still uninitialised it renders neither
+        // input, so an isolated toHaveCount(0) would pass vacuously. FAST timeout: at that point the
+        // product input can only be absent, so a slow one would just burn budget on a real failure.
+        expectHUScanReady: async () => await test.step(`${NAME} - Expect ready for HU scan (operator must scan the source HU)`, async () => {
             await DistributionLinePickFromScreen.waitForScreen();
             await expect(page.getByTestId('scanHUBarcode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
+            await expect(page.getByTestId('scanProductCode-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
         }),
 
-        // Explicit negative companion to expectHUScanReady. The mutual exclusion is implied by the
-        // component's progressStatus switch, but stating it costs one fast assertion and makes the
-        // failure mode obvious if that switch is ever turned into overlapping panels. FAST timeout:
-        // by the time this runs the HU-scan input is already visible, so the product input can only
-        // be absent — a slow timeout here would just burn budget on a genuine failure.
-        expectProductScanNotReady: async () => await test.step(`${NAME} - Expect NOT ready for product scan`, async () => {
-            // waitForScreen first, like every other assertion in this file: without it a caller that
-            // does NOT pair this with expectHUScanReady would happily "pass" against a screen that
-            // never rendered at all (absent input == count 0).
+        // Of the two causes for landing on "Scan HU" after an auto-advance, only the failed-HU-lookup
+        // fallback logs this warning; on screen the two are identical. Sound to assert without polling:
+        // the app awaits that lookup before it navigates, so once this screen is up the warning has
+        // either been logged already or never will be.
+        expectHUScanNotCausedByFailedHULookup: async () => await test.step(`${NAME} - Expect the HU scan is not the fallback of a failed HU lookup`, async () => {
             await DistributionLinePickFromScreen.waitForScreen();
-            await expect(page.getByTestId('scanProductCode-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
+            expectNoConsoleMessageMatching({
+                pattern: /Failed to resolve scanned HU QR for auto-advance carry-forward/,
+                because: 'the auto-advance asked for the HU again because it could NOT re-resolve the just-picked HU'
+                    + ' — not because the next order has no source HU of its own',
+            });
         }),
 
         scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
