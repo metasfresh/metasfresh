@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.IPackageWeightProvider;
@@ -44,6 +45,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.product.ProductId;
 import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -63,10 +65,12 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,6 +78,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 @RequiredArgsConstructor
@@ -87,6 +93,7 @@ public class PurchaseOrderToShipperTransportationService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
+	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILUQtyProvider qtyProvider;
@@ -180,6 +187,10 @@ public class PurchaseOrderToShipperTransportationService
 
 	private void addPurchaseOrderLines(final @NonNull I_M_ShipperTransportation shipperTransportation, final @NonNull I_C_Order order, @NonNull final List<I_C_OrderLine> orderLines)
 	{
+		final ShipperTransportationId shipperTransportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+		// Detect BEFORE any package is created whether this is the very first purchase order assigned to the transport order.
+		final boolean isFirstOrderOnTransportation = shipperTransportationDAO.retrieveOrderIds(shipperTransportationId).isEmpty();
+
 		final List<I_C_OrderLine> orderLinesWithLUQty = orderLines.stream()
 				.filter(orderBL::isLUQtySet)
 				.collect(Collectors.toList());
@@ -241,6 +252,63 @@ public class PurchaseOrderToShipperTransportationService
 						skippedLines.size(), skippedLineNos);
 			}
 		}
+
+		if (isFirstOrderOnTransportation && addedCount > 0)
+		{
+			applyDefaultDatesFromFirstOrder(shipperTransportation, order);
+		}
+	}
+
+	/**
+	 * Defaults the transport order's date fields from the first assigned purchase order (each value stays user-overridable afterwards):
+	 * <ul>
+	 *     <li>ETD = the purchase order's {@code DatePromised} (provisioning date)</li>
+	 *     <li>ETA = ETD + the vendor delivery time ({@code C_BPartner_Product.DeliveryTime_Promised}) of the purchase order's first line</li>
+	 *     <li>ATD = ETD</li>
+	 *     <li>ATA = ETA</li>
+	 *     <li>B/L date = ATD</li>
+	 * </ul>
+	 * Only applies to purchase (inbound) transport orders; the sales flow is left untouched.
+	 */
+	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
+	{
+		if (shipperTransportation.isSOTrx())
+		{
+			return; // sales behaviour on the transport order must keep working unchanged
+		}
+
+		final Timestamp etd = order.getDatePromised();
+		if (etd == null)
+		{
+			return;
+		}
+
+		final Timestamp eta = TimeUtil.addDays(etd, getFirstLineVendorDeliveryTimeDays(order));
+
+		shipperTransportation.setETD(etd);
+		shipperTransportation.setETA(eta);
+		shipperTransportation.setATD(etd);   // ATD = ETD
+		shipperTransportation.setATA(eta);   // ATA = ETA
+		shipperTransportation.setBLDate(etd); // B/L date = ATD (= ETD)
+		saveRecord(shipperTransportation);
+	}
+
+	/**
+	 * @return the vendor delivery time (in days) of the purchase order's first line (lowest {@code Line}), or {@code 0} when there is no
+	 * matching {@code C_BPartner_Product.DeliveryTime_Promised}.
+	 */
+	private int getFirstLineVendorDeliveryTimeDays(@NonNull final I_C_Order order)
+	{
+		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
+
+		return orderDAO.retrieveOrderLines(order)
+				.stream()
+				.filter(ol -> ol.getM_Product_ID() > 0)
+				.findFirst()
+				.map(ol -> ProductId.ofRepoId(ol.getM_Product_ID()))
+				.flatMap(productId -> bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId))
+				.orElse(0);
 	}
 
 	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)

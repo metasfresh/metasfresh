@@ -28,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_Package;
@@ -542,6 +543,122 @@ public class PurchaseOrderToShipperTransportationServiceTest
 				.isEqualTo(line2.getC_OrderLine_ID());
 	}
 
+	/**
+	 * The five transport-order date fields (ETD, ETA, ATD, ATA, B/L date) must auto-populate from the first assigned purchase order:
+	 * ETD = PO.DatePromised, ETA = ETD + vendor delivery time, ATD = ETD, ATA = ETA, B/L date = ATD.
+	 * <p>
+	 * me03 https://github.com/metasfresh/me03/issues/30956
+	 */
+	@Test
+	public void defaultDates_appliedFromFirstPurchaseOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorDefaults", "addressDefaults");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 5);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final java.sql.Timestamp expectedEtd = order.getDatePromised();
+		final java.sql.Timestamp expectedEta = TimeUtil.addDays(expectedEtd, 5);
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD = PO.DatePromised").isEqualTo(expectedEtd);
+		assertThat(reloaded.getETA()).as("ETA = ETD + vendor delivery time").isEqualTo(expectedEta);
+		assertThat(reloaded.getATD()).as("ATD = ETD").isEqualTo(expectedEtd);
+		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
+		assertThat(reloaded.getBLDate()).as("B/L date = ATD").isEqualTo(expectedEtd);
+	}
+
+	/**
+	 * When there is no {@code C_BPartner_Product.DeliveryTime_Promised} for the first line's product+vendor,
+	 * ETA falls back to ETD (delivery time = 0 days).
+	 */
+	@Test
+	public void defaultDates_noVendorDeliveryTime_etaEqualsEtd()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorNoDelivery", "addressNoDelivery");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final java.sql.Timestamp expectedEtd = load(orderId, I_C_Order.class).getDatePromised();
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).isEqualTo(expectedEtd);
+		assertThat(reloaded.getETA()).as("ETA = ETD when no vendor delivery time").isEqualTo(expectedEtd);
+	}
+
+	/**
+	 * Only the FIRST assigned purchase order drives the defaults; assigning further orders (or re-editing) must not overwrite the values.
+	 */
+	@Test
+	public void defaultDates_onlyFirstOrderWins()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorFirstWins", "addressFirstWins");
+
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// second order with a DIFFERENT DatePromised
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		order2Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2020, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		save(order2Record);
+
+		final java.sql.Timestamp firstOrderDatePromised = load(order1, I_C_Order.class).getDatePromised();
+
+		// assign order1 first, then order2
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order1));
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(order2));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("ETD stays derived from the FIRST assigned order, not the second")
+				.isEqualTo(firstOrderDatePromised);
+	}
+
+	/**
+	 * Regression-safety: the auto-defaulting must NOT run for a sales (SOTrx=Y) transport order, so the existing sales flow is untouched.
+	 */
+	@Test
+	public void defaultDates_notAppliedForSalesTransportOrder()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		shipperTransportation.setIsSOTrx(true);
+		save(shipperTransportation);
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorSales", "addressSales");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 5);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD must not be defaulted on a sales transport order").isNull();
+		assertThat(reloaded.getETA()).isNull();
+		assertThat(reloaded.getATD()).isNull();
+		assertThat(reloaded.getATA()).isNull();
+		assertThat(reloaded.getBLDate()).isNull();
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();
@@ -550,10 +667,21 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		shipperTransportation.setM_Shipper_ID(shipper.getM_Shipper_ID());
 
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(LocalDate.of(2019, 6, 6), orgDAO.getTimeZone(OrgId.ofRepoId(shipper.getAD_Org_ID()))));
+		shipperTransportation.setIsSOTrx(false); // purchase (inbound) transport order
 
 		save(shipperTransportation);
 
 		return shipperTransportation;
+	}
+
+	private void createBPartnerProduct(final int vendorId, final ProductId productId, final int orgId, final int deliveryTimePromisedDays)
+	{
+		final I_C_BPartner_Product bpartnerProduct = newInstance(I_C_BPartner_Product.class);
+		bpartnerProduct.setC_BPartner_ID(vendorId);
+		bpartnerProduct.setM_Product_ID(productId.getRepoId());
+		bpartnerProduct.setAD_Org_ID(orgId);
+		bpartnerProduct.setDeliveryTime_Promised(deliveryTimePromisedDays);
+		save(bpartnerProduct);
 	}
 
 	private I_M_Shipper createShipper()
