@@ -56,6 +56,14 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	/** no unfinished picking, but the WHOLE selection is ineligible: every selected schedule is already processed or still has a picked-but-unshipped qty (QtyPickList &gt; 0) */
 	private static final AdMessageKey MSG_CANNOT_CLOSE_NOT_ELIGIBLE = AdMessageKey.of("M_ShipmentSchedule_CannotClose_NotEligible");
 
+	/**
+	 * Row cap of the offending-schedules query: fetching a third row would add nothing, because the rejection message
+	 * only distinguishes "exactly one" (named) from "two or more" (generic).
+	 *
+	 * @see #assertNoOffendingSchedules(IQueryFilter)
+	 */
+	private static final int MAX_OFFENDING_SCHEDULES_TO_DISTINGUISH = 2;
+
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -104,8 +112,9 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	/**
 	 * Rejects the whole close (all-or-nothing) if any selected schedule still has an unfinished (Drafted) picking
 	 * job. The unfinished-picking check is a subquery filter folded into the selection query, so the offending
-	 * schedules come from a single query (no id round-trip / in-memory intersection). The query is capped at 2
-	 * because the rejection message only needs to distinguish "exactly one" (named) from "two or more" (generic):
+	 * schedules come from a single query (no id round-trip / in-memory intersection). The query is capped at
+	 * {@link #MAX_OFFENDING_SCHEDULES_TO_DISTINGUISH} because the rejection message only needs to distinguish
+	 * "exactly one" (named) from "two or more" (generic):
 	 * <ul>
 	 *     <li>none offending → do nothing;</li>
 	 *     <li>exactly one → the specific {@link #MSG_CANNOT_CLOSE_UNFINISHED_PICKING} naming that schedule's order;</li>
@@ -117,7 +126,7 @@ public class M_ShipmentSchedule_CloseShipmentSchedules extends JavaProcess
 	{
 		final List<I_M_ShipmentSchedule> offendingSchedules = shipmentSchedulePA.createQueryForShipmentScheduleSelection(getCtx(), userSelectionFilter)
 				.filter(pickingInfoService.newUnfinishedPickingFilter())
-				.setLimit(2)
+				.setLimit(MAX_OFFENDING_SCHEDULES_TO_DISTINGUISH)
 				.create()
 				.list();
 
