@@ -27,6 +27,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Order;
@@ -697,8 +698,12 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	private BPartnerLocationId createBPartnerAndLocation(final String partnerName, final String address)
 	{
+		final I_C_BP_Group bpGroup = newInstance(I_C_BP_Group.class);
+		save(bpGroup);
+
 		final I_C_BPartner bpartnerRecord = newInstance(I_C_BPartner.class);
 		bpartnerRecord.setName(partnerName);
+		bpartnerRecord.setC_BP_Group_ID(bpGroup.getC_BP_Group_ID());
 		save(bpartnerRecord);
 
 		final int bpartnerId = bpartnerRecord.getC_BPartner_ID();

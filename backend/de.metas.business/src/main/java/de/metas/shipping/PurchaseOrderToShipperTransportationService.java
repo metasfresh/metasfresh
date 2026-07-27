@@ -29,7 +29,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.IPackageWeightProvider;
@@ -93,12 +94,12 @@ public class PurchaseOrderToShipperTransportationService
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IShipperTransportationDAO shipperTransportationDAO = Services.get(IShipperTransportationDAO.class);
-	private final IBPartnerProductDAO bpartnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final ISSCC18CodeBL sscc18CodeBL = Services.get(ISSCC18CodeBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILUQtyProvider qtyProvider;
 	private final ITUDistributionProvider tuDistributionProvider;
 	private final IPackageWeightProvider packageWeightProvider;
+	@NonNull private final BPartnerProductEffectiveBL bpartnerProductEffectiveBL;
 
 	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
@@ -120,7 +121,12 @@ public class PurchaseOrderToShipperTransportationService
 			return tuDistribution;
 		};
 		final IPackageWeightProvider weightProvider = (order, orderLine, tuQtyForPackage) -> null;
-		return new PurchaseOrderToShipperTransportationService(PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(), luQtyProvider, tuProvider, weightProvider);
+		return new PurchaseOrderToShipperTransportationService(
+				PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(),
+				luQtyProvider,
+				tuProvider,
+				weightProvider,
+				new BPartnerProductEffectiveBL(BPartnerEffectiveBL.newInstanceForUnitTesting()));
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
@@ -294,8 +300,9 @@ public class PurchaseOrderToShipperTransportationService
 	}
 
 	/**
-	 * @return the vendor delivery time (in days) of the purchase order's first line (lowest {@code Line}), or {@code 0} when there is no
-	 * matching {@code C_BPartner_Product.DeliveryTime_Promised}.
+	 * @return the effective vendor purchase-transport days for the purchase order's first line (lowest {@code Line}) — i.e.
+	 * {@code C_BPartner_Product.DeliveryTime_Promised} with fallback to the vendor's {@code C_BPartner.PO_TransportDays} — or
+	 * {@code 0} when neither is set (or the order has no product line).
 	 */
 	private int getFirstLineVendorDeliveryTimeDays(@NonNull final I_C_Order order)
 	{
@@ -306,8 +313,7 @@ public class PurchaseOrderToShipperTransportationService
 				.stream()
 				.filter(ol -> ol.getM_Product_ID() > 0)
 				.findFirst()
-				.map(ol -> ProductId.ofRepoId(ol.getM_Product_ID()))
-				.flatMap(productId -> bpartnerProductDAO.getDeliveryTimePromised(vendorId, productId, orgId))
+				.map(ol -> bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(ol.getM_Product_ID()), orgId))
 				.orElse(0);
 	}
 
