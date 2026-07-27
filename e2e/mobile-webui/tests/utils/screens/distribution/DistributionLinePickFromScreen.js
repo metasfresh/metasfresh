@@ -1,4 +1,5 @@
 import { test } from '../../../../playwright.config';
+import { expect } from '@playwright/test';
 import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { GetQuantityDialog } from '../picking/GetQuantityDialog';
@@ -29,6 +30,17 @@ export const DistributionLinePickFromScreen = {
         expectHeaderProperty: async ({ caption, value, exact = true }) => await test.step(`${NAME} - Check header property '${caption}'='${value}'${exact ? '' : ' (substring)'}`, async () => {
             await DistributionLinePickFromScreen.waitForScreen();
             await DistributionUtils.expectHeaderProperty({ caption, value, exact });
+        }),
+
+        // The screen renders EXACTLY ONE of "Scan HU" / "Scan product" (a switch, not overlapping
+        // panels — see ScanHUAndGetQtyComponent's progressStatus), so asserting the product-scan
+        // input is `visible` also proves the HU-scan input is NOT the one showing. Used to guard
+        // the auto-advance-from-the-same-staging-LU scenario: after auto-advancing to the next
+        // order, the screen must be ready for the product scan directly — not sit in "Scan HU"
+        // state (which would misroute the operator's next scan, the product GTIN, into the HU slot).
+        expectProductScanReady: async () => await test.step(`${NAME} - Expect ready for PRODUCT scan (HU carried forward, no re-scan needed)`, async () => {
+            await DistributionLinePickFromScreen.waitForScreen();
+            await expect(page.getByTestId('scanProductCode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
         }),
 
         scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
