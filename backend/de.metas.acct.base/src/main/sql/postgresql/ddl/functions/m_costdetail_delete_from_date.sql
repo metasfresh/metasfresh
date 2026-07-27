@@ -153,15 +153,26 @@ BEGIN
                 --        -> a changing-costs inbound records amt = prevPrice*qty
                 --           (StandardCostingMethodHandler.createCostForMaterialReceipt), so the weighted
                 --           average provably reproduces prevPrice: it is a no-op, not an approximation.
-                --   'p' LastPOPrice / 'i' LastInvoice are DELIBERATELY EXCLUDED: their handlers REPLACE the
-                --        price with amt/qty (LastPOCostingMethodHandler.createCostForMatchPO,
+                --   'p' LastPOPrice / 'i' LastInvoice are DELIBERATELY EXCLUDED: on the M_MatchPO /
+                --        M_MatchInv path their handlers REPLACE the price with amt/qty
+                --        (LastPOCostingMethodHandler.createCostForMatchPO,
                 --        LastInvoiceCostingMethodHandler.createCostForMatchInvoice_MaterialCosts), so averaging
                 --        would silently write a WRONG CurrentCostPrice. Example: prevPrice=20, prevQty=10,
                 --        inbound qty=10 amt=400 -> replace gives 40, averaging gives 600/20 = 30.
+                --        CAVEAT for 'p': ManufacturingLastPOCostingMethodHandler.createMainProductOrCoProductReceipt
+                --        DOES call addWeightedAverage for a PP_Cost_Collector main/co-product receipt - but there
+                --        amt = currentCostPrice*qty, so that average is a no-op (same shape as 'S'). So 'p' behaves
+                --        two ways depending on the DOCUMENT, and a costingmethod-only gate cannot separate them;
+                --        'p' is therefore excluded wholesale, which is safe for BOTH sub-cases. Known residual
+                --        gap: a 'p' element whose last pre-range detail is a PP_Cost_Collector receipt still
+                --        RAISEs instead of being reconstructed. Widening the gate to a (method, document) key
+                --        would close it - deliberately out of scope here.
                 --   'L' Lifo / 'F' Fifo / 'U' UserDefined / 'x' ExternalProcessing are likewise excluded.
                 -- Everything excluded falls through to the RAISE below - i.e. exactly the behaviour those
                 -- methods already have today - so this change can never turn a loud abort into a silent
                 -- mis-valuation.
+                -- A NULL costingmethod (unresolvable cost element) makes the IN test NULL, not TRUE, so it
+                -- also falls through to the RAISE rather than averaging blindly.
                 v_next_costs_found := TRUE;
                 v_next_costs_debugInfo := 'case 2.5: based on prev costs of last cost details (inbound trx, weighted average), with changing costs';
                 v_next_currentqty   := v_firstCostDetail.prev_currentqty   + v_firstCostDetail.qty;
