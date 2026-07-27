@@ -54,6 +54,14 @@ const createMasterdata = async () => {
                     completeJobAutomatically: true,
                     requireScanningProductCode: true,
                     allowStartNextJobOnly: true,
+                    // Explicit (not the request-level default): this scenario's whole premise is a
+                    // pre-allocated move plan carrying a FIXED source HU per step (see
+                    // DistributionJobCreateCommand), which the backend only builds when this is
+                    // false. Unlike the other flags above, allowPickingAnyHU is NOT reset to a
+                    // request-level default when omitted (MobileConfigDistributionCommand keeps the
+                    // previous value) — a global, unscoped config row — so this must be set here to
+                    // keep the scenario deterministic regardless of what an earlier test left behind.
+                    allowPickingAnyHU: false,
                     orderBys: 'Priority, LocatorPriority',
                     // Job-level caption (asserted nowhere here, but kept consistent with the mirror
                     // spec's convention so the launcher/job header renders a meaningful caption).
@@ -117,12 +125,13 @@ test('Sweep: after auto-advance, the operator scans only the product code (the s
         await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId });
     });
 
-    // *** THE RED ASSERTION ***
+    // *** REGRESSION GUARD (was THE RED ASSERTION) ***
     // The staging LU was already scanned for DD1 and holds plenty of stock for DD2 too, so the
-    // operator should not need to re-scan it — the auto-advanced screen should go straight to the
-    // product-code scan. Today the app's auto-advance drops the scanned LU, leaving the screen in
-    // "Scan HU" state instead: the operator's next scan (the product GTIN) is then misread as an HU
-    // barcode, and this assertion fails.
+    // operator does not need to re-scan it — the auto-advanced screen goes straight to the
+    // product-code scan. The thunk carries the just-picked HU's QR code forward only when the next
+    // order's pre-allocated move plan draws from that SAME physical HU (as here) — see
+    // postDistributionPickFromThunk.js. Without that carry-forward, the operator's next scan (the
+    // product GTIN) would be misread as an HU barcode, and this assertion would fail.
     await test.step('On the auto-advanced DD2: the screen is ready for the PRODUCT scan (no HU re-scan requested)', async () => {
         await DistributionLinePickFromScreen.expectProductScanReady();
     });
