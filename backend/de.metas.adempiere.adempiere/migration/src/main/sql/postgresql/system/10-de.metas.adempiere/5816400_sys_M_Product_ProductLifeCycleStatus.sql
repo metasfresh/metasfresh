@@ -1,4 +1,5 @@
 -- IDs allocated from idserver.metas.de on 2026-07-27:
+--   AD_MigrationScript 5816400 (this script's filename prefix)
 --   AD_Reference    542123 (Product Life Cycle Status list)
 --   AD_Ref_List     544324 (O), 544325 (A), 544326 (G), 544327 (N)
 --   AD_Element      585137 (M_Product.ProductLifeCycleStatus)
