@@ -142,7 +142,7 @@ public class NShiftShipmentService
 		final JsonShipmentOptions bookingOptions = JsonShipmentOptions.builder()
 				.labelType(baseOptions.getLabelType())
 				.trackingURL(baseOptions.getTrackingURL())
-				.useShippingRules(baseOptions.getUseShippingRules())
+				//.useShippingRules(baseOptions.getUseShippingRules()) always active on this Endpoint
 				.serviceLevel(baseOptions.getServiceLevel())
 				.submit(true)
 				// OrderAdvice returns product/carrier (+ goods type) detail only with Visibility=extended — same as the advise (Submit=0) path
@@ -158,21 +158,18 @@ public class NShiftShipmentService
 	public static JsonShipmentRequest buildShipmentRequest(@NonNull final JsonDeliveryRequest deliveryRequest)
 	{
 		final JsonShipperConfig config = deliveryRequest.getShipperConfig();
-		final String useShippingRulesStr = config.getAdditionalProperty(NShiftConstants.USE_SHIPPING_RULES);
-		final Boolean useShippingRules = useShippingRulesStr != null ? Boolean.valueOf(useShippingRulesStr) : null;
+		final boolean isSelectionRules = StringUtils.toBoolean(config.getAdditionalProperty(NShiftConstants.SELECTION_RULES), false);
 		// with shipping/selection rules active nShift resolves the product from the rules, so ServiceLevel must not be sent (omitted via NON_NULL)
-		final String serviceLevel = Boolean.TRUE.equals(useShippingRules) ? null : config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
+		final String serviceLevel = isSelectionRules ? null : config.getAdditionalProperty(NShiftConstants.SERVICE_LEVEL);
 
 		final JsonShipmentOptions options = JsonShipmentOptions.builder()
 				.labelType(JsonLabelType.PDF)
 				.trackingURL(true)
-				.useShippingRules(useShippingRules)
+				.useShippingRules(isSelectionRules)
 				.serviceLevel(serviceLevel)
 				.build();
 
 		final String actorId = config.getAdditionalPropertyNotNull(NShiftConstants.ACTOR_ID);
-
-		final boolean useRules = Boolean.TRUE.equals(useShippingRules);
 
 		final JsonShipmentData.JsonShipmentDataBuilder dataBuilder = JsonShipmentData.builder()
 				.actorCSID(Integer.valueOf(actorId))
@@ -181,7 +178,7 @@ public class NShiftShipmentService
 
 		// With shipping rules active (non-manual) nShift re-resolves product / goods type / services from the rules,
 		// so they must NOT be pre-sent on the request; only send them when rules are off (manual / fixed product).
-		if (!useRules)
+		if (!isSelectionRules)
 		{
 			dataBuilder.prodConceptID(Integer.parseInt(deliveryRequest.getShipperProduct().getCode()));
 			deliveryRequest.getServices().forEach(service -> dataBuilder.service(Long.valueOf(service.getId()).intValue()));
@@ -205,7 +202,7 @@ public class NShiftShipmentService
 		int lineNoCounter = 1;
 		for (final JsonDeliveryOrderParcel deliveryLine : deliveryRequest.getDeliveryOrderParcels())
 		{
-			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, useRules));
+			dataBuilder.line(buildNShiftLine(deliveryLine, deliveryRequest, mappingConfigs, isSelectionRules));
 			allDetailGroups.addAll(NShiftUtil.buildLineLevelDetailGroups(buildContentValueProviders(deliveryLine, deliveryRequest), lineNoCounter, mappingConfigs));
 			lineNoCounter++;
 		}

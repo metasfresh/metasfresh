@@ -19,7 +19,11 @@ const createMasterdata = async ({ qtyToMove }) => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
-            mobileConfig: { distribution: {} },
+            // allowPickingAnyHU must be set explicitly: it is a sticky, global, unscoped distribution
+            // config row (MobileConfigDistributionCommand keeps the previous value when omitted), and an
+            // earlier spec in this folder (sweep_scan_product_after_autoAdvance) leaves it false. These
+            // cases need it true — otherwise no scanQRCode-button renders and the pick-from steps time out.
+            mobileConfig: { distribution: { allowPickingAnyHU: true } },
             resources: { "plantId": { type: "PT" } },
             products: { "P1": {} },
             warehouses: {
@@ -64,7 +68,11 @@ const createMasterdataTwoLocators = async ({ qtyPerHU, lineQty }) => {
         language: "en_US",
         request: {
             login: { user: { language: "en_US" } },
-            mobileConfig: { distribution: {} },
+            // allowPickingAnyHU must be set explicitly: it is a sticky, global, unscoped distribution
+            // config row (MobileConfigDistributionCommand keeps the previous value when omitted), and an
+            // earlier spec in this folder (sweep_scan_product_after_autoAdvance) leaves it false. These
+            // cases need it true — otherwise no scanQRCode-button renders and the pick-from steps time out.
+            mobileConfig: { distribution: { allowPickingAnyHU: true } },
             resources: { "plantId": { type: "PT" } },
             products: { "P1": {} },
             warehouses: {
