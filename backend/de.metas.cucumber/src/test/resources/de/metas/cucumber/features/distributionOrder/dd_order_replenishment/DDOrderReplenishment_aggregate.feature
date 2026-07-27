@@ -180,11 +180,57 @@ Feature: DD_Order replenishment — one distribution order per product group
     When every live DD_Order for the product group is voided directly:
       | M_Product_ID | M_LocatorTo_ID |
       | product      | packingLocator |
-    And the DD_Order_Picking_Rebuild process is run
+    # The dead order must stop counting as service for anybody — its allocation rows outlive it here (nothing
+    # deleted them), so a served-ness check that only asks "does an allocation row exist?" would leave both
+    # deliveries stranded and the rebuild below with nothing to do.
+    Then the drift rebuild considers jobScheduleA, jobScheduleB to still need a DD_Order
+    When the DD_Order_Picking_Rebuild process is run
 
     Then after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
       | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+    And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
+
+  @from:cucumber
+  Scenario: Re-running the rebuild against an unchanged group changes nothing
+    # The watchdog runs on an hourly cadence against live data, so its overwhelmingly most common input is a group
+    # that is ALREADY correctly served. The scenario above proves it can HEAL drift; this one proves it does not
+    # CAUSE any: a pass over unchanged data must leave the very same document, with the same quantity and the same
+    # contributor set, behind. A watchdog that re-planned here would double every consolidated replenishment once an
+    # hour — the mover would walk the route twice and twice the stock would leave the source locator.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    # BOTH deliveries are served by that one shared order, so neither is the watchdog's business any more. This is
+    # the whole claim: being served by an order that also serves somebody else counts as being served. It is asserted
+    # before the passes because it is what makes them no-ops — and because, once it holds, a pass enqueues nothing at
+    # all, so the assertions after it read a settled state rather than racing an in-flight reconcile.
+    Then the drift rebuild considers jobScheduleA, jobScheduleB already served
+
+    When the DD_Order_Picking_Rebuild process is run
+    # Same singular order, same quantity — and the SAME document: the identifiers below were captured before the
+    # pass, so an order that was re-issued, or voided and recreated, fails here instead of passing as "still one".
+    Then after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+    And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
+
+    # Idempotency is a property of REPEATED runs, so a second pass is the least that can demonstrate it: the first
+    # pass must not have left the group in a state the next one acts on.
+    When the DD_Order_Picking_Rebuild process is run
+    Then the drift rebuild considers jobScheduleA, jobScheduleB already served
+    And after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 15         |
     And the DD_OrderLine contributors are found:
       | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
       | groupDDOrderLine | jobScheduleA              | 10  |

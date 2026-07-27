@@ -22,8 +22,10 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
+import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.event.model.I_AD_EventLog;
@@ -210,6 +212,64 @@ public class DDOrderPickingReplenishment_StepDef
 	public void run_rebuild_process()
 	{
 		trxManager.runInThreadInheritedTrx(replenishmentService::rebuildDrift);
+	}
+
+	/**
+	 * Asserts the drift rebuild recognises each of the given workstation assignments as ALREADY SERVED, i.e. none of
+	 * them is in {@code DDOrderPickingReplenishmentService.getAssignmentIdsNeedingDDOrder()} — the set a rebuild pass
+	 * would re-plan.
+	 *
+	 * <p>This is the watchdog's "is this delivery already served?" question itself, and it has to be asserted
+	 * directly: on an already-served group the answer is invisible in the documents, because a re-plan of a group
+	 * that is already correct produces the same order again. An assignment that is served by a SHARED order — i.e.
+	 * every contributor but the one the order happens to point back at — must still be recognised, or the watchdog
+	 * re-plans the whole group on every hourly pass.</p>
+	 *
+	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
+	 */
+	@Then("^the drift rebuild considers (.*) already served$")
+	public void assert_assignments_considered_served(@NonNull final String pickingJobScheduleIdentifiers)
+	{
+		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder();
+
+		for (final StepDefDataIdentifier identifier : StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers))
+		{
+			final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(identifier);
+			assertThat(unserved)
+					.as("M_Picking_Job_Schedule %s (M_Picking_Job_Schedule_ID=%s) must NOT be in the drift rebuild's unserved set",
+							identifier, jobScheduleId.getRepoId())
+					.doesNotContain(jobScheduleId);
+		}
+	}
+
+	/**
+	 * The counterpart of {@code the drift rebuild considers ... already served}: asserts each of the given
+	 * assignments IS in the rebuild's unserved set, so a pass will re-plan it.
+	 *
+	 * <p>Needed wherever a scenario simulates the drift the watchdog exists for: it pins that the served-ness
+	 * predicate really lets go of an assignment whose order died, rather than the rebuild happening to re-plan it for
+	 * some other reason.</p>
+	 *
+	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
+	 */
+	@Then("^the drift rebuild considers (.*) to still need a DD_Order$")
+	public void assert_assignments_considered_unserved(@NonNull final String pickingJobScheduleIdentifiers)
+	{
+		final ImmutableSet<PickingJobScheduleId> unserved = assignmentIdsNeedingDDOrder();
+
+		for (final StepDefDataIdentifier identifier : StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers))
+		{
+			final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(identifier);
+			assertThat(unserved)
+					.as("M_Picking_Job_Schedule %s (M_Picking_Job_Schedule_ID=%s) must be in the drift rebuild's unserved set",
+							identifier, jobScheduleId.getRepoId())
+					.contains(jobScheduleId);
+		}
+	}
+
+	private ImmutableSet<PickingJobScheduleId> assignmentIdsNeedingDDOrder()
+	{
+		return trxManager.callInThreadInheritedTrx(replenishmentService::getAssignmentIdsNeedingDDOrder);
 	}
 
 	/**

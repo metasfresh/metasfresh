@@ -28,7 +28,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.eevolution.model.I_DD_Order;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Repository;
 
@@ -43,7 +42,7 @@ import java.util.stream.Stream;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /**
- * Repository Tables: M_Picking_Job_Schedule (query owner); DD_Order (sub-query filter only — see {@link #streamAssignmentsNeedingDDOrder});
+ * Repository Tables: M_Picking_Job_Schedule (query owner);
  * M_ShipmentSchedule (sub-query filter only — see {@link #listContributorsOfGroup(ProductId, UomId, Set)})
  * Repository Cluster: PickingJobScheduleRepository
  */
@@ -318,21 +317,30 @@ public class PickingJobScheduleRepository
 	}
 
 	/**
-	 * Cross-entity anti-join: streams active, not-yet-processed schedules that are NOT yet referenced by a completed
-	 * DD_Order ({@code M_Picking_Job_Schedule LEFT-anti-JOIN DD_Order} on {@code DD_Order.M_Picking_Job_Schedule_ID}).
+	 * Cross-entity anti-join: streams the active, not-yet-processed assignments that no live DD_Order serves yet
+	 * ({@code M_Picking_Job_Schedule} LEFT-anti-JOIN {@code servedAssignmentsQuery} on
+	 * {@code M_Picking_Job_Schedule_ID}).
 	 * <p>
-	 * {@code completedDDOrdersQuery} is passed in by the caller (the DD_Order reconcile flow) rather than built here,
-	 * so {@code DD_Order} stays a sub-query filter and not a table this repository owns.
+	 * Served-ness is decided by the caller-supplied set, which resolves it through the <b>contributor
+	 * association</b> — not through a single-owner back-reference column on the {@code DD_Order}. A consolidated
+	 * order serves several assignments, so such a column can name only one of them; every other contributor would
+	 * be reported unserved here and the whole group re-planned on every watchdog pass.
+	 * <p>
+	 * {@code servedAssignmentsQuery} is passed in rather than built here for the same reason the DD_Order query
+	 * always was: both the association and {@code DD_Order} live in modules that depend on this one, so only the
+	 * caller (the DD_Order reconcile flow) can compose them. Its {@code M_Picking_Job_Schedule_ID} column names the
+	 * served assignment.
 	 */
-	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<?> servedAssignmentsQuery)
 	{
 		final IQuery<I_M_Picking_Job_Schedule> query = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.addNotInSubQueryFilter(
 						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
-						I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID,
-						completedDDOrdersQuery)
+						// the sub-query's own FK back to M_Picking_Job_Schedule — same column name by convention
+						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
+						servedAssignmentsQuery)
 				.create();
 		Loggables.addLog("AssignmentsNeedingDDOrder - query: {}", query);
 

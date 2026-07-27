@@ -1492,9 +1492,34 @@ public class DDOrderPickingReplenishmentService
 		progress.done("Enqueued {} requests");
 	}
 
+	/**
+	 * The assignments {@link #rebuildDrift()} currently considers unserved, i.e. the watchdog's input set.
+	 *
+	 * <p>The read-only diagnostic seam over the served-ness predicate: "which deliveries does the watchdog think
+	 * still have no distribution order?" is otherwise only observable indirectly, through the documents a rebuild
+	 * pass happens to produce — and on an already-served group a pass produces nothing at all, so the predicate
+	 * cannot be told apart from an idempotent reconcile by looking at the outcome.</p>
+	 */
+	public ImmutableSet<PickingJobScheduleId> getAssignmentIdsNeedingDDOrder()
+	{
+		try (final Stream<PickingJobSchedule> assignments = streamAssignmentsNeedingDDOrder())
+		{
+			return assignments.map(PickingJobSchedule::getId).collect(ImmutableSet.toImmutableSet());
+		}
+	}
+
+	/**
+	 * The assignments no live DD_Order serves yet.
+	 *
+	 * <p>Served-ness is resolved through the contributor association: the assignments named by the alloc rows of the
+	 * lines of the live DD_Orders. A back-reference column on the {@code DD_Order} cannot answer this — a
+	 * consolidated order carries only ONE of its contributors there, so every other contributor of an
+	 * already-served group would be streamed on every hourly pass and the whole group re-planned.</p>
+	 */
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
 	{
-		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(ddOrderLowLevelDAO.queryCompletedDDOrders());
+		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(
+				contributorRepository.queryContributorsOfLines(ddOrderLowLevelDAO.queryCompletedDDOrderLines()));
 	}
 
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)

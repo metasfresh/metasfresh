@@ -12,6 +12,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_OrderLine;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
@@ -147,6 +148,25 @@ public class DDOrderLineContributorRepository
 	{
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
+				.create();
+	}
+
+	/**
+	 * The active alloc rows sitting on the given {@code DD_OrderLine}s, for use as a sub-query filter whose
+	 * {@code M_Picking_Job_Schedule_ID} column is the set of assignments those lines serve.
+	 * <p>
+	 * Handed the lines of the live DD_Orders, this is the drift watchdog's "already served" set — the association's
+	 * answer to a question a single-owner back-reference column can only answer for one contributor of a
+	 * consolidated order.
+	 */
+	public IQuery<I_DD_OrderLine_PickingJobSchedule> queryContributorsOfLines(@NonNull final IQuery<I_DD_OrderLine> ddOrderLinesQuery)
+	{
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						ddOrderLinesQuery)
 				.create();
 	}
 

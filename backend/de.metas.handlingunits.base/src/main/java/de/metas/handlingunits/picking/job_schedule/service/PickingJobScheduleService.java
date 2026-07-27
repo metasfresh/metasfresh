@@ -34,7 +34,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -178,14 +177,14 @@ public class PickingJobScheduleService
 	/**
 	 * Streams the active, not-yet-processed picking-job-schedule assignments that still need a DD_Order.
 	 * <p>
-	 * {@code completedDDOrdersQuery} is a sub-query reference (the set of DD_Orders whose schedule is already
-	 * covered), NOT a managed-entity query of this service — it is used as an anti-join filter against
-	 * {@code DD_Order.M_Picking_Job_Schedule_ID}. It is supplied by the DD_Order reconcile flow because the
-	 * "needs a DD_Order" predicate is only meaningful in that context.
+	 * {@code servedAssignmentsQuery} is a sub-query reference (the assignments a live DD_Order already serves,
+	 * read off the {@code DD_OrderLine_PickingJobSchedule} association), NOT a managed-entity query of this
+	 * service — it is used as an anti-join filter on {@code M_Picking_Job_Schedule_ID}. It is supplied by the
+	 * DD_Order reconcile flow because the "needs a DD_Order" predicate is only meaningful in that context.
 	 */
-	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<?> servedAssignmentsQuery)
 	{
-		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);
+		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(servedAssignmentsQuery);
 	}
 
 	/**

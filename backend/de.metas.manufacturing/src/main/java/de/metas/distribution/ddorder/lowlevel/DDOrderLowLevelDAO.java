@@ -106,6 +106,26 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
+	 * Returns a sub-query selecting the active {@link I_DD_OrderLine}s of {@link #queryCompletedDDOrders()}.
+	 *
+	 * <p>The line-level entry point into the same live-DD_Order set: whatever hangs off a line — such as the
+	 * assignments a consolidated line serves — can only be restricted to live orders by going through the lines
+	 * first. Same composition rule as {@link #queryCompletedDDOrders()}: this DAO owns the DD_Order/DD_OrderLine
+	 * side only, and the caller's service joins it to whatever it needs.</p>
+	 */
+	public IQuery<I_DD_OrderLine> queryCompletedDDOrderLines()
+	{
+		return queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						queryCompletedDDOrders())
+				.create();
+	}
+
+	/**
 	 * Returns ALL live (Completed, active) {@link I_DD_Order} records linked to the given workstation assignment
 	 * ({@code M_Picking_Job_Schedule}), ordered by {@code DD_Order_ID}.
 	 *
@@ -141,7 +161,8 @@ public class DDOrderLowLevelDAO
 	 * <p>{@code replenishmentLineIdsQuery} is a sub-query reference over the alloc table
 	 * ({@code DD_OrderLine_PickingJobSchedule}), NOT a table this DAO owns — it is supplied by the reconcile flow in
 	 * {@code de.metas.handlingunits.base}, which is where that model interface lives (same pattern as
-	 * {@code PickingJobScheduleRepository.streamAssignmentsNeedingDDOrder} taking the DD_Order query from its caller).
+	 * {@code PickingJobScheduleRepository.streamAssignmentsNeedingDDOrder} taking its served-assignment query from
+	 * its caller).
 	 * It is what restricts the result to <b>replenishment</b> lines: the three group-key columns alone would also
 	 * match a manually created or MRP-generated DD_Order that happens to move the same product to the same locator,
 	 * and this reconcile voids what it does not need — it must never be able to void a foreign document.</p>
