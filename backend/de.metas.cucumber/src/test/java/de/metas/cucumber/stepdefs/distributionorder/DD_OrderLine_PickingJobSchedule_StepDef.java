@@ -47,6 +47,8 @@ import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantitys;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -168,6 +170,42 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 				.validateUsingConsumer(liveDDOrders -> assertThat(liveDDOrders)
 						.as("live (DocStatus != Voided) DD_Orders of the product group")
 						.isEmpty())
+				.maxWaitSeconds(timeoutSec)
+				.checkingIntervalMs(1000L)
+				.execute();
+	}
+
+	/**
+	 * @cucumber.stepdef Polls until EXACTLY the given number of live (DocStatus != Voided) DD_Orders exist for the
+	 * given product group. The counterpart of the "exactly one" step above, for the case where the expected outcome is
+	 * a DUPLICATE — e.g. the second order a watchdog pass issues for a pre-existing order that carries no contributor
+	 * association. Counts only; the individual orders are asserted by the caller.
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
+	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Locator_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then after not more than 120s, exactly 2 live DD_Orders exist for the product group:
+	 *   | M_Product_ID | M_LocatorTo_ID |
+	 *   | product      | packingLocator |
+	 * </pre>
+	 */
+	@Then("^after not more than (.*)s, exactly (\\d+) live DD_Orders exist for the product group:$")
+	public void assertLiveDDOrderCountForProductGroup(final int timeoutSec, final int expectedCount, @NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> assertLiveDDOrderCountForProductGroup(timeoutSec, expectedCount, row));
+	}
+
+	private void assertLiveDDOrderCountForProductGroup(final int timeoutSec, final int expectedCount, @NonNull final DataTableRow row) throws InterruptedException
+	{
+		final ProductId productId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		final LocatorId locatorToId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID).lookupNotNullIdIn(locatorTable);
+
+		StepDefUtil.<List<I_DD_Order>>tryAndWaitForData(() -> liveDDOrdersOfProductGroup(productId, locatorToId))
+				.validateUsingConsumer(liveDDOrders -> assertThat(liveDDOrders)
+						.as("live (DocStatus != Voided) DD_Orders of the product group")
+						.hasSize(expectedCount))
 				.maxWaitSeconds(timeoutSec)
 				.checkingIntervalMs(1000L)
 				.execute();
@@ -425,5 +463,81 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 					.as("live DD_Orders of the product group after voiding them all")
 					.isEmpty();
 		});
+	}
+
+	/**
+	 * @cucumber.stepdef Test seam: deletes the COMPLETE {@code DD_OrderLine_PickingJobSchedule} contributor
+	 * association of the given line(s), reducing the order to the shape a pre-rollout order has BEFORE the rollout
+	 * backfill (migration {@code 5816390}) runs — a Completed, still-open replenishment order that nothing associates
+	 * with the delivery it serves.
+	 * <p>
+	 * This is a real, reachable database state, not a fabricated one: the single-schedule FK columns such an order
+	 * used to carry are dropped by migration {@code 5816420}, so an un-backfilled pre-rollout order is left with
+	 * exactly this — no association at all. Served-ness ({@code retainAssignmentsNeedingDDOrder}) and the group's
+	 * existing-order lookup ({@code findActiveDDOrdersForReplenishmentGroup(..., contributorRepository.queryAll())})
+	 * both read ONLY this table, so the order becomes invisible to them.
+	 * @cucumber.columns
+	 *   <b>DD_OrderLine_ID</b> — (required, identifier-ref) the line whose contributor association is dropped<br>
+	 * @cucumber.depends StepDefData: DD_OrderLine_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the contributor associations of the pre-rollout DD_OrderLines are dropped:
+	 *   | DD_OrderLine_ID |
+	 *   | preRolloutLine  |
+	 * </pre>
+	 */
+	@When("^the contributor associations of the pre-rollout DD_OrderLines are dropped:$")
+	public void dropContributorAssociations(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final DDOrderLineId lineId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID).lookupNotNullIdIn(ddOrderLineTable);
+
+			contributorRepository.deleteByLineIds(ImmutableSet.of(lineId));
+
+			assertThat(contributorRepository.getByLineId(lineId))
+					.as("contributor association of DD_OrderLine_ID=%s after dropping it", lineId.getRepoId())
+					.isEmpty();
+		});
+	}
+
+	/**
+	 * @cucumber.stepdef Re-creates the contributor association exactly as the rollout backfill (migration
+	 * {@code 5816390}) creates it: one row per open contributing assignment, with {@code Qty} and {@code C_UOM_ID}
+	 * taken from the {@code DD_OrderLine} itself — the migration's own {@code SELECT ol.QtyEntered, ol.C_UOM_ID}.
+	 * <p>
+	 * The quantity is deliberately NOT a DataTable column: a scenario that supplied it would be pinning its own
+	 * expectation rather than what the migration writes. The assignment IS a column, because it is what the dropped
+	 * single-schedule FK column used to point at and the migration reads it from there
+	 * ({@code COALESCE(ol.M_Picking_Job_Schedule_ID, o.M_Picking_Job_Schedule_ID)}).
+	 * @cucumber.columns
+	 *   <b>DD_OrderLine_ID</b> — (required, identifier-ref) the pre-rollout line to backfill<br>
+	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the assignment that pre-rollout order served<br>
+	 * @cucumber.depends StepDefData: DD_OrderLine_StepDefData, M_Picking_Job_Schedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the rollout backfill re-creates the contributor associations:
+	 *   | DD_OrderLine_ID | M_Picking_Job_Schedule_ID |
+	 *   | preRolloutLine  | jobSchedule               |
+	 * </pre>
+	 */
+	@When("^the rollout backfill re-creates the contributor associations:$")
+	public void backfillContributorAssociations(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable)
+				.groupBy(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.forEach((lineIdentifier, rows) -> {
+					final DDOrderLineId lineId = rows.getFirstRow()
+							.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+							.lookupNotNullIdIn(ddOrderLineTable);
+					final I_DD_OrderLine line = ddOrderService.getLineById(lineId);
+
+					final ImmutableList<DDOrderLineContributor> contributors = rows.stream()
+							.map(row -> DDOrderLineContributor.of(
+									row.getAsIdentifier(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable),
+									Quantitys.of(line.getQtyEntered(), UomId.ofRepoId(line.getC_UOM_ID()))))
+							.collect(ImmutableList.toImmutableList());
+
+					contributorRepository.replaceByLineId(lineId, contributors);
+				});
 	}
 }
