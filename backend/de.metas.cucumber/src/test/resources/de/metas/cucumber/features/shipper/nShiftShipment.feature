@@ -308,7 +308,7 @@ Feature: nShift Shipment
       | cso_ac6    | inout_ac6  |
     Then validate the captured nShift shipment request options:
       | IsManual | IsSelectionRules | ServiceLevel |
-      | false    | true             | STANDARD     |
+      | N        | Y                | STANDARD     |
 
   @Id:S0355_DeliveryOrder_180
   Scenario: nShift Delivery Order — IsSelectionRules=false when shipper has IsSelectionRules and schedules have any manual
@@ -347,8 +347,8 @@ Feature: nShift Shipment
       | Identifier          | M_InOut_ID          |
       | cso_manual_advise   | inout_manual_advise |
     Then validate the captured nShift shipment request options:
-      | IsSelectionRules |
-      | false            |
+      | IsManual | IsSelectionRules |
+      | Y        | N                |
 
   @Id:S0355_DeliveryOrder_TC1
   Scenario: nShift Delivery Order exported via Historical Shipments JSON includes parcel tracking
