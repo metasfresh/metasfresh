@@ -158,6 +158,57 @@ class C_Invoice_CreditMemoReasonTest
 		assertThatCode(() -> interceptor.validateCreditMemoReason(invoice)).doesNotThrowAnyException();
 	}
 
+	/**
+	 * Post-prepareIt state: the effective {@code C_DocType_ID} (not the target) is set. Covers the
+	 * first branch of the dual doc-type check.
+	 */
+	@Test
+	void creditMemo_effectiveDocTypeConfigured_lineWithoutReason_blocks()
+	{
+		stubSysConfig(CONFIGURED_DOCTYPE_IDS);
+		stubCreditMemo(true);
+		stubLines(line(10, null));
+
+		final I_C_Invoice invoice = InterfaceWrapperHelper.newInstance(I_C_Invoice.class);
+		invoice.setC_DocType_ID(DOCTYPE_IN_LIST); // effective doc type, target left unset
+		InterfaceWrapperHelper.saveRecord(invoice);
+
+		assertThatThrownBy(() -> interceptor.validateCreditMemoReason(invoice))
+				.isInstanceOf(AdempiereException.class);
+	}
+
+	/**
+	 * A credit memo with no lines has nothing to validate — completion must not be blocked.
+	 */
+	@Test
+	void creditMemo_noLines_passes()
+	{
+		stubSysConfig(CONFIGURED_DOCTYPE_IDS);
+		stubCreditMemo(true);
+		stubLines(); // no lines
+
+		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
+
+		assertThatCode(() -> interceptor.validateCreditMemoReason(invoice)).doesNotThrowAnyException();
+	}
+
+	/**
+	 * A malformed SysConfig token must not abort completion: the bad token is skipped and the valid
+	 * doc-type IDs still enforce the rule.
+	 */
+	@Test
+	void malformedSysConfigToken_ignored_validIdsStillEnforce()
+	{
+		stubSysConfig("1000004, not-a-number");
+		stubCreditMemo(true);
+		stubLines(line(10, null));
+
+		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
+
+		assertThatThrownBy(() -> interceptor.validateCreditMemoReason(invoice))
+				.isInstanceOf(AdempiereException.class);
+	}
+
 	// -------------------------------------------------------------------------
 
 	private void stubSysConfig(final String docTypeIdsCsv)

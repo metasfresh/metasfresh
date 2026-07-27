@@ -63,6 +63,8 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -599,8 +601,25 @@ public class C_Invoice // 03771
 				.omitEmptyStrings()
 				.splitToList(value)
 				.stream()
-				.map(Integer::parseInt)
+				.map(this::parseDocTypeIdOrNull)
+				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private Integer parseDocTypeIdOrNull(@NonNull final String token)
+	{
+		try
+		{
+			return Integer.valueOf(token);
+		}
+		catch (final NumberFormatException ex)
+		{
+			// A misconfigured SysConfig must not abort every credit-memo completion with a cryptic
+			// stack trace: skip the unparseable token and keep enforcing the valid ones.
+			log.warn("Ignoring non-integer C_DocType_ID token '{}' in SysConfig {}", token, SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs);
+			return null;
+		}
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
