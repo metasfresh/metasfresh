@@ -15,7 +15,9 @@ import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributorR
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventPublisher;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
+import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.material.planning.ddorder.DistributionNetworkRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.picking.api.PickingJobScheduleId;
@@ -35,15 +37,18 @@ import org.adempiere.warehouse.WarehouseRepository;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
+import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
@@ -51,8 +56,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
- * Unit tests for the per-locator greedy allocation and the contributor attribution built on top of it. The UOM
- * conversion is injected because a non-stocking assignment UOM cannot be reached through the real warehouse workflow.
+ * Unit tests for the per-locator greedy allocation, the contributor attribution built on top of it, and the order the
+ * contributors are attributed in. The UOM conversion is injected because a non-stocking assignment UOM cannot be
+ * reached through the real warehouse workflow.
  */
 @ExtendWith(AdempiereTestWatcher.class)
 class DDOrderPickingReplenishmentServiceGreedyAllocateTest
@@ -114,6 +120,20 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				.active(true)
 				.processed(false)
 				.build();
+	}
+
+	/**
+	 * The contributor's shipment schedule, carrying the two effective values the attribution order reads off it.
+	 * Not saved: the comparator resolves the schedule through the map it is handed, never through the record's id.
+	 */
+	private static I_M_ShipmentSchedule shipmentSchedule(
+			@NonNull final PriorityRule priorityRule,
+			@NonNull final String preparationDate)
+	{
+		final I_M_ShipmentSchedule schedule = InterfaceWrapperHelper.newInstance(I_M_ShipmentSchedule.class);
+		schedule.setPriorityRule(priorityRule.getCode());
+		schedule.setPreparationDate(TimeUtil.asTimestamp(Instant.parse(preparationDate)));
+		return schedule;
 	}
 
 	private static BigDecimal sumOf(@NonNull final Map<LocatorId, ImmutableList<DDOrderLineContributor>> attribution)
@@ -502,5 +522,47 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		assertThat(actual.get(l2))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(tuple(p1.getId(), 4), tuple(p2.getId(), 5));
+	}
+
+	/**
+	 * The order the group's demand — and therefore its shortfall — is attributed in: priority rule first, then the
+	 * earliest preparation date, then the older assignment.
+	 * <p>
+	 * Each of the three keys decides exactly one adjacent pair here, and each pair's two OTHER keys point the other
+	 * way, so dropping any one key re-orders the result:
+	 * <ul>
+	 *     <li>priority: {@code urgentButLatest} has the latest date AND the highest id, so only its priority can put it first;</li>
+	 *     <li>preparation date: {@code highAndEarliest} shares its priority with the two behind it and has the higher id, so only its date can;</li>
+	 *     <li>assignment id: {@code highSameDayOlder}/{@code highSameDayYounger} agree on priority AND date, and are fed in
+	 *     the wrong order — a stable sort would keep them that way without the id key.</li>
+	 * </ul>
+	 */
+	@Test
+	void attributionOrder_ranksByPriorityRule_thenPreparationDate_thenOlderAssignment()
+	{
+		final PickingJobSchedule urgentButLatest = contributor(40, "1");
+		final PickingJobSchedule highAndEarliest = contributor(30, "1");
+		final PickingJobSchedule highSameDayOlder = contributor(10, "1");
+		final PickingJobSchedule highSameDayYounger = contributor(20, "1");
+
+		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedules = ImmutableMap.of(
+				urgentButLatest.getShipmentScheduleId(), shipmentSchedule(PriorityRule.Urgent, "2022-05-20T08:00:00Z"),
+				highAndEarliest.getShipmentScheduleId(), shipmentSchedule(PriorityRule.High, "2022-05-18T08:00:00Z"),
+				highSameDayOlder.getShipmentScheduleId(), shipmentSchedule(PriorityRule.High, "2022-05-19T08:00:00Z"),
+				highSameDayYounger.getShipmentScheduleId(), shipmentSchedule(PriorityRule.High, "2022-05-19T08:00:00Z"));
+
+		// Fed in the exact REVERSE of the expected order, so no key can look right by accident of the input order.
+		final List<PickingJobSchedule> actual = Stream
+				.of(highSameDayYounger, highSameDayOlder, highAndEarliest, urgentButLatest)
+				.sorted(service.attributionOrder(schedules))
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(actual)
+				.extracting(PickingJobSchedule::getId)
+				.containsExactly(
+						urgentButLatest.getId(),
+						highAndEarliest.getId(),
+						highSameDayOlder.getId(),
+						highSameDayYounger.getId());
 	}
 }

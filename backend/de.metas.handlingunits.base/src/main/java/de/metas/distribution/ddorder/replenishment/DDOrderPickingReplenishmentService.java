@@ -27,6 +27,7 @@ import de.metas.handlingunits.storage.LocatorIdAndQty;
 import de.metas.handlingunits.storage.ProductAvailableStockPerLocator;
 import de.metas.handlingunits.storage.ProductQtyOnHandByLocator;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.PriorityRule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -349,10 +350,13 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/** The id tiebreak keeps the order stable across passes, so a group whose demand did not change does not rewrite its alloc rows. */
-	private Comparator<PickingJobSchedule> attributionOrder(@NonNull final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedules)
+	@VisibleForTesting
+	Comparator<PickingJobSchedule> attributionOrder(@NonNull final Map<ShipmentScheduleId, I_M_ShipmentSchedule> schedules)
 	{
 		return Comparator
-				.comparing((final PickingJobSchedule contributor) -> shipmentScheduleEffectiveBL.getPriorityRule(schedules.get(contributor.getShipmentScheduleId())).getCode())
+				.comparing(
+						(final PickingJobSchedule contributor) -> shipmentScheduleEffectiveBL.getPriorityRule(schedules.get(contributor.getShipmentScheduleId())),
+						PriorityRule.HIGH_TO_LOW)
 				.thenComparing(contributor -> shipmentScheduleEffectiveBL.getPreparationDate(schedules.get(contributor.getShipmentScheduleId())))
 				.thenComparing(contributor -> contributor.getId());
 	}
@@ -373,8 +377,8 @@ public class DDOrderPickingReplenishmentService
 
 	private ImmutableSet<DDOrderLineId> lineIdsOf(@NonNull final List<I_DD_Order> ddOrders)
 	{
-		return ddOrders.stream()
-				.flatMap(ddOrder -> ddOrderLowLevelDAO.retrieveLines(ddOrder).stream())
+		return ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(ddOrders))
+				.stream()
 				.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 	}
