@@ -11,6 +11,7 @@ import de.metas.interfaces.I_C_OrderLine;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -658,6 +659,78 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(reloaded.getATD()).isNull();
 		assertThat(reloaded.getATA()).isNull();
 		assertThat(reloaded.getBLDate()).isNull();
+	}
+
+	/**
+	 * Assigning via {@code addOrderLinesToShipperTransportation} (which passes only a SELECTED subset of the PO's lines):
+	 * the vendor delivery time must still come from the PO's first line (lowest {@code Line}), even when that line is NOT
+	 * part of the assigned subset. Proves the deliberate re-query in getFirstLineVendorDeliveryTimeDays.
+	 */
+	@Test
+	public void defaultDates_viaAddOrderLines_usesPOFirstLineNotSelectedSubset()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorSubset", "addressSubset");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+
+		final I_C_OrderLine line1 = createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		line1.setLine(10);
+		save(line1);
+		final I_C_OrderLine line2 = createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product2, uom1), Money.of(10, chf));
+		line2.setLine(20);
+		save(line2);
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 5);  // first line (line 10)
+		createBPartnerProduct(order.getC_BPartner_ID(), product2, order.getAD_Org_ID(), 99); // the selected subset line (line 20)
+
+		// assign ONLY the second line — the subset deliberately excludes the PO's first line
+		service.addOrderLinesToShipperTransportation(transportationId, ImmutableSet.of(OrderLineId.ofRepoId(line2.getC_OrderLine_ID())));
+
+		final java.sql.Timestamp expectedEtd = order.getDatePromised();
+		final java.sql.Timestamp expectedEta = TimeUtil.addDays(expectedEtd, 5); // 5 (product1 / first line), NOT 99 (product2 / subset)
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).isEqualTo(expectedEtd);
+		assertThat(reloaded.getETA())
+				.as("ETA must use the PO's first-line delivery time even when only a later line was assigned")
+				.isEqualTo(expectedEta);
+	}
+
+	/**
+	 * Defaults are fill-only-if-unset: a date the user entered BEFORE the first PO was assigned is kept, while the remaining
+	 * unset fields are still populated from the PO.
+	 */
+	@Test
+	public void defaultDates_keepUserPresetField_fillOnlyUnset()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final java.sql.Timestamp presetEtd = TimeUtil.asTimestamp(LocalDate.of(2021, 5, 5), orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID())));
+		shipperTransportation.setETD(presetEtd);
+		save(shipperTransportation);
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorPreset", "addressPreset");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 5);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final java.sql.Timestamp poDatePromised = order.getDatePromised();
+		final java.sql.Timestamp expectedEta = TimeUtil.addDays(poDatePromised, 5);
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("pre-set ETD is kept, not overwritten").isEqualTo(presetEtd);
+		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default").isEqualTo(expectedEta);
+		assertThat(reloaded.getATD()).isEqualTo(poDatePromised);
+		assertThat(reloaded.getATA()).isEqualTo(expectedEta);
+		assertThat(reloaded.getBLDate()).isEqualTo(poDatePromised);
 	}
 
 	private I_M_ShipperTransportation createShipperTransportation()

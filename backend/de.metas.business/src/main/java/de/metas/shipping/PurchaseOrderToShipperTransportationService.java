@@ -74,6 +74,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -291,12 +292,19 @@ public class PurchaseOrderToShipperTransportationService
 
 		final Timestamp eta = TimeUtil.addDays(etd, getFirstLineVendorDeliveryTimeDays(order));
 
-		shipperTransportation.setETD(etd);
-		shipperTransportation.setETA(eta);
-		shipperTransportation.setATD(etd);   // ATD = ETD
-		shipperTransportation.setATA(eta);   // ATA = ETA
-		shipperTransportation.setBLDate(etd); // B/L date = ATD (= ETD)
-		saveRecord(shipperTransportation);
+		// Fill each field ONLY if the user has not already set it: these are defaults, so a value entered before the first PO
+		// was assigned must be kept. (After assignment every value stays freely editable as well.)
+		boolean changed = false;
+		if (shipperTransportation.getETD() == null)   { shipperTransportation.setETD(etd);    changed = true; }
+		if (shipperTransportation.getETA() == null)   { shipperTransportation.setETA(eta);    changed = true; }
+		if (shipperTransportation.getATD() == null)   { shipperTransportation.setATD(etd);    changed = true; } // ATD = ETD
+		if (shipperTransportation.getATA() == null)   { shipperTransportation.setATA(eta);    changed = true; } // ATA = ETA
+		if (shipperTransportation.getBLDate() == null){ shipperTransportation.setBLDate(etd); changed = true; } // B/L date = ATD (= ETD)
+
+		if (changed)
+		{
+			saveRecord(shipperTransportation);
+		}
 	}
 
 	/**
@@ -315,7 +323,7 @@ public class PurchaseOrderToShipperTransportationService
 		return orderDAO.retrieveOrderLines(order)
 				.stream()
 				.filter(ol -> ol.getM_Product_ID() > 0)
-				.findFirst()
+				.min(Comparator.comparingInt(I_C_OrderLine::getLine)) // lowest Line = the PO's first line, independent of DAO sort order
 				.map(ol -> bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(ol.getM_Product_ID()), orgId))
 				.orElse(0);
 	}
