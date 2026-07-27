@@ -22,11 +22,15 @@
 
 package de.metas.invoice.interceptor;
 
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationBL;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocTypeId;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.due_date.InvoiceDueDateProviderService;
@@ -51,6 +55,8 @@ import javax.annotation.Nullable;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.compiere.model.X_C_InvoiceLine.LINE_CREDITMEMOREASON_Doppellieferung;
+import static org.compiere.model.X_C_InvoiceLine.LINE_CREDITMEMOREASON_Falschlieferung;
 import static org.mockito.ArgumentMatchers.any;
 
 /**
@@ -91,6 +97,14 @@ class C_Invoice_CreditMemoReasonTest
 		Services.registerService(IInvoiceBL.class, invoiceBL);
 		Services.registerService(org.adempiere.service.ISysConfigBL.class, sysConfigBL);
 
+		// Mirror the real effective-doc-type resolution: C_DocType_ID if set, else C_DocTypeTarget_ID.
+		Mockito.when(invoiceBL.getDocTypeIdEffectiveOrNull(any(org.compiere.model.I_C_Invoice.class)))
+				.thenAnswer(inv -> {
+					final org.compiere.model.I_C_Invoice invoice = inv.getArgument(0);
+					final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID());
+					return docTypeId != null ? docTypeId : DocTypeId.ofRepoIdOrNull(invoice.getC_DocTypeTarget_ID());
+				});
+
 		interceptor = new C_Invoice(
 				Mockito.mock(PaymentReservationService.class),
 				Mockito.mock(IDocumentLocationBL.class),
@@ -102,7 +116,7 @@ class C_Invoice_CreditMemoReasonTest
 	{
 		stubSysConfig(CONFIGURED_DOCTYPE_IDS);
 		stubCreditMemo(true);
-		stubLines(line(10, "CMF"), line(20, null)); // line 20 has no reason
+		stubLines(line(10, LINE_CREDITMEMOREASON_Falschlieferung), line(20, null)); // line 20 has no reason
 
 		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
 
@@ -130,7 +144,7 @@ class C_Invoice_CreditMemoReasonTest
 	{
 		stubSysConfig(CONFIGURED_DOCTYPE_IDS);
 		stubCreditMemo(true);
-		stubLines(line(10, "CMF"), line(20, "CMD"));
+		stubLines(line(10, LINE_CREDITMEMOREASON_Falschlieferung), line(20, LINE_CREDITMEMOREASON_Doppellieferung));
 
 		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
 
@@ -207,29 +221,21 @@ class C_Invoice_CreditMemoReasonTest
 		assertThatCode(() -> interceptor.validateCreditMemoReason(invoice)).doesNotThrowAnyException();
 	}
 
-	/**
-	 * A malformed SysConfig token must not abort completion: the bad token is skipped and the valid
-	 * doc-type IDs still enforce the rule.
-	 */
-	@Test
-	void malformedSysConfigToken_ignored_validIdsStillEnforce()
-	{
-		stubSysConfig("1000004, not-a-number");
-		stubCreditMemo(true);
-		stubLines(line(10, null));
-
-		final I_C_Invoice invoice = creditMemoInvoice(DOCTYPE_IN_LIST);
-
-		assertThatThrownBy(() -> interceptor.validateCreditMemoReason(invoice))
-				.isInstanceOf(AdempiereException.class);
-	}
-
 	// -------------------------------------------------------------------------
 
+	// Parsing of the SysConfig CSV (incl. skipping malformed tokens) lives in
+	// ISysConfigBL#getCommaSeparatedRepoIdAwares and is covered by SysConfigBLTests. Here we stub it to
+	// return the already-parsed set of gated doc-type IDs.
 	private void stubSysConfig(final String docTypeIdsCsv)
 	{
-		Mockito.when(sysConfigBL.getValue(C_Invoice.SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, ""))
-				.thenReturn(docTypeIdsCsv);
+		final ImmutableSet.Builder<DocTypeId> docTypeIds = ImmutableSet.builder();
+		for (final String token : Splitter.on(',').trimResults().omitEmptyStrings().split(docTypeIdsCsv))
+		{
+			docTypeIds.add(DocTypeId.ofRepoId(Integer.parseInt(token)));
+		}
+		Mockito.doReturn(docTypeIds.build())
+				.when(sysConfigBL)
+				.getCommaSeparatedRepoIdAwares(Mockito.eq(C_Invoice.SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs), any());
 	}
 
 	private void stubCreditMemo(final boolean isCreditMemo)
@@ -237,7 +243,7 @@ class C_Invoice_CreditMemoReasonTest
 		Mockito.when(invoiceBL.isCreditMemo(any(I_C_Invoice.class))).thenReturn(isCreditMemo);
 	}
 
-	private void stubLines(final de.metas.adempiere.model.I_C_InvoiceLine... lines)
+	private void stubLines(final I_C_InvoiceLine... lines)
 	{
 		Mockito.when(invoiceBL.getLines(any(InvoiceId.class))).thenReturn(ImmutableList.copyOf(lines));
 	}
@@ -250,15 +256,11 @@ class C_Invoice_CreditMemoReasonTest
 		return invoice;
 	}
 
-	private de.metas.adempiere.model.I_C_InvoiceLine line(final int lineNo, @Nullable final String reason)
+	private I_C_InvoiceLine line(final int lineNo, @Nullable final String reason)
 	{
-		final de.metas.adempiere.model.I_C_InvoiceLine invoiceLine =
-				InterfaceWrapperHelper.newInstance(de.metas.adempiere.model.I_C_InvoiceLine.class);
-		InterfaceWrapperHelper.setValue(invoiceLine, org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line, lineNo);
-		if (reason != null)
-		{
-			InterfaceWrapperHelper.setValue(invoiceLine, org.compiere.model.I_C_InvoiceLine.COLUMNNAME_Line_CreditMemoReason, reason);
-		}
+		final I_C_InvoiceLine invoiceLine = InterfaceWrapperHelper.newInstance(I_C_InvoiceLine.class);
+		invoiceLine.setLine(lineNo);
+		invoiceLine.setLine_CreditMemoReason(reason);
 		InterfaceWrapperHelper.saveRecord(invoiceLine);
 		return invoiceLine;
 	}

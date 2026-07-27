@@ -1,6 +1,5 @@
 package de.metas.invoice.interceptor;
 
-import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.adempiere.model.I_C_InvoiceLine;
@@ -62,8 +61,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
-import javax.annotation.Nullable;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -565,16 +562,17 @@ public class C_Invoice // 03771
 			return;
 		}
 
-		final ImmutableSet<DocTypeId> mandatoryDocTypeIds = getCreditMemoReasonMandatoryDocTypeIds();
+		final ImmutableSet<DocTypeId> mandatoryDocTypeIds = sysConfigBL.getCommaSeparatedRepoIdAwares(
+				SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, DocTypeId::ofRepoIdOrNull);
 		if (mandatoryDocTypeIds.isEmpty())
 		{
 			return; // validation disabled
 		}
 
-		// Match either the effective or the target doc type (the latter covers the pre-complete state).
-		final boolean docTypeMatches = mandatoryDocTypeIds.contains(DocTypeId.ofRepoIdOrNull(invoice.getC_DocType_ID()))
-				|| mandatoryDocTypeIds.contains(DocTypeId.ofRepoIdOrNull(invoice.getC_DocTypeTarget_ID()));
-		if (!docTypeMatches)
+		// The effective doc type resolves C_DocType_ID (post-prepareIt) and falls back to C_DocTypeTarget_ID
+		// (pre-complete state), so we never have to probe the set with a null key.
+		final DocTypeId docTypeId = invoiceBL.getDocTypeIdEffectiveOrNull(invoice);
+		if (!mandatoryDocTypeIds.contains(docTypeId))
 		{
 			return;
 		}
@@ -589,37 +587,7 @@ public class C_Invoice // 03771
 
 		if (!linesWithoutReason.isEmpty())
 		{
-			throw new AdempiereException(MSG_CreditMemoReasonMandatory, linesWithoutReason)
-					.markAsUserValidationError();
-		}
-	}
-
-	private ImmutableSet<DocTypeId> getCreditMemoReasonMandatoryDocTypeIds()
-	{
-		final String value = sysConfigBL.getValue(SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs, "");
-		return Splitter.on(',')
-				.trimResults()
-				.omitEmptyStrings()
-				.splitToList(value)
-				.stream()
-				.map(this::parseDocTypeIdOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableSet.toImmutableSet());
-	}
-
-	@Nullable
-	private DocTypeId parseDocTypeIdOrNull(@NonNull final String token)
-	{
-		try
-		{
-			return DocTypeId.ofRepoIdOrNull(Integer.parseInt(token));
-		}
-		catch (final NumberFormatException ex)
-		{
-			// A misconfigured SysConfig must not abort every credit-memo completion with a cryptic
-			// stack trace: skip the unparseable token and keep enforcing the valid ones.
-			log.warn("Ignoring non-integer C_DocType_ID token '{}' in SysConfig {}", token, SYSCONFIG_CreditMemoReasonMandatory_DocTypeIDs);
-			return null;
+			throw new AdempiereException(MSG_CreditMemoReasonMandatory, linesWithoutReason);
 		}
 	}
 
