@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.distributionorder;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
@@ -38,7 +39,9 @@ import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
 import org.eevolution.model.X_DD_Order;
 import de.metas.distribution.ddorder.DDOrderId;
+import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderService;
+import de.metas.distribution.ddorder.replenishment.alloc.DDOrderLineContributorRepository;
 import de.metas.distribution.ddorder.replenishment.DDOrderPickingReplenishmentService;
 import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentEventHandler;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -97,6 +100,7 @@ public class DDOrderPickingReplenishment_StepDef
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	@NonNull private final DDOrderPickingReplenishmentService replenishmentService = SpringContextHolder.instance.getBean(DDOrderPickingReplenishmentService.class);
 	@NonNull private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
+	@NonNull private final DDOrderLineContributorRepository contributorRepository = SpringContextHolder.instance.getBean(DDOrderLineContributorRepository.class);
 
 	@NonNull private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	@NonNull private final de.metas.cucumber.stepdefs.picking.M_Picking_Job_Schedule_StepDefData pickingJobScheduleTable;
@@ -139,7 +143,7 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Test seam: sets {@code QtyInTransit=1} on every {@code DD_OrderLine} linked to the given picking job schedule,
+	 * Test seam: sets {@code QtyInTransit=1} on every {@code DD_OrderLine} the given picking job schedule contributes to,
 	 * simulating dispatched-movement state without running the movement-processing flow.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment. For a different
@@ -157,15 +161,18 @@ public class DDOrderPickingReplenishment_StepDef
 	 * mistaken for a record-id digit (e.g. {@code 7.5}).
 	 *
 	 * <p>Params: the quantity to put in transit, and the identifier (from {@code M_Picking_Job_Schedule_StepDefData})
-	 * of the assignment whose DD_OrderLines should be marked in transit.</p>
+	 * of the assignment whose contributed DD_OrderLines should be marked in transit.</p>
 	 */
 	@When("^simulate goods in transit of (.*) on DD_Order linked to picking job schedule (.*)$")
 	public void simulate_goods_in_transit(@NonNull final String qtyInTransit, @NonNull final String pickingJobScheduleIdentifier)
 	{
 		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
 
-		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
-				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Picking_Job_Schedule_ID, jobScheduleId)
+		final ImmutableSet<DDOrderLineId> lineIds = contributorRepository.getLineIdsByPickingJobScheduleId(jobScheduleId);
+		final List<I_DD_OrderLine> lines = lineIds.isEmpty()
+				? ImmutableList.of()
+				: queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addInArrayFilter(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, lineIds)
 				.create()
 				.list(I_DD_OrderLine.class);
 
