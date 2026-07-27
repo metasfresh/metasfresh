@@ -135,6 +135,40 @@ public class M_Picking_Job_Schedule_StepDef
 	}
 
 	/**
+	 * @cucumber.stepdef Re-assigns an existing workstation assignment to another workplace in place, keeping its
+	 * {@code QtyToPick}, triggering the {@code M_Picking_Job_Schedule} interceptor's picker-busy guard and
+	 * after-commit reconcile.
+	 * @cucumber.columns
+	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the existing assignment to re-assign<br>
+	 *   <b>C_Workplace_ID</b> — (required, identifier-ref) the workplace to move it to<br>
+	 * @cucumber.depends StepDefData: M_Picking_Job_Schedule_StepDefData, C_Workplace_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * When the picking job schedule workplace is changed:
+	 *   | M_Picking_Job_Schedule_ID | C_Workplace_ID |
+	 *   | jobScheduleA              | workplaceB     |
+	 * </pre>
+	 */
+	@And("^the picking job schedule workplace is changed:$")
+	public void changeWorkplace(final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::changeWorkplace);
+	}
+
+	private void changeWorkplace(final DataTableRow row)
+	{
+		final PickingJobSchedule jobSchedule = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIn(jobScheduleTable);
+		final WorkplaceId newWorkplaceId = row.getAsIdentifier(I_M_Picking_Job_Schedule.COLUMNNAME_C_Workplace_ID).lookupNotNullIdIn(workplaceTable);
+
+		// Passing the existing PickingJobScheduleId takes createOrUpdate's UPDATE branch, so the workplace changes in place.
+		pickingJobScheduleService.createOrUpdate(
+				CreateOrUpdatePickingJobSchedulesRequest.builder()
+						.shipmentScheduleAndJobScheduleIds(ShipmentScheduleAndJobScheduleIdSet.of(jobSchedule.getShipmentScheduleAndJobScheduleId()))
+						.workplaceId(newWorkplaceId)
+						.build());
+	}
+
+	/**
 	 * @cucumber.stepdef Attempts to change an existing assignment's {@code QtyToPick} and asserts the
 	 * {@code beforeChange} interceptor REJECTS the save, leaving the assignment unchanged.
 	 * <p>
