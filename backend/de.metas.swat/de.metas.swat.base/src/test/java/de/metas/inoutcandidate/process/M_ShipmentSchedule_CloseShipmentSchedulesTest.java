@@ -38,9 +38,14 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * Covers the close-guard's single-schedule identifier helper
- * ({@link M_ShipmentSchedule_CloseShipmentSchedules#toHumanReadableIdentifier}): order-found → order
- * {@code DocumentNo}; fallback (no order, or order not in the resolved map) → {@code M_ShipmentSchedule_ID}.
+ * Covers both of the close-guard's single-schedule naming helpers:
+ * <ul>
+ * <li>{@link M_ShipmentSchedule_CloseShipmentSchedules#toHumanReadableIdentifier}: order-found → order
+ * {@code DocumentNo}; fallback (no order, or order not in the resolved map) → {@code M_ShipmentSchedule_ID}.</li>
+ * <li>{@link M_ShipmentSchedule_CloseShipmentSchedules#resolveDocumentNoByOrderId}: schedule referencing an existing
+ * order → one-entry {@code OrderId -> DocumentNo} map; no order → empty map (so the identifier falls back to the
+ * {@code M_ShipmentSchedule_ID}).</li>
+ * </ul>
  */
 class M_ShipmentSchedule_CloseShipmentSchedulesTest
 {
