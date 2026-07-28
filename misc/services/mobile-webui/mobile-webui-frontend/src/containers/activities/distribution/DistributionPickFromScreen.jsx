@@ -30,17 +30,9 @@ const DistributionPickFromScreen = () => {
   const dispatch = useDispatch();
   const [lineId, setLineId] = useState(lineIdParam);
 
-  // The handling unit this screen was OPENED with — scanned on the job screen
-  // (DistributionMoveActivity) or carried across an auto-advance (postDistributionPickFromThunk) —
-  // minus the one the backend has refused to pick from. While one is applied,
-  // ScanHUAndGetQtyComponent renders no handling-unit input at all and goes straight to the
-  // article-code scan, so a refused handling unit would leave the operator with no way to name
-  // another one; forgetting it puts the handling-unit prompt back on the same screen.
-  //
-  // What is remembered is WHICH code was refused, rather than a copy of the current one, because
-  // this component stays mounted across the auto-advance: a copy would not pick up the handling unit
-  // the next order carries in, and the operator would be asked to identify one again on every order
-  // after the refusal.
+  // The handling unit the screen was opened with — a job-screen scan, or one carried across an
+  // auto-advance — until the server refuses to pick from it. The refused code is what is remembered,
+  // so a handling unit a LATER order carries into this still-mounted screen is applied again.
   const [refusedHUQRCode, setRefusedHUQRCode] = useState(null);
   const appliedHUQRCode = huQRCodeParam === refusedHUQRCode ? undefined : huQRCodeParam;
 
@@ -138,15 +130,9 @@ const DistributionPickFromScreen = () => {
         qty,
       })
     ).catch((axiosError) => {
-      // A handling unit the operator did not choose on this screen and the server refuses to pick
-      // from is a dead end: they cannot name another one while it stays applied. Forget it, so the
-      // handling-unit prompt returns here instead of the order having to be left, and carry the
-      // server's reason into the message so the operator knows what to reach for.
-      //
-      // Only a refusal — a response — is answered this way. A network-layer failure carries no
-      // verdict on the handling unit and retrying the same scan can succeed, so it must not cost the
-      // operator the handling unit they are picking from (the response/no-response discriminator is
-      // this app's convention for that distinction).
+      // A refused handling unit the operator did not choose here is a dead end: this screen renders no
+      // handling-unit input while one is applied. Forget it so the prompt returns, with the reason.
+      // A network failure is no verdict on it and retrying can succeed, so it travels on untouched.
       const isServerRefusal = axiosError?.response != null;
       if (appliedHUQRCode == null || !isServerRefusal) {
         throw axiosError;
