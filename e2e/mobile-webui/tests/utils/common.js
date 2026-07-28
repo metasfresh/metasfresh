@@ -106,19 +106,10 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
 const UAT_CAPTURE_HOLD_MS = 500;
 
 /**
- * Hold the currently-painted screen briefly so the video recorder actually SAMPLES it.
- *
- * A NO-OP unless the UAT_CAPTURE env var is set, so a normal or CI run pays zero timing cost and
- * behaves identically to having no hold at all. Enable it only for a deliberate capture run:
- * `UAT_CAPTURE=1 npx playwright test <spec>`.
- *
- * Why this cannot be an assertion instead: on an already-loaded list the result assertions resolve
- * within a few milliseconds and the browser context closes right after, so the proven end state can
- * fall between two screencast frames and end up in no recorded frame at all. Post-production cannot
- * create a frame that was never captured, and no `visible`/`toHaveCount` wait extends the recorder's
- * sampling window — it only proves the element is there.
- *
- * Call this ONLY from a screen object, never from a spec: a scenario must read as the real workflow.
+ * Hold the painted screen briefly so the video recorder samples it. A NO-OP unless UAT_CAPTURE is
+ * set — enable it only for a deliberate capture run: `UAT_CAPTURE=1 npx playwright test <spec>`.
+ * Why no assertion can substitute, and why this may only be called from a screen object and never
+ * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
  */
 export const holdForCaptureIfEnabled = async () => {
     if (!process.env.UAT_CAPTURE) {
