@@ -46,8 +46,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,6 +72,9 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	private DDOrderPickingReplenishmentService service;
 	private DDOrderLineContributorRepository contributorRepository;
 	private DDOrderMoveScheduleService ddOrderMoveScheduleService;
+
+	/** The lines each test froze via {@link #createDDOrderLine}; the source of truth both freeze stubs answer from. */
+	private final Set<DDOrderLineId> linesWithMoveInProgress = new HashSet<>();
 
 	private I_C_UOM uomEach;   // product stocking UOM (e.g. PCE)
 	private I_C_UOM uomCase;   // assignment / demand UOM (e.g. a 6-pack case)
@@ -112,8 +118,15 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		);
 
 		// Default: no line is under movement. Each test that needs a frozen line states its own freeze set via
-		// createDDOrderLine(..., hasMoveInProgress=true), which stubs the specific line id to true.
-		when(ddOrderMoveScheduleService.hasInProgressSchedules(any(DDOrderLineId.class))).thenReturn(false);
+		// createDDOrderLine(..., hasMoveInProgress=true), which records the line id in linesWithMoveInProgress. Both the
+		// single-id form (the in-place write site) and the batched form (computeFrozenSplit's pre-loop resolution) answer
+		// from that same set.
+		when(ddOrderMoveScheduleService.hasInProgressSchedules(any(DDOrderLineId.class)))
+				.thenAnswer(invocation -> linesWithMoveInProgress.contains(invocation.<DDOrderLineId>getArgument(0)));
+		when(ddOrderMoveScheduleService.retrieveLineIdsWithInProgressSchedules(any()))
+				.thenAnswer(invocation -> invocation.<Set<DDOrderLineId>>getArgument(0).stream()
+						.filter(linesWithMoveInProgress::contains)
+						.collect(Collectors.collectingAndThen(Collectors.toSet(), ImmutableSet::copyOf)));
 	}
 
 	private PickingJobSchedule contributor(final int jobScheduleRepoId, final String qtyToPickEach)
@@ -202,7 +215,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 		if (hasMoveInProgress)
 		{
-			when(ddOrderMoveScheduleService.hasInProgressSchedules(DDOrderLineId.ofRepoId(lineRepoId))).thenReturn(true);
+			linesWithMoveInProgress.add(DDOrderLineId.ofRepoId(lineRepoId));
 		}
 		return line;
 	}

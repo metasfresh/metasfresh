@@ -787,13 +787,13 @@ public class DDOrderPickingReplenishmentService
 	{
 		final LinkedHashMap<LocatorId, Quantity> refusedQtyByLocator = new LinkedHashMap<>();
 
-		// N+1 budget (Global Constraint 6): freeze state cannot change during a reconcile, so resolve the frozen lines
-		// ONCE here — hasInProgressSchedules has only single-id overloads, no batched variant — and test set membership
-		// inside the fixed-point loop rather than re-asking the service on every iteration.
-		final ImmutableSet<DDOrderLineId> frozenLineIds = existingLineByLocator.values().stream()
+		// N+1 budget: freeze state cannot change during a reconcile, so resolve the frozen lines ONCE here — in a single
+		// batched query — and test set membership inside the fixed-point loop rather than re-asking the service on every
+		// iteration.
+		final ImmutableSet<DDOrderLineId> candidateLineIds = existingLineByLocator.values().stream()
 				.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
-				.filter(lineId -> ddOrderMoveScheduleService.hasInProgressSchedules(lineId))
 				.collect(ImmutableSet.toImmutableSet());
+		final ImmutableSet<DDOrderLineId> frozenLineIds = ddOrderMoveScheduleService.retrieveLineIdsWithInProgressSchedules(candidateLineIds);
 
 		while (true)
 		{
@@ -1242,7 +1242,7 @@ public class DDOrderPickingReplenishmentService
 
 	/**
 	 * The {@link #computeFrozenSplit} fixed-point-loop form of {@link #isShrinkRefusedByMoveInProgress(I_DD_OrderLine, Quantity)}:
-	 * the freeze verdict is pre-resolved into {@code frozenLineIds} once before the loop (N+1 budget, Global Constraint 6)
+	 * the freeze verdict is pre-resolved into {@code frozenLineIds} once before the loop (N+1 budget)
 	 * and this only tests membership — never re-asking the service per iteration. Same freeze signal, same shrink math,
 	 * so the two forms cannot disagree about which lines are frozen.
 	 */
