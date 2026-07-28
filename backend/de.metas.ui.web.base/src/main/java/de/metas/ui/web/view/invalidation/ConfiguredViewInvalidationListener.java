@@ -71,8 +71,8 @@ public class ConfiguredViewInvalidationListener implements ICacheResetListener
 	private static final String SYSCONFIG_DelayInMillis = "webui.ConfiguredViewInvalidationListener.debouncer.delayInMillis";
 	private static final int DEFAULT_DelayInMillis = 100;
 
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IViewsRepository viewsRepository;
 	private final WebuiViewInvalidateOnChangeRepository configRepository;
