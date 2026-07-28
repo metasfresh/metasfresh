@@ -355,7 +355,8 @@ public class ExternalIdentifierProductLookupServiceTest
 	 * the query date must still resolve — the product must NOT become unresolvable just because
 	 * no PIIP row is valid on the requested date.
 	 *
-	 * <p>Setup mirrors the failing cucumber: ValidFrom=2022-01-01, query date=2021-04-15
+	 * <p>Setup mirrors cucumber scenario @Id:S0469_20 (manualPriceOLCandToInvoice):
+	 * ValidFrom=2022-01-01, query date=2021-04-15
 	 * (i.e. ValidFrom is AFTER the query date, so the validity-filtered primary query returns nothing).
 	 * Expected: the product is still returned (with the best-available PIIP), NOT empty.
 	 */
