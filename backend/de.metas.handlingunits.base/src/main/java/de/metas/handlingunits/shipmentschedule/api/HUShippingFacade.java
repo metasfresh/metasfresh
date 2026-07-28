@@ -24,6 +24,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
@@ -41,10 +42,13 @@ import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
 import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
+import de.metas.shipper.gateway.spi.model.ResolvedCarrier;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperGatewayId;
 import de.metas.shipping.ShipperId;
@@ -97,6 +101,7 @@ public class HUShippingFacade
 	private final IShipmentService shipmentService = ShipmentService.getInstance();
 
 	private final Lazy<ShipperGatewayFacade> shipperGatewayFacadeHolder = SpringContextHolder.lazyBean(ShipperGatewayFacade.class);
+	private final Lazy<DeliveryOrderCarrierResolver> deliveryOrderCarrierResolverHolder = SpringContextHolder.lazyBean(DeliveryOrderCarrierResolver.class);
 
 	//
 	// Parameters
@@ -294,6 +299,11 @@ public class HUShippingFacade
 		Check.assume(addToShipperTransportationId > 0, "addToShipperTransportationId > 0");
 		final I_M_ShipperTransportation shipperTransportation = load(addToShipperTransportationId, I_M_ShipperTransportation.class);
 
+		// Resolve the carrier from the shipment schedule (SCHEDULE-SOURCED); pass it to commons as data
+		// (commons must not depend on the handlingunits module — see DeliveryOrderCarrierResolver).
+		final ImmutableMap<ShipmentScheduleId, ResolvedCarrier> carrierByScheduleId = deliveryOrderCarrierResolverHolder.get()
+				.resolveByPackageIds(mPackageIds.stream().map(PackageId::ofRepoId).collect(ImmutableSet.toImmutableSet()));
+
 		final DeliveryOrderCreateRequest request = DeliveryOrderCreateRequest.builder()
 				.pickupDate(getPickupDate(shipperTransportation))
 				.timeFrom(TimeUtil.asLocalTime(shipperTransportation.getPickupTimeFrom()))
@@ -301,6 +311,7 @@ public class HUShippingFacade
 				.packageIds(mPackageIds)
 				.shipperTransportationId(ShipperTransportationId.ofRepoId(addToShipperTransportationId))
 				.shipperGatewayId(shipperGatewayId)
+				.carrierByScheduleId(carrierByScheduleId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}

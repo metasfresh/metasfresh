@@ -10,6 +10,7 @@ import de.metas.frontend_testing.masterdata.hu.JsonCreateHURequest;
 import de.metas.frontend_testing.masterdata.hu.JsonPackingInstructionsRequest;
 import de.metas.frontend_testing.masterdata.huQRCodes.JsonGenerateHUQRCodeRequest;
 import de.metas.frontend_testing.masterdata.inventory.JsonInventoryRequest;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxRequest;
 import de.metas.frontend_testing.masterdata.mobile_configuration.JsonMobileConfigRequest;
 import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRequest;
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
@@ -60,6 +61,7 @@ public class JsonCreateMasterdataRequest
 
 	@Nullable JsonMobileConfigRequest mobileConfig;
 	@Nullable Map<String, JsonLoginUserRequest> login;
+	@Nullable Map<String, JsonMailboxRequest> mailboxes;
 	@Nullable Map<String, JsonCreateBPartnerRequest> bpartners;
 	@Nullable Map<String, JsonWorkplaceRequest> workplaces;
 	@Nullable Map<String, JsonWarehouseRequest> warehouses;

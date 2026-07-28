@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 766662840L;
+	private static final long serialVersionUID = -1879918600L;
 
     /** Standard Constructor */
     public X_C_BP_Group (final Properties ctx, final int C_BP_Group_ID, @Nullable final String trxName)
@@ -376,6 +376,27 @@ public class X_C_BP_Group extends org.compiere.model.PO implements I_C_BP_Group,
 	public boolean isDeviatingBillBPartner() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDeviatingBillBPartner);
+	}
+
+	/** 
+	 * IsPreAdviceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPREADVICEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPREADVICEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISPREADVICEREQUIRED_No = "N";
+	@Override
+	public void setIsPreAdviceRequired (final @Nullable java.lang.String IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public java.lang.String getIsPreAdviceRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPreAdviceRequired);
 	}
 
 	@Override

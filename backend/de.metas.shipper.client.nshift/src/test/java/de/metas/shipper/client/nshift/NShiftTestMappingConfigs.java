@@ -21,6 +21,10 @@ public class NShiftTestMappingConfigs
 	public static final String REFERENCE_KIND_PICKUP_END = "109";
 	public static final String REFERENCE_KIND_DELIVERY_DATE = "9";
 	public static final String REFERENCE_KIND_CUSTOMER_REFERENCE = "7";
+	public static final String REFERENCE_KIND_PRE_ADVICE = "65";
+	public static final String REFERENCE_KIND_INCOTERMS = "63";
+	public static final String REFERENCE_KIND_EXTERNAL_SYSTEM = "64";
+	public static final String LINE_REFERENCE_KIND_TOP_LEVEL_TYPE = "135";
 	public static final String LINE_REFERENCE_KIND_CONTENTS = "23";
 	public static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_1 = "129";
 	public static final String LINE_REFERENCE_KIND_CUSTOM_FIELD_2 = "130";
@@ -45,7 +49,7 @@ public class NShiftTestMappingConfigs
 	public static final String DETAIL_KIND_CUSTOMS_ARTICLE_CURRENCY = "17";
 	public static final String DETAIL_KIND_SHIPPER_EORI = "182";
 
-	public static final JsonMappingConfigList SHARED = JsonMappingConfigList.ofList(ImmutableList.of(
+	public static final JsonMappingConfigList SHARED_TEST = JsonMappingConfigList.ofList(ImmutableList.of(
 			// Shipment-level references
 			JsonMappingConfig.builder()
 					.seqNo(10)
@@ -70,6 +74,24 @@ public class NShiftTestMappingConfigs
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
 					.attributeKey(REFERENCE_KIND_CUSTOMER_REFERENCE)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(42)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_INCOTERMS)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(43)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_EXTERNAL_SYSTEM)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(44)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_PRE_ADVICE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED)
 					.build(),
 			// Sender attention
 			JsonMappingConfig.builder()
@@ -296,6 +318,172 @@ public class NShiftTestMappingConfigs
 					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
 					.attributeKey(LINE_REFERENCE_KIND_CUSTOM_FIELD_6)
 					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_GROSS_WEIGHT_KG)
+					.build()
+	));
+
+	/**
+	 * The nShift mapping config exactly as currently migrated into the DB (M_Shipper_Mapping_Config for the
+	 * nShift shipper). Unlike {@link #SHARED_TEST} it has no per-country {@code mappingRule} variants — it is a
+	 * verbatim mirror of the migrated rows, ordered by SeqNo.
+	 */
+	public static final JsonMappingConfigList SHARED_DB = JsonMappingConfigList.ofList(ImmutableList.of(
+			// Shipment-level references
+			JsonMappingConfig.builder()
+					.seqNo(10)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_PICKUP_START)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_START)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(20)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_PICKUP_END)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PICKUP_DATE_AND_TIME_END)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(30)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_DELIVERY_DATE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_DELIVERY_DATE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(40)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_CUSTOMER_REFERENCE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CUSTOMER_REFERENCE)
+					.build(),
+			// Sender attention
+			JsonMappingConfig.builder()
+					.seqNo(50)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION)
+					.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(55)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COMPANY_NAME)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(60)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_SENDER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_DEPARTMENT)
+			// 		.build(),
+			// Receiver attention
+			JsonMappingConfig.builder()
+					.seqNo(70)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION)
+					.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(75)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_COMPANY_NAME)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(80)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_DEPARTMENT)
+			// 		.build(),
+			// JsonMappingConfig.builder()
+			// 		.seqNo(90)
+			// 		.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_RECEIVER_ATTENTION)
+			// 		.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_RECEIVER_CONTACT_LASTNAME_AND_FIRSTNAME)
+			// 		.build(),
+			// Shipment-level detail group (customs info)
+			JsonMappingConfig.builder()
+					.seqNo(100)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_INFO)
+					.attributeKey(DETAIL_KIND_SHIPPER_EORI)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPER_EORI)
+					.build(),
+			// Line detail group (customs article)
+			JsonMappingConfig.builder()
+					.seqNo(110)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_QUANTITY)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SHIPPED_QUANTITY)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(120)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_UNIT_OF_MEASURE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UOM_CODE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(130)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_DESCRIPTION_OF_GOODS)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_NAME)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(140)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_UNIT_VALUE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_PRICE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(150)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_TOTAL_VALUE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOTAL_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(160)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_CUSTOMS_ARTICLE_CURRENCY)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_CURRENCY_CODE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(170)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_COUNTRY_OF_ORIGIN)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_SENDER_COUNTRY_CODE)
+					.build(),
+			// Line reference
+			JsonMappingConfig.builder()
+					.seqNo(180)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+					.attributeKey(LINE_REFERENCE_KIND_CONTENTS)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_PRODUCT_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(190)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_DETAIL_GROUP)
+					.groupKey(DETAIL_GROUP_KEY_CUSTOMS_ARTICLE)
+					.attributeKey(DETAIL_KIND_UNIT_WEIGHT)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_UNIT_WEIGHT_G)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(200)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_INCOTERMS)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_INCOTERMS_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(210)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_EXTERNAL_SYSTEM)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(220)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_REFERENCE)
+					.attributeKey(REFERENCE_KIND_PRE_ADVICE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED)
+					.build(),
+			JsonMappingConfig.builder()
+					.seqNo(220)
+					.attributeType(DeliveryMappingConstants.ATTRIBUTE_TYPE_LINE_REFERENCE)
+					.attributeKey(LINE_REFERENCE_KIND_TOP_LEVEL_TYPE)
+					.attributeValue(DeliveryMappingConstants.ATTRIBUTE_VALUE_TOP_LEVEL_TYPE)
 					.build()
 	));
 }

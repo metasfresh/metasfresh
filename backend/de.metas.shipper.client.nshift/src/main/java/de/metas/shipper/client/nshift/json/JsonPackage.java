@@ -44,6 +44,12 @@ public class JsonPackage
 	@JsonProperty("ItemNo")
 	Integer itemNo;
 
+	@JsonProperty("PkgCSID")
+	Integer pkgCSID;
+
+	@JsonProperty("PkgTag")
+	String pkgTag;
+
 	@JsonProperty("PkgNo")
 	String pkgNo;
 

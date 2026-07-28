@@ -92,12 +92,14 @@ pull_request_rules:
               - base=yoyo_uat
           - or: &PROJECT_BRANCHES_HOTFIX
               # HOTFIX BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=speedy_tiger_hotfix
+              - base=temporary_test202412_hotfix
+              - base=neon_underwear_hotfix
               - base=midnight_xylophone_hotfix
               - base=boomerang_signal_hotfix
               - base=galaxy_hero_hotfix
               - base=vernal_mousse_hotfix
               - base=rogue_spacewalk_hotfix
-              - base=temporary_test202412_hotfix
               - base=taloned_owl_hotfix
               - base=organic_goat_hotfix
               - base=green_oak_hotfix
@@ -124,18 +126,21 @@ pull_request_rules:
               - base=yoyo_hotfix
           - or: &PROJECT_BRANCHES_RELEASE
               # RELEASE BRANCH. THIS LINE IS A COMMENT FOR NEW CUSTOMER AUTOMATION. DO NOT EDIT THIS LINE IN ANY WAY. The script will insert new branches below this line.
+              - base=speedy_tiger_release
+              - base=temporary_test202412_release
               - base=midnight_xylophone_release
               - base=boomerang_signal_release
+              - base=deep_tundra_release
               - base=galaxy_hero_release
               - base=vernal_mousse_release
               - base=rogue_spacewalk_release
-              - base=temporary_test202412_release
               - base=taloned_owl_release
               - base=organic_goat_release
               - base=green_oak_release
               - base=mighty_pegasus_release
               - base=task_force_release
               - base=keen_hawk_release
+              - base=gray_knight_release
               - base=game_time_release
               - base=ghost_rider_release
               - base=intensive_care_release

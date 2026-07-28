@@ -24,7 +24,7 @@ package de.metas.externalsystem.export.bpartner;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.audit.data.repository.DataExportAuditRepository;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
+import de.metas.externalsystem.ExternalSystemConfigRepository;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
@@ -51,7 +51,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 {
 	private static final AdMessageKey MSG_RABBIT_MQ_SENT = AdMessageKey.of("RabbitMQ_Sent");
 
-	private final ExternalSystemConfigRepo externalSystemConfigRepo = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
+	private final ExternalSystemConfigRepository externalSystemConfigRepository = SpringContextHolder.instance.getBean(ExternalSystemConfigRepository.class);
 	private final DataExportAuditRepository dataExportAuditRepository = SpringContextHolder.instance.getBean(DataExportAuditRepository.class);
 
 	private static final String PARAM_EXTERNAL_SYSTEM_CONFIG_RABBITMQ_HTTP_ID = "ExternalSystem_Config_RabbitMQ_HTTP_ID";
@@ -64,7 +64,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 	{
 		if (getExternalSystemParam().equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepo.getActiveByType(getExternalSystemType())
+			final ImmutableList<ExternalSystemParentConfig> activeConfigs = externalSystemConfigRepository.getActiveByType(getExternalSystemType())
 					.stream()
 					.collect(ImmutableList.toImmutableList());
 
@@ -89,7 +89,7 @@ public abstract class C_BPartner_SyncTo_ExternalSystem extends JavaProcess imple
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (!externalSystemConfigRepo.isAnyConfigActive(getExternalSystemType()))
+		if (!externalSystemConfigRepository.isAnyConfigActive(getExternalSystemType()))
 		{
 			return ProcessPreconditionsResolution.reject();
 		}

@@ -56,9 +56,9 @@ import de.metas.handlingunits.picking.job.service.commands.pick.PickingJobPickCo
 import de.metas.handlingunits.picking.job.service.commands.pick_all.PickingJobPickAllCommand;
 import de.metas.handlingunits.picking.job.service.commands.retrieve.PickingJobCandidateRetrieveCommand;
 import de.metas.handlingunits.picking.job.service.external.bpartner.PickingJobBPartnerService;
+import de.metas.handlingunits.picking.job.service.external.carrieradvise.PickingJobCarrierAdviseConsistencyService;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
-import de.metas.handlingunits.picking.job.service.external.salesorder.PickingJobSalesOrderService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
 import de.metas.handlingunits.picking.job.service.external.warehouse.PickingJobWarehouseService;
 import de.metas.handlingunits.picking.job.service.shelflife.PickingShelfLifeCheck;
@@ -120,10 +120,10 @@ public class PickingJobService implements PickingSlotListener
 	@NonNull private final MobileUIPickingUserProfileService configService;
 	@NonNull private final PickingJobScheduleService pickingJobScheduleService;
 	@NonNull private final PickingJobHUService huService;
+	@NonNull private final PickingJobCarrierAdviseConsistencyService carrierAdviseConsistencyService;
 	@NonNull private final PickingJobGraiTargetService graiTargetService;
 	@NonNull private final PickingJobUnpickProductResolver unpickProductResolver;
 	@NonNull private final PickingShelfLifeCheck shelfLifeCheck;
-	@NonNull private final PickingJobSalesOrderService salesOrderService;
 
 	@NonNull
 	public PickingJob getById(final PickingJobId pickingJobId)
@@ -686,10 +686,17 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final LUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withLuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// Selecting an LU starts a NEW top-level parcel → re-init the header carrier from the unprocessed lines
+		// (the batch that will land on it). Only on a genuine new-*parcel* select (a real LU), not when clearing it.
+		if (target != null && target.isNewLU())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -701,10 +708,18 @@ public class PickingJobService implements PickingSlotListener
 			@Nullable final PickingJobLineId lineId,
 			@Nullable final TUPickingTarget target)
 	{
-		final PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
+		PickingJob pickingJobChanged = pickingJob.withTuPickingTarget(lineId, target);
 		if (Util.equals(pickingJob, pickingJobChanged))
 		{
 			return pickingJob;
+		}
+
+		// A TU is a new top-level parcel ONLY when it is NOT nested under an existing LU pick target. A TU nested
+		// under an LU keeps the LU's header carrier state untouched (the LU is the parcel). Re-init only on a real
+		// new-*parcel* select (a new TU), not when clearing the target.
+		if (target != null && target.isNewTU() && !pickingJobChanged.getLuPickingTargetEffective(lineId).isPresent())
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
 		}
 
 		pickingJobRepository.save(pickingJobChanged);
@@ -738,12 +753,10 @@ public class PickingJobService implements PickingSlotListener
 		// is no single line product at header level.
 		final LUPickingTarget luTarget = pickingJob.getLuPickingTargetEffective(lineId).orElse(null);
 		final ProductId lineProductId = (lineId != null) ? pickingJob.getLineById(lineId).getProductId() : null;
-		final String poReference = resolvePOReferenceForGraiCheck(pickingJob, lineId);
 		final GraiTuResolution resolved = graiTargetService.resolveTuTypeAndCapacity(
 				scannedGrai,
 				luTarget,
-				lineProductId,
-				poReference);
+				lineProductId);
 
 		final GRAI grai = resolved.getGrai();
 		final HuPackingInstructionsId tuPIId = resolved.getTuPIId();
@@ -754,37 +767,6 @@ public class PickingJobService implements PickingSlotListener
 		final TUPickingTarget tuTarget = TUPickingTarget.ofPackingInstructions(tuPIId, tuPI.getName(), grai);
 
 		return setTUPickingTarget(pickingJob, lineId, tuTarget);
-	}
-
-	/**
-	 * Resolves the current sales order's PO reference for the Migros GRAI-ownership check
-	 * ({@link PickingJobGraiTargetService#resolveTuTypeAndCapacity}), via the {@code external/salesorder} facade.
-	 *
-	 * @return {@code null} when no sales order can be unambiguously resolved (a header-level scan of a job whose
-	 * lines span more than one sales order), or when the resolved order has no PO reference set. A {@code null}
-	 * result means the Migros-ownership check is skipped, not failed.
-	 */
-	@Nullable
-	private String resolvePOReferenceForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
-	{
-		final OrderId salesOrderId = resolveSalesOrderIdForGraiCheck(pickingJob, lineId);
-		return salesOrderId != null ? salesOrderService.getPOReferenceById(salesOrderId) : null;
-	}
-
-	@Nullable
-	private static OrderId resolveSalesOrderIdForGraiCheck(@NonNull final PickingJob pickingJob, @Nullable final PickingJobLineId lineId)
-	{
-		if (lineId != null)
-		{
-			return pickingJob.getLineById(lineId).getSalesOrderAndLineId().getOrderId();
-		}
-
-		// Header-level scan: only unambiguous when every line of the job belongs to the same sales order
-		// (always true for SALES_ORDER-aggregated jobs; a DELIVERY_LOCATION job can span several orders).
-		final ImmutableSet<OrderId> salesOrderIds = pickingJob.streamLines()
-				.map(line -> line.getSalesOrderAndLineId().getOrderId())
-				.collect(ImmutableSet.toImmutableSet());
-		return salesOrderIds.size() == 1 ? salesOrderIds.iterator().next() : null;
 	}
 
 	/**
@@ -889,7 +871,14 @@ public class PickingJobService implements PickingSlotListener
 			final boolean isShipClosedHUs)
 	{
 		final LUIdsAndTopLevelTUIdsCollector closedHUIdsCollector = new LUIdsAndTopLevelTUIdsCollector();
-		final PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+		PickingJob pickingJobChanged = pickingJob.withClosedLUAndTUPickingTargets(isCloseOnHeader, isCloseOnLines, onlyLineId, closedHUIdsCollector);
+
+		// Closing a TOP-LEVEL parcel (header scope) frees the header for the next batch → re-init its carrier
+		// state from the still-unprocessed lines. A per-line close (isCloseOnHeader=false) leaves the header alone.
+		if (isCloseOnHeader)
+		{
+			pickingJobChanged = pickingJobChanged.withHeaderCarrierFromUnprocessedLines();
+		}
 
 		if (!Util.equals(pickingJob, pickingJobChanged))
 		{
@@ -898,6 +887,10 @@ public class PickingJobService implements PickingSlotListener
 
 		if (!closedHUIdsCollector.isEmpty())
 		{
+			// Enforce per-parcel carrier-advise consistency at target-close: a closed LU may ship right here (isShipClosedHUs),
+			// so complete-time is too late. Throwing here aborts the close (and thus the pick/complete).
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(closedHUIdsCollector.getAllTopLevelHUIds());
+
 			pickingJobChanged.getPickingSlotIdEffective(onlyLineId)
 					.ifPresent(pickingSlotId -> pickingSlotService.addToPickingSlotQueue(pickingSlotId, closedHUIdsCollector.getAllTopLevelHUIds()));
 
@@ -984,6 +977,19 @@ public class PickingJobService implements PickingSlotListener
 		if (pickingTarget == null)
 		{
 			return pickingJob;
+		}
+
+		// Enforce per-parcel carrier-advise consistency on the closed TU — the same guard the LU-close / complete
+		// path runs (closeLUAndTUPickingTargets). Without it, a TU carrying two distinct manual carriers slips
+		// silently past close and only fails later at shipment generation with a raw ShipperGatewayException.
+		// Guard the TOP-LEVEL HU of the closing TU (the LU when the TU is nested under one, else the TU itself):
+		// the guard's schedule lookup only matches top-level HUs, and a nested TU's picked schedules carry the LU's
+		// M_LU_HU_ID, so guarding the TU directly would miss them. This mirrors the LU-close / complete path, which
+		// already passes top-level HU ids (closedHUIdsCollector.getAllTopLevelHUIds()).
+		if (pickingTarget.isExistingTU())
+		{
+			final HuId topLevelHuId = huService.getTopLevelHuId(pickingTarget.getTuIdNotNull());
+			carrierAdviseConsistencyService.assertConsistentForClosedHUs(ImmutableSet.of(topLevelHuId));
 		}
 
 		return setTUPickingTarget(pickingJob, lineId, null);

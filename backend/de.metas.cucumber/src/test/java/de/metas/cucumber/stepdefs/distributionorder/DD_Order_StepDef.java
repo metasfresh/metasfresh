@@ -98,10 +98,10 @@ import org.eevolution.model.X_DD_Order;
 import javax.annotation.Nullable;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -850,18 +850,31 @@ public class DD_Order_StepDef
 		final PickingJobScheduleId jobScheduleId = rows.get(0)
 				.getAsIdentifier(I_DD_Order.COLUMNNAME_M_Picking_Job_Schedule_ID).lookupNotNullIdIn(pickingJobScheduleTable);
 
+		// Expected per-locator picture: the full source-locator SET, plus the expected QtyEntered for each row that
+		// specifies one (QtyEntered is an optional column).
 		final Map<LocatorId, DataTableRow> expectedBySourceLocator = new LinkedHashMap<>();
+		final Map<LocatorId, BigDecimal> expectedQtyBySourceLocator = new LinkedHashMap<>();
 		for (final DataTableRow row : rows)
 		{
 			final LocatorId sourceLocatorId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Locator_ID).lookupNotNullIdIn(locatorTable);
 			expectedBySourceLocator.put(sourceLocatorId, row);
+			row.getAsOptionalBigDecimal(I_DD_OrderLine.COLUMNNAME_QtyEntered)
+					.ifPresent(qtyEntered -> expectedQtyBySourceLocator.put(sourceLocatorId, qtyEntered));
 		}
 
-		// Poll until the live DD_Orders' source-locator set EXACTLY matches the expected set, then validate each
-		// matched DD_Order's header + single line. Polling on the whole set (not row-by-row) avoids binding to a
-		// transient in-flight state where a void/create/update has only partially landed.
-		final Supplier<Boolean> exactSetReady = () -> liveSourceLocatorsForPickingJobSchedule(jobScheduleId).equals(expectedBySourceLocator.keySet());
-		StepDefUtil.tryAndWait(timeoutSec, 1000, exactSetReady, () -> logCurrentDDOrdersForPickingJobSchedule(jobScheduleId));
+		// Poll until the async reconcile has SETTLED, then validate each matched DD_Order's header + single line.
+		// "Settled" = the live source-locator set EXACTLY matches the expected set AND every expected per-locator
+		// QtyEntered matches the live line quantity. Polling on the whole picture (not row-by-row) avoids binding to
+		// a transient in-flight state where a void/create/update has only partially landed. QtyEntered is part of
+		// the gate because a demand change that keeps the SAME contributing locators (only the quantity changes)
+		// leaves the source-locator set unchanged: a set-only check is satisfied immediately by the stale pre-change
+		// DD_Orders and would race the async (event-bus) reconcile that updates the line quantity.
+		final Supplier<Boolean> reconcileSettled = () -> {
+			final Map<LocatorId, BigDecimal> liveQtyBySourceLocator = liveLineQtyBySourceLocatorForPickingJobSchedule(jobScheduleId);
+			return isPerLocatorReconcileSettled(expectedBySourceLocator.keySet(), expectedQtyBySourceLocator,
+					liveQtyBySourceLocator.keySet(), liveQtyBySourceLocator);
+		};
+		StepDefUtil.tryAndWait(timeoutSec, 1000, reconcileSettled, () -> logCurrentDDOrdersForPickingJobSchedule(jobScheduleId));
 
 		for (final Map.Entry<LocatorId, DataTableRow> entry : expectedBySourceLocator.entrySet())
 		{
@@ -877,11 +890,11 @@ public class DD_Order_StepDef
 	}
 
 	/**
-	 * Returns the set of source locators ({@code DD_OrderLine.M_Locator_ID}) of all live (non-voided) DD_Orders
-	 * linked to the given assignment. Each reconcile DD_Order has exactly one line, so this is the set of
-	 * contributing source locators.
+	 * Live per-locator picture: source {@code LocatorId} → the line's {@code QtyEntered}, for every live (non-voided)
+	 * DD_Order linked to the assignment. Each reconcile DD_Order has exactly one line, so the key set is the set of
+	 * contributing source locators and each value is that locator's current planned quantity.
 	 */
-	private Set<LocatorId> liveSourceLocatorsForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
+	private Map<LocatorId, BigDecimal> liveLineQtyBySourceLocatorForPickingJobSchedule(@NonNull final PickingJobScheduleId jobScheduleId)
 	{
 		// Collect the live DD_Order ids, then fetch all their lines in a single batched query (no per-DD_Order query).
 		final List<DDOrderId> liveDDOrderIds = queryBL.createQueryBuilder(I_DD_Order.class)
@@ -892,7 +905,7 @@ public class DD_Order_StepDef
 				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
 				.collect(java.util.stream.Collectors.toList());
 
-		final Set<LocatorId> sourceLocatorIds = new LinkedHashSet<>();
+		final Map<LocatorId, BigDecimal> qtyBySourceLocator = new LinkedHashMap<>();
 		ddOrderLowLevelDAO.streamLinesByDDOrderIds(liveDDOrderIds)
 				.forEach(line -> {
 					// Resolve the source LocatorId from the locator record (authoritative warehouse), not the
@@ -900,10 +913,39 @@ public class DD_Order_StepDef
 					final LocatorId sourceLocatorId = LocatorId.ofRecordOrNull(warehouseDAO.getLocatorByRepoId(line.getM_Locator_ID()));
 					if (sourceLocatorId != null)
 					{
-						sourceLocatorIds.add(sourceLocatorId);
+						qtyBySourceLocator.put(sourceLocatorId, line.getQtyEntered());
 					}
 				});
-		return sourceLocatorIds;
+		return qtyBySourceLocator;
+	}
+
+	/**
+	 * Readiness predicate for {@link #validatePerLocatorDDOrdersLinkedToPickingJobSchedule}: the async reconcile has
+	 * settled iff the live source-locator set exactly matches the expected set AND every expected per-locator
+	 * {@code QtyEntered} equals the live line quantity. Including the quantity is essential — a demand change that
+	 * keeps the same contributing locators (only the quantity changes) leaves the source-locator set unchanged, so a
+	 * set-only check would report "ready" immediately against the stale pre-change DD_Orders and race the async
+	 * reconcile that updates the line quantity. Pure/stateless so it can be unit-tested without a DB.
+	 */
+	static boolean isPerLocatorReconcileSettled(
+			@NonNull final Set<LocatorId> expectedLocators,
+			@NonNull final Map<LocatorId, BigDecimal> expectedQtyByLocator,
+			@NonNull final Set<LocatorId> liveLocators,
+			@NonNull final Map<LocatorId, BigDecimal> liveQtyByLocator)
+	{
+		if (!liveLocators.equals(expectedLocators))
+		{
+			return false;
+		}
+		for (final Map.Entry<LocatorId, BigDecimal> expected : expectedQtyByLocator.entrySet())
+		{
+			final BigDecimal liveQty = liveQtyByLocator.get(expected.getKey());
+			if (liveQty == null || liveQty.compareTo(expected.getValue()) != 0)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Nullable

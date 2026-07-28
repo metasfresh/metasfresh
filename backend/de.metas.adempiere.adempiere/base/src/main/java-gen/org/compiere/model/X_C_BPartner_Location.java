@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_BPartner_Location, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1185353059L;
+	private static final long serialVersionUID = -1229707121L;
 
     /** Standard Constructor */
     public X_C_BPartner_Location (final Properties ctx, final int C_BPartner_Location_ID, @Nullable final String trxName)
@@ -395,6 +395,27 @@ public class X_C_BPartner_Location extends org.compiere.model.PO implements I_C_
 	public boolean isPayFrom() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPayFrom);
+	}
+
+	/** 
+	 * IsPreAdviceRequired AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPREADVICEREQUIRED_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPREADVICEREQUIRED_Yes = "Y";
+	/** No = N */
+	public static final String ISPREADVICEREQUIRED_No = "N";
+	@Override
+	public void setIsPreAdviceRequired (final @Nullable java.lang.String IsPreAdviceRequired)
+	{
+		set_Value (COLUMNNAME_IsPreAdviceRequired, IsPreAdviceRequired);
+	}
+
+	@Override
+	public java.lang.String getIsPreAdviceRequired() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPreAdviceRequired);
 	}
 
 	@Override

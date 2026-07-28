@@ -365,9 +365,20 @@ public class C_OrderLine_StepDef
 	}
 
 	/**
-	 * Validates {@code C_OrderLine} records. The line is located by {@code (C_Order_ID, M_Product_ID, QtyOrdered)},
-	 * then every present column is asserted (each column is an optional assertion). The date columns
-	 * ({@code DateOrdered}, {@code DatePromised}) are compared as a start-of-day {@code Timestamp}.
+	 * Validates order lines by locating each one via ({@code C_Order_ID}, {@code M_Product_ID}, {@code QtyOrdered}) and
+	 * asserting the remaining columns. The date columns ({@code DateOrdered}, {@code DatePromised}) are compared as a
+	 * start-of-day {@code Timestamp}.
+	 * <p>
+	 * Required DataTable columns: {@code C_Order_ID.Identifier}, {@code M_Product_ID.Identifier}, {@code QtyOrdered}.
+	 * All other columns are optional per-row assertions handled by {@code validateOrderLine} — among them
+	 * {@code OPT.C_Flatrate_Conditions_ID.Identifier} (the threaded contract conditions),
+	 * {@code OPT.IsGroupCompensationLine} (asserts a compensation/discount line, {@code IsGroupCompensationLine=Y}) and
+	 * {@code OPT.GroupCompensationPercentage} (the compensation line's discount/surcharge percentage).
+	 * <pre>
+	 * And validate the created order lines
+	 *   | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | OPT.IsGroupCompensationLine | OPT.GroupCompensationPercentage |
+	 *   | orderLine_discount        | order_1               | discountProduct         | 1          | true                        | 10                              |
+	 * </pre>
 	 */
 	@And("validate the created order lines")
 	public void validate_created_order_lines(@NonNull final DataTable table)
@@ -641,6 +652,38 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	/**
+	 * Validates a single {@link I_C_OrderLine} record against expected values from the DataTable row.
+	 * Called per row by {@link #validate_created_order_lines(DataTable)}.
+	 *
+	 * <p>Supported DataTable columns (all optional unless noted):</p>
+	 * <ul>
+	 *   <li>{@code C_OrderLine_ID} — required identifier; must have been registered in {@link C_OrderLine_StepDefData}</li>
+	 *   <li>{@code C_Order_ID} — optional identifier; validates that the line belongs to this order</li>
+	 *   <li>{@code M_Product_ID} — optional identifier; resolved via M_Product_StepDefData</li>
+	 *   <li>{@code QtyOrdered} — optional BigDecimal</li>
+	 *   <li>{@code qtydelivered} — optional BigDecimal; maps to {@code QtyDelivered}</li>
+	 *   <li>{@code qtyinvoiced} — optional BigDecimal; maps to {@code QtyInvoiced}</li>
+	 *   <li>{@code price} — optional BigDecimal; maps to {@code PriceEntered}</li>
+	 *   <li>{@code discount} — optional BigDecimal</li>
+	 *   <li>{@code currencyCode} — optional ISO-4217 code</li>
+	 *   <li>{@code processed} — optional boolean</li>
+	 *   <li>{@code OPT.M_Warehouse_ID.Identifier} — optional identifier; resolved via {@link de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData};
+	 *       when absent the warehouse is not validated</li>
+	 *   <li>(plus further optional columns: C_UOM_BPartner_ID.X12DE355, IsManualPrice, BPartner_QtyItemCapacity,
+	 *       QtyEnteredInBPartnerUOM, C_UOM_ID.X12DE355, QtyItemCapacity, DateOrdered, C_TaxCategory_ID,
+	 *       C_BPartner_Vendor_ID, C_Flatrate_Conditions_ID, Price_UOM_ID.X12DE355, ProductDescription,
+	 *       M_AttributeSetInstance_ID, ATT.*, M_HU_PI_Item_Product_ID, QtyEnteredTU, QtyReserved,
+	 *       C_Tax_ID, ExternalId, C_Project_ID)</li>
+	 * </ul>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * And validate the created order lines:
+	 *   | C_OrderLine_ID     | C_Order_ID   | M_Product_ID   | QtyOrdered | qtydelivered | qtyinvoiced | price | discount | currencyCode | processed | OPT.M_Warehouse_ID.Identifier |
+	 *   | orderLine_S30235_1 | order_S30235 | product_S30235 | 1          | 0            | 0           | 10    | 0        | EUR          | true      | pickingWH                     |
+	 * </pre>
+	 */
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final DataTableRow row)
 	{
 		final String identifierStr = row.getAsIdentifier().getAsString();
@@ -659,6 +702,12 @@ public class C_OrderLine_StepDef
 			final boolean isManualPrice = StringUtils.toBoolean(isManualPriceStr);
 			softly.assertThat(orderLine.isManualPrice()).isEqualTo(isManualPrice);
 		}
+
+		row.getAsOptionalBoolean(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine)
+				.ifPresent(isGroupCompensationLine -> softly.assertThat(orderLine.isGroupCompensationLine()).as("IsGroupCompensationLine").isEqualTo(isGroupCompensationLine));
+
+		row.getAsOptionalBigDecimal(I_C_OrderLine.COLUMNNAME_GroupCompensationPercentage)
+				.ifPresent(groupCompensationPercentage -> softly.assertThat(orderLine.getGroupCompensationPercentage()).as("GroupCompensationPercentage").isEqualByComparingTo(groupCompensationPercentage));
 
 		final String bPartnerQtyItemCapacity = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_BPartner_QtyItemCapacity);
 		if (Check.isNotBlank(bPartnerQtyItemCapacity))
@@ -880,6 +929,14 @@ public class C_OrderLine_StepDef
 				softly.fail("Expected C_Order.C_Project_ID to be set for C_Order_ID=%s", orderLine.getC_Order_ID());
 			}
 		}
+
+		row.getAsOptionalIdentifier(I_C_OrderLine.COLUMNNAME_M_Warehouse_ID)
+				.ifPresent(warehouseIdentifier -> {
+					final I_M_Warehouse warehouse = warehouseTable.get(warehouseIdentifier);
+					softly.assertThat(orderLine.getM_Warehouse_ID())
+							.as("M_Warehouse_ID for Identifier=%s", identifierStr)
+							.isEqualTo(warehouse.getM_Warehouse_ID());
+				});
 
 		softly.assertAll();
 	}

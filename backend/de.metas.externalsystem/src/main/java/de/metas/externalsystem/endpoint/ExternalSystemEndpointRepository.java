@@ -22,6 +22,8 @@
 
 package de.metas.externalsystem.endpoint;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.HttpMethod;
 import de.metas.cache.CCache;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
@@ -33,7 +35,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 
+/**
+ * Repository Tables: ExternalSystem_Endpoint
+ * Repository Cluster: sole owner of {@code ExternalSystem_Endpoint}.
+ */
 @Repository
 public class ExternalSystemEndpointRepository
 {
@@ -44,6 +53,26 @@ public class ExternalSystemEndpointRepository
 	public ExternalSystemEndpoint getById(@NonNull final ExternalSystemEndpointId id)
 	{
 		return endpointsCache.getOrLoad(id, this::retrieveById);
+	}
+
+	/**
+	 * Batch-load endpoints in a single query, to avoid a {@link #getById(ExternalSystemEndpointId)}-per-item N+1
+	 * when resolving endpoints for a collection of items (e.g. inside a stream).
+	 */
+	@NonNull
+	public ImmutableMap<ExternalSystemEndpointId, ExternalSystemEndpoint> getByIds(@NonNull final Collection<ExternalSystemEndpointId> ids)
+	{
+		final ImmutableSet<ExternalSystemEndpointId> distinctIds = ImmutableSet.copyOf(ids);
+		if (distinctIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final List<I_ExternalSystem_Endpoint> endpointRecords = InterfaceWrapperHelper.loadByRepoIdAwares(distinctIds, I_ExternalSystem_Endpoint.class);
+
+		return endpointRecords.stream()
+				.map(ExternalSystemEndpointRepository::fromRecord)
+				.collect(ImmutableMap.toImmutableMap(ExternalSystemEndpoint::getId, Function.identity()));
 	}
 
 	@NonNull
@@ -65,7 +94,7 @@ public class ExternalSystemEndpointRepository
 				.value(endpointRecord.getValue())
 				.transportType(TransportType.ofCode(endpointRecord.getTransportType()))
 				// HTTP transport fields (nullable — only set for HTTP transport)
-				.endpointUrl(endpointRecord.getOutboundHttpEP())
+				.endpointUrl(endpointRecord.getHttpEndPoint())
 				.method(parseHttpMethod(endpointRecord.getOutboundHttpMethod()))
 				.contentType(parseMediaType(endpointRecord.getContentType()))
 				// HTTP authentication fields
@@ -84,6 +113,9 @@ public class ExternalSystemEndpointRepository
 				.sshPrivateKey(endpointRecord.getSshPrivateKey())
 				.sftpRemotePath(endpointRecord.getSftpRemotePath())
 				.sftpFilenamePattern(endpointRecord.getSftpFilenamePattern())
+				.sftpPollingIntervalMs(endpointRecord.getSftpPollingIntervalMs() > 0 ? endpointRecord.getSftpPollingIntervalMs() : null)
+				.processedDirectory(endpointRecord.getProcessedDirectory())
+				.errorDirectory(endpointRecord.getErrorDirectory())
 				.isArrayFanOut(endpointRecord.isArrayFanOut())
 				// OAuth2 + file-upload fields
 				.oauthTokenUrl(endpointRecord.getOAuthTokenUrl())

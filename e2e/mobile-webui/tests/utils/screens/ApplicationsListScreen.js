@@ -20,6 +20,12 @@ export const ApplicationsListScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
+    // Assert the home menu is NOT displayed — used to prove a workflow start did not bounce the
+    // operator back to the root menu.
+    expectNotDisplayed: async () => await test.step(`${NAME} - Expect NOT to be displayed`, async () => {
+        await expect(containerElement()).toHaveCount(0);
+    }),
+
     expectLogoutButtonReachable: async () => await test.step(`${NAME} - Expect logout button reachable by scrolling`, async () => {
         const logoutButton = page.locator('#logout-button');
         await expect(logoutButton).toBeVisible();

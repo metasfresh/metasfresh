@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -99,24 +98,11 @@ public class WorkplaceService
 		return workplaceRepository.getAllPackingPlacePickFromLocatorIds();
 	}
 
-	public Set<LocatorId> getPickFromLocatorIds(final Workplace workplace)
-	{
-		if (workplace.getPickFromLocatorId() != null)
-		{
-			return ImmutableSet.of(workplace.getPickFromLocatorId());
-		}
-		else
-		{
-			return warehouseBL.getLocatorIdsByWarehouseId(workplace.getWarehouseId());
-		}
-	}
-
 	/**
 	 * The single target locator to deliver to for this workplace: the configured {@code PickFrom_Locator_ID} if set,
 	 * otherwise the workplace warehouse's default locator (always resolvable via
 	 * {@link IWarehouseBL#getOrCreateDefaultLocatorId(WarehouseId)}). Use this when exactly one delivery locator is
-	 * required (e.g. the DD_Order picking-replenishment target); {@link #getPickFromLocatorIds(Workplace)} returns the
-	 * multi-locator set used for availability/source filtering.
+	 * required (e.g. the DD_Order picking-replenishment target).
 	 */
 	@NonNull
 	public LocatorId getPickFromLocatorIdOrWarehouseDefault(@NonNull final Workplace workplace)

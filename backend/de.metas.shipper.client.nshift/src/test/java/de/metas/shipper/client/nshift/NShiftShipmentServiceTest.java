@@ -49,8 +49,11 @@ import org.springframework.test.context.TestPropertySource;
 
 import java.math.BigDecimal;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest(classes = { NShiftClientConfig.class, NShiftShipmentService.class, NShiftRestClient.class })
 @TestPropertySource(properties = {
@@ -124,6 +127,9 @@ public class NShiftShipmentServiceTest
 			.deliveryDate("2025-10-02")
 			.deliveryNote("Delivery note")
 			.customerReference("Customer reference")
+			.incotermsValue("DAP")
+			.externalSystemValue("Other")
+			.preAdviceRequired("Y")
 			.deliveryOrderParcel(JsonDeliveryOrderParcel.builder()
 					.id("1")
 					.grossWeightKg(BigDecimal.TEN)
@@ -210,14 +216,15 @@ public class NShiftShipmentServiceTest
 					.additionalProperty(NShiftConstants.ACTOR_ID, ACTOR_ID)
 					.additionalProperty(NShiftConstants.IS_CREATE_DRAFT_SHIPMENT_ONLY, "N")
 					.build())
-			.mappingConfigs(NShiftTestMappingConfigs.SHARED)
+			.mappingConfigs(NShiftTestMappingConfigs.SHARED_TEST)
 			.build();
 
 	@Test
 	@Disabled("This test is only for local testing of changes, we don't want to call an api on each build")
 	void local_api_test()
 	{
-		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(DELIVERY_REQUEST);
+		final JsonDeliveryResponse response = nShiftShipmentService.createShipment(
+				DELIVERY_REQUEST.toBuilder().mappingConfigs(NShiftTestMappingConfigs.SHARED_DB).build());
 		assertNotNull(response);
 		assertNotNull(response.getItems().get(0).getTrackingUrl());
 		assertFalse(response.isError());
@@ -228,6 +235,22 @@ public class NShiftShipmentServiceTest
 	{
 		final JsonShipmentRequest request = NShiftShipmentService.buildShipmentRequest(DELIVERY_REQUEST);
 		expect.serializer("orderedJson").toMatchSnapshot(request);
+	}
+
+	@Test
+	void buildShipmentRequest_withSelectionRules_omitsProductGoodsTypeAndServices()
+	{
+		final JsonDeliveryRequest request = DELIVERY_REQUEST.toBuilder()
+				.shipperConfig(DELIVERY_REQUEST.getShipperConfig().withAdditionalProperty(NShiftConstants.SELECTION_RULES, "Y"))
+				.build();
+
+		final JsonShipmentRequest shipmentRequest = NShiftShipmentService.buildShipmentRequest(request);
+
+		assertTrue(shipmentRequest.getOptions().getUseShippingRules(), "IsSelectionRules must be on");
+		// with rules active nShift resolves product/goods type/services, so we don't pre-send a resolved product
+		assertEquals(0, shipmentRequest.getData().getProdConceptID(), "ProdConceptID must stay 0 (no resolved product) when rules resolve it");
+		assertTrue(shipmentRequest.getData().getServices().isEmpty(), "Services must not be pre-sent when rules resolve them");
+		assertNull(shipmentRequest.getData().getLines().get(0).getGoodsTypeID(), "Line GoodsTypeID must be omitted when rules resolve it");
 	}
 
 }

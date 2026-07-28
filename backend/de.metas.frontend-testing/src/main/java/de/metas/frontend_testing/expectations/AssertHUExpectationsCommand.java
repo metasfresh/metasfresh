@@ -143,6 +143,19 @@ class AssertHUExpectationsCommand
 			assertThat(hu.getHUStatus()).as("HUStatus").isEqualTo(expectation.getHuStatus());
 		}
 
+		if (expectation.getBpartner() != null)
+		{
+			final I_M_HU hu = getHUById(huId);
+			final BPartnerId expectedBPartnerId = context.getId(expectation.getBpartner(), BPartnerId.class);
+			assertThat(BPartnerId.ofRepoIdOrNull(hu.getC_BPartner_ID())).as("HU consignee C_BPartner_ID").isEqualTo(expectedBPartnerId);
+		}
+
+		if (Boolean.TRUE.equals(expectation.getConsigneeCleared()))
+		{
+			final I_M_HU hu = getHUById(huId);
+			assertThat(hu.getC_BPartner_ID() <= 0).as("HU consignee cleared (C_BPartner_ID <= 0)").isEqualTo(true);
+		}
+
 		if (expectation.getHuType() != null)
 		{
 			final I_M_HU hu = getHUById(huId);
