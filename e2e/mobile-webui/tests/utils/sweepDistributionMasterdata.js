@@ -8,10 +8,13 @@ import { generateEAN13 } from './ean13';
 //
 // ONE staging LU at a ground locator, feeding every DD order. The two specs must differ in NOTHING
 // but allowPickingAnyHU (plus the per-spec barcode prefix and workplace key, which only keep their
-// data apart): that is exactly what makes each of them discriminating — with the same data, the flag
-// alone decides whether the operator lands on the PRODUCT scan or back on the HU scan after an
-// auto-advance. Both therefore build their masterdata HERE, so the identity is structural instead of
-// two ~60-line copies asked by a comment to stay in sync.
+// data apart), so each covers one side of that flag with everything else held constant: with it off
+// the backend pre-allocates a move plan pinning a source HU per step, with it on it builds no plan at
+// all (the anyHU spec pins that as a precondition —
+// DistributionUtils.expectPickAnyHUJobWithoutMovePlan). The operator's experience must be the SAME
+// either way: after an auto-advance the screen is ready for the PRODUCT scan, never a repeat HU scan.
+// Both specs therefore build their masterdata HERE, so the identity is structural instead of two
+// ~60-line copies asked by a comment to stay in sync.
 //
 // The auto-advance carry-forward rule itself is owned by postDistributionPickFromThunk.js.
 //
@@ -24,8 +27,8 @@ const SWEEP_ORDER_COUNT = 3;
 const LU_QTY = 1000;
 
 /**
- * @param allowPickingAnyHU THE variable under test — the ONLY behavioural difference between the two
- *        sweep specs. Always passed explicitly: it is a sticky, global config row that the masterdata
+ * @param allowPickingAnyHU THE variable under test — the ONLY configuration difference between the
+ *        two sweep specs. Always passed explicitly: it is a sticky, global config row that the masterdata
  *        API leaves untouched when omitted (see e2e/mobile-webui/CLAUDE.md § "Debugging Flaky Tests"
  *        rule 3).
  * @param barcodePrefix per-spec prefix of the staging LU's external barcode.
