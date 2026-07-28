@@ -40,7 +40,7 @@ SELECT l.AD_Language, t.AD_Element_ID,
        t.Created, t.CreatedBy, t.Updated, t.UpdatedBy, 'Y'
 FROM AD_Language l, AD_Element t
 WHERE l.IsActive = 'Y'
-  AND l.IsSystemLanguage = 'Y'
+  AND (l.IsSystemLanguage = 'Y' OR l.IsBaseLanguage = 'Y')
   AND t.AD_Element_ID = 585135
   AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt
                   WHERE tt.AD_Language = l.AD_Language AND tt.AD_Element_ID = t.AD_Element_ID);
@@ -80,7 +80,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593025 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:00.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -89,7 +89,7 @@ VALUES (593025 /*From ID Server*/, 0, 0, 'Y',
         13, 10,
         'Y', 'Y', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'Y', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'Y', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -98,7 +98,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593026 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:01.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -107,7 +107,7 @@ VALUES (593026 /*From ID Server*/, 0, 0, 'Y',
         19, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -116,7 +116,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593027 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:02.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -125,7 +125,7 @@ VALUES (593027 /*From ID Server*/, 0, 0, 'Y',
         30, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'Y', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -134,7 +134,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength, DefaultValue,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593028 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:03.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -143,7 +143,7 @@ VALUES (593028 /*From ID Server*/, 0, 0, 'Y',
         20, 1, 'Y',
         'Y', 'N', 'N', 'Y', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -152,7 +152,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593029 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:04.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -161,7 +161,7 @@ VALUES (593029 /*From ID Server*/, 0, 0, 'Y',
         16, 29,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'N',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -170,7 +170,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, AD_Reference_Value_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593030 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:05.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -179,7 +179,7 @@ VALUES (593030 /*From ID Server*/, 0, 0, 'Y',
         18, 110, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'N',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -188,7 +188,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593031 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:06.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -197,7 +197,7 @@ VALUES (593031 /*From ID Server*/, 0, 0, 'Y',
         16, 29,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'N',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -206,7 +206,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, AD_Reference_Value_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593032 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:07.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -215,7 +215,7 @@ VALUES (593032 /*From ID Server*/, 0, 0, 'Y',
         18, 110, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'N',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 -- DD_OrderLine_ID (FK; no cascade delete — see CREATE TABLE below)
@@ -225,7 +225,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593033 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:08.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -234,7 +234,7 @@ VALUES (593033 /*From ID Server*/, 0, 0, 'Y',
         30, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 -- M_Picking_Job_Schedule_ID (FK; no cascade delete — see CREATE TABLE below)
@@ -244,7 +244,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593034 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:09.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -253,7 +253,7 @@ VALUES (593034 /*From ID Server*/, 0, 0, 'Y',
         30, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -262,7 +262,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593035 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:10.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -271,7 +271,7 @@ VALUES (593035 /*From ID Server*/, 0, 0, 'Y',
         29, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
@@ -280,7 +280,7 @@ INSERT INTO AD_Column (AD_Column_ID, AD_Client_ID, AD_Org_ID, IsActive,
                        AD_Reference_ID, AD_Reference_Value_ID, FieldLength,
                        IsMandatory, IsKey, IsParent, IsUpdateable, IsAlwaysUpdateable,
                        IsLazyLoading, IsExcludeFromZoomTargets, IsAllowLogging,
-                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsTranslated, Version, EntityType,
+                       IsEncrypted, IsIdentifier, IsSelectionColumn, IsSyncDatabase, IsTranslated, Version, EntityType,
                        PersonalDataCategory)
 VALUES (593036 /*From ID Server*/, 0, 0, 'Y',
         TO_TIMESTAMP('2026-07-25 14:02:11.000000', 'YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC', 100,
@@ -289,7 +289,7 @@ VALUES (593036 /*From ID Server*/, 0, 0, 'Y',
         30, 541960, 10,
         'Y', 'N', 'N', 'N', 'N',
         'N', 'Y', 'Y',
-        'N', 'N', 'N', 'N', 0, 'de.metas.handlingunits',
+        'N', 'N', 'N', 'Y', 'N', 0, 'de.metas.handlingunits',
         'NP');
 
 -- AD_Column_Trl: skeleton rows for all 12 new columns (one per active system/base language)
@@ -327,9 +327,9 @@ CREATE TABLE DD_OrderLine_PickingJobSchedule
     AD_Client_ID                       numeric(10)                        NOT NULL,
     AD_Org_ID                          numeric(10)                        NOT NULL,
     IsActive                           character(1) DEFAULT 'Y'::bpchar   NOT NULL,
-    Created                            timestamp without time zone DEFAULT now() NOT NULL,
+    Created                            timestamp with time zone DEFAULT now() NOT NULL,
     CreatedBy                          numeric(10)                        NOT NULL,
-    Updated                            timestamp without time zone DEFAULT now() NOT NULL,
+    Updated                            timestamp with time zone DEFAULT now() NOT NULL,
     UpdatedBy                          numeric(10)                        NOT NULL,
     DD_OrderLine_ID                    numeric(10)                        NOT NULL,
     M_Picking_Job_Schedule_ID          numeric(10)                        NOT NULL,
