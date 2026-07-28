@@ -142,6 +142,53 @@ Feature: DD_Order replenishment — one distribution order per product group
     And each of jobScheduleA, jobScheduleB resolves to the DD_Order identified by groupDDOrder
 
   @from:cucumber
+  Scenario: The single arrival settles each delivery with its own share, not with the consolidated quantity
+    # The workstation holds no stock of its own, so the 15 the mover brings is the only stock either delivery can be
+    # settled from. It must settle 10 into one delivery and 5 into the other — never the consolidated 15 into either.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+
+    When Start distribution job for dd_order identified by groupDDOrder
+      | DD_Order_ID  |
+      | groupDDOrder |
+    And Pick HU for distribution job line
+      | M_HU_ID        |
+      | stockProductHU |
+    And Drop HU for distribution job line
+
+    Then M_HU are validated:
+      | M_HU_ID        | HUStatus | IsActive | M_Locator_ID   |
+      | stockProductHU | A        | true     | packingLocator |
+
+    # Each delivery is now shipped on its own, out of that one arrival: the workstation holds no other stock, so
+    # every PCE either shipment takes is a PCE the mover brought.
+    #
+    # Deliberately NOT scoped to the workstation assignment: with an M_Picking_Job_Schedule supplied, shipment
+    # generation ships ONLY what that assignment already has picked
+    # (ShipmentScheduleWithHUService#prepareShipmentSchedulesWithHUForQtyToDeliver refuses the QtyToDeliver path for a
+    # job-schedule-scoped request), and no picker has picked here — the mover's drop is an arrival, not a pick. Shipping
+    # per delivery is what settles the arrival, and that is what this scenario is about.
+    When shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentScheduleA     | shipmentA  |
+    And shipment is generated for the following shipment schedule
+      | M_ShipmentSchedule_ID | M_InOut_ID |
+      | shipmentScheduleB     | shipmentB  |
+
+    # Proportional and complete, per delivery: each is settled in full for its own 10 and 5, leaving nothing to deliver.
+    Then after not more than 60s, validate shipment schedules:
+      | M_ShipmentSchedule_ID | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyToDeliver |
+      | shipmentScheduleA     | 10             | 10               | 0                |
+      | shipmentScheduleB     | 5              | 5                | 0                |
+
+    # Not double-counted: each share landed on its OWN customer order line, and the two together are exactly the 15 moved.
+    And validate the created shipment lines
+      | M_InOut_ID | M_Product_ID | C_OrderLine_ID | movementqty |
+      | shipmentA  | product      | orderLineA     | 10          |
+      | shipmentB  | product      | orderLineB     | 5           |
+
+  @from:cucumber
   Scenario: One drift-rebuild pass serves every contributor of a product group
     Given after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
@@ -384,7 +431,9 @@ Feature: DD_Order replenishment — one distribution order per product group
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
       | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
 
-    And simulate goods in transit on DD_Order linked to picking job schedule jobScheduleA
+    # Seeding the legacy column is the only way to arm that guard at all — no production flow writes QtyInTransit —
+    # so what this scenario proves is the EXEMPTION, which is live behaviour, not the seeded state itself.
+    And seed the legacy QtyInTransit column on DD_Order linked to picking job schedule jobScheduleA
 
     When shipment is generated for the following shipment schedule
       | M_ShipmentSchedule_ID | M_Picking_Job_Schedule_ID |
