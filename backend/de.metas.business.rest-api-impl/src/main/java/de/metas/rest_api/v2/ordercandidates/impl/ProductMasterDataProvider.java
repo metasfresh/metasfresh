@@ -19,6 +19,9 @@ import lombok.With;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
 /*
  * #%L
  * de.metas.ordercandidate.rest-api-impl
@@ -57,6 +60,14 @@ public final class ProductMasterDataProvider
 
 		@NonNull
 		ExternalIdentifier productExternalIdentifier;
+
+		/**
+		 * The effective delivery date (= OLCand datePromised effective) used to select the correct
+		 * M_HU_PI_Item_Product validity row. {@code null} means no date filter (callers other than
+		 * the v2 OLCand path keep passing {@code null}).
+		 */
+		@Nullable
+		ZonedDateTime date;
 	}
 
 	@Value
@@ -84,10 +95,11 @@ public final class ProductMasterDataProvider
 
 	public ProductInfo getProductInfo(
 			@NonNull final ExternalIdentifier productExternalIdentifier,
-			@NonNull final OrgId orgId)
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date)
 	{
 		return productInfoCache.getOrLoad(
-				new ProductCacheKey(orgId, productExternalIdentifier),
+				new ProductCacheKey(orgId, productExternalIdentifier, date),
 				this::getProductInfo0);
 
 	}
@@ -95,9 +107,9 @@ public final class ProductMasterDataProvider
 	private ProductInfo getProductInfo0(@NonNull final ProductCacheKey key)
 	{
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
-		
+
 		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
-				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), null)
+				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), key.getDate())
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier.getRawValue())

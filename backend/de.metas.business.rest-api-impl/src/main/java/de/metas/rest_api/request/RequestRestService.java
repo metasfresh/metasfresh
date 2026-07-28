@@ -283,7 +283,7 @@ public class RequestRestService
 		{
 			return null;
 		}
-		final ProductMasterDataProvider.ProductInfo productInfo = productMasterDataProvider.getProductInfo(productIdentifier, orgId);
+		final ProductMasterDataProvider.ProductInfo productInfo = productMasterDataProvider.getProductInfo(productIdentifier, orgId, null);
 		if (productInfo == null)
 		{
 			throw new AdempiereException("@NotFound@ @M_Product_ID@");

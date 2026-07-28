@@ -85,6 +85,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -120,7 +121,10 @@ public class JsonConverters
 
 		final String jsonProductIdentifier = request.getProductIdentifier();
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(jsonProductIdentifier);
-		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId);
+		final ZonedDateTime datePromised = request.getDateRequired() != null
+				? request.getDateRequired().atStartOfDay(masterdataProvider.getOrgTimeZone(orgId))
+				: null;
+		final ProductMasterDataProvider.ProductInfo productInfo = masterdataProvider.getProductInfo(productIdentifier, orgId, datePromised);
 
 		final PricingSystemId pricingSystemId = masterdataProvider.getPricingSystemIdByValue(request.getPricingSystemCode());
 
