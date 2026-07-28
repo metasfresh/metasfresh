@@ -1,9 +1,11 @@
 import { original, produce } from 'immer';
-import { difference, forEach, get } from 'lodash';
+import { difference, get } from 'lodash';
 import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
+import { SORT_TAB } from '../constants/ActionTypes';
+import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
 import { doesSelectionExist } from '../utils/documentListHelper';
 
 export const initialTableState = {
@@ -44,6 +46,66 @@ export const initialState = { length: 0 };
  */
 export const getTableId = ({ windowId, viewId, docId, tabId }) => {
   return `${windowId}_${viewId ? viewId : `${docId}_${tabId}`}`;
+};
+
+const addRowToArray = ({ orderedRows, rowToAdd, orderBys }) => {
+  if (!orderedRows.length) {
+    orderedRows.push(rowToAdd);
+    return;
+  }
+  for (let i = 0; i < orderedRows.length; i++) {
+    const currentRow = orderedRows[i];
+    const cmp = compareRows({ row1: currentRow, row2: rowToAdd, orderBys });
+    if (cmp > 0) {
+      orderedRows.splice(i, 0, rowToAdd);
+      return;
+    }
+  }
+  orderedRows.push(rowToAdd);
+};
+
+const compareRows = ({ row1, row2, orderBys }) => {
+  for (const orderBy of orderBys) {
+    const { fieldName, ascending } = orderBy;
+    const value1 = extractValueToCompare(row1, fieldName);
+    const value2 = extractValueToCompare(row2, fieldName);
+    const cmp = compareValues({ value1, value2, ascending });
+    if (cmp !== 0) {
+      return cmp;
+    }
+  }
+};
+
+const extractValueToCompare = (row, fieldName) => {
+  const field = row?.fieldsByName?.[fieldName];
+  if (!field) {
+    return undefined;
+  }
+  let value = field.value;
+  const widgetType = field.widgetType;
+  if (NUMERIC_FIELD_TYPES.includes(widgetType)) {
+    if (value == null) {
+      return null;
+    }
+    return Number(value);
+  } else {
+    if (value?.caption) {
+      value = value.caption;
+    }
+    return value;
+  }
+};
+
+const compareValues = ({ value1, value2, ascending }) => {
+  if (value1 == null && value2 == null) {
+    return 0;
+  } else if (value1 == value2) {
+    return 0;
+  } else if (value1 < value2) {
+    return ascending ? -1 : +1;
+  } else {
+    return ascending ? +1 : -1;
+  }
 };
 
 /**
@@ -236,15 +298,13 @@ const reducer = produce((draftState, action) => {
           rows = rows.filter((row) => !removed[row.rowId]);
         }
 
-        // find&replace updated rows (unfortunately it's a table so we'll have to traverse it)
+        // find & replace updated rows in place (they may be reordered below if their sort key changed)
         if (changed && Object.values(changed).length) {
           rows = rows.map((row) => {
             if (changed[row.rowId]) {
-              row = { ...changed[row.rowId] };
-
+              const replaced = { ...changed[row.rowId] };
               delete changed[row.rowId];
-
-              return row;
+              return replaced;
             }
             return row;
           });
@@ -252,8 +312,33 @@ const reducer = produce((draftState, action) => {
       } else {
         rows = [];
       }
-      // added rows
-      forEach(changed, (value) => rows.push(value));
+
+      // add remaining (new) rows, respecting the currently active orderBys (falls back to defaultOrderBys, then unordered append)
+      if (changed) {
+        const rowsToAdd = Object.values(changed);
+        if (rowsToAdd.length) {
+          const orderBys = original(
+            draftState[id].orderBys ?? draftState[id].defaultOrderBys
+          );
+          if (orderBys && orderBys.length) {
+            rowsToAdd.forEach((rowToAdd) =>
+              addRowToArray({ orderedRows: rows, rowToAdd, orderBys })
+            );
+          } else {
+            rowsToAdd.forEach((rowToAdd) => rows.push(rowToAdd));
+          }
+        }
+      }
+
+      // if any row's sort key changed in the in-place replace above, re-order the whole array
+      const orderBys = original(
+        draftState[id].orderBys ?? draftState[id].defaultOrderBys
+      );
+      if (orderBys && orderBys.length) {
+        rows = [...rows].sort((row1, row2) =>
+          compareRows({ row1, row2, orderBys })
+        );
+      }
 
       draftState[id].rows = rows;
 
@@ -339,6 +424,28 @@ const reducer = produce((draftState, action) => {
         draftState[id].activeSort = active;
       }
 
+      return;
+    }
+
+    case SORT_TAB: {
+      const {
+        scope,
+        windowId,
+        docId,
+        tabId,
+        field: fieldName,
+        asc: ascending,
+      } = action;
+
+      if (scope !== 'master') {
+        return;
+      }
+
+      const tableId = getTableId({ windowId, docId, tabId });
+      // Guard against race condition where sort action fires before table creation.
+      if (draftState[tableId]) {
+        draftState[tableId].orderBys = [{ fieldName, ascending }];
+      }
       return;
     }
 
