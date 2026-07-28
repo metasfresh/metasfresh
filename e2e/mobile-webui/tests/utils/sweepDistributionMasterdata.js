@@ -6,15 +6,23 @@ import { generateEAN13 } from './ean13';
 //   - sweep_scan_product_after_autoAdvance.spec.js       (allowPickingAnyHU: false)
 //   - sweep_scan_HU_after_autoAdvance_anyHU.spec.js      (allowPickingAnyHU: true)
 //
-// ONE staging LU at a ground locator, feeding every DD order. The two specs must differ in NOTHING
-// but allowPickingAnyHU (plus the per-spec barcode prefix and workplace key, which only keep their
-// data apart), so each covers one side of that flag with everything else held constant: with it off
-// the backend pre-allocates a move plan pinning a source HU per step, with it on it builds no plan at
-// all (the anyHU spec pins that as a precondition —
-// DistributionUtils.expectPickAnyHUJobWithoutMovePlan). The operator's experience must be the SAME
-// either way: after an auto-advance the screen is ready for the PRODUCT scan, never a repeat HU scan.
-// Both specs therefore build their masterdata HERE, so the identity is structural instead of two
-// ~60-line copies asked by a comment to stay in sync.
+// Handling units of ONE product stand at a ground locator and feed a series of single-line DD orders
+// that drop onto a packing table. Both specs build their masterdata HERE, so what they share is
+// structural instead of two ~60-line copies asked by a comment to stay in sync, and each covers one
+// side of allowPickingAnyHU: with it off the backend pre-allocates a move plan pinning a source
+// handling unit per step, with it on it builds no plan at all (the anyHU spec pins that as a
+// precondition — DistributionUtils.expectPickAnyHUJobWithoutMovePlan). The operator's experience must
+// be the SAME either way: after an auto-advance the screen is ready for the PRODUCT scan, never a
+// repeat handling-unit scan.
+//
+// The two specs differ in that flag, in `handlingUnitCount`, and in the per-spec barcode prefix and
+// workplace key (which only keep their data apart). The count follows the flag:
+//   - true — the recorded customer situation, several handling units of one article at one source
+//     locator with the operator identifying one of them; only then can an assertion pin a pick onto
+//     THEIR choice rather than onto the only thing standing there.
+//   - false — the move plan allocates from whichever eligible handling units the supplier offers first
+//     (DDOrderMovePlanCreateCommand.createPlanStep), so several equivalent candidates leave that spec
+//     no fixture-determined handling unit to scan; it takes the default of one.
 //
 // The auto-advance carry-forward rule itself is owned by postDistributionPickFromThunk.js.
 //
@@ -23,19 +31,35 @@ import { generateEAN13 } from './ean13';
 // order reaches in one pick. Both specs reference DD1..DD3 by name, so this is not a free knob.
 const SWEEP_ORDER_COUNT = 3;
 
-// Plenty of qty on the staging LU so every DD order is a small, partial pick off it.
-const LU_QTY = 1000;
+// Plenty of qty on each handling unit, so every DD order is a small PARTIAL pick and the handling unit
+// stays at the source locator to serve the orders that follow. A handling unit an order takes WHOLE is
+// moved into transit instead, which is the case carried_hu_cannot_serve_next_order.spec.js owns.
+// Exported because a spec pinning WHICH handling unit a pick came off states the qty left on each.
+export const SWEEP_HU_QTY = 1000;
 
 /**
- * @param allowPickingAnyHU THE variable under test — the ONLY configuration difference between the
+ * @param allowPickingAnyHU THE variable under test — the configuration difference between the
  *        two sweep specs. Always passed explicitly: it is a sticky, global config row that the masterdata
  *        API leaves untouched when omitted (see e2e/mobile-webui/CLAUDE.md § "Debugging Flaky Tests"
  *        rule 3).
- * @param barcodePrefix per-spec prefix of the staging LU's external barcode.
+ * @param barcodePrefix per-spec prefix of the handling units' external barcodes.
  * @param workplaceKey per-spec workplace name.
+ * @param handlingUnitCount how many handling units of the product stand at the source locator. They
+ *        are created as HU1..HU<n> and their external barcodes returned in
+ *        `masterdata.huExternalBarcodes`, keyed by the same identifiers. One by default — what each
+ *        spec passes, and why, is in the comment above.
  */
-export const createSweepMasterdata = async ({ allowPickingAnyHU, barcodePrefix, workplaceKey }) => {
-    const luExternalBarcode = `${barcodePrefix}-${Date.now()}`;
+export const createSweepMasterdata = async ({ allowPickingAnyHU, barcodePrefix, workplaceKey, handlingUnitCount = 1 }) => {
+    const huExternalBarcodes = {};
+    const handlingUnits = {};
+    for (let i = 1; i <= handlingUnitCount; i++) {
+        const huIdentifier = `HU${i}`;
+        const externalBarcode = `${barcodePrefix}-${i}-${Date.now()}`;
+        huExternalBarcodes[huIdentifier] = externalBarcode;
+        // Each identified by its own external barcode, the way the customer's handling units are
+        // labelled — they carry no other label an operator could scan.
+        handlingUnits[huIdentifier] = { product: "P", warehouse: "wh", locator: "LZ", qty: SWEEP_HU_QTY, externalBarcode };
+    }
 
     const distributionOrders = {};
     for (let i = 1; i <= SWEEP_ORDER_COUNT; i++) {
@@ -73,7 +97,7 @@ export const createSweepMasterdata = async ({ allowPickingAnyHU, barcodePrefix, 
             warehouses: {
                 "wh": {
                     locators: {
-                        // The ground locator where the ONE staging LU sits.
+                        // The ground locator the handling units stand at.
                         LZ: { isGroundLocator: true, priorityNo: 10 },
                         // The non-ground target every DD order drops to.
                         packingTable: { isGroundLocator: false, priorityNo: 999 },
@@ -81,14 +105,11 @@ export const createSweepMasterdata = async ({ allowPickingAnyHU, barcodePrefix, 
                 },
                 "whInTransit": { inTransit: true },
             },
-            handlingUnits: {
-                // The single staging LU, scannable via its external barcode, holding plenty of P.
-                LU: { product: "P", warehouse: "wh", locator: "LZ", qty: LU_QTY, externalBarcode: luExternalBarcode },
-            },
+            handlingUnits,
             distributionOrders,
         },
     });
 
-    masterdata.luExternalBarcode = luExternalBarcode;
+    masterdata.huExternalBarcodes = huExternalBarcodes;
     return masterdata;
 };
