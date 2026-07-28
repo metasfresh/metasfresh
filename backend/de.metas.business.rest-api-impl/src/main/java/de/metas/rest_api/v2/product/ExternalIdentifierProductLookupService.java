@@ -58,7 +58,7 @@ public class ExternalIdentifierProductLookupService
 	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
-	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	@NonNull private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
