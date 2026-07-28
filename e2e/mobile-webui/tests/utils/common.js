@@ -43,6 +43,23 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
     await page.waitForTimeout(FAST_ACTION_TIMEOUT);
 });
 
+// How long a capture run freezes an already-painted screen. Long enough for Playwright's screencast
+// (which samples at ~40ms) to capture a dozen frames of it.
+const UAT_CAPTURE_HOLD_MS = 500;
+
+/**
+ * Hold the painted screen briefly so the video recorder samples it. A NO-OP unless UAT_CAPTURE is
+ * set — enable it only for a deliberate capture run: `UAT_CAPTURE=1 npx playwright test <spec>`.
+ * Why no assertion can substitute, and why this may only be called from a screen object and never
+ * from a spec: e2e/mobile-webui/CLAUDE.md § "Test scenarios read like a real-life workflow".
+ */
+export const holdForCaptureIfEnabled = async () => {
+    if (!process.env.UAT_CAPTURE) {
+        return;
+    }
+    await page.waitForTimeout(UAT_CAPTURE_HOLD_MS);
+};
+
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
 const runAndWatchForErrors = async (func) => {
