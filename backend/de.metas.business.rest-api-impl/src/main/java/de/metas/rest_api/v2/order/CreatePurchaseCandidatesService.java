@@ -151,7 +151,7 @@ public class CreatePurchaseCandidatesService
 		final String productIdentifier = request.getProductIdentifier();
 
 		final ProductId productId = productLookupService
-				.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), orgId)
+				.resolveProductExternalIdentifier(ExternalIdentifier.of(productIdentifier), orgId, null)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier)

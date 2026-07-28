@@ -42,6 +42,8 @@ import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -56,7 +58,8 @@ public class ExternalIdentifierProductLookupService
 	@NonNull
 	public Optional<ProductAndHUPIItemProductId> resolveProductExternalIdentifier(
 			@NonNull final ExternalIdentifier productIdentifier,
-			@NonNull final OrgId orgId)
+			@NonNull final OrgId orgId,
+			@Nullable final ZonedDateTime date)
 	{
 		switch (productIdentifier.getType())
 		{
@@ -80,7 +83,7 @@ public class ExternalIdentifierProductLookupService
 				return ProductAndHUPIItemProductId.opt(productId);
 
 			case GTIN:
-				return lookupProductByGTIN(productIdentifier);
+				return lookupProductByGTIN(productIdentifier, date);
 			default:
 				throw new InvalidIdentifierException(productIdentifier.getRawValue());
 		}
@@ -89,7 +92,8 @@ public class ExternalIdentifierProductLookupService
 	@VisibleForTesting
 	@NonNull
 	Optional<ProductAndHUPIItemProductId> lookupProductByGTIN(
-			@NonNull final ExternalIdentifier productIdentifier)
+			@NonNull final ExternalIdentifier productIdentifier,
+			@Nullable final ZonedDateTime date)
 	{
 		final String gtin = productIdentifier.asGTIN();
 		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)

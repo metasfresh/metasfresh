@@ -97,7 +97,7 @@ public final class ProductMasterDataProvider
 		final ExternalIdentifier productIdentifier = key.getProductExternalIdentifier();
 		
 		final ProductAndHUPIItemProductId productAndHUPIItemProductId = productLookupService
-				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId())
+				.resolveProductExternalIdentifier(productIdentifier, key.getOrgId(), null)
 				.orElseThrow(() -> MissingResourceException.builder()
 						.resourceName("productIdentifier")
 						.resourceIdentifier(productIdentifier.getRawValue())

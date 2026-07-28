@@ -324,7 +324,8 @@ public class ProductRestService
 
 		return productLookupService.resolveProductExternalIdentifier(
 				ExternalIdentifier.of(productIdentifier),
-				OrgId.ofRepoId(org.getAD_Org_ID()));
+				OrgId.ofRepoId(org.getAD_Org_ID()),
+				null);
 	}
 
 	private void createOrUpdateBpartnerProducts(

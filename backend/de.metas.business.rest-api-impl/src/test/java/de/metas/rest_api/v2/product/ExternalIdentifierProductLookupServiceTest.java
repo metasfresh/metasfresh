@@ -37,6 +37,10 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,7 +76,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -96,7 +100,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-87654321");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -120,7 +124,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-98765432");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -144,7 +148,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-11223344");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -168,7 +172,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-44332211");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -192,7 +196,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-55667788");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -212,7 +216,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-99887766");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -232,7 +236,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-66778899");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -252,7 +256,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-77889900");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -265,10 +269,89 @@ public class ExternalIdentifierProductLookupServiceTest
 	{
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-00000000");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isEmpty();
+	}
+
+	/**
+	 * RED test — proves the bug: {@code lookupProductByGTIN} currently ignores the {@code date} parameter
+	 * and always returns the record with the highest {@code M_HU_PI_Item_Product_ID} (newest by insertion order).
+	 *
+	 * <p>Setup: one product, two M_HU_PI_Item_Product rows sharing the same GTIN:
+	 * <ul>
+	 *   <li>OLD row: Qty=9, ValidFrom=2019-01-01</li>
+	 *   <li>NEW row: Qty=6, ValidFrom=2026-07-01</li>
+	 * </ul>
+	 *
+	 * <p>Expected (after Task 3 fix):
+	 * <ul>
+	 *   <li>date=2026-06-26 (before NEW's ValidFrom) → OLD row (Qty=9)</li>
+	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom) → NEW row (Qty=6)</li>
+	 *   <li>when both rows are valid (date=2026-07-05), picks latest ValidFrom → NEW row (Qty=6)</li>
+	 * </ul>
+	 *
+	 * <p>Current behaviour (FAILING — date is ignored): all three calls return the NEW row (Qty=6)
+	 * because the query orders by M_HU_PI_Item_Product_ID (insertion order) and NEW was inserted last.
+	 *
+	 * <p>This test MUST FAIL until Task 3 implements the validity filter.
+	 */
+	@Test
+	void gtin_respects_validity_at_datePromised()
+	{
+		// given — one active product
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("test-product-validity");
+		product.setIsActive(true);
+		InterfaceWrapperHelper.save(product);
+
+		final String gtin = "77700001";
+
+		// OLD row: valid from 2019-01-01, no ValidTo → still valid as of 2026-06-26 but superseded after 2026-07-01
+		final I_M_HU_PI_Item_Product oldRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		oldRow.setM_Product_ID(product.getM_Product_ID());
+		oldRow.setGTIN(gtin);
+		oldRow.setQty(new java.math.BigDecimal("9"));
+		oldRow.setValidFrom(Timestamp.valueOf(LocalDate.of(2019, 1, 1).atStartOfDay()));
+		oldRow.setIsActive(true);
+		InterfaceWrapperHelper.save(oldRow);
+
+		// NEW row: valid from 2026-07-01, no ValidTo → applies from 2026-07-01 onward
+		final I_M_HU_PI_Item_Product newRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		newRow.setM_Product_ID(product.getM_Product_ID());
+		newRow.setGTIN(gtin);
+		newRow.setQty(new java.math.BigDecimal("6"));
+		newRow.setValidFrom(Timestamp.valueOf(LocalDate.of(2026, 7, 1).atStartOfDay()));
+		newRow.setIsActive(true);
+		InterfaceWrapperHelper.save(newRow);
+
+		final HUPIItemProductId oldRowId = HUPIItemProductId.ofRepoId(oldRow.getM_HU_PI_Item_Product_ID());
+		final HUPIItemProductId newRowId = HUPIItemProductId.ofRepoId(newRow.getM_HU_PI_Item_Product_ID());
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
+
+		// when — date before NEW's ValidFrom: only OLD is valid → expect OLD row (Qty=9)
+		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
+		final Optional<ProductAndHUPIItemProductId> resultBeforeSwitch = productLookupService.lookupProductByGTIN(identifier, beforeSwitch);
+		assertThat(resultBeforeSwitch).isPresent();
+		assertThat(resultBeforeSwitch.get().getHupiItemProductId())
+				.as("date=2026-06-26: should return OLD row (Qty=9) but date is currently ignored → FAILS with NEW row")
+				.isEqualTo(oldRowId);
+
+		// when — date on/after NEW's ValidFrom: both valid, pick latest ValidFrom → expect NEW row (Qty=6)
+		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
+		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
+		assertThat(resultAfterSwitch).isPresent();
+		assertThat(resultAfterSwitch.get().getHupiItemProductId())
+				.as("date=2026-07-05: should return NEW row (Qty=6, latest ValidFrom)")
+				.isEqualTo(newRowId);
+
+		// when — same after-switch date, confirm it is the latest-ValidFrom row (AC2)
+		final Optional<ProductAndHUPIItemProductId> resultLatestValidFrom = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
+		assertThat(resultLatestValidFrom).isPresent();
+		assertThat(resultLatestValidFrom.get().getHupiItemProductId())
+				.as("date=2026-07-05 (both valid): latest ValidFrom wins → NEW row (Qty=6)")
+				.isEqualTo(newRowId);
 	}
 
 	@Test
@@ -287,7 +370,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isEmpty();
@@ -315,7 +398,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
@@ -345,7 +428,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-12345678");
-		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, null);
 
 		// then
 		assertThat(result).isPresent();
