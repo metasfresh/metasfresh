@@ -46,6 +46,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -87,6 +88,9 @@ class DDOrderPickingReplenishmentServiceVoidOrDisconnectTest
 	private DDOrderPickingReplenishmentService service;
 	private DDOrderReplenishmentGroupKey groupKey;
 
+	/** The orders a mover is under way on, as {@link #createGroupDDOrder} declares them; the batch query is answered from it. */
+	private final HashSet<DDOrderId> ordersWithMoveInProgress = new HashSet<>();
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -103,9 +107,16 @@ class DDOrderPickingReplenishmentServiceVoidOrDisconnectTest
 		pickingJobRepository = mock(PickingJobRepository.class);
 		pickingJobScheduleService = mock(PickingJobScheduleService.class);
 		workplaceService = mock(WorkplaceService.class);
-		// The live "goods are on their way" signal: an IN_PROGRESS DD_Order_MoveSchedule. Mocked per order, defaulting
-		// to false, so every scenario states explicitly which of its orders a mover is working on.
+		// The live "goods are on their way" signal: an IN_PROGRESS DD_Order_MoveSchedule. Production asks it for a whole
+		// candidate set in one query, so the mock answers exactly that: the queried set intersected with the orders the
+		// scenario declared a mover to be working on. Nothing declared -> empty, so silence never means "moving".
+		ordersWithMoveInProgress.clear();
 		ddOrderMoveScheduleService = mock(DDOrderMoveScheduleService.class);
+		when(ddOrderMoveScheduleService.retrieveIdsOfOrdersWithInProgressSchedules(any()))
+				.thenAnswer(invocation -> invocation.<Set<DDOrderId>>getArgument(0)
+						.stream()
+						.filter(ordersWithMoveInProgress::contains)
+						.collect(ImmutableSet.toImmutableSet()));
 		contributorRepository = new DDOrderLineContributorRepository();
 
 		service = new DDOrderPickingReplenishmentService(
@@ -195,7 +206,7 @@ class DDOrderPickingReplenishmentServiceVoidOrDisconnectTest
 		final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 		if (hasMoveInProgress)
 		{
-			when(ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderId)).thenReturn(true);
+			ordersWithMoveInProgress.add(ddOrderId);
 		}
 
 		final DDOrderLineId lineId = DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID());
@@ -268,6 +279,8 @@ class DDOrderPickingReplenishmentServiceVoidOrDisconnectTest
 						stillRequiredLocatorId, requiredOrder.getLine()),
 				ImmutableSet.of(stillRequiredLocatorId),
 				lineIndexOf(movingOrder, idleOrder, requiredOrder),
+				// The pass's batched "which of these orders holds moved goods" verdict, as reconcile computes it.
+				ImmutableSet.of(movingOrder.getDdOrderId()),
 				obsoleteLineIds,
 				disconnectedLineIds);
 
