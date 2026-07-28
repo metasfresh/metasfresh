@@ -1,6 +1,6 @@
 # Frontend Web UI E2E Test Coverage
 
-**Last Updated**: 2025-12-04
+**Last Updated**: 2026-06-29
 
 This document provides a complete overview of E2E test coverage for the metasfresh desktop web UI.
 
@@ -103,6 +103,58 @@ npm run test:report
 
 ---
 
+### 4. HU Label Configuration — Create Record
+**File**: `tests/spec/hu-label-config-create.spec.js`
+**Status**: ✅ Passing (German)
+**Duration**: ~6 seconds
+
+**Workflow**:
+1. Navigate to HU Label Configuration window (541647) → new record
+2. Set the label report process (the only mandatory field without a default)
+3. Leave IsAutoPrint at its `N` default (so the AutoPrintCopies field stays hidden)
+4. Verify the record becomes valid, persists, and AutoPrintCopies defaulted to `1`
+
+**Key Validations**:
+- New record creation in a grid window
+- A mandatory field hidden by DisplayLogic must still get a default (regression guard
+  for the AutoPrintCopies default — without it the WebUI saves the record with
+  AutoPrintCopies = `0`, i.e. "print zero copies"; the direct-INSERT path fails with a
+  NOT-NULL violation)
+- `validStatus.valid` + `saveStatus.saved` polling
+
+**Components Tested**:
+- HU Label Configuration window (541647) / M_HU_Label_Config
+- AutoPrintCopies default
+
+---
+
+### 5. Picking profile — shelf-life-warning field
+**File**: `tests/spec/picking-profile-shelflife-field.spec.js`
+**Status**: ✅ Passing (English, German)
+**Duration**: ~20 seconds per language
+
+**Workflow**:
+1. Provision a login user (+ picking profile with a pick-to structure) via masterdata API
+2. Log in, open the Mobile UI Kommissionierprofil window and its singleton record
+3. Assert `IsWarnShelfLifeUndercut` checkbox renders; capture its current value
+4. Click the checkbox label (`.input-checkbox`), await the PATCH; assert the value flipped
+5. Reload the page, assert the flipped value persisted (end-state persistence)
+
+**Key Validations**:
+- Field renders in the AD layout (AD_Window_ID 541743, picking-profile window)
+- YesNo checkbox is interactive via the `.input-checkbox` label
+- Save is confirmed by an HTTP 200 PATCH to `/rest/api/window/541743/<id>`
+- Value persists after a full page reload (DB-level persistence)
+- State-agnostic: the profile is a per-client singleton shared across scenarios, so the test
+  reads-then-flips rather than assuming an initial value
+
+**Components Tested**:
+- Mobile UI Kommissionierprofil window (AD_Window_ID 541743)
+- MobileUI_UserProfile_Picking.IsWarnShelfLifeUndercut YesNo field
+- Picking-profile masterdata provisioning (`mobileConfig.picking` key)
+
+---
+
 ## Test Architecture
 
 ### Page Objects
@@ -158,10 +210,10 @@ Areas **NOT yet covered** by E2E tests:
 
 ## Test Quality Metrics
 
-- **Total test specs**: 3
-- **Total test cases**: 6 (3 specs × 2 languages)
+- **Total test specs**: 5
+- **Total test cases**: ~10
 - **Language coverage**: en_US, de_DE
-- **Success rate**: 100% (6/6 passing)
+- **Success rate**: 100% (passing)
 - **Average execution time**: ~27 seconds per test
 - **Total suite time**: ~2.7 minutes (sequential execution)
 

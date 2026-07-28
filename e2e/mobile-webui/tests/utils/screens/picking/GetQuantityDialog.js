@@ -1,5 +1,5 @@
 import { test } from "../../../../playwright.config";
-import { expectErrorToastIf, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
+import { expectErrorToastIf, holdForCaptureIfEnabled, page, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from "../../common";
 import { expect } from "@playwright/test";
 
 const NAME = 'GetQuantityDialog';
@@ -13,7 +13,7 @@ export const QTY_NOT_FOUND_REASON_IGNORE = 'IgnoreReason';
 
 export const GetQuantityDialog = {
     waitForDialog: async () => await test.step(`${NAME} - Wait for dialog`, async () => {
-        await containerElement().waitFor();
+        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
     }),
 
     waitToClose: async () => await test.step(`${NAME} - Wait to close`, async () => {
@@ -47,6 +47,15 @@ export const GetQuantityDialog = {
     typeLotNo: async (lotNo) => await test.step(`${NAME} - Type LotNo '${lotNo}'`, async () => {
         const field = page.getByTestId('lotNo');
         await clickAndType(field, lotNo);
+    }),
+
+    typeBestBeforeDate: async (bestBeforeDate) => await test.step(`${NAME} - Type BestBeforeDate '${bestBeforeDate}'`, async () => {
+        // The Best-Before field is a DateInput. With the default config
+        // (mobileui.frontend.dateInput.isUseNativeComponent=N) it renders as a text input
+        // expecting the DD.MM.YYYY display format; fill() sets the whole value in one event.
+        const field = page.getByTestId('bestBeforeDate');
+        await field.tap();
+        await field.fill(bestBeforeDate);
     }),
 
     typeCatchWeight: async (qty) => await test.step(`${NAME} - Type CatchWeight '${qty}'`, async () => {
@@ -84,6 +93,18 @@ export const GetQuantityDialog = {
         await expect(radioButton).toBeChecked();
     }),
 
+    expectDoneDisabled: async () => await test.step(`${NAME} - Expect Done button disabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeDisabled();
+    }),
+
+    expectDoneEnabled: async () => await test.step(`${NAME} - Expect Done button enabled`, async () => {
+        await expect(page.getByTestId('done-button')).toBeEnabled();
+    }),
+
+    expectQtyValidationError: async (expectedText) => await test.step(`${NAME} - Expect qty validation error '${expectedText}'`, async () => {
+        await expect(page.getByTestId('qty-validation-error')).toContainText(expectedText);
+    }),
+
     clickDone: async ({ expectedError } = {}) => await test.step(`${NAME} - Press OK`, async () => {
         let doneButton = page.getByTestId('done-button');
 
@@ -97,6 +118,13 @@ export const GetQuantityDialog = {
             },
             ({ textContent }) => expect(textContent).toContain(expectedError)
         );
+    }),
+
+    // Taps OK/Done but does NOT wait for the dialog to close. Used when pressing Done is
+    // expected to surface a follow-up dialog on top (e.g. the shelf-life RLZ confirmation),
+    // which keeps this qty dialog open until that follow-up is resolved.
+    clickDoneExpectingFollowupDialog: async () => await test.step(`${NAME} - Press OK (expecting follow-up dialog)`, async () => {
+        await page.getByTestId('done-button').tap();
     }),
 
     clickCancel: async () => await test.step(`${NAME} - Press Cancel`, async () => {
@@ -119,7 +147,7 @@ export const GetQuantityDialog = {
         await expectMissingOrDisabled(page.getByTestId('confirmDoneAndCloseTarget-button'));
     }),
 
-    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
+    fillAndPressDone: async ({ switchToManualInput, expectQtyEntered, qtyEntered, lotNo, bestBeforeDate, catchWeight, catchWeightQRCode, qtyNotFoundReason, expectQtyNotFoundReason, expectedError }) => await test.step(`${NAME} - Fill dialog`, async () => {
         await GetQuantityDialog.waitForDialog();
 
         // run this first!
@@ -135,6 +163,9 @@ export const GetQuantityDialog = {
         }
         if (lotNo != null) {
             await GetQuantityDialog.typeLotNo(lotNo);
+        }
+        if (bestBeforeDate != null) {
+            await GetQuantityDialog.typeBestBeforeDate(bestBeforeDate);
         }
         if (catchWeight != null) {
             await GetQuantityDialog.typeCatchWeight(catchWeight);
@@ -154,6 +185,10 @@ export const GetQuantityDialog = {
             await GetQuantityDialog.clickQtyNotFoundReason({ reason: qtyNotFoundReason });
         }
 
+        // Capture mode only (UAT_CAPTURE): hold the filled dialog on the recorder for a few frames
+        // so the entered values are captured before OK closes it. No-op / full speed otherwise.
+        await holdForCaptureIfEnabled();
+
         await GetQuantityDialog.clickDone({ expectedError });
     }),
 };
@@ -165,8 +200,16 @@ export const GetQuantityDialog = {
 //
 
 const expectMissingOrDisabled = async (locator) => {
+    // Element should either not exist (dialog already closed) or be disabled (dialog closing).
+    // Race condition: count() > 0 may be true, but by the time toBeDisabled() runs the dialog
+    // may have unmounted. In that case, re-check count — if 0, element is gone (OK).
     if (await locator.count() > 0) {
-        await expect(locator).toBeDisabled();
+        try {
+            await expect(locator).toBeDisabled();
+        } catch (e) {
+            if (await locator.count() === 0) return;
+            throw e;
+        }
     }
 };
 

@@ -11,7 +11,9 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
+import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.util.IdentifiersResolver;
+import de.metas.invoice.InvoiceId;
 import de.metas.money.MoneyService;
 import de.metas.product.ProductId;
 import de.metas.tax.api.ITaxDAO;
@@ -38,6 +40,7 @@ public class FactAcctMatchersFactory
 	@NonNull private final C_BPartner_StepDefData bpartnerTable;
 	@NonNull private final C_Tax_StepDefData taxTable;
 	@NonNull private final M_Product_StepDefData productTable;
+	@NonNull private final C_Invoice_StepDefData invoiceTable;
 
 	public FactAcctMatchers createLineMatchers(@NonNull final DataTable table)
 	{
@@ -83,6 +86,7 @@ public class FactAcctMatchersFactory
 				.taxId(extractTaxId(row))
 				.bpartnerId(extractBPartnerId(row))
 				.productId(extractProductId(row))
+				.invoiceId(extractInvoiceId(row))
 				.build();
 	}
 
@@ -107,6 +111,7 @@ public class FactAcctMatchersFactory
 				.taxId(extractTaxId(row))
 				.bpartnerId(extractBPartnerId(row))
 				.productId(extractProductId(row))
+				.invoiceId(extractInvoiceId(row))
 				//
 				.amtAcctDr(row.getAsOptionalBigDecimal(I_Fact_Acct.COLUMNNAME_AmtAcctDr).orElse(null))
 				.amtAcctCr(row.getAsOptionalBigDecimal(I_Fact_Acct.COLUMNNAME_AmtAcctCr).orElse(null))
@@ -164,6 +169,14 @@ public class FactAcctMatchersFactory
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("M_Product_ID").orElse(null);
 		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(productTable));
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Nullable
+	private Optional<InvoiceId> extractInvoiceId(final @NonNull DataTableRow row)
+	{
+		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier("C_Invoice_ID").orElse(null);
+		return identifier == null ? null : Optional.ofNullable(identifier.lookupIdIn(invoiceTable));
 	}
 
 }

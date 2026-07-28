@@ -7,6 +7,7 @@ import de.metas.gs1.GTIN;
 import de.metas.gs1.ean13.EAN13;
 import de.metas.i18n.ITranslatableString;
 import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
@@ -32,6 +33,7 @@ public class PickingJobProductService
 {
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public static PickingJobProductService newInstanceForUnitTesting()
@@ -69,6 +71,11 @@ public class PickingJobProductService
 		return productBL.getProductValue(productId);
 	}
 
+	public ITranslatableString getProductNameTrl(@NonNull final ProductId productId)
+	{
+		return productBL.getProductNameTrl(productId);
+	}
+
 	public boolean isValidEAN13Product(@NonNull final EAN13 ean13, @NonNull final ProductId expectedProductId, @Nullable final BPartnerId bpartnerId)
 	{
 		return productBL.isValidEAN13Product(ean13, expectedProductId, bpartnerId);
@@ -80,5 +87,14 @@ public class PickingJobProductService
 	public ImmutableMap<ProductId, Product> getByIdsAsMap(@NonNull final Set<ProductId> ids)
 	{
 		return productRepository.getByIdsAsMap(ids);
+	}
+
+	/**
+	 * @return M_Product.GuaranteeDaysMin, falling back to product category when product value is 0.
+	 *         Returns 0 if not configured on either.
+	 */
+	public int getGuaranteeDaysMin(@NonNull final ProductId productId)
+	{
+		return productDAO.getProductGuaranteeDaysMinFallbackProductCategory(productId);
 	}
 }

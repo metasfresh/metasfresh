@@ -13,9 +13,9 @@ const NAME = 'DistributionJobsListScreen';
 const containerElement = () => page.locator('#WFLaunchersScreen');
 
 export const DistributionJobsListScreen = {
-    waitForScreen: async () => await test.step(`${NAME} - Wait for screen`, async () => {
-        await containerElement().waitFor({ timeout: SLOW_ACTION_TIMEOUT });
-        await page.locator('.loading').waitFor({ state: 'detached', timeout: SLOW_ACTION_TIMEOUT });
+    waitForScreen: async ({ timeout = SLOW_ACTION_TIMEOUT } = {}) => await test.step(`${NAME} - Wait for screen`, async () => {
+        await containerElement().waitFor({ timeout });
+        await page.locator('.loading').waitFor({ state: 'detached', timeout });
     }),
 
     filterByFacetId: async ({
@@ -48,9 +48,9 @@ export const DistributionJobsListScreen = {
     },
 
     expectJobButtons: async (expectationsArray) => await test.step(`${NAME} - Expect ${expectationsArray.length} job buttons`, async () => {
-        await test.step(`Wait for all expected buttons to be attached`, async () => {
+        await test.step(`Wait for all expected buttons to be visible`, async () => {
             for (const expectation of expectationsArray) {
-                await locateJobButtons(expectation).waitFor({ state: 'attached' });
+                await locateJobButtons(expectation).waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
             }
         });
 

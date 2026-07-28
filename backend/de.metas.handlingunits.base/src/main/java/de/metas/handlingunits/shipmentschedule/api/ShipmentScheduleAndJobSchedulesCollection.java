@@ -3,7 +3,6 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.util.GuavaCollectors;
@@ -56,6 +55,13 @@ public class ShipmentScheduleAndJobSchedulesCollection implements Iterable<Shipm
 	}
 
 	public boolean isEmpty() {return list.isEmpty();}
+
+	public int countUnprocessed()
+	{
+		return (int) list.stream()
+				.filter(schedule -> !schedule.isProcessed())
+				.count();
+	}
 
 	@Override
 	public @NotNull Iterator<ShipmentScheduleAndJobSchedules> iterator() {return list.iterator();}

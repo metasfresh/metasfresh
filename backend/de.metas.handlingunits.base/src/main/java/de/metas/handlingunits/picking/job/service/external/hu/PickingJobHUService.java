@@ -69,6 +69,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -208,9 +209,15 @@ public class PickingJobHUService
 
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId) {return huQRCodesService.getQRCodeByHuId(huId);}
 
+	public Map<HuId, HUQRCode> getSingleQRCodeByHuIds(@NonNull final Collection<HuId> huIds) {return huQRCodesService.getSingleQRCodeByHuIds(huIds);}
+
 	public List<HUQRCode> getOrCreateQRCodesByHuId(@NonNull final HuId huId) {return huQRCodesService.getOrCreateQRCodesByHuId(huId);}
 
 	public HuId getHuIdByQRCode(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCode(huQRCode);}
+
+	public Optional<HuId> getHuIdByQRCodeIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode);}
+
+	public Optional<HuId> getHuIdByQRCodeIncludingInactiveIfExists(final HUQRCode huQRCode) {return huQRCodesService.getHuIdByQRCodeIncludingInactiveIfExists(huQRCode);}
 
 	public HuId createInventoryForMissingQty(@NonNull final CreateVirtualInventoryWithQtyReq req) {return inventoryService.createInventoryForMissingQty(req);}
 

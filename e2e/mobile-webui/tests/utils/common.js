@@ -16,6 +16,23 @@ export const setCurrentPage = (currentPage) => {
     page = currentPage;
 }
 
+// Capture mode — OFF by default. When the env flag UAT_CAPTURE is set, the run is a deliberate
+// recording run for a UAT/documentation video; otherwise this is a no-op and the test runs at
+// full speed. The test's normal/CI speed is never affected.
+// See skill playwright-video-delivery § "Test speed vs. recording speed".
+export const UAT_CAPTURE = !!process.env.UAT_CAPTURE;
+
+// Hold the currently-painted screen on the video recorder long enough for the freshly-entered
+// values to be captured as a clear, deliberate freeze (the recorder samples ~25 fps and Playwright
+// otherwise fills + confirms within a single frame, so the values are never recorded). NO-OP unless
+// UAT_CAPTURE is set — so this can only ever slow a deliberate capture run, never a normal/CI run;
+// the value is therefore generous for legibility, not a marginal minimum.
+const CAPTURE_HOLD_MS = 500;
+export const holdForCaptureIfEnabled = async () => {
+    if (!UAT_CAPTURE || page == null) return;
+    await page.waitForTimeout(CAPTURE_HOLD_MS);
+};
+
 export const step = async (title, func) => await test.step(title, async () => await runAndWatchForErrors(func));
 
 let nextErrorWatcherId = 101;
@@ -69,6 +86,13 @@ export const expectErrorToast = async (title, func, toastValidator) => {
     return await test.step(`Expect error: ${title} (watcherId=${watcherId})`, async () => {
         const executeFuncFailOnSuccess = async () => {
             await func();
+            // Grace period: if func() returned cleanly but a toast is still pending, give
+            // React time to render before declaring "not detected". The original Promise.race
+            // could lose against a ~20ms-late toast render under CI load, producing false
+            // "not detected" failures. The hang-on-error semantic of Promise.race
+            // is preserved: if func() never returns (waiting for a screen that won't come),
+            // we never reach this sleep and the toast branch wins as before.
+            await new Promise(resolve => setTimeout(resolve, 2000));
             throw new Error(`Expected error toast not detected (watcherId=${watcherId})`);
         }
 

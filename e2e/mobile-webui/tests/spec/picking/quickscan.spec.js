@@ -1,5 +1,7 @@
 import { test } from "../../../playwright.config";
 import { allure } from 'allure-playwright';
+import { page, FAST_ACTION_TIMEOUT } from "../../utils/common";
+import { expect } from '@playwright/test';
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { PickingJobsListScreen } from "../../utils/screens/picking/PickingJobsListScreen";
 import { PickingJobScreen } from "../../utils/screens/picking/PickingJobScreen";
@@ -45,14 +47,16 @@ const createMasterdata = async () => {
     });
 };
 
-test.describe('Barcode Scanner Input Modes', () => {
+test.describe('Picking Quick Scan', () => {
 
+    // Quick-scan via keyboard events: scan HU QR code directly from the picking job screen
+    // without pressing the "Scan" button. The system auto-resolves which line the HU belongs to.
     // noinspection JSUnusedLocalSymbols
-    test('scan barcode via keyboard events', async ({ page }) => {
+    test('quick-scan HU via keyboard events', async ({ page }) => {
         allure.epic('E0105: Picking');
         allure.tag('F00230: MobileUI Picking');
         allure.tag('F00230');
-        allure.story('Barcode scanner keyboard input mode');
+        allure.story('Quick-scan HU from picking job screen (keyboard mode)');
         allure.severity('critical');
 
         const masterdata = await createMasterdata();
@@ -78,12 +82,33 @@ test.describe('Barcode Scanner Input Modes', () => {
         await PickingJobScreen.complete();
     });
 
+    // Tests BarcodeScannerComponent in IME mode (Zebra DataWedge text injection).
+    //
+    // WHY THIS TEST EXISTS (me03#28834):
+    // Zebra MC3300x scanners use DataWedge in IME/InputConnection mode. This means scanned
+    // text is injected via Android's InputConnection.commitText(), NOT via keyboard events.
+    // For InputConnection to work, the barcode input must be:
+    //   - type="text" (NOT type="hidden" — hidden inputs can't receive focus/InputConnection)
+    //   - inputMode="none" (suppresses virtual keyboard while keeping InputConnection alive)
+    //
+    // WHAT THIS TEST VALIDATES:
+    // 1. Input element attributes: verifies the hidden scanner input on the picking job screen
+    //    has type="text" and inputMode="none". This catches regressions where someone changes
+    //    it back to type="hidden" (which would silently break DataWedge IME scanning).
+    // 2. Functional flow: simulates IME text injection via typeViaIME() and verifies the
+    //    full quick-scan path works (scan → auto-resolve line → pick dialog → pick).
+    //
+    // LIMITATION: typeViaIME() uses evaluate() to set the input value directly — this bypasses
+    // the real Android InputConnection. The attribute assertions in step 1 are what actually
+    // guard against the type="hidden" regression. Real InputConnection can only be tested
+    // on hardware (manual test on Zebra MC3300x).
+    //
     // noinspection JSUnusedLocalSymbols
-    test('scan barcode via IME text injection', async ({ page }) => {
+    test('quick-scan HU via IME text injection', async ({ page: _page }) => {
         allure.epic('E0105: Picking');
         allure.tag('F00230: MobileUI Picking');
         allure.tag('F00230');
-        allure.story('Barcode scanner IME input mode (Zebra DataWedge)');
+        allure.story('Quick-scan HU from picking job screen (IME/DataWedge mode)');
         allure.severity('critical');
 
         const masterdata = await createMasterdata();
@@ -106,10 +131,21 @@ test.describe('Barcode Scanner Input Modes', () => {
 
         await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
 
+        // Verify the hidden scanner input rendered by BarcodeScannerButton has IME-compatible
+        // attributes. This is the critical regression guard — if someone reverts to type="hidden",
+        // the typeViaIME() flow below would still pass (it bypasses InputConnection), but this
+        // assertion would catch it.
+        await test.step('Verify hidden scanner input is IME-compatible (type=text, inputMode=none)', async () => {
+            const scannerInput = page.locator('#input-text');
+            await scannerInput.waitFor({ state: 'attached', timeout: FAST_ACTION_TIMEOUT });
+            await expect(scannerInput).toHaveAttribute('type', 'text');
+            await expect(scannerInput).toHaveAttribute('inputmode', 'none');
+        });
+
         await PickingJobScreen.expectLineButton({ index: 1, qtyToPick: '3 TU', qtyPicked: '0 TU' });
 
-        // Scan HU via IME
-        await test.step('Pick HU via IME', async () => {
+        // Scan HU via IME directly from the picking job screen (quick-scan without pressing "Scan" button)
+        await test.step('Pick HU via IME (quick-scan from picking job screen)', async () => {
             await BarcodeScannerComponent.typeViaIME(masterdata.handlingUnits.HU1.qrCode);
             await GetQuantityDialog.fillAndPressDone({ expectQtyEntered: '3' });
             await PickingJobScreen.waitForScreen();

@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.business.BusinessTestHelper;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.QtyTU;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -37,7 +38,10 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.qrcodes.ean13.EAN13HUQRCode;
 import de.metas.handlingunits.qrcodes.gs1.GS1HUQRCode;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
+import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.handlingunits.qrcodes.model.IHUQRCode;
 import de.metas.handlingunits.qrcodes.special.PickOnTheFlyQRCode;
@@ -62,6 +66,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -166,6 +172,46 @@ class HUQRCodesServiceTest
 		huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, attributes.getBestBeforeDate() != null ? LocalDate.parse(attributes.getBestBeforeDate()) : null);
 		huAttributes.setValue(AttributeConstants.ATTR_LotNumber, attributes.getLotNumber());
 		huAttributes.setValue(Weightables.ATTR_WeightNet, attributes.getWeightNet() != null ? new BigDecimal(attributes.getWeightNet()) : null);
+	}
+
+	@Nested
+	class getSingleQRCodeByHuIds
+	{
+		private final HUQRCodesRepository repo = new HUQRCodesRepository();
+
+		private HUQRCode newQRCode()
+		{
+			return HUQRCode.builder()
+					.id(HUQRCodeUniqueId.ofUUID(UUID.randomUUID()))
+					.packingInfo(HUQRCodePackingInfo.builder()
+							.huUnitType(HUQRCodeUnitType.TU)
+							.packingInstructionsId(HuPackingInstructionsId.ofRepoId(123))
+							.caption("Some TU")
+							.build())
+					.attributes(ImmutableList.of())
+					.build();
+		}
+
+		@Test
+		void returnsOnlyHUsWithExactlyOneAssignedQRCode()
+		{
+			final HuId huSingle = HuId.ofRepoId(701);
+			final HuId huMulti = HuId.ofRepoId(702);
+			final HuId huNone = HuId.ofRepoId(703);
+
+			final HUQRCode qrSingle = newQRCode();
+			repo.createNew(qrSingle, huSingle);
+			// two distinct QR codes assigned to the same HU -> ambiguous -> must be omitted
+			repo.createNew(newQRCode(), huMulti);
+			repo.createNew(newQRCode(), huMulti);
+			// huNone has no assigned QR code
+
+			final Map<HuId, HUQRCode> result = huQRCodesService.getSingleQRCodeByHuIds(
+					ImmutableList.of(huSingle, huMulti, huNone));
+
+			assertThat(result).containsOnlyKeys(huSingle);
+			assertThat(result.get(huSingle).getId()).isEqualTo(qrSingle.getId());
+		}
 	}
 
 	@Nested
@@ -358,6 +404,50 @@ class HUQRCodesServiceTest
 			final IHUQRCode parsedHUQRCode = huQRCodesService.parse(tuId.toHUValue());
 			System.out.println("parsedHUQRCode: " + parsedHUQRCode + " (" + parsedHUQRCode.getClass() + ")");
 			assertThat(parsedHUQRCode).isInstanceOf(HUQRCode.class);
+		}
+
+		@Test
+		void locatorQRCode_throwsUserFriendlyError()
+		{
+			// LOC# prefix is a locator QR code, not an HU QR code
+			final String locatorQRCodeString = "LOC#1#{\"warehouseId\":1,\"locatorId\":2,\"caption\":\"Regal-01\"}";
+			assertThatThrownBy(() -> huQRCodesService.parse(locatorQRCodeString))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+
+		@Test
+		void unrecognized_throwsUserFriendlyError()
+		{
+			final String junkCode = "TOTALLY_UNKNOWN_FORMAT_XYZ";
+			assertThatThrownBy(() -> huQRCodesService.parse(junkCode))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> assertThat(((AdempiereException)ex).isUserValidationError()).isTrue());
+		}
+
+		@Test
+		void truncatedHuQRCodeHead_throwsUserFriendlyError()
+		{
+			// A long HU QR code can be split mid-stream on a slow scanner device: the head fragment keeps the
+			// valid "HU#<version>#" prefix but carries a truncated JSON payload. It must surface the SAME friendly
+			// "not recognized" message as any other bad code, not leak the raw "Failed converting payload" error.
+			final HuId tuId = createTU();
+			final String fullHuQRCode = huQRCodesService.generateForExistingHU(tuId).getSingleQRCode(tuId).getAsString();
+
+			// sanity: the full code is a valid, parseable HU QR code
+			assertThat(huQRCodesService.parse(fullHuQRCode)).isInstanceOf(HUQRCode.class);
+
+			// simulate the device split: keep the HU#<version># prefix, drop the tail so the JSON payload is incomplete
+			final String truncatedHead = fullHuQRCode.substring(0, fullHuQRCode.length() / 2);
+			assertThat(truncatedHead).startsWith("HU#");
+
+			assertThatThrownBy(() -> huQRCodesService.parse(truncatedHead))
+					.isInstanceOf(AdempiereException.class)
+					.satisfies(ex -> {
+						final AdempiereException ae = (AdempiereException)ex;
+						assertThat(ae.isUserValidationError()).isTrue();
+						assertThat(ae.getErrorCode()).isEqualTo(MobileQRCodeMessages.NOT_RECOGNIZED.toAD_Message());
+					});
 		}
 	}
 }

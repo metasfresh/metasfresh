@@ -240,7 +240,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 	public WFProcess processEvent(final JsonDistributionEvent event, final UserId callerId)
 	{
-		DistributionJob job = distributionRestService.processEvent(event, callerId);
+		final DistributionJob job = distributionRestService.processEvent(event, callerId);
 		return toWFProcess(job);
 	}
 

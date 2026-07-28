@@ -148,6 +148,60 @@ class AssertPickingExpectationsCommand
 			final List<I_M_ShipmentSchedule_QtyPicked> actualQtyPickedRecords = services.getShipmentScheduleQtyPickedRecords(actualsById.keySet());
 			assertQtyPickedList(expectation.getQtyPicked(), actualQtyPickedRecords, actualsById);
 		}
+
+		if (expectation.getIsClosed() != null)
+		{
+			assertThat(actuals).isNotEmpty();
+			waitShipmentSchedulesClosed(actuals, expectation.getIsClosed());
+			actuals.forEach(actual -> softly(() -> {
+				softlyPutContext("shipmentSchedule", actual);
+				assertThat(actual.isClosed()).as("IsClosed").isEqualTo(expectation.getIsClosed());
+			}));
+		}
+	}
+
+	private void waitShipmentSchedulesClosed(
+			@NonNull final List<I_M_ShipmentSchedule> actuals,
+			final boolean expectedClosed) throws InterruptedException
+	{
+		if (!expectedClosed)
+		{
+			return; // no need to wait if we expect them NOT closed
+		}
+
+		final ArrayList<I_M_ShipmentSchedule> notYetClosed = new ArrayList<>();
+		for (final I_M_ShipmentSchedule actual : actuals)
+		{
+			if (!actual.isClosed())
+			{
+				notYetClosed.add(actual);
+			}
+		}
+
+		if (notYetClosed.isEmpty())
+		{
+			return;
+		}
+
+		final Stopwatch stopwatch = Stopwatch.createStarted();
+		while (!notYetClosed.isEmpty() && stopwatch.elapsed().compareTo(DEFAULT_TIMEOUT) < 0)
+		{
+			logger.info("Waiting for {}/{} shipment schedules to be closed", notYetClosed.size(), actuals.size());
+			//noinspection BusyWait
+			Thread.sleep(1000);
+
+			InterfaceWrapperHelper.refreshAll(notYetClosed);
+			notYetClosed.removeIf(I_M_ShipmentSchedule::isClosed);
+		}
+		stopwatch.stop();
+
+		if (!notYetClosed.isEmpty())
+		{
+			throw new AdempiereException("Not all shipment schedules were closed after " + stopwatch + ": " + notYetClosed);
+		}
+
+		// Refresh all actuals so subsequent assertions see updated state
+		InterfaceWrapperHelper.refreshAll(actuals);
 	}
 
 	private void assertQtyPickedList(

@@ -212,7 +212,11 @@ public class DistributionRestService
 
 		final DDOrderId ddOrderId = job.getDdOrderId();
 		ddOrderService.close(ddOrderId);
-		ddOrderService.print(ddOrderId);
+
+		if (configRepository.getConfig().isPrintDDOrderOnComplete())
+		{
+			ddOrderService.print(ddOrderId);
+		}
 
 		return getJobById(ddOrderId);
 	}

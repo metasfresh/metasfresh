@@ -52,4 +52,5 @@ public class WorkplaceRepositoryTest
 				.build());
 		assertNotNull(workplace2);
 	}
+
 }

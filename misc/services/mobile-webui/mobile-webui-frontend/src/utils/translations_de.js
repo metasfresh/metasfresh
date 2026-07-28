@@ -5,6 +5,8 @@ const translations = {
       differentProduct: 'The scanned QR Product does not match',
     },
     PleaseTryAgain: 'Oops, das sollte nicht passieren',
+    InternalError:
+      'Bitte erneut versuchen. Sollte das Problem weiterhin auftreten, wenden Sie sich an den Support. (Trace: %(traceId)s)',
     network: {
       noResponse: 'Verbindung Fehler',
     },
@@ -56,6 +58,9 @@ const translations = {
   login: {
     submitButton: 'Login',
     alternativeMethods: 'Wechseln zu...',
+    qrLoginPlaceholder: 'QR-Code zum Anmelden scannen',
+    username: 'Benutzername',
+    password: 'Passwort',
     authMethod: {
       qrCode: 'QR Code',
       userAndPass: 'Passwort',
@@ -79,6 +84,14 @@ const translations = {
       scanWorkplacePlaceholder: 'Arbeitsplatz scannen...',
       scanWorkstationPlaceholder: 'Arbeitsstation scannen...',
       scanTrolleyPlaceholder: 'Wagen scannen...',
+      scanPrompt: 'Barcode scannen',
+      scanInProgress: 'Scan läuft...',
+      enterManually: 'Manuell eingeben',
+      scanWithCamera: 'Mit Kamera scannen',
+      useHardwareScanner: 'Hardware-Scanner verwenden',
+      manualInputPlaceholder: 'Barcode eingeben...',
+      manualInputSubmit: 'Senden',
+      cameraError: 'Kamera konnte nicht gestartet werden. Bitte Kamerazugriff prüfen.',
     },
   },
   activities: {
@@ -89,6 +102,16 @@ const translations = {
     huManager: {
       missingTargetQrCode: 'Der Ziel-QR-Code muss zuerst gescannt werden!',
       scanLuOrLocator: 'Scannen LU oder Lagerplatz',
+      action: {
+        bulkActions: {
+          windowName: 'Massenaktionen',
+          closeScanner: 'Scanner schließen',
+          move: 'Verschieben',
+          moveSuccess: 'HU erfolgreich verschoben',
+          scanHUPlaceholder: 'HU scannen',
+          scanTargetPlaceholder: 'Ziellagerplatz scannen',
+        },
+      },
     },
     picking: {
       PickingLine: 'Packzeile',
@@ -131,6 +154,8 @@ const translations = {
       reopenLU: 'LU wieder öffnen',
       pickingSlot: 'Verpackungsfach',
       pickAll: 'Schnelldruck',
+      noMatchingLines: 'Keine passende Packzeile gefunden',
+      rlzConfirmDeclined: 'Kommissionierung übersprungen — MHD zu kurz',
     },
     distribution: {
       DistributionLine: 'Pickenzeile',
@@ -155,6 +180,11 @@ const translations = {
       },
       abort: 'Rückgängig',
       notFound: 'Nicht gefunden',
+      error: {
+        title: 'Bestätigung konnte nicht gesendet werden',
+        retry: 'Erneut senden',
+        cancel: 'Abbrechen',
+      },
     },
     mfg: {
       ProductName: 'Produkt',

@@ -45,6 +45,11 @@ export const DistributionLineScreen = {
         await expect(page.getByTestId('step-0-button')).toHaveCount(0);
     }),
 
+    openPickFromScreen: async () => await test.step(`${NAME} - Open Pick From Screen`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await DistributionLinePickFromScreen.waitForScreen();
+    }),
+
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {
         await DistributionLineScreen.expectVisible();
         await page.locator(ID_BACK_BUTTON).tap();

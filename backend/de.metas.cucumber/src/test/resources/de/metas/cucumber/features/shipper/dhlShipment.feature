@@ -10,6 +10,9 @@ Feature: Dhl Shipment
     And metasfresh has date and time 2022-12-12T12:12:12+01:00[Europe/Berlin]
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    # Read the HU's WeightGross attribute first, with product nominal gross as fallback. The last scenario
+    # in this feature resets WeightSourceTypes to the default ProductWeight to cover the fallback path.
+    And set sys config String value HUWeightGross,ProductWeight for sys config de.metas.shipping.WeightSourceTypes
     And ensure product accounts exist
     And load M_Shipper:
       | Identifier  | Name |
@@ -27,13 +30,14 @@ Feature: Dhl Shipment
       | packing_product_1 | 2003135          |
     #Configure dimensions of packing product
     And metasfresh contains M_HU_PackingMaterial:
-      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name   | OPT.Length | OPT.Width | OPT.Height | OPT.C_UOM_Dimension_ID.Identifier |
-      | dhl_pm                             | packing_product_1           | Karton | 30         | 20        | 10         | cm                                |
+      | M_HU_PackingMaterial_ID | M_Product_ID      | Name   | Length | Width | Height | C_UOM_Dimension_ID | IsInvoiceable |
+      | dhl_pm                  | packing_product_1 | Karton | 30     | 20    | 10     | cm                 | N             |
 
-    # Create product
+    # Create product. NetWeight and GrossWeight are distinct so the HU pipeline derives both
+    # WeightNet (= 0.245 × qty) and WeightTare delta (= 0.005 × qty + packing material).
     And metasfresh contains M_Products:
-      | Identifier          | Name                | IsStocked | WeightGross | IsSelfPacked | LengthInCm | WidthInCm | HeightInCm |
-      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.250 KGM   | Y            | 20         | 10        | 5          |
+      | Identifier          | Name                | IsStocked | WeightNet | WeightGross | IsSelfPacked | LengthInCm | WidthInCm | HeightInCm |
+      | test_product_dhl_01 | test_product_dhl_01 | true      | 0.245 KGM | 0.250 KGM   | Y            | 20         | 10        | 5          |
     And metasfresh contains M_PricingSystems
       | Identifier |
       | ps_dhl_1   |
@@ -91,10 +95,6 @@ Feature: Dhl Shipment
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | REST.Context      | IsOrderInTuUomWhenMatched |
       | dhl_huProductTU_X                  | dhl_huPiItemTU             | test_product_dhl_01     | 5   | 2022-01-10 | dhl_huProductTU_X | false                     |
 
-  @ignore
-    # findings so far:
-    # when running the executor on gh-actions, il2 is not created. Probably related to it's price being 0
-    # i guess there is a switch about skipping price-0 lines that is activated by a preceeding test.
   @Id:S0335.1_100
   Scenario: Auto-processing of olcand and shipped via DHL
     When metasfresh contains External System
@@ -173,7 +173,6 @@ Feature: Dhl Shipment
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | il1                         | invoice_1               | test_product_dhl_01     | 1           | true      |
-      | il2                         | invoice_1               | packing_product_1       | 1           | true      |
     And load Transportation Order from Shipment
       | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
       | shipment_1            | shipTransp_1                          |
@@ -289,3 +288,63 @@ Feature: Dhl Shipment
     And validate DHL_ShipmentOrder:
       | M_Package_ID | C_BPartner_ID | DHL_LengthInCm | DHL_WidthInCm | DHL_HeightInCm | DHL_WeightInKg |
       | package1     | dhl_customer  | 50             | 20            | 10             | 2.5            |
+
+
+  @Id:S0335.1_300
+  Scenario: DHL shipment with default WeightSourceTypes=ProductWeight (no HU pipeline)
+    # M_Package.PackageWeight is read from product.GrossWeight × qty directly (no HU attribute path).
+    Given set sys config String value ProductWeight for sys config de.metas.shipping.WeightSourceTypes
+
+    When metasfresh contains External System
+      | Name                 | Value                |
+      | TestSystem_S0335_300 | TestSystem_S0335_300 |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+    """
+{
+  "requests": [
+    {
+      "orgCode": "001",
+      "externalHeaderId": "dhl_03",
+      "externalLineId": "dhl_03",
+      "externalSystemCode": "TestSystem_S0335_300",
+      "dataSource": "int-Shopware",
+      "bpartner": {
+          "bpartnerIdentifier": "gln-1122334455667",
+          "bpartnerLocationIdentifier": "gln-1122334455667"
+      },
+      "dateRequired": "2022-12-12",
+      "dateOrdered": "2022-12-12",
+      "orderDocType": "SalesOrder",
+      "paymentTerm": "val-1000002",
+      "productIdentifier": "val-test_product_dhl_01",
+      "qty": 10,
+      "currencyCode": "EUR",
+      "discount": 0,
+      "poReference": "ref_12389",
+      "deliveryViaRule": "S",
+      "deliveryRule": "F",
+      "bpartnerName": "olCandBPartnerName",
+      "shipper": "val-Dhl"
+    }
+  ]
+}
+"""
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "dhl_03",
+    "externalSystemCode": "TestSystem_S0335_300",
+    "ship": true,
+    "invoice": true,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier | M_InOut_ID.Identifier | C_Invoice_ID.Identifier |
+      | order_1               | shipment_1            | invoice_1               |
+    And load Transportation Order from Shipment
+      | M_InOut_ID.Identifier | M_ShipperTransportation_ID.Identifier |
+      | shipment_1            | shipTransp_1                          |
+    And validate M_Packages for shipment shipment_1
+      | M_Shipper_ID | C_BPartner_ID | C_BPartner_Location_ID | PackageWeight | M_Package_ID | LengthInCm | WidthInCm | HeightInCm |
+      | shipper_DHL  | dhl_customer  | dhl_location           | 2.5           | package1     | 50         | 20        | 10         |

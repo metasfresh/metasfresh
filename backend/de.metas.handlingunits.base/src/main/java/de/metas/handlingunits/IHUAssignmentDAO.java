@@ -171,6 +171,8 @@ public interface IHUAssignmentDAO extends ISingletonService
 	 */
 	IQueryBuilder<I_M_HU_Assignment> retrieveTUHUAssignmentsForModelQuery(Object model);
 
+	List<I_M_HU> retrieveDistinctAssignedTUsForModel(Object model);
+
 	/**
 	 * Retrieves those "sub" assignments that reference the same top-level HU and data-record as the given <code>assigment</code>, but also reference a particular (sub-)component of the top-level HU
 	 *

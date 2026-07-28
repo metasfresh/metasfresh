@@ -80,6 +80,7 @@ public class PickingJobReopenCommand
 
 		this.jobToReopen = jobToReopen;
 		this.huIdsToPick = huIdsToPick.stream()
+				.distinct()
 				.collect(ImmutableMap.toImmutableMap(HUWithPickOnTheFlyStatus::getHuId, Function.identity()));
 	}
 

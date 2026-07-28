@@ -40,6 +40,7 @@ import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateResponse;
 import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
@@ -68,14 +69,19 @@ public class CreateMasterdataCommand
 	{
 		this.context.putFromJson(request.getContext());
 
+		// Apply sysconfigs early (before any masterdata creation)
+		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
+
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
-		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
+		// Resources must be created AFTER workplaces: a workstation resource may reference a workplace
+		// by identifier (JsonCreateResourceRequest.workplace), resolved from the context populated here.
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
@@ -89,6 +95,7 @@ public class CreateMasterdataCommand
 
 		return JsonCreateMasterdataResponse.builder()
 				.context(context.toJson())
+				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
 				.mobileConfig(mobileConfig)
 				.login(login)
 				.bpartners(bpartners)
@@ -386,6 +393,14 @@ public class CreateMasterdataCommand
 				.build()
 				.execute();
 
+	}
+
+	private ImmutableMap<String, String> applySysconfigs()
+	{
+		return SysconfigCommand.builder()
+				.sysconfigs(request.getSysconfigs())
+				.build()
+				.execute();
 	}
 
 }

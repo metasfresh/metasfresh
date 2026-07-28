@@ -59,6 +59,37 @@ export const Backend = {
         };
     }),
 
+    setSysconfigs: async (sysconfigs) => await test.step(`Backend: set sysconfigs`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        const response = await page.request.post(`${backendBaseUrl}/frontendTesting/setSysconfigs`, {
+            data: sysconfigs,
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+
+        if (!response.ok()) {
+            const responseBody = await response.json();
+            assertNoErrors({ responseBody });
+        }
+    }),
+
+    // Returns the operator's CURRENT active workplace (system of record) — shape:
+    // { workplaceRequired, assignedWorkplace: { ...id/name/caption... } }.
+    // Used to prove the operator's active workplace, as opposed to a workstation SCREEN's
+    // statically-linked workplace (which never drifts and would not catch a re-assign bug).
+    getCurrentWorkplace: async () => await test.step(`Backend: get current workplace`, async () => {
+        const backendBaseUrl = await getBackendBaseUrl();
+        // The mobile REST API authenticates via the login token header (not a browser cookie),
+        // so page.request must carry it explicitly — same token the logged-in UI uses.
+        const response = await page.request.get(`${backendBaseUrl}/workplace`, {
+            headers: { 'Authorization': getAuthToken() },
+        });
+        const responseBody = await response.json();
+        assertNoErrors({ responseBody });
+        return responseBody;
+    }),
+
     getWFProcess: async ({ wfProcessId }) => {
         const backendBaseUrl = await getBackendBaseUrl();
         const response = await page.request.get(`${backendBaseUrl}/userWorkflows/wfProcess/${wfProcessId}`, {
@@ -121,9 +152,9 @@ const assertNoErrors = ({ responseBody }) => {
 };
 
 const getAuthToken = () => {
-    const token = lastMasterdata?.login?.user?.token;
+    const token = testContext.lastMasterdata?.login?.user?.token;
     if (!token) {
-        throw new Error('No token found in masterdata:\n' + JSON.stringify(lastMasterdata, null, 2));
+        throw new Error('No token found in masterdata:\n' + JSON.stringify(testContext.lastMasterdata, null, 2));
     }
     return token;
 }

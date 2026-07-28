@@ -1,0 +1,6 @@
+# Overlay for host-based Playwright testing
+# Swaps mobile config to use localhost:8282 instead of app-test:8282
+services:
+  mobile:
+    volumes:
+      - ./configs/mobile/mobile-config-local.js:/usr/share/nginx/html/config.js:ro

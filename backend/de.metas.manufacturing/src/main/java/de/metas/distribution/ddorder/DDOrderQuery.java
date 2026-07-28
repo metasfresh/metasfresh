@@ -31,7 +31,20 @@ public class DDOrderQuery
 	@NonNull @Builder.Default ValueRestriction<UserId> responsibleId = ValueRestriction.any();
 	@Nullable Set<WarehouseId> warehouseFromIds;
 	@Nullable InSetPredicate<WarehouseId> warehouseToIds;
-	@Nullable InSetPredicate<LocatorId> locatorToIds;
+
+	/**
+	 * Workplace visibility filter. When {@code workplaceWarehouseId} is set, matches orders that either
+	 * <ul>
+	 *     <li>ship <b>from</b> this warehouse ({@code M_Warehouse_From_ID}) — the source/picking side, OR</li>
+	 *     <li>deliver <b>to</b> this warehouse ({@code M_Warehouse_To_ID}) — the destination side; and, when
+	 *         {@code workplacePickFromLocatorId} is also set, only orders that have a line delivering to that
+	 *         locator ({@code DD_OrderLine.M_LocatorTo_ID}).</li>
+	 * </ul>
+	 * The pick-from locator narrows the destination side only — it never suppresses source-side matches.
+	 * Applied in addition to (AND with) {@code warehouseFromIds} / {@code warehouseToIds} when those are set.
+	 */
+	@Nullable WarehouseId workplaceWarehouseId;
+	@Nullable LocatorId workplacePickFromLocatorId;
 	@Nullable Set<OrderId> salesOrderIds;
 	@Nullable Set<PPOrderId> manufacturingOrderIds;
 	@Nullable Set<LocalDate> datesPromised;

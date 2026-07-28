@@ -1,3 +1,4 @@
+@from:cucumber
 @ghActions:run_on_executor5
 @allure.label.epic:E0292_EDI
 @allure.label.feature:F00350_EDI
@@ -290,6 +291,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1_S0317_020                  | PD           | true                | false       |
 
+    Then after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_1_S0317_020                  | s_1_S0317_020         |
+
     Then after not more than 30s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID | IsManual_IPA_SSCC18 | M_HU_ID             | M_HU_PackagingCode_ID       | GTIN_PackingMaterial |
       | p_1_S0317_020      | true                | null                | huPackagingCode_1_S0317_020 | gtinPiItemProduct    |
@@ -311,6 +316,13 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item, when the orderline has a TU-UOM
       | %END%                                                                                                                                                                          |
       | "1","ipaSSCC18_14092022_1","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","10","0","210420","lotNumber","location_gln","","","","","","location_gln","","","","",""  |
       | "1","ipaSSCC18_14092022_2","@o_1_S0317_020.orderPOReference@","16.04.2021","","@p_1_S0317_020.productName@","1","0","210420","luLotNumber","location_gln","","","","","","location_gln","","","","","" |
+
+    # Reverse the shipment to clean up the EDI_Desadv_Pack(_Item) records this scenario produced.
+    # The empty checks below verify the cleanup is complete — they protect the next scenario in
+    # this feature (and other features in the same CI executor) from inheriting leftover rows.
+    And the shipment identified by s_1_S0317_020 is reversed
+    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+    And after not more than 30s, there are no records in EDI_Desadv_Pack
 
 
   @Id:S0317_030

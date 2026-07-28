@@ -22,20 +22,27 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
+import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.handlingunits.HUPIAttributeId;
 import de.metas.handlingunits.model.I_M_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.X_M_HU_PI_Attribute;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.After;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -45,9 +52,25 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Ver
 public class M_HU_PI_Attribute_StepDef
 {
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final M_HU_PI_Attribute_StepDefData huPiAttributeTable;
 	private final M_HU_PI_Version_StepDefData huPiVersionTable;
+
+	/**
+	 * UseInASI overrides made by {@link #update_M_HU_PI_Attribute_UseInASI(DataTable)} during this scenario,
+	 * captured so {@link #resetM_HU_PI_AttributeUseInASIOverrides()} can restore the value the row had before
+	 * the update — without assuming the platform default. Per-scenario lifetime via PicoContainer's
+	 * fresh-instance-per-scenario semantics.
+	 */
+	private final List<UseInASIOverride> useInASIOverrides = new ArrayList<>();
+
+	@Value
+	private static class UseInASIOverride
+	{
+		HUPIAttributeId piAttributeId;
+		boolean originalUseInASI;
+	}
 
 	public M_HU_PI_Attribute_StepDef(
 			@NonNull final M_HU_PI_Attribute_StepDefData huPiAttributeTable,
@@ -90,5 +113,48 @@ public class M_HU_PI_Attribute_StepDef
 		final String piAttributeIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Attribute_ID);
 
 		huPiAttributeTable.put(piAttributeIdentifier, piAttributeRecord);
+	}
+
+	@And("update M_HU_PI_Attribute UseInASI:")
+	public void update_M_HU_PI_Attribute_UseInASI(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(row -> {
+			final int huPiVersionId = row.getAsInt(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID);
+			final String attributeValue = row.getAsString(I_M_Attribute.Table_Name + "." + I_M_Attribute.COLUMNNAME_Value);
+			final boolean useInASI = row.getAsBoolean(I_M_HU_PI_Attribute.COLUMNNAME_UseInASI);
+
+			final AttributeId attributeId = attributeDAO.getAttributeIdByCode(AttributeCode.ofString(attributeValue));
+
+			final I_M_HU_PI_Attribute piAttribute = queryBL.createQueryBuilder(I_M_HU_PI_Attribute.class)
+					.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_HU_PI_Version_ID, huPiVersionId)
+					.addEqualsFilter(I_M_HU_PI_Attribute.COLUMNNAME_M_Attribute_ID, attributeId.getRepoId())
+					.addOnlyActiveRecordsFilter()
+					.create()
+					.firstOnlyNotNull(I_M_HU_PI_Attribute.class);
+
+			useInASIOverrides.add(new UseInASIOverride(
+					HUPIAttributeId.ofRepoId(piAttribute.getM_HU_PI_Attribute_ID()),
+					piAttribute.isUseInASI()));
+
+			piAttribute.setUseInASI(useInASI);
+			InterfaceWrapperHelper.saveRecord(piAttribute);
+		});
+	}
+
+	/**
+	 * Restores any {@code UseInASI} overrides made by {@link #update_M_HU_PI_Attribute_UseInASI(DataTable)}
+	 * back to the value the row carried before the override. Fires for every scenario regardless of
+	 * pass/fail; no-op when nothing was overridden in this scenario.
+	 */
+	@After
+	public void resetM_HU_PI_AttributeUseInASIOverrides()
+	{
+		for (final UseInASIOverride override : useInASIOverrides)
+		{
+			final I_M_HU_PI_Attribute piAttribute = InterfaceWrapperHelper.load(override.getPiAttributeId(), I_M_HU_PI_Attribute.class);
+			piAttribute.setUseInASI(override.isOriginalUseInASI());
+			InterfaceWrapperHelper.saveRecord(piAttribute);
+		}
+		useInASIOverrides.clear();
 	}
 }

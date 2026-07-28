@@ -31,6 +31,7 @@ public class MobileUIDistributionConfigRepository
 	private static final MobileUIDistributionConfig DEFAULT_CONFIG = MobileUIDistributionConfig.builder()
 			.allowPickingAnyHU(false)
 			.isRequireTrolley(false)
+			.isPrintDDOrderOnComplete(true)
 			.captionFormat(DistributionJobCaptionFormat.ofNonEmptyList(ImmutableList.of(
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.SourceDoc).build(),
 					DistributionJobCaptionFormatItem.builder().field(DistributionJobCaptionField.WarehouseFrom).build(),
@@ -44,11 +45,13 @@ public class MobileUIDistributionConfigRepository
 			.sorting(DistributionJobSorting.DEFAULT)
 			.build();
 
+	@NonNull
 	public MobileUIDistributionConfig getConfig()
 	{
-		return cache.getOrLoad(0, this::retrieveConfig);
+		return cache.getOrLoadNonNull(0, this::retrieveConfig);
 	}
 
+	@NonNull
 	private MobileUIDistributionConfig retrieveConfig()
 	{
 		final I_MobileUI_UserProfile_DD record = retrieveRecord().orElse(null);
@@ -62,6 +65,7 @@ public class MobileUIDistributionConfigRepository
 				.isRequireScanningProductCode(record.isRequireScanningProductCode())
 				.isNavigateToJobsListAfterPickFromComplete(record.isNavigateToJobsListAfterPickFromComplete())
 				.isCompleteJobAutomatically(record.isCompleteJobAutomatically())
+				.isPrintDDOrderOnComplete(record.isPrintDDOrderOnComplete())
 				.maxLaunchers(QueryLimit.ofInt(record.getMaxLaunchers()))
 				.maxStartedLaunchers(QueryLimit.ofInt(record.getMaxStartedLaunchers()))
 				.isAllowStartNextJobOnly(record.isAllowStartNextJobOnly())
@@ -91,7 +95,7 @@ public class MobileUIDistributionConfigRepository
 				.stream();
 	}
 
-	private static DistributionJobCaptionFormatItem fromRecord(I_MobileUI_UserProfile_DD_CaptionItem record)
+	private static DistributionJobCaptionFormatItem fromRecord(final I_MobileUI_UserProfile_DD_CaptionItem record)
 	{
 		return DistributionJobCaptionFormatItem.builder()
 				.field(extractField(record))
@@ -120,7 +124,7 @@ public class MobileUIDistributionConfigRepository
 				.stream();
 	}
 
-	private static DistributionJobSortingItem fromRecord(I_MobileUI_UserProfile_DD_Sort record)
+	private static DistributionJobSortingItem fromRecord(final I_MobileUI_UserProfile_DD_Sort record)
 	{
 		return DistributionJobSortingItem.of(
 				extractField(record),
@@ -218,6 +222,7 @@ public class MobileUIDistributionConfigRepository
 		record.setIsRequireScanningProductCode(from.isRequireScanningProductCode());
 		record.setIsNavigateToJobsListAfterPickFromComplete(from.isNavigateToJobsListAfterPickFromComplete());
 		record.setIsCompleteJobAutomatically(from.isCompleteJobAutomatically());
+		record.setIsPrintDDOrderOnComplete(from.isPrintDDOrderOnComplete());
 
 		record.setMaxLaunchers(from.getMaxLaunchers().toIntOrZero());
 		record.setMaxStartedLaunchers(from.getMaxStartedLaunchers().toIntOrZero());

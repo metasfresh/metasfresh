@@ -10,6 +10,7 @@ import de.metas.frontend_testing.masterdata.CreateMasterdataCommand;
 import de.metas.frontend_testing.masterdata.CreateMasterdataCommandSupportingServices;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataRequest;
 import de.metas.frontend_testing.masterdata.JsonCreateMasterdataResponse;
+import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
@@ -183,5 +184,16 @@ public class FrontendTestingRestController
 	{
 		Integer shipmentId;
 		Integer salesOrderId;
+	}
+	@PostMapping("setSysconfigs")
+	public void setSysconfigs(@RequestBody @NonNull final java.util.Map<String, String> sysconfigs)
+	{
+		callInContext(() -> {
+			SysconfigCommand.builder()
+					.sysconfigs(sysconfigs)
+					.build()
+					.execute();
+			return null;
+		});
 	}
 }

@@ -40,6 +40,7 @@
         <metasfresh.version>10.0.0</metasfresh.version>
         <testcontainers.version>1.21.3</testcontainers.version>
         <external.libs.path></external.libs.path>
+        <cucumber.filter.tags>not @ignore</cucumber.filter.tags>
     </properties>
 
     <dependencyManagement>
@@ -241,6 +242,7 @@
                     <properties>
                         <configurationParameters>
                             cucumber.junit-platform.naming-strategy=surefire
+                            cucumber.filter.tags=${cucumber.filter.tags}
                         </configurationParameters>
                     </properties>
                     <additionalClasspathElements>

@@ -77,7 +77,7 @@ public interface I_C_Workplace
 
 	/**
 	 * Set Workplace.
-	 * The assignment applies to all users assigned to this workstation
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -87,7 +87,7 @@ public interface I_C_Workplace
 
 	/**
 	 * Get Workplace.
-	 * The assignment applies to all users assigned to this workstation
+	 * Logical area within a warehouse, to which one or more Workstations can be assigned. An operator logs into exactly one Workplace per shift. The associated warehouse (M_Warehouse_ID) drives the storage location of the work performed there.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

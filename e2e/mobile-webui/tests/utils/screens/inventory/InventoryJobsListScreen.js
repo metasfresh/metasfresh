@@ -1,7 +1,8 @@
-import { page, SLOW_ACTION_TIMEOUT, step } from '../../common';
+import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT, step } from '../../common';
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { InventoryJobScreen } from './InventoryJobScreen';
+import { ApplicationsListScreen } from '../ApplicationsListScreen';
 
 const NAME = 'InventoryJobsListScreen';
 /** @returns {import('@playwright/test').Locator} */
@@ -22,6 +23,12 @@ export const InventoryJobsListScreen = {
         return {
             jobId: await InventoryJobScreen.getJobId(),
         }
+    }),
+
+    goBack: async () => await test.step(`${NAME} - Go back`, async () => {
+        await InventoryJobsListScreen.waitForScreen();
+        await page.locator(ID_BACK_BUTTON).tap();
+        await ApplicationsListScreen.waitForScreen();
     }),
 };
 

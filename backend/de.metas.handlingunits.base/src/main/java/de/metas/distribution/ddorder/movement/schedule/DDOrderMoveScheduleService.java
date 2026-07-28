@@ -213,7 +213,7 @@ public class DDOrderMoveScheduleService
 
 	public void printMaterialInTransitReport(
 			@NonNull final LocatorId inTransitLocatorId,
-			@NonNull String adLanguage)
+			@NonNull final String adLanguage)
 	{
 		MaterialInTransitReportCommand.builder()
 				.adLanguage(adLanguage)

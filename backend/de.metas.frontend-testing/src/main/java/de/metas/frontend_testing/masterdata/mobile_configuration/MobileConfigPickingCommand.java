@@ -147,6 +147,13 @@ class MobileConfigPickingCommand
 
 		builder.displayPickingSlotSuggestions(OptionalBoolean.ofNullableBoolean(from.getDisplayPickingSlotSuggestions()));
 
+		builder.isShowConfirmationPromptWhenOverPick(Boolean.TRUE.equals(from.getShowPromptWhenOverPicking()));
+
+		if (from.getWarnShelfLifeUndercut() != null)
+		{
+			builder.isWarnShelfLifeUndercut(from.getWarnShelfLifeUndercut());
+		}
+
 		return builder.build();
 	}
 

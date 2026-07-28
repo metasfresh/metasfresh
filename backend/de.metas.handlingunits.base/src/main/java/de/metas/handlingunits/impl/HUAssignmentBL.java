@@ -28,8 +28,11 @@ import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentBuilder;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUAssignmentListener;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
+import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -52,6 +55,8 @@ import java.util.Properties;
 public class HUAssignmentBL implements IHUAssignmentBL
 {
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final CompositeHUAssignmentListener listeners = new CompositeHUAssignmentListener();
 
 	/**
@@ -385,5 +390,32 @@ public class HUAssignmentBL implements IHUAssignmentBL
 	public ImmutableSetMultimap<TableRecordReference, HuId> getHUsByRecordRefs(@NonNull final TableRecordReferenceSet recordRefs)
 	{
 		return huAssignmentDAO.retrieveHUsByRecordRefs(recordRefs);
+	}
+
+	@Override
+	public int retrieveTUCountForModel(final Object model)
+	{
+		final List<I_M_HU> hus = huAssignmentDAO.retrieveDistinctAssignedTUsForModel(model);
+		int countTUs = 0;
+		for (final I_M_HU hu : hus)
+		{
+			if (handlingUnitsBL.isAggregateHU(hu))
+			{
+				final I_M_HU_Item parentItem = handlingUnitsDAO.retrieveParentItem(hu);
+				if (parentItem != null)
+				{
+					countTUs += parentItem.getQty().intValue();
+				}
+				else
+				{
+					countTUs += 1; // fallback: count as single TU if hierarchy is inconsistent
+				}
+			}
+			else
+			{
+				countTUs += 1; // pure TU.. that counts ONE
+			}
+		}
+		return countTUs;
 	}
 }

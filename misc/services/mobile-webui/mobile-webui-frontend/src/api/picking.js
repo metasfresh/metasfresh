@@ -80,6 +80,7 @@ export const postStepPicked = ({
   setLotNo,
   lotNo,
   isCloseTarget = false,
+  isShelfLifeConfirmed = false,
 }) => {
   const realRejectedQtyReason =
     qtyRejectedReasonCode === QTY_REJECTED_REASON_TO_IGNORE_KEY ? null : qtyRejectedReasonCode;
@@ -103,6 +104,7 @@ export const postStepPicked = ({
     setLotNo,
     lotNo,
     isCloseTarget,
+    isShelfLifeConfirmed,
   });
 };
 
@@ -152,9 +154,9 @@ export const getClosedLUs = ({ wfProcessId, lineId }) => {
     .then((response) => unboxAxiosResponse(response));
 };
 
-export const getScannedHUQRCodeInfo = ({ qrCode }) => {
+export const getScannedHUQRCodeInfo = ({ qrCode, productNo }) => {
   return axios
-    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode })
+    .post(`${apiBasePath}/picking/hu/byScannedCode`, { scannedCode: qrCode, productNo })
     .then((response) => unboxAxiosResponse(response));
 };
 
