@@ -101,6 +101,32 @@ export const mashDeviceBack = async (times = 12) => await step(`Mash device/brow
     await page.waitForTimeout(FAST_ACTION_TIMEOUT);
 });
 
+// How long a capture run freezes an already-painted screen. Long enough for Playwright's screencast
+// (which samples at ~40ms) to capture a dozen frames of it.
+const UAT_CAPTURE_HOLD_MS = 500;
+
+/**
+ * Hold the currently-painted screen briefly so the video recorder actually SAMPLES it.
+ *
+ * A NO-OP unless the UAT_CAPTURE env var is set, so a normal or CI run pays zero timing cost and
+ * behaves identically to having no hold at all. Enable it only for a deliberate capture run:
+ * `UAT_CAPTURE=1 npx playwright test <spec>`.
+ *
+ * Why this cannot be an assertion instead: on an already-loaded list the result assertions resolve
+ * within a few milliseconds and the browser context closes right after, so the proven end state can
+ * fall between two screencast frames and end up in no recorded frame at all. Post-production cannot
+ * create a frame that was never captured, and no `visible`/`toHaveCount` wait extends the recorder's
+ * sampling window — it only proves the element is there.
+ *
+ * Call this ONLY from a screen object, never from a spec: a scenario must read as the real workflow.
+ */
+export const holdForCaptureIfEnabled = async () => {
+    if (!process.env.UAT_CAPTURE) {
+        return;
+    }
+    await page.waitForTimeout(UAT_CAPTURE_HOLD_MS);
+};
+
 let nextErrorWatcherId = 101;
 let currentErrorWatcherId = 0;
 const runAndWatchForErrors = async (func) => {
