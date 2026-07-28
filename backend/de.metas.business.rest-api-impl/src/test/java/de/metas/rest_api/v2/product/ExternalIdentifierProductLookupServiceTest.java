@@ -278,7 +278,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 	/**
 	 * RED test — proves the bug: {@code lookupProductByGTIN} currently ignores the {@code date} parameter
-	 * and always returns the record with the highest {@code M_HU_PI_Item_Product_ID} (newest by insertion order).
+	 * and always returns the record with the lowest {@code M_HU_PI_Item_Product_ID} (oldest by insertion order).
 	 *
 	 * <p>Setup: one product, two M_HU_PI_Item_Product rows sharing the same GTIN:
 	 * <ul>
