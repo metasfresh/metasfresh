@@ -507,8 +507,8 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
 				.setJoinOr()
 				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
-				// a PLV must have a ValidFrom, but has no ValidTo.
-				// For this reason, ValidTo is not mandatory here neither
+				// M_HU_PI_Item_Product.ValidTo is optional; null means open-ended validity (no expiry date).
+				// A null ValidTo must count as still-valid on the given date.
 				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
 
 		return queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)

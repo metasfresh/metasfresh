@@ -288,7 +288,7 @@ public class ExternalIdentifierProductLookupServiceTest
 	 *   <li>OLD row: Qty=9, ValidFrom=2019-01-01 — inserted second → higher ID</li>
 	 * </ul>
 	 *
-	 * <p>Expected behaviour (implemented by the {@code createValidOnDateFilter} in Task 3):
+	 * <p>Expected behaviour (implemented by {@code HUPIItemProductDAO.createValidOnDateFilter}):
 	 * <ul>
 	 *   <li>date=2026-06-26 (before NEW's ValidFrom) → only OLD is valid → OLD row (Qty=9)</li>
 	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom, both rows valid) → latest ValidFrom wins → NEW row (Qty=6)</li>
