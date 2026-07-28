@@ -733,6 +733,55 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(reloaded.getBLDate()).isEqualTo(poDatePromised);
 	}
 
+	/**
+	 * When several purchase orders are assigned in a SINGLE call, the "first order" that seeds the default dates must be
+	 * the lowest {@code C_Order_ID}, regardless of the encounter order of the passed collection.
+	 * <p>
+	 * Contract guard: the in-memory test DAO already returns rows in ascending-id order, so this test does NOT reproduce
+	 * the real-DB unspecified-row-order non-determinism the sort defends against — it locks the intended seeding order
+	 * (lowest id wins) and would fail if that ordering were reversed or seeded from a different order.
+	 */
+	@Test
+	public void defaultDates_batchAssignment_firstIsLowestOrderId()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBatch", "addressBatch");
+
+		// order1 is created first => lowest C_Order_ID => it must be the "first order" that seeds the dates
+		final OrderId order1 = createOrder(bpartnerAndLocation);
+		createOrderLine(order1, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order1Record = load(order1, I_C_Order.class);
+		final java.sql.Timestamp order1DatePromised = TimeUtil.asTimestamp(LocalDate.of(2019, 1, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order1Record.getAD_Org_ID())));
+		order1Record.setDatePromised(order1DatePromised);
+		save(order1Record);
+
+		// order2 and order3 have HIGHER C_Order_IDs and DIFFERENT DatePromised values
+		final OrderId order2 = createOrder(bpartnerAndLocation);
+		createOrderLine(order2, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order2Record = load(order2, I_C_Order.class);
+		order2Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2020, 2, 2), orgDAO.getTimeZone(OrgId.ofRepoId(order2Record.getAD_Org_ID()))));
+		save(order2Record);
+
+		final OrderId order3 = createOrder(bpartnerAndLocation);
+		createOrderLine(order3, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+		final I_C_Order order3Record = load(order3, I_C_Order.class);
+		order3Record.setDatePromised(TimeUtil.asTimestamp(LocalDate.of(2021, 3, 3), orgDAO.getTimeZone(OrgId.ofRepoId(order3Record.getAD_Org_ID()))));
+		save(order3Record);
+
+		// sanity: order1 is indeed the lowest C_Order_ID of the batch
+		assertThat(order1.getRepoId()).isLessThan(order2.getRepoId()).isLessThan(order3.getRepoId());
+
+		// assign all three at once, in a collection order that does NOT start with order1
+		service.addPurchaseOrdersToShipperTransportation(transportationId, ImmutableSet.of(order3, order2, order1));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD())
+				.as("ETD is seeded by the lowest-C_Order_ID order, not by the collection/DB encounter order")
+				.isEqualTo(order1DatePromised);
+	}
+
 	private I_M_ShipperTransportation createShipperTransportation()
 	{
 		final I_M_Shipper shipper = createShipper();

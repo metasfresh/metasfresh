@@ -149,6 +149,9 @@ public class PurchaseOrderToShipperTransportationService
 		final ImmutableList<OrderId> validPurchaseOrdersIds = availableOrderIds
 				.stream()
 				.filter(orderId -> !alreadyAssignedOrderIds.contains(orderId))
+				// Sort by C_Order_ID so the "first order" that seeds the transport order's default dates is deterministic
+				// even when several purchase orders are assigned in a single call (the DB/set encounter order is not meaningful).
+				.sorted(Comparator.comparingInt(OrderId::getRepoId))
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -284,22 +287,39 @@ public class PurchaseOrderToShipperTransportationService
 			return; // sales behaviour on the transport order must keep working unchanged
 		}
 
+		// DatePromised is guaranteed non-null here: this runs only for completed/closed purchase orders and the caller
+		// already dereferences order.getDatePromised() when building the base package request, so a null would fail earlier.
 		final Timestamp etd = order.getDatePromised();
-		if (etd == null)
-		{
-			return;
-		}
-
 		final Timestamp eta = TimeUtil.addDays(etd, getFirstLineVendorDeliveryTimeDays(order));
 
 		// Fill each field ONLY if the user has not already set it: these are defaults, so a value entered before the first PO
 		// was assigned must be kept. (After assignment every value stays freely editable as well.)
 		boolean changed = false;
-		if (shipperTransportation.getETD() == null)   { shipperTransportation.setETD(etd);    changed = true; }
-		if (shipperTransportation.getETA() == null)   { shipperTransportation.setETA(eta);    changed = true; }
-		if (shipperTransportation.getATD() == null)   { shipperTransportation.setATD(etd);    changed = true; } // ATD = ETD
-		if (shipperTransportation.getATA() == null)   { shipperTransportation.setATA(eta);    changed = true; } // ATA = ETA
-		if (shipperTransportation.getBLDate() == null){ shipperTransportation.setBLDate(etd); changed = true; } // B/L date = ATD (= ETD)
+		if (shipperTransportation.getETD() == null)
+		{
+			shipperTransportation.setETD(etd);
+			changed = true;
+		}
+		if (shipperTransportation.getETA() == null)
+		{
+			shipperTransportation.setETA(eta);
+			changed = true;
+		}
+		if (shipperTransportation.getATD() == null)
+		{
+			shipperTransportation.setATD(etd); // ATD = ETD
+			changed = true;
+		}
+		if (shipperTransportation.getATA() == null)
+		{
+			shipperTransportation.setATA(eta); // ATA = ETA
+			changed = true;
+		}
+		if (shipperTransportation.getBLDate() == null)
+		{
+			shipperTransportation.setBLDate(etd); // B/L date = ATD (= ETD)
+			changed = true;
+		}
 
 		if (changed)
 		{
