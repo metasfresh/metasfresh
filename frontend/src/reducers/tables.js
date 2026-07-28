@@ -4,7 +4,6 @@ import { createSelector } from 'reselect';
 import { merge } from 'merge-anything';
 
 import * as types from '../constants/ActionTypes';
-import { SORT_TAB } from '../constants/ActionTypes';
 import { NUMERIC_FIELD_TYPES } from '../constants/Constants';
 import { doesSelectionExist } from '../utils/documentListHelper';
 
@@ -74,6 +73,7 @@ const compareRows = ({ row1, row2, orderBys }) => {
       return cmp;
     }
   }
+  return 0;
 };
 
 const extractValueToCompare = (row, fieldName) => {
@@ -427,7 +427,7 @@ const reducer = produce((draftState, action) => {
       return;
     }
 
-    case SORT_TAB: {
+    case types.SORT_TAB: {
       const {
         scope,
         windowId,

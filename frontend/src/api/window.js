@@ -86,6 +86,10 @@ export function getTabRequest(tabId, windowType, docId, orderBy) {
     .catch((error) => {
       // eslint-disable-next-line no-console
       console.error('getTabRequest error: ', error);
+      // Callers destructure { rows, orderBys } — return a shape-consistent
+      // empty result so a request failure degrades gracefully rather than
+      // crashing the destructure downstream.
+      return { rows: [], orderBys: [] };
     });
 }
 

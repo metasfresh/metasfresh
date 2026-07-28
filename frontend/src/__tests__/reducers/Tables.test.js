@@ -3,6 +3,7 @@ import { merge } from 'merge-anything';
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
+  getTableId,
   initialState,
   initialTableState,
 } from '../../reducers/tables';
@@ -244,7 +245,7 @@ describe('Tables reducer', () => {
     const windowId = '541851';
     const docId = '1000001';
     const tabId = 'AD_Tab-999';
-    const tableId = `${windowId}_${docId}_${tabId}`;
+    const tableId = getTableId({ windowId, docId, tabId });
 
     const numericRow = (rowId, amount) => ({
       rowId,
