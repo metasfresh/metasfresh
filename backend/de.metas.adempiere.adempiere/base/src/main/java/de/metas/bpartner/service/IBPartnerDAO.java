@@ -141,6 +141,9 @@ public interface IBPartnerDAO extends ISingletonService
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdEvenInactive(@NonNull BPartnerLocationId bpartnerLocationId);
 
+	@NonNull
+	I_C_BPartner_Location getBPartnerLocationByIdEvenInactiveNotNull(@NonNull BPartnerLocationId bpartnerLocationId);
+
 	@Nullable
 	I_C_BPartner_Location getBPartnerLocationByIdInTrx(BPartnerLocationId bpartnerLocationId);
 
@@ -421,4 +424,15 @@ public interface IBPartnerDAO extends ISingletonService
 
 	@NonNull
 	Optional<BPartnerLocationId> retrieveSingleBPartnerLocationIdBy(@NonNull GLNQuery query);
+
+	/**
+	 * Retrieves all active-and-inactive factorer BPartners ({@code IsFactorer='Y'}) in the given organisation.
+	 * Callers use the returned list size to distinguish "no factorer configured" vs "ambiguous multiple factorers"
+	 * — the DB partial unique index only enforces uniqueness among active rows.
+	 *
+	 * @param orgId organisation scope
+	 * @return factorer BPs in this org (typically 0 or 1; more is an ambiguity the caller must handle)
+	 */
+	@NonNull
+	java.util.List<I_C_BPartner> retrieveFactorerBPartnersForOrg(@NonNull OrgId orgId);
 }

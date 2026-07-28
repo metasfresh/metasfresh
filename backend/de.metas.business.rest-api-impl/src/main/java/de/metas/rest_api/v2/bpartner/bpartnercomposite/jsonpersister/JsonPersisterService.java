@@ -83,6 +83,7 @@ import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
@@ -90,6 +91,9 @@ import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPriceListDAO;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -114,6 +118,7 @@ import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.compiere.model.I_M_PriceList;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -138,7 +143,10 @@ import static de.metas.util.Check.isBlank;
 public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
+	private static final AdMessageKey MSG_BPartnerCompositeOrgMismatch = AdMessageKey.of("BPartnerCompositeOrgMismatch");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -190,7 +198,7 @@ public class JsonPersisterService
 	}
 
 	/**
-	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
+	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question (path parameter). If {@code null}, the system will fall back to the current context-OrgId.
 	 */
 	private JsonResponseBPartnerCompositeUpsertItem persistWithinTrx(
 			@Nullable final String orgCode,
@@ -200,7 +208,23 @@ public class JsonPersisterService
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
 
-		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
+		final JsonRequestComposite jsonRequestComposite = requestItem.getBpartnerComposite();
+		final String bodyOrgCode = jsonRequestComposite.getOrgCode();
+
+		if (!isBlank(orgCode) && !isBlank(bodyOrgCode))
+		{
+			final OrgId pathOrgId = retrieveOrgIdOrDefault(orgCode);
+			final OrgId bodyOrgId = retrieveOrgIdOrDefault(bodyOrgCode);
+			if (!OrgId.equals(pathOrgId, bodyOrgId))
+			{
+				throw new AdempiereException(MSG_BPartnerCompositeOrgMismatch, orgCode, bodyOrgCode);
+			}
+		}
+
+		// body takes precedence over path; when both are present they already resolved to the same org (checked above).
+		final String effectiveOrgCode = !isBlank(bodyOrgCode) ? bodyOrgCode : orgCode;
+		final OrgId orgId = retrieveOrgIdOrDefault(effectiveOrgCode);
+
 		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(rawBpartnerIdentifier);
 		final Optional<BPartnerComposite> optionalBPartnerComposite = jsonRetrieverService.getBPartnerComposite(orgId, bpartnerIdentifier);
@@ -208,20 +232,19 @@ public class JsonPersisterService
 		final JsonResponseBPartnerCompositeUpsertItemUnderConstrunction resultBuilder = new JsonResponseBPartnerCompositeUpsertItemUnderConstrunction();
 		resultBuilder.setJsonResponseBPartnerUpsertItemBuilder(JsonResponseUpsertItem.builder().identifier(rawBpartnerIdentifier));
 
-		final JsonRequestComposite jsonRequestComposite = requestItem.getBpartnerComposite();
 		final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(jsonRequestComposite.getSyncAdvise(), parentSyncAdvise);
 
 		final BPartnerComposite bpartnerComposite;
 		if (optionalBPartnerComposite.isPresent())
 		{
-			logger.debug("Found BPartner with id={} for identifier={} (orgCode={})", optionalBPartnerComposite.get().getBpartner().getId(), rawBpartnerIdentifier, jsonRequestComposite.getOrgCode());
+			logger.debug("Found BPartner with id={} for identifier={} (effectiveOrgCode={})", optionalBPartnerComposite.get().getBpartner().getId(), rawBpartnerIdentifier, effectiveOrgCode);
 			// load and mutate existing aggregation root
 			bpartnerComposite = optionalBPartnerComposite.get();
 			resultBuilder.setNewBPartner(false);
 		}
 		else
 		{
-			logger.debug("Found no BPartner for identifier={} (orgCode={})", rawBpartnerIdentifier, jsonRequestComposite.getOrgCode());
+			logger.debug("Found no BPartner for identifier={} (effectiveOrgCode={})", rawBpartnerIdentifier, effectiveOrgCode);
 			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw MissingResourceException.builder()
@@ -232,10 +255,13 @@ public class JsonPersisterService
 						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 			// create new aggregation root
-			logger.debug("Going to create a new bpartner-composite (orgCode={})", jsonRequestComposite.getOrgCode());
+			logger.debug("Going to create a new bpartner-composite (effectiveOrgCode={})", effectiveOrgCode);
 			bpartnerComposite = BPartnerComposite.builder().build();
 			resultBuilder.setNewBPartner(true);
 		}
+
+		// Establish the effective org before sync so the path-only case (no body orgCode) is correctly preserved.
+		bpartnerComposite.setOrgId(orgId);
 
 		syncJsonToBPartnerComposite(
 				resultBuilder,
@@ -687,7 +713,7 @@ public class JsonPersisterService
 			handleBPartnerValueExternalReference(
 					JsonMetasfreshId.of(bpartnerComposite.getBpartner().getId().getRepoId()),
 					jsonRequestComposite.getBpartner().getCode(),
-					jsonRequestComposite.getOrgCode());
+					bpartnerComposite.getOrgId());
 		}
 
 		final ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseContactUpsertItemBuilders = resultBuilder.getJsonResponseContactUpsertItems();
@@ -722,7 +748,7 @@ public class JsonPersisterService
 	private void handleBPartnerValueExternalReference(
 			@NonNull final JsonMetasfreshId metasfreshId,
 			@Nullable final String bPartnerCode,
-			@Nullable final String orgCode)
+			@NonNull final OrgId orgId)
 	{
 		if (bPartnerCode == null)
 		{
@@ -749,7 +775,7 @@ public class JsonPersisterService
 				.externalReferenceItem(externalReferenceItem)
 				.build();
 
-		externalReferenceRestControllerService.performUpsert(externalReferenceUpsert, orgCode);
+		externalReferenceRestControllerService.performUpsert(externalReferenceUpsert, orgId);
 
 	}
 
@@ -1009,6 +1035,25 @@ public class JsonPersisterService
 			else
 			{
 				bpartner.setDiscountPrinted(jsonBPartner.getDiscountPrinted());
+			}
+		}
+
+		// priceListId -> customer pricing system (looked up from the price list)
+		if (jsonBPartner.isPriceListIdSet())
+		{
+			final PriceListId priceListId = PriceListId.ofRepoIdOrNull(JsonMetasfreshId.toValue(jsonBPartner.getPriceListId()));
+			if (priceListId != null)
+			{
+				final I_M_PriceList priceList = priceListDAO.getById(priceListId);
+				if (priceList == null)
+				{
+					throw MissingResourceException.builder()
+							.resourceName("priceListId")
+							.resourceIdentifier(String.valueOf(priceListId.getRepoId()))
+							.parentResource(jsonBPartner)
+							.build();
+				}
+				bpartner.setCustomerPricingSystemId(PricingSystemId.ofRepoId(priceList.getM_PricingSystem_ID()));
 			}
 		}
 

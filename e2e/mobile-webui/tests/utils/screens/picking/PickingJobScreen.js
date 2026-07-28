@@ -139,6 +139,25 @@ export const PickingJobScreen = {
         }
     }),
 
+    clickAdviseCarrier: async () => await step(`${NAME} - Click advise carrier button`, async () => {
+        const button = page.getByTestId('advise-carrier-button');
+        await button.waitFor({ timeout: SLOW_ACTION_TIMEOUT });
+        await expect(button).toBeEnabled();
+        await button.tap();
+        await PickingJobScreen.waitForScreen();
+    }),
+
+    expectAdviseCarrierButtonVisible: async () => await step(`${NAME} - Expect advise carrier button visible`, async () => {
+        await page.getByTestId('advise-carrier-button').waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+    }),
+
+    expectCarrierProductCaption: async ({ caption }) => await step(`${NAME} - Expect carrier product caption contains '${caption}'`, async () => {
+        // The current carrier product now renders as a detail line inside the advise-carrier button.
+        const detail = page.getByTestId('carrier-product-caption');
+        await detail.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
+        await expect(detail).toContainText(caption);
+    }),
+
     pickHU: async ({
                        qrCode,
                        isScanDirectly,
@@ -207,6 +226,21 @@ export const PickingJobScreen = {
                 await expect(classes).toContain(expectedClassName);
             });
         }
+    }),
+
+    // per-line available-qty display, gated by the picking profile's IsShowQtyAvailableForLines flag.
+    // `qtyAvailable` is the full expected text, e.g. 'Verfügbar: 10 Stk' / 'Verfügbar: 0 Stk'.
+    expectLineQtyAvailable: async ({ index, qtyAvailable }) => await step(`${NAME} - Expect line ${index} qty available '${qtyAvailable}'`, async () => {
+        const lineButton = locateLineButton({ index });
+        const qtyAvailableElement = lineButton.getByTestId('picking-line-qty-available');
+        await qtyAvailableElement.waitFor({ state: 'visible', timeout: FAST_ACTION_TIMEOUT });
+        await expect(qtyAvailableElement).toHaveText(qtyAvailable);
+    }),
+
+    // when the flag is off, no qty-available element must be rendered on the line at all.
+    expectLineQtyAvailableNotVisible: async ({ index }) => await step(`${NAME} - Expect line ${index} qty available not shown`, async () => {
+        const lineButton = locateLineButton({ index });
+        await lineButton.getByTestId('picking-line-qty-available').waitFor({ state: 'detached', timeout: FAST_ACTION_TIMEOUT });
     }),
 
     clickPickAllButton: async () => await step(`${NAME} - Click Pick All button`, async () => {

@@ -226,7 +226,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 
 		this.excludeBOMProducts = excludeBOMProducts;
 
-		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID);
+		ctxNamesNeededForQuery = ImmutableSet.of(param_C_BPartner_ID, param_M_PriceList_ID, param_PricingDate, param_AD_Org_ID, param_AD_Client_ID);
 
 		searchStringMinLength = adTablesRepo.getTypeaheadMinLength(org.compiere.model.I_M_Product.Table_Name);
 		this.isFallbackToBasePricelist = CoalesceUtil.coalesceNotNull(isFallbackToBasePricelist, Boolean.TRUE);
@@ -805,6 +805,7 @@ public class ProductLookupDescriptor implements LookupDescriptor, LookupDataSour
 		{
 			return;
 		}
+		// Resolve the enforcement gate from the request context's client/org.
 		final ClientId clientId = ClientId.ofRepoId(param_AD_Client_ID.getValueAsInteger(evalCtx));
 		final OrgId orgId = OrgId.ofRepoId(param_AD_Org_ID.getValueAsInteger(evalCtx));
 		if (!productBL.isPurchaseSalesEnforcementEnabled(clientId, orgId))

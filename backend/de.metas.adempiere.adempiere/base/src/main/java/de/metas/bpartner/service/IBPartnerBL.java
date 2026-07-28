@@ -34,7 +34,6 @@ import de.metas.location.LocationId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
-import de.metas.shipping.ShipperId;
 import de.metas.tax.api.VATIdentifier;
 import de.metas.user.User;
 import de.metas.user.UserId;
@@ -221,10 +220,6 @@ public interface IBPartnerBL extends ISingletonService
 
 	@Nullable
 	PricingSystemId retrievePricingSystemIdOrNull(@NonNull BPartnerId bpartnerId, SOTrx soTrx);
-
-	@Nullable
-	ShipperId getEffectiveShipperId(@Nullable BPartnerLocationId bPartnerDropShipLocationId,
-									@NonNull BPartnerLocationId bPartnerLocationId);
 
 	@Value
 	@Builder
