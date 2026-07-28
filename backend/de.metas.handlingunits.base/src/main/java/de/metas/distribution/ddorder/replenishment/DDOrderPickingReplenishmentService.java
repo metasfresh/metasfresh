@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
@@ -164,6 +165,10 @@ public class DDOrderPickingReplenishmentService
 			{
 				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
+			// DEAD GUARD: no production flow writes DD_OrderLine.QtyInTransit or QtyDelivered — the only writers are
+			// MDDOrderLine's zero-initialisers — so this refusal can only fire for a caller that seeds those columns itself.
+			// The live "goods are already moving" signal is an in-progress DD_Order_MoveSchedule, see holdsMovedGoods below;
+			// re-keying this guard onto it is tracked separately and deliberately not done here.
 			for (final I_DD_OrderLine line : linesByOrderId.get(ddOrder.getDD_Order_ID()))
 			{
 				final BigDecimal qtyMoved = line.getQtyInTransit().add(line.getQtyDelivered());
@@ -297,9 +302,10 @@ public class DDOrderPickingReplenishmentService
 			case VOID:
 			{
 				final ImmutableSet<DDOrderLineId> lineIds = lineIdsOf(existingDDOrders);
-				voidAllDDOrders(existingDDOrders);
-				// A voided order must not still answer "which DD_Order serves this delivery?".
-				contributorRepository.deleteByLineIds(lineIds);
+				final ImmutableSet<DDOrderLineId> disconnectedLineIds = disposeVoidOut(existingDDOrders);
+				// A voided order must not still answer "which DD_Order serves this delivery?" — a DISCONNECTED one must,
+				// else the delivery loses its navigation to the move its worker is finishing.
+				contributorRepository.deleteByLineIds(Sets.difference(lineIds, disconnectedLineIds));
 				return;
 			}
 			default:
@@ -459,7 +465,12 @@ public class DDOrderPickingReplenishmentService
 			throw newPickerBusyException(blocked.getKey(), blocked.getValue());
 		}
 
-		final ExistingLineIndex existingLines = indexExistingBySourceLocator(existingDDOrders);
+		// ONE query for every existing order's lines: the index, the disposal decisions below and the cleanup all read it.
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingDDOrders)),
+				I_DD_OrderLine::getDD_Order_ID);
+
+		final ExistingLineIndex existingLines = indexExistingBySourceLocator(existingDDOrders, linesByOrderId);
 		final Map<LocatorId, I_DD_OrderLine> existingLineByLocator = existingLines.getByLocator();
 
 		final HashSet<DDOrderLineId> obsoleteLineIds = new HashSet<>();
@@ -470,30 +481,21 @@ public class DDOrderPickingReplenishmentService
 						productId, locatorToId, groupKey.getUomId(), contributorRepository.queryAll()));
 
 		// Left live, an unkeyable order would lose its alloc rows to the cleanup below and become unreachable.
-		final ImmutableListMultimap<Integer, I_DD_OrderLine> unkeyableLinesByOrderId = Multimaps.index(
-				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingLines.getUnkeyable())),
-				I_DD_OrderLine::getDD_Order_ID);
-
 		for (final I_DD_Order unkeyableDDOrder : existingLines.getUnkeyable())
 		{
-			final DDOrderId unkeyableDDOrderId = DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID());
-			final ImmutableList<I_DD_OrderLine> unkeyableDDOrderLines = unkeyableLinesByOrderId.get(unkeyableDDOrder.getDD_Order_ID());
-
-			// Voiding a duplicate that already holds goods in transit or delivered would strand that in-hand stock — disconnect it instead.
-			final BigDecimal movedQty = unkeyableDDOrderLines.stream()
-					.map(line -> line.getQtyInTransit().add(line.getQtyDelivered()))
-					.reduce(BigDecimal.ZERO, BigDecimal::add);
-			if (movedQty.signum() > 0)
-			{
-				disconnectDDOrderFor(unkeyableDDOrderId);
-				unkeyableDDOrderLines.forEach(line -> disconnectedLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
-			}
-			else
-			{
-				voidDDOrder(unkeyableDDOrderId);
-				unkeyableDDOrderLines.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
-			}
+			disposeObsoleteDDOrder(
+					DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID()),
+					linesByOrderId.get(unkeyableDDOrder.getDD_Order_ID()),
+					obsoleteLineIds,
+					disconnectedLineIds);
 		}
+
+		disposeOrdersOfLocatorsNoLongerRequired(
+				existingLineByLocator,
+				requiredByLocator.keySet(),
+				linesByOrderId,
+				obsoleteLineIds,
+				disconnectedLineIds);
 
 		final Map<PickingJobScheduleId, Quantity> disconnectedServedByContributor = sumSharesByContributor(disconnectedLineIds);
 		logUncoveredRemainder(groupKey, sourceWarehouseId, allocation.getUncovered(), disconnectedServedByContributor);
@@ -508,15 +510,6 @@ public class DDOrderPickingReplenishmentService
 						.adOrgId(orgId.getRepoId())
 						.build());
 		final WarehouseId inTransitWarehouseId = warehouseRepository.getInTransitWarehouseId(orgId);
-
-		for (final Map.Entry<LocatorId, I_DD_OrderLine> entry : existingLineByLocator.entrySet())
-		{
-			if (!requiredByLocator.containsKey(entry.getKey()))
-			{
-				voidDDOrder(DDOrderId.ofRepoId(entry.getValue().getDD_Order_ID()));
-				obsoleteLineIds.add(DDOrderLineId.ofRepoId(entry.getValue().getDD_OrderLine_ID()));
-			}
-		}
 
 		final HashSet<DDOrderLineId> survivingLineIds = new HashSet<>();
 
@@ -603,6 +596,99 @@ public class DDOrderPickingReplenishmentService
 		// The disconnect deliberately KEEPS its association, else the delivery loses its navigation to the in-progress move.
 		obsoleteLineIds.removeAll(disconnectedLineIds);
 		contributorRepository.deleteByLineIds(obsoleteLineIds);
+	}
+
+	/**
+	 * The locators the fresh allocation no longer needs: their order is obsolete, so it is disposed of. Runs BEFORE the
+	 * frozen split, so an order that turns out to be merely DISCONNECTED has its shares netted off the re-plan instead
+	 * of being planned a second time.
+	 *
+	 * @param obsoleteLineIds     collects the lines of every VOIDED order: their alloc rows are dropped
+	 * @param disconnectedLineIds collects the lines of every DISCONNECTED order: their alloc rows survive
+	 */
+	@VisibleForTesting
+	void disposeOrdersOfLocatorsNoLongerRequired(
+			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator,
+			@NonNull final Set<LocatorId> requiredLocatorIds,
+			@NonNull final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId,
+			@NonNull final Set<DDOrderLineId> obsoleteLineIds,
+			@NonNull final Set<DDOrderLineId> disconnectedLineIds)
+	{
+		for (final Map.Entry<LocatorId, I_DD_OrderLine> entry : existingLineByLocator.entrySet())
+		{
+			if (requiredLocatorIds.contains(entry.getKey()))
+			{
+				continue;
+			}
+
+			final int ddOrderRepoId = entry.getValue().getDD_Order_ID();
+			disposeObsoleteDDOrder(
+					DDOrderId.ofRepoId(ddOrderRepoId),
+					linesByOrderId.get(ddOrderRepoId),
+					obsoleteLineIds,
+					disconnectedLineIds);
+		}
+	}
+
+	/**
+	 * Disposes of ONE order the reconcile no longer wants, and files its lines under the outcome: a DISCONNECTED order
+	 * keeps its alloc rows, a VOIDED one loses them.
+	 */
+	private void disposeObsoleteDDOrder(
+			@NonNull final DDOrderId ddOrderId,
+			@NonNull final Collection<I_DD_OrderLine> ddOrderLines,
+			@NonNull final Set<DDOrderLineId> obsoleteLineIds,
+			@NonNull final Set<DDOrderLineId> disconnectedLineIds)
+	{
+		final Set<DDOrderLineId> disposedLineIds = disposeObsoleteDDOrder(ddOrderId)
+				? disconnectedLineIds
+				: obsoleteLineIds;
+		addLineIdsTo(ddOrderLines, disposedLineIds);
+	}
+
+	/**
+	 * The flavour for a caller that only needs to know about the disconnected outcome.
+	 *
+	 * @return {@code true} when the order was DISCONNECTED — its alloc rows must be KEPT; {@code false} when it was voided.
+	 */
+	private boolean disposeObsoleteDDOrder(@NonNull final DDOrderId ddOrderId)
+	{
+		if (holdsMovedGoods(ddOrderId))
+		{
+			disconnectDDOrderFor(ddOrderId);
+			return true;
+		}
+
+		voidDDOrder(ddOrderId);
+		return false;
+	}
+
+	private static void addLineIdsTo(@NonNull final Collection<I_DD_OrderLine> lines, @NonNull final Set<DDOrderLineId> target)
+	{
+		lines.forEach(line -> target.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
+	}
+
+	/**
+	 * The void-or-disconnect decision, shared by every disposal site: voiding an order whose goods a mover already has
+	 * in his hands would strand that stock, leaving him with goods no document accounts for. Such an order is
+	 * DISCONNECTED instead: it leaves the guard/reconcile lookups while staying live for him to finish the move.
+	 *
+	 * <p>The signal is an IN_PROGRESS {@code DD_Order_MoveSchedule} — picked from the source, not yet dropped at the
+	 * workstation. That is what the mobile mover actually writes ({@code Status} {@code NS}&nbsp;→&nbsp;{@code IP} on
+	 * the pick, {@code CO} on the drop); {@code DD_OrderLine.QtyInTransit} / {@code QtyDelivered} are written by no
+	 * production flow at all, so a decision keyed on them would never fire.</p>
+	 *
+	 * <p>It is also the SAME predicate the {@code DD_Order} interceptor's {@code BEFORE_VOID} / {@code BEFORE_CLOSE}
+	 * veto uses ({@code clearSchedules}), so this disposal decision can never contradict the veto and try to void an
+	 * order the document engine will refuse to void.</p>
+	 *
+	 * <p>Asked per ORDER, not per line: a void voids the whole document, and the veto is asked per order too. An
+	 * actively-working picker ({@code findBlockingPickingWork}) is a strictly DIFFERENT, narrower signal — a move can be
+	 * under way with no picking-job line open on it — so it does not answer this question.</p>
+	 */
+	private boolean holdsMovedGoods(@NonNull final DDOrderId ddOrderId)
+	{
+		return ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderId);
 	}
 
 	/**
@@ -1031,16 +1117,12 @@ public class DDOrderPickingReplenishmentService
 	/**
 	 * On a locator collision the OLDER order keeps the locator — the one a mover may already be working.
 	 */
-	private ExistingLineIndex indexExistingBySourceLocator(@NonNull final List<I_DD_Order> existingDDOrders)
+	private ExistingLineIndex indexExistingBySourceLocator(
+			@NonNull final List<I_DD_Order> existingDDOrders,
+			@NonNull final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId)
 	{
 		final LinkedHashMap<LocatorId, I_DD_OrderLine> byLocator = new LinkedHashMap<>();
 		final ImmutableList.Builder<I_DD_Order> unkeyable = ImmutableList.builder();
-
-		// ONE query for all orders' lines instead of one per order; grouped by DD_Order_ID, each group keeps the
-		// single-order flavour's Line/DD_OrderLine_ID ordering, so line.get(0) is the same line as before.
-		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
-				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingDDOrders)),
-				I_DD_OrderLine::getDD_Order_ID);
 
 		for (final I_DD_Order ddOrder : existingDDOrders)
 		{
@@ -1124,6 +1206,10 @@ public class DDOrderPickingReplenishmentService
 
 	/**
 	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are frozen.
+	 * <p>
+	 * SUPERSEDED: keys on {@code QtyDelivered}, which no production flow writes (only MDDOrderLine's zero-initialiser), so it
+	 * never freezes anything on a live instance. The freeze is being re-keyed onto {@link #holdsMovedGoods} — the same live
+	 * movement signal the disposal sites already use — in a follow-up change; left as-is here to keep that swap in one place.
 	 */
 	private static boolean isShrinkRefusedByDeliveredQty(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
@@ -1275,13 +1361,34 @@ public class DDOrderPickingReplenishmentService
 				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
 
-			voidDDOrder(ddOrderId);
+			if (holdsMovedGoods(ddOrderId))
+			{
+				// Nothing to file either way: reaching this line means its alloc rows are already gone — that is the
+				// very condition that got us here.
+				disconnectDDOrderFor(ddOrderId);
+			}
+			else
+			{
+				voidDDOrder(ddOrderId);
+			}
 		}
 	}
 
-	private void voidAllDDOrders(@NonNull final List<I_DD_Order> ddOrders)
+	/**
+	 * The group lost every contributor and is voided out — except for an order that already holds moved goods, which is
+	 * DISCONNECTED instead.
+	 *
+	 * @return the lines of the DISCONNECTED orders, whose alloc rows the caller must keep.
+	 */
+	private ImmutableSet<DDOrderLineId> disposeVoidOut(@NonNull final List<I_DD_Order> ddOrders)
 	{
 		final ImmutableMap<DDOrderId, BlockingWork> blockingByDDOrderId = findBlockingPickingWork(ddOrders);
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(ddOrders)),
+				I_DD_OrderLine::getDD_Order_ID);
+
+		final HashSet<DDOrderLineId> obsoleteLineIds = new HashSet<>();
+		final HashSet<DDOrderLineId> disconnectedLineIds = new HashSet<>();
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
@@ -1291,8 +1398,10 @@ public class DDOrderPickingReplenishmentService
 				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
 
-			voidDDOrder(ddOrderId);
+			disposeObsoleteDDOrder(ddOrderId, linesByOrderId.get(ddOrder.getDD_Order_ID()), obsoleteLineIds, disconnectedLineIds);
 		}
+
+		return ImmutableSet.copyOf(disconnectedLineIds);
 	}
 
 	/**
@@ -1303,7 +1412,7 @@ public class DDOrderPickingReplenishmentService
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
-			if (ddOrderMoveScheduleService.hasInProgressSchedules(ddOrderId))
+			if (holdsMovedGoods(ddOrderId))
 			{
 				disconnectDDOrderFor(ddOrderId);
 			}
@@ -1337,7 +1446,7 @@ public class DDOrderPickingReplenishmentService
 
 		Loggables.addLog(
 				"DD_Order picking replenishment: disconnected (IsPickingDisconnected=Y) in-progress replenishment"
-						+ " DD_Order_ID={0} on shipment close-out; contributor rows retained, DistributionJob stays live for the worker",
+						+ " DD_Order_ID={0}; contributor rows retained, DistributionJob stays live for the worker",
 				ddOrderId.getRepoId());
 	}
 
