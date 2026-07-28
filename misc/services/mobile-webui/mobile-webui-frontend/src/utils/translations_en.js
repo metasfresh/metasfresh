@@ -198,6 +198,7 @@ const translations = {
       invalidQtyToMove: 'Invalid qty to move',
       qrcode: {
         differentProduct: 'The scanned QR Product does not match',
+        productCodeWhereHUExpected: 'This is an article barcode (GTIN), not an HU barcode. Please scan the HU first.',
       },
       printMaterialInTransitReport: 'In Transit Report',
     },

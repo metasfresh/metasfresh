@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { getNextEligiblePickFromLine } from '../../../api/distribution';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
+import { ATTR_barcodeType, BARCODE_TYPE_EAN13 } from '../../../utils/qrCode/common';
 import { trl } from '../../../utils/translations';
 import { distributionJobScreenLocation, distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
@@ -30,6 +31,24 @@ const DistributionPickFromScreen = () => {
 
   const resolveHUScannedCode = async (scannedBarcode) => {
     const parsedQRCode = await resolveDistributionScannedBarcodeToParsedQRCode(scannedBarcode);
+
+    // An article code is not a handling unit. A source locator holds many handling units of one
+    // article, so a bare article code cannot say which one to pick from — which is why
+    // DistributionHUService.resolveHUQRCode identifies a handling unit only from a real handling-unit
+    // code (a full HUQRCode, a bare M_HU.Value, or an HU's ExternalBarcode attribute) and answers an
+    // EAN13 with 422 QR_WRONG_TYPE. So the operator gains nothing from that round trip: tell them here
+    // instead, in words they can act on. Throwing leaves ScanHUAndGetQtyComponent in its
+    // STATUS_READ_HU_BARCODE step, so the article code is never remembered as the chosen handling unit,
+    // never reaches getNextEligiblePickFromLine in the huQRCode slot, and the operator keeps their
+    // place — their next scan is still read as a handling unit.
+    //
+    // EAN13 is the only article code this parse can recognise on its own:
+    // resolveDistributionScannedBarcodeToParsedQRCode asks for precise formats only, which rules GS1
+    // out. Anything else is left to the backend and keeps the message it answers with — a locator QR
+    // code and an unrecognised barcode are covered by scan_HU_barcodes.spec.js.
+    if (parsedQRCode?.[ATTR_barcodeType] === BARCODE_TYPE_EAN13) {
+      throw trl('activities.distribution.qrcode.productCodeWhereHUExpected');
+    }
 
     const { productId, qtyToPickRemaining, uom } = getLineInfo({ activity, lineId: lineIdParam });
     if (productId != null && parsedQRCode?.productId != null && parsedQRCode.productId !== productId) {
