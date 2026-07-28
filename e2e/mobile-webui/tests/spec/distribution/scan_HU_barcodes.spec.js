@@ -22,6 +22,13 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
             mobileConfig: {
                 distribution: {
                     // mobileConfig->distribution entry is important to make sure we get the default distribution config
+                    //
+                    // ...except for allowPickingAnyHU, which the masterdata API does NOT reset when omitted
+                    // (MobileConfigDistributionCommand writes it only when non-null) — it is a sticky, global
+                    // config row that keeps whatever an earlier spec left. This scenario needs it TRUE: the
+                    // line screen's "Scan QR Code" button, which every case below taps, renders only then
+                    // (DistributionLineScreen.jsx). See e2e/mobile-webui/CLAUDE.md § "Debugging Flaky Tests" rule 3.
+                    allowPickingAnyHU: true,
                 }
             },
             resources: {

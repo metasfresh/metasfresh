@@ -310,7 +310,8 @@ de.metas.shipper.client.nshift.NShiftShipmentServiceTest.build_request_test=[
     },
     "options": {
       "Labels": "PDF",
-      "TrackingURL": 1
+      "TrackingURL": 1,
+      "UseShippingRules": 0
     }
   }
 ]

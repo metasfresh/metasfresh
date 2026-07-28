@@ -27,6 +27,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.jetbrains.annotations.Contract;
 
@@ -34,6 +35,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntFunction;
 
 public interface ISysConfigBL extends ISingletonService
 {
@@ -124,4 +126,13 @@ public interface ISysConfigBL extends ISingletonService
 	Map<String, String> getValuesForPrefix(String prefix, boolean removePrefix, ClientAndOrgId clientAndOrgId);
 
 	<T extends Enum<T>> ImmutableSet<T> getCommaSeparatedEnums(@NonNull String sysconfigName, @NonNull Class<T> enumType);
+
+	/**
+	 * Reads a system-level SysConfig holding a comma-separated list of repo-ids and maps each token to a {@link RepoIdAware}.
+	 * Empty/unset (or the {@code "-"} sentinel) yields an empty set. Consistent with {@link #getCommaSeparatedEnums(String, Class)},
+	 * an unparseable token is logged and skipped rather than aborting the caller.
+	 *
+	 * @param mapper turns a parsed repo-id into the value object, e.g. {@code DocTypeId::ofRepoIdOrNull} (may return {@code null} to skip)
+	 */
+	<T extends RepoIdAware> ImmutableSet<T> getCommaSeparatedRepoIdAwares(@NonNull String sysconfigName, @NonNull IntFunction<T> mapper);
 }

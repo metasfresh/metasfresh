@@ -110,8 +110,8 @@ const DistributionPickFromScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineIdParam ?? '-'}_scan`}
-      scanHUPlaceholderText={trl('activities.distribution.scanHU')}
-      scanProductPlaceholderText={trl('activities.distribution.scanProduct')}
+      scanHUPlaceholderText={trl('activities.distribution.scanHUBarcodePlaceholder')}
+      scanProductPlaceholderText={trl('activities.distribution.scanProductGtinPlaceholder')}
       scannedBarcode={huQRCodeParam}
       resolveScannedBarcode={resolveHUScannedCode}
       resolveProductScannedCode={resolveProductScannedCode}

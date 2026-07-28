@@ -582,15 +582,27 @@ public class NShiftGateway_StepDef
 		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
 		final SoftAssertions softly = new SoftAssertions();
 
-		row.getAsOptionalString("UseShippingRules").ifPresent(expected -> {
-			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("UseShippingRules");
+		row.getAsOptionalString("IsManual").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("IsManual");
 			if (DataTableUtil.isNullPlaceholder(expected))
 			{
-				softly.assertThat(actual).as("shipperConfig.UseShippingRules should be absent").isNull();
+				softly.assertThat(actual).as("shipperConfig.IsManual should be absent").isNull();
 			}
 			else
 			{
-				softly.assertThat(actual).as("shipperConfig.UseShippingRules").isEqualTo(expected);
+				softly.assertThat(actual).as("shipperConfig.IsManual").isEqualTo(expected);
+			}
+		});
+
+		row.getAsOptionalString("IsSelectionRules").ifPresent(expected -> {
+			final String actual = capturedShipmentRequest.getShipperConfig().getAdditionalProperty("IsSelectionRules");
+			if (DataTableUtil.isNullPlaceholder(expected))
+			{
+				softly.assertThat(actual).as("shipperConfig.IsSelectionRules should be absent").isNull();
+			}
+			else
+			{
+				softly.assertThat(actual).as("shipperConfig.IsSelectionRules").isEqualTo(expected);
 			}
 		});
 
