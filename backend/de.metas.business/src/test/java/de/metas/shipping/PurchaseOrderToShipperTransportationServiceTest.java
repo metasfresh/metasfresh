@@ -24,10 +24,13 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.sscc18.SSCC18;
 import de.metas.sscc18.impl.SSCC18CodeBL;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
@@ -97,6 +100,8 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+		// OrderBL.getMaxPurchaseTransportDays (used to derive ETD) resolves BPartnerProductEffectiveBL as a Spring bean
+		SpringContextHolder.registerJUnitBean(new BPartnerProductEffectiveBL(BPartnerEffectiveBL.newInstanceForUnitTesting()));
 		Services.registerService(ISSCC18CodeBL.class, new SSCC18CodeBL()
 		{
 			@Override
@@ -547,7 +552,7 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 	/**
 	 * The five transport-order date fields (ETD, ETA, ATD, ATA, B/L date) must auto-populate from the first assigned purchase order:
-	 * ETD = PO.DatePromised, ETA = ETD + vendor delivery time, ATD = ETD, ATA = ETA, B/L date = ATD.
+	 * ETA = PO.DatePromised, ETD = ETA − vendor transport days, ATD = ETD, ATA = ETA, B/L date = ATD.
 	 * <p>
 	 * me03 https://github.com/metasfresh/me03/issues/30956
 	 */
@@ -567,20 +572,50 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
 
-		final java.sql.Timestamp expectedEtd = order.getDatePromised();
-		final java.sql.Timestamp expectedEta = TimeUtil.addDays(expectedEtd, 5);
+		final java.sql.Timestamp expectedEta = order.getDatePromised();           // ETA = promised arrival date
+		final java.sql.Timestamp expectedEtd = TimeUtil.addDays(expectedEta, -5); // ETD = arrival − vendor transport days (5)
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
-		assertThat(reloaded.getETD()).as("ETD = PO.DatePromised").isEqualTo(expectedEtd);
-		assertThat(reloaded.getETA()).as("ETA = ETD + vendor delivery time").isEqualTo(expectedEta);
+		assertThat(reloaded.getETD()).as("ETD = PO.DatePromised − vendor transport days").isEqualTo(expectedEtd);
+		assertThat(reloaded.getETA()).as("ETA = PO.DatePromised (promised arrival)").isEqualTo(expectedEta);
 		assertThat(reloaded.getATD()).as("ATD = ETD").isEqualTo(expectedEtd);
 		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
 		assertThat(reloaded.getBLDate()).as("B/L date = ATD").isEqualTo(expectedEtd);
 	}
 
 	/**
-	 * When there is no {@code C_BPartner_Product.DeliveryTime_Promised} for the first line's product+vendor,
-	 * ETA falls back to ETD (delivery time = 0 days).
+	 * ETD uses the purchase order's {@code PreparationDate} when it is set (already computed by tour planning), in preference to
+	 * the {@code DatePromised} − max-transport-days fallback.
+	 */
+	@Test
+	public void defaultDates_etdUsesOrderPreparationDateWhenSet()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorPrep", "addressPrep");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final java.sql.Timestamp datePromised = TimeUtil.asTimestamp(LocalDate.of(2025, 3, 10), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		final java.sql.Timestamp preparationDate = TimeUtil.asTimestamp(LocalDate.of(2025, 3, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setDatePromised(datePromised);
+		order.setPreparationDate(preparationDate);
+		save(order);
+		// a vendor transport time that WOULD give a different ETD (2025-03-06) via the fallback — proving PreparationDate wins
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 4);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("ETD uses the PO's PreparationDate when set, not the DatePromised−maxDays fallback").isEqualTo(preparationDate);
+		assertThat(reloaded.getETA()).as("ETA = PO.DatePromised").isEqualTo(datePromised);
+	}
+
+	/**
+	 * When the purchase order has no vendor transport days and no {@code PreparationDate}, ETD falls back to {@code DatePromised}
+	 * and therefore equals ETA (offset = 0 days).
 	 */
 	@Test
 	public void defaultDates_noVendorDeliveryTime_etaEqualsEtd()
@@ -662,12 +697,12 @@ public class PurchaseOrderToShipperTransportationServiceTest
 	}
 
 	/**
-	 * Assigning via {@code addOrderLinesToShipperTransportation} (which passes only a SELECTED subset of the PO's lines):
-	 * the vendor delivery time must still come from the PO's first line (lowest {@code Line}), even when that line is NOT
-	 * part of the assigned subset. Proves the deliberate re-query in getFirstLineVendorDeliveryTimeDays.
+	 * Assigning via {@code addOrderLinesToShipperTransportation} (which passes only a SELECTED subset of the PO's lines): the ETD
+	 * default must use the MAX vendor transport days across ALL of the PO's lines, even lines NOT part of the assigned subset.
+	 * Proves ETD is derived from the whole purchase order (via {@code OrderBL.getMaxPurchaseTransportDays}), not just the subset.
 	 */
 	@Test
-	public void defaultDates_viaAddOrderLines_usesPOFirstLineNotSelectedSubset()
+	public void defaultDates_viaAddOrderLines_usesMaxTransportDaysAcrossAllLinesNotSubset()
 	{
 		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
 		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
@@ -683,20 +718,20 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		save(line2);
 
 		final I_C_Order order = load(orderId, I_C_Order.class);
-		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 5);  // first line (line 10)
-		createBPartnerProduct(order.getC_BPartner_ID(), product2, order.getAD_Org_ID(), 99); // the selected subset line (line 20)
+		createBPartnerProduct(order.getC_BPartner_ID(), product1, order.getAD_Org_ID(), 99); // line 10 — NOT assigned, but carries the max transport days
+		createBPartnerProduct(order.getC_BPartner_ID(), product2, order.getAD_Org_ID(), 5);  // line 20 — the only assigned line
 
-		// assign ONLY the second line — the subset deliberately excludes the PO's first line
+		// assign ONLY the second line — the subset deliberately excludes the line carrying the max transport days
 		service.addOrderLinesToShipperTransportation(transportationId, ImmutableSet.of(OrderLineId.ofRepoId(line2.getC_OrderLine_ID())));
 
-		final java.sql.Timestamp expectedEtd = order.getDatePromised();
-		final java.sql.Timestamp expectedEta = TimeUtil.addDays(expectedEtd, 5); // 5 (product1 / first line), NOT 99 (product2 / subset)
+		final java.sql.Timestamp expectedEta = order.getDatePromised();
+		final java.sql.Timestamp expectedEtd = TimeUtil.addDays(expectedEta, -99); // max across ALL lines (99 on the NON-assigned line), not the subset's 5
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
-		assertThat(reloaded.getETD()).isEqualTo(expectedEtd);
-		assertThat(reloaded.getETA())
-				.as("ETA must use the PO's first-line delivery time even when only a later line was assigned")
-				.isEqualTo(expectedEta);
+		assertThat(reloaded.getETA()).isEqualTo(expectedEta);
+		assertThat(reloaded.getETD())
+				.as("ETD uses the MAX vendor transport days across ALL PO lines (incl. lines not in the assigned subset)")
+				.isEqualTo(expectedEtd);
 	}
 
 	/**
@@ -722,12 +757,11 @@ public class PurchaseOrderToShipperTransportationServiceTest
 
 		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
 
-		final java.sql.Timestamp poDatePromised = order.getDatePromised();
-		final java.sql.Timestamp expectedEta = TimeUtil.addDays(poDatePromised, 5);
+		final java.sql.Timestamp expectedEta = order.getDatePromised(); // ETA = promised arrival (vendor transport days are NOT re-added)
 
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD()).as("pre-set ETD is kept, not overwritten").isEqualTo(presetEtd);
-		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default").isEqualTo(expectedEta);
+		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default (= DatePromised)").isEqualTo(expectedEta);
 		assertThat(reloaded.getATD()).as("ATD = ETD, so it follows the user-preset ETD, not the PO's DatePromised").isEqualTo(presetEtd);
 		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
 		assertThat(reloaded.getBLDate()).as("B/L date = ATD, which here equals the user-preset ETD").isEqualTo(presetEtd);

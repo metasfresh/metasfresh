@@ -29,8 +29,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.effective.BPartnerEffectiveBL;
-import de.metas.bpartner_product.BPartnerProductEffectiveBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.ILUQtyProvider;
 import de.metas.handlingunits.IPackageWeightProvider;
@@ -46,7 +44,6 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
-import de.metas.product.ProductId;
 import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
@@ -81,8 +78,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
 @Service
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
@@ -100,7 +95,6 @@ public class PurchaseOrderToShipperTransportationService
 	private final ILUQtyProvider qtyProvider;
 	private final ITUDistributionProvider tuDistributionProvider;
 	private final IPackageWeightProvider packageWeightProvider;
-	@NonNull private final BPartnerProductEffectiveBL bpartnerProductEffectiveBL;
 
 	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
@@ -126,8 +120,7 @@ public class PurchaseOrderToShipperTransportationService
 				PurchaseOrderToShipperTransportationRepository.newInstanceForUnitTesting(),
 				luQtyProvider,
 				tuProvider,
-				weightProvider,
-				new BPartnerProductEffectiveBL(BPartnerEffectiveBL.newInstanceForUnitTesting()));
+				weightProvider);
 	}
 
 	private static final String AD_PROCESS_VALUE_C_Order_SSCC_Print_Jasper = "C_Order_SSCC_Print_Jasper";
@@ -280,12 +273,15 @@ public class PurchaseOrderToShipperTransportationService
 	/**
 	 * Defaults the transport order's date fields from the first assigned purchase order (each value stays user-overridable afterwards):
 	 * <ul>
-	 *     <li>ETD = the purchase order's {@code DatePromised} (provisioning date)</li>
-	 *     <li>ETA = ETD + the vendor delivery time ({@code C_BPartner_Product.DeliveryTime_Promised}) of the purchase order's first line</li>
+	 *     <li>ETA = the purchase order's {@code DatePromised} (the promised arrival date)</li>
+	 *     <li>ETD = the purchase order's provisioning/ready date: its {@code PreparationDate} (already derived by tour planning as
+	 *         {@code DatePromised} minus the vendor transport days, honouring tours), falling back to that same computation
+	 *         ({@code DatePromised} minus {@link IOrderBL#getMaxPurchaseTransportDays(I_C_Order)}) when {@code PreparationDate} is unset</li>
 	 *     <li>ATD = ETD</li>
 	 *     <li>ATA = ETA</li>
 	 *     <li>B/L date = ATD</li>
 	 * </ul>
+	 * The vendor transport lead time is taken from the purchase order's own dates rather than re-added here, so it is never double-counted.
 	 * Only applies to purchase (inbound) transport orders; the sales flow is left untouched.
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
@@ -295,10 +291,15 @@ public class PurchaseOrderToShipperTransportationService
 			return; // sales behaviour on the transport order must keep working unchanged
 		}
 
-		// DatePromised is guaranteed non-null here: this runs only for completed/closed purchase orders and the caller
-		// already dereferences order.getDatePromised() when building the base package request, so a null would fail earlier.
-		final Timestamp etd = order.getDatePromised();
-		final Timestamp eta = TimeUtil.addDays(etd, getFirstLineVendorDeliveryTimeDays(order));
+		// ETA = the PO's promised (arrival) date; guaranteed non-null here (the caller already dereferences it when building the base
+		// package request, and this runs only for completed/closed purchase orders). ETD = the PO's ready/provisioning date: its
+		// PreparationDate when set (already computed by tour planning), else DatePromised minus the max vendor transport days across
+		// the PO's lines. The vendor lead time is thus taken from the PO's own dates, never re-added.
+		final Timestamp eta = order.getDatePromised();
+		final Timestamp preparationDate = order.getPreparationDate();
+		final Timestamp etd = preparationDate != null
+				? preparationDate
+				: TimeUtil.addDays(eta, -orderBL.getMaxPurchaseTransportDays(order));
 
 		// Fill each field ONLY if the user has not already set it: these are defaults, so a value entered before the first PO
 		// was assigned must be kept. (After assignment every value stays freely editable as well.)
@@ -333,29 +334,8 @@ public class PurchaseOrderToShipperTransportationService
 
 		if (changed)
 		{
-			saveRecord(shipperTransportation);
+			shipperTransportationDAO.save(shipperTransportation);
 		}
-	}
-
-	/**
-	 * @return the effective vendor purchase-transport days for the purchase order's first line (lowest {@code Line}) — i.e.
-	 * {@code C_BPartner_Product.DeliveryTime_Promised} with fallback to the vendor's {@code C_BPartner.PO_TransportDays} — or
-	 * {@code 0} when neither is set (or the order has no product line).
-	 */
-	private int getFirstLineVendorDeliveryTimeDays(@NonNull final I_C_Order order)
-	{
-		final BPartnerId vendorId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
-		final OrgId orgId = OrgId.ofRepoId(order.getAD_Org_ID());
-
-		// Intentionally re-query ALL of the order's lines rather than reusing the caller's list: addOrderLinesToShipperTransportation()
-		// passes only a SELECTED subset of lines, and the spec requires the vendor delivery time of the PO's *first* line (lowest Line).
-		// This runs once per transport order (first-order assignment only), so the extra query is negligible.
-		return orderDAO.retrieveOrderLines(order)
-				.stream()
-				.filter(ol -> ol.getM_Product_ID() > 0)
-				.min(Comparator.comparingInt(I_C_OrderLine::getLine)) // lowest Line = the PO's first line, independent of DAO sort order
-				.map(ol -> bpartnerProductEffectiveBL.getPurchaseTransportDays(vendorId, ProductId.ofRepoId(ol.getM_Product_ID()), orgId))
-				.orElse(0);
 	}
 
 	private List<I_C_OrderLine> getUnassignedOrderLines(final List<I_C_OrderLine> orderLines)
