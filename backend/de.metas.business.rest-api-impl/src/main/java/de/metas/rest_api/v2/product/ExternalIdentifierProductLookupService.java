@@ -39,6 +39,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.compiere.model.I_C_BPartner_Product;
@@ -100,22 +101,19 @@ public class ExternalIdentifierProductLookupService
 			@Nullable final ZonedDateTime date)
 	{
 		final String gtin = productIdentifier.asGTIN();
-		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-				.setJoinOr()
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
-				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
 
-		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addOnlyActiveRecordsFilter()
-				.filter(hupiFilter)
-				.filter(huPIItemProductDAO.createValidOnDateFilter(date))
-				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
-				.orderBy()
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
-				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
-				.endOrderBy()
-				.create().first();
+		// Primary query: respect validity (ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)).
+		// This selects the best PIIP that is actually valid on the requested date.
+		I_M_HU_PI_Item_Product hupi = findFirstHupiByGtin(gtin, true, date);
+
+		if (hupi == null && date != null)
+		{
+			// Fallback: no PIIP is valid on the date (e.g. the only row has ValidFrom in the future).
+			// Validity must only decide WHICH PIIP is chosen — it must NEVER make the product unresolvable.
+			// Use the best-available PIIP (most recent ValidFrom) regardless of validity.
+			hupi = findFirstHupiByGtin(gtin, false, null);
+		}
+
 		if (hupi != null)
 		{
 			return ProductAndHUPIItemProductId.opt(
@@ -156,6 +154,48 @@ public class ExternalIdentifierProductLookupService
 			return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(p.getM_Product_ID()));
 		}
 		return Optional.empty();
+	}
+
+	/**
+	 * Finds the first {@link I_M_HU_PI_Item_Product} row matching the given GTIN/EAN/UPC value,
+	 * ordered by {@code ValidFrom DESC} (most recent first) then by ID ascending as a tiebreak.
+	 *
+	 * @param gtin           the GTIN/EAN/UPC value to match
+	 * @param applyValidity  when {@code true}, adds a "valid on date" filter so only rows whose
+	 *                       ValidFrom/ValidTo window covers the given date are returned; when {@code false},
+	 *                       no validity filter is applied (fallback to resolve the product even when no row
+	 *                       is valid on the requested date)
+	 * @param date           the date to use for validity filtering; used only when {@code applyValidity} is {@code true}
+	 * @return the first matching row, or {@code null} if none found
+	 */
+	@Nullable
+	private I_M_HU_PI_Item_Product findFirstHupiByGtin(
+			@NonNull final String gtin,
+			final boolean applyValidity,
+			@Nullable final ZonedDateTime date)
+	{
+		final ICompositeQueryFilter<I_M_HU_PI_Item_Product> hupiFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_GTIN, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_EAN_TU, gtin)
+				.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_UPC, gtin);
+
+		final IQueryBuilder<I_M_HU_PI_Item_Product> builder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(hupiFilter)
+				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID);
+
+		if (applyValidity)
+		{
+			builder.filter(huPIItemProductDAO.createValidOnDateFilter(date));
+		}
+
+		return builder.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
+				.create()
+				.first();
 	}
 
 }

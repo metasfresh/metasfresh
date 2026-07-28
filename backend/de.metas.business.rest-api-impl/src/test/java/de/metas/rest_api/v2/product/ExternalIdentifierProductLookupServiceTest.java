@@ -349,6 +349,49 @@ public class ExternalIdentifierProductLookupServiceTest
 				.isEqualTo(newRowId);
 	}
 
+	/**
+	 * Regression test for the cucumber scenario @Id:S0469_20 (manualPriceOLCandToInvoice):
+	 * a product whose ONLY M_HU_PI_Item_Product GTIN row has ValidFrom in the FUTURE relative to
+	 * the query date must still resolve — the product must NOT become unresolvable just because
+	 * no PIIP row is valid on the requested date.
+	 *
+	 * <p>Setup mirrors the failing cucumber: ValidFrom=2022-01-01, query date=2021-04-15
+	 * (i.e. ValidFrom is AFTER the query date, so the validity-filtered primary query returns nothing).
+	 * Expected: the product is still returned (with the best-available PIIP), NOT empty.
+	 */
+	@Test
+	void gtin_resolves_product_even_when_no_piip_valid_on_date()
+	{
+		// given — one active product with a single PIIP whose ValidFrom is AFTER the query date
+		final I_M_Product product = InterfaceWrapperHelper.newInstance(I_M_Product.class);
+		product.setValue("test-product-future-validfrom");
+		product.setIsActive(true);
+		InterfaceWrapperHelper.save(product);
+
+		final String gtin = "20220101GT";
+
+		final I_M_HU_PI_Item_Product hupiItemProduct = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
+		hupiItemProduct.setM_Product_ID(product.getM_Product_ID());
+		hupiItemProduct.setGTIN(gtin);
+		hupiItemProduct.setValidFrom(TimeUtil.parseLocalDateAsTimestamp("2022-01-01")); // ValidFrom is in the FUTURE relative to the query date
+		hupiItemProduct.setIsActive(true);
+		InterfaceWrapperHelper.save(hupiItemProduct);
+
+		// when — query date is BEFORE ValidFrom (mirrors cucumber: dateRequired=2021-04-15)
+		final ZonedDateTime queryDate = LocalDate.of(2021, 4, 15).atStartOfDay(ZoneOffset.UTC);
+		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
+		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, queryDate);
+
+		// then — product must still resolve; validity must only decide WHICH PIIP, never make the product unresolvable
+		assertThat(result)
+				.as("Product with single future-ValidFrom PIIP must still resolve when queried before that date")
+				.isPresent();
+		assertThat(result.get().getProductId())
+				.isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
+		assertThat(result.get().getHupiItemProductId())
+				.isEqualTo(HUPIItemProductId.ofRepoId(hupiItemProduct.getM_HU_PI_Item_Product_ID()));
+	}
+
 	@Test
 	void lookupProductByGTIN_with_inactive_records()
 	{
