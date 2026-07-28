@@ -67,7 +67,12 @@ public class ConfiguredViewInvalidationListener implements ICacheResetListener
 	private static final Logger logger = LogManager.getLogger(ConfiguredViewInvalidationListener.class);
 
 	private static final String SYSCONFIG_BufferMaxSize = "webui.ConfiguredViewInvalidationListener.debouncer.bufferMaxSize";
+	private static final int DEFAULT_BufferMaxSize = 500;
 	private static final String SYSCONFIG_DelayInMillis = "webui.ConfiguredViewInvalidationListener.debouncer.delayInMillis";
+	private static final int DEFAULT_DelayInMillis = 100;
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final IViewsRepository viewsRepository;
 	private final WebuiViewInvalidateOnChangeRepository configRepository;
@@ -80,11 +85,10 @@ public class ConfiguredViewInvalidationListener implements ICacheResetListener
 		this.viewsRepository = viewsRepository;
 		this.configRepository = configRepository;
 
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		this.debouncer = Debouncer.<String>builder()
 				.name(ConfiguredViewInvalidationListener.class.getSimpleName() + "-debouncer")
-				.bufferMaxSize(sysConfigBL.getIntValue(SYSCONFIG_BufferMaxSize, 500))
-				.delayInMillis(sysConfigBL.getIntValue(SYSCONFIG_DelayInMillis, 100))
+				.bufferMaxSize(sysConfigBL.getIntValue(SYSCONFIG_BufferMaxSize, DEFAULT_BufferMaxSize))
+				.delayInMillis(sysConfigBL.getIntValue(SYSCONFIG_DelayInMillis, DEFAULT_DelayInMillis))
 				.distinct(true)
 				.consumer(this::invalidateViewsForTableNamesNow)
 				.build();
@@ -119,7 +123,6 @@ public class ConfiguredViewInvalidationListener implements ICacheResetListener
 
 		//
 		// Defer after commit (committed data) + debounce (coalesce bulk changes).
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final ITrx currentTrx = trxManager.getThreadInheritedTrx(OnTrxMissingPolicy.ReturnTrxNone);
 		if (trxManager.isActive(currentTrx))
 		{
