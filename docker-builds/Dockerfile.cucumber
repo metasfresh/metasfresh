@@ -1,5 +1,5 @@
 ARG REFNAME=local
-ARG REGISTRY=
+ARG REGISTRY=ghcr.io/
 FROM ${REGISTRY}metasfresh/metas-mvn-backend:$REFNAME AS backend
 
 FROM maven:3.8.4-jdk-8
@@ -15,7 +15,7 @@ WORKDIR /cucumber
 COPY backend/de.metas.cucumber/ .
 
 RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode de.qaware.maven:go-offline-maven-plugin:resolve-dependencies -DfailOnErrors=true
-RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode clean test-compile --offline
+RUN --mount=type=secret,id=mvn-settings,dst=/root/.m2/settings.xml mvn --batch-mode -T1C clean test-compile --offline
 
 COPY docker-builds/mvn/settings.xml /root/.m2/
 COPY docker-builds/cucumber/compose.yml /compose.yml

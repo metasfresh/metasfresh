@@ -2,9 +2,13 @@ package de.metas.handlingunits.trace;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.InventoryLineHU;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Assignment;
@@ -16,22 +20,31 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
+import de.metas.inout.InOutId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.ad.dao.IQueryBL;
+import de.metas.material.event.commons.AttributesKey;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.I_M_MovementLine;
 import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -217,6 +230,11 @@ public class HUTraceEventsServiceTests
 		return vhu;
 	}
 
+	private I_M_HU createVHU()
+	{
+		return createVHU(X_M_HU.HUSTATUS_Active);
+	}
+
 	private List<I_M_HU_Trace> retrieveAllHUTraceRecords()
 	{
 		return Services.get(IQueryBL.class)
@@ -321,6 +339,397 @@ public class HUTraceEventsServiceTests
 		product.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(product);
 		return ProductId.ofRepoId(product.getM_Product_ID());
+	}
+
+	// =====================================================================
+	// T1: createAndAddForHuParentChanged — VHU moved from standalone into LU
+	// =====================================================================
+
+	/**
+	 * VHU was standalone (no parent). Now it is moved into an LU.
+	 * parentHUItemOld = null (had no parent before).
+	 * Expected: 2 TRANSFORM_PARENT events:
+	 * 1. topLevelHuId = VHU itself, qty = -qty  (removed from old position)
+	 * 2. topLevelHuId = LU,         qty = +qty  (added to new position)
+	 */
+	@Test
+	public void createAndAddForHuParentChanged_newParentIsTopLevel()
+	{
+		final I_M_HU lu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+
+		final ProductId product = newProduct("vhu_product");
+		final Quantity qty = Quantity.of(5, uom);
+
+		Mockito.doReturn(ImmutableList.of(vhu)).when(huAccessService).retrieveVhus(HuId.ofRepoId(vhu.getM_HU_ID()));
+		// after the move, the VHU's new top-level is the LU
+		Mockito.doReturn(lu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(vhu);
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty))).when(huAccessService).retrieveProductAndQty(vhu);
+
+		// parentHUItemOld = null: VHU had no parent before
+		huTraceEventsService.createAndAddForHuParentChanged(vhu, null);
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).as("2 TRANSFORM_PARENT events expected (remove from old + add to new)").hasSize(2);
+
+		traces.sort(Comparator.comparing(I_M_HU_Trace::getQty));
+
+		// First event: removal from old position (qty negative)
+		assertThat(traces.get(0).getM_HU_ID()).isEqualTo(vhu.getM_HU_ID()); // old top = VHU itself
+		assertThat(traces.get(0).getQty()).isEqualByComparingTo("-5");
+
+		// Second event: addition to new position (qty positive)
+		assertThat(traces.get(1).getM_HU_ID()).isEqualTo(lu.getM_HU_ID()); // new top = LU
+		assertThat(traces.get(1).getQty()).isEqualByComparingTo("5");
+
+		assertThat(traces.get(0).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_TRANSFORM_PARENT);
+		assertThat(traces.get(1).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_TRANSFORM_PARENT);
+	}
+
+	// =====================================================================
+	// T2: createAndAddForHuParentChanged — VHU removed from parent (Bug 2 fix)
+	// =====================================================================
+
+	/**
+	 * Bug 2 scenario: VHU is being removed from its parent LU.
+	 * parentHUItemOld points to an old LU.
+	 * After removal, retrieveTopLevelHuId(vhu) returns 0 (HU is in transient detached state).
+	 * <p>
+	 * BEFORE FIX: builder.topLevelHuId(null) throws NPE.
+	 * AFTER FIX: falls back to hu.getM_HU_ID() — the VHU itself becomes the new top-level.
+	 * <p>
+	 * Expected: 2 TRANSFORM_PARENT events:
+	 * 1. topLevelHuId = old LU,     qty = -qty  (removed from LU)
+	 * 2. topLevelHuId = VHU itself, qty = +qty  (now standalone)
+	 */
+	@Test
+	public void createAndAddForHuParentChanged_removedFromParent()
+	{
+		final I_M_HU oldLu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+
+		final I_M_HU_Item parentHUItemOld = newInstance(I_M_HU_Item.class);
+		parentHUItemOld.setM_HU_ID(oldLu.getM_HU_ID());
+		save(parentHUItemOld);
+
+		final ProductId product = newProduct("vhu_product_removed");
+		final Quantity qty = Quantity.of(7, uom);
+
+		Mockito.doReturn(ImmutableList.of(vhu)).when(huAccessService).retrieveVhus(HuId.ofRepoId(vhu.getM_HU_ID()));
+		// Old LU is its own top-level
+		Mockito.doReturn(oldLu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(oldLu);
+		// VHU is detached — retrieveTopLevelHuId returns 0 (triggers the bug / fix)
+		Mockito.doReturn(0).when(huAccessService).retrieveTopLevelHuId(vhu);
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty))).when(huAccessService).retrieveProductAndQty(vhu);
+
+		huTraceEventsService.createAndAddForHuParentChanged(vhu, parentHUItemOld);
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).as("2 TRANSFORM_PARENT events expected after fix (no NPE)").hasSize(2);
+
+		traces.sort(Comparator.comparing(I_M_HU_Trace::getQty));
+
+		// Removal from old LU
+		assertThat(traces.get(0).getM_HU_ID()).as("old top = LU").isEqualTo(oldLu.getM_HU_ID());
+		assertThat(traces.get(0).getQty()).isEqualByComparingTo("-7");
+
+		// New position: VHU is now its own top-level (fallback to hu.getM_HU_ID())
+		assertThat(traces.get(1).getM_HU_ID()).as("new top = VHU itself (fallback)").isEqualTo(vhu.getM_HU_ID());
+		assertThat(traces.get(1).getQty()).isEqualByComparingTo("7");
+	}
+
+	// =====================================================================
+	// T3: createAndAddEventsForInventoryLines — qty difference (count ≠ book)
+	// =====================================================================
+
+	/**
+	 * Inventory line with QtyCount > QtyBook: a positive stock adjustment.
+	 * isQtyDifference = true → one trace for the HU itself with qty = count - book.
+	 */
+	@Test
+	public void createAndAddEventsForInventoryLines_basic()
+	{
+		final I_M_HU vhu = createVHU();
+		final ProductId product = newProduct("inv_product");
+		final Quantity huQty = Quantity.of(10, uom);
+
+		final InventoryLineHU inventoryLineHU = InventoryLineHU.builder()
+				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
+				.qtyBook(Quantity.of(BigDecimal.ZERO, uom))
+				.qtyCount(Quantity.of(new BigDecimal("3"), uom))
+				.build();
+
+		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
+
+		final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineRecord = newInstance(de.metas.handlingunits.model.I_M_InventoryLine.class);
+		inventoryLineRecord.setQtyBook(BigDecimal.ZERO);
+		inventoryLineRecord.setQtyCount(new BigDecimal("3"));
+		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
+		save(inventoryLineRecord);
+
+		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
+		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
+
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
+
+		// VHU has no parent → retrieveTopLevelHuId returns its own ID
+		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, huQty))).when(huAccessService).retrieveProductAndQty(Mockito.any(I_M_HU.class));
+
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(OrgId.ofRepoId(10))
+				.type(HUTraceType.MATERIAL_INVENTORY);
+
+		svc.createAndAddEventsForInventoryLines(builder, ImmutableList.of(inventoryLineRecord));
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).as("1 trace for qty difference").hasSize(1);
+		assertThat(traces.get(0).getQty()).as("qty = count - book = 3").isEqualByComparingTo("3");
+		assertThat(traces.get(0).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_INVENTORY);
+	}
+
+	// =====================================================================
+	// T4: createAndAddEventsForInventoryLines — internal use (QtyInternalUse > 0)
+	// =====================================================================
+
+	/**
+	 * Internal-use inventory line (disposal). QtyBook = QtyCount, QtyInternalUse > 0.
+	 * isQtyDifference = false → traces created for VHUs under the HU, qty = QtyInternalUse.
+	 */
+	@Test
+	public void createAndAddEventsForInventoryLines_noQtyDifference_internalUse()
+	{
+		final I_M_HU vhu = createVHU();
+		final ProductId product = newProduct("inv_internal_use_product");
+		final Quantity huQty = Quantity.of(5, uom);
+
+		final InventoryLineHU inventoryLineHU = InventoryLineHU.builder()
+				.huId(HuId.ofRepoId(vhu.getM_HU_ID()))
+				.qtyInternalUse(Quantity.of(new BigDecimal("4"), uom))
+				.build();
+
+		final InventoryLine inventoryLine = buildTestInventoryLine(inventoryLineHU, product);
+
+		final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineRecord = newInstance(de.metas.handlingunits.model.I_M_InventoryLine.class);
+		inventoryLineRecord.setQtyBook(new BigDecimal("5"));
+		inventoryLineRecord.setQtyCount(new BigDecimal("5")); // no qty difference
+		inventoryLineRecord.setQtyInternalUse(new BigDecimal("4")); // internal use qty
+		inventoryLineRecord.setC_UOM_ID(uom.getC_UOM_ID());
+		save(inventoryLineRecord);
+
+		final InventoryRepository inventoryRepoMock = Mockito.mock(InventoryRepository.class);
+		Mockito.doReturn(inventoryLine).when(inventoryRepoMock).toInventoryLine(inventoryLineRecord);
+
+		final HUTraceEventsService svc = new HUTraceEventsService(new HUTraceRepository(), huAccessService, inventoryRepoMock);
+
+		// VHU has no parent → retrieveTopLevelHuId returns its own ID
+		Mockito.doReturn(vhu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(Mockito.any(I_M_HU.class));
+		// VHU retrieves itself
+		Mockito.doReturn(ImmutableList.of(vhu)).when(huAccessService).retrieveVhus(HuId.ofRepoId(vhu.getM_HU_ID()));
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, huQty))).when(huAccessService).retrieveProductAndQty(Mockito.any(I_M_HU.class));
+
+		final HUTraceEventBuilder builder = HUTraceEvent.builder()
+				.orgId(OrgId.ofRepoId(10))
+				.type(HUTraceType.MATERIAL_INVENTORY);
+
+		svc.createAndAddEventsForInventoryLines(builder, ImmutableList.of(inventoryLineRecord));
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).as("1 trace for internal use VHU").hasSize(1);
+		assertThat(traces.get(0).getQty()).as("qty = QtyInternalUse = 4").isEqualByComparingTo("4");
+	}
+
+	// =====================================================================
+	// T8: createAndAddFor(M_Movement) — basic movement trace
+	// =====================================================================
+
+	/**
+	 * M_Movement with one movement line, one HU assignment → one MATERIAL_MOVEMENT trace.
+	 */
+	@Test
+	public void createAndAddFor_movement_basic()
+	{
+		final I_M_HU lu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+		final ProductId product = newProduct("movement_product");
+		final Quantity qty = Quantity.of(3, uom);
+
+		final I_M_Movement movement = newInstance(I_M_Movement.class);
+		movement.setMovementDate(new Timestamp(System.currentTimeMillis()));
+		movement.setDocStatus("CO");
+		save(movement);
+
+		final I_M_MovementLine movementLine = newInstance(I_M_MovementLine.class);
+		save(movementLine);
+
+		final I_M_HU_Assignment assignment = newInstance(I_M_HU_Assignment.class);
+		assignment.setM_HU_ID(lu.getM_HU_ID());
+		assignment.setVHU_ID(vhu.getM_HU_ID());
+		save(assignment);
+
+		Mockito.doReturn(ImmutableList.of(assignment)).when(huAccessService).retrieveHuAssignments(movementLine);
+		Mockito.doReturn(lu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(lu);
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty))).when(huAccessService).retrieveProductAndQty(vhu);
+
+		huTraceEventsService.createAndAddFor(movement, ImmutableList.of(movementLine));
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).hasSize(1);
+		assertThat(traces.get(0).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_MOVEMENT);
+		assertThat(traces.get(0).getM_HU_ID()).isEqualTo(lu.getM_HU_ID());
+	}
+
+	// =====================================================================
+	// T9: createAndAddFor(HUTraceForReturnedQtyRequest) — single source VHU
+	// =====================================================================
+
+	/**
+	 * Customer return: one returned VHU linked to one original shipped VHU.
+	 * Expected: 1 MATERIAL_RECEIPT trace with vhuSourceId set to the shipped VHU.
+	 */
+	@Test
+	public void createAndAddForReturnedQty_basic()
+	{
+		final I_M_HU topReturnedHU = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU returnedVhu = createVHU();
+		final I_M_HU sourceShippedVhu = createVHU();
+
+		final ProductId product = newProduct("returned_product");
+		final Quantity qty = Quantity.of(2, uom);
+
+		final HUTraceForReturnedQtyRequest request = HUTraceForReturnedQtyRequest.builder()
+				.returnedVirtualHU(returnedVhu)
+				.topLevelReturnedHUId(HuId.ofRepoId(topReturnedHU.getM_HU_ID()))
+				.sourceShippedVHUIds(ImmutableSet.of(HuId.ofRepoId(sourceShippedVhu.getM_HU_ID())))
+				.docStatus("CO")
+				.eventTime(Instant.now())
+				.orgId(OrgId.ofRepoId(10))
+				.customerReturnId(InOutId.ofRepoId(500))
+				.productId(product)
+				.qty(qty)
+				.build();
+
+		huTraceEventsService.createAndAddFor(request);
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).hasSize(1);
+		assertThat(traces.get(0).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_RECEIPT);
+		assertThat(traces.get(0).getVHU_ID()).isEqualTo(returnedVhu.getM_HU_ID());
+		assertThat(traces.get(0).getVHU_Source_ID()).isEqualTo(sourceShippedVhu.getM_HU_ID());
+	}
+
+	// =====================================================================
+	// T10: createAndAddFor(HUTraceForReturnedQtyRequest) — multiple source VHUs
+	// =====================================================================
+
+	/**
+	 * Customer return with multiple source shipped VHUs (e.g., goods were split before shipping).
+	 * Expected: one trace per source VHU, all pointing to the same returned VHU.
+	 */
+	@Test
+	public void createAndAddForReturnedQty_multipleSourceVhus()
+	{
+		final I_M_HU topReturnedHU = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU returnedVhu = createVHU();
+		final I_M_HU sourceVhu1 = createVHU();
+		final I_M_HU sourceVhu2 = createVHU();
+
+		final ProductId product = newProduct("returned_product_multi");
+		final Quantity qty = Quantity.of(4, uom);
+
+		final HUTraceForReturnedQtyRequest request = HUTraceForReturnedQtyRequest.builder()
+				.returnedVirtualHU(returnedVhu)
+				.topLevelReturnedHUId(HuId.ofRepoId(topReturnedHU.getM_HU_ID()))
+				.sourceShippedVHUIds(ImmutableSet.of(
+						HuId.ofRepoId(sourceVhu1.getM_HU_ID()),
+						HuId.ofRepoId(sourceVhu2.getM_HU_ID())))
+				.docStatus("CO")
+				.eventTime(Instant.now())
+				.orgId(OrgId.ofRepoId(10))
+				.customerReturnId(InOutId.ofRepoId(501))
+				.productId(product)
+				.qty(qty)
+				.build();
+
+		huTraceEventsService.createAndAddFor(request);
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).as("one trace per source VHU").hasSize(2);
+		assertThat(traces).allMatch(t -> t.getVHU_ID() == returnedVhu.getM_HU_ID());
+		assertThat(traces).allMatch(t -> t.getHUTraceType().equals(X_M_HU_Trace.HUTRACETYPE_MATERIAL_RECEIPT));
+	}
+
+	// =====================================================================
+	// T11: createAndAddFor(M_ShipmentSchedule_QtyPicked) — only LU set
+	// =====================================================================
+
+	/**
+	 * M_ShipmentSchedule_QtyPicked with only M_LU_HU_ID set (no TU, no VHU).
+	 * The service must retrieve VHUs from the LU and create one MATERIAL_PICKING trace per VHU.
+	 */
+	@Test
+	public void createAndAddForShipmentScheduleQtyPicked_luOnly()
+	{
+		final I_M_HU lu = saveFluent(newInstance(I_M_HU.class));
+		final I_M_HU vhu = createVHU();
+		final ProductId product = newProduct("lu_only_product");
+		final Quantity qty = Quantity.of(6, uom);
+
+		final I_M_ShipmentSchedule_QtyPicked qtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		qtyPicked.setM_LU_HU(lu);
+		save(qtyPicked);
+
+		Mockito.doReturn(lu.getM_HU_ID()).when(huAccessService).retrieveTopLevelHuId(lu);
+		Mockito.doReturn(ImmutableList.of(vhu)).when(huAccessService).retrieveVhus(HuId.ofRepoId(lu.getM_HU_ID()));
+		Mockito.doReturn(Optional.of(ImmutablePair.of(product, qty))).when(huAccessService).retrieveProductAndQty(vhu);
+
+		huTraceEventsService.createAndAddFor(qtyPicked);
+
+		final List<I_M_HU_Trace> traces = retrieveAllHUTraceRecords();
+		assertThat(traces).hasSize(1);
+		assertThat(traces.get(0).getHUTraceType()).isEqualTo(X_M_HU_Trace.HUTRACETYPE_MATERIAL_PICKING);
+		assertThat(traces.get(0).getM_HU_ID()).isEqualTo(lu.getM_HU_ID());
+		assertThat(traces.get(0).getVHU_ID()).isEqualTo(vhu.getM_HU_ID());
+	}
+
+	// =====================================================================
+	// T12: createAndAddFor(M_ShipmentSchedule_QtyPicked) — no HU set → no trace
+	// =====================================================================
+
+	/**
+	 * M_ShipmentSchedule_QtyPicked with none of its three HU fields set.
+	 * The service must return early without creating any trace.
+	 */
+	@Test
+	public void createAndAddForShipmentScheduleQtyPicked_noHuSet()
+	{
+		final I_M_ShipmentSchedule_QtyPicked qtyPicked = newInstance(I_M_ShipmentSchedule_QtyPicked.class);
+		save(qtyPicked); // LU, TU, VHU all 0
+
+		huTraceEventsService.createAndAddFor(qtyPicked);
+
+		assertThat(retrieveAllHUTraceRecords()).as("no HU set → no trace created").isEmpty();
+	}
+
+	// =====================================================================
+	// Helpers
+	// =====================================================================
+
+	/**
+	 * Builds a minimal {@link InventoryLine} for unit testing, containing a single {@link InventoryLineHU}.
+	 */
+	private InventoryLine buildTestInventoryLine(
+			final InventoryLineHU inventoryLineHU,
+			final ProductId productId)
+	{
+		return InventoryLine.builder()
+				.orgId(OrgId.ofRepoId(10))
+				.productId(productId)
+				.storageAttributesKey(AttributesKey.NONE)
+				.locatorId(LocatorId.ofRepoId(1, 100))
+				.asiId(AttributeSetInstanceId.NONE)
+				.inventoryLineHU(inventoryLineHU)
+				.build();
 	}
 
 	private static <T> T saveFluent(final T model)
