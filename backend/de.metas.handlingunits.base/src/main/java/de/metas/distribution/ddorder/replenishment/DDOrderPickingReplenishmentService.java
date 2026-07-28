@@ -24,6 +24,7 @@ import de.metas.distribution.ddorder.replenishment.event.DDOrderReplenishmentReq
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
@@ -646,10 +647,8 @@ public class DDOrderPickingReplenishmentService
 	 */
 	private static boolean isDeadDDOrder(@NonNull final I_DD_Order ddOrder)
 	{
-		final String docStatus = ddOrder.getDocStatus();
 		return !ddOrder.isActive()
-				|| X_DD_Order.DOCSTATUS_Voided.equals(docStatus)
-				|| X_DD_Order.DOCSTATUS_Reversed.equals(docStatus);
+				|| DocStatus.ofNullableCodeOrUnknown(ddOrder.getDocStatus()).isReversedOrVoided();
 	}
 
 	private static ImmutableSet<DDOrderId> ddOrderIdsOfLines(@NonNull final Collection<I_DD_OrderLine> lines)
