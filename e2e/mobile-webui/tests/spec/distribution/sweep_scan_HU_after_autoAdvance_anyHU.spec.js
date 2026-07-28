@@ -70,8 +70,11 @@ test('Sweep: after auto-advance, the operator scans the staging LU again (it doe
     });
 
     // The screen alone cannot show WHY it asks: an app that had simply failed to recognise the LU just
-    // picked from would land the operator on exactly the same prompt. The two checks below rule that
-    // look-alike out — one on the app's own diagnostics, one on the job the backend actually built.
+    // picked from would land the operator on exactly the same prompt. Only the FIRST of the two checks
+    // below rules that look-alike out — the app's own diagnostics, the one observable that actually
+    // differs between the two paths. The second is a PRECONDITION check: DD2's configuration is fixed at
+    // job-creation time and identical either way, so it cannot say which path ran; what it does buy is
+    // that the scenario cannot silently degrade into covering a differently-configured job.
     await test.step('Diagnostic: the HU scan is not the fallback of a failed HU lookup', async () => {
         await DistributionLinePickFromScreen.expectHUScanNotCausedByFailedHULookup();
     });
