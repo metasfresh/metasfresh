@@ -3,8 +3,10 @@ package de.metas.distribution.ddorder.replenishment;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.time.SystemTime;
@@ -448,11 +450,31 @@ public class DDOrderPickingReplenishmentService
 
 		// Left live, an unkeyable order would lose its alloc rows to the cleanup below and become unreachable, while
 		// still sitting in the mover's list.
+		// ONE query for every unkeyable order's lines instead of one per order; the same fetch feeds the moved-qty test.
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> unkeyableLinesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingLines.getUnkeyable())),
+				I_DD_OrderLine::getDD_Order_ID);
+
 		for (final I_DD_Order unkeyableDDOrder : existingLines.getUnkeyable())
 		{
-			voidDDOrderFor(DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID()));
-			ddOrderLowLevelDAO.retrieveLines(unkeyableDDOrder)
-					.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
+			final DDOrderId unkeyableDDOrderId = DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID());
+			final ImmutableList<I_DD_OrderLine> unkeyableDDOrderLines = unkeyableLinesByOrderId.get(unkeyableDDOrder.getDD_Order_ID());
+
+			// A duplicate already holding goods in transit or delivered is a move a worker has begun; voiding it would
+			// strand that in-hand stock. Disconnect it instead — he finishes the move as a standalone replenishment while
+			// the group re-plans around it — and keep its alloc rows so that in-hand move stays associated.
+			final BigDecimal movedQty = unkeyableDDOrderLines.stream()
+					.map(line -> line.getQtyInTransit().add(line.getQtyDelivered()))
+					.reduce(BigDecimal.ZERO, BigDecimal::add);
+			if (movedQty.signum() > 0)
+			{
+				disconnectDDOrderFor(unkeyableDDOrderId);
+			}
+			else
+			{
+				voidDDOrderFor(unkeyableDDOrderId);
+				unkeyableDDOrderLines.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
+			}
 		}
 
 		final FrozenSplit split = computeFrozenSplit(contributorsInOrder, requiredByLocator, existingLineByLocator);
@@ -898,9 +920,15 @@ public class DDOrderPickingReplenishmentService
 		final LinkedHashMap<LocatorId, I_DD_OrderLine> byLocator = new LinkedHashMap<>();
 		final ImmutableList.Builder<I_DD_Order> unkeyable = ImmutableList.builder();
 
+		// ONE query for all orders' lines instead of one per order; grouped by DD_Order_ID, each group keeps the
+		// single-order flavour's Line/DD_OrderLine_ID ordering, so line.get(0) is the same line as before.
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingDDOrders)),
+				I_DD_OrderLine::getDD_Order_ID);
+
 		for (final I_DD_Order ddOrder : existingDDOrders)
 		{
-			final List<I_DD_OrderLine> lines = ddOrderLowLevelDAO.retrieveLines(ddOrder);
+			final ImmutableList<I_DD_OrderLine> lines = linesByOrderId.get(ddOrder.getDD_Order_ID());
 			if (lines.isEmpty())
 			{
 				unkeyable.add(ddOrder);

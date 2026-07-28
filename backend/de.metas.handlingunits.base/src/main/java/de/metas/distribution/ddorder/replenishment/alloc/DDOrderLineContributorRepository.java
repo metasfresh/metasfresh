@@ -106,7 +106,10 @@ public class DDOrderLineContributorRepository
 
 	public ImmutableList<DDOrderLineContributor> getByLineIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
-		if (lineIds.isEmpty()) {return ImmutableList.of();}
+		if (lineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
 
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -120,7 +123,10 @@ public class DDOrderLineContributorRepository
 
 	public ImmutableSet<PickingJobScheduleId> getPickingJobScheduleIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
-		if (lineIds.isEmpty()) {return ImmutableSet.of();}
+		if (lineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
 
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -141,7 +147,10 @@ public class DDOrderLineContributorRepository
 	public ImmutableSet<DDOrderLineId> getLineIdsByPickingJobScheduleIds(@NonNull final Collection<PickingJobScheduleId> pickingJobScheduleIds)
 	{
 		// Optimization only: addInArrayFilter already renders an empty IN-list as "1=0" (addInArrayOrAllFilter would render "1=1").
-		if (pickingJobScheduleIds.isEmpty()) {return ImmutableSet.of();}
+		if (pickingJobScheduleIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
 
 		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addOnlyActiveRecordsFilter()
@@ -170,7 +179,10 @@ public class DDOrderLineContributorRepository
 
 	public void deleteByLineIds(@NonNull final Collection<DDOrderLineId> lineIds)
 	{
-		if (lineIds.isEmpty()) {return;}
+		if (lineIds.isEmpty())
+		{
+			return;
+		}
 
 		queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addInArrayFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineIds)
@@ -183,7 +195,10 @@ public class DDOrderLineContributorRepository
 	 */
 	public void deleteByPickingJobScheduleIds(@NonNull final Collection<PickingJobScheduleId> pickingJobScheduleIds)
 	{
-		if (pickingJobScheduleIds.isEmpty()) {return;}
+		if (pickingJobScheduleIds.isEmpty())
+		{
+			return;
+		}
 
 		queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
 				.addInArrayFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID, pickingJobScheduleIds)
