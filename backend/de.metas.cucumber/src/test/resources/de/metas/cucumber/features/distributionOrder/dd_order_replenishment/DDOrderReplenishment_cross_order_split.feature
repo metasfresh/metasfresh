@@ -8,10 +8,7 @@ Feature: DD_Order replenishment — a contributor straddling two source locators
   I want a delivery leaving the product group to shrink EVERY distribution order it contributed to,
   so that no order keeps sending me for a quantity nobody demands any more.
 
-  Three customer deliveries share one product group (10 + 10 + 10 = 30) and no single source locator
-  holds that much: locatorA covers 15 and locatorB the other 15. The middle delivery's demand therefore
-  STRADDLES the locator boundary — it contributes 5 to locatorA's order and 5 to locatorB's — so when it
-  leaves, it is the last contributor of neither.
+  Three customer deliveries share one product group (10 + 10 + 10 = 30) sourced from locatorA (15) and locatorB (15), so the middle delivery straddles the locator boundary with 5 on each.
 
   Background:
     Given infrastructure and metasfresh are running

@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
@@ -23,6 +25,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
 import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job_schedule.service.PickingJobScheduleService;
 import de.metas.handlingunits.storage.LocatorIdAndQty;
@@ -66,6 +69,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.Warehouse;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.WarehouseRepository;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
@@ -76,6 +80,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -138,16 +143,27 @@ public class DDOrderPickingReplenishmentService
 				PickingJobScheduleId.ofRepoId(jobSchedule.getM_Picking_Job_Schedule_ID()),
 				ShipmentScheduleId.ofRepoId(jobSchedule.getM_ShipmentSchedule_ID()));
 
-		for (final I_DD_Order ddOrder : findLiveDDOrdersOfAffectedGroups(jobSchedule))
+		final ImmutableList<I_DD_Order> ddOrders = findLiveDDOrdersOfAffectedGroups(jobSchedule);
+		if (ddOrders.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableMap<DDOrderId, BlockingWork> blockingByDDOrderId = findBlockingPickingWork(ddOrders);
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(ddOrders)),
+				I_DD_OrderLine::getDD_Order_ID);
+
+		for (final I_DD_Order ddOrder : ddOrders)
 		{
 			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
 
-			final BlockingWork busyPicker = findBlockingPickingWork(ddOrder);
+			final BlockingWork busyPicker = blockingByDDOrderId.get(ddOrderId);
 			if (busyPicker != null)
 			{
 				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
-			for (final I_DD_OrderLine line : ddOrderLowLevelDAO.retrieveLines(ddOrder))
+			for (final I_DD_OrderLine line : linesByOrderId.get(ddOrder.getDD_Order_ID()))
 			{
 				final BigDecimal qtyMoved = line.getQtyInTransit().add(line.getQtyDelivered());
 				if (qtyMoved.signum() > 0)
@@ -431,16 +447,15 @@ public class DDOrderPickingReplenishmentService
 
 		// Running the greedy once over the SUM is what makes over-allocation impossible: two deliveries can no longer
 		// each claim the same on-hand units.
-		final Map<LocatorId, Quantity> requiredByLocator = computeRequiredAllocation(groupKey, sourceWarehouseId, productId, groupDemand);
+		final AllocationResult allocation = computeRequiredAllocation(sourceWarehouseId, productId, groupDemand);
+		final Map<LocatorId, Quantity> requiredByLocator = allocation.getAllocation();
 
-		// Refuse the whole reconcile before mutating anything.
-		for (final I_DD_Order existingDDOrder : existingDDOrders)
+		// Refuse the whole reconcile before mutating anything; every void below relies on this verdict.
+		final ImmutableMap<DDOrderId, BlockingWork> blockingByDDOrderId = findBlockingPickingWork(existingDDOrders);
+		if (!blockingByDDOrderId.isEmpty())
 		{
-			final BlockingWork busyPicker = findBlockingPickingWork(existingDDOrder);
-			if (busyPicker != null)
-			{
-				throw newPickerBusyException(DDOrderId.ofRepoId(existingDDOrder.getDD_Order_ID()), busyPicker);
-			}
+			final Map.Entry<DDOrderId, BlockingWork> blocked = blockingByDDOrderId.entrySet().iterator().next();
+			throw newPickerBusyException(blocked.getKey(), blocked.getValue());
 		}
 
 		final ExistingLineIndex existingLines = indexExistingBySourceLocator(existingDDOrders);
@@ -448,9 +463,12 @@ public class DDOrderPickingReplenishmentService
 
 		final HashSet<DDOrderLineId> obsoleteLineIds = new HashSet<>();
 
-		// Left live, an unkeyable order would lose its alloc rows to the cleanup below and become unreachable, while
-		// still sitting in the mover's list.
-		// ONE query for every unkeyable order's lines instead of one per order; the same fetch feeds the moved-qty test.
+		// A disconnected duplicate is a move the worker still finishes: its share is netted off the re-plan, its alloc row survives the cleanup.
+		final HashSet<DDOrderLineId> disconnectedLineIds = new HashSet<>(
+				ddOrderLowLevelDAO.findDisconnectedLineIdsForReplenishmentGroup(
+						productId, locatorToId, groupKey.getUomId(), contributorRepository.queryAll()));
+
+		// Left live, an unkeyable order would lose its alloc rows to the cleanup below and become unreachable.
 		final ImmutableListMultimap<Integer, I_DD_OrderLine> unkeyableLinesByOrderId = Multimaps.index(
 				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(existingLines.getUnkeyable())),
 				I_DD_OrderLine::getDD_Order_ID);
@@ -460,24 +478,25 @@ public class DDOrderPickingReplenishmentService
 			final DDOrderId unkeyableDDOrderId = DDOrderId.ofRepoId(unkeyableDDOrder.getDD_Order_ID());
 			final ImmutableList<I_DD_OrderLine> unkeyableDDOrderLines = unkeyableLinesByOrderId.get(unkeyableDDOrder.getDD_Order_ID());
 
-			// A duplicate already holding goods in transit or delivered is a move a worker has begun; voiding it would
-			// strand that in-hand stock. Disconnect it instead — he finishes the move as a standalone replenishment while
-			// the group re-plans around it — and keep its alloc rows so that in-hand move stays associated.
+			// Voiding a duplicate that already holds goods in transit or delivered would strand that in-hand stock — disconnect it instead.
 			final BigDecimal movedQty = unkeyableDDOrderLines.stream()
 					.map(line -> line.getQtyInTransit().add(line.getQtyDelivered()))
 					.reduce(BigDecimal.ZERO, BigDecimal::add);
 			if (movedQty.signum() > 0)
 			{
 				disconnectDDOrderFor(unkeyableDDOrderId);
+				unkeyableDDOrderLines.forEach(line -> disconnectedLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
 			}
 			else
 			{
-				voidDDOrderFor(unkeyableDDOrderId);
+				voidDDOrder(unkeyableDDOrderId);
 				unkeyableDDOrderLines.forEach(line -> obsoleteLineIds.add(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())));
 			}
 		}
 
-		final FrozenSplit split = computeFrozenSplit(contributorsInOrder, requiredByLocator, existingLineByLocator);
+		final Map<PickingJobScheduleId, Quantity> disconnectedServedByContributor = sumSharesByContributor(disconnectedLineIds);
+		logUncoveredRemainder(groupKey, sourceWarehouseId, allocation.getUncovered(), disconnectedServedByContributor);
+		final FrozenSplit split = computeFrozenSplit(contributorsInOrder, requiredByLocator, existingLineByLocator, disconnectedServedByContributor);
 		final Map<LocatorId, Quantity> refusedQtyByLocator = split.getRefusedQtyByLocator();
 		final ImmutableMap<LocatorId, ImmutableList<DDOrderLineContributor>> attribution = split.getAttribution();
 
@@ -493,7 +512,7 @@ public class DDOrderPickingReplenishmentService
 		{
 			if (!requiredByLocator.containsKey(entry.getKey()))
 			{
-				voidDDOrderFor(DDOrderId.ofRepoId(entry.getValue().getDD_Order_ID()));
+				voidDDOrder(DDOrderId.ofRepoId(entry.getValue().getDD_Order_ID()));
 				obsoleteLineIds.add(DDOrderLineId.ofRepoId(entry.getValue().getDD_OrderLine_ID()));
 			}
 		}
@@ -523,7 +542,7 @@ public class DDOrderPickingReplenishmentService
 				// A frozen line already covers everything this chunk was computed for: nothing left to plan here.
 				if (existingLine != null)
 				{
-					voidDDOrderFor(DDOrderId.ofRepoId(existingLine.getDD_Order_ID()));
+					voidDDOrder(DDOrderId.ofRepoId(existingLine.getDD_Order_ID()));
 					obsoleteLineIds.add(DDOrderLineId.ofRepoId(existingLine.getDD_OrderLine_ID()));
 				}
 				continue;
@@ -573,28 +592,78 @@ public class DDOrderPickingReplenishmentService
 
 		// A DD_Order voided OUTSIDE the reconcile leaves its alloc rows behind; without this drop, the contributor
 		// would keep resolving to that dead order alongside the fresh one.
-		contributorRepository.getLineIdsByPickingJobScheduleIds(
+		obsoleteLineIds.addAll(findLineIdsOfDeadDDOrders(
+				contributorRepository.getLineIdsByPickingJobScheduleIds(
 						contributorsInOrder.stream()
 								.map(PickingJobSchedule::getId)
-								.collect(ImmutableSet.toImmutableSet()))
-				.stream()
-				// A contributor that arrived from ANOTHER group still has a row there, and that group's line is still
-				// serving its own remaining contributors; dropping it by line id would wipe them too.
-				.filter(lineId -> isLineOfGroup(lineId, groupKey))
-				.forEach(obsoleteLineIds::add);
+								.collect(ImmutableSet.toImmutableSet())),
+				groupKey));
 		obsoleteLineIds.removeAll(survivingLineIds);
+		// The disconnect deliberately KEEPS its association, else the delivery loses its navigation to the in-progress move.
+		obsoleteLineIds.removeAll(disconnectedLineIds);
 		contributorRepository.deleteByLineIds(obsoleteLineIds);
 	}
 
-	private boolean isLineOfGroup(@NonNull final DDOrderLineId lineId, @NonNull final DDOrderReplenishmentGroupKey groupKey)
+	/**
+	 * The group's lines whose DD_Order is gone. A CLOSED or still-live order is NOT gone: dropping its alloc rows would
+	 * cost the delivery its navigation to that movement.
+	 */
+	@VisibleForTesting
+	ImmutableSet<DDOrderLineId> findLineIdsOfDeadDDOrders(
+			@NonNull final Set<DDOrderLineId> lineIds,
+			@NonNull final DDOrderReplenishmentGroupKey groupKey)
 	{
-		final I_DD_OrderLine line = ddOrderLowLevelDAO.getLineById(lineId);
+		if (lineIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		// A contributor that arrived from ANOTHER group still has a row there, and that group's line is still
+		// serving its own remaining contributors; dropping it by line id would wipe them too.
+		final ImmutableList<I_DD_OrderLine> linesOfGroup = ddOrderLowLevelDAO.getLinesByIds(ImmutableSet.copyOf(lineIds))
+				.stream()
+				.filter(line -> isLineOfGroup(line, groupKey))
+				.collect(ImmutableList.toImmutableList());
+		if (linesOfGroup.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<DDOrderId> deadDDOrderIds = ddOrderLowLevelDAO.getByIds(ddOrderIdsOfLines(linesOfGroup))
+				.stream()
+				.filter(DDOrderPickingReplenishmentService::isDeadDDOrder)
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		return linesOfGroup.stream()
+				.filter(line -> deadDDOrderIds.contains(DDOrderId.ofRepoId(line.getDD_Order_ID())))
+				.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	/**
+	 * Voided or deactivated: either way it can no longer answer "which DD_Order serves this delivery?".
+	 */
+	private static boolean isDeadDDOrder(@NonNull final I_DD_Order ddOrder)
+	{
+		return !ddOrder.isActive() || X_DD_Order.DOCSTATUS_Voided.equals(ddOrder.getDocStatus());
+	}
+
+	private static ImmutableSet<DDOrderId> ddOrderIdsOfLines(@NonNull final Collection<I_DD_OrderLine> lines)
+	{
+		return lines.stream()
+				.map(line -> DDOrderId.ofRepoId(line.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private static boolean isLineOfGroup(@NonNull final I_DD_OrderLine line, @NonNull final DDOrderReplenishmentGroupKey groupKey)
+	{
 		return line.getM_Product_ID() == groupKey.getProductId().getRepoId()
 				&& line.getM_LocatorTo_ID() == groupKey.getLocatorToId().getRepoId()
 				&& line.getC_UOM_ID() == groupKey.getUomId().getRepoId();
 	}
 
-	@lombok.Value
+	@Value
 	@VisibleForTesting
 	static class FrozenSplit
 	{
@@ -613,14 +682,16 @@ public class DDOrderPickingReplenishmentService
 	FrozenSplit computeFrozenSplit(
 			@NonNull final List<PickingJobSchedule> contributorsInOrder,
 			@NonNull final Map<LocatorId, Quantity> requiredByLocator,
-			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator)
+			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator,
+			@NonNull final Map<PickingJobScheduleId, Quantity> disconnectedServedByContributor)
 	{
 		final LinkedHashMap<LocatorId, Quantity> refusedQtyByLocator = new LinkedHashMap<>();
 
 		while (true)
 		{
-			final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor =
-					sharesOfFrozenLines(refusedQtyByLocator.keySet(), existingLineByLocator);
+			final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor = mergeServed(
+					disconnectedServedByContributor,
+					sharesOfFrozenLines(refusedQtyByLocator.keySet(), existingLineByLocator));
 			final ImmutableMap<LocatorId, Quantity> attributableByLocator = requiredByLocator.entrySet().stream()
 					.filter(entry -> !refusedQtyByLocator.containsKey(entry.getKey()))
 					.collect(ImmutableMap.toImmutableMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -652,9 +723,6 @@ public class DDOrderPickingReplenishmentService
 		}
 	}
 
-	/**
-	 * Summed, because one contributor can hold a share on more than one frozen line.
-	 */
 	private Map<PickingJobScheduleId, Quantity> sharesOfFrozenLines(
 			@NonNull final Set<LocatorId> frozenLocatorIds,
 			@NonNull final Map<LocatorId, I_DD_OrderLine> existingLineByLocator)
@@ -668,11 +736,45 @@ public class DDOrderPickingReplenishmentService
 				.map(locatorId -> DDOrderLineId.ofRepoId(existingLineByLocator.get(locatorId).getDD_OrderLine_ID()))
 				.collect(ImmutableSet.toImmutableSet());
 
+		return sumSharesByContributor(frozenLineIds);
+	}
+
+	/**
+	 * Summed, because one contributor can hold a share on more than one line.
+	 */
+	private Map<PickingJobScheduleId, Quantity> sumSharesByContributor(@NonNull final Set<DDOrderLineId> lineIds)
+	{
+		if (lineIds.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
 		final LinkedHashMap<PickingJobScheduleId, Quantity> result = new LinkedHashMap<>();
-		for (final DDOrderLineContributor share : contributorRepository.getByLineIds(frozenLineIds))
+		for (final DDOrderLineContributor share : contributorRepository.getByLineIds(lineIds))
 		{
 			result.merge(share.getPickingJobScheduleId(), share.getQty(), Quantity::add);
 		}
+		return result;
+	}
+
+	/**
+	 * A contributor can be served by both a disconnected order and a frozen line, so the two maps add rather than one winning.
+	 */
+	private static Map<PickingJobScheduleId, Quantity> mergeServed(
+			@NonNull final Map<PickingJobScheduleId, Quantity> a,
+			@NonNull final Map<PickingJobScheduleId, Quantity> b)
+	{
+		if (a.isEmpty())
+		{
+			return b;
+		}
+		if (b.isEmpty())
+		{
+			return a;
+		}
+
+		final LinkedHashMap<PickingJobScheduleId, Quantity> result = new LinkedHashMap<>(a);
+		b.forEach((contributorId, qty) -> result.merge(contributorId, qty, Quantity::add));
 		return result;
 	}
 
@@ -688,10 +790,9 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Partial coverage is allowed: an uncovered remainder is logged and left unfulfilled rather than routed to a fallback locator.
+	 * Partial coverage is allowed: an uncovered remainder is left unfulfilled rather than routed to a fallback locator; the caller logs it.
 	 */
-	private Map<LocatorId, Quantity> computeRequiredAllocation(
-			@NonNull final DDOrderReplenishmentGroupKey groupKey,
+	private AllocationResult computeRequiredAllocation(
 			@NonNull final WarehouseId sourceWarehouseId,
 			@NonNull final ProductId productId,
 			@NonNull final Quantity demandQty)
@@ -701,7 +802,7 @@ public class DDOrderPickingReplenishmentService
 		if (sourceLocatorIds.isEmpty())
 		{
 			Loggables.addLog("No ground floor locators found for {}", sourceWarehouse.getName());
-			return ImmutableMap.of();
+			return new AllocationResult(ImmutableMap.of(), demandQty);
 		}
 
 		// Sorted BEFORE the on-hand stream is opened, so the greedy loop can stop pulling chunks once the demand is covered.
@@ -714,7 +815,7 @@ public class DDOrderPickingReplenishmentService
 		final Stream<LocatorIdAndQty> orderedNonEmpty = ProductAvailableStockPerLocator.newInstance(handlingUnitsBL)
 				.streamLocatorQtyOnHandOrdered(productId, 50, sourceLocatorIdsInPickOrder);
 
-		final AllocationResult result = greedyAllocateOrdered(
+		return greedyAllocateOrdered(
 				demandQty,
 				orderedNonEmpty,
 				availableStockingUom -> uomConversionBL.convertQuantityTo(availableStockingUom, conversionCtx, demandQty.getUomId()),
@@ -725,20 +826,33 @@ public class DDOrderPickingReplenishmentService
 						productId.getRepoId(),
 						availableStockingUom,
 						demandQty.getUomId().getRepoId()));
+	}
 
-		if (result.getUncovered().signum() > 0)
+	/**
+	 * Reported net of what the disconnected duplicates already serve, else it overstates a shortfall the final line quantities do not have.
+	 */
+	private static void logUncoveredRemainder(
+			@NonNull final DDOrderReplenishmentGroupKey groupKey,
+			@NonNull final WarehouseId sourceWarehouseId,
+			@NonNull final Quantity uncoveredQty,
+			@NonNull final Map<PickingJobScheduleId, Quantity> alreadyServedByContributor)
+	{
+		final Quantity uncoveredNetQty = alreadyServedByContributor.values().stream()
+				.reduce(uncoveredQty, Quantity::subtract)
+				.toZeroIfNegative();
+		if (uncoveredNetQty.signum() <= 0)
 		{
-			Loggables.addLog(
-					"DD_Order picking replenishment: on-hand stock for M_Product_ID={0} in source M_Warehouse_ID={1}"
-							+ " covers only part of the summed demand of the product group targeting M_Locator_ID={2};"
-							+ " uncovered remainder={3} left unfulfilled (watchdog will retry)",
-					productId.getRepoId(),
-					sourceWarehouseId.getRepoId(),
-					groupKey.getLocatorToId().getRepoId(),
-					result.getUncovered().toBigDecimal());
+			return;
 		}
 
-		return result.getAllocation();
+		Loggables.addLog(
+				"DD_Order picking replenishment: on-hand stock for M_Product_ID={0} in source M_Warehouse_ID={1}"
+						+ " covers only part of the summed demand of the product group targeting M_Locator_ID={2};"
+						+ " uncovered remainder={3} left unfulfilled (watchdog will retry)",
+				groupKey.getProductId().getRepoId(),
+				sourceWarehouseId.getRepoId(),
+				groupKey.getLocatorToId().getRepoId(),
+				uncoveredNetQty.toBigDecimal());
 	}
 
 	/**
@@ -809,7 +923,7 @@ public class DDOrderPickingReplenishmentService
 	/**
 	 * The per-locator allocation (insertion-ordered) and the uncovered demand remainder.
 	 */
-	@lombok.Value
+	@Value
 	@VisibleForTesting
 	static class AllocationResult
 	{
@@ -901,7 +1015,7 @@ public class DDOrderPickingReplenishmentService
 		return Strings.padStart(Integer.toString(priorityNo), 10, '0') + "|" + value;
 	}
 
-	@lombok.Value
+	@Value
 	private static class ExistingLineIndex
 	{
 		@NonNull Map<LocatorId, I_DD_OrderLine> byLocator;
@@ -1069,15 +1183,10 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Refuses while ANY contributor of the order is being picked. The verdict is read as it stands NOW, so the delete→void callers must take their own beforehand.
+	 * Unguarded: every caller takes the picker-busy verdict for its whole batch of orders beforehand, since a delete→void caller has to take it before the delete.
 	 */
-	private void voidDDOrderFor(@NonNull final DDOrderId existingDDOrderId)
+	private void voidDDOrder(@NonNull final DDOrderId existingDDOrderId)
 	{
-		final BlockingWork busyPicker = findBlockingPickingWork(ddOrderLowLevelDAO.getById(existingDDOrderId));
-		if (busyPicker != null)
-		{
-			throw newPickerBusyException(existingDDOrderId, busyPicker);
-		}
 		ddOrderService.voidIt(existingDDOrderId);
 		Loggables.addLog("DD_Order picking replenishment: voided DD_Order_ID={0}", existingDDOrderId.getRepoId());
 	}
@@ -1128,15 +1237,28 @@ public class DDOrderPickingReplenishmentService
 			@NonNull final Set<DDOrderLineId> lineIds,
 			@NonNull final ImmutableMap<DDOrderLineId, BlockingWork> blockingBeforeDeparture)
 	{
+		if (lineIds.isEmpty())
+		{
+			return;
+		}
+
+		final ImmutableSet<DDOrderLineId> stillServedLineIds = contributorRepository.getPickingJobScheduleIdsByLineId(lineIds).keySet();
+		final ImmutableMap<DDOrderLineId, I_DD_OrderLine> linesById = Maps.uniqueIndex(
+				ddOrderLowLevelDAO.getLinesByIds(ImmutableSet.copyOf(lineIds)),
+				line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()));
+		final ImmutableMap<DDOrderId, I_DD_Order> ddOrdersById = Maps.uniqueIndex(
+				ddOrderLowLevelDAO.getByIds(ddOrderIdsOfLines(linesById.values())),
+				ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+
 		for (final DDOrderLineId lineId : lineIds)
 		{
-			if (!contributorRepository.getByLineId(lineId).isEmpty())
+			if (stillServedLineIds.contains(lineId))
 			{
 				continue;
 			}
 
-			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrderLowLevelDAO.getLineById(lineId).getDD_Order_ID());
-			final I_DD_Order ddOrder = ddOrderLowLevelDAO.getById(ddOrderId);
+			final DDOrderId ddOrderId = DDOrderId.ofRepoId(linesById.get(lineId).getDD_Order_ID());
+			final I_DD_Order ddOrder = ddOrdersById.get(ddOrderId);
 			// Already voided by the FK-resolved pass above, or a close-out disposition the reconcile must not touch.
 			if (!X_DD_Order.DOCSTATUS_Completed.equals(ddOrder.getDocStatus())
 					|| !ddOrder.isActive()
@@ -1151,15 +1273,23 @@ public class DDOrderPickingReplenishmentService
 				throw newPickerBusyException(ddOrderId, busyPicker);
 			}
 
-			voidDDOrderFor(ddOrderId);
+			voidDDOrder(ddOrderId);
 		}
 	}
 
 	private void voidAllDDOrders(@NonNull final List<I_DD_Order> ddOrders)
 	{
+		final ImmutableMap<DDOrderId, BlockingWork> blockingByDDOrderId = findBlockingPickingWork(ddOrders);
 		for (final I_DD_Order ddOrder : ddOrders)
 		{
-			voidDDOrderFor(DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
+			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+			final BlockingWork busyPicker = blockingByDDOrderId.get(ddOrderId);
+			if (busyPicker != null)
+			{
+				throw newPickerBusyException(ddOrderId, busyPicker);
+			}
+
+			voidDDOrder(ddOrderId);
 		}
 	}
 
@@ -1243,10 +1373,11 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableSet.of();
 		}
 
-		try (final Stream<PickingJobSchedule> assignments = streamAssignmentsNeedingDDOrder())
+		try (final Stream<PickingJobSchedule> assignments = pickingJobScheduleService.streamAssignmentsNeedingDDOrder(
+				queryServedAssignments(),
+				assignmentIds))
 		{
 			return assignments.map(PickingJobSchedule::getId)
-					.filter(assignmentIds::contains)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
@@ -1256,8 +1387,12 @@ public class DDOrderPickingReplenishmentService
 	 */
 	private Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder()
 	{
-		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(
-				contributorRepository.queryByLines(ddOrderLowLevelDAO.queryCompletedDDOrderLines()));
+		return pickingJobScheduleService.streamAssignmentsNeedingDDOrder(queryServedAssignments());
+	}
+
+	private IQuery<I_DD_OrderLine_PickingJobSchedule> queryServedAssignments()
+	{
+		return contributorRepository.queryByLines(ddOrderLowLevelDAO.queryCompletedDDOrderLines());
 	}
 
 	public void assertWarehouseConfigurationIsValid(@NonNull final I_M_Warehouse warehouse)
@@ -1276,34 +1411,51 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Evaluated over the order's COMPLETE contributor set; an order carrying no contributor row at all reports nobody busy.
+	 * Evaluated over each order's COMPLETE contributor set; an order carrying no contributor row at all is absent from the result.
 	 */
-	@Nullable
-	private BlockingWork findBlockingPickingWork(@NonNull final I_DD_Order ddOrder)
+	private ImmutableMap<DDOrderId, BlockingWork> findBlockingPickingWork(@NonNull final Collection<I_DD_Order> ddOrders)
 	{
-		final ImmutableList<PickingJobSchedule> contributors = contributorsOf(lineIdsOf(ImmutableList.of(ddOrder)));
-		if (contributors.isEmpty())
+		if (ddOrders.isEmpty())
 		{
-			return null;
+			return ImmutableMap.of();
+		}
+
+		final ImmutableListMultimap<Integer, I_DD_OrderLine> linesByOrderId = Multimaps.index(
+				ddOrderLowLevelDAO.retrieveLines(ImmutableSet.copyOf(ddOrders)),
+				I_DD_OrderLine::getDD_Order_ID);
+		final ImmutableListMultimap<DDOrderLineId, PickingJobSchedule> contributorsByLineId = contributorsByLineId(
+				linesByOrderId.values().stream()
+						.map(line -> DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()))
+						.collect(ImmutableSet.toImmutableSet()));
+		if (contributorsByLineId.isEmpty())
+		{
+			return ImmutableMap.of();
 		}
 
 		final ImmutableSet<ShipmentScheduleId> busyScheduleIds = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(
-				contributors.stream()
+				contributorsByLineId.values().stream()
 						.map(PickingJobSchedule::getShipmentScheduleId)
 						.collect(ImmutableSet.toImmutableSet()));
-
-		for (final PickingJobSchedule contributor : contributors)
+		if (busyScheduleIds.isEmpty())
 		{
-			if (busyScheduleIds.contains(contributor.getShipmentScheduleId()))
-			{
-				return BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId());
-			}
+			return ImmutableMap.of();
 		}
-		return null;
+
+		final LinkedHashMap<DDOrderId, BlockingWork> result = new LinkedHashMap<>();
+		for (final I_DD_Order ddOrder : ddOrders)
+		{
+			final DDOrderId ddOrderId = DDOrderId.ofRepoId(ddOrder.getDD_Order_ID());
+			firstBlocking(
+					linesByOrderId.get(ddOrder.getDD_Order_ID()).stream()
+							.flatMap(line -> contributorsByLineId.get(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID())).stream()),
+					busyScheduleIds)
+					.ifPresent(blocking -> result.putIfAbsent(ddOrderId, blocking));
+		}
+		return ImmutableMap.copyOf(result);
 	}
 
 	/**
-	 * The per-line form of {@link #findBlockingPickingWork(I_DD_Order)}; {@code departingAssignment} is folded in because its own row is already deleted and no longer resolvable.
+	 * The per-line form of {@link #findBlockingPickingWork(Collection)}; {@code departingAssignment} is folded in because its own row is already deleted and no longer resolvable.
 	 */
 	private ImmutableMap<DDOrderLineId, BlockingWork> findBlockingPickingWorkByLineId(
 			@NonNull final Set<DDOrderLineId> lineIds,
@@ -1314,33 +1466,66 @@ public class DDOrderPickingReplenishmentService
 			return ImmutableMap.of();
 		}
 
-		final ImmutableMap<DDOrderLineId, ImmutableList<PickingJobSchedule>> contributorsByLineId = lineIds.stream()
-				.collect(ImmutableMap.toImmutableMap(
-						lineId -> lineId,
-						lineId -> Stream.concat(contributorsOf(ImmutableSet.of(lineId)).stream(), Stream.of(departingAssignment))
-								.sorted(Comparator.comparing(PickingJobSchedule::getId))
-								.collect(ImmutableList.toImmutableList())));
+		final ImmutableListMultimap<DDOrderLineId, PickingJobSchedule> contributorsByLineId = contributorsByLineId(lineIds);
 
-		final ImmutableSet<ShipmentScheduleId> shipmentScheduleIds = contributorsByLineId.values().stream()
-				.flatMap(List::stream)
-				.map(PickingJobSchedule::getShipmentScheduleId)
-				.collect(ImmutableSet.toImmutableSet());
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableMap.of();
-		}
-
-		final ImmutableSet<ShipmentScheduleId> busyScheduleIds = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(shipmentScheduleIds);
+		final ImmutableSet<ShipmentScheduleId> busyScheduleIds = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(
+				Stream.concat(contributorsByLineId.values().stream(), Stream.of(departingAssignment))
+						.map(PickingJobSchedule::getShipmentScheduleId)
+						.collect(ImmutableSet.toImmutableSet()));
 		if (busyScheduleIds.isEmpty())
 		{
 			return ImmutableMap.of();
 		}
 
 		final ImmutableMap.Builder<DDOrderLineId, BlockingWork> result = ImmutableMap.builder();
-		contributorsByLineId.forEach((lineId, contributors) -> contributors.stream()
+		for (final DDOrderLineId lineId : lineIds)
+		{
+			firstBlocking(
+					Stream.concat(contributorsByLineId.get(lineId).stream(), Stream.of(departingAssignment)),
+					busyScheduleIds)
+					.ifPresent(blocking -> result.put(lineId, blocking));
+		}
+		return result.build();
+	}
+
+	/**
+	 * Ordered by id so that the contributor a refusal names is the same on every run — an operator cannot report a message that changes between two identical situations.
+	 */
+	private static Optional<BlockingWork> firstBlocking(
+			@NonNull final Stream<PickingJobSchedule> contributors,
+			@NonNull final Set<ShipmentScheduleId> busyScheduleIds)
+	{
+		return contributors
+				.sorted(Comparator.comparing(PickingJobSchedule::getId))
 				.filter(contributor -> busyScheduleIds.contains(contributor.getShipmentScheduleId()))
 				.findFirst()
-				.ifPresent(contributor -> result.put(lineId, BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId()))));
+				.map(contributor -> BlockingWork.of(contributor.getId(), contributor.getShipmentScheduleId()));
+	}
+
+	/**
+	 * A contributor whose assignment no longer loads was deleted and is left out.
+	 */
+	private ImmutableListMultimap<DDOrderLineId, PickingJobSchedule> contributorsByLineId(@NonNull final Set<DDOrderLineId> lineIds)
+	{
+		final ImmutableSetMultimap<DDOrderLineId, PickingJobScheduleId> contributorIdsByLineId =
+				contributorRepository.getPickingJobScheduleIdsByLineId(lineIds);
+		if (contributorIdsByLineId.isEmpty())
+		{
+			return ImmutableListMultimap.of();
+		}
+
+		final ImmutableMap<PickingJobScheduleId, PickingJobSchedule> contributorsById = Maps.uniqueIndex(
+				pickingJobScheduleService.getByIds(ImmutableSet.copyOf(contributorIdsByLineId.values())),
+				PickingJobSchedule::getId);
+
+		final ImmutableListMultimap.Builder<DDOrderLineId, PickingJobSchedule> result = ImmutableListMultimap.builder();
+		contributorIdsByLineId.forEach((lineId, contributorId) -> {
+			final PickingJobSchedule contributor = contributorsById.get(contributorId);
+			if (contributor != null)
+			{
+				result.put(lineId, contributor);
+			}
+		});
 		return result.build();
 	}
 

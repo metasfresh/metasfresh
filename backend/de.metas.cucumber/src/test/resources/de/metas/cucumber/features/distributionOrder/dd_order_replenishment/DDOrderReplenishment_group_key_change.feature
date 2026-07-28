@@ -7,13 +7,7 @@ Feature: DD_Order replenishment — moving an assignment between product groups 
   I want the distribution order I moved it AWAY from to shrink to what is still assigned to it,
   so that the mover is not sent to fetch goods nobody at that workstation needs any more.
 
-  Re-assigning the workstation changes the target locator, hence the product group the delivery belongs to.
-  The delivery joins a new group and leaves the old one, and the order serving the old group must be
-  re-planned for its remaining contributors — exactly as it is when a contributor is un-assigned.
-
-  Two customer deliveries need the same product, in the same UOM, replenished from the same source locator
-  to workstation A — one product group, demand 10 + 5 = 15. Workstation B has its own pick-from locator, so
-  it is a second, initially empty product group.
+  Two customer deliveries share one product group at workstation A (demand 10 + 5 = 15); workstation B has its own pick-from locator, hence its own initially empty group.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -135,13 +129,13 @@ Feature: DD_Order replenishment — moving an assignment between product groups 
       | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
       | movedDDOrderLine | jobScheduleA              | 10  |
 
-    # The group jobScheduleA left keeps only jobScheduleB's 5 — an order still sized 15 would send the mover
-    # to workstation A with goods that moved to workstation B.
+    # The group jobScheduleA left is re-planned IN PLACE (hence it keeps the groupDDOrder identifier) down to
+    # jobScheduleB's 5 — an order still sized 15 would send the mover for goods that moved to workstation B.
     And after not more than 120s, exactly one live DD_Order exists for the product group:
-      | M_Product_ID | M_LocatorTo_ID  | DD_Order_ID    | DD_OrderLine_ID    | DocStatus | M_Warehouse_From_ID | QtyEntered |
-      | product      | packingLocatorA | vacatedDDOrder | vacatedDDOrderLine | CO        | stockWH             | 5          |
+      | M_Product_ID | M_LocatorTo_ID  | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocatorA | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 5          |
     And the DD_OrderLine contributors are found:
-      | DD_OrderLine_ID    | M_Picking_Job_Schedule_ID | Qty |
-      | vacatedDDOrderLine | jobScheduleB              | 5   |
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleB              | 5   |
     And each of jobScheduleA resolves to the DD_Order identified by movedDDOrder
-    And each of jobScheduleB resolves to the DD_Order identified by vacatedDDOrder
+    And each of jobScheduleB resolves to the DD_Order identified by groupDDOrder

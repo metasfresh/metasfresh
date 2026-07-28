@@ -7,11 +7,6 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
   already begun moving the goods of the losing one, I want that order left standing and disconnected — not voided —
   so the worker finishes the move he has in his hands while the group re-plans around it.
 
-  When the group is re-planned it keeps ONE order per source locator; a second live order on the same locator is a
-  duplicate the reconcile disposes of. A duplicate that is empty is voided, but a duplicate already holding goods in
-  transit or delivered is a move in progress: voiding it would strand that in-hand stock, so it is DISCONNECTED
-  (IsPickingDisconnected=Y, still Completed) and its worker finishes it as a standalone replenishment.
-
   One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator.
 
   Background:
@@ -94,7 +89,7 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
 
   @from:cucumber
   @Id:S30919_10
-  Scenario: A second live order holding moved goods is disconnected while the group re-plans on the first
+  Scenario: A disconnected duplicate keeps its contributor association so the delivery still navigates to it
     # The order the assignment triggered on the packing warehouse: the eventual WINNER of the locator collision.
     Given after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID | DD_OrderLine_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
@@ -112,8 +107,8 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
 
     # The duplicate is the one the rebuild associated with the assignment (the first order is still orphaned here).
     And after not more than 120s, the DD_Order linked to picking job schedule is found:
-      | M_Picking_Job_Schedule_ID | DD_Order_ID    | DocStatus | QtyEntered |
-      | jobSchedule               | duplicateOrder | CO        | 10         |
+      | M_Picking_Job_Schedule_ID | DD_Order_ID    | DD_OrderLine_ID | DocStatus | QtyEntered |
+      | jobSchedule               | duplicateOrder | duplicateLine   | CO        | 10         |
 
     # A worker has already moved the whole 10 PCE of the duplicate into transit — the move that must not be stranded.
     And simulate goods in transit of 10 on DD_Order linked to picking job schedule jobSchedule
@@ -126,9 +121,60 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
 
     When the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
 
+    # The disconnect must RETAIN the duplicate's alloc row — the trailing cleanup re-derives obsolete lines from the
+    # contributors' schedules and must exclude the disconnected line, or the delivery can no longer navigate to it.
+    Then the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID | M_Picking_Job_Schedule_ID | Qty |
+      | duplicateLine   | jobSchedule               | 10  |
+
     # The duplicate held goods in transit, so it is DISCONNECTED (IsPickingDisconnected=Y, still Completed) — never
-    # voided — and the worker finishes it. The first order keeps serving the group's demand, untouched.
-    Then after not more than 10s, following DD_Orders are found
+    # voided — and its worker finishes it.
+    And after not more than 10s, following DD_Orders are found
       | Identifier     | DocStatus | IsPickingDisconnected |
       | duplicateOrder | CO        | true                  |
-      | winnerOrder    | CO        | false                 |
+
+    # AC4 navigation survives: with its association retained, the delivery still reaches the disconnected order that
+    # is replenishing it as a Related Document.
+    And each of shipmentSchedule reaches the DD_Order identified by duplicateOrder as related document
+
+  @from:cucumber
+  @Id:S30919_20
+  Scenario: The group nets the disconnected duplicate's in-transit qty off, so the winner is not double-planned
+    # The order the assignment triggered on the packing warehouse: the eventual WINNER of the locator collision.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID | DD_OrderLine_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | winnerOrder | winnerLine      | CO        | stockWH             | 10         |
+
+    # Reach a genuine two-live-orders-in-one-group state, as above.
+    When the contributor associations of the pre-rollout DD_OrderLines are dropped:
+      | DD_OrderLine_ID |
+      | winnerLine      |
+    And the DD_Order_Picking_Rebuild process is run
+    And after not more than 120s, exactly 2 live DD_Orders exist for the product group:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |
+
+    And after not more than 120s, the DD_Order linked to picking job schedule is found:
+      | M_Picking_Job_Schedule_ID | DD_Order_ID    | DocStatus | QtyEntered |
+      | jobSchedule               | duplicateOrder | CO        | 10         |
+
+    # The whole 10 PCE of the duplicate is moved into transit: this move alone covers the group's entire demand of 10.
+    And simulate goods in transit of 10 on DD_Order linked to picking job schedule jobSchedule
+
+    And the rollout backfill re-creates the contributor associations:
+      | DD_OrderLine_ID | M_Picking_Job_Schedule_ID |
+      | winnerLine      | jobSchedule               |
+
+    When the reconcile event for M_Picking_Job_Schedule jobSchedule is processed
+
+    # The disconnected duplicate's 10 in transit already cover the demand of 10, so the winner has nothing left to
+    # plan — it is VOIDED, not left re-planning the full 10 on top of the move (which would move 20 for a demand of 10).
+    Then after not more than 10s, following DD_Orders are found
+      | Identifier     | DocStatus | IsPickingDisconnected |
+      | winnerOrder    | VO        | false                 |
+      | duplicateOrder | CO        | true                  |
+
+    # Exactly the disconnected duplicate remains live, still carrying its 10 — total committed equals the demand of 10.
+    And after not more than 10s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | QtyEntered |
+      | product      | packingLocator | CO        | 10         |

@@ -177,9 +177,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 
 	/**
 	 * @cucumber.stepdef Polls until EXACTLY the given number of live (DocStatus != Voided) DD_Orders exist for the
-	 * given product group. The counterpart of the "exactly one" step above, for the case where the expected outcome is
-	 * a DUPLICATE — e.g. the second order a watchdog pass issues for a pre-existing order that carries no contributor
-	 * association. Counts only; the individual orders are asserted by the caller.
+	 * given product group. Counts only; the individual orders are asserted by the caller.
 	 * @cucumber.columns
 	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
 	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
@@ -470,12 +468,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	 * association of the given line(s), reducing the order to the shape a pre-rollout order has BEFORE the rollout
 	 * backfill (migration {@code 5816390}) runs — a Completed, still-open replenishment order that nothing associates
 	 * with the delivery it serves.
-	 * <p>
-	 * This is a real, reachable database state, not a fabricated one: the single-schedule FK columns such an order
-	 * used to carry are dropped by migration {@code 5816420}, so an un-backfilled pre-rollout order is left with
-	 * exactly this — no association at all. Served-ness ({@code retainAssignmentsNeedingDDOrder}) and the group's
-	 * existing-order lookup ({@code findActiveDDOrdersForReplenishmentGroup(..., contributorRepository.queryAll())})
-	 * both read ONLY this table, so the order becomes invisible to them.
 	 * @cucumber.columns
 	 *   <b>DD_OrderLine_ID</b> — (required, identifier-ref) the line whose contributor association is dropped<br>
 	 * @cucumber.depends StepDefData: DD_OrderLine_StepDefData
@@ -504,11 +496,6 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 	 * @cucumber.stepdef Re-creates the contributor association exactly as the rollout backfill (migration
 	 * {@code 5816390}) creates it: one row per open contributing assignment, with {@code Qty} and {@code C_UOM_ID}
 	 * taken from the {@code DD_OrderLine} itself — the migration's own {@code SELECT ol.QtyEntered, ol.C_UOM_ID}.
-	 * <p>
-	 * The quantity is deliberately NOT a DataTable column: a scenario that supplied it would be pinning its own
-	 * expectation rather than what the migration writes. The assignment IS a column, because it is what the dropped
-	 * single-schedule FK column used to point at and the migration reads it from there
-	 * ({@code COALESCE(ol.M_Picking_Job_Schedule_ID, o.M_Picking_Job_Schedule_ID)}).
 	 * @cucumber.columns
 	 *   <b>DD_OrderLine_ID</b> — (required, identifier-ref) the pre-rollout line to backfill<br>
 	 *   <b>M_Picking_Job_Schedule_ID</b> — (required, identifier-ref) the assignment that pre-rollout order served<br>

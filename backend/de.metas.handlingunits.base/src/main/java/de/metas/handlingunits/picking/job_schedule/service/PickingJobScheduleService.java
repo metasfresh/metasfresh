@@ -180,6 +180,14 @@ public class PickingJobScheduleService
 		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(servedAssignmentsQuery);
 	}
 
+	/** @see PickingJobScheduleRepository#streamAssignmentsNeedingDDOrder(IQuery, Set) */
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(
+			@NonNull final IQuery<?> servedAssignmentsQuery,
+			@NonNull final Set<PickingJobScheduleId> onlyAssignmentIds)
+	{
+		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(servedAssignmentsQuery, onlyAssignmentIds);
+	}
+
 	/**
 	 * {@code workplaceIds} must be the workplaces whose effective pick-from locator is {@code groupKey}'s target locator ({@link WorkplaceService#getWorkplaceIdsByEffectivePickFromLocatorId}).
 	 *

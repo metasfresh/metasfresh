@@ -500,10 +500,89 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
 				ImmutableList.of(p1, p2),
 				ImmutableMap.of(l1, each("5"), l2, each("15")),
-				ImmutableMap.of(l1, lineL1, l2, lineL2));
+				ImmutableMap.of(l1, lineL1, l2, lineL2),
+				ImmutableMap.of());
 
 		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1, l2);
 		assertThat(split.getAttribution()).isEmpty();
+	}
+
+	/**
+	 * The reason the two served maps are merged by addition: P1 is served 4 by a disconnected duplicate AND 6 by the
+	 * line frozen in the first iteration, so only 2 of its 12 are left to attribute. Under a last-wins merge it would
+	 * be attributed 6.
+	 */
+	@Test
+	void frozenSplit_sumsWhatADisconnectedDuplicateAndAFrozenLineEachServeTheSameContributor()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "12");
+
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
+
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1),
+				ImmutableMap.of(l1, each("3"), l2, each("8")),
+				ImmutableMap.of(l1, lineL1),
+				ImmutableMap.of(p1.getId(), each("4")));
+
+		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1);
+		assertThat(split.getRefusedQtyByLocator().get(l1).toBigDecimal()).isEqualByComparingTo("3");
+		assertThat(split.getAttribution()).containsOnlyKeys(l2);
+		assertThat(split.getAttribution().get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 2));
+	}
+
+	@Test
+	void frozenSplit_aContributorServedOnlyByADisconnectedDuplicateIsNettedByThatAlone()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "10");
+		final PickingJobSchedule p2 = contributor(2, "5");
+
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1, p2),
+				ImmutableMap.of(l1, each("6"), l2, each("5")),
+				ImmutableMap.of(),
+				ImmutableMap.of(p1.getId(), each("4")));
+
+		assertThat(split.getRefusedQtyByLocator()).isEmpty();
+		assertThat(split.getAttribution().get(l1))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 6));
+		assertThat(split.getAttribution().get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p2.getId(), 5));
+	}
+
+	@Test
+	void frozenSplit_aContributorServedOnlyByAFrozenLineIsNettedByThatAlone()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "12");
+
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
+
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1),
+				ImmutableMap.of(l1, each("3"), l2, each("9")),
+				ImmutableMap.of(l1, lineL1),
+				ImmutableMap.of());
+
+		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1);
+		assertThat(split.getRefusedQtyByLocator().get(l1).toBigDecimal()).isEqualByComparingTo("3");
+		assertThat(split.getAttribution()).containsOnlyKeys(l2);
+		assertThat(split.getAttribution().get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 6));
 	}
 
 	@Test

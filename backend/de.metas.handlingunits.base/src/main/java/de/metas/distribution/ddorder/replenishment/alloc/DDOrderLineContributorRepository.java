@@ -2,6 +2,7 @@ package de.metas.distribution.ddorder.replenishment.alloc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
@@ -119,6 +120,27 @@ public class DDOrderLineContributorRepository
 				.stream()
 				.map(DDOrderLineContributorRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	/**
+	 * The per-line flavour of {@link #getPickingJobScheduleIds(Collection)}: a line with no contributor row is absent from the result.
+	 */
+	public ImmutableSetMultimap<DDOrderLineId, PickingJobScheduleId> getPickingJobScheduleIdsByLineId(@NonNull final Collection<DDOrderLineId> lineIds)
+	{
+		if (lineIds.isEmpty())
+		{
+			return ImmutableSetMultimap.of();
+		}
+
+		return queryBL.createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineIds)
+				.orderBy(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.create()
+				.stream()
+				.collect(ImmutableSetMultimap.toImmutableSetMultimap(
+						record -> DDOrderLineId.ofRepoId(record.getDD_OrderLine_ID()),
+						record -> PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID())));
 	}
 
 	public ImmutableSet<PickingJobScheduleId> getPickingJobScheduleIds(@NonNull final Collection<DDOrderLineId> lineIds)

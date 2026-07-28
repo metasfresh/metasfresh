@@ -5,12 +5,10 @@
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — one distribution order per product group
   As a mover replenishing a packing workplace,
-  I want the demand that shares product, UOM and target locator to arrive as ONE distribution order
-  carrying the summed quantity,
+  I want the demand that shares product, UOM and target locator to arrive as ONE distribution order carrying the summed quantity,
   so that I walk the route once instead of once per customer delivery.
 
-  Two customer deliveries need the same product, in the same UOM, at the same workstation pick-from
-  locator, replenished from the same source locator — one product group, demand 10 + 5 = 15.
+  Two customer deliveries share one product group — same product, UOM, workstation pick-from locator and source locator, demand 10 + 5 = 15.
 
   Background:
     Given infrastructure and metasfresh are running

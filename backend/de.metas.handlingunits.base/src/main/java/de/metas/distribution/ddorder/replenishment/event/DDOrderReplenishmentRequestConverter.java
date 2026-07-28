@@ -39,10 +39,7 @@ class DDOrderReplenishmentRequestConverter
 				.putProperty(PROPERTY_triggeredBy, triggeredBy.getRepoId())
 				.putProperty(PROPERTY_AD_Client_ID, clientAndOrgId.getClientId().getRepoId())
 				.putProperty(PROPERTY_AD_Org_ID, clientAndOrgId.getOrgId().getRepoId())
-				// Tie the resulting AD_EventLog (and thus its AD_EventLog_Entry rows) to one of the assignments that
-				// triggered the reconcile. EventLogService.saveEvent copies this into AD_EventLog.AD_Table_ID /
-				// Record_ID, which lets callers (incl. tests) pin a log entry to an originating assignment
-				// instead of matching any reconcile entry globally.
+				// EventLogService.saveEvent copies this into AD_EventLog.AD_Table_ID / Record_ID, so a log entry can be pinned to the assignment that triggered it.
 				.setSourceRecordReference(triggeredBy.toTableRecordReference())
 				// shallBeLogged() is required: without it the event-bus never sets up the EventLogEntryCollector
 				// thread-local, the handler throws "Missing thread-local EventLogEntryCollector", and no AD_EventLog is recorded.

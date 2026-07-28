@@ -558,6 +558,7 @@ public class DD_Order_StepDef
 	 * Optional columns:
 	 * <ul>
 	 *   <li>{@code Identifier} — stores the found DD_Order for later reference</li>
+	 *   <li>{@code DD_OrderLine_ID} — stores the found DD_Order's single line for later reference</li>
 	 *   <li>{@code DocStatus} — expected header doc status (e.g. {@code CO})</li>
 	 *   <li>{@code M_Warehouse_From_ID} — expected source warehouse identifier (header + line)</li>
 	 *   <li>{@code M_Warehouse_To_ID} — expected target warehouse identifier (header)</li>
@@ -594,6 +595,18 @@ public class DD_Order_StepDef
 				.execute();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ddOrderTable.putOrReplace(identifier, ddOrder));
+		row.getAsOptionalIdentifier(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID)
+				.ifPresent(identifier -> ddOrderLineTable.putOrReplace(identifier, singleLineOf(ddOrder)));
+	}
+
+	private I_DD_OrderLine singleLineOf(@NonNull final I_DD_Order ddOrder)
+	{
+		final List<I_DD_OrderLine> lines = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, ddOrder.getDD_Order_ID())
+				.create()
+				.list(I_DD_OrderLine.class);
+		assertThat(lines).as("DD_Order %s has exactly one line", ddOrder.getDD_Order_ID()).hasSize(1);
+		return lines.get(0);
 	}
 
 	/**

@@ -4,17 +4,10 @@
 @ghActions:run_on_executor7
 Feature: DD_Order replenishment — the change guards cover every contributor of a shared order
   As a traffic manager editing a workstation assignment,
-  I want the refusal that protects a replenishment already in progress to hold for EVERY delivery behind
-  that replenishment — not only the one whose back-reference the document happens to carry —
-  and to tell me whose work is blocking me, so that I can go and resolve it.
+  I want the refusal that protects a replenishment already in progress to hold for EVERY delivery behind that
+  replenishment, and to tell me whose work is blocking me, so that I can go and resolve it.
 
-  A consolidated distribution order serves several deliveries but carries the back-reference of exactly one
-  of them. Guarding only that one leaves every other contributor freely editable while the goods are on the
-  move or a picker is working on them — silently, with no error and no log entry. The rule itself is
-  unchanged: what widens is the set it is evaluated over.
-
-  Two customer deliveries need the same product, in the same UOM, at the same workstation pick-from
-  locator, replenished from the same source locator — one product group, demand 10 + 5 = 15.
+  Two customer deliveries share one product group — same product, UOM, workstation pick-from locator and source locator, demand 10 + 5 = 15.
 
   Background:
     Given infrastructure and metasfresh are running

@@ -7,18 +7,7 @@ Feature: DD_Order replenishment — an order that already exists at rollout is b
   I want each of those orders to keep serving its delivery exactly as before,
   so that the drift watchdog does not send the mover to fetch the same goods a second time.
 
-  Before this change an open replenishment order carried its single delivery in an FK column on the document.
-  That column is dropped by migration 5816420, and from then on "is this contributor already served?" is answered
-  ONLY through the DD_OrderLine_PickingJobSchedule contributor association — so migration 5816390 backfills one
-  association row per open pre-existing order line, and must run BEFORE the drop.
-
-  These two scenarios pin both halves of that ordering requirement: with the association the pre-existing order
-  reads as served and the watchdog leaves it alone; without it the same order is invisible and the watchdog
-  issues a duplicate for demand the first order already covers.
-
-  One delivery needs 10 PCE at the workstation pick-from locator. 30 PCE are on hand at one source locator —
-  deliberate headroom, so that a duplicate, if one is issued, is limited by the demand it re-covers and not by
-  the stock left over, and the duplication is therefore unambiguous.
+  One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator.
 
   Background:
     Given infrastructure and metasfresh are running

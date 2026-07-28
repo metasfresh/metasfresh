@@ -90,6 +90,19 @@ public class DDOrderLowLevelDAO
 		return InterfaceWrapperHelper.load(ddOrderId, I_DD_Order.class);
 	}
 
+	/**
+	 * The batch flavour of {@link #getById(DDOrderId)}.
+	 */
+	public List<I_DD_Order> getByIds(@NonNull final Set<DDOrderId> ddOrderIds)
+	{
+		if (ddOrderIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderIds, I_DD_Order.class);
+	}
+
 	/** This DAO owns the DD_Order side only; the caller's service composes the cross-model join. */
 	public IQuery<I_DD_Order> queryCompletedDDOrders()
 	{
@@ -152,6 +165,40 @@ public class DDOrderLowLevelDAO
 				.list(I_DD_Order.class);
 	}
 
+	/**
+	 * The group's DISCONNECTED ({@code IsPickingDisconnected=Y}) replenishment lines — the ones {@link #findActiveDDOrdersForReplenishmentGroup} hides; their contributor shares are netted off the group's remaining demand.
+	 */
+	public ImmutableSet<DDOrderLineId> findDisconnectedLineIdsForReplenishmentGroup(
+			@NonNull final ProductId productId,
+			@NonNull final LocatorId locatorToId,
+			@NonNull final UomId uomId,
+			@NonNull final IQuery<?> replenishmentLineIdsQuery)
+	{
+		final IQuery<I_DD_Order> disconnectedGroupOrders = queryBL
+				.createQueryBuilder(I_DD_Order.class)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
+				.addEqualsFilter(I_DD_Order.COLUMNNAME_IsPickingDisconnected, true)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL
+				.createQueryBuilder(I_DD_OrderLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID, locatorToId)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_UOM_ID, uomId)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID,
+						replenishmentLineIdsQuery)
+				.addInSubQueryFilter(
+						I_DD_OrderLine.COLUMNNAME_DD_Order_ID,
+						I_DD_Order.COLUMNNAME_DD_Order_ID,
+						disconnectedGroupOrders)
+				.create()
+				.listDistinctAsImmutableSet(I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID, DDOrderLineId.class);
+	}
+
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
 	{
 		final List<I_DD_OrderLine> ddOrderLines = queryBL
@@ -173,10 +220,7 @@ public class DDOrderLowLevelDAO
 	}
 
 	/**
-	 * The batch flavour of {@link #retrieveLines(I_DD_Order)}: ONE query for all the given orders instead of one per order.
-	 * <p>
-	 * The result is ordered by {@code DD_Order_ID}, then exactly as the single-order flavour orders within an order, so
-	 * it equals the concatenation of the per-order results taken in ascending order id.
+	 * The batch flavour of {@link #retrieveLines(I_DD_Order)}: the result equals the concatenation of the per-order results taken in ascending order id.
 	 */
 	public List<I_DD_OrderLine> retrieveLines(@NonNull final Set<I_DD_Order> ddOrders)
 	{
@@ -329,6 +373,19 @@ public class DDOrderLowLevelDAO
 		}
 
 		return record;
+	}
+
+	/**
+	 * The batch flavour of {@link #getLineById(DDOrderLineId)}; unlike it, a missing id is silently absent from the result.
+	 */
+	public List<I_DD_OrderLine> getLinesByIds(@NonNull final Set<DDOrderLineId> ddOrderLineIds)
+	{
+		if (ddOrderLineIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		return InterfaceWrapperHelper.loadByRepoIdAwares(ddOrderLineIds, I_DD_OrderLine.class);
 	}
 
 	public Stream<I_DD_Order> streamDDOrders(final DDOrderQuery query)

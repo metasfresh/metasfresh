@@ -261,4 +261,26 @@ class PickingJobRepositoryTest
 				.as("no picking job line for the schedule must NOT count as busy")
 				.isEmpty();
 	}
+
+	@Test
+	void retrieveScheduleIdsWithActivePickingJobLine_manySchedules_returnsOnlyTheBusyOnes()
+	{
+		final ShipmentScheduleId voided = ShipmentScheduleId.ofRepoId(201);
+		final ShipmentScheduleId drafted1 = ShipmentScheduleId.ofRepoId(202);
+		final ShipmentScheduleId completed = ShipmentScheduleId.ofRepoId(203);
+		final ShipmentScheduleId drafted2 = ShipmentScheduleId.ofRepoId(204);
+		final ShipmentScheduleId noLine = ShipmentScheduleId.ofRepoId(205);
+		createPickingJobWithLine(PickingJobDocStatus.Voided, voided);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, drafted1);
+		createPickingJobWithLine(PickingJobDocStatus.Completed, completed);
+		createPickingJobWithLine(PickingJobDocStatus.Drafted, drafted2);
+
+		// the non-busy ones are asked FIRST, so an implementation that only honours the first id cannot pass
+		final Set<ShipmentScheduleId> actual = pickingJobRepository.retrieveScheduleIdsWithActivePickingJobLine(
+				ImmutableSet.of(voided, noLine, completed, drafted1, drafted2));
+
+		Assertions.assertThat(actual)
+				.as("every drafted schedule of the batch must come back, and only those")
+				.containsExactlyInAnyOrder(drafted1, drafted2);
+	}
 }

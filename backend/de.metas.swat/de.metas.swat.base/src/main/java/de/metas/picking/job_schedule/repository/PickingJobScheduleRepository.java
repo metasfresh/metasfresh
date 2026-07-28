@@ -301,15 +301,47 @@ public class PickingJobScheduleRepository
 	 */
 	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<?> servedAssignmentsQuery)
 	{
-		final IQuery<I_M_Picking_Job_Schedule> query = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
+		return streamAssignments(queryAssignmentsNeedingDDOrder(servedAssignmentsQuery, null));
+	}
+
+	/**
+	 * The bounded flavour: {@code onlyAssignmentIds} is pushed into the query, so the DB — not the caller — does the restricting.
+	 */
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(
+			@NonNull final IQuery<?> servedAssignmentsQuery,
+			@NonNull final Set<PickingJobScheduleId> onlyAssignmentIds)
+	{
+		if (onlyAssignmentIds.isEmpty())
+		{
+			return Stream.empty();
+		}
+
+		return streamAssignments(queryAssignmentsNeedingDDOrder(servedAssignmentsQuery, onlyAssignmentIds));
+	}
+
+	private IQuery<I_M_Picking_Job_Schedule> queryAssignmentsNeedingDDOrder(
+			@NonNull final IQuery<?> servedAssignmentsQuery,
+			@Nullable final Set<PickingJobScheduleId> onlyAssignmentIds)
+	{
+		final IQueryBuilder<I_M_Picking_Job_Schedule> queryBuilder = queryBL.createQueryBuilder(I_M_Picking_Job_Schedule.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Picking_Job_Schedule.COLUMNNAME_Processed, false)
 				.addNotInSubQueryFilter(
 						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
 						// the sub-query's own FK back to M_Picking_Job_Schedule — same column name by convention
 						I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID,
-						servedAssignmentsQuery)
-				.create();
+						servedAssignmentsQuery);
+
+		if (onlyAssignmentIds != null)
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Job_Schedule.COLUMNNAME_M_Picking_Job_Schedule_ID, onlyAssignmentIds);
+		}
+
+		return queryBuilder.create();
+	}
+
+	private static Stream<PickingJobSchedule> streamAssignments(@NonNull final IQuery<I_M_Picking_Job_Schedule> query)
+	{
 		Loggables.addLog("AssignmentsNeedingDDOrder - query: {}", query);
 
 		return query.iterateAndStream().map(PickingJobScheduleRepository::fromRecord);
