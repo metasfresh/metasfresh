@@ -52,6 +52,7 @@ import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -67,6 +68,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 
 	private DDOrderPickingReplenishmentService service;
 	private DDOrderLineContributorRepository contributorRepository;
+	private DDOrderMoveScheduleService ddOrderMoveScheduleService;
 
 	private I_C_UOM uomEach;   // product stocking UOM (e.g. PCE)
 	private I_C_UOM uomCase;   // assignment / demand UOM (e.g. a 6-pack case)
@@ -81,6 +83,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 	{
 		AdempiereTestHelper.get().init();
 		contributorRepository = mock(DDOrderLineContributorRepository.class);
+		ddOrderMoveScheduleService = mock(DDOrderMoveScheduleService.class);
 
 		uomEach = BusinessTestHelper.createUOM("Each", 0, 0);
 		uomCase = BusinessTestHelper.createUOM("Case", 0, 0);
@@ -103,10 +106,14 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				mock(DDOrderReplenishmentEventPublisher.class),
 				mock(PickingJobScheduleService.class),
 				mock(WorkplaceService.class),
-				mock(DDOrderMoveScheduleService.class),
+				ddOrderMoveScheduleService,
 				new WarehouseRepository(),
 				contributorRepository
 		);
+
+		// Default: no line is under movement. Each test that needs a frozen line states its own freeze set via
+		// createDDOrderLine(..., hasMoveInProgress=true), which stubs the specific line id to true.
+		when(ddOrderMoveScheduleService.hasInProgressSchedules(any(DDOrderLineId.class))).thenReturn(false);
 	}
 
 	private PickingJobSchedule contributor(final int jobScheduleRepoId, final String qtyToPickEach)
@@ -179,15 +186,24 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		return LocatorId.ofRepoId(warehouseId, loc.getM_Locator_ID());
 	}
 
-	private static I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final String qtyDelivered)
+	/**
+	 * @param hasMoveInProgress the REAL "the mover has picked and not yet dropped" signal — an IN_PROGRESS
+	 *                          DD_Order_MoveSchedule. {@code QtyDelivered} is deliberately NOT set: no production flow
+	 *                          writes it, so a fixture that freezes through it proves nothing about production.
+	 */
+	private I_DD_OrderLine createDDOrderLine(final int lineRepoId, final String qtyOrdered, final boolean hasMoveInProgress)
 	{
 		final I_DD_OrderLine line = InterfaceWrapperHelper.newInstance(I_DD_OrderLine.class);
 		line.setDD_OrderLine_ID(lineRepoId);
 		line.setQtyEntered(new BigDecimal(qtyOrdered));
 		line.setQtyOrdered(new BigDecimal(qtyOrdered));
 		line.setTargetQty(new BigDecimal(qtyOrdered));
-		line.setQtyDelivered(new BigDecimal(qtyDelivered));
 		InterfaceWrapperHelper.saveRecord(line);
+
+		if (hasMoveInProgress)
+		{
+			when(ddOrderMoveScheduleService.hasInProgressSchedules(DDOrderLineId.ofRepoId(lineRepoId))).thenReturn(true);
+		}
 		return line;
 	}
 
@@ -487,8 +503,8 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final PickingJobSchedule p1 = contributor(1, "10");
 		final PickingJobSchedule p2 = contributor(2, "10");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "4");
-		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", "3");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
+		final I_DD_OrderLine lineL2 = createDDOrderLine(102, "12", true);
 		final ImmutableList<DDOrderLineContributor> sharesOfL1 = ImmutableList.of(
 				DDOrderLineContributor.of(p1.getId(), each("6")),
 				DDOrderLineContributor.of(p2.getId(), each("4")));
@@ -519,7 +535,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId l2 = createLocator("20-B", 50);
 		final PickingJobSchedule p1 = contributor(1, "12");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
 		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
 				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
 
@@ -567,7 +583,7 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 		final LocatorId l2 = createLocator("20-B", 50);
 		final PickingJobSchedule p1 = contributor(1, "12");
 
-		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", "5");
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true);
 		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
 				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
 
