@@ -7,7 +7,7 @@ import { DistributionJobsListScreen } from "../../utils/screens/distribution/Dis
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { DistributionLinePickFromScreen } from '../../utils/screens/distribution/DistributionLinePickFromScreen';
 import { DistributionUtils } from '../../utils/screens/distribution/DistributionUtils';
-import { generateEAN13 } from '../../utils/ean13';
+import { createSweepMasterdata } from '../../utils/sweepDistributionMasterdata';
 
 //
 // The "sweep" distribution flow when the operator may serve an order from ANY handling unit: small
@@ -16,80 +16,19 @@ import { generateEAN13 } from '../../utils/ean13';
 // the next order will be served from the LU just scanned — so on every auto-advanced order the operator
 // scans the staging LU again, then the product code.
 //
-// The fixture is deliberately field-identical to sweep_scan_product_after_autoAdvance.spec.js apart
-// from the barcode prefix, the workplace key and allowPickingAnyHU: with that flag off, the very same
-// data lands the operator on the PRODUCT scan instead. That contrast is what makes this spec
-// discriminating, so keep the two fixtures in sync. The carry-forward rule itself is owned by
+// The fixture comes from the factory shared with sweep_scan_product_after_autoAdvance.spec.js: with
+// allowPickingAnyHU off, the very same data lands the operator on the PRODUCT scan instead, and that
+// contrast is what makes this spec discriminating. The carry-forward rule itself is owned by
 // postDistributionPickFromThunk.js.
 //
 
-const ORDER_COUNT = 3;
-
-// Plenty of qty on the staging LU so every DD order below is a small, partial pick off it.
-const LU_QTY = 1000;
-
-const createMasterdata = async () => {
-    const luExternalBarcode = `EXT-SWEEP-ANYHU-${Date.now()}`;
-
-    // Single-line DD orders: auto-advance only fires once an order is FULLY picked, which a
-    // single-line order reaches in one pick.
-    const distributionOrders = {};
-    for (let i = 1; i <= ORDER_COUNT; i++) {
-        distributionOrders[`DD${i}`] = {
-            seqNo: i * 10,
-            warehouseFrom: "wh",
-            warehouseTo: "wh",
-            warehouseInTransit: "whInTransit",
-            plant: "plantId",
-            lines: [{ product: "P", qtyEntered: i * 10, locatorFrom: "LZ", locatorTo: "packingTable" }],
-        };
-    }
-
-    const masterdata = await Backend.createMasterdata({
-        language: "en_US",
-        request: {
-            login: { user: { language: "en_US", workplace: "sweepAnyHUWorkplace" } },
-            mobileConfig: {
-                distribution: {
-                    navigateToJobsListAfterPickFromComplete: true,
-                    completeJobAutomatically: true,
-                    requireScanningProductCode: true,
-                    allowStartNextJobOnly: true,
-                    // THE flag under test, and sticky — see e2e/mobile-webui/CLAUDE.md § "Debugging
-                    // Flaky Tests" rule 3: always set, never inherited.
-                    allowPickingAnyHU: true,
-                    orderBys: 'Priority, LocatorPriority',
-                    // Job-level caption (asserted nowhere here, but kept consistent with the mirror
-                    // spec's convention so the launcher/job header renders a meaningful caption).
-                    captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName,Qty',
-                },
-            },
-            // The workplace is the packing table: a single warehouse, pick-from = packingTable.
-            workplaces: { sweepAnyHUWorkplace: { warehouse: 'wh', pickFromLocator: 'packingTable' } },
-            resources: { "plantId": { type: "PT" } },
-            products: { "P": { gtin: generateEAN13().ean13 } },
-            warehouses: {
-                "wh": {
-                    locators: {
-                        // The ground locator where the ONE staging LU sits.
-                        LZ: { isGroundLocator: true, priorityNo: 10 },
-                        // The non-ground target every DD order drops to.
-                        packingTable: { isGroundLocator: false, priorityNo: 999 },
-                    },
-                },
-                "whInTransit": { inTransit: true },
-            },
-            handlingUnits: {
-                // The single staging LU, scannable via its external barcode, holding plenty of P.
-                LU: { product: "P", warehouse: "wh", locator: "LZ", qty: LU_QTY, externalBarcode: luExternalBarcode },
-            },
-            distributionOrders,
-        },
+const createMasterdata = async () =>
+    await createSweepMasterdata({
+        // THE flag under test.
+        allowPickingAnyHU: true,
+        barcodePrefix: 'EXT-SWEEP-ANYHU',
+        workplaceKey: 'sweepAnyHUWorkplace',
     });
-
-    masterdata.luExternalBarcode = luExternalBarcode;
-    return masterdata;
-};
 
 // noinspection JSUnusedLocalSymbols
 test('Sweep: after auto-advance, the operator scans the staging LU again (it does not carry forward)', async ({ page }) => {

@@ -74,6 +74,28 @@ export const DistributionUtils = {
     }),
 
     /**
+     * Assert the source HUs of the given distribution job's pre-allocated move plan are EXACTLY
+     * `expectedHUQRCodes` (order-insensitive, one entry per step across all lines).
+     *
+     * The complement of expectPickAnyHUJobWithoutMovePlan below, and the check that makes the
+     * auto-advance "different source HU" case (postDistributionPickFromThunk case 2) literal: it pins
+     * BOTH that a plan exists at all — a job started with allowPickingAnyHU on has none, which is the
+     * look-alike that lands the operator on the same Scan-HU prompt for a different reason — and that
+     * the plan draws from this order's OWN HU, not from the one the operator just picked.
+     */
+    expectMovePlanSourceHUs: async ({ wfProcessId, expectedHUQRCodes }) => await test.step(`Backend: expect the move plan of wfProcess "${wfProcessId}" to draw from exactly ${JSON.stringify(expectedHUQRCodes)}`, async () => {
+        const wfProcess = await Backend.getWFProcess({ wfProcessId });
+        const lines = getJobLines({ wfProcess });
+        const steps = lines.flatMap((line) => line.steps ?? []);
+
+        expect(
+            steps.map((step) => step.pickFromHU?.qrCode?.code).sort(),
+            `the pre-allocated move plan of wfProcess "${wfProcessId}" was expected to draw from exactly the listed HUs:\n`
+            + JSON.stringify(lines, null, 2)
+        ).toEqual([...expectedHUQRCodes].sort());
+    }),
+
+    /**
      * Assert the given distribution job is in "pick any HU" mode AND carries no pre-allocated move
      * plan: every line reports allowPickingAnyHU, and there is not a single step.
      *
