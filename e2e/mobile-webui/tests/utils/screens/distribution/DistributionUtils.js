@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { Backend } from '../Backend';
 
@@ -12,8 +12,19 @@ export const DistributionUtils = {
         return match ? match[1] : null;
     },
 
+    /**
+     * Assert the screen is showing the given distribution job, reading the job from the URL.
+     *
+     * Polled, because the app reaches the next order WITHOUT a screen transition: the auto-advance
+     * replaces the job in the URL while the same pick-from screen container stays mounted, so there
+     * is nothing else for a caller to wait on — and when the order just picked needed no quantity
+     * dialog, nothing in the flow blocks until the pick has even been posted. Reading the URL once
+     * would then compare against the order the operator is still leaving.
+     */
     expectJobId: async ({ distributionJobId }) => {
-        await expect(await DistributionUtils.getJobIdFromPageUrl()).toEqual(distributionJobId);
+        await expect
+            .poll(async () => await DistributionUtils.getJobIdFromPageUrl(), { timeout: SLOW_ACTION_TIMEOUT })
+            .toEqual(distributionJobId);
     },
 
     // Assert a row of the shared `.view-header` table (the job/line header rendered on the
