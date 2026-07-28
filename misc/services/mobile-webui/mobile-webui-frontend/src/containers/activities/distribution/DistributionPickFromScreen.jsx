@@ -4,7 +4,7 @@ import { getNextEligiblePickFromLine } from '../../../api/distribution';
 import { toQRCodeString } from '../../../utils/qrCode/hu';
 import { ATTR_barcodeType, BARCODE_TYPE_EAN13 } from '../../../utils/qrCode/common';
 import { trl } from '../../../utils/translations';
-import { extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
+import { extractErrorCodeFromAxiosError, extractUserFriendlyErrorMessageFromAxiosError } from '../../../utils/toast';
 import { distributionJobScreenLocation, distributionLineScreenLocation } from '../../../routes/distribution';
 import ScanHUAndGetQtyComponent from '../../../components/ScanHUAndGetQtyComponent';
 import { resolveDistributionScannedBarcodeToParsedQRCode } from '../../../apps/distribution/services/barcodeResolverService';
@@ -16,6 +16,20 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { isRequireScanningProductCode } from '../../../reducers/wfProcesses/distribution/getDistributionJobCompleteStatus';
 import { postDistributionPickFromThunk } from '../../../apps/distribution/redux/postDistributionPickFromThunk';
 import { useDistributionLineHeaders } from './DistributionLineScreen';
+
+// The rejections that say the applied handling unit itself cannot serve the pick, so the operator has
+// to name another one. Any other failure leaves it the best information the screen has about where to
+// pick from, and reads as itself: relabelling it sends the operator after a handling unit for nothing.
+const HU_REFUSAL_ERROR_CODES = new Set([
+  // DistributionHUService.assertHUCanBePickedFrom
+  'DISTRIBUTION_HU_RESERVED',
+  'DISTRIBUTION_HU_ALREADY_AT_TARGET',
+  'DISTRIBUTION_HU_NOT_AT_TARGET',
+  // DistributionJobPickFromCommand.resolveHuIdToPick, keyed by AD_Message because neither message
+  // carries an AD_Message.ErrorCode and AdempiereException then reports the key.
+  'de.metas.distribution.workflows_api.ProductDoesNotMatch',
+  'de.metas.distribution.workflows_api.NotEnoughQty',
+]);
 
 const DistributionPickFromScreen = () => {
   const {
@@ -31,10 +45,11 @@ const DistributionPickFromScreen = () => {
   const [lineId, setLineId] = useState(lineIdParam);
 
   // The handling unit the screen was opened with — a job-screen scan, or one carried across an
-  // auto-advance — until the server refuses to pick from it. The refused code is what is remembered,
-  // so a handling unit a LATER order carries into this still-mounted screen is applied again.
-  const [refusedHUQRCode, setRefusedHUQRCode] = useState(null);
-  const appliedHUQRCode = huQRCodeParam === refusedHUQRCode ? undefined : huQRCodeParam;
+  // auto-advance — until the server refuses to pick from it. The refusal belongs to the order it was
+  // met on: this screen stays mounted across auto-advances, and a later order may carry the same
+  // handling unit in legitimately.
+  const [refusedOnWFProcessId, setRefusedOnWFProcessId] = useState(null);
+  const appliedHUQRCode = refusedOnWFProcessId === wfProcessId ? undefined : huQRCodeParam;
 
   const resolveHUScannedCode = async (scannedBarcode) => {
     const parsedQRCode = await resolveDistributionScannedBarcodeToParsedQRCode(scannedBarcode);
@@ -131,14 +146,15 @@ const DistributionPickFromScreen = () => {
       })
     ).catch((axiosError) => {
       // A refused handling unit the operator did not choose here is a dead end: this screen renders no
-      // handling-unit input while one is applied. Forget it so the prompt returns, with the reason.
-      // A network failure is no verdict on it and retrying can succeed, so it travels on untouched.
-      const isServerRefusal = axiosError?.response != null;
-      if (appliedHUQRCode == null || !isServerRefusal) {
+      // handling-unit input while one is applied. Forget it for this order so the prompt returns, with
+      // the reason. A failure that says nothing about it — a conflict elsewhere, a server fault, a lost
+      // connection, which carries no response at all — travels on untouched, and it stays applied.
+      const isHURefusal = HU_REFUSAL_ERROR_CODES.has(extractErrorCodeFromAxiosError(axiosError));
+      if (appliedHUQRCode == null || !isHURefusal) {
         throw axiosError;
       }
 
-      setRefusedHUQRCode(appliedHUQRCode);
+      setRefusedOnWFProcessId(wfProcessId);
       throw trl('activities.distribution.cannotPickFromSelectedHU', {
         reason: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
       });
