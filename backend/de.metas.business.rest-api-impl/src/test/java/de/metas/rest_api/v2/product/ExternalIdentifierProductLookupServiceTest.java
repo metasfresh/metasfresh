@@ -355,10 +355,11 @@ public class ExternalIdentifierProductLookupServiceTest
 	 * the query date must still resolve — the product must NOT become unresolvable just because
 	 * no PIIP row is valid on the requested date.
 	 *
-	 * <p>Setup mirrors cucumber scenario @Id:S0469_20 (manualPriceOLCandToInvoice):
-	 * ValidFrom=2022-01-01, query date=2021-04-15
+	 * <p>Setup mirrors the fallback case: ValidFrom=2022-01-01, query date=2021-04-15
 	 * (i.e. ValidFrom is AFTER the query date, so the validity-filtered primary query returns nothing).
-	 * Expected: the product is still returned (with the best-available PIIP), NOT empty.
+	 * Expected: the product resolves (product ID present) but the not-yet-valid PIIP is NOT attached —
+	 * applying a future packing instruction before its ValidFrom would be semantically wrong.
+	 * The downstream caller will fall back to virtual/No-Packing-Item.
 	 */
 	@Test
 	void gtin_resolves_product_even_when_no_piip_valid_on_date()
@@ -378,19 +379,21 @@ public class ExternalIdentifierProductLookupServiceTest
 		hupiItemProduct.setIsActive(true);
 		InterfaceWrapperHelper.save(hupiItemProduct);
 
-		// when — query date is BEFORE ValidFrom (mirrors cucumber: dateRequired=2021-04-15)
+		// when — query date is BEFORE ValidFrom (mirrors the fallback scenario: dateRequired=2021-04-15)
 		final ZonedDateTime queryDate = LocalDate.of(2021, 4, 15).atStartOfDay(ZoneOffset.UTC);
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
 		final Optional<ProductAndHUPIItemProductId> result = productLookupService.lookupProductByGTIN(identifier, queryDate);
 
-		// then — product must still resolve; validity must only decide WHICH PIIP, never make the product unresolvable
+		// then — product must still resolve; the not-yet-valid PIIP must NOT be attached
 		assertThat(result)
 				.as("Product with single future-ValidFrom PIIP must still resolve when queried before that date")
 				.isPresent();
 		assertThat(result.get().getProductId())
+				.as("Product ID must match")
 				.isEqualTo(ProductId.ofRepoId(product.getM_Product_ID()));
 		assertThat(result.get().getHupiItemProductId())
-				.isEqualTo(HUPIItemProductId.ofRepoId(hupiItemProduct.getM_HU_PI_Item_Product_ID()));
+				.as("Not-yet-valid PIIP must NOT be returned in the fallback — downstream uses virtual/No-Packing-Item")
+				.isEqualTo(HUPIItemProductId.VIRTUAL_HU);
 	}
 
 	@Test

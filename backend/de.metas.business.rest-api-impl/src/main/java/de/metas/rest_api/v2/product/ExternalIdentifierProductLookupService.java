@@ -109,9 +109,14 @@ public class ExternalIdentifierProductLookupService
 		if (hupi == null && date != null)
 		{
 			// Fallback: no PIIP is valid on the date (e.g. the only row has ValidFrom in the future).
-			// Validity must only decide WHICH PIIP is chosen — it must NEVER make the product unresolvable.
-			// Use the best-available PIIP (most recent ValidFrom) regardless of validity.
-			hupi = findFirstHupiByGtin(gtin, false, null);
+			// Resolve the product via the unfiltered query so the product is not lost, but do NOT
+			// attach the out-of-window PIIP — applying a not-yet-valid packing instruction would be wrong.
+			// The downstream caller will use virtual/No-Packing-Item in the absence of a PIIP.
+			final I_M_HU_PI_Item_Product fallbackHupi = findFirstHupiByGtin(gtin, false, null);
+			if (fallbackHupi != null)
+			{
+				return ProductAndHUPIItemProductId.opt(ProductId.ofRepoId(fallbackHupi.getM_Product_ID()));
+			}
 		}
 
 		if (hupi != null)
