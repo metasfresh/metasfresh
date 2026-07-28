@@ -16,7 +16,7 @@
     "sftpAuthType": "PASSWORD",
     "sftpRemotePath": "/inbound",
     "sftpPollingIntervalMs": "30000",
-    "sftpProcessedDirectory": ".done",
-    "sftpErrorDirectory": ".error"
+    "processedDirectory": ".done",
+    "errorDirectory": ".error"
   }
 }
