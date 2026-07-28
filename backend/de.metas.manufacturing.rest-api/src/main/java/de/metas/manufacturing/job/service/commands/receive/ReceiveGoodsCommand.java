@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands.receive;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -169,7 +170,7 @@ public class ReceiveGoodsCommand
 	}
 
 	@NonNull
-	private FinishedGoodsReceiveLine receiveLine(FinishedGoodsReceiveLine line)
+	private FinishedGoodsReceiveLine receiveLine(@NonNull final FinishedGoodsReceiveLine line)
 	{
 		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getReceiveToNewLU() != null)
@@ -248,6 +249,7 @@ public class ReceiveGoodsCommand
 		}
 	}
 
+	@Nullable
 	private ReceivingTarget receiveToNewLU(@NonNull final JsonNewLUTarget newLUTarget)
 	{
 		final Quantity qtyToReceive = getQtyToReceive();
@@ -392,30 +394,39 @@ public class ReceiveGoodsCommand
 
 	private Quantity getQtyToReceive()
 	{
-		final UomId uomId;
+		final UomId fallbackUomId;
 		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
 		if (coProductLine != null)
 		{
-			uomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
+			fallbackUomId = UomId.ofRepoId(coProductLine.getC_UOM_ID());
 		}
 		else
 		{
 			final I_PP_Order ppOrder = getPPOrder();
-			uomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
+			fallbackUomId = UomId.ofRepoId(ppOrder.getC_UOM_ID());
 		}
 
-		if (receiveUnitType.isTU() && tuPIItemProductIdForTUMode != null)
-		{
-			final HUPIItemProduct huPIItemProduct = loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode);
-			final QtyTU qtyTU = QtyTU.ofBigDecimal(qtyToReceiveBD);
-			return huPIItemProduct.computeQtyCUsOfQtyTUs(qtyTU);
-		}
-		else
-		{
-			return Quantitys.of(qtyToReceiveBD, uomId);
-		}
+		final HUPIItemProduct tuPIItemProductForTUMode = receiveUnitType.isTU() && tuPIItemProductIdForTUMode != null
+				? loadingAndSavingSupportServices.getTUPIItemProduct(tuPIItemProductIdForTUMode)
+				: null;
+
+		return computeQtyToReceive(qtyToReceiveBD, fallbackUomId, tuPIItemProductForTUMode);
 	}
 
+	@VisibleForTesting
+	static Quantity computeQtyToReceive(
+			@NonNull final BigDecimal qtyToReceiveBD,
+			@NonNull final UomId fallbackUomId,
+			@Nullable final HUPIItemProduct tuPIItemProductForTUMode)
+	{
+		if (tuPIItemProductForTUMode == null || tuPIItemProductForTUMode.isInfiniteCapacity())
+		{
+			return Quantitys.of(qtyToReceiveBD, fallbackUomId);
+		}
+		return tuPIItemProductForTUMode.computeQtyCUsOfQtyTUs(QtyTU.ofBigDecimal(qtyToReceiveBD));
+	}
+
+	@Nullable
 	private ReceivingTarget getPreviousReceivingTarget()
 	{
 		final I_PP_Order_BOMLine coProductLine = getCOProductLine();
@@ -440,6 +451,7 @@ public class ReceiveGoodsCommand
 		}
 	}
 
+	@Nullable
 	private ReceivingTarget receiveToNewTU(@NonNull final JsonNewTUTarget newTUTarget)
 	{
 		final HUPIItemProductId tuPIItemProductId = newTUTarget.getTuPIItemProductId();

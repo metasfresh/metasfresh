@@ -32,7 +32,9 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.pair.ImmutablePair;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
+import de.metas.bpartner.BPartnerId;
+import de.metas.inoutcandidate.ShipmentConstraintId;
+import de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintService;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -42,6 +44,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
 import de.metas.inoutcandidate.api.OlAndSched;
 import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidRequest;
+import de.metas.inoutcandidate.api.ShipmentScheduleUpdateInvalidResult;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -77,6 +80,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.inout.util.DeliveryGroupCandidate;
 import org.adempiere.inout.util.DeliveryGroupCandidateGroupId;
@@ -126,7 +130,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
-	private final IShipmentConstraintsBL shipmentConstraintsBL = Services.get(IShipmentConstraintsBL.class);
+	@NonNull private final ShipmentConstraintService shipmentConstraintService;
 	private final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
 	private final IDeliveryDayBL deliveryDayBL = Services.get(IDeliveryDayBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -154,6 +158,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final PickingBOMService pickingBOMService = new PickingBOMService();
 
 		return new ShipmentScheduleUpdater(
+				new ShipmentConstraintService(new de.metas.inoutcandidate.shipmentconstraint.ShipmentConstraintRepository()),
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
 				pickingBOMService,
@@ -176,7 +181,7 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	}
 
 	@Override
-	public int updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
+	public ShipmentScheduleUpdateInvalidResult updateShipmentSchedules(@NonNull final ShipmentScheduleUpdateInvalidRequest request)
 	{
 		final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 		loggable.addLog("ShipmentScheduleUpdater - Invoked with ShipmentScheduleUpdateInvalidRequest={}", request);
@@ -201,7 +206,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				loggable.addLog("ShipmentScheduleUpdater - created {} missing candidates", shipmentSchedulesNewIds.size());
 			}
 
-			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId);
+			final QueryLimit maxToProcess = request.getMaxToProcess();
+			final List<OlAndSched> olsAndScheds = shipmentSchedulePA.retrieveInvalid(selectionId, maxToProcess);
 			loggable.addLog("Found {} invalid shipment schedules and tagged them with {}", olsAndScheds.size(), selectionId);
 
 			invalidatePickingBOMProducts(olsAndScheds, selectionId);
@@ -211,8 +217,17 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// cleanup the marker/pointer tables
 			invalidSchedulesRepo.deleteRecomputeMarkersOutOfTrx(selectionId);
 
+			// NOTE: deliberately NOT "olsAndScheds.size() >= maxToProcess" -- the tag unit is a whole product
+			// (see markAllToRecomputeOutOfTrx), so a bounded pass can retrieve fewer, exactly as many, or MORE
+			// schedules than maxToProcess. The reliable signal is whether untagged markers still remain.
+			// Always false for NO_LIMIT, regardless of that signal, so the manual (single-shot) path never regresses.
+			final boolean limitReached = maxToProcess.isLimited() && invalidSchedulesRepo.existsUntaggedRecomputeMarkers();
+
 			logger.debug("Done");
-			return olsAndScheds.size();
+			return ShipmentScheduleUpdateInvalidResult.builder()
+					.updatedCount(olsAndScheds.size())
+					.limitReached(limitReached)
+					.build();
 		}
 		finally
 		{
@@ -829,13 +844,14 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private void updateShipmentConstraints(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final int billBPartnerId = sched.getBill_BPartner_ID();
-		final int deliveryStopShipmentConstraintId = shipmentConstraintsBL.getDeliveryStopShipmentConstraintId(billBPartnerId);
-		final boolean isDeliveryStop = deliveryStopShipmentConstraintId > 0;
-		if (isDeliveryStop)
+		final BPartnerId billBPartnerId = BPartnerId.ofRepoIdOrNull(sched.getBill_BPartner_ID());
+		final java.util.Optional<ShipmentConstraintId> constraintId = billBPartnerId != null
+				? shipmentConstraintService.getDeliveryStopConstraintIdFor(billBPartnerId)
+				: java.util.Optional.empty();
+		if (constraintId.isPresent())
 		{
 			sched.setIsDeliveryStop(true);
-			sched.setM_Shipment_Constraint_ID(deliveryStopShipmentConstraintId);
+			sched.setM_Shipment_Constraint_ID(constraintId.get().getRepoId());
 		}
 		else
 		{

@@ -10,6 +10,7 @@ Feature: Jasper Report Tests
     Given infrastructure and metasfresh are running
     And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config de.metas.report.jasper.IsMockReportService
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
     And metasfresh has date and time 2025-04-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config de.metas.payment.esr.Enabled
@@ -94,7 +95,7 @@ Feature: Jasper Report Tests
       | M_HU_ID | M_ReceiptSchedule_ID | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCUsPerTU | M_HU_PI_Item_Product_ID | M_LU_HU_PI_ID |
       | hu1     | rs1                  | N               | 1     | N               | 1     | N               | 10          | product_TU_10CU         | LU            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
     And create material receipt
       | M_HU_ID | M_ReceiptSchedule_ID | M_InOut_ID |
       | hu1     | rs1                  | receipt1   |

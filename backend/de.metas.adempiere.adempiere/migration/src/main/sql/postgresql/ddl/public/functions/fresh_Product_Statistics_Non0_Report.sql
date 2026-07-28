@@ -34,7 +34,17 @@ $BODY$
 
 
 SELECT x.*
-FROM report.fresh_product_statistics_report x
+FROM report.fresh_product_statistics_report(
+        p_C_Period_ID,
+        p_issotrx,
+        p_C_BPartner_ID,
+        p_C_Activity_ID,
+        p_M_Product_ID,
+        p_M_Product_Category_ID,
+        p_M_AttributeSetInstance_ID,
+        p_AD_Org_ID,
+        p_AD_Language
+    ) x
          LEFT JOIN c_bpartner bp ON x.c_bpartner_id = bp.c_bpartner_id
 WHERE (period1sum != 0
     OR period2sum != 0

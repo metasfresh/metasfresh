@@ -86,6 +86,8 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -125,6 +127,8 @@ import java.util.stream.Collectors;
 public class InOutBL implements IInOutBL
 {
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
+
+	@NonNull private final SpringContextHolder.Lazy<BPartnerAddressEffectiveBL> bpartnerAddressEffectiveBL = SpringContextHolder.lazyBean(BPartnerAddressEffectiveBL.class);
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -853,10 +857,7 @@ public class InOutBL implements IInOutBL
 	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		return bpartnerBL.getEffectiveShipperId(
-				BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
-				BPartnerLocationId.ofRepoId(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
-		);
+		return bpartnerAddressEffectiveBL.get().getDeliveryEffective(inout).getShipperId();
 	}
 
 	@Override
@@ -866,6 +867,16 @@ public class InOutBL implements IInOutBL
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
 				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())
+		);
+	}
+
+	@Override
+	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
 		);
 	}
 

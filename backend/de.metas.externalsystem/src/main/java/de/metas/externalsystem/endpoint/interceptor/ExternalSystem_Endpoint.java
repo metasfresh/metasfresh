@@ -88,12 +88,20 @@ public class ExternalSystem_Endpoint
 			endpoint.setSshPrivateKey(null);
 			endpoint.setSftpRemotePath(null);
 			endpoint.setSftpFilenamePattern(null);
+			endpoint.setSftpPollingIntervalMs(0);
 		}
 		else if (TransportType.SFTP.getCode().equals(newTransportType))
 		{
-			endpoint.setOutboundHttpEP(null);
+			endpoint.setHttpEndPoint(null);
 			endpoint.setOutboundHttpMethod(null);
 			endpoint.setContentType(null);
+			endpoint.setAuthType(null);
+			endpoint.setAuthToken(null);
+			endpoint.setLoginUsername(null);
+			endpoint.setPassword(null);
+			endpoint.setClientId(null);
+			endpoint.setClientSecret(null);
+			endpoint.setSasSignature(null);
 		}
 	}
 

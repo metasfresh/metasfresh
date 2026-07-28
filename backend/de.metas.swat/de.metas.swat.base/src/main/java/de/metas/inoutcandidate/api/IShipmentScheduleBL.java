@@ -35,16 +35,14 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.PInstanceId;
-import de.metas.project.ProjectId;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.storage.IStorageQuery;
 import de.metas.uom.UomId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.asi_aware.IAttributeSetInstanceAware;
-
-import javax.annotation.Nullable;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.warehouse.WarehouseId;
@@ -52,8 +50,10 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -200,6 +200,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	I_M_ShipmentSchedule getByOrderLineId(@NonNull OrderLineId orderLineId);
 
+	List<I_M_ShipmentSchedule> getByOrderLineIds(@NonNull Set<OrderLineId> orderLineIds);
+
 	void assertSalesOrderCanBeReactivated(@NonNull OrderId salesOrderId);
 
 	Quantity getQtyScheduledForPicking(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
@@ -214,4 +216,10 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 * Updates C_Project_ID on the shipment schedule for the given order line, if not yet processed.
 	 */
 	void updateProjectId(@NonNull OrderLineId orderLineId, @Nullable ProjectId projectId);
+
+	/**
+	 * Propagates the schedule's {@code C_Project_ID} onto its {@code M_AttributeSetInstance} via {@link org.adempiere.mm.attributes.api.AttributeConstants#ATTR_Project}.
+	 * No-op on processed schedules or when the project attribute is not storage-relevant.
+	 */
+	void updateASIFromProjectId(@NonNull I_M_ShipmentSchedule shipmentSchedule);
 }

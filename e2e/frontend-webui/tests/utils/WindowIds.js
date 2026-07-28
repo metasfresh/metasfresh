@@ -54,6 +54,15 @@ export const BUSINESS_PARTNER_WINDOW_ID = 123;
  */
 export const PRODUCT_WINDOW_ID = 140;
 
+/**
+ * Resource window (Ressource)
+ * Table: S_Resource
+ * Window ID: 236 (main tab AD_Tab_ID=414 "Ressource")
+ * Description: Manufacturing resources/work centers. Carries the optional
+ * LotNumberCode field that selects a per-resource lot-number sequence.
+ */
+export const RESOURCE_WINDOW_ID = 236;
+
 // ============================================================================
 // SALES SIDE WINDOWS
 // ============================================================================
@@ -107,6 +116,19 @@ export const SALES_INVOICE_WINDOW_ID = 167;
 export const RECEIPT_CANDIDATES_WINDOW_ID = 540196;
 
 // ============================================================================
+// TAX WINDOWS
+// ============================================================================
+
+/**
+ * Tax window (Steuersatz)
+ * Table: C_Tax
+ * AD_Window_ID: 137
+ * Tab: Steuer (AD_Tab_ID 174)
+ * Description: Define tax rates and their EN16931 VAT category for e-invoicing
+ */
+export const TAX_WINDOW_ID = 137;
+
+// ============================================================================
 // PAYMENT WINDOWS
 // ============================================================================
 
@@ -150,6 +172,36 @@ export const FORECAST_WINDOW_ID = 328;
  * with current stock on hand. Used for sales & purchase statistics.
  */
 export const PURCHASE_SALES_OVERVIEW_WINDOW_ID = 542070;
+
+/**
+ * Stock per Week window (Bestand pro Woche)
+ * Table: MD_Stock_PerWeek_V (AD_Table_ID=542612)
+ * Window ID: 542159
+ * Description: Read-only grid view of available-to-promise stock per week.
+ * Opens EMPTY (queryIfNoFilters=false via StockPerWeekSqlViewBindingCustomizer);
+ * rows load only after a filter (product / warehouse / week range) is applied.
+ */
+export const STOCK_PER_WEEK_WINDOW_ID = 542159;
+
+// ============================================================================
+// PICKING WINDOWS
+// ============================================================================
+
+/**
+ * Picking Terminal V2 (Kommissionier-Terminal v2)
+ * Custom view backed by PackageableViewFactoryV2
+ * Window ID: 540485
+ * Description: Browse-all picking terminal showing shipment schedules
+ */
+export const PICKING_TERMINAL_V2_WINDOW_ID = 540485;
+
+/**
+ * Picking Terminal V1 (Kommissionier-Terminal)
+ * Custom view backed by PackageableView with included PickingSlotView
+ * Window ID: 540350
+ * Description: Classic picking terminal with HU editor
+ */
+export const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
 
 // ============================================================================
 // SYSTEM/TEST WINDOWS

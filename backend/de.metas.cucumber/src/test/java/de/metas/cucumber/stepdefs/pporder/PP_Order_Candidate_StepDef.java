@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.InterfaceWrapperHelperUtils;
+import de.metas.cucumber.stepdefs.ItemProvider.ProviderResult;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
@@ -40,6 +41,7 @@ import de.metas.cucumber.stepdefs.order.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_Line_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.maturing.M_Maturing_Configuration_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -95,6 +97,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -152,16 +155,102 @@ public class PP_Order_Candidate_StepDef
 	private final M_HU_StepDefData huTable;
 	@NonNull
 	private final S_Resource_StepDefData resourceTable;
+	@NonNull
+	private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	private static final AdMessageKey MSG_QTY_ENTERED_LOWER_THAN_QTY_PROCESSED = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyEnteredLowerThanQtyProcessed");
 	private static final AdMessageKey MSG_QTY_TO_PROCESS_GREATER_THAN_QTY_LEFT = AdMessageKey.of("org.eevolution.productioncandidate.model.interceptor.QtyToProcessGreaterThanQtyLeftToBeProcessed");
 
+	/**
+	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order_Candidate} records matching the DataTable.
+	 * <p>
+	 * The rabbitMQ queues are drained first via {@link RabbitMQ_StepDef#wait_empty_all_queues()} (material-events
+	 * then async-batch) so the async material-dispo chain that creates / updates the candidates has fully settled
+	 * before the poll asserts. This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7
+	 * ("drain inside the consuming step def, as late as possible, never as a bare step in the .feature file").
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * Then after not more than 60s, PP_Order_Candidates are found
+	 *   | Identifier | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | DatePromised | DateStartSchedule | OPT.IsClosed | OPT.Processed |
+	 * </pre>
+	 */
 	@And("^after not more than (.*)s, PP_Order_Candidates are found$")
-	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable)
+	public void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		DataTableRows.of(dataTable)
 				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID)
 				.forEach(row -> validatePP_Order_Candidate(timeoutSec, row));
+	}
+
+	/**
+	 * Exact-set ("has only") variant of {@link #validatePP_Order_Candidate(int, DataTable)}: after the async chain
+	 * settles, the ONLY active PP_Order_Candidate records for the product(s) referenced in the table are exactly the
+	 * listed rows — no more, no fewer. Use it to prove that a re-evaluation created no phantom / extra production
+	 * candidate. Drains the rabbitMQ queues first (material -> async) so the candidate set is fully settled before the
+	 * count (module CLAUDE.md rule 7: drain inside the consuming step, never as a bare step in the .feature file).
+	 *
+	 * @cucumber.columns same as "PP_Order_Candidates are found".
+	 * @cucumber.example
+	 * <pre>
+	 * And after not more than 60s, the PP_Order_Candidate table has only the following records
+	 *   | Identifier | Processed | M_Product_ID | PP_Product_BOM_ID | PP_Product_Planning_ID | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised | DateStartSchedule | IsClosed |
+	 * </pre>
+	 */
+	@And("^after not more than (.*)s, the PP_Order_Candidate table has only the following records$")
+	public void validatePP_Order_Candidate_hasOnly(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
+		final DataTableRows rows = DataTableRows.of(dataTable)
+				.setAdditionalRowIdentifierColumnName(COLUMNNAME_PP_Order_Candidate_ID);
+
+		// each expected row must be present, and each row must resolve to a DISTINCT record: exclude the candidates
+		// already matched by earlier rows so that two byte-identical candidates (e.g. a lot-for-lot delta produced
+		// beside an already-processed one) are asserted one-to-one, instead of both matching the same attribute query.
+		final Set<PPOrderCandidateId> alreadyMatchedIds = new HashSet<>();
+		rows.forEach(row -> {
+			final I_PP_Order_Candidate matched = validatePP_Order_Candidate(timeoutSec, row, alreadyMatchedIds);
+			alreadyMatchedIds.add(PPOrderCandidateId.ofRepoId(matched.getPP_Order_Candidate_ID()));
+		});
+
+		// ... and NO other PP_Order_Candidate may exist for the product(s) referenced in the table.
+		// NOTE: no addOnlyActiveRecordsFilter here — the per-row query (toSqlQuery) does not filter on IsActive
+		// either, so the count must use the same population, otherwise an inactive candidate would make the
+		// per-row match and the count disagree.
+		final ImmutableSet<ProductId> productIds = rows.stream()
+				.map(row -> row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupIdIn(productTable))
+				.collect(ImmutableSet.toImmutableSet());
+		final int expectedCount = rows.toList().size();
+
+		StepDefUtil.<Boolean>tryAndWaitForItem()
+				.worker(() -> {
+					final List<I_PP_Order_Candidate> actual = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+							.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productIds)
+							.orderBy(COLUMNNAME_PP_Order_Candidate_ID)
+							.create()
+							.list();
+					if (actual.size() != expectedCount)
+					{
+						final StringBuilder sb = new StringBuilder();
+						for (final I_PP_Order_Candidate c : actual)
+						{
+							sb.append("\n\tPP_Order_Candidate_ID=").append(c.getPP_Order_Candidate_ID())
+									.append(" M_Product_ID=").append(c.getM_Product_ID())
+									.append(" QtyEntered=").append(c.getQtyEntered())
+									.append(" Processed=").append(c.isProcessed())
+									.append(" IsClosed=").append(c.isClosed());
+						}
+						return ProviderResult.resultWasNotFound(
+								"Expected " + expectedCount + " PP_Order_Candidate(s) but found " + actual.size()
+										+ " for products " + productIds + ":" + sb);
+					}
+					return ProviderResult.resultWasFound(true);
+				})
+				.maxWaitSeconds(timeoutSec)
+				.execute();
 	}
 
 	@And("update PP_Order_Candidates")
@@ -336,13 +425,22 @@ public class PP_Order_Candidate_StepDef
 
 	private void validatePP_Order_Candidate(final int timeoutSec, @NonNull final DataTableRow row) throws InterruptedException
 	{
-		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row))
+		validatePP_Order_Candidate(timeoutSec, row, ImmutableSet.of());
+	}
+
+	private I_PP_Order_Candidate validatePP_Order_Candidate(
+			final int timeoutSec,
+			@NonNull final DataTableRow row,
+			@NonNull final Set<PPOrderCandidateId> excludeIds) throws InterruptedException
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = StepDefUtil.tryAndWaitForItem(toSqlQuery(row, excludeIds))
 				.validateUsingConsumer((record) -> validatePP_Order_Candidate(record, row))
 				.logContext(() -> toTabularStringForProductIdentifier(row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID)))
 				.maxWaitSeconds(timeoutSec)
 				.execute();
 
 		row.getAsOptionalIdentifier().ifPresent(identifier -> ppOrderCandidateTable.putOrReplace(identifier, ppOrderCandidate));
+		return ppOrderCandidate;
 	}
 
 	private void validatePP_Order_Candidate(@NonNull final I_PP_Order_Candidate actual, @NonNull final DataTableRow row)
@@ -408,6 +506,10 @@ public class PP_Order_Candidate_StepDef
 				.ifPresent(processed -> softly.assertThat(actual.isProcessed()).as("Processed").isEqualTo(processed));
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsClosed)
 				.ifPresent(isClosed -> softly.assertThat(actual.isClosed()).as("IsClosed").isEqualTo(isClosed));
+		// asserted explicitly (not filtered out) so a candidate emptied + deactivated by a decrease stays visible in
+		// the "has only" set as IsActive=false rather than silently disappearing.
+		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsActive)
+				.ifPresent(isActive -> softly.assertThat(actual.isActive()).as("IsActive").isEqualTo(isActive));
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> softly.assertThat(actual.isMaturing()).as("IsMaturing").isEqualTo(isMaturing));
@@ -428,6 +530,11 @@ public class PP_Order_Candidate_StepDef
 	}
 
 	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row)
+	{
+		return toSqlQuery(row, ImmutableSet.of());
+	}
+
+	private IQuery<I_PP_Order_Candidate> toSqlQuery(@NonNull final DataTableRow row, @NonNull final Set<PPOrderCandidateId> excludeIds)
 	{
 		final StepDefDataIdentifier identifier = row.getAsOptionalIdentifier().orElse(null);
 		if (identifier != null && ppOrderCandidateTable.isPresent(identifier))
@@ -450,6 +557,11 @@ public class PP_Order_Candidate_StepDef
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_BOM_ID, bomId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Product_Planning_ID, productPlanningId)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_S_Resource_ID, resourceId);
+
+		if (!excludeIds.isEmpty())
+		{
+			builder.addNotInArrayFilter(COLUMNNAME_PP_Order_Candidate_ID, excludeIds);
+		}
 
 		row.getAsOptionalBoolean(I_PP_Order_Candidate.COLUMNNAME_IsMaturing)
 				.ifPresent(isMaturing -> builder.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_IsMaturing, isMaturing));

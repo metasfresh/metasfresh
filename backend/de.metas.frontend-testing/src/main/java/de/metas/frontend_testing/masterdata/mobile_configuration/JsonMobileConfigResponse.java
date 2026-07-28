@@ -46,9 +46,11 @@ public class JsonMobileConfigResponse
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean allowCompletingPartialPickingJob;
 		@Nullable Boolean isAnonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
+		@Nullable Boolean massPrinting;
 
 		@Nullable List<PickingJobFacetGroup> filters;
 	}

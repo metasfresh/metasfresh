@@ -135,12 +135,23 @@ public class M_HU_PI_Item_Product_StepDef
 				: null;
 
 		final StepDefDataIdentifier identifier = tableRow.getAsIdentifier();
+		final Integer bpartnerIdFilter = tableRow.getAsOptionalIdentifier(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID)
+				.map(bpIdentifier -> bpIdentifier.lookupNotNullIdIn(bpartnerTable).getRepoId())
+				.orElse(null);
 		final I_M_HU_PI_Item_Product huPiItemProductRecord = huPiItemProductTable.getOptional(identifier)
 				.orElseGet(() -> {
 					final IQueryBuilder<I_M_HU_PI_Item_Product> queryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID, productId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_ID, huPiItemId)
 							.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsActive, active);
+					if (bpartnerIdFilter != null)
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, bpartnerIdFilter);
+					}
+					else
+					{
+						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, null);
+					}
 					if (isInfiniteCapacity)
 					{
 						queryBuilder.addEqualsFilter(I_M_HU_PI_Item_Product.COLUMNNAME_IsInfiniteCapacity, true);

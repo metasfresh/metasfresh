@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1373880103L;
+	private static final long serialVersionUID = -391288279L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -598,18 +598,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
-	public void setCreateDta (final @Nullable java.lang.String CreateDta)
-	{
-		set_Value (COLUMNNAME_CreateDta, CreateDta);
-	}
-
-	@Override
-	public java.lang.String getCreateDta() 
-	{
-		return get_ValueAsString(COLUMNNAME_CreateDta);
-	}
-
-	@Override
 	public void setCreateFrom (final @Nullable java.lang.String CreateFrom)
 	{
 		set_Value (COLUMNNAME_CreateFrom, CreateFrom);
@@ -837,6 +825,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setDueDate (final @Nullable java.sql.Timestamp DueDate)
+	{
+		set_Value (COLUMNNAME_DueDate, DueDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getDueDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DueDate);
+	}
+
+	@Override
 	public void setDunningGrace (final @Nullable java.sql.Timestamp DunningGrace)
 	{
 		set_Value (COLUMNNAME_DunningGrace, DunningGrace);
@@ -1019,6 +1019,27 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public boolean isPaid() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPaid);
+	}
+
+	/** 
+	 * IsPartialInvoice AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int ISPARTIALINVOICE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String ISPARTIALINVOICE_Yes = "Y";
+	/** No = N */
+	public static final String ISPARTIALINVOICE_No = "N";
+	@Override
+	public void setIsPartialInvoice (final @Nullable java.lang.String IsPartialInvoice)
+	{
+		set_Value (COLUMNNAME_IsPartialInvoice, IsPartialInvoice);
+	}
+
+	@Override
+	public java.lang.String getIsPartialInvoice() 
+	{
+		return get_ValueAsString(COLUMNNAME_IsPartialInvoice);
 	}
 
 	@Override
@@ -1407,6 +1428,36 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getSalesRep_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesRep_ID);
+	}
+
+	/** 
+	 * ScriptedExport_Status AD_Reference_ID=542104
+	 * Reference name: ExternalSystem_ExportStatus
+	 */
+	public static final int SCRIPTEDEXPORT_STATUS_AD_Reference_ID=542104;
+	/** Pending = P */
+	public static final String SCRIPTEDEXPORT_STATUS_Pending = "P";
+	/** Enqueued = U */
+	public static final String SCRIPTEDEXPORT_STATUS_Enqueued = "U";
+	/** SendingStarted = D */
+	public static final String SCRIPTEDEXPORT_STATUS_SendingStarted = "D";
+	/** Sent = S */
+	public static final String SCRIPTEDEXPORT_STATUS_Sent = "S";
+	/** Error = E */
+	public static final String SCRIPTEDEXPORT_STATUS_Error = "E";
+	/** Invalid = I */
+	public static final String SCRIPTEDEXPORT_STATUS_Invalid = "I";
+	/** DontSend = N */
+	public static final String SCRIPTEDEXPORT_STATUS_DontSend = "N";
+	@Override
+	public void setScriptedExport_Status (final @Nullable java.lang.String ScriptedExport_Status)
+	{
+		throw new IllegalArgumentException ("ScriptedExport_Status is virtual column");	}
+
+	@Override
+	public java.lang.String getScriptedExport_Status() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScriptedExport_Status);
 	}
 
 	@Override

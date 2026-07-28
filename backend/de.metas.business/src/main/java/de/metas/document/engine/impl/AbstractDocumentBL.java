@@ -25,6 +25,7 @@ import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
+import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -55,6 +56,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 public abstract class AbstractDocumentBL implements IDocumentBL
 {
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
+
+	private static final DeadlockRetryPolicy DEADLOCK_RETRY_POLICY = DeadlockRetryPolicy.DEFAULT;
+
+	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
@@ -115,11 +120,9 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 							   @NonNull final String action,
 							   final boolean throwExIfNotSuccess)
 	{
-		final ITrxManager trxManager = Services.get(ITrxManager.class);
-
 		final String trxName = getTrxName(document.getDocumentModel(), true /* ignoreIfNotHandled */);
 
-		final Boolean processed = trxManager.call(trxName, new TrxCallable<Boolean>()
+		final TrxCallable<Boolean> processCallable = new TrxCallable<Boolean>()
 		{
 			@Override
 			public Boolean call() throws Exception
@@ -148,9 +151,28 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 				// put back the transaction which document had initially
 				setTrxName(document.getDocumentModel(), trxName, true /* ignoreIfNotHandled */);
 			}
-		});
+		};
+
+		final Boolean processed;
+		if (isEngineOwnsTheTransaction(trxName))
+		{
+			// engine-owned trxName => trxManager.call is REQUIRES_NEW: each retry attempt opens its own fresh trx
+			processed = DEADLOCK_RETRY_POLICY.call(
+					() -> trxManager.call(trxName, processCallable),
+					document.getDocumentInfo());
+		}
+		else
+		{
+			processed = trxManager.call(trxName, processCallable);
+		}
 
 		return processed != null && processed;
+	}
+
+	private boolean isEngineOwnsTheTransaction(@Nullable final String trxName)
+	{
+		return trxManager.isNull(trxName)
+				|| (ITrx.TRXNAME_ThreadInherited.equals(trxName) && !trxManager.hasThreadInheritedTrx());
 	}
 
 	protected boolean processIt0(@NonNull final IDocument doc, final String action) throws Exception

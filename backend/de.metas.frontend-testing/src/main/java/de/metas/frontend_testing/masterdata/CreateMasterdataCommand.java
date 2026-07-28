@@ -1,9 +1,14 @@
 package de.metas.frontend_testing.masterdata;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.frontend_testing.masterdata.adprocess.JsonSetAdProcessFlagsRequest;
+import de.metas.frontend_testing.masterdata.adprocess.SetAdProcessFlagsCommand;
 import de.metas.frontend_testing.masterdata.bpartner.CreateBPartnerCommand;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerRequest;
 import de.metas.frontend_testing.masterdata.bpartner.JsonCreateBPartnerResponse;
+import de.metas.frontend_testing.masterdata.compensation_group.CreateCompensationGroupSchemaCommand;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaRequest;
+import de.metas.frontend_testing.masterdata.compensation_group.JsonCompensationGroupSchemaResponse;
 import de.metas.frontend_testing.masterdata.custom_qrcode_format.CustomQRCodeFormatCommand;
 import de.metas.frontend_testing.masterdata.dd_order.DDOrderCommand;
 import de.metas.frontend_testing.masterdata.dd_order.JsonDDOrderRequest;
@@ -53,13 +58,20 @@ import de.metas.frontend_testing.masterdata.sales_order.SalesOrderCreateCommand;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateRequest;
 import de.metas.frontend_testing.masterdata.shipment.JsonShipmentCreateResponse;
 import de.metas.frontend_testing.masterdata.shipment.ShipmentCreateCommand;
+import de.metas.frontend_testing.masterdata.orgseller.ConfigureOrgSellerCommand;
+import de.metas.frontend_testing.masterdata.orgseller.JsonOrgSellerRequest;
 import de.metas.frontend_testing.masterdata.sysconfig.SysconfigCommand;
+import de.metas.frontend_testing.masterdata.shipper.CreateShipperCommand;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperRequest;
+import de.metas.frontend_testing.masterdata.shipper.JsonCreateShipperResponse;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserResponse;
 import de.metas.frontend_testing.masterdata.user.LoginUserCommand;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseResponse;
 import de.metas.frontend_testing.masterdata.warehouse.WarehouseCommand;
+import de.metas.frontend_testing.masterdata.mailbox.CreateMailboxCommand;
+import de.metas.frontend_testing.masterdata.mailbox.JsonMailboxResponse;
 import de.metas.frontend_testing.masterdata.workplace.CreateWorkplaceCommand;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceResponse;
 import de.metas.order.OrderId;
@@ -68,6 +80,7 @@ import lombok.Builder;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
@@ -91,17 +104,29 @@ public class CreateMasterdataCommand
 		// Apply sysconfigs early (before any masterdata creation)
 		final ImmutableMap<String, String> previousSysconfigs = applySysconfigs();
 
+		// Apply AD_Process flag overrides (e.g. IsPdfA3Output for the sales-invoice report process)
+		applyAdProcessFlags();
+
 		// IMPORTANT: the order is very important
 		final ImmutableMap<String, JsonLoginUserResponse> login = createLoginUsers();
+		final ImmutableMap<String, JsonMailboxResponse> mailboxes = createMailboxes();
 		final ImmutableMap<String, JsonCreateBPartnerResponse> bpartners = createBPartners();
+		configureOrgSeller();
 		final ImmutableMap<String, JsonCreateProductResponse> products = createProducts();
-		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
+		final ImmutableMap<String, JsonCompensationGroupSchemaResponse> compensationGroupSchemas = createCompensationGroupSchemas();
+		// Post-pass: products and schemas must both be built first; this sets M_Product.C_CompensationGroup_Schema_ID
+		// for products that named a schema identifier. Keep this call directly after createCompensationGroupSchemas().
+		linkProductsToCompensationGroupSchemas();
 		final ImmutableMap<String, JsonWarehouseResponse> warehouses = createWarehouses();
 		final ImmutableMap<String, JsonPickingSlotCreateResponse> pickingSlots = createPickingSlots();
 		final ImmutableMap<String, JsonWorkplaceResponse> workplaces = createWorkplaces();
+		// Resources must be created AFTER workplaces: a workstation resource may reference a workplace
+		// by identifier (JsonCreateResourceRequest.workplace), resolved from the context populated here.
+		final ImmutableMap<String, JsonCreateResourceResponse> resources = createResources();
 		final ImmutableMap<String, JsonCreateProductPlanningResponse> productPlannings = createProductPlannings();
 		final Map<String, JsonPackingInstructionsResponse> packingInstructions = createPackingInstructions();
 		final JsonMobileConfigResponse mobileConfig = createMobileConfiguration();
+		final ImmutableMap<String, JsonCreateShipperResponse> shippers = createShippers();
 		final ImmutableMap<String, JsonCreateHUResponse> hus = createHUs();
 		final ImmutableMap<String, JsonGenerateHUQRCodeResponse> generatedHUQRCodes = generateHUQRCodes();
 		final ImmutableMap<String, JsonSalesOrderCreateResponse> salesOrders = createSalesOrders();
@@ -121,7 +146,9 @@ public class CreateMasterdataCommand
 				.previousSysconfigs(previousSysconfigs.isEmpty() ? null : previousSysconfigs)
 				.mobileConfig(mobileConfig)
 				.login(login)
+				.mailboxes(mailboxes.isEmpty() ? null : mailboxes)
 				.bpartners(bpartners)
+				.compensationGroupSchemas(compensationGroupSchemas.isEmpty() ? null : compensationGroupSchemas)
 				.products(products)
 				.resources(resources)
 				.productPlannings(productPlannings)
@@ -129,6 +156,7 @@ public class CreateMasterdataCommand
 				.warehouses(warehouses)
 				.workplaces(workplaces)
 				.packingInstructions(packingInstructions)
+				.shippers(shippers)
 				.handlingUnits(hus)
 				.generatedHUQRCodes(generatedHUQRCodes)
 				.salesOrders(salesOrders)
@@ -184,6 +212,50 @@ public class CreateMasterdataCommand
 				.identifier(identifier)
 				.build()
 				.execute();
+	}
+
+	private ImmutableMap<String, JsonCompensationGroupSchemaResponse> createCompensationGroupSchemas()
+	{
+		return process(request.getCompensationGroupSchemas(), this::createCompensationGroupSchema);
+	}
+
+	private JsonCompensationGroupSchemaResponse createCompensationGroupSchema(final String identifier, final JsonCompensationGroupSchemaRequest request)
+	{
+		return CreateCompensationGroupSchemaCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
+				.build()
+				.execute();
+	}
+
+	/**
+	 * For every product whose request set {@link JsonCreateProductRequest#getCompensationGroupSchema()},
+	 * resolves the schema identifier (now that schemas have been created) and writes the FK to
+	 * {@code M_Product.C_CompensationGroup_Schema_ID}.
+	 */
+	private void linkProductsToCompensationGroupSchemas()
+	{
+		final Map<String, JsonCreateProductRequest> productRequests = request.getProducts();
+		if (productRequests == null || productRequests.isEmpty())
+		{
+			return;
+		}
+
+		productRequests.forEach((productIdentifier, productRequest) -> {
+			final Identifier schemaIdentifier = productRequest.getCompensationGroupSchema();
+			if (schemaIdentifier == null)
+			{
+				return;
+			}
+
+			final de.metas.product.ProductId productId = context.getId(Identifier.ofString(productIdentifier), de.metas.product.ProductId.class);
+			final de.metas.order.compensationGroup.GroupTemplateId schemaId = context.getId(schemaIdentifier, de.metas.order.compensationGroup.GroupTemplateId.class);
+
+			final org.compiere.model.I_M_Product productRecord = org.adempiere.model.InterfaceWrapperHelper.load(productId, org.compiere.model.I_M_Product.class);
+			productRecord.setC_CompensationGroup_Schema_ID(schemaId.getRepoId());
+			org.adempiere.model.InterfaceWrapperHelper.save(productRecord);
+		});
 	}
 
 	private ImmutableMap<String, JsonCreateProductResponse> createProducts()
@@ -262,6 +334,16 @@ public class CreateMasterdataCommand
 				.execute();
 	}
 
+	private ImmutableMap<String, JsonMailboxResponse> createMailboxes()
+	{
+		if (request.getMailboxes() == null) {return ImmutableMap.of();}
+
+		return CreateMailboxCommand.builder()
+				.context(context)
+				.requests(request.getMailboxes())
+				.build().execute();
+	}
+
 	private ImmutableMap<String, JsonWorkplaceResponse> createWorkplaces()
 	{
 		if (request.getWorkplaces() == null) {return ImmutableMap.of();}
@@ -305,6 +387,20 @@ public class CreateMasterdataCommand
 				.context(context)
 				.request(request.getMobileConfig())
 				//
+				.build().execute();
+	}
+
+	private ImmutableMap<String, JsonCreateShipperResponse> createShippers()
+	{
+		return process(request.getShippers(), this::createShipper);
+	}
+
+	private JsonCreateShipperResponse createShipper(final String identifier, final JsonCreateShipperRequest request)
+	{
+		return CreateShipperCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(Identifier.ofString(identifier))
 				.build().execute();
 	}
 
@@ -503,6 +599,36 @@ public class CreateMasterdataCommand
 	{
 		return SysconfigCommand.builder()
 				.sysconfigs(request.getSysconfigs())
+				.build()
+				.execute();
+	}
+
+	private void applyAdProcessFlags()
+	{
+		final List<JsonSetAdProcessFlagsRequest> requests = request.getAdProcessFlags();
+		if (requests == null || requests.isEmpty())
+		{
+			return;
+		}
+		for (final JsonSetAdProcessFlagsRequest flagRequest : requests)
+		{
+			SetAdProcessFlagsCommand.builder()
+					.request(flagRequest)
+					.build()
+					.execute();
+		}
+	}
+
+	private void configureOrgSeller()
+	{
+		final JsonOrgSellerRequest orgSellerRequest = request.getOrgSeller();
+		if (orgSellerRequest == null)
+		{
+			return;
+		}
+		ConfigureOrgSellerCommand.builder()
+				.context(context)
+				.request(orgSellerRequest)
 				.build()
 				.execute();
 	}

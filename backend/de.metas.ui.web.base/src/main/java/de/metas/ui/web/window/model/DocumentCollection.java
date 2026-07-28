@@ -86,6 +86,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 
 @Component
@@ -599,6 +600,96 @@ public class DocumentCollection
 		}
 	}
 
+	/**
+	 * Decides whether the cached root document should be evicted when one of its children gets
+	 * invalidated.
+	 *
+	 * <p>Historically this was gated purely on {@link DocumentToInvalidate#isInvalidateDocument()},
+	 * which the dispatcher only sets for whole-table invalidations. For a specific child-record
+	 * invalidation (the common case when a single child row is inserted/updated/deleted
+	 * externally), the gate stays false and the cached parent keeps its in-memory state.
+	 *
+	 * <p>That is fine for a happy-path parent — the child collection is flagged stale and the
+	 * frontend refreshes it on its own. It is NOT fine when the cached parent is in error state,
+	 * because a child-state change is a strong signal that the condition that produced the error
+	 * may now be gone. Without this escape hatch, the sticky error (and its potentially huge
+	 * {@code reason} string) survives until the document is evicted by LRU or by an admin cache
+	 * reset with {@code forgetNotSavedDocuments=true}.
+	 *
+	 * <p><b>Exception — user-validation errors are kept, not self-healed.</b> A user-fixable business
+	 * rejection (e.g. editing a record to a value that violates a unique constraint) sets the root's
+	 * save/valid status to a <i>user-validation</i> error. Unlike a system/technical error, this is not a
+	 * stale-data artifact a fresh reload would clear — reloading merely discards the user's rejected input
+	 * and the explanation. So a user-validation error is NOT treated as an eviction reason here; the root
+	 * is kept and the frontend keeps mirroring the error the standard way (via {@code saveStatus}). It
+	 * still clears naturally on the next successful (writable) save, LRU eviction, or admin cache reset.
+	 * An explicit full-invalidation request, a system save error, or a system invalid state still evicts.
+	 *
+	 * <p>Mostly-boolean signature on purpose so it can be unit-tested without needing to mock
+	 * {@link Document} (which is final and has a non-trivial constructor).
+	 *
+	 * <p>The unsaved-new-included-document guard (evaluated last) takes precedence over
+	 * {@code callerRequestedFullInvalidation}: we never discard in-memory work-in-progress, even on an
+	 * explicit full-invalidation request — so this method can return {@code false} despite
+	 * {@code callerRequestedFullInvalidation == true}.
+	 *
+	 * @param callerRequestedFullInvalidation   the caller explicitly asked to fully invalidate the root (not
+	 *                                          just a child-triggered self-heal); still overridden by the
+	 *                                          unsaved-new-included-document guard (see note above)
+	 * @param rootHasSaveError                  the cached root currently carries a save error at all — the gate
+	 *                                          for the save-error eviction branch
+	 * @param rootSaveErrorIsUserValidation     the root's save error (if any) is a user-fixable business
+	 *                                          rejection, not a system/technical fault — kept, not evicted
+	 * @param rootValidStatusIsValid            the root's valid-status is currently valid; when {@code false}
+	 *                                          the invalid-valid-status eviction branch applies
+	 * @param rootValidStatusInvalidIsUserValidation the root's invalid valid-status (if any) is a user-fixable
+	 *                                          business rejection — kept, not evicted
+	 * @param rootIsNew                         the cached root itself is new (not yet persisted); evicting it
+	 *                                          would lose it entirely
+	 * @param rootHasUnsavedNewIncludedDocument supplies whether the root owns an unsaved, new, in-memory
+	 *                                          included document whose work would be lost on eviction. Evaluated
+	 *                                          lazily — only when the root would otherwise be evicted — because it
+	 *                                          walks the included collections and is wasted on the happy path.
+	 */
+	static boolean shouldInvalidateRootOnChildInvalidation(
+			final boolean callerRequestedFullInvalidation,
+			final boolean rootHasSaveError,
+			final boolean rootSaveErrorIsUserValidation,
+			final boolean rootValidStatusIsValid,
+			final boolean rootValidStatusInvalidIsUserValidation,
+			final boolean rootIsNew,
+			@NonNull final BooleanSupplier rootHasUnsavedNewIncludedDocument)
+	{
+		// Never evict a new (not-yet-persisted) root — we would lose it entirely and the user would
+		// get a 404 with the document vanished from his browser.
+		if (rootIsNew)
+		{
+			return false;
+		}
+
+		// Would we evict at all? (cheap checks)
+		// A user-validation error — a user-fixable business rejection such as a unique-constraint
+		// violation — is NOT, by itself, a reason to evict: keeping the errored root lets the user keep
+		// seeing why their edit was rejected, instead of the error silently self-healing away on the next
+		// child-record invalidation (which, for an already-persisted record, also reverts the rejected
+		// value). Only a system/technical save error, a system invalid state, or an explicit
+		// full-invalidation request forces eviction.
+		final boolean systemSaveErrorForcesEvict = rootHasSaveError && !rootSaveErrorIsUserValidation;
+		final boolean systemInvalidForcesEvict = !rootValidStatusIsValid && !rootValidStatusInvalidIsUserValidation;
+		final boolean wouldInvalidate = callerRequestedFullInvalidation
+				|| systemSaveErrorForcesEvict
+				|| systemInvalidForcesEvict;
+		if (!wouldInvalidate)
+		{
+			return false;
+		}
+
+		// We would evict — but never discard a root that still owns an unsaved, new, in-memory included
+		// document: that work would be lost and the next read-only load would 404. Checked last and
+		// lazily because it walks the included collections.
+		return !rootHasUnsavedNewIncludedDocument.getAsBoolean();
+	}
+
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
@@ -649,7 +740,14 @@ public class DocumentCollection
 				// Invalidate the root document
 				// NOTE: avoid invalidating if the document is new (and not saved) because in that case we will lose the document and we will never be able to recover.
 				// As a symptom the user will get 404 or similar in his browser and the document will vanish completely.
-				if (documentToInvalidate.isInvalidateDocument() && !rootDocument.isNew())
+				if (shouldInvalidateRootOnChildInvalidation(
+						documentToInvalidate.isInvalidateDocument(),
+						rootDocument.getSaveStatus().isError(),
+						rootDocument.getSaveStatus().isUserValidationError(),
+						rootDocument.getValidStatus().isValid(),
+						rootDocument.getValidStatus().isUserValidationError(),
+						rootDocument.isNew(),
+						rootDocument::hasUnsavedNewIncludedDocuments))
 				{
 					rootDocuments.invalidate(rootDocumentKey);
 				}

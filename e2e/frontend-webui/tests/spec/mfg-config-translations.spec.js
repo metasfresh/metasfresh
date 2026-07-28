@@ -42,7 +42,7 @@ test.describe('MobileUI MFG Config Translations', () => {
 
     // Verify German translations are present (not English)
     // The exact labels depend on which fields are displayed in grid view
-    expect(allHeaderText).toContain('Zuteilung beliebiger HU erlauben');
+    expect(allHeaderText).toContain('Rohwarenprüfung deaktivieren');
   });
 
   //
@@ -76,6 +76,6 @@ test.describe('MobileUI MFG Config Translations', () => {
     console.log('Grid headers (en_US):', allHeaderText);
 
     // Verify English translations are present
-    expect(allHeaderText).toContain('Allow Issuing Any HU');
+    expect(allHeaderText).toContain('No Raw Material Check');
   });
 });

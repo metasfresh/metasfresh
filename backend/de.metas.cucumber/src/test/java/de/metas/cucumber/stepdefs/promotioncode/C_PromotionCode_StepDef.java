@@ -3,12 +3,17 @@ package de.metas.cucumber.stepdefs.promotioncode;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.ValueAndName;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_PromotionCode;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
@@ -37,20 +42,41 @@ public class C_PromotionCode_StepDef
 
 	private void createPromotionCode(@NonNull final DataTableRow row)
 	{
-		final I_C_PromotionCode record = InterfaceWrapperHelper.newInstance(I_C_PromotionCode.class);
-
 		final ValueAndName valueAndName = row.suggestValueAndName();
-		record.setValue(valueAndName.getValue());
+
+		// Upsert by Value: re-use an existing record if found (prevents UniqueConstraint errors on repeated runs)
+		final I_C_PromotionCode existingRecord = findExistingByValue(valueAndName.getValue());
+		final I_C_PromotionCode record;
+		if (existingRecord != null)
+		{
+			record = existingRecord;
+		}
+		else
+		{
+			final I_C_PromotionCode newRecord = InterfaceWrapperHelper.newInstance(I_C_PromotionCode.class);
+			newRecord.setValue(valueAndName.getValue());
+			record = newRecord;
+		}
 		record.setName(valueAndName.getName());
 
 		row.getAsOptionalString(I_C_PromotionCode.COLUMNNAME_Description)
 				.ifPresent(record::setDescription);
 		row.getAsOptionalLocalDate(I_C_PromotionCode.COLUMNNAME_ValidTo)
-				.ifPresent(validTo -> record.setValidTo(java.sql.Timestamp.valueOf(validTo.atStartOfDay())));
+				.ifPresent(validTo -> record.setValidTo(Timestamp.valueOf(validTo.atStartOfDay())));
 
 		saveRecord(record);
 
 		row.getAsOptionalIdentifier()
 				.ifPresent(identifier -> promotionCodeTable.putOrReplace(identifier, record));
+	}
+
+	@Nullable
+	private static I_C_PromotionCode findExistingByValue(@NonNull final String value)
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_C_PromotionCode.class)
+				.addEqualsFilter(I_C_PromotionCode.COLUMNNAME_Value, value)
+				.create()
+				.firstOnly(I_C_PromotionCode.class);
 	}
 }

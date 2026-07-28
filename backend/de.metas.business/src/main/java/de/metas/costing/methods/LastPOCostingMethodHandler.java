@@ -59,7 +59,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createCostForMatchPO(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
@@ -91,7 +91,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 	@Override
 	protected CostDetailCreateResult createOutboundCostDefaultImpl(final CostDetailCreateRequest request)
 	{
-		final CurrentCost currentCosts = utils.getCurrentCost(request);
+		final CurrentCost currentCosts = utils.getCurrentCostForUpdate(request);
 		final CostDetailPreviousAmounts previousCosts = CostDetailPreviousAmounts.of(currentCosts);
 
 		final CostDetailCreateResult result = utils.createCostDetailRecordWithChangedCosts(request, previousCosts);
@@ -123,7 +123,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final CostSegmentAndElement outboundSegmentAndElement = utils.extractOutboundCostSegmentAndElement(request);
 		final CostSegmentAndElement inboundSegmentAndElement = utils.extractInboundCostSegmentAndElement(request);
 
-		final CurrentCost outboundCurrentCosts = utils.getCurrentCost(outboundSegmentAndElement);
+		final CurrentCost outboundCurrentCosts = utils.getCurrentCostForUpdate(outboundSegmentAndElement);
 		final CostDetailPreviousAmounts outboundPreviousCosts = CostDetailPreviousAmounts.of(outboundCurrentCosts);
 		final CostPrice currentCostPrice = outboundCurrentCosts.getCostPrice();
 		final Quantity outboundQty = utils.convertToUOM(
@@ -182,7 +182,7 @@ public class LastPOCostingMethodHandler extends CostingMethodHandlerTemplate
 			utils.saveCurrentCost(outboundCurrentCosts);
 
 			// Inbound cost
-			final CurrentCost inboundCurrentCosts = utils.getCurrentCost(inboundSegmentAndElement);
+			final CurrentCost inboundCurrentCosts = utils.getCurrentCostForUpdate(inboundSegmentAndElement);
 			final CostDetailPreviousAmounts inboundPreviousCosts = CostDetailPreviousAmounts.of(inboundCurrentCosts);
 			inboundResult = utils.createCostDetailRecordWithChangedCosts(
 					inboundCostDetailRequest,

@@ -15,11 +15,13 @@ import de.metas.organization.IOrgDAO;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.CreateSelectionResponse;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
@@ -34,6 +36,9 @@ public class DDOrderCandidateService
 	public static final String SYSCONFIG_DDOrderAggregation_header_bySalesOrderId = "DDOrderAggregation.header.bySalesOrderId";
 	public static final String SYSCONFIG_DDOrderAggregation_header_byPPOrderRef = "DDOrderAggregation.header.byPPOrderRef";
 	public static final String SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId = "DDOrderAggregation.line.bySalesOrderLineId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byProductId = "DDOrderAggregation.header.byProductId";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byLocatorFrom = "DDOrderAggregation.header.byLocatorFrom";
+	public static final String SYSCONFIG_DDOrderAggregation_header_byLocatorTo = "DDOrderAggregation.header.byLocatorTo";
 
 	@NonNull private final DDOrderCandidateRepository ddOrderCandidateRepository;
 	@NonNull private final DDOrderCandidateAllocRepository ddOrderCandidateAllocRepository;
@@ -76,9 +81,17 @@ public class DDOrderCandidateService
 		ddOrderCandidateEnqueueService.enqueueIds(ids);
 	}
 
-	public void enqueueToProcess(@NonNull final PInstanceId selectionId)
+	public void enqueueToProcess(@NonNull final DDOrderCandidateQuery query)
 	{
-		ddOrderCandidateEnqueueService.enqueueSelection(selectionId);
+		final CreateSelectionResponse selection = ddOrderCandidateRepository.createSelection(query).orElse(null);
+		if (selection == null)
+		{
+			Loggables.addLog("No DD_Order_Candidate(s) to enqueue for {}", query);
+			return;
+		}
+
+		Loggables.addLog("Enqueue {} DD_Order_Candidate(s) for {}", selection.getCount(), query);
+		ddOrderCandidateEnqueueService.enqueueSelection(selection.getSelectionId());
 	}
 
 	public List<DDOrderCandidate> getBySelectionId(@NonNull final PInstanceId selectionId)
@@ -115,6 +128,9 @@ public class DDOrderCandidateService
 				.aggregateBySalesOrderId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_bySalesOrderId, true))
 				.aggregateByPPOrderRef(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byPPOrderRef, true))
 				.aggregateBySalesOrderLineId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_line_bySalesOrderLineId, true))
+				.aggregateByProductId(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byProductId, false))
+				.aggregateByLocatorFrom(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byLocatorFrom, false))
+				.aggregateByLocatorTo(sysConfigBL.getBooleanValue(SYSCONFIG_DDOrderAggregation_header_byLocatorTo, false))
 				.build();
 	}
 

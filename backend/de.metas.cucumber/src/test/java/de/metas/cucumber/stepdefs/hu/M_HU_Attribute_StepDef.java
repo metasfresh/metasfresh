@@ -25,12 +25,12 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.DataTableRow;
 import de.metas.cucumber.stepdefs.DataTableRows;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDataIdentifier;
 import de.metas.cucumber.stepdefs.attribute.M_Attribute_StepDefData;
 import de.metas.cucumber.stepdefs.context.SharedTestContext;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -90,22 +90,37 @@ public class M_HU_Attribute_StepDef
 		DataTableRows.of(dataTable).forEach(this::validateHUAttribute);
 	}
 
+	/**
+	 * Sets a numeric attribute value recursively on the given HU and all its descendants.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>M_HU_ID</b> — (required, identifier-ref) HU at the root of the recursion<br>
+	 *   <b>M_Attribute_ID</b> — (required, identifier-ref) attribute to set<br>
+	 *   <b>ValueNumber</b> — (optional) numeric value; {@code null} clears the attribute<br>
+	 * @cucumber.depends StepDefData: M_HU_StepDefData, M_Attribute_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And update M_HU_Attribute recursive:
+	 *   | M_HU_ID | M_Attribute_ID | ValueNumber |
+	 *   | hu_lu   | weightAttr     | 12.5        |
+	 * </pre>
+	 */
 	@And("update M_HU_Attribute recursive:")
 	public void update_M_HU_Attribute_recursive(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_HU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
+		DataTableRows.of(dataTable).forEach(row -> {
+			final I_M_HU hu = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID).lookupNotNullIn(huTable);
+			final Attribute attribute = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID).lookupNotNullIn(attributeTable);
+			final BigDecimal valueNumber = row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber).orElse(null);
 
-			final String attributeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			final Attribute attribute = attributeTable.get(attributeIdentifier);
-
-			final BigDecimal valueNumber = DataTableUtil.extractBigDecimalForColumnName(row, "OPT." + I_M_HU_Attribute.COLUMNNAME_ValueNumber);
-
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), attribute.getAttributeCode(), valueNumber, null);
-		}
+			huAttributesBL.updateHUAttributeRecursive(
+					HuId.ofRepoId(hu.getM_HU_ID()),
+					HUAttributeUpdateRequest.builder()
+							.attributeCode(attribute.getAttributeCode())
+							.attributeValue(valueNumber)
+							.build());
+		});
 	}
 
 	@And("update M_HU_Attribute:")
@@ -206,6 +221,28 @@ public class M_HU_Attribute_StepDef
 				+ ", ValueDate=" + huAttribute.getValueDate();
 	}
 
+	/**
+	 * Changes an HU attribute via the attribute storage service, which triggers propagation and event firing.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_HU_ID.Identifier} — HU whose attribute is to be changed</li>
+	 *   <li>{@code M_Attribute_ID.Value} — attribute code (e.g. "WeightGross", "Lot-Nummer")</li>
+	 * </ul>
+	 * Optional columns (at least one value column should be present):
+	 * <ul>
+	 *   <li>{@code OPT.ValueNumber} — numeric value (BigDecimal); used for number-type attributes</li>
+	 *   <li>{@code OPT.Value} — value as string; for list/string-type attributes pass the attribute-value
+	 *       code (e.g. "A", "B"); for numeric attributes a parseable number string also works</li>
+	 * </ul>
+	 *
+	 * <p>Example (list attribute):
+	 * <pre>
+	 * And M_HU_Attribute is changed
+	 *   | M_HU_ID.Identifier | M_Attribute_ID.Value    | OPT.Value |
+	 *   | vhu1               | stock_attr_rekey_test   | B         |
+	 * </pre>
+	 */
 	private void changeHUAttribute(@NonNull final DataTableRow row)
 	{
 		final StepDefDataIdentifier huIdentifier = row.getAsIdentifier(I_M_HU_Attribute.COLUMNNAME_M_HU_ID);
@@ -230,7 +267,20 @@ public class M_HU_Attribute_StepDef
 		row.getAsOptionalBigDecimal(I_M_HU_Attribute.COLUMNNAME_ValueNumber)
 				.ifPresent(valueNumber -> attributesStorage.setValue(attributeRecord, valueNumber));
 
-		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value)
-				.ifPresent(value -> attributesStorage.setValue(attributeRecord, value));
+		// OPT.Value: dispatch on the attribute's declared value type, not on whether the string
+		// parses as a number — otherwise a list attribute with a numeric-looking value code
+		// (e.g. "1") would be silently sent down the numeric path.
+		row.getAsOptionalString(I_M_HU_Attribute.COLUMNNAME_Value).ifPresent(valueStr -> {
+			final AttributeValueType attributeValueType = AttributeValueType.ofCode(attributeRecord.getAttributeValueType());
+			if (attributeValueType == AttributeValueType.NUMBER)
+			{
+				attributesStorage.setValue(attributeRecord, new BigDecimal(valueStr));
+			}
+			else
+			{
+				// STRING / LIST / DATE: set as the string value (list = the attribute-value code)
+				attributesStorage.setValue(attributeRecord, valueStr);
+			}
+		});
 	}
 }

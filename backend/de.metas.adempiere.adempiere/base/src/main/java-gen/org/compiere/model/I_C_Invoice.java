@@ -30,7 +30,7 @@ public interface I_C_Invoice
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
-	 * Set Inputsource.
+	 * Set Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -39,7 +39,7 @@ public interface I_C_Invoice
 	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
 
 	/**
-	 * Get Inputsource.
+	 * Get Input Source.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -794,27 +794,6 @@ public interface I_C_Invoice
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set CreateDta.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCreateDta (@Nullable java.lang.String CreateDta);
-
-	/**
-	 * Get CreateDta.
-	 *
-	 * <br>Type: Button
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCreateDta();
-
-	ModelColumn<I_C_Invoice, Object> COLUMN_CreateDta = new ModelColumn<>(I_C_Invoice.class, "CreateDta", null);
-	String COLUMNNAME_CreateDta = "CreateDta";
-
-	/**
 	 * Set Create From ....
 	 * Prozess, der die Position(en) aus einem bestehenden Beleg kopiert
 	 *
@@ -1112,6 +1091,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_DocumentNo = new ModelColumn<>(I_C_Invoice.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
+
+	/**
+	 * Set Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDueDate (@Nullable java.sql.Timestamp DueDate);
+
+	/**
+	 * Get Due Date.
+	 * Date when the payment is due
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getDueDate();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_DueDate = new ModelColumn<>(I_C_Invoice.class, "DueDate", null);
+	String COLUMNNAME_DueDate = "DueDate";
 
 	/**
 	 * Set Dunning Grace Date.
@@ -1445,6 +1447,29 @@ public interface I_C_Invoice
 
 	ModelColumn<I_C_Invoice, Object> COLUMN_IsPaid = new ModelColumn<>(I_C_Invoice.class, "IsPaid", null);
 	String COLUMNNAME_IsPaid = "IsPaid";
+
+	/**
+	 * Set Partial invoice.
+	 * When checked, this invoice is a partial invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsPartialInvoice (@Nullable java.lang.String IsPartialInvoice);
+
+	/**
+	 * Get Partial invoice.
+	 * When checked, this invoice is a partial invoice.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIsPartialInvoice();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_IsPartialInvoice = new ModelColumn<>(I_C_Invoice.class, "IsPartialInvoice", null);
+	String COLUMNNAME_IsPartialInvoice = "IsPartialInvoice";
 
 	/**
 	 * Set Partially Paid.
@@ -2016,6 +2041,29 @@ public interface I_C_Invoice
 	int getSalesRep_ID();
 
 	String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/**
+	 * Set Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setScriptedExport_Status (@Nullable java.lang.String ScriptedExport_Status);
+
+	/**
+	 * Get Export Status.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getScriptedExport_Status();
+
+	ModelColumn<I_C_Invoice, Object> COLUMN_ScriptedExport_Status = new ModelColumn<>(I_C_Invoice.class, "ScriptedExport_Status", null);
+	String COLUMNNAME_ScriptedExport_Status = "ScriptedExport_Status";
 
 	/**
 	 * Set Send EMail.

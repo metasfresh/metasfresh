@@ -96,11 +96,22 @@ public class DistributionWorkflowLaunchersProvider
 		final MobileUIDistributionConfig config = getConfig();
 		final Workplace workplace = warehouseService.getWorkplaceByUserId(userId).orElse(null);
 
-		return DDOrderReferenceQuery.builder()
+		final DDOrderReferenceQueryBuilder builder = DDOrderReferenceQuery.builder()
 				.sorting(config.getSorting())
 				.responsibleId(userId)
-				.warehouseToId(workplace != null ? workplace.getWarehouseId() : null)
-				.locatorToId(workplace != null ? workplace.getPickFromLocatorId() : null);
+				.workplaceWarehouseId(workplace != null ? workplace.getWarehouseId() : null)
+				.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
+
+		if (workplace != null && !workplace.isPackingPlace())
+		{
+			builder.excludeLocatorToIds(warehouseService.getAllPackingPlacePickFromLocatorIds());
+		}
+		else
+		{
+			builder.workplacePickFromLocatorId(workplace != null ? workplace.getPickFromLocatorId() : null);
+		}
+
+		return builder;
 	}
 
 	private WorkflowLauncher toWorkflowLauncher(@NonNull final DDOrderReference ddOrderReference)

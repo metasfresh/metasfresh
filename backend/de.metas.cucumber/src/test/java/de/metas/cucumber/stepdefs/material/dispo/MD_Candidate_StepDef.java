@@ -44,6 +44,7 @@ import de.metas.cucumber.stepdefs.pporder.PP_OrderLine_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_BOMLine_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.material.dispo.commons.SimulatedCandidateService;
@@ -149,6 +150,8 @@ public class MD_Candidate_StepDef
 	@NonNull private final PP_OrderLine_Candidate_StepDefData ppOrderLineCandidateTable;
 	@NonNull private final PP_Order_StepDefData ppOrderTable;
 	@NonNull private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
+
+	@NonNull private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table) throws Throwable
@@ -392,9 +395,108 @@ public class MD_Candidate_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, candidateDetailWasDeleted);
 	}
 
+	/**
+	 * Asserts that no {@code MD_Candidate} rows (excluding STOCK-type) exist for the given product.
+	 * Use after draining the RabbitMQ queue to verify that a dropship-warehouse SO did not trigger
+	 * any material-disposition demand candidates.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   (none — product identifier is provided directly in the step text)
+	 * @cucumber.example
+	 * <pre>
+	 * Then no MD_Candidate exists for M_Product_ID product_dw
+	 * </pre>
+	 */
+	@Then("^no MD_Candidate exists for M_Product_ID (.*)$")
+	public void no_md_candidate_exists_for_product(@NonNull final String productIdentifier)
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+
+		final int count = queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+				.addEqualsFilter(COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+				.addNotEqualsFilter(COLUMNNAME_MD_Candidate_Type, de.metas.material.dispo.commons.candidate.CandidateType.STOCK.getCode())
+				.create()
+				.count();
+
+		assertThat(count)
+				.as("Expected zero non-STOCK MD_Candidate rows for product %s (M_Product_ID=%s) — dropship-warehouse SO must bypass material disposition",
+						productIdentifier, productRecord.getM_Product_ID())
+				.isZero();
+	}
+
+	/**
+	 * Asserts that at least one {@code MD_Candidate} row matching each given type / business-case combination
+	 * exists for the given product. The step polls the DB for up to ~10 seconds to tolerate async settle
+	 * (purchase-candidate-advised → requested → PO completion → MD_Candidate creation chain).
+	 * <p>
+	 * Counterpart to {@code no MD_Candidate exists for M_Product_ID …}: use this on a regular (non-dropship)
+	 * warehouse to verify that the material-disposition bypass does <em>not</em> over-fire — i.e. that the
+	 * standard SUPPLY/PURCHASE chain still creates the expected MD_Candidate rows.
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <ul>
+	 *     <li>{@code MD_Candidate_Type} — required, one of {@link CandidateType} (e.g. {@code SUPPLY}, {@code DEMAND}, {@code STOCK_UP})</li>
+	 *     <li>{@code MD_Candidate_BusinessCase} — required, one of {@link CandidateBusinessCase} (e.g. {@code PURCHASE}, {@code FORECAST}, {@code PRODUCTION})</li>
+	 *   </ul>
+	 *   Each row must match at least one MD_Candidate row for the product; no row-count assertion is performed.
+	 * @cucumber.example
+	 * <pre>
+	 * Then MD_Candidates exist for M_Product_ID product_dw:
+	 *   | MD_Candidate_Type | MD_Candidate_BusinessCase |
+	 *   | SUPPLY            | PURCHASE                  |
+	 * </pre>
+	 */
+	@Then("^MD_Candidates exist for M_Product_ID (.*):$")
+	public void md_candidates_exist_for_product(@NonNull final String productIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).as("Product for identifier=%s", productIdentifier).isNotNull();
+		final int productRepoId = productRecord.getM_Product_ID();
+
+		final List<DataTableRow> rows = DataTableRows.of(dataTable).toList();
+		for (final DataTableRow row : rows)
+		{
+			final CandidateType candidateType = row.getAsEnum(COLUMNNAME_MD_Candidate_Type, CandidateType.class);
+			final CandidateBusinessCase businessCase = row.getAsEnum(COLUMNNAME_MD_Candidate_BusinessCase, CandidateBusinessCase.class);
+
+			final Supplier<Boolean> matchExists = () -> queryBL.createQueryBuilderOutOfTrx(I_MD_Candidate.class)
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productRepoId)
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_Type, candidateType.getCode())
+					.addEqualsFilter(COLUMNNAME_MD_Candidate_BusinessCase, businessCase.getCode())
+					.create()
+					.anyMatch();
+
+			try
+			{
+				StepDefUtil.tryAndWait(10, 500, matchExists);
+			}
+			catch (final InterruptedException ie)
+			{
+				Thread.currentThread().interrupt();
+				throw ie;
+			}
+			catch (final RuntimeException ex)
+			{
+				throw new AdempiereException(
+						"No MD_Candidate found for product=" + productIdentifier
+								+ " (M_Product_ID=" + productRepoId + ")"
+								+ " with Type=" + candidateType.getCode()
+								+ " and BusinessCase=" + businessCase.getCode(),
+						ex);
+			}
+		}
+	}
+
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
 	public void validate_md_candidate_records(final int timeoutSec, @NonNull final MD_Candidate_StepDefTable table) throws Throwable
 	{
+		// "has only" is exact-set, so drain the material then async queue first — the whole
+		// ShipmentSchedule -> SupplyRequired -> PPOrderCandidate chain must settle before the snapshot.
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		validate_md_candidates(timeoutSec, table);
 
 		StepDefUtil.<Boolean>tryAndWaitForItem()

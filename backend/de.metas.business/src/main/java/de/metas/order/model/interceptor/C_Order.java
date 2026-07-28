@@ -25,16 +25,23 @@ package de.metas.order.model.interceptor;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_C_Order;
-import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.effective.BPartnerAddressEffective;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import de.metas.bpartner.effective.BillBPartnerResolution;
+import de.metas.bpartner.effective.BPartnerEffectiveBL;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -49,8 +56,10 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserRepository;
 import de.metas.order.location.OrderLocationsUpdater;
-import de.metas.order.paymentschedule.service.OrderPayScheduleService;
+import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.promotioncode.PromotionCodeId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -62,6 +71,8 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.ShipperId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -77,9 +88,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BP_Group;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
@@ -110,8 +120,9 @@ public class C_Order
 	@NonNull private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	@NonNull private final IBPGroupDAO groupDAO = Services.get(IBPGroupDAO.class);
 	@NonNull private final IBPartnerBL bpartnerBL;
+	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
 	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -125,6 +136,8 @@ public class C_Order
 
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerEffectiveBL bpartnerEffectiveBL,
+			@NonNull final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
@@ -132,6 +145,8 @@ public class C_Order
 			@NonNull final OrderPayScheduleService orderPayScheduleService)
 	{
 		this.bpartnerBL = bpartnerBL;
+		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
+		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
@@ -140,6 +155,22 @@ public class C_Order
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
+	}
+
+	@VisibleForTesting
+	public static C_Order newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(C_Order.class, () -> new C_Order(
+				SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+				BPartnerEffectiveBL.newInstanceForUnitTesting(),
+				BPartnerAddressEffectiveBL.newInstanceForUnitTesting(),
+				new OrderLineDetailRepository(),
+				DocumentLocationBL.newInstanceForUnitTesting(),
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
+				OrderPayScheduleService.newInstanceForUnitTesting()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
@@ -235,21 +266,29 @@ public class C_Order
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
-					I_C_Order.COLUMNNAME_C_BPartner_ID })
-	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
+					I_C_Order.COLUMNNAME_C_BPartner_ID
+			})
 	public void setIncoterms(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
-		if (bpartner == null)
-		{
-			return; // nothing to do yet
-		}
-		if(order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
+		if (order.isSOTrx() && IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()) != null && !InterfaceWrapperHelper.isUIAction(order))
 		{
 			return; // prevent updating value from OLCand
 		}
 
 		orderBL.setIncoterms(order);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID },
+			skipIfCopying = true)
+	public void setSalesRepFromBPartner(final I_C_Order order)
+	{
+		// No isUIAction guard (intentional): this must also run when an order is created
+		// programmatically from an OLCand, not only from the UI callout.
+		if (order.isSOTrx())
+		{
+			orderBL.setSalesRep(order);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -530,6 +569,27 @@ public class C_Order
 		}
 	}
 
+	/**
+	 * Mirrors {@code CalloutOrder.docType} (which only fires in the WebUI) so that {@code OrderType} is also set
+	 * for orders created/changed via the REST API, OLCand import or async processing.
+	 */
+	@ModelChange(timings = {
+			ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = {
+			I_C_Order.COLUMNNAME_C_DocTypeTarget_ID,
+			I_C_Order.COLUMNNAME_C_DocType_ID
+	})
+	public void updateOrderTypeFromDocType(final I_C_Order order)
+	{
+		if (DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()) == null && DocTypeId.ofRepoIdOrNull(order.getC_DocTypeTarget_ID()) == null)
+		{
+			return; // no doctype yet => nothing to derive from
+		}
+
+		order.setOrderType(orderBL.getDocBaseAndSubType(order).getDocSubType().getNullableCode());
+	}
+
 	@ModelChange(timings = {
 			ModelValidator.TYPE_BEFORE_NEW,
 			ModelValidator.TYPE_BEFORE_CHANGE,
@@ -548,7 +608,7 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
-	public void updateShipper(@NonNull final I_C_Order order)
+	public void updateDeliveryPartnerDefaults(@NonNull final I_C_Order order)
 	{
 		if(InterfaceWrapperHelper.isCopying(order))
 		{
@@ -560,7 +620,9 @@ public class C_Order
 			return;
 		}
 
-		orderBL.setShipperId(order);
+		final BPartnerAddressEffective addressEffective = bpartnerAddressEffectiveBL.getDeliveryEffective(order);
+		order.setM_Shipper_ID(ShipperId.toRepoId(addressEffective.getShipperId()));
+		order.setIsPreAdviceRequired(addressEffective.isPreAdviceRequired());
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)
@@ -689,29 +751,33 @@ public class C_Order
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
-	public void setBillBPartnerIdIfAssociation(final I_C_Order order)
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID }, skipIfCopying = true)
+	public void setBillBPartnerIdFromEffectiveResolution(final I_C_Order order)
 	{
-		final I_C_BP_Group bpartnerGroup = groupDAO.getByBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
-		if (bpartnerGroup.isAssociation())
+		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(order.getC_BPartner_ID());
+		if (bPartnerId == null)
 		{
-			order.setBill_BPartner_ID(bpartnerGroup.getBill_BPartner_ID());
-			order.setBill_Location_ID(bpartnerGroup.getBill_Location_ID());
-			order.setBill_User_ID(bpartnerGroup.getBill_User_ID());
+			return;
 		}
-		else
+
+		// Preserve a bill partner that was explicitly provided programmatically (e.g. by OLCandOrderFactory) —
+		// i.e. a bill partner DIFFERENT from the order's own partner. The standard own-bill-to default
+		// (Bill_BPartner == C_BPartner, set by setBillLocation) is NOT a "provided" value and is still
+		// (re)resolved. On a UI action we always (re)resolve.
+		final BPartnerId providedBillBPartnerId = BPartnerId.ofRepoIdOrNull(order.getBill_BPartner_ID());
+		if (!InterfaceWrapperHelper.isUIAction(order)
+				&& providedBillBPartnerId != null
+				&& !BPartnerId.equals(providedBillBPartnerId, bPartnerId))
 		{
-			final BPGroupId parentGroupId = BPGroupId.ofRepoIdOrNull(bpartnerGroup.getParent_BP_Group_ID());
-			if (parentGroupId != null)
-			{
-				final I_C_BP_Group parentGroup = groupDAO.getById(parentGroupId);
-				if (parentGroup.isAssociation())
-				{
-					order.setBill_BPartner_ID(parentGroup.getBill_BPartner_ID());
-					order.setBill_Location_ID(parentGroup.getBill_Location_ID());
-					order.setBill_User_ID(parentGroup.getBill_User_ID());
-				}
-			}
+			return;
+		}
+
+		final BillBPartnerResolution resolution = bpartnerEffectiveBL.getEffectiveBillBPartner(bPartnerId);
+		if (resolution != null)
+		{
+			order.setBill_BPartner_ID(resolution.getBillBPartnerId().getRepoId());
+			order.setBill_Location_ID(BPartnerLocationId.toRepoId(resolution.getBillLocationId()));
+			order.setBill_User_ID(UserId.toRepoId(resolution.getBillUserId()));
 		}
 	}
 

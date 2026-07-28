@@ -1,6 +1,6 @@
 @from:cucumber
 @ghActions:run_on_executor2
-Feature: Package Licensing InOut Report (gh#28487, gh#28967)
+Feature: Package Licensing — Basic Detail Report (gh#28487, gh#28967)
   Verifies that the SQL function report.Package_Licensing_InOut_Report()
   returns all movements (not just cross-border), with correct ForeignSalesQty,
   PurchaseQty, MovementQty, MaterialType, and PackagingInstructionFactor.

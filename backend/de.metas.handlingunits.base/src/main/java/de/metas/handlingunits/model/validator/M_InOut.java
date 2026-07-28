@@ -28,6 +28,7 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentBL;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.attribute.HUAttributeUpdateRequest;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.empties.IHUEmptiesService;
@@ -45,6 +46,7 @@ import de.metas.handlingunits.picking.job.service.HUWithPickOnTheFlyStatus;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.picking.job.service.ReopenPickingJobRequest;
 import de.metas.handlingunits.picking.slot.IHUPickingSlotBL;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.shipping.IHUPackageBL;
 import de.metas.handlingunits.snapshot.IHUSnapshotDAO;
 import de.metas.handlingunits.util.HUByIdComparator;
@@ -82,6 +84,7 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
@@ -142,6 +145,7 @@ public class M_InOut
 		emptyPickingSlots(shipment);
 		generateEmptiesMovementForEmptiesInOut(shipment);
 		updateAttributes(shipment);
+		huInOutBL.setReceivedDateOnReceiptHUs(shipment);
 	}
 
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
@@ -159,10 +163,27 @@ public class M_InOut
 		}
 
 		final List<I_M_HU> hus = huInOutBL.retrieveHandlingUnits(shipment);
+		final HUAttributeUpdateRequest request = HUAttributeUpdateRequest.builder()
+				.attributeCode(AttributeConstants.WarrantyStartDate)
+				.attributeValue(shipment.getMovementDate())
+				.build();
 		for (final I_M_HU hu : hus)
 		{
-			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
+			huAttributesBL.updateHUAttributeRecursive(hu, request);
 		}
+	}
+
+	/**
+	 * Stamps {@code HU_DateReceived} on every receipt line's ASI before completion. The framework currently
+	 * invokes interceptor methods within the same class+timing in declaration order, so this method —
+	 * declared before {@link #validateCustomerReturns(I_M_InOut)} — runs first; HUs subsequently created by
+	 * {@code CustomerReturnHUsCreateCommand} inherit the date via the existing line-ASI → HU propagation.
+	 * Complementary to {@link IHUInOutBL#setReceivedDateOnReceiptHUs(I_M_InOut)} at AFTER_COMPLETE.
+	 */
+	@DocValidate(timings = ModelValidator.TIMING_BEFORE_COMPLETE)
+	public void setReceivedDateOnReceiptLineASIs(@NonNull final I_M_InOut inout)
+	{
+		huInOutBL.setReceivedDateOnReceiptLineASIs(inout);
 	}
 
 	private void setHUStatusShippedForShipment(final I_M_InOut shipment)
@@ -272,6 +293,24 @@ public class M_InOut
 				.build();
 
 		pickingJobService.reopenPickingJobs(request);
+
+		// Safety net: the reopen above only restores picked qty for a *Completed* picking job. When the shipment
+		// was recreated via "Generate Shipments" the job is left Drafted, so a subsequent reverse restores nothing
+		// and the shipment can no longer be recreated (me03#29561). Re-create the picked rows directly from the
+		// just-reversed allocations for any (schedule, VHU) the reopen did not restore.
+		//
+		// Gate this to allocations whose VHU is covered by a picking job: a QtyToDeliver / on-the-fly shipment has
+		// NO picking job and its reverse must instead clear the HU's BPartner + return it to Active stock (so it
+		// can be shipped to a different customer) — that behaviour must stay untouched.
+		final ImmutableSet<HuId> huIdsCoveredByPickingJobs = pickingJobService.getHuIdsCoveredByPickingJobs(allShipmentSchedulesInvolved);
+		if (!huIdsCoveredByPickingJobs.isEmpty())
+		{
+			final List<I_M_ShipmentSchedule_QtyPicked> pickedJobAllocations = assignedQuantities.stream()
+					.filter(qtyPicked -> qtyPicked.getVHU_ID() > 0
+							&& huIdsCoveredByPickingJobs.contains(HuId.ofRepoId(qtyPicked.getVHU_ID())))
+					.collect(ImmutableList.toImmutableList());
+			huShipmentScheduleBL.restoreUnshippedQtyPickedIfMissing(pickedJobAllocations);
+		}
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_REACTIVATE)

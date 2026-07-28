@@ -4,6 +4,7 @@ import { Backend } from "../../utils/screens/Backend";
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { HUManagerScreen } from '../../utils/screens/huManager/HUManagerScreen';
+import { step, FAST_ACTION_TIMEOUT } from '../../utils/common';
 
 const createMasterdata = async ({ externalBarcode } = {}) => {
     return await Backend.createMasterdata({
@@ -76,4 +77,30 @@ test('Scan by ExternalBarcode attribute', async ({ page }) => {
     await HUManagerScreen.waitForScreen();
     await HUManagerScreen.scanHUQRCode({ huQRCode: externalBarcode });
     await HUManagerScreen.expectValue({ name: 'qty-value', expectedValue: '80 PCE' });
+});
+
+// noinspection JSUnusedLocalSymbols
+test('Spurious Enter without barcode does not trigger blank API call', async ({ page }) => {
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5120');
+    allure.story('HU Manager - Scan Methods');
+    allure.severity('critical');
+
+    const masterdata = await createMasterdata();
+    await LoginScreen.login(masterdata.login.user);
+    await ApplicationsListScreen.expectVisible();
+    await ApplicationsListScreen.startApplication('huManager');
+    await HUManagerScreen.waitForScreen();
+
+    // step() races the action against ErrorToast.waitToPopup — if a toast fires, test fails.
+    // Bug (before fix): blank Enter → backend → AdempiereException("code is blank") → toast.
+    await step('Spurious Enter should not cause an error', async () => {
+        await page.evaluate(() => {
+            const input = document.querySelector('#input-text');
+            if (input) {
+                input.dispatchEvent(new KeyboardEvent('keyup', { key: 'Enter', bubbles: true }));
+            }
+        });
+        await page.waitForTimeout(FAST_ACTION_TIMEOUT);
+    });
 });

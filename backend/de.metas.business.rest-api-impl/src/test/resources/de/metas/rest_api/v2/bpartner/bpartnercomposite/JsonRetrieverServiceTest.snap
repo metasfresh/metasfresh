@@ -47,6 +47,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "company": false,
       "customer": true,
+      "discountPrinted": false,
       "excludeFromPromotions": false,
       "groupId": 15,
       "id": 20,

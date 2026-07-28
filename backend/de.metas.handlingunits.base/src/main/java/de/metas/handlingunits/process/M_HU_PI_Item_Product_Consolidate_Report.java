@@ -53,7 +53,7 @@ public class M_HU_PI_Item_Product_Consolidate_Report extends JavaProcess
 	protected String doIt()
 	{
 		// Step 1: Execute consolidation function, capture RAISE NOTICE via SQLWarning
-		final String consolidateSql = "SELECT m_hu_pi_item_product_consolidate(?, ?, ?)";
+		final String consolidateSql = "SELECT m_hu_pi_item_product_consolidate(?::boolean, ?::boolean, ?::numeric)";
 		final SQLValueStringResult result = DB.getSQLValueStringWithWarningEx(
 				null, // trxName — RunOutOfTrx, no transaction
 				consolidateSql,

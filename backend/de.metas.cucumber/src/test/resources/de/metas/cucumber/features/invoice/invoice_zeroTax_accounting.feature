@@ -20,6 +20,13 @@ Feature: Check accounting for invoices with 0% tax
       | Identifier | C_TaxCategory_ID | Rate | C_Country_ID.CountryCode | To_Country_ID.CountryCode |
       | zeroTax    | zeroTaxCategory  | 0    | DE                       | DE                        |
 
+    And metasfresh contains C_VAT_Codes:
+      | Identifier  | C_Tax_ID | IsSOTrx | AmountType |
+      | sales0_T    | zeroTax  | Y       | T          |
+      | sales0_N    | zeroTax  | Y       | N          |
+      | purchase0_T | zeroTax  | N       | T          |
+      | purchase0_N | zeroTax  | N       | N          |
+
     And metasfresh contains M_PricingSystems
       | Identifier    |
       | pricingSystem |
@@ -67,6 +74,7 @@ Feature: Check accounting for invoices with 0% tax
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0470_010
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
@@ -79,15 +87,16 @@ Feature: Check accounting for invoices with 0% tax
       | invl_100   | invoice1     | product1     | 1 PCE       | zeroTax  |
     And the invoice identified by invoice1 is completed
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID | M_Product_ID | C_Tax_ID |
-      | C_Receivable_Acct     | 5 EUR       |             | customer1     | invoice1  | -            | -        |
-      | P_Revenue_Acct        |             | 5 EUR       | customer1     | invoice1  | product1     | zeroTax  |
-      | T_Due_Acct            | 0 EUR       | 0 EUR       | customer1     | invoice1  | -            | zeroTax  |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID | M_Product_ID | C_Tax_ID | C_VAT_Code_ID |
+      | C_Receivable_Acct     | 5 EUR       |             | customer1     | invoice1  | -            | -        | -             |
+      | P_Revenue_Acct        |             | 5 EUR       | customer1     | invoice1  | product1     | zeroTax  | sales0_N      |
+      | T_Due_Acct            | 0 EUR       | 0 EUR       | customer1     | invoice1  | -            | zeroTax  | sales0_T      |
 
     
 # ############################################################################################################################################
 # ############################################################################################################################################
 # ############################################################################################################################################
+  @Id:S0470_020
   @from:cucumber
   @allure.label.epic:E0340_Invoicing
   @allure.label.feature:F00700_Invoicing
@@ -100,7 +109,7 @@ Feature: Check accounting for invoices with 0% tax
       | invl_100   | invoice1     | product1     | 1 PCE       | zeroTax  |
     And the invoice identified by invoice1 is completed
     And Fact_Acct records are matching
-      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID | M_Product_ID | C_Tax_ID |
-      | V_Liability_Acct      |             | 5 EUR       | vendor1       | invoice1  | -            | -        |
-      | P_Expense_Acct        | 5 EUR       |             | vendor1       | invoice1  | product1     | zeroTax  |
-      | T_Credit_Acct         | 0 EUR       | 0 EUR       | vendor1       | invoice1  | -            | zeroTax  |
+      | AccountConceptualName | AmtSourceDr | AmtSourceCr | C_BPartner_ID | Record_ID | M_Product_ID | C_Tax_ID | C_VAT_Code_ID |
+      | V_Liability_Acct      |             | 5 EUR       | vendor1       | invoice1  | -            | -        | -             |
+      | P_Expense_Acct        | 5 EUR       |             | vendor1       | invoice1  | product1     | zeroTax  | purchase0_N   |
+      | T_Credit_Acct         | 0 EUR       | 0 EUR       | vendor1       | invoice1  | -            | zeroTax  | purchase0_T   |

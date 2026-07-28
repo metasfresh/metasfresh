@@ -152,38 +152,38 @@ public class HUGraiSnapshot
 			// else: slot was already empty and stays empty — no change
 		}
 
-		// Step 4: Handle aggregate blocks
-		if (!aggregateBlocks.isEmpty())
+		// Step 4: Distribute remaining GRAIs across ALL aggregate blocks, respecting each block's tuCount.
+		// Each aggregate block corresponds to a distinct product group on the LU and has its own VHU
+		// and capacity (tuCount). Dumping everything into block 0 is the historical bug that caused
+		// all GRAIs to land on the first product's TU when an LU carried several products.
+		for (final AggregateBlock block : aggregateBlocks)
 		{
-			final AggregateBlock firstBlock = aggregateBlocks.get(0);
-
-			// Compute what the first block should hold:
-			// = (existing GRAIs that are in desiredGrais) + remainingUnassigned
+			final int capacity = block.tuCount.toInt();
 			final ArrayList<GRAI> newBlockGrais = new ArrayList<>();
-			for (final GRAI grai : firstBlock.grais)
+
+			// Keep existing GRAIs that are still desired (up to block capacity).
+			for (final GRAI grai : block.grais)
 			{
+				if (newBlockGrais.size() >= capacity)
+				{
+					break;
+				}
 				if (desiredGrais.contains(grai))
 				{
 					newBlockGrais.add(grai);
 				}
 			}
-			newBlockGrais.addAll(remainingUnassigned);
-			remainingUnassigned.clear();
-			final GRAISet newBlockGraiSet = GRAISet.ofCollection(newBlockGrais);
 
-			if (!newBlockGraiSet.equals(firstBlock.grais))
+			// Fill remaining slots in this block from the unassigned pool.
+			while (newBlockGrais.size() < capacity && !remainingUnassigned.isEmpty())
 			{
-				changes.add(AttributeChange.of(firstBlock.vhuId, newBlockGraiSet));
+				newBlockGrais.add(remainingUnassigned.remove(0));
 			}
 
-			// Clear any additional aggregate blocks
-			for (int i = 1; i < aggregateBlocks.size(); i++)
+			final GRAISet newBlockGraiSet = GRAISet.ofCollection(newBlockGrais);
+			if (!newBlockGraiSet.equals(block.grais))
 			{
-				final AggregateBlock block = aggregateBlocks.get(i);
-				if (!block.grais.isEmpty())
-				{
-					changes.add(AttributeChange.of(block.vhuId, GRAISet.EMPTY));
-				}
+				changes.add(AttributeChange.of(block.vhuId, newBlockGraiSet));
 			}
 		}
 

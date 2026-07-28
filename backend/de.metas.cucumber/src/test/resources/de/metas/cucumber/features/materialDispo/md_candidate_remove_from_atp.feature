@@ -136,7 +136,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | sol_atp_003 | so_atp_003 | product_atp  | 100        |
     And the order identified by so_atp_003 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     And metasfresh has date and time 2024-09-20T10:00:00+01:00[Europe/Berlin]
     # Create purchase order (supply at T+3)
@@ -148,7 +148,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | pol_atp_003 | po_atp_003 | product_atp  | 150        |
     And the order identified by po_atp_003 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify all candidates
     And after not more than 10s, MD_Candidates are found
@@ -196,7 +196,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_1  | so_004_1   | product_atp  | 30         |
     And the order identified by so_004_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create purchase order 1 (supply_1_004 at T+2)
     And metasfresh contains C_Orders:
@@ -206,7 +206,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | pol_004_1  | po_004_1   | product_atp  | 50         |
     And the order identified by po_004_1 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create sales order 2 (demand_2_004 at T+3) - this is the middle candidate we'll test
     And metasfresh contains C_Orders:
@@ -216,7 +216,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_2  | so_004_2   | product_atp  | 40         |
     And the order identified by so_004_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create purchase order 2 (supply_2_004 at T+4)
     And metasfresh contains C_Orders:
@@ -226,7 +226,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | pol_004_2  | po_004_2   | product_atp  | 60         |
     And the order identified by po_004_2 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Create sales order 3 (demand_3_004 at T+5)
     And metasfresh contains C_Orders:
@@ -236,7 +236,7 @@ Feature: MD_Candidate_Remove_From_ATP process
       | Identifier | C_Order_ID | M_Product_ID | QtyEntered |
       | sol_004_3  | so_004_3   | product_atp  | 35         |
     And the order identified by so_004_3 is completed
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify all candidates are present with correct ATP chain
     And after not more than 10s, MD_Candidates are found

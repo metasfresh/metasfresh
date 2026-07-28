@@ -74,7 +74,7 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_C_OrderLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOutLine_ID;
 import static org.compiere.model.I_M_InOutLine.COLUMNNAME_M_InOut_ID;
@@ -154,6 +154,14 @@ public class M_InOut_Line_StepDef
 		final I_M_InOutLine inoutLine = getSingleInOutLine(lineQueryBuilder.create());
 
 		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID).ifPresent(inoutLineIdentifier -> inoutLineTable.putOrReplace(inoutLineIdentifier, inoutLine));
+
+		row.getAsOptionalIdentifier(I_M_InOutLine.COLUMNNAME_M_AttributeSetInstance_ID).ifPresent(asiIdentifier -> {
+			if (inoutLine.getM_AttributeSetInstance_ID() > 0)
+			{
+				final I_M_AttributeSetInstance asi = InterfaceWrapperHelper.load(inoutLine.getM_AttributeSetInstance_ID(), I_M_AttributeSetInstance.class);
+				asiTable.putOrReplace(asiIdentifier, asi);
+			}
+		});
 
 		return inoutLine;
 	}

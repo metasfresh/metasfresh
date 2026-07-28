@@ -1,4 +1,4 @@
-import { ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
+import { expectErrorToast, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../../common';
 import { test } from '../../../../../playwright.config';
 import { expect } from '@playwright/test';
 import { RawMaterialIssueLineScanScreen } from './RawMaterialIssueLineScanScreen';
@@ -19,7 +19,7 @@ export const RawMaterialIssueLineScreen = {
         await expect(containerElement()).toBeVisible();
     }),
 
-    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining }) => await test.step(`${NAME} - Scan QR code`, async () => {
+    scanQRCode: async ({ qrCode, expectQtyEntered, expectQtyTarget, expectQtyRemaining, qtyEntered }) => await test.step(`${NAME} - Scan QR code`, async () => {
         await page.getByTestId('scanQRCode-button').tap();
         await RawMaterialIssueLineScanScreen.waitForScreen();
         await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
@@ -29,7 +29,7 @@ export const RawMaterialIssueLineScreen = {
         if (expectQtyRemaining != null) {
             await GetQuantityDialog.expectUserInfoValue({ captionKey: 'general.QtyToPick', expectedValue: expectQtyRemaining });
         }
-        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered });
+        await GetQuantityDialog.fillAndPressDone({ expectQtyEntered, qtyEntered });
         await RawMaterialIssueLineScreen.waitForScreen();
     }),
 
@@ -46,6 +46,23 @@ export const RawMaterialIssueLineScreen = {
             await expect(locator.getByTestId('indicator')).toHaveCount(0);
             await expect(locator.getByTestId('indicator2')).toHaveCount(0);
         }
+    }),
+
+    scanQRCodeExpectError: async ({ qrCode, qtyEntered }) => await test.step(`${NAME} - Scan QR code (expect error, qty=${qtyEntered})`, async () => {
+        await page.getByTestId('scanQRCode-button').tap();
+        await RawMaterialIssueLineScanScreen.waitForScreen();
+        await RawMaterialIssueLineScanScreen.typeQRCode(qrCode);
+        await expectErrorToast(`${NAME} over-issue rejected`, async () => {
+            await GetQuantityDialog.fillAndPressDone({ qtyEntered });
+            // On success: dialog closes and navigates back to line screen.
+            // On error (after fix): dialog stays open → waitToClose hangs → toast wins.
+        });
+        await GetQuantityDialog.waitForDialog(); // dialog still open — worker was not navigated away
+    }),
+
+    retypeQtyAndConfirm: async ({ qtyEntered }) => await test.step(`${NAME} - Retype qty=${qtyEntered} and confirm`, async () => {
+        await GetQuantityDialog.fillAndPressDone({ qtyEntered });
+        await RawMaterialIssueLineScreen.waitForScreen();
     }),
 
     goBack: async () => await test.step(`${NAME} - Go back`, async () => {

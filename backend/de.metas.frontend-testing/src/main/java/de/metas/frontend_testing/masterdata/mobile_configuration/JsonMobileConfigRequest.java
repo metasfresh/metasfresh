@@ -55,10 +55,15 @@ public class JsonMobileConfigRequest
 		@Nullable Boolean filterByQRCode;
 		@Nullable Boolean showLastPickedBestBeforeDateForLines;
 		@Nullable Boolean anonymousPickHUsOnTheFly;
+		@Nullable Boolean pickingSlotRequired;
 		@Nullable Boolean displayPickingSlotSuggestions;
 		@Nullable Boolean activeWorkplaceRequired;
 		@Nullable Boolean considerOnlyJobScheduledToWorkplace;
 		@Nullable Boolean allowQuickPackAll;
+		@Nullable Boolean massPrinting;
+		@Nullable Boolean showQtyAvailableForLines;
+		@Nullable Boolean showPromptWhenOverPicking;
+		@Nullable Boolean warnShelfLifeUndercut;
 
 		@Nullable List<Customer> customers;
 		

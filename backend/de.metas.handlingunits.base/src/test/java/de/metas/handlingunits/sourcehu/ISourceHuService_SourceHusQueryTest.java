@@ -105,7 +105,7 @@ public class ISourceHuService_SourceHusQueryTest
 	private I_M_HU createHuWithLocatorOfWarehouse(final I_M_Warehouse warehouse)
 	{
 		final I_M_Locator locator = newInstance(I_M_Locator.class);
-		locator.setM_Warehouse(warehouse);
+		locator.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
 		save(locator);
 
 		final I_M_HU hu = newInstance(I_M_HU.class);

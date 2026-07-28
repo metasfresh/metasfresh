@@ -125,7 +125,7 @@ Feature: Packing items, TU quantities, and attributes propagated from SO to Purc
       | C_PurchaseCandidate_ID | QtyToPurchase | M_HU_PI_Item_Product_ID | QtyEnteredTU |
       | pc_pk1                 | 30            | huPiItemProd_pk1        | 3            |
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     # Verify PO was auto-generated
     And after not more than 60s, C_PurchaseCandidate_Alloc are found

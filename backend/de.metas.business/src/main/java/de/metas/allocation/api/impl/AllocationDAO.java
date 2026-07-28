@@ -128,9 +128,9 @@ public class AllocationDAO implements IAllocationDAO
 
 	@Cached(cacheName = I_C_AllocationLine.Table_Name + "#By#" + I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID + "#retrieveAll")
 		/* package */ List<I_C_AllocationLine> retrieveLines(final @CacheCtx Properties ctx,
-															 final int allocationHdrId,
-															 final boolean retrieveAll,
-															 final @CacheTrx String trxName)
+		                                                     final int allocationHdrId,
+		                                                     final boolean retrieveAll,
+		                                                     final @CacheTrx String trxName)
 	{
 		final IQueryBuilder<I_C_AllocationLine> builder = queryBL
 				.createQueryBuilder(I_C_AllocationLine.class, ctx, trxName)
@@ -422,4 +422,22 @@ public class AllocationDAO implements IAllocationDAO
 				.create()
 				.firstOnlyNotNull();
 	}
+
+	@Override
+	public boolean hasActiveAllocationBetween(@NonNull final InvoiceId invoiceId, @NonNull final PaymentId paymentId)
+	{
+		final IQuery<I_C_AllocationHdr> activeHdrs = queryBL.createQueryBuilder(I_C_AllocationHdr.class)
+				.addInArrayFilter(I_C_AllocationHdr.COLUMNNAME_DocStatus, DocStatus.completedOrClosedStatuses())
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_C_AllocationLine.COLUMNNAME_C_AllocationHdr_ID, I_C_AllocationHdr.COLUMNNAME_C_AllocationHdr_ID, activeHdrs)
+				.create()
+				.anyMatch();
+	}
+
 }

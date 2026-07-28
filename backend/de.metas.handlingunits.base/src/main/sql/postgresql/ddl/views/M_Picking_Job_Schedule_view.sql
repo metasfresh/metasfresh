@@ -55,7 +55,8 @@ WITH base_schedule AS (SELECT s.m_shipmentschedule_id,
 
                               s.carrier_advising_status,
                               s.carrier_product_id,
-                              s.carrier_goods_type_id
+                              s.carrier_goods_type_id,
+                              (SELECT c_doctype_id FROM c_order WHERE c_order_id = s.c_orderso_id) AS c_doctype_id
                        FROM m_packageable_v s
                        WHERE s.carrier_product_id > 0
                           OR get_sysconfig_value('de.metas.handlingunits.picking.job_schedule.RequireCarrierProductSet') = 'N')
