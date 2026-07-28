@@ -172,6 +172,11 @@ public class PurchaseOrderToShipperTransportationService
 
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
+				.stream()
+				// Sort by C_Order_ID so the "first order" that seeds the transport order's default dates is deterministic
+				// even when a single call carries lines from several purchase orders (the multimap key order is not meaningful).
+				// Mirrors the ordering already applied in addPurchaseOrdersToShipperTransportation().
+				.sorted(Comparator.comparingInt(I_C_Order::getC_Order_ID))
 				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
@@ -263,6 +268,9 @@ public class PurchaseOrderToShipperTransportationService
 			}
 		}
 
+		// addedCount > 0: a first order whose every line lacks LU packing config already throws above
+		// (MSG_NoLUPackingConfigForOrderLines), so on the normal first-order path this guard is a defensive no-op.
+		// It also keeps date-defaulting from firing should a future change let an all-lines-skipped call return without throwing.
 		if (isFirstOrderOnTransportation && addedCount > 0)
 		{
 			applyDefaultDatesFromFirstOrder(shipperTransportation, order);
