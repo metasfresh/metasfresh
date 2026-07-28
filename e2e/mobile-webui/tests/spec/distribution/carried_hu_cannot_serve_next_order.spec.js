@@ -228,3 +228,136 @@ test('A carried handling unit that can no longer be picked from hands the handli
         });
     });
 });
+
+//
+// The second case on the same fixture: the pick fails for a reason that is NOT about the handling
+// unit. The operator has HU_B applied — here by scanning it on the job screen, the other way this
+// screen is opened with a handling unit already selected — and the server answers the pick with a
+// workflow-state conflict. The handling unit is not what went wrong, so the operator must be told what
+// did, and must keep it: repeating the same scan can succeed, and taking it away costs them a scan of
+// a handling unit that was never the problem.
+//
+// The refusal above and this failure arrive on the same endpoint (/distribution/event) and both carry
+// an HTTP response, so only the backend's error code tells them apart — the HU-specific rejections
+// carry one (DISTRIBUTION_HU_NOT_AT_TARGET and its siblings, MobileQRCodeMessages), while every other
+// rejection on this path is a plain-message AdempiereException with none at all.
+//
+// RESIDUAL GAP, stated rather than implied: this covers a rejection with NO error code, which is what
+// every non-HU rejection reachable here produces today (DDOrderPickFromCommand's "Already picked",
+// DistributionJob.assertCanEdit, movement generation, an infra 5xx). It therefore does NOT distinguish
+// the named-code list the app matches on from a plainer "any error code at all" test — no reachable
+// rejection on this path separates the two.
+//
+
+// What the app really receives when the pick fails for a reason that is not about the handling unit:
+// RestResponseEntityExceptionHandler answers an AdempiereException with 422 and a JsonError body, and
+// a plain-message one — DDOrderPickFromCommand.executeInTrx's "Already picked" workflow-state conflict,
+// raised when the schedule was already picked from — carries no errorCode and is not user-friendly, so
+// the app shows its own error.InternalError text.
+const WORKFLOW_CONFLICT_RESPONSE = {
+    status: 422,
+    contentType: 'application/json',
+    body: JSON.stringify({
+        errors: [
+            {
+                message: 'Already picked',
+                userFriendlyError: false,
+                parameters: {},
+                stackTrace: 'de.metas.distribution.ddorder.movement.schedule.commands.pick_from.DDOrderPickFromCommand.executeInTrx',
+            },
+        ],
+    }),
+};
+
+// The en text of error.InternalError, which is what a rejection flagged not-user-friendly surfaces as.
+const EXPECTED_INTERNAL_ERROR_MESSAGE = 'If the problem persists, contact support';
+
+// Answer the NEXT pick with the workflow-state conflict above and let every later one reach the
+// backend, so the operator's retry is a real pick against real stock.
+const answerNextPickWithWorkflowConflict = async (page) => {
+    let alreadyAnswered = false;
+    await page.route('**/distribution/event', async (route) => {
+        if (alreadyAnswered) {
+            await route.continue();
+            return;
+        }
+        alreadyAnswered = true;
+        await route.fulfill(WORKFLOW_CONFLICT_RESPONSE);
+    });
+};
+
+test('A pick refused for a reason that is not about the handling unit keeps it selected', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114.3');
+    allure.tag('F5114');
+    allure.story('A pick rejected for a reason that is not about the handling unit reports that reason and leaves the selected handling unit in place, so repeating the scan books the pick');
+    allure.severity('critical');
+
+    const huABarcode = `EXT-CONFLICT-A-${Date.now()}`;
+    const huBBarcode = `EXT-CONFLICT-B-${Date.now()}`;
+    const masterdata = await createMasterdata({ huABarcode, huBBarcode });
+    const articleCode = masterdata.products.P.gtin;
+
+    await test.step('Open the Distribution app and start DD1', async () => {
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('distribution');
+        await DistributionJobsListScreen.waitForScreen();
+        await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
+        await DistributionJobScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD1.jobId });
+    });
+
+    await test.step('Identify HU_B on the job screen — it holds two orders\' worth and stands at the source locator', async () => {
+        await DistributionJobScreen.scanHU({ huQRCode: huBBarcode });
+        await DistributionLinePickFromScreen.expectProductScanReady();
+    });
+
+    await answerNextPickWithWorkflowConflict(page);
+
+    let refusalToastText;
+    await expectErrorToast(
+        'Scan the article code while the server answers the pick with a workflow-state conflict',
+        async () => await DistributionLinePickFromScreen.typeProductCode(articleCode),
+        ({ textContent }) => {
+            refusalToastText = textContent;
+        }
+    );
+
+    // *** THE ASSERTION THIS SPEC EXISTS FOR ***
+    // Asserted before the message, because this is the half that strands the operator: HU_B is not
+    // what the server rejected, so it stays applied and the screen keeps asking for the article code.
+    // Dropping it would send them to re-scan a handling unit that was never the problem.
+    await test.step('HU_B is still the selected handling unit, so the screen still asks for the article code', async () => {
+        await DistributionLinePickFromScreen.expectProductScanReady();
+    });
+
+    // *** THE ASSERTION THIS SPEC EXISTS FOR ***
+    // ... and the operator is told what actually went wrong. Naming HU_B as unusable would send them
+    // looking for another handling unit for a failure that had nothing to do with this one.
+    await test.step('The operator is shown the failure itself, not that the handling unit cannot be picked from', async () => {
+        expect(refusalToastText).toContain(EXPECTED_INTERNAL_ERROR_MESSAGE);
+        expect(refusalToastText).not.toContain(EXPECTED_MESSAGE);
+    });
+
+    await test.step('Scan the article code again → the pick books off HU_B and DD1 auto-advances to DD2', async () => {
+        await DistributionLinePickFromScreen.typeProductCode(articleCode);
+        await DistributionLinePickFromScreen.expectJobId({ distributionJobId: masterdata.distributionOrders.DD2.jobId });
+        await DistributionLinePickFromScreen.expectProductScanReady();
+    });
+
+    await test.step('Backend: DD1 moved one unit into transit and HU_B kept the rest', async () => {
+        // DD1 was served by a unit split off HU_B, which exists only from the pick on, so it can only
+        // be named through the QR code DD1's job step reports.
+        const dd1PickedHUQRCode = await DistributionUtils.getPickedHUQRCode({
+            wfProcessId: `distribution-${masterdata.distributionOrders.DD1.jobId}`,
+        });
+        await Backend.expect({
+            title: 'DD1 picked one unit off HU_B after the retry',
+            hus: {
+                [dd1PickedHUQRCode]: { warehouse: 'whInTransit', huStatus: 'A', storages: { P: `${QTY_PER_ORDER} PCE` } },
+                HU_B: { warehouse: 'wh', locator: 'LZ', huStatus: 'A', storages: { P: `${HU_B_QTY - QTY_PER_ORDER} PCE` } },
+            },
+        });
+    });
+});
