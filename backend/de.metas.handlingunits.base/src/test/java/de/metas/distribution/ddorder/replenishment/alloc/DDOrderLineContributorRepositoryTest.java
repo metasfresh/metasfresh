@@ -14,8 +14,14 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
+import org.compiere.model.ModelValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 @ExtendWith(AdempiereTestWatcher.class)
@@ -35,8 +42,43 @@ class DDOrderLineContributorRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		// The in-memory harness does not enforce Postgres indexes; this stands in for ddorderline_pjs_active_uidx.
+		POJOLookupMap.get().addModelValidator(new DD_OrderLine_PickingJobSchedule_ActiveUniqueIndexEmulator());
 		repository = new DDOrderLineContributorRepository();
 		uomId = UomId.ofRepoId(BusinessTestHelper.createUOM("PCE").getC_UOM_ID());
+	}
+
+	/**
+	 * Emulates the DB's partial unique index {@code ddorderline_pjs_active_uidx} — created by migration {@code 5816200} on
+	 * {@code (DD_OrderLine_ID, M_Picking_Job_Schedule_ID) WHERE IsActive = 'Y'}. A {@code CREATE UNIQUE INDEX} is not
+	 * deferrable, so Postgres checks it per statement; that transient state is invisible to a post-condition assertion,
+	 * hence this save-time stand-in.
+	 */
+	@Interceptor(I_DD_OrderLine_PickingJobSchedule.class)
+	static class DD_OrderLine_PickingJobSchedule_ActiveUniqueIndexEmulator
+	{
+		@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+		public void rejectASecondActiveRowForTheSamePair(@NonNull final I_DD_OrderLine_PickingJobSchedule record)
+		{
+			if (!record.isActive())
+			{
+				return;
+			}
+
+			final boolean conflicts = Services.get(IQueryBL.class).createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, record.getDD_OrderLine_ID())
+					.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID, record.getM_Picking_Job_Schedule_ID())
+					.create()
+					.stream()
+					.anyMatch(other -> other.getDD_OrderLine_PickingJobSchedule_ID() != record.getDD_OrderLine_PickingJobSchedule_ID());
+			if (conflicts)
+			{
+				throw new AdempiereException("ddorderline_pjs_active_uidx violated:"
+						+ " a second active row for DD_OrderLine_ID=" + record.getDD_OrderLine_ID()
+						+ ", M_Picking_Job_Schedule_ID=" + record.getM_Picking_Job_Schedule_ID());
+			}
+		}
 	}
 
 	private Quantity qty(final int value) {return Quantitys.of(BigDecimal.valueOf(value), uomId);}
@@ -118,6 +160,102 @@ class DDOrderLineContributorRepositoryTest
 		assertThat(repository.getByLineId(lineId(1)))
 				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
 				.containsExactly(tuple(scheduleId(10), 10), tuple(scheduleId(20), 7), tuple(scheduleId(30), 5));
+	}
+
+	/**
+	 * An inactive row alongside its active sibling for the same {@code (line, assignment)} pair is a state the PARTIAL unique
+	 * index permits, and one {@code retrieveRecordsByLineId} deliberately reads (it omits the active filter). Reconciling it
+	 * must never put two active rows in the table at once — the index rejects that per statement, not at commit.
+	 */
+	@Test
+	void replaceByLineId_reconcilesAnInactiveRowAndItsActiveSibling_withoutEverHoldingTwoActiveRows()
+	{
+		createRow(lineId(1), scheduleId(10), 3, false);
+		createRow(lineId(1), scheduleId(10), 10, true);
+
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(7))));
+
+		assertThat(rowsByLineId(lineId(1)))
+				.as("reconciled to exactly one row, active, carrying the new qty")
+				.extracting(
+						record -> PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()),
+						I_DD_OrderLine_PickingJobSchedule::isActive,
+						record -> record.getQty().intValue())
+				.containsExactly(tuple(scheduleId(10), true, 7));
+	}
+
+	@Test
+	void replaceByLineId_reactivatesAPreExistingInactiveRow_insteadOfInsertingASecondOne()
+	{
+		final int inactiveRowId = createRow(lineId(1), scheduleId(10), 3, false).getDD_OrderLine_PickingJobSchedule_ID();
+
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(rowsByLineId(lineId(1)))
+				.extracting(
+						I_DD_OrderLine_PickingJobSchedule::getDD_OrderLine_PickingJobSchedule_ID,
+						I_DD_OrderLine_PickingJobSchedule::isActive,
+						record -> record.getQty().intValue())
+				.containsExactly(tuple(inactiveRowId, true, 10));
+	}
+
+	@Test
+	void replaceByLineId_deletesTheInactiveRowOfADepartedContributor()
+	{
+		createRow(lineId(1), scheduleId(99), 3, false);
+
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(rowsByLineId(lineId(1)))
+				.as("an inactive row of a departed contributor is deleted, not left behind")
+				.extracting(record -> PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID()))
+				.containsExactly(scheduleId(10));
+	}
+
+	/**
+	 * Two shares of ONE assignment cannot be persisted: the pair has a single {@code Qty} column, so whether the row should
+	 * carry the sum or the last share is the caller's decision, not this repository's.
+	 */
+	@Test
+	void replaceByLineId_rejectsTwoSharesOfTheSameAssignment()
+	{
+		assertThatThrownBy(() -> repository.replaceByLineId(lineId(1), ImmutableList.of(
+				DDOrderLineContributor.of(scheduleId(10), qty(4)),
+				DDOrderLineContributor.of(scheduleId(10), qty(6)))))
+				.isInstanceOf(AdempiereException.class)
+				.hasMessageContaining("contributes more than once");
+
+		assertThat(rowsByLineId(lineId(1))).as("a rejected input writes nothing").isEmpty();
+	}
+
+	/**
+	 * Writes a row directly: an INACTIVE row is a legacy/deactivated state that no repository method can produce, so there is
+	 * no domain operation to drive it through.
+	 */
+	private I_DD_OrderLine_PickingJobSchedule createRow(
+			@NonNull final DDOrderLineId lineId,
+			@NonNull final PickingJobScheduleId pickingJobScheduleId,
+			final int qty,
+			final boolean active)
+	{
+		final I_DD_OrderLine_PickingJobSchedule record = InterfaceWrapperHelper.newInstance(I_DD_OrderLine_PickingJobSchedule.class);
+		record.setDD_OrderLine_ID(lineId.getRepoId());
+		record.setM_Picking_Job_Schedule_ID(pickingJobScheduleId.getRepoId());
+		record.setQty(BigDecimal.valueOf(qty));
+		record.setC_UOM_ID(uomId.getRepoId());
+		record.setIsActive(active);
+		InterfaceWrapperHelper.saveRecord(record);
+		return record;
+	}
+
+	/** Every row of the line, inactive ones included — {@link DDOrderLineContributorRepository#getByLineId(DDOrderLineId)} hides those. */
+	private static ImmutableList<I_DD_OrderLine_PickingJobSchedule> rowsByLineId(@NonNull final DDOrderLineId lineId)
+	{
+		return Services.get(IQueryBL.class).createQueryBuilder(I_DD_OrderLine_PickingJobSchedule.class)
+				.addEqualsFilter(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_DD_OrderLine_ID, lineId)
+				.orderBy(I_DD_OrderLine_PickingJobSchedule.COLUMNNAME_M_Picking_Job_Schedule_ID)
+				.create()
+				.listImmutable(I_DD_OrderLine_PickingJobSchedule.class);
 	}
 
 	private static ImmutableMap<PickingJobScheduleId, Integer> rowIdsByPickingJobScheduleId(@NonNull final DDOrderLineId lineId)

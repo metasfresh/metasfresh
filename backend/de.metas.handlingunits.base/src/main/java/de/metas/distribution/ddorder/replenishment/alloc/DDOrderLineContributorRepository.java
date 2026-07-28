@@ -11,6 +11,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
 import org.eevolution.model.I_DD_OrderLine;
@@ -37,17 +38,24 @@ public class DDOrderLineContributorRepository
 	 */
 	public void replaceByLineId(@NonNull final DDOrderLineId lineId, @NonNull final List<DDOrderLineContributor> contributors)
 	{
+		final ImmutableSet<PickingJobScheduleId> wantedPickingJobScheduleIds = extractPickingJobScheduleIds(lineId, contributors);
+
 		final HashMap<PickingJobScheduleId, I_DD_OrderLine_PickingJobSchedule> reusableRecords = new HashMap<>();
 		final ArrayList<I_DD_OrderLine_PickingJobSchedule> obsoleteRecords = new ArrayList<>();
 		for (final I_DD_OrderLine_PickingJobSchedule record : retrieveRecordsByLineId(lineId))
 		{
 			final PickingJobScheduleId pickingJobScheduleId = PickingJobScheduleId.ofRepoId(record.getM_Picking_Job_Schedule_ID());
-			if (reusableRecords.putIfAbsent(pickingJobScheduleId, record) != null)
+			// The unique index is partial, so an inactive duplicate row for the pair is possible and must still be deleted.
+			if (!wantedPickingJobScheduleIds.contains(pickingJobScheduleId)
+					|| reusableRecords.putIfAbsent(pickingJobScheduleId, record) != null)
 			{
-				// No unique constraint on (DD_OrderLine_ID, M_Picking_Job_Schedule_ID): a duplicate row is possible and must still be deleted.
 				obsoleteRecords.add(record);
 			}
 		}
+
+		// Must precede the saves: ddorderline_pjs_active_uidx is an INDEX, hence not deferrable, so a stale sibling row still
+		// present would fail the reused row's save with 23505 instead of at commit.
+		InterfaceWrapperHelper.deleteAll(obsoleteRecords);
 
 		for (final DDOrderLineContributor contributor : contributors)
 		{
@@ -59,9 +67,26 @@ public class DDOrderLineContributorRepository
 			updateRecord(record, lineId, contributor);
 			InterfaceWrapperHelper.saveRecord(record);
 		}
+	}
 
-		obsoleteRecords.addAll(reusableRecords.values());
-		InterfaceWrapperHelper.deleteAll(obsoleteRecords);
+	/**
+	 * Rejects two shares of ONE assignment: the pair has a single {@code Qty} column, so whether it should carry the sum or the
+	 * last share is the caller's decision, not this repository's — and collapsing it here would silently mask a broken attribution.
+	 */
+	private static ImmutableSet<PickingJobScheduleId> extractPickingJobScheduleIds(
+			@NonNull final DDOrderLineId lineId,
+			@NonNull final List<DDOrderLineContributor> contributors)
+	{
+		final ImmutableSet<PickingJobScheduleId> pickingJobScheduleIds = contributors.stream()
+				.map(DDOrderLineContributor::getPickingJobScheduleId)
+				.collect(ImmutableSet.toImmutableSet());
+		if (pickingJobScheduleIds.size() != contributors.size())
+		{
+			throw new AdempiereException("An M_Picking_Job_Schedule_ID contributes more than once to DD_OrderLine_ID="
+					+ lineId.getRepoId() + ": " + contributors);
+		}
+
+		return pickingJobScheduleIds;
 	}
 
 	private ImmutableList<I_DD_OrderLine_PickingJobSchedule> retrieveRecordsByLineId(@NonNull final DDOrderLineId lineId)
