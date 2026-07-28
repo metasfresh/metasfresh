@@ -278,10 +278,12 @@ export function clearMasterData() {
   };
 }
 
-export function sortTab(scope, tabId, field, asc) {
+export function sortTab({ scope, windowId, docId, tabId, field, asc }) {
   return {
     type: SORT_TAB,
     scope,
+    windowId,
+    docId,
     tabId,
     field,
     asc,

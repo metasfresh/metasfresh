@@ -304,7 +304,7 @@ class MasterWindowContainer extends PureComponent {
       tabId: activeTabId,
     });
 
-    sortTab('master', tabId, field, asc);
+    sortTab({ scope: 'master', windowId, docId, tabId, field, asc });
     getTabRequest(tabId, windowId, dataId, orderBy).then((rows) => {
       updateTabTableData(tableId, rows);
     });
