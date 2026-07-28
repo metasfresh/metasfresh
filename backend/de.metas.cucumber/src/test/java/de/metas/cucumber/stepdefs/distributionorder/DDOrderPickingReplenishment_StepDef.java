@@ -198,6 +198,11 @@ public class DDOrderPickingReplenishment_StepDef
 	 * Asserts the drift rebuild recognises each of the given workstation assignments as ALREADY SERVED.
 	 *
 	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the drift rebuild considers jobScheduleA, jobScheduleB already served
+	 * </pre>
 	 */
 	@Then("^the drift rebuild considers (.*) already served$")
 	public void assert_assignments_considered_served(@NonNull final String pickingJobScheduleIdentifiers)
@@ -219,6 +224,11 @@ public class DDOrderPickingReplenishment_StepDef
 	 * assignments IS in the rebuild's unserved set, so a pass will re-plan it.
 	 *
 	 * <p>Param: a comma-separated list of {@code M_Picking_Job_Schedule} identifiers.</p>
+	 *
+	 * @cucumber.example
+	 * <pre>
+	 * Then the drift rebuild considers jobScheduleA, jobScheduleB to still need a DD_Order
+	 * </pre>
 	 */
 	@Then("^the drift rebuild considers (.*) to still need a DD_Order$")
 	public void assert_assignments_considered_unserved(@NonNull final String pickingJobScheduleIdentifiers)

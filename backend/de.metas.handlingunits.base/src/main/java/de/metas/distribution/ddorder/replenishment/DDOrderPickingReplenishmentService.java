@@ -642,11 +642,14 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Voided or deactivated: either way it can no longer answer "which DD_Order serves this delivery?".
+	 * Voided, reversed or deactivated: only Post is left as a doc action, so it can never again serve the delivery.
 	 */
 	private static boolean isDeadDDOrder(@NonNull final I_DD_Order ddOrder)
 	{
-		return !ddOrder.isActive() || X_DD_Order.DOCSTATUS_Voided.equals(ddOrder.getDocStatus());
+		final String docStatus = ddOrder.getDocStatus();
+		return !ddOrder.isActive()
+				|| X_DD_Order.DOCSTATUS_Voided.equals(docStatus)
+				|| X_DD_Order.DOCSTATUS_Reversed.equals(docStatus);
 	}
 
 	private static ImmutableSet<DDOrderId> ddOrderIdsOfLines(@NonNull final Collection<I_DD_OrderLine> lines)

@@ -3,6 +3,7 @@ package de.metas.distribution.ddorder.replenishment.alloc;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
 import de.metas.business.BusinessTestHelper;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.handlingunits.model.I_DD_OrderLine_PickingJobSchedule;
@@ -170,6 +171,34 @@ class DDOrderLineContributorRepositoryTest
 		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
 
 		assertThat(repository.getByLineIds(ImmutableSet.of())).isEmpty();
+	}
+
+	@Test
+	void getPickingJobScheduleIdsByLineId_groupsPerLine_andLeavesOutALineWithoutContributor()
+	{
+		repository.replaceByLineId(lineId(1), ImmutableList.of(
+				DDOrderLineContributor.of(scheduleId(10), qty(10)),
+				DDOrderLineContributor.of(scheduleId(20), qty(2))));
+		repository.replaceByLineId(lineId(2), ImmutableList.of(DDOrderLineContributor.of(scheduleId(30), qty(3))));
+		repository.replaceByLineId(lineId(4), ImmutableList.of(DDOrderLineContributor.of(scheduleId(40), qty(4))));
+
+		final ImmutableSetMultimap<DDOrderLineId, PickingJobScheduleId> actual =
+				repository.getPickingJobScheduleIdsByLineId(ImmutableSet.of(lineId(1), lineId(2), lineId(3)));
+
+		assertThat(actual.keySet()).as("only the given lines that have a contributor row")
+				.containsExactlyInAnyOrder(lineId(1), lineId(2));
+		assertThat(actual.get(lineId(1))).containsExactlyInAnyOrder(scheduleId(10), scheduleId(20));
+		assertThat(actual.get(lineId(2))).containsExactly(scheduleId(30));
+		assertThat(actual.get(lineId(3))).as("a line with no contributor row resolves to nothing, not to a foreign line's set")
+				.isEmpty();
+	}
+
+	@Test
+	void getPickingJobScheduleIdsByLineId_returnsEmptyForEmptyLineIds_evenWhenMatchingContributorExists()
+	{
+		repository.replaceByLineId(lineId(1), ImmutableList.of(DDOrderLineContributor.of(scheduleId(10), qty(10))));
+
+		assertThat(repository.getPickingJobScheduleIdsByLineId(ImmutableSet.of()).entries()).isEmpty();
 	}
 
 	@Test

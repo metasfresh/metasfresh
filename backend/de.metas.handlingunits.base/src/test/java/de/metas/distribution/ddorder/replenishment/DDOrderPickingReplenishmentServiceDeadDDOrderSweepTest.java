@@ -89,18 +89,24 @@ class DDOrderPickingReplenishmentServiceDeadDDOrderSweepTest
 	}
 
 	@Test
-	void aClosedOrdersLineIsNotSwept_onlyVoidedAndDeactivatedOnesAre()
+	void aClosedOrdersLineIsNotSwept_onlyVoidedReversedAndDeactivatedOnesAre()
 	{
 		final DDOrderLineId closedLineId = createLine(X_DD_Order.DOCSTATUS_Closed, true, PRODUCT_ID);
 		final DDOrderLineId completedLineId = createLine(X_DD_Order.DOCSTATUS_Completed, true, PRODUCT_ID);
 		final DDOrderLineId voidedLineId = createLine(X_DD_Order.DOCSTATUS_Voided, true, PRODUCT_ID);
+		// Reverse-Correct delegates to voidIt (reservations cleared, lines processed) but lands on RE, not VO.
+		final DDOrderLineId reversedLineId = createLine(X_DD_Order.DOCSTATUS_Reversed, true, PRODUCT_ID);
 		final DDOrderLineId deactivatedLineId = createLine(X_DD_Order.DOCSTATUS_Completed, false, PRODUCT_ID);
+		// Reactivate/Unlock leave a still-completable order, which must keep its association.
+		final DDOrderLineId inProgressLineId = createLine(X_DD_Order.DOCSTATUS_InProgress, true, PRODUCT_ID);
+		final DDOrderLineId draftedLineId = createLine(X_DD_Order.DOCSTATUS_Drafted, true, PRODUCT_ID);
 		final DDOrderLineId voidedOfAnotherGroupLineId = createLine(X_DD_Order.DOCSTATUS_Voided, true, OTHER_PRODUCT_ID);
 
 		final ImmutableSet<DDOrderLineId> actual = service.findLineIdsOfDeadDDOrders(
-				ImmutableSet.of(closedLineId, completedLineId, voidedLineId, deactivatedLineId, voidedOfAnotherGroupLineId),
+				ImmutableSet.of(closedLineId, completedLineId, voidedLineId, reversedLineId, deactivatedLineId,
+						inProgressLineId, draftedLineId, voidedOfAnotherGroupLineId),
 				groupKey);
 
-		assertThat(actual).containsExactlyInAnyOrder(voidedLineId, deactivatedLineId);
+		assertThat(actual).containsExactlyInAnyOrder(voidedLineId, reversedLineId, deactivatedLineId);
 	}
 }
