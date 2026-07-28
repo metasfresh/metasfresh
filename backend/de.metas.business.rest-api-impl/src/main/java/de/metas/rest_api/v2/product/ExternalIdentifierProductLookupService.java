@@ -28,6 +28,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.handlingunits.HUPIItemProductId;
+import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -38,6 +39,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,7 @@ public class ExternalIdentifierProductLookupService
 {
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
@@ -105,8 +109,12 @@ public class ExternalIdentifierProductLookupService
 		final I_M_HU_PI_Item_Product hupi = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
 				.addOnlyActiveRecordsFilter()
 				.filter(hupiFilter)
+				.filter(huPIItemProductDAO.createValidOnDateFilter(date))
 				.addNotNull(I_M_HU_PI_Item_Product.COLUMNNAME_M_Product_ID)
-				.orderBy(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
+				.orderBy()
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Direction.Descending, Nulls.Last)
+				.addColumn(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID, Direction.Ascending, Nulls.Last)
+				.endOrderBy()
 				.create().first();
 		if (hupi != null)
 		{
