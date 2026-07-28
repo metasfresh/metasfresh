@@ -7,7 +7,8 @@ Feature: DD_Order replenishment — an order that already exists at rollout is b
   I want each of those orders to keep serving its delivery exactly as before,
   so that the drift watchdog does not send the mover to fetch the same goods a second time.
 
-  One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator.
+  One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator,
+  so a second delivery arriving after rollout can join the same group.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -157,3 +158,56 @@ Feature: DD_Order replenishment — an order that already exists at rollout is b
     And after not more than 10s, following DD_Orders are found
       | Identifier        | DocStatus |
       | preRolloutDDOrder | CO        |
+
+  @from:cucumber
+  Scenario: A backfilled pre-existing order is grown into a group by later demand for the same product
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID       | DD_OrderLine_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | preRolloutDDOrder | preRolloutLine  | CO        | stockWH             | 10         |
+
+    # Rollout day: the FK column the order used to carry is gone (5816420) and the backfill (5816390) restores its
+    # association. This is the state EVERY order that already existed at rollout is in from here on.
+    When the contributor associations of the pre-rollout DD_OrderLines are dropped:
+      | DD_OrderLine_ID |
+      | preRolloutLine  |
+    And the rollout backfill re-creates the contributor associations:
+      | DD_OrderLine_ID | M_Picking_Job_Schedule_ID |
+      | preRolloutLine  | jobSchedule               |
+
+    # The day after: a second delivery needs the same product at the same workstation — same group key.
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID | DateOrdered | M_Warehouse_ID |
+      | laterOrder | true    | customer      | 2022-05-17  | packingWH      |
+    And metasfresh contains C_OrderLines:
+      | Identifier     | C_Order_ID | M_Product_ID | QtyEntered |
+      | laterOrderLine | laterOrder | product      | 10         |
+    And the order identified by laterOrder is completed
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier            | C_OrderLine_ID | Warehouse_ID |
+      | laterShipmentSchedule | laterOrderLine | packingWH    |
+
+    When create or update picking job schedules
+      | M_Picking_Job_Schedule_ID | M_ShipmentSchedule_ID | C_Workplace_ID | QtyToPick |
+      | laterJobSchedule          | laterShipmentSchedule | workplace      | 10        |
+
+    # Grown, not duplicated: still ONE live order for the group, now planning both deliveries' 10 + 10.
+    Then after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 20         |
+    # The SAME line the backfill wrote to — the legacy order was re-used, not replaced by a look-alike.
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID | M_Picking_Job_Schedule_ID | Qty |
+      | preRolloutLine  | jobSchedule               | 10  |
+      | preRolloutLine  | laterJobSchedule          | 10  |
+    And each of jobSchedule, laterJobSchedule resolves to the DD_Order identified by preRolloutDDOrder
+    # Not voided either: the legacy document itself is what now serves both deliveries.
+    And after not more than 10s, following DD_Orders are found
+      | Identifier        | DocStatus |
+      | preRolloutDDOrder | CO        |
+
+    # The performance claim, measured rather than asserted in prose: the pre-rollout behaviour planned one order per
+    # assignment, so this demand set would have cost 2. It costs 1 — never more, and strictly fewer once a group has
+    # two contributors, which is exactly the mover's saved walk.
+    And the live DD_Orders of the product group are no more than one per contributing assignment jobSchedule, laterJobSchedule:
+      | M_Product_ID | M_LocatorTo_ID |
+      | product      | packingLocator |

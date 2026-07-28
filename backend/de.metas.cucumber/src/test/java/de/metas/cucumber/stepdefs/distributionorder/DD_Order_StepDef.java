@@ -907,4 +907,48 @@ public class DD_Order_StepDef
 				});
 		logger.error("*** Waiting for per-locator DD_Orders, current context:\n{}", sb);
 	}
+
+	/**
+	 * @cucumber.stepdef Asserts the DD_Order's header business partner and location ARE the ones of the DD_Order's own
+	 * organization — i.e. exactly what {@code IBPartnerOrgBL#retrieveOrgBPLocationId} resolves from
+	 * {@code AD_OrgInfo.OrgBP_Location_ID} for the order's {@code AD_Org_ID}.
+	 * <p>
+	 * A replenishment order moves goods between the organization's own warehouses, so the organization owns it: never
+	 * one of the customers whose deliveries it serves, and never nobody. The header partner and location drive the
+	 * order's {@code DeliveryRule}, print format and print language, so both are pinned.
+	 * <p>
+	 * The step first asserts the organization HAS a business-partner link, so it can never pass by comparing "unset"
+	 * against "unset".
+	 * @cucumber.depends StepDefData: DD_Order_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * Then the DD_Order identified by groupDDOrder names the business partner of its own organization
+	 * </pre>
+	 */
+	@Then("^the DD_Order identified by (.*) names the business partner of its own organization$")
+	public void assertDDOrderNamesOwnOrgBPartner(@NonNull final String ddOrderIdentifier)
+	{
+		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
+		final OrgId orgId = OrgId.ofRepoId(ddOrder.getAD_Org_ID());
+
+		final BPartnerLocationId orgBPLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(orgId);
+		assertThat(orgBPLocationId)
+				.as("AD_OrgInfo.OrgBP_Location_ID of AD_Org_ID=%s — the organization's own business partner must be"
+						+ " linked, otherwise the assertions below would compare unset against unset", orgId.getRepoId())
+				.isNotNull();
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		softly.assertThat(BPartnerId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID()))
+				.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_ID must be the organization's own business partner",
+						ddOrderIdentifier, ddOrder.getDD_Order_ID())
+				.isEqualTo(orgBPLocationId.getBpartnerId());
+
+		softly.assertThat(BPartnerLocationId.ofRepoIdOrNull(ddOrder.getC_BPartner_ID(), ddOrder.getC_BPartner_Location_ID()))
+				.as("DD_Order %s (DD_Order_ID=%s) C_BPartner_Location_ID must be the organization's own business partner location",
+						ddOrderIdentifier, ddOrder.getDD_Order_ID())
+				.isEqualTo(orgBPLocationId);
+
+		softly.assertAll();
+	}
 }

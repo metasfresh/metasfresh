@@ -527,4 +527,79 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 					contributorRepository.replaceByLineId(lineId, contributors);
 				});
 	}
+
+	/**
+	 * @cucumber.stepdef Compares the number of live (DocStatus != Voided) DD_Orders serving the product group against
+	 * the one-order-per-assignment behaviour, which for the same demand set would produce exactly one order per
+	 * contributing workstation assignment. Asserts the group needs NO MORE than that — and strictly FEWER as soon as
+	 * two or more assignments contribute, since consolidating them is the whole point.
+	 * <p>
+	 * A low order count is only worth something if the demand is actually planned, so the step first asserts every
+	 * listed assignment is served by one of those live orders. Otherwise the comparison could be won by leaving
+	 * demand unserved.
+	 * <p>
+	 * Params: a comma-separated list of the {@code M_Picking_Job_Schedule} identifiers making up the demand set.
+	 * @cucumber.columns
+	 *   <b>M_Product_ID</b> — (required, identifier-ref) the group's product<br>
+	 *   <b>M_LocatorTo_ID</b> — (required, identifier-ref) the group's target locator<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Locator_StepDefData, M_Picking_Job_Schedule_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And the live DD_Orders of the product group are no more than one per contributing assignment jobSchedule, laterJobSchedule:
+	 *   | M_Product_ID | M_LocatorTo_ID |
+	 *   | product      | packingLocator |
+	 * </pre>
+	 */
+	@Then("^the live DD_Orders of the product group are no more than one per contributing assignment (.*):$")
+	public void assertLiveDDOrdersAreNoMoreThanOnePerAssignment(
+			@NonNull final String pickingJobScheduleIdentifiers,
+			@NonNull final DataTable dataTable)
+	{
+		final DataTableRow row = DataTableRows.of(dataTable).singleRow();
+		final ProductId productId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
+		final LocatorId locatorToId = row.getAsIdentifier(I_DD_OrderLine.COLUMNNAME_M_LocatorTo_ID).lookupNotNullIdIn(locatorTable);
+
+		final ImmutableSet<DDOrderId> liveDDOrderIds = liveDDOrdersOfProductGroup(productId, locatorToId)
+				.stream()
+				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final ImmutableSet<PickingJobScheduleId> jobScheduleIds = StepDefUtil.extractIdentifiers(pickingJobScheduleIdentifiers)
+				.stream()
+				.map(pickingJobScheduleTable::getId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		for (final PickingJobScheduleId jobScheduleId : jobScheduleIds)
+		{
+			assertThat(ddOrderIdsServing(jobScheduleId))
+					.as("live DD_Orders of the product group serving M_Picking_Job_Schedule_ID=%s — the whole demand set"
+							+ " must be served before the order count may be compared", jobScheduleId.getRepoId())
+					.isNotEmpty()
+					.isSubsetOf(liveDDOrderIds);
+		}
+
+		final int onePerAssignmentCount = jobScheduleIds.size();
+
+		assertThat(liveDDOrderIds.size())
+				.as("live DD_Orders %s of the product group vs. the %s the one-order-per-assignment behaviour would"
+						+ " create for M_Picking_Job_Schedule_IDs=%s", liveDDOrderIds, onePerAssignmentCount, jobScheduleIds)
+				.isLessThanOrEqualTo(onePerAssignmentCount);
+
+		if (onePerAssignmentCount >= 2)
+		{
+			assertThat(liveDDOrderIds.size())
+					.as("live DD_Orders %s of the product group must be strictly fewer than the %s assignments"
+							+ " contributing to it, else nothing was consolidated", liveDDOrderIds, onePerAssignmentCount)
+					.isLessThan(onePerAssignmentCount);
+		}
+	}
+
+	/** The DD_Orders the given assignment is served by, resolved through its {@code DD_OrderLine_PickingJobSchedule} rows. */
+	private ImmutableSet<DDOrderId> ddOrderIdsServing(@NonNull final PickingJobScheduleId jobScheduleId)
+	{
+		return contributorRepository.getLineIdsByPickingJobScheduleId(jobScheduleId)
+				.stream()
+				.map(lineId -> DDOrderId.ofRepoId(ddOrderService.getLineById(lineId).getDD_Order_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }
