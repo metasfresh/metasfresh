@@ -22,6 +22,7 @@
 
 package de.metas.shipping;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
@@ -47,7 +48,9 @@ import de.metas.report.ReportResultData;
 import de.metas.report.server.ReportConstants;
 import de.metas.shipping.api.IShipperTransportationDAO;
 import de.metas.shipping.model.I_M_ShipperTransportation;
+import de.metas.shipping.model.I_M_ShippingPackage;
 import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.Package;
 import de.metas.sscc18.ISSCC18CodeBL;
 import de.metas.util.Check;
@@ -76,7 +79,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PurchaseOrderToShipperTransportationService
 {
-	private static final AdMessageKey MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER = AdMessageKey.of("ReceiptScheduleAssignedToProcessedTransportationOrder");
+	@VisibleForTesting
+	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
+
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -88,11 +93,17 @@ public class PurchaseOrderToShipperTransportationService
 	private final ITUDistributionProvider tuDistributionProvider;
 	private final IPackageWeightProvider packageWeightProvider;
 
+	@VisibleForTesting
 	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting()
+	{
+		return newInstanceForUnitTesting((o, ol) -> 1);
+	}
+
+	@VisibleForTesting
+	public static PurchaseOrderToShipperTransportationService newInstanceForUnitTesting(@NonNull final ILUQtyProvider luQtyProvider)
 	{
 		Adempiere.assertUnitTestMode();
 
-		final ILUQtyProvider luQtyProvider = (o, ol) -> 1;
 		final ITUDistributionProvider tuProvider = (order, orderLine, totalTU, luCount) -> {
 			final ArrayList<BigDecimal> tuDistribution = new ArrayList<>(luCount);
 			for (int i = 0; i < luCount; i++)
@@ -138,12 +149,13 @@ public class PurchaseOrderToShipperTransportationService
 		}
 	}
 
-	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Collection<OrderAndLineId> orderAndLineIds)
+	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Set<OrderLineId> orderLineIds)
 	{
-		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderAndLineIds);
+		final ImmutableListMultimap<I_C_Order, I_C_OrderLine> orderToLinesMap = orderDAO.getOrderToLinesMap(orderLineIds);
 
+		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
-				.forEach(order -> addPurchaseOrderLines(shipperTransportationDAO.getById(shipperTransportationId), order, orderToLinesMap.get(order)));
+				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
 	public void addPurchaseOrderToShipperTransportation(final @NonNull OrderId purchaseOrderId, final @NonNull ShipperTransportationId shipperTransportationId)
@@ -190,20 +202,44 @@ public class PurchaseOrderToShipperTransportationService
 				.orgId(orgId)
 				.build();
 
+		final List<I_C_OrderLine> skippedLines = new ArrayList<>();
+		int addedCount = 0;
+
 		for (final I_C_OrderLine ol : orderLinesWithoutLUQty)
 		{
 			final int requiredLUCount = qtyProvider.getRequiredLUCount(order, ol);
 			if (requiredLUCount <= 0)
 			{
+				skippedLines.add(ol);
 				continue;
 			}
 
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, requiredLUCount);
+			addedCount++;
 		}
 		for (final I_C_OrderLine ol : orderLinesWithLUQty)
 		{
 			final int qtyLUs = ol.getQtyLU().intValueExact();
 			addPurchaseOrderLineToShipperTransportationId(baseRequest, order, ol, qtyLUs);
+			addedCount++;
+		}
+
+		if (!skippedLines.isEmpty())
+		{
+			final String skippedLineNos = skippedLines.stream()
+					.map(ol -> String.valueOf(ol.getLine()))
+					.collect(Collectors.joining(", "));
+
+			if (addedCount == 0)
+			{
+				throw new AdempiereException(MSG_NoLUPackingConfigForOrderLines, skippedLineNos)
+						.markAsUserValidationError();
+			}
+			else
+			{
+				Loggables.addLog("Skipped {} PO line(s) with no LU packing configuration (lines: {})",
+						skippedLines.size(), skippedLineNos);
+			}
 		}
 	}
 
@@ -236,12 +272,10 @@ public class PurchaseOrderToShipperTransportationService
 															   final int qtyLUs)
 	{
 		final OrderLineId orderLineId = OrderLineId.ofRepoId(ol.getC_OrderLine_ID());
-		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
 
-		if (!existingPackages.isEmpty())
-		{
-			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
-		}
+		// For most flows this is a NOOP as the packages should have been deleted beforehand. Keeping this as a safety net.
+		deletePackagesForOrderLine(orderLineId);
+
 		final OrgId orgId = OrgId.ofRepoId(ol.getAD_Org_ID());
 
 		final BigDecimal totalTU = ol.getQtyEnteredTU();
@@ -260,6 +294,15 @@ public class PurchaseOrderToShipperTransportationService
 							.tuQty(tuQtyForPackage)
 							.grossWeightInKg(grossWeightInKg)
 							.build());
+		}
+	}
+
+	private void deletePackagesForOrderLine(final OrderLineId orderLineId)
+	{
+		final ImmutableList<Package> existingPackages = repo.getPackagesBy(ShippingPackageQuery.builder().orderLineId(orderLineId).build());
+		if (!existingPackages.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(existingPackages.stream().map(Package::getId).collect(ImmutableList.toImmutableList()));
 		}
 	}
 
@@ -291,21 +334,65 @@ public class PurchaseOrderToShipperTransportationService
 		return result.getReportData();
 	}
 
-	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	public boolean hasProcessedShipperTransportation(@NonNull final OrderId orderId)
 	{
-		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+		return shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderId(orderId)
 				.processed(true)
 				.build());
-		if (isDeletePossible)
-		{
-			repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
-		}
-
-		return isDeletePossible;
 	}
 
-	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds)
+	public boolean deleteShippingPackagesForOrderIfPossible(@NonNull final OrderId orderId)
+	{
+		if (hasProcessedShipperTransportation(orderId))
+		{
+			return false;
+		}
+		repo.deleteBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		return true;
+	}
+
+	public void syncShippingPackagesFromOrder(@NonNull final I_C_Order order)
+	{
+		final OrderId orderId = OrderId.ofRepoId(order.getC_Order_ID());
+		final Collection<I_M_ShippingPackage> shippingPackages = repo.getBy(ShippingPackageQuery.builder().orderId(orderId).build());
+		if (shippingPackages.isEmpty())
+		{
+			return;
+		}
+
+		// Collect current order line IDs to detect removed lines
+		final ImmutableSet<Integer> currentOrderLineIds = orderDAO.retrieveOrderLines(order)
+				.stream()
+				.map(I_C_OrderLine::getC_OrderLine_ID)
+				.collect(ImmutableSet.toImmutableSet());
+
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, order.getC_BPartner_Location_ID());
+
+		final ImmutableSet.Builder<PackageId> packageIdsToDelete = ImmutableSet.builder();
+		for (final I_M_ShippingPackage sp : shippingPackages)
+		{
+			// Collect packages for order lines that no longer exist (deleted during reactivation)
+			if (sp.getC_OrderLine_ID() > 0 && !currentOrderLineIds.contains(sp.getC_OrderLine_ID()))
+			{
+				packageIdsToDelete.add(PackageId.ofRepoId(sp.getM_Package_ID()));
+				continue;
+			}
+
+			// Sync header-level fields to both M_ShippingPackage and M_Package
+			repo.updateShippingPackageAndPackage(sp, bPartnerId, bPartnerLocationId, order.getDatePromised());
+		}
+
+		// Batch-delete packages for removed order lines
+		final ImmutableSet<PackageId> toDelete = packageIdsToDelete.build();
+		if (!toDelete.isEmpty())
+		{
+			repo.deleteFromShipperTransportation(toDelete);
+		}
+	}
+
+	public void deleteShippingPackagesForOrderLines(@NonNull final Collection<OrderLineId> orderLineIds, @NonNull final AdMessageKey failureMessage)
 	{
 		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
 				.orderLineIds(orderLineIds)
@@ -317,7 +404,23 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		else
 		{
-			throw new AdempiereException(MSG_RECEIPT_SCHEDULE_ASSIGNED_TO_PROCESSED_TRANSPORTATION_ORDER);
+			throw new AdempiereException(failureMessage);
+		}
+	}
+
+	public void deleteShippingPackagesForOrders(@NonNull final Collection<OrderId> orderIds, @NonNull final AdMessageKey failureMessage)
+	{
+		final boolean isDeletePossible = !shipperTransportationDAO.anyMatch(ShipperTransportationQuery.builder()
+				.orderIds(orderIds)
+				.processed(true)
+				.build());
+		if (isDeletePossible)
+		{
+			repo.deleteBy(ShippingPackageQuery.builder().orderIds(orderIds).build());
+		}
+		else
+		{
+			throw new AdempiereException(failureMessage);
 		}
 	}
 }

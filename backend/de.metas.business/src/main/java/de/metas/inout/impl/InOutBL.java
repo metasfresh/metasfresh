@@ -1,5 +1,6 @@
 package de.metas.inout.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.AcctSchemaId;
@@ -9,7 +10,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
@@ -85,6 +86,8 @@ import org.compiere.model.I_R_Request;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
@@ -125,11 +128,13 @@ public class InOutBL implements IInOutBL
 {
 	private static final String VIEW_M_Shipment_Statistics_V = "M_Shipment_Statistics_V";
 
+	@NonNull private final SpringContextHolder.Lazy<BPartnerAddressEffectiveBL> bpartnerAddressEffectiveBL = SpringContextHolder.lazyBean(BPartnerAddressEffectiveBL.class);
+
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
-	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IRequestTypeDAO requestTypeDAO = Services.get(IRequestTypeDAO.class);
@@ -168,8 +173,7 @@ public class InOutBL implements IInOutBL
 	@Override
 	public List<I_M_InOutLine> getLines(@NonNull final InOutId inoutId)
 	{
-		final I_M_InOut inout = getById(inoutId);
-		return getLines(inout);
+		return inOutDAO.retrieveLinesByInOutId(inoutId);
 	}
 
 	@Override
@@ -224,6 +228,12 @@ public class InOutBL implements IInOutBL
 	public Set<InOutAndLineId> getLineIdsByOrderLineIds(final Set<OrderLineId> orderLineIds)
 	{
 		return inOutDAO.retrieveLineIdsByOrderLineIds(orderLineIds);
+	}
+
+	@Override
+	public List<I_M_InOutLine> getLinesByOrderLineIds(final Set<OrderLineId> orderLineIds)
+	{
+		return inOutDAO.streamLinesByOrderLineIds(orderLineIds).collect(ImmutableList.toImmutableList());
 	}
 
 	@Override
@@ -392,7 +402,7 @@ public class InOutBL implements IInOutBL
 			return priceListDAO.getPricingSystemById(pricingSystemId);
 		}
 
-		final PricingSystemId pricingSystemId = bpartnerDAO.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
+		final PricingSystemId pricingSystemId = bpartnerBL.retrievePricingSystemIdOrNull(BPartnerId.ofRepoId(inOut.getC_BPartner_ID()), soTrx);
 		if (pricingSystemId == null)
 		{
 			return null;
@@ -623,7 +633,7 @@ public class InOutBL implements IInOutBL
 		if (inout.isSOTrx())
 		{
 			final InOutId shipmentId = InOutId.ofRepoId(inout.getM_InOut_ID());
-			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLinesForInOutId(shipmentId);
+			final Set<InOutAndLineId> shipmentAndLineIds = inOutDAO.retrieveLineIdsByInOutId(shipmentId);
 			if (!shipmentAndLineIds.isEmpty())
 			{
 				CacheMgt.get().reset(CacheInvalidateMultiRequest.rootRecords(
@@ -704,7 +714,7 @@ public class InOutBL implements IInOutBL
 		final I_M_InOut inout = inOutDAO.getById(inOutId);
 
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
-		final I_C_BPartner_Location bpartnerLocation = bpartnerDAO.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
+		final I_C_BPartner_Location bpartnerLocation = bpartnerBL.getBPartnerLocationByIdInTrx(BPartnerLocationId.ofRepoId(bpartnerId, inout.getC_BPartner_Location_ID()));
 
 		final String locationEmail = bpartnerLocation.getEMail();
 		if (!Check.isEmpty(locationEmail))
@@ -717,7 +727,7 @@ public class InOutBL implements IInOutBL
 		{
 			return null;
 		}
-		return bpartnerDAO.getContactLocationEmail(contactId);
+		return bpartnerBL.getContactLocationEmail(contactId);
 	}
 
 	@Override
@@ -786,7 +796,7 @@ public class InOutBL implements IInOutBL
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(inOut.getC_BPartner_ID());
 
 		return bPartnerId != null
-				? bpartnerDAO.getById(bPartnerId, I_C_BPartner.class)
+				? bpartnerBL.getById(bPartnerId, I_C_BPartner.class)
 				: null;
 	}
 
@@ -844,20 +854,10 @@ public class InOutBL implements IInOutBL
 		inout.setM_Shipper_ID(ShipperId.toRepoId(findShipperId(inout)));
 	}
 
+	@Nullable
 	private ShipperId findShipperId(@NonNull final I_M_InOut inout)
 	{
-		final BPartnerLocationId dropShipLocationId = getEffectiveDropshipBPartnerLocationId(inout);
-		final Optional<ShipperId> deliveryAddressShipperId = bpartnerDAO.getShipperIdByBPLocationId(dropShipLocationId);
-
-		return deliveryAddressShipperId.orElseGet(() -> bpartnerDAO.getShipperId(getEffectiveDropshipPartnerId(inout)));
-	}
-
-	private BPartnerLocationId getEffectiveDropshipBPartnerLocationId(@NonNull final I_M_InOut inout)
-	{
-		return CoalesceUtil.coalesceSuppliersNotNull(
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
-				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
-		);
+		return bpartnerAddressEffectiveBL.get().getDeliveryEffective(inout).getShipperId();
 	}
 
 	@Override
@@ -867,6 +867,16 @@ public class InOutBL implements IInOutBL
 		return CoalesceUtil.coalesceSuppliersNotNull(
 				() -> BPartnerId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID()),
 				() -> BPartnerId.ofRepoIdOrNull(inout.getC_BPartner_ID())
+		);
+	}
+
+	@Override
+	@NonNull
+	public BPartnerLocationId getEffectiveDropshipLocationId(@NonNull final I_M_InOut inout)
+	{
+		return CoalesceUtil.coalesceSuppliersNotNull(
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getDropShip_BPartner_ID(), inout.getDropShip_Location_ID()),
+				() -> BPartnerLocationId.ofRepoIdOrNull(inout.getC_BPartner_ID(), inout.getC_BPartner_Location_ID())
 		);
 	}
 

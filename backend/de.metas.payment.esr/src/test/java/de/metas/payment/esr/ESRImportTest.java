@@ -16,6 +16,7 @@ import de.metas.document.refid.model.I_C_ReferenceNo_Doc;
 import de.metas.document.refid.model.I_C_ReferenceNo_Type;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.interfaces.I_C_DocType;
+import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.lock.api.ILockManager;
@@ -127,7 +128,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1Payment.isAllocated()).isTrue();
 
 		// check allocations
-		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
+		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
@@ -189,6 +190,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
+		inv.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(inv);
 
 		final String esrLineText = "01201067789300000001060012345600654321400000025009072  030014040914041014041100001006800000000000090                          ";
@@ -339,6 +341,7 @@ public class ESRImportTest extends ESRTestBase
 		inv1.setC_Currency_ID(esrImportLine.getC_Invoice().getC_Currency_ID());
 		inv1.setIsSOTrx(true);
 		inv1.setProcessed(true);
+		inv1.setIsFinancial(true);
 		save(inv1);
 
 		// Registrate payment action handlers.
@@ -541,7 +544,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1Payment.isAllocated()).isFalse();
 
 		// alocations
-		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
+		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
@@ -732,6 +735,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
+		inv.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(inv);
 
 		// Registrate payment action handlers.
@@ -764,7 +768,7 @@ public class ESRImportTest extends ESRTestBase
 		assertThat(esrLine1CreatedPayment.isAllocated()).isTrue();
 
 		// allocations
-		List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
+		final List<I_C_AllocationLine> allocLines = Services.get(IAllocationDAO.class).retrieveAllocationLines(esrImportLine.getC_Invoice());
 		assertThat(allocLines).hasSize(1);
 		assertThat(allocLines.get(0).getAmount()).isEqualByComparingTo(new BigDecimal(50));
 
@@ -882,6 +886,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setC_Currency_ID(currencyEUR.getRepoId());
 		inv.setIsSOTrx(true);
 		inv.setProcessed(true);
+		inv.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(inv);
 
 		// Register payment action handlers.
@@ -1085,14 +1090,14 @@ public class ESRImportTest extends ESRTestBase
 		// Wait until all threads finished
 		while (!threadsRunning.isEmpty())
 		{
-			for (Iterator<Thread> it = threadsRunning.iterator(); it.hasNext(); )
+			for (final Iterator<Thread> it = threadsRunning.iterator(); it.hasNext(); )
 			{
 				final Thread thread = it.next();
 				try
 				{
 					thread.join();
 				}
-				catch (InterruptedException e)
+				catch (final InterruptedException e)
 				{
 					throw new RuntimeException(e);
 				}
@@ -1537,6 +1542,7 @@ public class ESRImportTest extends ESRTestBase
 		inv.setProcessed(true);
 		inv.setIsSOTrx(true);
 		inv.setIsPaid(true);
+		inv.setIsFinancial(InvoiceDocBaseType.ofCode(type.getDocBaseType()).isFinancial());
 		save(inv);
 
 		// allocation for invoice

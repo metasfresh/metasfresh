@@ -813,6 +813,19 @@ public class AttributeDAO implements IAttributeDAO
 		return getAttributeRecordById(attributeId);
 	}
 
+	@Override
+	public boolean isStorageRelevant(@NonNull final AttributeCode attributeCode)
+	{
+		final Attribute attribute = getAttributesMap().getByCodeOrNull(attributeCode);
+		return attribute != null && attribute.isActive() && attribute.isStorageRelevant();
+	}
+
+	//
+	//
+	// -------------------------------------------------------------------------
+	//
+	//
+
 	private static final class AttributeListValueMap
 	{
 		public static AttributeListValueMap ofList(final List<AttributeListValue> list)

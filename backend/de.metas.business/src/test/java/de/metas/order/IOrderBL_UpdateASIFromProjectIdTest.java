@@ -73,6 +73,7 @@ class IOrderBL_UpdateASIFromProjectIdTest
 		final I_M_Attribute attribute = newInstance(I_M_Attribute.class);
 		attribute.setValue(AttributeConstants.ATTR_Project.getCode());
 		attribute.setAttributeValueType(ATTRIBUTEVALUETYPE_StringMax40);
+		attribute.setIsStorageRelevant(true);
 		saveRecord(attribute);
 	}
 
@@ -112,7 +113,9 @@ class IOrderBL_UpdateASIFromProjectIdTest
 	@Nullable
 	private String getProjectValueFromASI(final AttributeSetInstanceId asiId)
 	{
-		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId).getValueAsString(AttributeConstants.ATTR_Project);
+		return attributeSetInstanceBL.getImmutableAttributeSetById(asiId)
+				.getValueAsStringIfExists(AttributeConstants.ATTR_Project)
+				.orElse(null);
 	}
 
 	@Test

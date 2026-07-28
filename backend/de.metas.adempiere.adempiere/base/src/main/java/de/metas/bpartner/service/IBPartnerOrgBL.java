@@ -32,8 +32,10 @@ import lombok.NonNull;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 
+import javax.annotation.Nullable;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -46,8 +48,21 @@ public interface IBPartnerOrgBL extends ISingletonService
 
 	Optional<BPartnerId> retrieveLinkedBPartnerId(OrgId orgId);
 
+	/**
+	 * Makes {@code bpartnerId} the org's linked BPartner ({@code C_BPartner.AD_OrgBP_ID = orgId}) —
+	 * the link {@code retrieveOrgBPartner} resolves. Because an org has at most one linked BPartner
+	 * (partial unique index {@code C_BPartner_OrgBP_ID_Unique}), any partner currently linked to the
+	 * org is unlinked first.
+	 */
+	void setLinkedBPartner(@NonNull OrgId orgId, @NonNull BPartnerId bpartnerId);
+
+	@Nullable
+	I_C_BPartner_Location retrieveOrgBPLocation(@NonNull OrgId orgId);
+
+	@Nullable
 	I_C_Location retrieveOrgLocation(final OrgId orgId);
 
+	@Nullable
 	default CountryId getOrgCountryId(@NonNull final OrgId orgId)
 	{
 		final I_C_Location orgLocation = retrieveOrgLocation(orgId);

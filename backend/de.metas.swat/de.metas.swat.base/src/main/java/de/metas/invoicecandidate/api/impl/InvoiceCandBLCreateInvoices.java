@@ -22,6 +22,7 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.IsPartialInvoice;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.matchinv.MatchInvType;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
@@ -51,6 +52,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.promotioncode.PromotionCodeId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
 import de.metas.user.UserId;
@@ -163,6 +165,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	private Class<? extends IInvoiceGeneratorRunnable> invoiceGeneratorClass = null;
 	private static final boolean createInvoiceFromOrder = false; // FIXME: 08511 workaround
 	private Boolean _ignoreInvoiceSchedule = null;
+	private Boolean _isInvoiceManualRule = null;
 	private IInvoicingParams _invoicingParams;
 	private IInvoiceGenerateResult _collector;
 
@@ -353,6 +356,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				final String trxName)
 		{
 			final I_C_Invoice invoice;
+			final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 
 			//
 			// Case: our invoice is linked to an order
@@ -387,7 +391,6 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice = create(ctx, I_C_Invoice.class, trxName);
 				invoice.setC_PaymentTerm_ID(PaymentTermId.toRepoId(invoiceHeader.getPaymentTermId()));
 
-				final ZoneId timeZone = orgDAO.getTimeZone(invoiceHeader.getOrgId());
 				invoice.setDateInvoiced(TimeUtil.asTimestamp(invoiceHeader.getDateInvoiced(), timeZone));
 				invoice.setDateAcct(TimeUtil.asTimestamp(invoiceHeader.getDateAcct(), timeZone)); // 03905: also updating DateAcct
 
@@ -396,6 +399,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				Check.assume(externalIds.size() <= 1, "Unexpectedly found multiple externalId candidates for the same invoice: {}", externalIds);
 				invoice.setExternalId(externalIds.stream().findFirst().orElse(null));
 			}
+
+			invoice.setDueDate(TimeUtil.asTimestamp(invoiceHeader.getOverrideDueDate(), timeZone));
 
 			// 08451: we need to get the resp taxIncluded value from the IC, even if there is a C_Order_ID
 			invoice.setIsTaxIncluded(invoiceHeader.isTaxIncluded()); // tasks 04119
@@ -428,6 +433,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Order_ID(invoiceHeader.getC_Order_ID()); // set order reference, if any
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
+			invoice.setC_PromotionCode_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCodeId()));
+			invoice.setC_PromotionCode2_ID(PromotionCodeId.toRepoId(invoiceHeader.getPromotionCode2Id()));
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
 			invoice.setExternalSystem_ID(ExternalSystemId.toRepoId(invoiceHeader.getExternalSystemId()));
 			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
@@ -444,6 +451,18 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			invoiceBL.updateDescriptionFromDocTypeTargetId(invoice, invoiceHeader.getDescription(), invoiceHeader.getDescriptionBottom());
+
+			// Propagate caller's explicit IsPartialInvoice intent (set by AggregationEngine from
+			// PlainInvoicingParams.partialInvoice) to the C_Invoice. Use setValue rather than the
+			// typed boolean setter so the C_Invoice BEFORE_NEW interceptor sees isValueChanged=true
+			// and skips its doctype-default — preserving the caller's intent even when the
+			// doctype-swap in AggregationEngine could not find a matching sibling. See me03 #29369.
+			final Boolean isPartialInvoiceIntent = invoiceHeader.getIsPartialInvoice();
+			if (isPartialInvoiceIntent != null)
+			{
+				invoice.setIsPartialInvoice(IsPartialInvoice.fromValue(isPartialInvoiceIntent).toCode());
+			}
+
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -558,9 +577,9 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private final String trxName;
 
 		private DefaultInvoiceLineGeneratorRunnable(final I_C_Invoice invoice,
-													final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
-													final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
-													final String trxName)
+		                                            final IInvoiceCandAggregate aggregate, final Set<IInvoiceLineRW> processedLines,
+		                                            final List<I_C_Invoice_Candidate> errorCandidates, final AdempiereException[] errorException,
+		                                            final String trxName)
 		{
 			createdLines = new ArrayList<>();
 
@@ -720,6 +739,13 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList());
 				invoiceLine.setExternalIds(ExternalIdsUtil.joinExternalIds(externalIds));
+
+				// F00127.1 — propagate free-of-charge flag from IC to invoice line
+				invoiceLine.setIsWithoutCharge(cand.isWithoutCharge());
+				invoiceLine.setReason(cand.isWithoutCharge() ? cand.getReason() : null);
+
+				// F01010.4 — propagate override account from IC to invoice line
+				invoiceLine.setC_ElementValue_Override_ID(cand.getC_ElementValue_Override_ID());
 
 				final Dimension invoiceCandidateDimension = dimensionService.getFromRecord(cand);
 				dimensionService.updateRecord(invoiceLine, invoiceCandidateDimension);
@@ -904,7 +930,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				// Skip invoice candidate if we are adviced to do so
 				// TODO: i think this checking is no longer needed because we are doing it when enqueueing
-				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule))
+				if (invoiceCandBL.isSkipCandidateFromInvoicing(ic, ignoreInvoiceSchedule, isInvoiceManualRule()))
 				{
 					continue;
 				}
@@ -948,9 +974,11 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				.alwaysUseDefaultHeaderAggregationKeyBuilder(invoicingParams != null && invoicingParams.isConsolidateApprovedICs())
 				.dateInvoicedParam(invoicingParams != null ? invoicingParams.getDateInvoiced() : null)
 				.dateAcctParam(invoicingParams != null ? invoicingParams.getDateAcct() : null)
+				.overrideDueDateParam(invoicingParams != null ? invoicingParams.getOverrideDueDate() : null)
 				.useDefaultBillLocationAndContactIfNotOverride(invoicingParams != null && invoicingParams.isUpdateLocationAndContactForInvoice())
 				.docTypeInvoicingPoolService(docTypeInvoicingPoolService)
 				.deliveryDateAsInvoiceDate(invoicingParams != null && invoicingParams.isDeliveryDateAsInvoiceDate())
+				.partialInvoice(invoicingParams != null ? invoicingParams.getIsPartialInvoice() : null)
 				.build();
 	}
 
@@ -1186,6 +1214,29 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		if (invoicingParams != null)
 		{
 			return invoicingParams.isIgnoreInvoiceSchedule();
+		}
+
+		return false;
+	}
+
+	@Override
+	public InvoiceCandBLCreateInvoices setInvoiceManualRule(final boolean isInvoiceManualRule)
+	{
+		this._isInvoiceManualRule = isInvoiceManualRule;
+		return this;
+	}
+
+	private boolean isInvoiceManualRule()
+	{
+		if (_isInvoiceManualRule != null)
+		{
+			return _isInvoiceManualRule;
+		}
+
+		final IInvoicingParams invoicingParams = getInvoicingParams();
+		if (invoicingParams != null)
+		{
+			return invoicingParams.isInvoiceManualRule();
 		}
 
 		return false;

@@ -185,6 +185,7 @@ public class DistributionJobPickFromCommand
 		final JsonDistributionEvent.PickFrom pickFrom = Check.assumeNotNull(this.pickFrom, "pickFrom must be set");
 		final ScannedCode pickFromScannedCode = ScannedCode.ofString(Check.assumeNotNull(pickFrom.getQrCode(), "pickFrom.qrCode must be set"));
 		final HuId sourceHuId = huService.resolveHUId(pickFromScannedCode);
+		huService.assertHUCanBePickedFrom(sourceHuId, line.getPickFromLocatorId(), line.getDropToLocatorId());
 
 		final Quantity sourceHUQty = huService.getProductQuantity(sourceHuId, line.getProductId());
 

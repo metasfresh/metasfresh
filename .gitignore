@@ -67,14 +67,14 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 .m2-local/**
 
 # this is ignored to prevent pusing debug snapshots
- **/*.snap.debug
+**/*.snap.debug
+
+# environment files (may contain secrets or local overrides)
+**/.env
 
 # github related
 .github/merge_to_master
 .github/integrate
-
-# workspace-local Maven repository
-.m2-local/
 
 # claude related
 .claude
@@ -82,9 +82,10 @@ misc/services/camel/de-metas-camel-shipping/tmp/
 **/CLAUDE.md.backup
 .mcp.json
 **/claude-docs
+**/REVIEW.md
 /docs/
 
-.m2-local
+
 
 # dev-mode artifacts extracted from CI images
 .dev-artifacts/
@@ -95,3 +96,16 @@ nul
 
 /mcp-scripts/**/*
 
+**/allure-results/**/*
+**/playwright-report/**/*
+**/test-results/**/*
+docker-builds/e2e-tests/.env
+*.stackdump
+tmp/
+# Claude-config links (created by install-claude-config.sh; must not be tracked)
+/REVIEW.md
+/docs/documentation-naming.md
+/docs/manual
+
+# graphify knowledge-graph output (per-module graph.json/graph.html, can be 5-30 MB each)
+graphify-out/

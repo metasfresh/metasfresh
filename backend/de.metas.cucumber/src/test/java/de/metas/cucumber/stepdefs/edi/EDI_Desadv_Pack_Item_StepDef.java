@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.hu.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.edi.api.impl.pack.EDIDesadvPackId;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
@@ -42,6 +43,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
@@ -65,6 +67,7 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private final EDI_Desadv_Pack_StepDefData packTable;
 	private final EDI_Desadv_Pack_Item_StepDefData packItemTable;
+	private final EDI_DesadvLine_StepDefData desadvLineTable;
 	private final M_InOut_StepDefData shipmentTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
 	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
@@ -72,12 +75,14 @@ public class EDI_Desadv_Pack_Item_StepDef
 	public EDI_Desadv_Pack_Item_StepDef(
 			@NonNull final EDI_Desadv_Pack_StepDefData packTable,
 			@NonNull final EDI_Desadv_Pack_Item_StepDefData packItemTable,
+			@NonNull final EDI_DesadvLine_StepDefData desadvLineTable,
 			@NonNull final M_InOut_StepDefData shipmentTable,
 			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
 			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
 	{
 		this.packTable = packTable;
 		this.packItemTable = packItemTable;
+		this.desadvLineTable = desadvLineTable;
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
 		this.huPackagingCodeTable = huPackagingCodeTable;
@@ -87,6 +92,71 @@ public class EDI_Desadv_Pack_Item_StepDef
 	public void setupMD_Stock_Data()
 	{
 		truncateEDIDesadvPackItem();
+	}
+
+	/**
+	 * Inserts EDI_Desadv_Pack_Item records directly into the DB so that tests can inject
+	 * pack items with specific quantities (e.g. MovementQty=0) without going through the normal
+	 * shipment/DESADV creation flow.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code EDI_Desadv_Pack_Item_ID} – identifier under which the created record is registered</li>
+	 *   <li>{@code EDI_Desadv_Pack_ID} – identifier of an existing pack (must be registered in {@link EDI_Desadv_Pack_StepDefData})</li>
+	 *   <li>{@code EDI_DesadvLine_ID} – identifier of an existing desadv line (must be registered in {@link EDI_DesadvLine_StepDefData})</li>
+	 *   <li>{@code MovementQty} – movement quantity of this pack item</li>
+	 *   <li>{@code QtyCUsPerLU} – number of CUs per LU</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code M_InOutLine_ID} – identifier or {@code -} for null</li>
+	 * </ul>
+	 *
+	 * <p>Example:
+	 * <pre>
+	 * Given metasfresh contains EDI_Desadv_Pack_Item:
+	 *   | EDI_Desadv_Pack_Item_ID | EDI_Desadv_Pack_ID | EDI_DesadvLine_ID | MovementQty | QtyCUsPerLU | M_InOutLine_ID |
+	 *   | pi_zero_qty             | myPack             | myLine            | 0           | 0           | -              |
+	 * </pre>
+	 */
+	@Given("metasfresh contains EDI_Desadv_Pack_Item:")
+	public void metasfresh_contains_edi_desadv_pack_item(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::insertPackItem);
+	}
+
+	private void insertPackItem(@NonNull final DataTableRow row)
+	{
+		final StepDefDataIdentifier packIdentifier = row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID);
+		final EDIDesadvPackId packId = packTable.getId(packIdentifier);
+
+		final StepDefDataIdentifier desadvLineIdentifier = row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID);
+		final I_EDI_DesadvLine desadvLine = desadvLineTable.get(desadvLineIdentifier);
+
+		final BigDecimal movementQty = row.getAsBigDecimal(I_EDI_Desadv_Pack_Item.COLUMNNAME_MovementQty);
+		final BigDecimal qtyCUsPerLU = row.getAsBigDecimal(I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU);
+
+		final I_EDI_Desadv_Pack_Item packItemRecord = InterfaceWrapperHelper.newInstance(I_EDI_Desadv_Pack_Item.class);
+		packItemRecord.setEDI_Desadv_Pack_ID(packId.getRepoId());
+		packItemRecord.setEDI_DesadvLine_ID(desadvLine.getEDI_DesadvLine_ID());
+		packItemRecord.setMovementQty(movementQty);
+		packItemRecord.setQtyCUsPerLU(qtyCUsPerLU);
+		// Line is mandatory (NOT NULL). The injected item only needs a non-null, distinct line value;
+		// 9999 won't collide with the generator's low sequential line numbers within the same pack.
+		packItemRecord.setLine(row.getAsOptionalInt(I_EDI_Desadv_Pack_Item.COLUMNNAME_Line).orElse(9999));
+
+		row.getAsOptionalIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID)
+				.filter(id -> !id.isNullPlaceholder())
+				.ifPresent(inOutLineIdentifier -> {
+					final InOutLineId inOutLineId = shipmentLineTable.getId(inOutLineIdentifier);
+					packItemRecord.setM_InOutLine_ID(inOutLineId.getRepoId());
+				});
+
+		InterfaceWrapperHelper.saveRecord(packItemRecord);
+
+		final StepDefDataIdentifier packItemIdentifier = row.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID);
+		packItemTable.put(packItemIdentifier, packItemRecord);
 	}
 
 	@Then("^after not more than (.*)s, the EDI_Desadv_Pack_Item has only the following records:$")
@@ -266,7 +336,9 @@ public class EDI_Desadv_Pack_Item_StepDef
 		softly.assertAll();
 
 		final StepDefDataIdentifier packItemIdentifier = dataTableRow.getAsIdentifier(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID);
-		packItemTable.put(packItemIdentifier, desadvPackItemRecord);
+		// putOrReplace (not put): a scenario may assert the same pack item at multiple checkpoints
+		// (e.g. after complete, then again after re-complete) using the same identifier.
+		packItemTable.putOrReplace(packItemIdentifier, desadvPackItemRecord);
 	}
 
 	private void logCurrentContext(

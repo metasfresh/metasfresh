@@ -2,13 +2,13 @@ package de.metas.invoice.matchinv.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
 import de.metas.invoice.InvoiceAndLineId;
 import de.metas.invoice.matchinv.MatchInv;
+import de.metas.invoice.matchinv.MatchInvCollection;
 import de.metas.invoice.matchinv.MatchInvId;
 import de.metas.invoice.matchinv.MatchInvQuery;
 import de.metas.invoice.matchinv.MatchInvType;
@@ -35,7 +35,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -72,7 +71,6 @@ public class MatchInvoiceService
 
 	public MatchInv getById(final MatchInvId matchInvId) {return matchInvoiceRepository.getById(matchInvId);}
 
-
 	public I_M_MatchInv getRecordByIdOurOfTrx(final MatchInvId matchInvId) {return matchInvoiceRepository.getRecordByIdOutOfTrx(matchInvId);}
 
 	public Set<MatchInvId> getIdsProcessedButNotPostedByInOutLineIds(final Set<InOutLineId> inoutLineIds) {return matchInvoiceRepository.getIdsProcessedButNotPostedByInOutLineIds(inoutLineIds);}
@@ -87,7 +85,7 @@ public class MatchInvoiceService
 		final InvoiceAndLineId invoiceAndLineId = InvoiceAndLineId.ofRepoId(invoiceLine.getC_Invoice_ID(), invoiceLine.getC_InvoiceLine_ID());
 		final StockQtyAndUOMQty zero = StockQtyAndUOMQtys.createZero(ProductId.ofRepoId(invoiceLine.getM_Product_ID()), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
 
-		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+		final MatchInvCollection matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
 				.type(MatchInvType.Material)
 				.invoiceAndLineId(invoiceAndLineId)
 				.build());
@@ -101,7 +99,7 @@ public class MatchInvoiceService
 			@NonNull final InOutLineId inoutLineId,
 			@NonNull final StockQtyAndUOMQty initialQtys)
 	{
-		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+		final MatchInvCollection matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
 				.type(MatchInvType.Material)
 				.inoutLineId(inoutLineId)
 				.build());
@@ -109,7 +107,7 @@ public class MatchInvoiceService
 	}
 
 	private static StockQtyAndUOMQty sumQty(
-			@NonNull final List<MatchInv> matchInvs,
+			@NonNull final MatchInvCollection matchInvs,
 			@NonNull final StockQtyAndUOMQty initialQtys)
 	{
 		StockQtyAndUOMQty result = initialQtys;
@@ -162,7 +160,7 @@ public class MatchInvoiceService
 			@NonNull final I_C_InvoiceLine reversalLine,
 			@NonNull final Timestamp reversalDateInvoiced)
 	{
-		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+		final MatchInvCollection matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
 				.invoiceAndLineId(invoiceAndLineId)
 				.build());
 		if (matchInvs.isEmpty())
@@ -171,7 +169,7 @@ public class MatchInvoiceService
 		}
 
 		final ImmutableMap<InOutLineId, I_M_InOutLine> inoutLinesById = Maps.uniqueIndex(
-				inoutBL.getLinesByIds(extractInOutLineIds(matchInvs)),
+				inoutBL.getLinesByIds(matchInvs.getInOutLineIds()),
 				inoutLine -> InOutLineId.ofRepoId(inoutLine.getM_InOutLine_ID()));
 
 		for (final MatchInv matchInv : matchInvs)
@@ -188,13 +186,6 @@ public class MatchInvoiceService
 					.dateTrx(reversalDateInvoiced)
 					.build();
 		}
-	}
-
-	private static ImmutableSet<InOutLineId> extractInOutLineIds(final List<MatchInv> matchInvs)
-	{
-		return matchInvs.stream()
-				.map(matchInv -> matchInv.getInoutLineId().getInOutLineId())
-				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public boolean hasMatchInvs(
@@ -227,7 +218,7 @@ public class MatchInvoiceService
 
 	public Optional<Money> getCostAmountMatched(@NonNull final InOutCostId inoutCostId)
 	{
-		final List<MatchInv> matchInvs = matchInvoiceRepository.list(
+		final MatchInvCollection matchInvs = matchInvoiceRepository.list(
 				MatchInvQuery.builder()
 						.type(MatchInvType.Cost)
 						.inoutCostId(inoutCostId)
@@ -240,7 +231,7 @@ public class MatchInvoiceService
 
 	public Optional<Money> getCostAmountMatched(final InvoiceAndLineId invoiceAndLineId)
 	{
-		final List<MatchInv> matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
+		final MatchInvCollection matchInvs = matchInvoiceRepository.list(MatchInvQuery.builder()
 				.type(MatchInvType.Cost)
 				.invoiceAndLineId(invoiceAndLineId)
 				.build());

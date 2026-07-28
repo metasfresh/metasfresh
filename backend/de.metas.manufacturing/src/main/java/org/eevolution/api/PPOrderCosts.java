@@ -151,6 +151,23 @@ public final class PPOrderCosts
 		changeExistingCost(costSegmentAndElement, cost -> cost.subtractingAccumulatedAmountAndQty(amt, qty, uomConverter));
 	}
 
+	/**
+	 * Sets the current-cost price snapshot on the existing cost row for the given segment.
+	 * Callers must ensure {@code newPrice}'s UOM matches the existing row's {@code accumulatedQty} UOM; this
+	 * is currently true because they derive from the product's stocking UOM at every current call site
+	 * ({@code ManufacturingAveragePOCostingMethodHandler}, {@code ManufacturingMovingAverageInvoiceCostingMethodHandler}
+	 * and {@code ManufacturingLastPOCostingMethodHandler}),
+	 * but it is NOT structurally enforced by
+	 * {@link CostSegmentAndElement}. The underlying {@code withPrice} rebuild throws {@code AdempiereException}
+	 * if {@code newPrice}'s UOM diverges from the row's {@code accumulatedQty} UOM.
+	 */
+	public void updatePriceForCostSegmentAndElement(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final CostPrice newPrice)
+	{
+		changeExistingCost(costSegmentAndElement, cost -> cost.withPrice(newPrice));
+	}
+
 	private void changeExistingCost(
 			@NonNull final CostSegmentAndElement costSegmentAndElement,
 			@NonNull final UnaryOperator<PPOrderCost> mapper)

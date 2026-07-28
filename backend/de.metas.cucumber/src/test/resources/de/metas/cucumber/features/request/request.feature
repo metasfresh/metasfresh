@@ -52,7 +52,7 @@ Feature: R_Request upsert and retrieval via API
       | ol_1       | o1         | p1           | 3          |
     And the order identified by o1 is completed
 
-    And wait until de.metas.material rabbitMQ queue is empty or throw exception after 5 minutes
+    And wait until all rabbitMQ queues are empty or throw exception after 5 minutes
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/request' and fulfills with '201' status code
 """

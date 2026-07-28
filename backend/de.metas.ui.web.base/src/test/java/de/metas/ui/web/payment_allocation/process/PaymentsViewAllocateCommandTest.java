@@ -177,7 +177,7 @@ public class PaymentsViewAllocateCommandTest
 		assertThat(actualAllocatedAmt.toBigDecimal()).isEqualByComparingTo(expectedAllocatedAmt);
 	}
 
-	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, InvoicePaymentStatus expectedPaymentStatus, String expectedOpenAmt)
+	private void assertInvoicePaymentStatus(final InvoiceId invoiceId, final InvoicePaymentStatus expectedPaymentStatus, final String expectedOpenAmt)
 	{
 		final I_C_Invoice invoice = invoiceDAO.getByIdInTrx(invoiceId);
 		invoiceBL.testAllocation(invoice, true);
@@ -247,6 +247,7 @@ public class PaymentsViewAllocateCommandTest
 			invoiceRecord.setIsSOTrx(docType.isSOTrx());
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
 			invoiceRecord.setGrandTotal(invoiceGrandTotal.toBigDecimal());
+			invoiceRecord.setIsFinancial(docBaseType.isFinancial());
 			saveRecord(invoiceRecord);
 			invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
 		}

@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
-import { toUrl, unboxAxiosResponse } from '../utils';
+import { unboxAxiosResponse } from '../utils';
 import { toQRCodeString } from '../utils/qrCode/hu';
 
 export const getDistributionScannedHUQRCodeInfo = ({ qrCode }) => {
   return axios
-    .get(toUrl(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode }))
+    .post(`${apiBasePath}/distribution/hu/byScannedCode`, { scannedCode: qrCode })
     .then((response) => unboxAxiosResponse(response));
 };
 
@@ -56,6 +56,12 @@ export const postDropAll = ({ dropToQRCode }) => {
 export const completeDistributionJob = ({ wfProcessId }) => {
   return axios
     .post(`${apiBasePath}/distribution/job/${wfProcessId}/complete`)
+    .then((response) => unboxAxiosResponse(response));
+};
+
+export const switchDistributionPickFromLocatorToNext = ({ wfProcessId }) => {
+  return axios
+    .post(`${apiBasePath}/distribution/job/${wfProcessId}/switchPickFromLocatorToNext`)
     .then((response) => unboxAxiosResponse(response));
 };
 

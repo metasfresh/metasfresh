@@ -32,6 +32,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUContextHolder;
+import de.metas.handlingunits.HUItemType;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HUPIItemProduct;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -62,6 +63,7 @@ import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.generichumodel.HUType;
+import de.metas.handlingunits.grai.GRAI;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.CopyHUsCommand.CopyHUsCommandBuilder;
 import de.metas.handlingunits.model.I_M_HU;
@@ -1031,6 +1033,34 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 		return getPI(piVersion);
 	}
 
+	@Override
+	public HuPackingInstructionsVersionId retrievePICurrentVersionId(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersionId(piId);
+	}
+
+	@Override
+	@NonNull
+	public I_M_HU_PI_Version retrievePICurrentVersion(@NonNull final HuPackingInstructionsId piId)
+	{
+		return handlingUnitsRepo.retrievePICurrentVersion(piId);
+	}
+
+	@Override
+	public I_M_HU_PI_Item retrievePIItemMaterial(@NonNull final I_M_HU_PI_Version version)
+	{
+		return handlingUnitsRepo.retrievePIItemMaterial(version);
+	}
+
+	@Override
+	public Optional<I_M_HU_PI_Item> retrieveFirstPIItem(
+			@NonNull final HuPackingInstructionsId piId,
+			@NonNull final HuPackingInstructionsId includedPIId,
+			@Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrieveFirstPIItem(piId, includedPIId, bpartnerId);
+	}
+
 	@NonNull
 	@Override
 	public I_M_HU_PI getIncludedPI(@NonNull final I_M_HU_Item huItem)
@@ -1564,6 +1594,18 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public List<I_M_HU_Item> retrieveItems(final I_M_HU hu, final HUItemType type)
+	{
+		return handlingUnitsRepo.retrieveItems(hu, type);
+	}
+
+	@Override
+	public List<I_M_HU_PI_Item> retrievePIItems(final I_M_HU_PI_Version piVersion, @Nullable final BPartnerId bpartnerId)
+	{
+		return handlingUnitsRepo.retrievePIItems(piVersion, bpartnerId);
+	}
+
+	@Override
 	@NonNull
 	public ImmutableSet<LocatorId> getLocatorIds(@NonNull final Collection<HuId> huIds)
 	{
@@ -1599,6 +1641,16 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 				.setOnlyActiveHUs(true)
 				.setOnlyTopLevelHUs()
 				.addOnlyWithAttribute(AttributeConstants.ATTR_ExternalBarcode, scannedCode.getAsString())
+				.firstIdOnly();
+	}
+
+	@Override
+	public Optional<HuId> getTopLevelHuIdByGrai(@NonNull final GRAI grai)
+	{
+		return handlingUnitsRepo.createHUQueryBuilder()
+				.setOnlyActiveHUs(true)
+				.setOnlyTopLevelHUs()
+				.addOnlyWithAttribute(AttributeConstants.ATTR_GRAI, grai.toCanonicalString())
 				.firstIdOnly();
 	}
 

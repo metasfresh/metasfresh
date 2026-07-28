@@ -77,3 +77,32 @@ Feature: Purchase order to transportation order
     And the transport order identified by transportationOrder is completed
 
     And the order identified by order_PO cannot be reactivated
+
+  @from:cucumber
+  @allure.label.epic:E0140_Purchasing
+  @allure.label.feature:F00600_Purchase_Order
+  @F00600
+  Scenario: Shipping packages survive PO reactivation and are synced on re-complete
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference    | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.DeliveryRule | OPT.DeliveryViaRule | M_Shipper_ID |
+      | order_PO2  | N       | supplier                 | 2022-06-11  | po_ref_S0156_200   | POO             | ps_PO                             | supplier                              | A                | S                   | shipper_DHL  |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_PO2 | order_PO2             | purchasedProduct        | 5          |
+
+    And metasfresh contains Transport Order
+      | Identifier           | M_Shipper_ID | Shipper_BPartner_ID | Shipper_Location_ID |
+      | transportationOrder2 | shipper_DHL  | supplier            | supplier            |
+
+    And the order identified by order_PO2 is completed
+
+    # Assign shipping packages to the transportation order
+    And C_Order_AddTo_M_ShipperTransportation is invoked for order order_PO2 and transportation order: transportationOrder2
+    And metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder2
+
+    # Reactivate and re-complete the PO — shipping packages must survive
+    When the order identified by order_PO2 is reactivated
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder2
+
+    When the order identified by order_PO2 is completed
+    Then metasfresh contains exactly 1 M_ShippingPackages for transportation order: transportationOrder2

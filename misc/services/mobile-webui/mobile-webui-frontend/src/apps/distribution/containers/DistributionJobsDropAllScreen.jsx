@@ -4,10 +4,12 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { distributionJobsListScreenLocation } from '../../../routes/distribution';
 import { postDropAll } from '../../../api/distribution';
 import { toastErrorFromObj } from '../../../utils/toast';
+import { trl } from '../../../utils/translations';
 
 const DistributionJobsDropAllScreen = () => {
   const { history } = useScreenDefinition({
     screenId: 'DistributionJobsDropAllScreen',
+    captionKey: 'activities.distribution.scanDropToLocator',
     back: distributionJobsListScreenLocation(),
   });
 
@@ -17,7 +19,12 @@ const DistributionJobsDropAllScreen = () => {
       .catch(toastErrorFromObj);
   };
 
-  return <BarcodeScannerComponent onResolvedResult={onBarcodeScanned} />;
+  return (
+    <BarcodeScannerComponent
+      onResolvedResult={onBarcodeScanned}
+      inputPlaceholderText={trl('activities.distribution.scanDropToLocator')}
+    />
+  );
 };
 
 export default DistributionJobsDropAllScreen;

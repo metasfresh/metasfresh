@@ -93,7 +93,6 @@ const updateLineStatusAndRollup = ({ draftWFProcess, activityId, lineId }) => {
   const draftLine = draftWFProcess.activities[activityId].dataStored.lines[lineId];
 
   draftLine.completeStatus = computeLineStatus(draftLine);
-  console.log(`Update line [${activityId} ${lineId} ]: completeStatus=${draftLine.completeStatus}`);
 
   //
   // Rollup:
@@ -174,6 +173,7 @@ registerHandler({
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.customQRCodeFormats = fromActivity.componentProps.customQRCodeFormats;
+    draftActivityDataStored.readAttributes = fromActivity.componentProps.readAttributes ?? [];
     return draftActivityDataStored;
   },
 });

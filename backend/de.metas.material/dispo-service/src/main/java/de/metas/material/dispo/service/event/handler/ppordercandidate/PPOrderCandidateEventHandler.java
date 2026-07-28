@@ -50,6 +50,8 @@ import de.metas.material.planning.ProductPlanningId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.WarehouseId;
+import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 
 import javax.annotation.Nullable;
@@ -61,8 +63,15 @@ import java.util.Optional;
 abstract class  PPOrderCandidateEventHandler
 {
 	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
+	@NonNull protected final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	@NonNull protected final CandidateChangeService candidateChangeService;
 	@NonNull protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+
+	protected final boolean isWarehouseExcludedFromMaterialDispo(@NonNull final AbstractPPOrderCandidateEvent event)
+	{
+		final WarehouseId warehouseId = event.getPpOrderCandidate().getPpOrderData().getWarehouseId();
+		return warehouseBL.isIgnoreInMaterialDispo(warehouseId);
+	}
 
 	@NonNull
 	protected final Candidate createHeaderCandidate(
@@ -199,15 +208,23 @@ abstract class  PPOrderCandidateEventHandler
 
 		final PPOrderCandidate ppOrderCandidate = event.getPpOrderCandidate();
 
-		return productionDetailBuilder
+		productionDetailBuilder
 				.advised(Flag.of(event instanceof PPOrderCandidateAdvisedEvent))
 				.qty(ppOrderCandidate.getPpOrderData().getQtyOpen())
 				.plantId(ppOrderCandidate.getPpOrderData().getPlantId())
 				.workstationId(ppOrderCandidate.getPpOrderData().getWorkstationId())
 				.pickDirectlyIfFeasible(Flag.FALSE)
-				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId())
-				.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()))
-				.build();
+				.productPlanningId(ppOrderCandidate.getPpOrderData().getProductPlanningId());
+
+		// Only (re)assign the PP_Order_Candidate link when the event carries one: an ADVISED event carries none, and
+		// overwriting with null would wipe the link on an updated supply candidate → the by-id header match would then
+		// miss it and spawn a duplicate. Preserve the existing link.
+		if (ppOrderCandidate.getPpOrderCandidateId() != null)
+		{
+			productionDetailBuilder.ppOrderRef(PPOrderRef.ofPPOrderCandidateIdOrNull(ppOrderCandidate.getPpOrderCandidateId()));
+		}
+
+		return productionDetailBuilder.build();
 	}
 
 	@NonNull
@@ -259,7 +276,27 @@ abstract class  PPOrderCandidateEventHandler
 				.groupId(groupId)
 				.build();
 
-		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
+		final Candidate matchInGroup = candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);
+		if (matchInGroup != null)
+		{
+			return matchInGroup;
+		}
+
+		// Fallback: during a lot-for-lot reactivate round-trip the header supply can be re-created under a NEW
+		// materialDispoGroupId, which would orphan the existing component (line) candidate and leave a stale 0-qty
+		// duplicate. The line is uniquely identified by its PP_OrderLine_Candidate id (productionDetailsQuery), so
+		// match on that alone — without the group filter — to reconcile it in place.
+		// Safe for other (non-lot-for-lot) production paths: this only runs when the group-scoped query above found
+		// nothing, i.e. only when the candidate group changed. When the group is stable the group-scoped match
+		// already succeeds and this fallback is never reached.
+		final CandidatesQuery lineCandidateQueryAnyGroup = CandidatesQuery.builder()
+				.type(CandidateType.DEMAND)
+				.businessCase(CandidateBusinessCase.PRODUCTION)
+				.productionDetailsQuery(productionDetailsQuery)
+				.simulatedQueryQualifier(simulatedQueryQualifier)
+				.build();
+
+		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQueryAnyGroup);
 	}
 
 	@NonNull

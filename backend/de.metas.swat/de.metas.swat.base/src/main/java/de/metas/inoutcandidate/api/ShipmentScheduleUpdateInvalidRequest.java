@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 
 import java.util.Properties;
 
@@ -42,4 +43,12 @@ public class ShipmentScheduleUpdateInvalidRequest
 	PInstanceId selectionId;
 
 	boolean createMissingShipmentSchedules;
+
+	/**
+	 * Bounds the recompute pass to whole products (stock-coherent unit); see
+	 * {@link de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository#markAllToRecomputeOutOfTrx(PInstanceId, QueryLimit)}.
+	 * Defaults to {@link QueryLimit#NO_LIMIT}, preserving the previous single-shot, unbounded behavior
+	 * (e.g. for the manual {@code M_ShipmentSchedule_Update} process).
+	 */
+	@NonNull @Builder.Default QueryLimit maxToProcess = QueryLimit.NO_LIMIT;
 }

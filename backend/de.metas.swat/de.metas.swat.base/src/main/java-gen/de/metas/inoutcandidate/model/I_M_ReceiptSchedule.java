@@ -1039,6 +1039,27 @@ public interface I_M_ReceiptSchedule
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Delivery Stop.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDeliveryStop (boolean IsDeliveryStop);
+
+	/**
+	 * Get Delivery Stop.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDeliveryStop();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsDeliveryStop = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsDeliveryStop", null);
+	String COLUMNNAME_IsDeliveryStop = "IsDeliveryStop";
+
+	/**
 	 * Set B/L Received.
 	 * Has the bill of lading been received?
 	 *
@@ -1729,6 +1750,27 @@ public interface I_M_ReceiptSchedule
 
 	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_Processed = new ModelColumn<>(I_M_ReceiptSchedule.class, "Processed", null);
 	String COLUMNNAME_Processed = "Processed";
+
+	/**
+	 * Set Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isIsClosed();
+
+	ModelColumn<I_M_ReceiptSchedule, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_ReceiptSchedule.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
 
 	/**
 	 * Set Packaging capacity.

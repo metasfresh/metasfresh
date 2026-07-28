@@ -16,7 +16,7 @@ select commoditynumber,
        AD_Org_ID,
        OrgName,
        CustomsTariff,
-       weight,
+       sum(weight)  as weight,
        vataxid,
        c_year_id
 from (
@@ -63,7 +63,14 @@ from (
                 io.AD_Org_ID,
                 o.Name          as OrgName,
                 ct.value           AS CustomsTariff,
-                iow.catchweight    AS weight,
+                -- Per-line weight: catch weight first, then UOM conversion to KG, then product weight fallback
+                coalesce(
+                    coalesce(iol.qtydeliveredcatch,
+                             uomConvert(iol.M_Product_ID, iol.C_UOM_ID,
+                                        (select C_UOM_ID from C_UOM where x12de355 = 'KGM' and isactive = 'Y' order by isdefault desc limit 1),
+                                        iol.qtyentered)),
+                    iol.qtyentered * p.weight
+                )                  AS weight,
                 bp.vataxid,
                 per.c_year_id
          from M_InOut io
@@ -99,7 +106,6 @@ from (
                   JOIN C_Period per on i.dateinvoiced >= per.startdate and i.dateinvoiced <= per.enddate
 
                   LEFT OUTER JOIN M_CustomsTariff ct ON ct.M_CustomsTariff_ID = p.M_CustomsTariff_ID
-                  LEFT OUTER JOIN de_metas_endcustomer_fresh_reports.Docs_Sales_InOut_Sum_Weight(io.m_inout_id, 'de_DE') AS iow ON TRUE
 
          where io.issotrx = 'Y'
            and io.isactive = 'Y'
@@ -128,7 +134,6 @@ group by commoditynumber,
          AD_Org_ID,
          OrgName,
          CustomsTariff,
-         weight,
          vataxid,
          c_year_id
 order by deliveryCountry, commoditynumber;

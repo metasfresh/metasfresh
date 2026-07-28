@@ -138,11 +138,89 @@ public class HUQRCodesRepository
 		removeAssignment(existingRecord, huIdsToRemove);
 	}
 
+	/**
+	 * Read-only counterpart of {@link #getHUAssignmentByQRCode(HUQRCode)} that also returns rows whose
+	 * {@code M_HU_QRCode_Assignment.IsActive='N'}. Use from cleanup / forensic paths (e.g. detecting a
+	 * stale sticker scan after the HU was destroyed and the assignment soft-deleted by the destroy
+	 * interceptor). Returns the most recent assignment first when several exist.
+	 */
+	public Optional<HuId> getHuIdByQRCodeIncludingInactive(@NonNull final HUQRCode huQRCode)
+	{
+		return getByUniqueId(huQRCode.getId())
+				.flatMap(record -> queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+						.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, record.getM_HU_QRCode_ID())
+						.orderByDescending(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_Assignment_ID)
+						.create()
+						.firstOptional(I_M_HU_QRCode_Assignment.class)
+						.map(assignment -> HuId.ofRepoId(assignment.getM_HU_ID())));
+	}
+
+	/**
+	 * Soft-delete: set {@code IsActive='N'} on every active {@code M_HU_QRCode_Assignment} row pointing at
+	 * the given HU, preserving the row for audit/traceability. All scan-time lookup paths already filter on
+	 * {@code IsActive='Y'} via {@code addOnlyActiveRecordsFilter()}, so deactivated rows stop resolving.
+	 */
+	public void deactivateAssignmentsByHuId(@NonNull final HuId huId)
+	{
+		queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.stream()
+				.forEach(assignment -> {
+					assignment.setIsActive(false);
+					InterfaceWrapperHelper.save(assignment);
+				});
+	}
+
 	public boolean isQRCodeAssignedToHU(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
 	{
 		return getHUAssignmentByQRCode(qrCode)
 				.map(huQrCodeAssignment -> huQrCodeAssignment.isAssignedToHuId(huId))
 				.orElse(false);
+	}
+
+	/**
+	 * Read-only diagnostic for a failed {@link #isQRCodeAssignedToHU(HUQRCode, HuId)}: inspects the live
+	 * {@code M_HU_QRCode} row (including inactive) and its active assignments and returns a precise cause
+	 * string, so the raised error distinguishes the distinct failure modes. Performs no writes.
+	 */
+	public String diagnoseAssignmentFailure(@NonNull final HUQRCode qrCode, @NonNull final HuId huId)
+	{
+		final HUQRCodeUniqueId uniqueId = qrCode.getId();
+
+		// look up the QR-code row(s) by UniqueId WITHOUT the active filter, so an inactive row is still seen
+		final List<I_M_HU_QRCode> qrRecords = queryBL.createQueryBuilder(I_M_HU_QRCode.class)
+				.addEqualsFilter(I_M_HU_QRCode.COLUMNNAME_UniqueId, uniqueId.getAsString())
+				.create()
+				.list(I_M_HU_QRCode.class);
+		if (qrRecords.isEmpty())
+		{
+			return "no M_HU_QRCode row for UniqueId=" + uniqueId.getAsString();
+		}
+
+		final I_M_HU_QRCode activeQrRecord = qrRecords.stream()
+				.filter(I_M_HU_QRCode::isActive)
+				.findFirst()
+				.orElse(null);
+		if (activeQrRecord == null)
+		{
+			return "M_HU_QRCode row inactive for UniqueId=" + uniqueId.getAsString();
+		}
+
+		final ImmutableSet<HuId> assignedHuIds = queryBL.createQueryBuilder(I_M_HU_QRCode_Assignment.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_QRCode_Assignment.COLUMNNAME_M_HU_QRCode_ID, activeQrRecord.getM_HU_QRCode_ID())
+				.create()
+				.stream()
+				.map(assignment -> HuId.ofRepoId(assignment.getM_HU_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+		if (assignedHuIds.isEmpty())
+		{
+			return "QR active but has no active assignment";
+		}
+
+		return "QR active but assigned to HU(s) " + assignedHuIds + ", not " + huId;
 	}
 
 	public Optional<HUQRCode> getFirstQRCodeByHuId(@NonNull final HuId huId)

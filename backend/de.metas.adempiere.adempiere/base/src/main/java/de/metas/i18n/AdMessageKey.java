@@ -45,7 +45,7 @@ public final class AdMessageKey
 	@Nullable
 	public static AdMessageKey ofNullable(@Nullable final String value)
 	{
-		return value != null && Check.isNotBlank(value) ? of(value) : null;
+		return Check.isNotBlank(value) ? of(value) : null;
 	}
 
 	private final String value;

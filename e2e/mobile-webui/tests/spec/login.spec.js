@@ -23,7 +23,7 @@ test.describe('Login/Logout', () => {
                 const response = await Backend.createMasterdata({
                     request: {
                         mobileConfig: {
-                            defaultAuthMethod: authMethod,  
+                            defaultAuthMethod: authMethod,
                         },
                         login: {
                             user: { language },
@@ -41,4 +41,29 @@ test.describe('Login/Logout', () => {
             });
         });
     })
+
+    test('Logout button visible on small screen height', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0295: Frontend MobileUI');
+        allure.tag('F12000: Frontend MobileUI');
+        allure.tag('F12000');
+        allure.story('Logout button visible on small screen');
+        allure.severity('normal');
+
+        // Simulate Zebra MC3300x screen height (~450px)
+        await page.setViewportSize({ width: 412, height: 450 });
+
+        const response = await Backend.createMasterdata({
+            request: {
+                login: {
+                    user: { language: 'en_US' },
+                },
+            }
+        });
+
+        await LoginScreen.login(response.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.expectLogoutButtonReachable();
+        await ApplicationsListScreen.logout();
+    });
 });

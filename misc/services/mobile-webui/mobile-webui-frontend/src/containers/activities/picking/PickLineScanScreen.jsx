@@ -31,7 +31,9 @@ import {
   getQtyRejectedReasonsFromActivity,
 } from '../../../reducers/wfProcesses';
 import { parseQRCodeString, toQRCodeString } from '../../../utils/qrCode/hu';
-import { getScannedHUQRCodeInfo } from '../../../api/picking';
+import { getScannedHUQRCodeInfo, useAvailablePickingTargets } from '../../../api/picking';
+import { PickingTargetType } from '../../../constants/PickingTargetType';
+import Spinner from '../../../components/Spinner';
 import { useBooleanSetting } from '../../../reducers/settings';
 import {
   getNextEligibleLineToPick,
@@ -85,6 +87,34 @@ const PickLineScanScreen = () => {
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const { luPickingTarget } = useCurrentPickingTargetInfo({ wfProcessId, activityId });
+  // The current TU pick target (line-scoped for PRODUCT aggregation, header-scoped otherwise — hence
+  // fallbackToHeader). When a TU pick target is set, the operator established it via the pick-target
+  // GRAI scan (SelectPickTargetScreen's GraiScanPanel), which already captured that TU's GRAI — so the
+  // inline GRAI capture below must NOT fire (it would swallow the pick). The pre-materialization target
+  // exposes `.grai`; once the TU is materialized on first pick it becomes an existing-TU target (grai
+  // nulled in the JSON) but is still present — so we gate on presence, which survives materialization.
+  // The Flow-Through pick uses an LU target with NO TU target, so the inline capture still fires there.
+  const { tuPickingTarget } = useCurrentPickingTargetInfo({
+    wfProcessId,
+    activityId,
+    lineId,
+    fallbackToHeader: true,
+  });
+
+  // GRAI Flow-Through: when GRAI scanning is required for this job's customer, the qty confirm
+  // auto-invokes the inline GRAI capture (handled by ScanHUAndGetQtyComponent) and the captured codes
+  // are reported on the same onResult, so qty + GRAIs go out as ONE atomic pick. `existingLuGrais` are
+  // the GRAIs already assigned to this line's effective LU by prior picks — the capture panel mirrors
+  // the server-side LU-wide dedupe against them, so re-scanning a GRAI already on the LU (a
+  // different product picked onto the SAME LU) is skipped, not counted. The Flow-Through pick happens on
+  // this line-scan screen (no per-step scan screen), so the wiring must live here too, not only in
+  // PickStepScanScreen.
+  const { graiScanEnabled, existingLuGrais, isTargetsLoading } = useAvailablePickingTargets({
+    wfProcessId,
+    lineId,
+    type: PickingTargetType.TU,
+  });
+  const isInlineGraiCaptureEnabled = graiScanEnabled && tuPickingTarget == null;
 
   useHeaderUpdate({ url, caption, uom, qtyToPick, qtyPicked });
 
@@ -93,10 +123,12 @@ const PickLineScanScreen = () => {
       convertScannedBarcodeToResolvedResult({
         scannedBarcode,
         expectedProductId: productId,
+        expectedProductNo: productNo,
+        isShowPromptWhenOverPicking,
         customQRCodeFormats,
         pickingUnit,
       }),
-    [productId, customQRCodeFormats, pickingUnit]
+    [productId, productNo, isShowPromptWhenOverPicking, customQRCodeFormats, pickingUnit]
   );
 
   const onClose = useOnClose({ applicationId, wfProcessId, activity, lineId, next });
@@ -120,10 +152,18 @@ const PickLineScanScreen = () => {
     [qtyToPickRemaining]
   );
 
+  // Block qty entry until graiScanEnabled is known (the targets GET defaults it false while in flight),
+  // else a GRAI-required pick could be confirmed and sent without GRAIs.
+  if (isTargetsLoading) {
+    return <Spinner />;
+  }
+
   return (
     <ScanHUAndGetQtyComponent
       key={`${applicationId}_${wfProcessId}_${activityId}_${lineId}_scan`} // very important, to force the component recreation when we do history.replace
       scannedBarcode={qrCode}
+      graiScanEnabled={isInlineGraiCaptureEnabled}
+      existingLuGrais={existingLuGrais}
       qtyTargetCaption={trl('general.QtyToPick')}
       qtyCaption={trl(pickingUnit === PICKING_UNIT_TU ? 'general.QtyTU' : 'general.Qty')}
       packingItemName={pickingUnit === PICKING_UNIT_TU ? packingItemName : null}
@@ -175,7 +215,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     catchWeightUom: line.catchWeightUOM,
     isShowPromptWhenOverPicking: activity?.dataStored?.isShowPromptWhenOverPicking,
     customQRCodeFormats,
-    readAttributes: getReadAttributesFromActivity({ activity }),
+    // Per-line readAttributes (e.g. SerialNo for serial-no products); falls back to the job-level set.
+    readAttributes: line?.readAttributes ?? getReadAttributesFromActivity({ activity }),
   };
 };
 
@@ -189,6 +230,8 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 export const convertScannedBarcodeToResolvedResult = async ({
   scannedBarcode,
   expectedProductId,
+  expectedProductNo,
+  isShowPromptWhenOverPicking,
   customQRCodeFormats,
   pickingUnit,
 }) => {
@@ -225,7 +268,13 @@ export const convertScannedBarcodeToResolvedResult = async ({
     throw trl('activities.picking.notEligibleHUBarcode');
   }
 
-  return convertQRCodeObjectToResolvedResult({ parsedQRCode, pickingUnit, huInfoFromBackend });
+  return convertQRCodeObjectToResolvedResult({
+    parsedQRCode,
+    pickingUnit,
+    huInfoFromBackend,
+    expectedProductNo,
+    isShowPromptWhenOverPicking,
+  });
 };
 
 //
@@ -234,7 +283,13 @@ export const convertScannedBarcodeToResolvedResult = async ({
 //
 //
 
-const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, huInfoFromBackend }) => {
+const convertQRCodeObjectToResolvedResult = async ({
+  parsedQRCode,
+  pickingUnit,
+  huInfoFromBackend,
+  expectedProductNo,
+  isShowPromptWhenOverPicking,
+}) => {
   const result = {
     qrCode: parsedQRCode,
   };
@@ -254,6 +309,8 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, 
   result.scannedHU = {
     huUnitType: parsedQRCode.huUnitType,
   };
+
+  // Existing behavior: fetch HU info for LU in TU-picking (qtyTUs)
   if (parsedQRCode.huUnitType === 'LU' && pickingUnit === PICKING_UNIT_TU) {
     let huInfo = huInfoFromBackend;
     if (huInfo == null) {
@@ -269,7 +326,24 @@ const convertQRCodeObjectToResolvedResult = async ({ parsedQRCode, pickingUnit, 
     }
   }
 
-  console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
+  // For whole-TU picks with overdelivery prompt enabled,
+  // fetch actual product qty from backend so the prompt can detect overdelivery.
+  // The backend picks the full HU storage qty when isPickWholeTU=true,
+  // so we need the actual qty to compare against remaining.
+  if (parsedQRCode.isTUToBePickedAsWhole === true && isShowPromptWhenOverPicking) {
+    try {
+      const huInfo =
+        huInfoFromBackend ??
+        (await getScannedHUQRCodeInfo({ qrCode: toQRCodeString(parsedQRCode), productNo: expectedProductNo }));
+      if (huInfo?.productQty != null) {
+        result.qtyInitial = parseFloat(huInfo.productQty);
+      }
+    } catch (error) {
+      console.warn('Failed to get HU product qty for overdelivery check. Ignored', error);
+    }
+  }
+
+  // console.log('convertQRCodeObjectToResolvedResult', { result, qrCodeObj: parsedQRCode, pickingUnit });
   return result;
 };
 
@@ -344,11 +418,14 @@ const usePostQtyPicked = ({
     catchWeight = null,
     bestBeforeDate,
     lotNo,
+    serialNos,
     productNo,
     isCloseTarget = false,
     isDone = true,
     resolvedBarcodeData,
     barcodeType,
+    setGrais,
+    graiCodes,
   }) => {
     const lineIdEffective = resolvedBarcodeData?.lineId ?? lineIdParam;
 
@@ -383,6 +460,10 @@ const usePostQtyPicked = ({
         bestBeforeDate,
         setLotNo: lotNo !== undefined,
         lotNo,
+        setGrais,
+        graiCodes,
+        setSerialNos: serialNos !== undefined,
+        serialNos,
         isCloseTarget,
       })
     ).then(({ isPickingJobCompleted }) => !isPickingJobCompleted && isDone && onClose());

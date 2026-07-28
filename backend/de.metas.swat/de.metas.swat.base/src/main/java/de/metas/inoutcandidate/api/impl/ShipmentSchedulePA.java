@@ -31,12 +31,14 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.ModelColumnNameValue;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.CreateSelectionResponse;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.MOrderLine;
@@ -103,6 +105,14 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 			+ "\n                  WHERE res.C_OrderLineSO_ID = M_ShipmentSchedule.C_OrderLine_ID"
 			+ "\n                        AND res.IsActive = 'Y'"
 			+ "\n                        AND hu.IsActive='Y' AND hu.HUStatus NOT IN ('D'/*Destroyed*/, 'P'/*Planning*/, 'E'/*Shipped*/))"
+			+ "\n THEN FALSE ELSE TRUE END,"
+			//
+			// Reservation 1b - look at scheds for which there is a Qty reservation (from Material Cockpit V2)
+			+ "\n CASE WHEN EXISTS(SELECT 1"
+			+ "\n                  FROM M_QtyReservation qres"
+			+ "\n                  WHERE qres.C_OrderLine_ID = M_ShipmentSchedule.C_OrderLine_ID"
+			+ "\n                        AND qres.IsActive = 'Y'"
+			+ "\n                        AND qres.QtyTU > 0)"
 			+ "\n THEN FALSE ELSE TRUE END,"
 			//
 			// Reservation 2 - look at scheds for whose bpartners there are *dedicated* HUs.
@@ -257,7 +267,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 	 * Note: The {@link I_C_OrderLine}s contained in the {@link OlAndSched} instances are {@link MOrderLine}s.
 	 */
 	@Override
-	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId)
+	public List<OlAndSched> retrieveInvalid(@NonNull final PInstanceId pinstanceId, @NonNull final QueryLimit maxToProcess)
 	{
 		final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 		// 1.
@@ -267,7 +277,7 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		// task 08727: Tag the recompute records out-of-trx.
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
-		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId);
+		invalidSchedulesRepo.markAllToRecomputeOutOfTrx(pinstanceId, maxToProcess);
 
 		// 2.
 		// Load the scheds the are pointed to by our marked M_ShipmentSchedule_Recompute records
@@ -394,7 +404,9 @@ public class ShipmentSchedulePA implements IShipmentSchedulePA
 		{
 			selectionQueryBuilder.addEqualsFilter(inoutCandidateColumnName, null);
 		}
-		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection();
+		final PInstanceId selectionToUpdateId = selectionQueryBuilder.create().createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
 		if (selectionToUpdateId == null)
 		{
 			// nothing to update

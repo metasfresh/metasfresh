@@ -6,22 +6,30 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.config.mobileui.MobileUIPickingUserProfile;
+import de.metas.handlingunits.picking.config.mobileui.PickAttribute;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineGroupBy;
 import de.metas.handlingunits.picking.config.mobileui.PickingLineSortBy;
+import de.metas.handlingunits.picking.job.model.CurrentPickingTarget;
+import de.metas.handlingunits.picking.job.model.LUPickingTarget;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobLine;
+import de.metas.handlingunits.picking.job.model.TUPickingTarget;
 import de.metas.handlingunits.picking.job.service.external.hu.PickingJobHUService;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.rest_api.JsonHUAttributeConverters;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.picking.rest_api.json.JsonLUPickingTarget;
 import de.metas.picking.rest_api.json.JsonPickingJob;
 import de.metas.picking.rest_api.json.JsonPickingJobLine;
+import de.metas.picking.rest_api.json.JsonTUPickingTarget;
 import de.metas.picking.rest_api.json.JsonRejectReasonsList;
+import de.metas.picking.workflow.CarrierAdviseTargetInfo;
 import de.metas.picking.workflow.DisplayValueProvider;
 import de.metas.picking.workflow.DisplayValueProviderService;
+import de.metas.picking.workflow.PackedHUCarrierAdviseService;
 import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.uom.UomId;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -52,6 +60,7 @@ public class JsonPickingJobConverterCommand
 	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobHUService huService;
 	@NonNull private final PickingJobRestService pickingJobRestService;
+	@NonNull private final PackedHUCarrierAdviseService packedHUCarrierAdviseService;
 
 	@NonNull private final PickingJob pickingJob;
 	@NonNull private final JsonOpts jsonOpts;
@@ -66,6 +75,7 @@ public class JsonPickingJobConverterCommand
 			@NonNull final PickingJobProductService productService,
 			@NonNull final PickingJobHUService huService,
 			@NonNull final PickingJobRestService pickingJobRestService,
+			@NonNull final PackedHUCarrierAdviseService packedHUCarrierAdviseService,
 			@NonNull final DisplayValueProviderService displayValueProviderService,
 			//
 			@NonNull final PickingJob pickingJob,
@@ -74,6 +84,7 @@ public class JsonPickingJobConverterCommand
 		this.productService = productService;
 		this.huService = huService;
 		this.pickingJobRestService = pickingJobRestService;
+		this.packedHUCarrierAdviseService = packedHUCarrierAdviseService;
 		this.pickingJob = pickingJob;
 		this.jsonOpts = jsonOpts;
 
@@ -85,7 +96,7 @@ public class JsonPickingJobConverterCommand
 
 	public JsonPickingJob execute()
 	{
-		return JsonPickingJob.builderFrom(pickingJob)
+		final JsonPickingJob.JsonPickingJobBuilder builder = JsonPickingJob.builderFrom(pickingJob)
 				.lines(toJsonPickingJobLines())
 				.qtyRejectedReasons(JsonRejectReasonsList.of(pickingJobRestService.getQtyRejectedReasons(), jsonOpts))
 				.allowSkippingRejectedReason(pickingJobOptions.isAllowSkippingRejectedReason())
@@ -93,8 +104,19 @@ public class JsonPickingJobConverterCommand
 				.readAttributes(pickingJobOptions.getPickAttributes().getAttributesToReadSet())
 				.showPromptWhenOverPicking(pickingJobOptions.isShowConfirmationPromptWhenOverPick())
 				.anonymousPickHUsOnTheFly(pickingJob.isAnonymousPickHUsOnTheFly())
-				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue())
-				.build();
+				.completeJobAutomatically(pickingJobOptions.getCompleteJobAutomatically().isTrue());
+
+		// The LU/TU pick targets are already set by JsonPickingJob.builderFrom(pickingJob).
+
+		final CarrierAdviseTargetInfo jobCarrierAdvise = packedHUCarrierAdviseService.resolveInfo(pickingJob, null, jsonOpts.getAdLanguage());
+
+		// Job-level carrier-advise flags — the mobile UI reads these for the job view's advise button.
+		builder.carrierAdviseAvailable(jobCarrierAdvise.isAvailable())
+				.carrierAdviseReadOnly(jobCarrierAdvise.isReadOnly())
+				.carrierProductCaption(jobCarrierAdvise.getProductCaption())
+				.carrierAdviseDisabledReason(jobCarrierAdvise.getDisabledReason());
+
+		return builder.build();
 	}
 
 	@NonNull
@@ -109,16 +131,74 @@ public class JsonPickingJobConverterCommand
 		for (final Map.Entry<String, List<PickingJobLine>> group : sortedGroupedLines.entrySet())
 		{
 			group.getValue().stream()
-					.map(line -> JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
-							.displayGroupKey(group.getKey())
-							.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
-							.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
-									getAdditionalHeaderProperties(line), jsonOpts))
+					.map(line -> enrichLineCarrierAdvise(
+							JsonPickingJobLine.builderFrom(line, this::getUOMSymbolById, jsonOpts)
+									.displayGroupKey(group.getKey())
+									.allowPickingAnyHU(pickingJob.isAllowPickingAnyHU())
+									.readAttributes(computeLineReadAttributes(line))
+									.additionalHeaderProperties(JsonWFProcessHeaderProperties.of(
+											getAdditionalHeaderProperties(line), jsonOpts)),
+							line)
 							.build()
 					)
 					.forEach(result::add);
 		}
 		return ImmutableList.copyOf(result);
+	}
+
+	/**
+	 * Exposes the carrier-advise flags on the line (the mobile UI reads them for the line view's advise button)
+	 * and sets the current LU/TU pick target, if any. The carrier-advise flags live only on the line/job, never
+	 * on the pick target: the UI shows one package at a time, so the current target's advise is always the
+	 * line's (line view) / job's (job view) value — a per-target copy carried no extra information.
+	 */
+	@NonNull
+	private JsonPickingJobLine.JsonPickingJobLineBuilder enrichLineCarrierAdvise(
+			@NonNull final JsonPickingJobLine.JsonPickingJobLineBuilder lineBuilder,
+			@NonNull final PickingJobLine line)
+	{
+		final CurrentPickingTarget currentPickingTarget = line.getCurrentPickingTarget();
+
+		// The carrier product is the line's own job-scoped persisted value (or the job's shared value for
+		// header-level aggregation).
+		final CarrierAdviseTargetInfo lineInfo = packedHUCarrierAdviseService.resolveInfo(pickingJob, line, jsonOpts.getAdLanguage());
+		lineBuilder.carrierAdviseAvailable(lineInfo.isAvailable())
+				.carrierAdviseReadOnly(lineInfo.isReadOnly())
+				.carrierProductCaption(lineInfo.getProductCaption())
+				.carrierAdviseDisabledReason(lineInfo.getDisabledReason());
+
+		final LUPickingTarget existingLuTarget = currentPickingTarget.getLuPickingTarget()
+				.filter(LUPickingTarget::isExistingLU)
+				.orElse(null);
+		if (existingLuTarget != null)
+		{
+			return lineBuilder.luPickingTarget(JsonLUPickingTarget.of(existingLuTarget));
+		}
+
+		final TUPickingTarget existingTuTarget = currentPickingTarget.getTuPickingTarget()
+				.filter(TUPickingTarget::isExistingTU)
+				.orElse(null);
+		if (existingTuTarget != null)
+		{
+			return lineBuilder.tuPickingTarget(JsonTUPickingTarget.of(existingTuTarget));
+		}
+
+		return lineBuilder;
+	}
+
+	/**
+	 * Per-line read attributes = the job-level set plus {@link PickAttribute#SerialNo} when this line's product
+	 * opts into serial-no picking and its attribute set supports SerialNo.
+	 */
+	@NonNull
+	private Set<PickAttribute> computeLineReadAttributes(@NonNull final PickingJobLine line)
+	{
+		final Set<PickAttribute> base = pickingJobOptions.getPickAttributes().getAttributesToReadSet();
+		if (!productService.isSerialNoPickingEnabled(line.getProductId()))
+		{
+			return base;
+		}
+		return ImmutableSet.<PickAttribute>builder().addAll(base).add(PickAttribute.SerialNo).build();
 	}
 
 	@Nullable

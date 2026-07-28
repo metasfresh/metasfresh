@@ -18,7 +18,6 @@ import de.metas.order.event.OrderUserNotifications.NotificationRequest;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -107,6 +106,13 @@ import java.util.Set;
 				.externalHeaderId(orderAggregationKey.getExternalId())
 				.externalSystemId(orderAggregationKey.getExternalSystemId());
 
+		if (orderAggregationKey.isDropShip())
+		{
+			orderFactory.dropShip(
+					orderAggregationKey.getDropShipBPartnerId(),
+					orderAggregationKey.getDropShipLocationId(),
+					orderAggregationKey.getDropShipUserId());
+		}
 
 		if (docType != null)
 		{
@@ -116,17 +122,23 @@ import java.util.Set;
 		this.userNotifications = userNotifications;
 	}
 
+	/**
+	 * Adds {@code purchaseOrderItem} as a new, independent order line.
+	 * Each call creates a fresh {@link OrderLineBuilder} — candidates are never merged,
+	 * preserving the invariant required by
+	 * {@code UC_C_PurchaseCandidate_Alloc_C_OrderLinePO_ID}: one purchase candidate per PO line.
+	 */
 	public void addCandidate(@NonNull final PurchaseOrderItem purchaseOrderItem)
 	{
 		final OrderLineBuilder orderLineBuilder = orderFactory
-				.orderLineByProductAndUom(
-						purchaseOrderItem.getProductId(),
-						UomId.ofRepoId(purchaseOrderItem.getUomId()))
-				.orElseGet(orderFactory::newOrderLine)
+				.newOrderLine()
 				.productId(purchaseOrderItem.getProductId());
 
 		orderLineBuilder.addQty(purchaseOrderItem.getPurchasedQty());
 
+		orderLineBuilder.piItemProductId(purchaseOrderItem.getHuPIItemProductId());
+		orderLineBuilder.asiId(purchaseOrderItem.getAttributeSetInstanceId());
+		orderLineBuilder.qtyEnteredTU(purchaseOrderItem.getQtyEnteredTU());
 		orderLineBuilder.setDimension(purchaseOrderItem.getDimension());
 		if (purchaseOrderItem.getDiscount() != null)
 		{
