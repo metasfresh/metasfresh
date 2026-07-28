@@ -277,33 +277,22 @@ public class ExternalIdentifierProductLookupServiceTest
 	}
 
 	/**
-	 * RED test — proves the bug: {@code lookupProductByGTIN} currently ignores the {@code date} parameter
-	 * and always returns the record with the lowest {@code M_HU_PI_Item_Product_ID} (first by insertion order).
+	 * Proves that {@code lookupProductByGTIN} honours the {@code date} parameter and selects the
+	 * {@link I_M_HU_PI_Item_Product} row whose {@code ValidFrom} is on or before the given date.
 	 *
 	 * <p>Setup: one product, two M_HU_PI_Item_Product rows sharing the same GTIN.
-	 * NEW is inserted first (lower ID) so that the current ascending-ID query returns it for both dates,
-	 * making the first (beforeSwitch) assertion fail with a meaningful RED signal:
+	 * NEW is inserted first (lower ID) to eliminate any ordering coincidence — without the date filter
+	 * the ascending-ID tiebreak would return NEW for both dates, masking a date-filter regression.
 	 * <ul>
 	 *   <li>NEW row: Qty=6, ValidFrom=2026-07-01 — inserted first → lower ID</li>
 	 *   <li>OLD row: Qty=9, ValidFrom=2019-01-01 — inserted second → higher ID</li>
 	 * </ul>
 	 *
-	 * <p>Expected (after Task 3 fix):
+	 * <p>Expected behaviour (implemented by the {@code createValidOnDateFilter} in Task 3):
 	 * <ul>
-	 *   <li>date=2026-06-26 (before NEW's ValidFrom) → OLD row (Qty=9)</li>
-	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom, both rows valid) → NEW row (Qty=6, latest ValidFrom wins)</li>
+	 *   <li>date=2026-06-26 (before NEW's ValidFrom) → only OLD is valid → OLD row (Qty=9)</li>
+	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom, both rows valid) → latest ValidFrom wins → NEW row (Qty=6)</li>
 	 * </ul>
-	 *
-	 * <p>Current behaviour in RED state:
-	 * <ul>
-	 *   <li>beforeSwitch (date=2026-06-26): FAILS — ascending-ID query returns NEW (lower ID) instead of OLD,
-	 *       faithfully proving the future-dated row is NOT excluded before its ValidFrom.</li>
-	 *   <li>afterSwitch (date=2026-07-05): PASSES coincidentally — ascending-ID query happens to return NEW,
-	 *       which is also the expected result; the absence of the ValidFrom filter is not yet guarded here
-	 *       (Task 3 will make it pass for the right reason).</li>
-	 * </ul>
-	 *
-	 * <p>This test MUST FAIL (at least beforeSwitch) until Task 3 implements the validity filter.
 	 */
 	@Test
 	void gtin_respects_validity_at_datePromised()
@@ -317,8 +306,9 @@ public class ExternalIdentifierProductLookupServiceTest
 		final String gtin = "77700001";
 
 		// NEW row inserted FIRST → gets the lower M_HU_PI_Item_Product_ID.
-		// The current ascending-ID query returns it for both dates, so the beforeSwitch assertion fails in RED.
-		// ValidFrom=2026-07-01 → should only be returned for dates on/after 2026-07-01.
+		// Without the date filter the ascending-ID tiebreak would return this row for BOTH dates,
+		// masking a regression. The date filter (ValidFrom <= date) correctly excludes it pre-switch.
+		// ValidFrom=2026-07-01 → valid only for dates on/after 2026-07-01.
 		final I_M_HU_PI_Item_Product newRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		newRow.setM_Product_ID(product.getM_Product_ID());
 		newRow.setGTIN(gtin);
@@ -328,7 +318,8 @@ public class ExternalIdentifierProductLookupServiceTest
 		InterfaceWrapperHelper.save(newRow);
 
 		// OLD row inserted SECOND → gets the higher M_HU_PI_Item_Product_ID.
-		// ValidFrom=2019-01-01 → should be returned for dates before 2026-07-01.
+		// ValidFrom=2019-01-01 → valid for all dates before 2026-07-01; also valid after (but ranked lower
+		// by ValidFrom DESC, so NEW wins when both are valid).
 		final I_M_HU_PI_Item_Product oldRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		oldRow.setM_Product_ID(product.getM_Product_ID());
 		oldRow.setGTIN(gtin);
@@ -341,23 +332,20 @@ public class ExternalIdentifierProductLookupServiceTest
 		final HUPIItemProductId newRowId = HUPIItemProductId.ofRepoId(newRow.getM_HU_PI_Item_Product_ID());
 		final ExternalIdentifier identifier = ExternalIdentifier.of("gtin-" + gtin);
 
-		// when — date before NEW's ValidFrom: only OLD is valid → expect OLD row (Qty=9).
-		// RED: ascending-ID query returns NEW (lower ID) → assertion FAILS, proving future-dated row exclusion is broken.
+		// when — date before NEW's ValidFrom: only OLD is valid → expect OLD row (Qty=9)
 		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
 		final Optional<ProductAndHUPIItemProductId> resultBeforeSwitch = productLookupService.lookupProductByGTIN(identifier, beforeSwitch);
 		assertThat(resultBeforeSwitch).isPresent();
 		assertThat(resultBeforeSwitch.get().getHupiItemProductId())
-				.as("date=2026-06-26: should return OLD row (Qty=9); currently returns NEW (lower ID) — date filter absent")
+				.as("date=2026-06-26 (pre-switch): only OLD row is valid → expect OLD (Qty=9)")
 				.isEqualTo(oldRowId);
 
-		// when — date on/after NEW's ValidFrom: both valid, pick latest ValidFrom → expect NEW row (Qty=6).
-		// RED: ascending-ID query returns NEW (lower ID) — coincidentally the expected result, NOT because the
-		// ValidFrom ordering is applied (it is not). Task 3 makes this pass for the correct reason.
+		// when — date on/after NEW's ValidFrom: both rows valid, latest ValidFrom wins → expect NEW row (Qty=6)
 		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
 		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
 		assertThat(resultAfterSwitch).isPresent();
 		assertThat(resultAfterSwitch.get().getHupiItemProductId())
-				.as("date=2026-07-05: should return NEW row (Qty=6, latest ValidFrom); currently returns NEW by accident (lowest ID) — but the ValidFrom ≤ date filter is absent so OLD would not be excluded by date")
+				.as("date=2026-07-05 (post-switch): both rows valid, NEW has the latest ValidFrom → expect NEW (Qty=6)")
 				.isEqualTo(newRowId);
 	}
 
