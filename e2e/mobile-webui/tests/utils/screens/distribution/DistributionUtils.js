@@ -1,5 +1,5 @@
 import { test } from '../../../../playwright.config';
-import { page } from '../../common';
+import { page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { expect } from '@playwright/test';
 import { Backend } from '../Backend';
 
@@ -12,8 +12,19 @@ export const DistributionUtils = {
         return match ? match[1] : null;
     },
 
+    /**
+     * Assert the screen is showing the given distribution job, reading the job from the URL.
+     *
+     * Polled, because the app reaches the next order WITHOUT a screen transition: the auto-advance
+     * replaces the job in the URL while the same pick-from screen container stays mounted, so there
+     * is nothing else for a caller to wait on — and when the order just picked needed no quantity
+     * dialog, nothing in the flow blocks until the pick has even been posted. Reading the URL once
+     * would then compare against the order the operator is still leaving.
+     */
     expectJobId: async ({ distributionJobId }) => {
-        await expect(await DistributionUtils.getJobIdFromPageUrl()).toEqual(distributionJobId);
+        await expect
+            .poll(async () => await DistributionUtils.getJobIdFromPageUrl(), { timeout: SLOW_ACTION_TIMEOUT })
+            .toEqual(distributionJobId);
     },
 
     // Assert a row of the shared `.view-header` table (the job/line header rendered on the
@@ -93,6 +104,60 @@ export const DistributionUtils = {
             `the pre-allocated move plan of wfProcess "${wfProcessId}" was expected to draw from exactly the listed HUs:\n`
             + JSON.stringify(lines, null, 2)
         ).toEqual([...expectedHUQRCodes].sort());
+    }),
+
+    /**
+     * Start recording every `nextEligiblePickFromLine` request the app fires from now on, and return
+     * the recorder to read back later. The pick-from screen resolves an operator's scan through that
+     * one endpoint, so its request bodies are where "what did the app send, and in which slot" is
+     * answered — a scanned value can be legitimate as `productScannedCode` and wrong as `huQRCode`,
+     * which no on-screen assertion can tell apart.
+     *
+     * Recording (rather than `page.waitForResponse` around one action) is what suits a NEGATIVE
+     * assertion: there is no request to wait for, and the claim is about every request in a span.
+     * Start it before the first operator action, so nothing can slip in ahead of the listener.
+     *
+     * The listener lives on the per-test `page` and dies with it, so it needs no teardown.
+     */
+    recordNextEligiblePickFromLineRequests: () => {
+        const requestBodies = [];
+        page.on('request', (request) => {
+            if (request.method() !== 'POST' || !request.url().includes('/distribution/nextEligiblePickFromLine')) {
+                return;
+            }
+            let body;
+            try {
+                body = request.postDataJSON();
+            } catch {
+                // Keep the raw payload rather than dropping the request: a body we cannot parse must
+                // still show up in the assertion's failure output instead of silently reducing the
+                // recording — and with it the assertion — to nothing.
+                body = { unparsablePostData: request.postData() };
+            }
+            requestBodies.push(body);
+        });
+        return { requestBodies };
+    },
+
+    /**
+     * Assert that none of the recorded `nextEligiblePickFromLine` requests sent `huQRCode` — i.e. the
+     * app never offered that value to the backend as a handling-unit code. Pair it with a recorder
+     * started before the actions it must cover (recordNextEligiblePickFromLineRequests above).
+     */
+    expectNoPickFromLineRequestCarriedHUQRCode: async ({ recorder, huQRCode }) => await test.step(`Expect no nextEligiblePickFromLine request carried "${huQRCode}" as huQRCode`, async () => {
+        // Guard against a vacuous pass: this is a negative assertion over a recording, so a recorder
+        // that captured nothing at all — a moved endpoint path, a listener started too late, a
+        // scenario that never got as far as resolving a line — would satisfy it while proving
+        // nothing. The scenarios this serves all book a pick, and a pick cannot be booked without at
+        // least one nextEligiblePickFromLine round trip.
+        expect(recorder.requestBodies.length, 'no nextEligiblePickFromLine request was recorded at all, so this assertion would prove nothing').toBeGreaterThan(0);
+
+        const offending = recorder.requestBodies.filter((body) => body?.huQRCode === huQRCode);
+        expect(
+            offending,
+            `"${huQRCode}" was sent to nextEligiblePickFromLine in the huQRCode slot. All recorded requests:\n`
+            + JSON.stringify(recorder.requestBodies, null, 2)
+        ).toEqual([]);
     }),
 
     /**
