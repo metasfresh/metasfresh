@@ -3,6 +3,12 @@
 --   AD_Column     593037 (M_Forecast.IsBudgetForecast, default 'N', NOT NULL, mandatory)
 --   AD_Field      781847 (Forecast window 328 / header tab 653)
 --   AD_UI_Element 652771 (header, group 540277 "flags", SeqNo 40)
+--
+-- A budget forecast is used only for budgeting/planning and generates NO material-disposition
+-- demand (no purchase/production candidates are created from it). The Description/Help below
+-- state that meaning; Name/PrintName remain "Budgetprognose" / "Budget Forecast".
+-- IsTranslated convention for EntityType 'D' elements: de_DE/de_CH='N' (base-language text
+-- already carries German), en_US='Y'. Both flags are set correctly from the start here.
 
 -- Element: IsBudgetForecast
 -- 2026-07-27T14:00:00.000Z
@@ -13,39 +19,24 @@ INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,
 INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=585136 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
 ;
 
--- Element: IsBudgetForecast (de_DE, base language) -- set Description/Help
+-- Element: IsBudgetForecast (de_DE, base language) -- set Description/Help; IsTranslated='N' per convention
 -- 2026-07-27T14:00:01.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y',Description='Kennzeichnet diese Prognose als Budgetprognose',Help='Wenn aktiv, handelt es sich bei dieser Prognose um eine Budgetprognose.',Updated=TO_TIMESTAMP('2026-07-27 14:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='N',Description='Budget-/Planungsprognose: erzeugt keinen Material-Dispo-Bedarf',Help='Wenn aktiv, dient diese Prognose nur der Budgetierung bzw. Planung und erzeugt keinen Bedarf in der Materialdisposition (es werden keine Bestell- oder Fertigungskandidaten daraus erzeugt).',Updated=TO_TIMESTAMP('2026-07-27 14:00:01.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='de_DE'
 ;
 
--- 2026-07-27T14:00:01.100Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(585136,'de_DE')
-;
-
--- Element: IsBudgetForecast (de_CH) -- mirrors de_DE, no umlaut/ß substitution needed
+-- Element: IsBudgetForecast (de_CH) -- mirrors de_DE (no ß / Swiss-specific wording needed); IsTranslated='N' per convention
 -- 2026-07-27T14:00:02.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2026-07-27 14:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='N',Description='Budget-/Planungsprognose: erzeugt keinen Material-Dispo-Bedarf',Help='Wenn aktiv, dient diese Prognose nur der Budgetierung bzw. Planung und erzeugt keinen Bedarf in der Materialdisposition (es werden keine Bestell- oder Fertigungskandidaten daraus erzeugt).',Updated=TO_TIMESTAMP('2026-07-27 14:00:02.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='de_CH'
 ;
 
--- 2026-07-27T14:00:02.010Z
-/* DDL */  select update_ad_element_on_ad_element_trl_update(585136,'de_CH')
-;
-
--- 2026-07-27T14:00:02.100Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(585136,'de_CH')
-;
-
--- Element: IsBudgetForecast (en_US)
+-- Element: IsBudgetForecast (en_US) -- English Name/Description/Help; IsTranslated='Y'
 -- 2026-07-27T14:00:03.000Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Budget Forecast', PrintName='Budget Forecast',Description='Marks this forecast as a budget forecast',Help='If active, this forecast is a budget forecast.',Updated=TO_TIMESTAMP('2026-07-27 14:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Budget Forecast', PrintName='Budget Forecast',Description='Budget/planning forecast: does not generate material-disposition demand',Help='If active, this forecast is used only for budgeting/planning and does not generate any material-disposition demand (no purchase or production candidates are created from it).',Updated=TO_TIMESTAMP('2026-07-27 14:00:03.000000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Element_ID=585136 AND AD_Language='en_US'
 ;
 
--- 2026-07-27T14:00:03.010Z
-UPDATE AD_Element base SET Name=trl.Name, PrintName=trl.PrintName, Updated=trl.Updated, UpdatedBy=trl.UpdatedBy FROM AD_Element_Trl trl WHERE trl.AD_Element_ID=base.AD_Element_ID AND trl.AD_Language='en_US' AND trl.AD_Language=getBaseLanguage()
-;
-
+-- Propagate base-language (de_DE) Description/Help back onto the base AD_Element record
 -- 2026-07-27T14:00:03.100Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(585136,'en_US')
+/* DDL */  select update_ad_element_on_ad_element_trl_update(585136,'de_DE')
 ;
 
 -- Column: M_Forecast.IsBudgetForecast (AD_Table_ID=720)
@@ -75,6 +66,9 @@ INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=781847 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
 ;
 
+-- Propagate element Name/Description/Help/IsTranslated to AD_Field_Trl (all languages) and to the
+-- AD_Field base Name/Description. NOTE: this function does NOT sync AD_Field.Help (base column) -
+-- that is set explicitly below (known pitfall; see metasfresh-application-dictionary skill).
 -- 2026-07-27T14:00:06.200Z
 /* DDL */  select update_FieldTranslation_From_AD_Name_Element(585136)
 ;
@@ -85,6 +79,11 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781847
 
 -- 2026-07-27T14:00:06.400Z
 /* DDL */ select AD_Element_Link_Create_Missing_Field(781847)
+;
+
+-- AD_Field.Help (base column) is not carried by update_FieldTranslation_From_AD_Name_Element - set it directly
+-- 2026-07-27T14:00:06.500Z
+UPDATE AD_Field SET Help='Wenn aktiv, dient diese Prognose nur der Budgetierung bzw. Planung und erzeugt keinen Bedarf in der Materialdisposition (es werden keine Bestell- oder Fertigungskandidaten daraus erzeugt).',Updated=TO_TIMESTAMP('2026-07-27 14:00:06.500000','YYYY-MM-DD HH24:MI:SS.US')::timestamp without time zone AT TIME ZONE 'UTC',UpdatedBy=100 WHERE AD_Field_ID=781847
 ;
 
 -- UI Element: Prognose(328,D) -> Prognose(653,D) -> main -> flags.Budgetprognose
