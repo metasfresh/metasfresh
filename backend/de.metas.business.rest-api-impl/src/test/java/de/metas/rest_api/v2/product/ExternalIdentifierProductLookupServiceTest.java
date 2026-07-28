@@ -37,6 +37,7 @@ import org.compiere.model.I_M_Product;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -288,12 +289,12 @@ public class ExternalIdentifierProductLookupServiceTest
 	 * <p>Expected (after Task 3 fix):
 	 * <ul>
 	 *   <li>date=2026-06-26 (before NEW's ValidFrom) → OLD row (Qty=9)</li>
-	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom) → NEW row (Qty=6)</li>
-	 *   <li>when both rows are valid (date=2026-07-05), picks latest ValidFrom → NEW row (Qty=6)</li>
+	 *   <li>date=2026-07-05 (on/after NEW's ValidFrom, both rows valid) → NEW row (Qty=6, latest ValidFrom wins)</li>
 	 * </ul>
 	 *
-	 * <p>Current behaviour (FAILING — date is ignored): all three calls return the NEW row (Qty=6)
-	 * because the query orders by M_HU_PI_Item_Product_ID (insertion order) and NEW was inserted last.
+	 * <p>Current behaviour (FAILING — date is ignored): the second assertion returns the OLD row (Qty=9)
+	 * instead of the NEW row (Qty=6), because the query orders by {@code M_HU_PI_Item_Product_ID} ascending
+	 * and OLD was inserted first (lower ID). The first assertion passes trivially for the same reason.
 	 *
 	 * <p>This test MUST FAIL until Task 3 implements the validity filter.
 	 */
@@ -312,8 +313,8 @@ public class ExternalIdentifierProductLookupServiceTest
 		final I_M_HU_PI_Item_Product oldRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		oldRow.setM_Product_ID(product.getM_Product_ID());
 		oldRow.setGTIN(gtin);
-		oldRow.setQty(new java.math.BigDecimal("9"));
-		oldRow.setValidFrom(Timestamp.valueOf(LocalDate.of(2019, 1, 1).atStartOfDay()));
+		oldRow.setQty(new BigDecimal("9"));
+		oldRow.setValidFrom(Timestamp.from(LocalDate.of(2019, 1, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		oldRow.setIsActive(true);
 		InterfaceWrapperHelper.save(oldRow);
 
@@ -321,8 +322,8 @@ public class ExternalIdentifierProductLookupServiceTest
 		final I_M_HU_PI_Item_Product newRow = InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class);
 		newRow.setM_Product_ID(product.getM_Product_ID());
 		newRow.setGTIN(gtin);
-		newRow.setQty(new java.math.BigDecimal("6"));
-		newRow.setValidFrom(Timestamp.valueOf(LocalDate.of(2026, 7, 1).atStartOfDay()));
+		newRow.setQty(new BigDecimal("6"));
+		newRow.setValidFrom(Timestamp.from(LocalDate.of(2026, 7, 1).atStartOfDay(ZoneOffset.UTC).toInstant()));
 		newRow.setIsActive(true);
 		InterfaceWrapperHelper.save(newRow);
 
@@ -343,14 +344,7 @@ public class ExternalIdentifierProductLookupServiceTest
 		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
 		assertThat(resultAfterSwitch).isPresent();
 		assertThat(resultAfterSwitch.get().getHupiItemProductId())
-				.as("date=2026-07-05: should return NEW row (Qty=6, latest ValidFrom)")
-				.isEqualTo(newRowId);
-
-		// when — same after-switch date, confirm it is the latest-ValidFrom row (AC2)
-		final Optional<ProductAndHUPIItemProductId> resultLatestValidFrom = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
-		assertThat(resultLatestValidFrom).isPresent();
-		assertThat(resultLatestValidFrom.get().getHupiItemProductId())
-				.as("date=2026-07-05 (both valid): latest ValidFrom wins → NEW row (Qty=6)")
+				.as("date=2026-07-05: should return NEW row (Qty=6, latest ValidFrom) — currently returns OLD due to ascending ID ordering")
 				.isEqualTo(newRowId);
 	}
 
