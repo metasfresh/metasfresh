@@ -217,7 +217,7 @@ services:
     environment:
       - "FRONTEND_BASE_URL=http://mobile:80/mobile"
       - "WIREMOCK_BASE_URL=http://wiremock:8080"
-      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282 --disable-web-security --ignore-certificate-errors"
+      - "CHROMIUM_FLAGS=--unsafely-treat-insecure-origin-as-secure=http://app-test:8282,http://mobile:80,http://mobile --disable-web-security --ignore-certificate-errors"
     depends_on:
       mobile:
         condition: service_healthy
