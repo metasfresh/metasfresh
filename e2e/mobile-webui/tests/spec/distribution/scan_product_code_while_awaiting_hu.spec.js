@@ -22,21 +22,14 @@ import { expectErrorToast } from '../../utils/common';
 // with an untranslated wrong-QR-code-type rejection ("Falscher QR-Code-Typ: EAN13HUQRCode") that
 // tells the operator nothing they can act on.
 //
-// TWO tests, differing ONLY in whether product-code scanning is required, because that setting sends
-// the article code down a DIFFERENT code path to the same defect, and both settings ship:
-//
-//   required     the screen asked for the handling unit and took the article code as the chosen one
-//                locally, without asking the backend, silently moving the operator on to the
-//                article-code prompt — so the operator got no message at all, and the article code
-//                only travelled in the huQRCode slot one step later, on their next scan.
-//   not required the screen resolved the handling unit against the backend on the spot, so the
-//                article code went out in the huQRCode slot immediately and came back 422
-//                wrong-QR-code-type — the symptom the customer reported.
-//
-// Both tests make both assertions — the on-screen message and that nothing ever put the article code
-// in the huQRCode slot — and on the old app both fail in both tests. What the split buys is that each
-// setting is covered on its own path, and that the huQRCode assertion is the FIRST thing to notice the
-// defect in the "not required" test, where the message never differed from the server's.
+// TWO tests, differing ONLY in whether product-code scanning is required. Both settings ship to
+// customers, and the refusal itself is deliberately independent of them — it is decided before
+// requireScanningProductCode is read — so NEITHER test discriminates on that setting, and neither is
+// claimed to. What differs is the legitimate route each one then finishes the pick through: with the
+// setting on, the article code is scanned again at the article-code prompt; with it off, identifying
+// the handling unit goes straight to the quantity dialog. Each test asserts BOTH halves of the
+// behaviour — the on-screen message, and that no request ever carried the article code in the
+// huQRCode slot — so each setting is covered end to end.
 //
 // Everything else is held constant, and allowPickingAnyHU is on in both — the setting every customer
 // runs, and the one that puts the "Scan QR Code" button on the line screen these scenarios enter
@@ -45,6 +38,11 @@ import { expectErrorToast } from '../../utils/common';
 // Sibling coverage: scan_HU_barcodes.spec.js covers the other two things an operator can scan at this
 // prompt — a locator QR code and an unrecognised barcode — both of which the backend already answers
 // with a readable message and which this behaviour leaves alone.
+//
+// RESIDUAL GAP, stated rather than implied: only an EAN13 article code is refused on the screen,
+// because that is the one article-code format the pick-from screen recognises without asking the
+// backend. A GS1-encoded article code still reaches the backend and still surfaces its wrong-QR-type
+// message, so it is NOT covered here or by any sibling spec.
 //
 
 // Moved in ONE pick, so the whole handling unit travels and keeps its identity — that is what lets
@@ -160,9 +158,10 @@ test('Article code scanned where the handling unit is expected: the operator is 
 
     // ... and the message must not cost them their place: the prompt is still the handling-unit one,
     // so their next scan is read as a handling unit. The pick-from screen renders exactly ONE of the
-    // two scan inputs (ScanHUAndGetQtyComponent's progressStatus), and the article-code prompt is what
-    // the old app showed here — having accepted the article code as the chosen handling unit — so this
-    // is the assertion that tells the two apart under this configuration.
+    // two scan inputs (ScanHUAndGetQtyComponent's progressStatus), so asserting the handling-unit
+    // input is the one showing distinguishes "the scan was refused and the operator kept their place"
+    // from "the article code was taken as the chosen handling unit and the screen moved on to the
+    // article-code prompt" — the two outcomes differ in exactly this value.
     await test.step('The screen still asks for the handling unit', async () => {
         await DistributionLinePickFromScreen.expectHUScanReady();
     });
@@ -225,10 +224,11 @@ test('Article code scanned where the handling unit is expected: it is never sent
     await expectPickLanded();
 
     // *** THE ASSERTION THIS TEST EXISTS FOR ***
-    // With no product code required, the app resolves the scan against the backend immediately — so
-    // this is where the article code used to travel in the huQRCode slot and come back rejected as
-    // the wrong QR-code type. Nothing in the whole session may put it there: the only handling-unit
-    // code the backend is ever offered is the real one, scanned above.
+    // With no product code required, identifying the handling unit resolves it against the backend
+    // straight away — so in this configuration the huQRCode slot is filled from the very first scan
+    // the operator makes. Across the whole session it may only ever hold the real handling-unit code
+    // scanned above, never the article code, whose rejection is what the backend answers with the
+    // wrong-QR-code-type message the operator must never see.
     await DistributionUtils.expectNoPickFromLineRequestCarriedHUQRCode({
         recorder: pickFromLineRequests,
         huQRCode: articleCode,
