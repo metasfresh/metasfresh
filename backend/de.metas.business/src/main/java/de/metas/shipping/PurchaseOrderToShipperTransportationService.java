@@ -327,7 +327,7 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		if (shipperTransportation.getBLDate() == null)
 		{
-			shipperTransportation.setBLDate(shipperTransportation.getETD()); // B/L date = ATD (= ETD)
+			shipperTransportation.setBLDate(shipperTransportation.getATD()); // B/L date = ATD (guaranteed non-null: the ATD fill block runs above)
 			changed = true;
 		}
 

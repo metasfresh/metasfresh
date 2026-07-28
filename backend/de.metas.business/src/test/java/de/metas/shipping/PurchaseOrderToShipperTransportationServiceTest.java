@@ -730,7 +730,43 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default").isEqualTo(expectedEta);
 		assertThat(reloaded.getATD()).as("ATD = ETD, so it follows the user-preset ETD, not the PO's DatePromised").isEqualTo(presetEtd);
 		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
-		assertThat(reloaded.getBLDate()).as("B/L date = ETD, so it follows the user-preset ETD").isEqualTo(presetEtd);
+		assertThat(reloaded.getBLDate()).as("B/L date = ATD, which here equals the user-preset ETD").isEqualTo(presetEtd);
+	}
+
+	/**
+	 * B/L date follows ATD (not ETD): when the user pre-sets ATD to a value different from ETD and leaves ETD/BLDate unset,
+	 * the B/L date default must be the (kept) ATD, not the PO-derived ETD.
+	 */
+	@Test
+	public void defaultDates_blDateFollowsPresetAtd_notEtd()
+	{
+		final I_M_ShipperTransportation shipperTransportation = createShipperTransportation();
+		final ShipperTransportationId transportationId = ShipperTransportationId.ofRepoId(shipperTransportation.getM_ShipperTransportation_ID());
+
+		// user pre-sets ATD only; ETD, ETA, ATA and B/L date are left unset
+		final java.sql.Timestamp presetAtd = TimeUtil.asTimestamp(LocalDate.of(2025, 1, 15), orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID())));
+		shipperTransportation.setATD(presetAtd);
+		save(shipperTransportation);
+
+		final BPartnerLocationId bpartnerAndLocation = createBPartnerAndLocation("VendorBlAtd", "addressBlAtd");
+		final OrderId orderId = createOrder(bpartnerAndLocation);
+		createOrderLine(orderId, StockQtyAndUOMQtys.createConvert(BigDecimal.valueOf(2), product1, uom1), Money.of(10, chf));
+
+		// PO.DatePromised is deliberately DIFFERENT from the preset ATD, so ETD (= PO date) and ATD (= preset) diverge
+		final I_C_Order order = load(orderId, I_C_Order.class);
+		final java.sql.Timestamp poDatePromised = TimeUtil.asTimestamp(LocalDate.of(2025, 2, 1), orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID())));
+		order.setDatePromised(poDatePromised);
+		save(order);
+
+		service.addPurchaseOrdersToShipperTransportation(transportationId, Collections.singletonList(orderId));
+
+		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
+		assertThat(reloaded.getETD()).as("unset ETD is filled from the PO's DatePromised").isEqualTo(poDatePromised);
+		assertThat(reloaded.getATD()).as("pre-set ATD is kept, not overwritten").isEqualTo(presetAtd);
+		assertThat(reloaded.getBLDate())
+				.as("B/L date = ATD (the kept preset), NOT the PO-derived ETD")
+				.isEqualTo(presetAtd)
+				.isNotEqualTo(poDatePromised);
 	}
 
 	/**
