@@ -2,7 +2,6 @@ import { merge } from 'merge-anything';
 
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
-import { SORT_TAB } from '../../constants/ActionTypes';
 import reducer, {
   initialState,
   initialTableState,
@@ -262,13 +261,13 @@ describe('Tables reducer', () => {
     });
 
     it('SORT_TAB is ignored when the table does not exist (no throw, state unchanged)', () => {
-      const action = { type: SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
       expect(() => reducer(initialState, action)).not.toThrow();
       expect(reducer(initialState, action)).toEqual(initialState);
     });
 
     it('SORT_TAB is ignored when scope is not "master"', () => {
-      const action = { type: SORT_TAB, scope: 'included', windowId, docId, tabId, field: 'Amount', asc: false };
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'included', windowId, docId, tabId, field: 'Amount', asc: false };
       expect(reducer(initialState, action)).toEqual(initialState);
     });
 
@@ -277,7 +276,7 @@ describe('Tables reducer', () => {
         [tableId]: { ...initialTableState, windowId, docId, tabId },
         length: 1,
       });
-      const action = { type: SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
       expect(reducer(state, action)[tableId].orderBys).toEqual([
         { fieldName: 'Amount', ascending: true },
       ]);
