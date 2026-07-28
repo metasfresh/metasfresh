@@ -337,12 +337,7 @@ public class DD_OrderLine_PickingJobSchedule_StepDef
 		{
 			final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(identifier);
 
-			final ImmutableSet<DDOrderId> ddOrderIds = contributorRepository.getLineIdsByPickingJobScheduleId(jobScheduleId)
-					.stream()
-					.map(lineId -> DDOrderId.ofRepoId(ddOrderService.getLineById(lineId).getDD_Order_ID()))
-					.collect(ImmutableSet.toImmutableSet());
-
-			assertThat(ddOrderIds)
+			assertThat(ddOrderIdsServing(jobScheduleId))
 					.as("DD_Orders reachable from M_Picking_Job_Schedule %s (M_Picking_Job_Schedule_ID=%s) through its contributor rows",
 							identifier, jobScheduleId.getRepoId())
 					.containsExactly(expectedDDOrderId);

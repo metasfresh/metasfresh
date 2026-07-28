@@ -47,6 +47,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.Collector;
 
+/**
+ * Repository Tables: DD_NetworkDistribution, DD_NetworkDistributionLine
+ * Repository Cluster: DistributionNetworkRepository
+ */
 @Repository
 public class DistributionNetworkRepository
 {
