@@ -728,9 +728,9 @@ public class PurchaseOrderToShipperTransportationServiceTest
 		final I_M_ShipperTransportation reloaded = load(transportationId, I_M_ShipperTransportation.class);
 		assertThat(reloaded.getETD()).as("pre-set ETD is kept, not overwritten").isEqualTo(presetEtd);
 		assertThat(reloaded.getETA()).as("unset ETA still filled from the PO default").isEqualTo(expectedEta);
-		assertThat(reloaded.getATD()).isEqualTo(poDatePromised);
-		assertThat(reloaded.getATA()).isEqualTo(expectedEta);
-		assertThat(reloaded.getBLDate()).isEqualTo(poDatePromised);
+		assertThat(reloaded.getATD()).as("ATD = ETD, so it follows the user-preset ETD, not the PO's DatePromised").isEqualTo(presetEtd);
+		assertThat(reloaded.getATA()).as("ATA = ETA").isEqualTo(expectedEta);
+		assertThat(reloaded.getBLDate()).as("B/L date = ETD, so it follows the user-preset ETD").isEqualTo(presetEtd);
 	}
 
 	/**

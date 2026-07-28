@@ -313,19 +313,21 @@ public class PurchaseOrderToShipperTransportationService
 			shipperTransportation.setETA(eta);
 			changed = true;
 		}
+		// ATD/ATA/B-L date derive from the transport order's ETD/ETA FIELDS (read after the fills above), not from the raw PO
+		// dates: if the user pre-set ETD/ETA to something other than the PO default, ATD/ATA/B-L date must follow that value.
 		if (shipperTransportation.getATD() == null)
 		{
-			shipperTransportation.setATD(etd); // ATD = ETD
+			shipperTransportation.setATD(shipperTransportation.getETD()); // ATD = ETD
 			changed = true;
 		}
 		if (shipperTransportation.getATA() == null)
 		{
-			shipperTransportation.setATA(eta); // ATA = ETA
+			shipperTransportation.setATA(shipperTransportation.getETA()); // ATA = ETA
 			changed = true;
 		}
 		if (shipperTransportation.getBLDate() == null)
 		{
-			shipperTransportation.setBLDate(etd); // B/L date = ATD (= ETD)
+			shipperTransportation.setBLDate(shipperTransportation.getETD()); // B/L date = ATD (= ETD)
 			changed = true;
 		}
 
