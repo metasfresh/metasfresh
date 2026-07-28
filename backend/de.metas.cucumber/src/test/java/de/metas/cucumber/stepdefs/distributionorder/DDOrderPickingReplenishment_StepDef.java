@@ -143,28 +143,64 @@ public class DDOrderPickingReplenishment_StepDef
 	}
 
 	/**
-	 * Test seam: sets {@code QtyInTransit=1} on every {@code DD_OrderLine} the given picking job schedule contributes to,
-	 * simulating dispatched-movement state without running the movement-processing flow.
+	 * Legacy-column seam: writes {@code QtyInTransit=1} on every {@code DD_OrderLine} the given picking job schedule
+	 * contributes to. See the quantity-carrying form below for what this seam is and is NOT good for.
 	 *
 	 * <p>Param: the identifier (from {@code M_Picking_Job_Schedule_StepDefData}) of the assignment. For a different
-	 * quantity, use the {@code simulate goods in transit of &lt;qty&gt; on ...} form below.</p>
+	 * quantity, use the {@code seed the legacy QtyInTransit column of &lt;qty&gt; on ...} form below.</p>
 	 */
-	@When("^simulate goods in transit on DD_Order linked to picking job schedule (.*)$")
-	public void simulate_goods_in_transit(@NonNull final String pickingJobScheduleIdentifier)
+	@When("^seed the legacy QtyInTransit column on DD_Order linked to picking job schedule (.*)$")
+	public void seed_legacy_qty_in_transit(@NonNull final String pickingJobScheduleIdentifier)
 	{
-		simulate_goods_in_transit(BigDecimal.ONE.toPlainString(), pickingJobScheduleIdentifier);
+		seed_legacy_qty_in_transit(BigDecimal.ONE.toPlainString(), pickingJobScheduleIdentifier);
 	}
 
 	/**
-	 * The quantity-carrying form of {@code simulate goods in transit on DD_Order linked to picking job schedule}.
-	 * Use when a scenario asserts the refusal message REPORTS the moved quantity — pick a value that can't be
-	 * mistaken for a record-id digit (e.g. {@code 7.5}).
+	 * Legacy-column seam for the re-plan refusal guard ({@code DDOrderPickingReplenishmentService#assertCanChange}),
+	 * whose input is {@code DD_OrderLine.QtyInTransit + QtyDelivered}. Use when a scenario asserts the refusal message
+	 * REPORTS the moved quantity — pick a value that can't be mistaken for a record-id digit (e.g. {@code 7.5}).
 	 *
-	 * <p>Params: the quantity to put in transit, and the identifier (from {@code M_Picking_Job_Schedule_StepDefData})
-	 * of the assignment whose contributed DD_OrderLines should be marked in transit.</p>
+	 * <p><b>This is NOT the mover's state.</b> {@code QtyInTransit} and {@code QtyDelivered} are written by no
+	 * production flow whatsoever — the mobile mover records his progress on {@code DD_Order_MoveSchedule.Status}
+	 * ({@code NS}&nbsp;→&nbsp;{@code IP} on the pick, {@code CO} on the drop). Never use this seam to reach the
+	 * "goods are on their way" state a disposal decision keys on: drive the real
+	 * {@code pick from the DD_Order linked to picking job schedule:} step instead. It exists only to keep this
+	 * legacy-column guard covered exactly as it behaves today.</p>
+	 *
+	 * <p>Params: the quantity to write into the column, and the identifier (from
+	 * {@code M_Picking_Job_Schedule_StepDefData}) of the assignment whose contributed DD_OrderLines are written.</p>
 	 */
-	@When("^simulate goods in transit of (.*) on DD_Order linked to picking job schedule (.*)$")
-	public void simulate_goods_in_transit(@NonNull final String qtyInTransit, @NonNull final String pickingJobScheduleIdentifier)
+	@When("^seed the legacy QtyInTransit column of (.*) on DD_Order linked to picking job schedule (.*)$")
+	public void seed_legacy_qty_in_transit(@NonNull final String qtyInTransit, @NonNull final String pickingJobScheduleIdentifier)
+	{
+		for (final I_DD_OrderLine line : contributedDDOrderLines(pickingJobScheduleIdentifier))
+		{
+			line.setQtyInTransit(new BigDecimal(qtyInTransit.trim()));
+			InterfaceWrapperHelper.save(line);
+		}
+	}
+
+	/**
+	 * The {@code QtyDelivered} twin of {@code seed the legacy QtyInTransit column of ...}: the other half of the re-plan
+	 * refusal guard's {@code QtyInTransit + QtyDelivered} input, left with {@code QtyInTransit} at zero. The same
+	 * warning applies — neither column is ever written in production, so this seam covers that guard's arithmetic and
+	 * nothing else.
+	 *
+	 * <p>Params: the quantity to write into the column, and the identifier (from
+	 * {@code M_Picking_Job_Schedule_StepDefData}) of the assignment whose contributed DD_OrderLines are written.</p>
+	 */
+	@When("^seed the legacy QtyDelivered column of (.*) on DD_Order linked to picking job schedule (.*)$")
+	public void seed_legacy_qty_delivered(@NonNull final String qtyDelivered, @NonNull final String pickingJobScheduleIdentifier)
+	{
+		for (final I_DD_OrderLine line : contributedDDOrderLines(pickingJobScheduleIdentifier))
+		{
+			line.setQtyDelivered(new BigDecimal(qtyDelivered.trim()));
+			InterfaceWrapperHelper.save(line);
+		}
+	}
+
+	/** The DD_OrderLines the given assignment contributes to; empty is a setup error, so the callers never have to check. */
+	private List<I_DD_OrderLine> contributedDDOrderLines(@NonNull final String pickingJobScheduleIdentifier)
 	{
 		final PickingJobScheduleId jobScheduleId = pickingJobScheduleTable.getId(pickingJobScheduleIdentifier);
 
@@ -177,14 +213,10 @@ public class DDOrderPickingReplenishment_StepDef
 				.list(I_DD_OrderLine.class);
 
 		assertThat(lines)
-				.as("DD_OrderLines for picking job schedule %s (must exist before simulating goods-in-transit)", pickingJobScheduleIdentifier)
+				.as("DD_OrderLines for picking job schedule %s (must exist before seeding the legacy movement columns)", pickingJobScheduleIdentifier)
 				.isNotEmpty();
 
-		for (final I_DD_OrderLine line : lines)
-		{
-			line.setQtyInTransit(new BigDecimal(qtyInTransit.trim()));
-			InterfaceWrapperHelper.save(line);
-		}
+		return lines;
 	}
 
 	/** Runs the drift-rebuild that the {@code DD_Order_Picking_Rebuild} {@code AD_Process} performs. */

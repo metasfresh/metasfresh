@@ -7,7 +7,11 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
   already begun moving the goods of the losing one, I want that order left standing and disconnected — not voided —
   so the worker finishes the move he has in his hands while the group re-plans around it.
 
-  One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator.
+  One delivery needs 10 PCE at the workstation pick-from locator; 30 PCE are on hand at one source locator, as a
+  10-PCE HU (the one the mover takes) plus a 20-PCE one.
+
+  "A worker has begun the move" is the real mover state: an IN_PROGRESS DD_Order_MoveSchedule, reached by picking the
+  source HU of the DD_Order-backed mobile DistributionJob and not yet dropping it at the workstation.
 
   Background:
     Given infrastructure and metasfresh are running
@@ -62,12 +66,27 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
 
     # All 30 on one source locator, so both orders of the group source from the SAME locator — the collision the
     # reconcile resolves by keeping the older order and disposing of the younger duplicate.
+    #
+    # Split over two HUs because a DD_Order move always takes the WHOLE source HU: the mover picks the 10-PCE one
+    # (exactly the group's demand of 10), and the remaining 20 keep the locator stocked so the re-plan still has a
+    # source to allocate from.
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | moveStockInventory        | 2021-10-12   | stockWH        |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | moveStockInventory        | moveStockInventoryLine        | product                 | stockLocator | 0       | 10       | PCE          |
+    And complete inventory with inventoryIdentifier 'moveStockInventory'
+    And after not more than 60s, there are added M_HUs for inventory
+      | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
+      | moveStockInventoryLine        | moveSourceHU       |
+
     And metasfresh contains M_Inventories:
       | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
       | stockInventory            | 2021-10-12   | stockWH        |
     And metasfresh contains M_InventoriesLines:
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | M_Locator_ID | QtyBook | QtyCount | UOM.X12DE355 |
-      | stockInventory            | stockInventoryLine            | product                 | stockLocator | 0       | 30       | PCE          |
+      | stockInventory            | stockInventoryLine            | product                 | stockLocator | 0       | 20       | PCE          |
     And complete inventory with inventoryIdentifier 'stockInventory'
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -110,8 +129,11 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
       | M_Picking_Job_Schedule_ID | DD_Order_ID    | DD_OrderLine_ID | DocStatus | QtyEntered |
       | jobSchedule               | duplicateOrder | duplicateLine   | CO        | 10         |
 
-    # A worker has already moved the whole 10 PCE of the duplicate into transit — the move that must not be stranded.
-    And simulate goods in transit of 10 on DD_Order linked to picking job schedule jobSchedule
+    # A worker has already begun the duplicate's move: he picked its 10-PCE source HU off the stock locator, so the
+    # goods are in transit and not yet dropped at the workstation — the move that must not be stranded.
+    And pick from the DD_Order linked to picking job schedule:
+      | M_Picking_Job_Schedule_ID | PickFrom_HU_ID |
+      | jobSchedule               | moveSourceHU   |
 
     # Restore the first order's association so BOTH orders are visible to the reconcile as one group; the older order
     # keeps the source locator, the younger duplicate is the one the reconcile must dispose of.
@@ -158,8 +180,10 @@ Feature: DD_Order replenishment — a duplicate holding moved goods is disconnec
       | M_Picking_Job_Schedule_ID | DD_Order_ID    | DocStatus | QtyEntered |
       | jobSchedule               | duplicateOrder | CO        | 10         |
 
-    # The whole 10 PCE of the duplicate is moved into transit: this move alone covers the group's entire demand of 10.
-    And simulate goods in transit of 10 on DD_Order linked to picking job schedule jobSchedule
+    # The worker picked the duplicate's 10-PCE source HU: this move alone covers the group's entire demand of 10.
+    And pick from the DD_Order linked to picking job schedule:
+      | M_Picking_Job_Schedule_ID | PickFrom_HU_ID |
+      | jobSchedule               | moveSourceHU   |
 
     And the rollout backfill re-creates the contributor associations:
       | DD_OrderLine_ID | M_Picking_Job_Schedule_ID |

@@ -155,9 +155,11 @@ Feature: DD_Order replenishment — update (in place) and reverse (void only)
     # The beforeChange interceptor (assertCanChange) checks whether any DD_OrderLine linked to the schedule
     # has QtyInTransit > 0 or QtyDelivered > 0 — indicating the movement is already in progress.
     # When the condition holds, a change to QtyToPick is rejected (DDOrderPickingReconcile_MovementStarted).
-    # The QtyInTransit is set directly on the DB record (test seam) to simulate the state after a movement
-    # document was dispatched from the DD_Order, without running the full movement-processing flow.
-    When simulate goods in transit on DD_Order linked to picking job schedule jobSchedule
+    # LEGACY-COLUMN SEAM ONLY: QtyInTransit is written directly on the DB record because no production flow ever
+    # writes it (the only writer is MDDOrderLine's zero-initialiser). It is therefore NOT the mover's real state —
+    # that one is an in-progress DD_Order_MoveSchedule — and this scenario pins the guard's arithmetic and message,
+    # not a state a live instance can reach.
+    When seed the legacy QtyInTransit column on DD_Order linked to picking job schedule jobSchedule
 
     # Any attempted qty change is blocked by the beforeChange movement-started guard.
     Then changing the picking job schedule quantity is rejected:

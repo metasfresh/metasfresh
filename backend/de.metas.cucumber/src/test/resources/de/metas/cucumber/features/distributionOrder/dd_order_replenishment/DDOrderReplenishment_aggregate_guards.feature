@@ -121,6 +121,8 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | jobScheduleB              | shipmentScheduleB     | workplace      | 5         |
 
   @from:cucumber
+  # LEGACY-COLUMN SEAM ONLY, same as the QtyDelivered twin below: no production flow writes DD_OrderLine.QtyInTransit,
+  # so the seeded column is the only way to reach this refusal. Pins the message contract, not a production state.
   Scenario: Goods in transit refuse a change to the contributor whose back-reference the order does NOT carry
     Given after not more than 120s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
@@ -131,12 +133,45 @@ Feature: DD_Order replenishment — the change guards cover every contributor of
       | groupDDOrderLine | jobScheduleB              | 5   |
 
     # 7.5 (not a round number like 1) is deliberate — with 1 PCE the moved-quantity assertion could accidentally match a leading digit of a record id already in the message.
-    When simulate goods in transit of 7.5 on DD_Order linked to picking job schedule jobScheduleA
+    When seed the legacy QtyInTransit column of 7.5 on DD_Order linked to picking job schedule jobScheduleA
 
     # Blocking_M_Picking_Job_Schedule_ID names jobScheduleA via the contributor association's lowest-ID tie-break — never via the order's single (soon-removed) back-reference column.
     Then changing the picking job schedule quantity is rejected:
       | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                               | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID | Blocking_QtyMoved |
       | jobScheduleB              | 2         | DDOrderPickingReconcile_MovementStarted | jobScheduleA                       | shipmentScheduleA              | groupDDOrder         | 7.5               |
+
+    And after not more than 10s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+  @from:cucumber
+  # LEGACY-COLUMN SEAM ONLY — this state is NOT reachable in production. No production flow writes
+  # DD_OrderLine.QtyDelivered (the only writer is MDDOrderLine's zero-initialiser), so the scenario has to seed the
+  # column itself. It therefore pins the refusal's MESSAGE CONTRACT (which four blocking facts it names), not a state a
+  # live instance can produce. The live "goods are already moving" signal is an in-progress DD_Order_MoveSchedule, and
+  # that one IS exercised for real — via the picking mover step — in DDOrderReplenishment_duplicate_disconnect.feature.
+  # Re-keying this guard onto the live signal is tracked separately; until then read this scenario as seam coverage only.
+  Scenario: A directly-seeded legacy QtyDelivered refuses a change to the contributor it was not moved for
+    # The refusal adds up what LEFT the source and what ARRIVED at the workstation. Here the whole 15 has arrived, so
+    # nothing is in transit any more and only the delivered side can hold the refusal up.
+    Given after not more than 120s, exactly one live DD_Order exists for the product group:
+      | M_Product_ID | M_LocatorTo_ID | DD_Order_ID  | DD_OrderLine_ID  | DocStatus | M_Warehouse_From_ID | QtyEntered |
+      | product      | packingLocator | groupDDOrder | groupDDOrderLine | CO        | stockWH             | 15         |
+    And the DD_OrderLine contributors are found:
+      | DD_OrderLine_ID  | M_Picking_Job_Schedule_ID | Qty |
+      | groupDDOrderLine | jobScheduleA              | 10  |
+      | groupDDOrderLine | jobScheduleB              | 5   |
+
+    When seed the legacy QtyDelivered column of 15 on DD_Order linked to picking job schedule jobScheduleA
+
+    # The same four blocking facts the in-transit refusal names: whose work, whose delivery, which order, how much moved.
+    Then changing the picking job schedule quantity is rejected:
+      | M_Picking_Job_Schedule_ID | QtyToPick | ErrorCode                               | Blocking_M_Picking_Job_Schedule_ID | Blocking_M_ShipmentSchedule_ID | Blocking_DD_Order_ID | Blocking_QtyMoved |
+      | jobScheduleB              | 2         | DDOrderPickingReconcile_MovementStarted | jobScheduleA                       | shipmentScheduleA              | groupDDOrder         | 15                |
 
     And after not more than 10s, exactly one live DD_Order exists for the product group:
       | M_Product_ID | M_LocatorTo_ID | DocStatus | M_Warehouse_From_ID | QtyEntered |
