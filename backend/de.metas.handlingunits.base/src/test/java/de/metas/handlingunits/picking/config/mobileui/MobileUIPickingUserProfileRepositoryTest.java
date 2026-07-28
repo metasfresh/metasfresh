@@ -29,6 +29,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.model.I_MobileUI_UserProfile_Picking;
 import org.compiere.model.X_MobileUI_UserProfile_Picking;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -60,36 +61,77 @@ class MobileUIPickingUserProfileRepositoryTest
 		return record;
 	}
 
-	@Test
-	void isMassPrinting_Y()
+	@Nested
+	class IsMassPrinting
 	{
-		final I_MobileUI_UserProfile_Picking record = newProfileRecord();
-		record.setIsMassPrinting(true);
-		saveRecord(record);
+		@Test
+		void set_returnsTrue()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsMassPrinting(true);
+			saveRecord(record);
 
-		final MobileUIPickingUserProfile profile = repository.getProfile();
+			final MobileUIPickingUserProfile profile = repository.getProfile();
 
-		assertThat(profile.isMassPrinting()).isTrue();
+			assertThat(profile.isMassPrinting()).isTrue();
+		}
+
+		@Test
+		void unset_returnsFalse()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsMassPrinting(false);
+			saveRecord(record);
+
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.isMassPrinting()).isFalse();
+		}
+
+		@Test
+		void noProfileRecord_returnsFalse()
+		{
+			// no profile record — should return default (false)
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.isMassPrinting()).isFalse();
+		}
 	}
 
-	@Test
-	void isMassPrinting_N()
+	@Nested
+	class IsShowQtyAvailableForLines
 	{
-		final I_MobileUI_UserProfile_Picking record = newProfileRecord();
-		record.setIsMassPrinting(false);
-		saveRecord(record);
+		@Test
+		void set_returnsTrue()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsShowQtyAvailableForLines(true);
+			saveRecord(record);
 
-		final MobileUIPickingUserProfile profile = repository.getProfile();
+			final MobileUIPickingUserProfile profile = repository.getProfile();
 
-		assertThat(profile.isMassPrinting()).isFalse();
-	}
+			assertThat(profile.isShowQtyAvailableForLines()).isTrue();
+		}
 
-	@Test
-	void isMassPrinting_default()
-	{
-		// no profile record — should return default (false)
-		final MobileUIPickingUserProfile profile = repository.getProfile();
+		@Test
+		void unset_returnsFalse()
+		{
+			final I_MobileUI_UserProfile_Picking record = newProfileRecord();
+			record.setIsShowQtyAvailableForLines(false);
+			saveRecord(record);
 
-		assertThat(profile.isMassPrinting()).isFalse();
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.isShowQtyAvailableForLines()).isFalse();
+		}
+
+		@Test
+		void noProfileRecord_returnsFalse()
+		{
+			// no profile record — should return default (false)
+			final MobileUIPickingUserProfile profile = repository.getProfile();
+
+			assertThat(profile.isShowQtyAvailableForLines()).isFalse();
+		}
 	}
 }

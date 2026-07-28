@@ -42,8 +42,11 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
   const history = useMobileNavigation();
   const dispatch = useDispatch();
 
-  const { allowQuickPackAll } = useApplicationInfoParameters({ applicationId });
-  const qtyAvailable = usePickingJobQtyAvailable({ wfProcessId, enabled: allowQuickPackAll });
+  const { allowQuickPackAll, isShowQtyAvailableForLines } = useApplicationInfoParameters({ applicationId });
+  const qtyAvailable = usePickingJobQtyAvailable({
+    wfProcessId,
+    enabled: isShowQtyAvailableForLines || allowQuickPackAll,
+  });
   const isShowQuickPackAllButton = allowQuickPackAll && qtyAvailable?.status === QtyAvailableStatus.FULLY_AVAILABLE;
 
   const { onBarcodeScanned } = usePickProductsScan({ applicationId, wfProcessId, activityId });
@@ -116,6 +119,7 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
               const { uom, qtyToPick, qtyPicked } = line;
               const qtyPickedCatchWeight = computeCatchWeightsArrayForLine({ line });
               const qtyPickedCatchWeightStr = formatCatchWeightToHumanReadableStr(qtyPickedCatchWeight);
+              const lineQtyAvailable = isShowQtyAvailableForLines ? qtyAvailable?.lines?.[lineId] : null;
 
               return (
                 <ButtonWithIndicator
@@ -133,6 +137,8 @@ const PickProductsActivity = ({ applicationId, wfProcessId, activityId, activity
                     qtyCurrent={qtyPicked}
                     qtyCurrentCatchWeight={qtyPickedCatchWeightStr}
                     applicationId={applicationId}
+                    qtyAvailable={lineQtyAvailable?.qtyAvailableToPick}
+                    qtyAvailableUom={lineQtyAvailable?.uom}
                   />
                 </ButtonWithIndicator>
               );

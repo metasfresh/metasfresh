@@ -415,6 +415,54 @@ test.describe('Picking Job Completion', () => {
         await PickingJobsListScreen.waitForScreen({ timeout: VERY_SLOW_ACTION_TIMEOUT });
     });
 
+    // Regression guard for flaky-test registry case 05 (recreate_shipment_after_void.spec.js): the
+    // ORDINARY complete() must recover on its own from a single slow/lost confirmation response — the
+    // real cause of the complete->jobs-list flake — without the caller doing anything special. Here the
+    // FIRST userConfirmation is aborted at the network layer (the same signal a timed-out response
+    // produces: the inline retry panel), then released; settleCompleteToJobsList must tap Retry itself
+    // and land on the jobs list. Distinct from the test above, which drives the retry manually.
+    //
+    // noinspection JSUnusedLocalSymbols
+    test('complete() recovers on its own from a transient confirmation network failure', async ({ page }) => {
+        // === ALLURE METADATA ===
+        allure.epic('E0105: Picking');
+        allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');
+        allure.story('Picking job completion recovers from network flake');
+        allure.severity('normal');
+
+        const masterdata = await createMasterdata({ allowCompletingPartialPickingJob: true });
+
+        await LoginScreen.login(masterdata.login.user);
+        await ApplicationsListScreen.expectVisible();
+        await ApplicationsListScreen.startApplication('picking');
+        await PickingJobsListScreen.waitForScreen();
+        await PickingJobsListScreen.filterByDocumentNo(masterdata.salesOrders.SO1.documentNo);
+        await PickingJobsListScreen.startJob({ documentNo: masterdata.salesOrders.SO1.documentNo });
+        await PickingJobScreen.scanPickingSlot({ qrCode: masterdata.pickingSlots.slot1.qrCode });
+        await PickingJobScreen.setTargetLU({ lu: masterdata.packingInstructions.PI.luName });
+        await PickingJobScreen.pickHU({ qrCode: masterdata.handlingUnits.HU1.qrCode, expectQtyEntered: '3' });
+
+        const confirmationRoute = '**/userWorkflows/wfProcess/**/userConfirmation';
+        let failedOnce = false;
+        await test.step('Fail ONLY the first userConfirmation, then let the retry through', async () => {
+            await page.route(confirmationRoute, async (route) => {
+                if (!failedOnce) {
+                    failedOnce = true;
+                    await route.abort('failed');
+                } else {
+                    await route.continue();
+                }
+            });
+        });
+
+        // complete() must ride out the first failure via its own bounded Retry and reach the jobs list.
+        await PickingJobScreen.complete();
+        expect(failedOnce, 'the confirmation route should have fired (first attempt failed)').toBe(true);
+
+        await page.unroute(confirmationRoute);
+    });
+
     // noinspection JSUnusedLocalSymbols
     test('Cancel on retry panel hides it and leaves the job resumable', async ({ page }) => {
         // === ALLURE METADATA ===

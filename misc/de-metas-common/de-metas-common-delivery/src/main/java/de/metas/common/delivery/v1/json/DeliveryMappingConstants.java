@@ -55,6 +55,10 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_RECEIVER_BPARTNER_ATTENTION = "ReceiverBPartnerAttention";
 	public static final String ATTRIBUTE_VALUE_SENDER_BPARTNER_ATTENTION = "SenderBPartnerAttention";
 
+	public static final String ATTRIBUTE_VALUE_IS_PRE_ADVICE_REQUIRED = "IsPreAdviceRequired";
+	public static final String ATTRIBUTE_VALUE_INCOTERMS_VALUE = "IncotermsValue";
+	public static final String ATTRIBUTE_VALUE_EXTERNAL_SYSTEM_VALUE = "ExternalSystemValue";
+
 	// attributeValuesLine
 	public static final String ATTRIBUTE_VALUE_PARCEL_ID = "ParcelId";
 
@@ -75,6 +79,7 @@ public class DeliveryMappingConstants
 	public static final String ATTRIBUTE_VALUE_TOTAL_WEIGHT_G = "TotalWeightG";
 
 	// attributeValuesParcel
+	public static final String ATTRIBUTE_VALUE_TOP_LEVEL_TYPE = "TopLevelType";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_KG = "GrossWeightKg";
 	public static final String ATTRIBUTE_VALUE_GROSS_WEIGHT_G = "GrossWeightG";
 	public static final String ATTRIBUTE_VALUE_PACKAGE_LENGTH_CM = "PackageLengthCm";

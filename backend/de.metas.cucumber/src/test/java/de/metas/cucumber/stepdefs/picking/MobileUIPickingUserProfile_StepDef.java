@@ -34,6 +34,7 @@ import de.metas.handlingunits.picking.config.mobileui.PickingCustomerConfigsColl
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptions.PickingJobOptionsBuilder;
+import de.metas.handlingunits.picking.config.mobileui.PickingJobAggregationType;
 import de.metas.handlingunits.picking.config.mobileui.PickingJobOptionsId;
 import de.metas.handlingunits.picking.job.service.CreateShipmentPolicy;
 import de.metas.logging.LogManager;
@@ -77,6 +78,7 @@ public class MobileUIPickingUserProfile_StepDef
 	 * <ul>
 	 *   <li>{@code IsAllowPickingAnyHU} — boolean</li>
 	 *   <li>{@code CreateShipmentPolicy} — policy code/name: DO_NOT_CREATE / CREATE_DRAFT / CREATE_AND_COMPLETE / CREATE_COMPLETE_CLOSE</li>
+	 *   <li>{@code PickingJobAggregationType} — aggregation-type code: SALES_ORDER (default) / PRODUCT / DELIVERY_LOCATION</li>
 	 *   <li>{@code IsAlwaysSplitHUsEnabled} — boolean</li>
 	 *   <li>{@code IsAllowCompletingPartialPickingJob} — boolean</li>
 	 *   <li>{@code IsCatchWeightTUPickingEnabled} — boolean</li>

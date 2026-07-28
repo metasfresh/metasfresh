@@ -28,14 +28,20 @@ import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
+import de.metas.bpartner.effective.BPartnerAddressEffective;
+import de.metas.bpartner.effective.BPartnerAddressEffectiveBL;
 import de.metas.bpartner.effective.BillBPartnerResolution;
 import de.metas.bpartner.effective.BPartnerEffectiveBL;
+import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.document.location.IDocumentLocationBL;
+import de.metas.document.location.impl.DocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -50,6 +56,8 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.IOrderLinePricingConditions;
 import de.metas.order.OrderId;
 import de.metas.order.impl.OrderLineDetailRepository;
+import de.metas.user.UserGroupRepository;
+import de.metas.user.UserRepository;
 import de.metas.order.location.OrderLocationsUpdater;
 import de.metas.order.paymentschedule.core.service.OrderPayScheduleService;
 import de.metas.promotioncode.PromotionCodeId;
@@ -63,6 +71,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.shipping.PurchaseOrderToShipperTransportationService;
+import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -79,6 +88,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -112,6 +122,7 @@ public class C_Order
 	@NonNull private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	@NonNull private final IBPartnerBL bpartnerBL;
 	@NonNull private final BPartnerEffectiveBL bpartnerEffectiveBL;
+	@NonNull private final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL;
 	@NonNull private final OrderLineDetailRepository orderLineDetailRepository;
 	@NonNull private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	@NonNull private final IDocumentLocationBL documentLocationBL;
@@ -126,6 +137,7 @@ public class C_Order
 	public C_Order(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final BPartnerEffectiveBL bpartnerEffectiveBL,
+			@NonNull final BPartnerAddressEffectiveBL bpartnerAddressEffectiveBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
@@ -134,6 +146,7 @@ public class C_Order
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.bpartnerEffectiveBL = bpartnerEffectiveBL;
+		this.bpartnerAddressEffectiveBL = bpartnerAddressEffectiveBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
@@ -142,6 +155,22 @@ public class C_Order
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
+	}
+
+	@VisibleForTesting
+	public static C_Order newInstanceForUnitTesting()
+	{
+		Adempiere.assertUnitTestMode();
+		//noinspection DataFlowIssue
+		return SpringContextHolder.getBeanOrSupply(C_Order.class, () -> new C_Order(
+				SpringContextHolder.getBeanOrSupply(IBPartnerBL.class, () -> new BPartnerBL(new UserRepository())),
+				BPartnerEffectiveBL.newInstanceForUnitTesting(),
+				BPartnerAddressEffectiveBL.newInstanceForUnitTesting(),
+				new OrderLineDetailRepository(),
+				DocumentLocationBL.newInstanceForUnitTesting(),
+				new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository()),
+				PurchaseOrderToShipperTransportationService.newInstanceForUnitTesting(),
+				OrderPayScheduleService.newInstanceForUnitTesting()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_M_PriceList_ID })
@@ -579,7 +608,7 @@ public class C_Order
 	}
 
 	@CalloutMethod(columnNames = { I_C_Order.COLUMNNAME_DropShip_Location_ID, I_C_Order.COLUMNNAME_C_BPartner_Location_ID })
-	public void updateShipper(@NonNull final I_C_Order order)
+	public void updateDeliveryPartnerDefaults(@NonNull final I_C_Order order)
 	{
 		if(InterfaceWrapperHelper.isCopying(order))
 		{
@@ -591,7 +620,9 @@ public class C_Order
 			return;
 		}
 
-		orderBL.setShipperId(order);
+		final BPartnerAddressEffective addressEffective = bpartnerAddressEffectiveBL.getDeliveryEffective(order);
+		order.setM_Shipper_ID(ShipperId.toRepoId(addressEffective.getShipperId()));
+		order.setIsPreAdviceRequired(addressEffective.isPreAdviceRequired());
 	}
 
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_DropShip_Location_ID)

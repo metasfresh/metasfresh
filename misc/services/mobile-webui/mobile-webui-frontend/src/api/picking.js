@@ -251,3 +251,9 @@ export const postMassPrintingScan = ({ scannedCode }) => {
     .post(`${apiBasePath}/picking/massPrinting/scan`, { scannedCode })
     .then((response) => unboxAxiosResponse(response));
 };
+
+export const advisePickingTarget = ({ wfProcessId, lineId }) => {
+  return axios
+    .post(toUrl(`${apiBasePath}/picking/job/${wfProcessId}/target/advise`, { lineId }))
+    .then((response) => unboxAxiosResponse(response));
+};

@@ -29,7 +29,6 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.customstariff.CustomsTariffId;
 import de.metas.customstariff.CustomsTariffRepository;
 import de.metas.interfaces.I_C_OrderLine;
@@ -39,15 +38,29 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import de.metas.location.LocationId;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
+import de.metas.money.MoneyService;
+import de.metas.externalsystem.ExternalSystemId;
+import de.metas.externalsystem.ExternalSystemRepository;
+import de.metas.handlingunits.IHUPackageDAO;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_Package_HU;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.IncotermsRepository;
 import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.Product;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.quantity.Quantity;
+import de.metas.shipper.gateway.commons.CarrierAdviseItemValue;
 import de.metas.shipper.gateway.commons.DeliveryOrderUtil;
 import de.metas.shipper.gateway.commons.model.CarrierGoodsTypeRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductRepository;
@@ -65,22 +78,24 @@ import de.metas.shipping.ShipperId;
 import de.metas.shipping.mpackage.PackageId;
 import de.metas.shipping.mpackage.PackageItem;
 import de.metas.uom.IUOMConversionBL;
-import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import de.metas.handlingunits.attribute.HUAttributeConstants;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -97,6 +112,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final UserRepository userRepository;
 	@NonNull private final ProductRepository productRepository;
 	@NonNull private final CustomsTariffRepository customsTariffRepository;
+	@NonNull private final IncotermsRepository incotermsRepository;
+	@NonNull private final ExternalSystemRepository externalSystemRepository;
+	@NonNull private final MoneyService moneyService;
 
 	@NonNull private final IBPartnerOrgBL bpartnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	@NonNull private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
@@ -106,6 +124,9 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	@NonNull private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull private final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
+	@NonNull private final IHUPackageDAO huPackageDAO = Services.get(IHUPackageDAO.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	@NonNull private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 
 	private static final BigDecimal DEFAULT_PackageWeightInKg = BigDecimal.ONE;
@@ -139,7 +160,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 
 		final ShipperId shipperId = deliveryOrderKey.getShipperId();
 
-		return DeliveryOrder.builder()
+		final DeliveryOrder.DeliveryOrderBuilder builder = DeliveryOrder.builder()
 				.shipperId(shipperId)
 				.shipperTransportationId(deliveryOrderKey.getShipperTransportationId())
 				//
@@ -165,10 +186,45 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.deliveryOrderParcels(toDeliveryOrderLines(request.getPackageInfos()))
 				.goodsType(carrierGoodsTypeRepository.getCachedGoodsTypeById(deliveryOrderKey.getCarrierGoodsTypeId()))
 				.shipperProduct(carrierProductRepository.getCachedShipperProductById(deliveryOrderKey.getCarrierProductId()))
-				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(carrierServiceRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of())
-				//
-				.build();
+				.services(deliveryOrderKey.getCarrierServices() != null ? deliveryOrderKey.getCarrierServices().stream().map(carrierServiceRepository::getCachedCarrierServiceById).collect(ImmutableSet.toImmutableSet()) : ImmutableSet.of());
 
+		resolveOrderContext(request.getPackageInfos(), builder);
+
+		return builder.build();
+	}
+
+	private void resolveOrderContext(
+			@NonNull final Set<CreateDraftDeliveryOrderRequest.PackageInfo> packageInfos,
+			@NonNull final DeliveryOrder.DeliveryOrderBuilder builder)
+	{
+		final OrderId orderId = packageInfos.stream()
+				.map(packageInfo -> purchaseOrderToShipperTransportationRepository.getPackageById(packageInfo.getPackageId()).getPackageContents())
+				.flatMap(Collection::stream)
+				.map(packageItem -> packageItem.getOrderAndLineId().getOrderId())
+				.findFirst()
+				.orElse(null);
+
+		if (orderId == null)
+		{
+			return;
+		}
+
+		final I_C_Order order = orderDAO.getById(orderId);
+
+		final IncotermsId incotermsId = IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID());
+		if (incotermsId != null)
+		{
+			final Incoterms incoterms = incotermsRepository.getById(incotermsId);
+			builder.incotermsValue(incoterms.getValue());
+		}
+
+		final ExternalSystemId externalSystemId = ExternalSystemId.ofRepoIdOrNull(order.getExternalSystem_ID());
+		if (externalSystemId != null)
+		{
+			builder.externalSystemValue(externalSystemRepository.getById(externalSystemId).getType().getValue());
+		}
+
+		builder.preAdviceRequired(StringUtils.ofBoolean(order.isPreAdviceRequired()));
 	}
 
 	@NonNull
@@ -209,11 +265,51 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 							.grossWeightKg(packageInfo.getWeightInKgOr(DEFAULT_PackageWeightInKg))
 							.content(packageInfo.getDescription())
 							.items(deliveryOrderItems)
+							.topLevelType(resolveTopLevelTypeWireString(packageInfo.getPackageId()))
 							.build();
 				})
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	// TopLevelType wire-conversion: "LU", "TU", "CU".
+	// Keep in sync with PackedHUCarrierAdviseService.toTopLevelTypeWireString (HU-advise path).
+	// Both sides must produce identical strings for the nShift mapping config to work consistently.
+	@Nullable
+	private String resolveTopLevelTypeWireString(@NonNull final PackageId packageId)
+	{
+		final List<I_M_Package_HU> packageHUs = huPackageDAO.retrievePackageHUs(packageId);
+		if (packageHUs.isEmpty())
+		{
+			return null;
+		}
+		final HuId huId = HuId.ofRepoId(packageHUs.get(0).getM_HU_ID());
+		final I_M_HU hu = handlingUnitsDAO.getById(huId);
+		final HuUnitType huUnitType = HuUnitType.ofNullableCode(handlingUnitsBL.getHU_UnitType(hu));
+		if (huUnitType == null)
+		{
+			return null;
+		}
+		switch (huUnitType)
+		{
+			case LU:
+				return "LU";
+			case TU:
+				return "TU";
+			case VHU:
+				return "CU";
+			default:
+				// ship path is resilient: an unexpected unit type omits TopLevelType (returns null)
+				// rather than failing the shipment — unlike the advise path which throws.
+				return null;
+		}
+	}
+
+	// Carrier "final info" build path — delivery-order (3 of 3).
+	// Unit price / total value / shipped quantity derivation is shared across the three nShift build paths via
+	// de.metas.shipper.gateway.commons.CarrierAdviseItemValue (so they cannot drift):
+	//   - HU-advise:        PackedHUCarrierAdviseService#buildRequestItem
+	//   - schedule-advise:  CarrierAdviseCommand#getJsonDeliveryAdvisorRequestParcel
+	//   - delivery-order:   NShiftDraftDeliveryOrderCreator#createDeliveryOrderItem
 	@NonNull
 	private DeliveryOrderItem createDeliveryOrderItem(@NonNull final PackageItem packageItem)
 	{
@@ -223,11 +319,7 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 		final BigDecimal weightInKg = computeNominalGrossWeightInKg(packageItem).orElse(BigDecimal.ZERO);
 		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(packageItem.getOrderLineId());
 
-		final UomId targetUOMID = CoalesceUtil.coalesceNotNull(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()), packageItem.getQuantity().getUomId());
-
-		final Quantity quantity = uomConversionBL.convertQuantityTo(packageItem.getQuantity(), productId, targetUOMID);
-		final Money unitPrice = Money.of(orderLine.getPriceEntered(), CurrencyId.ofRepoId(orderLine.getC_Currency_ID()));
-		final Money totalPackageValue = unitPrice.multiply(quantity.toBigDecimal());
+		final CarrierAdviseItemValue itemValue = CarrierAdviseItemValue.compute(moneyService, orderLine, productId, packageItem.getQuantity());
 
 		final CustomsTariffId customsTariffId = product.getCustomsTariffId();
 		final String customsTariff = customsTariffId != null ? customsTariffRepository.getById(customsTariffId).getValue() : null;
@@ -240,14 +332,18 @@ public class NShiftDraftDeliveryOrderCreator implements DraftDeliveryOrderCreato
 				.customsTariff(customsTariff)
 				.countryOfOrigin(countryOfOrigin)
 				.totalWeightInKg(weightInKg)
-				.shippedQuantity(packageItem.getQuantity())
-				.unitPrice(unitPrice)
-				.totalValue(totalPackageValue)
+				.shippedQuantity(itemValue.getShippedQuantity())
+				.unitPrice(itemValue.getUnitPrice())
+				.totalValue(itemValue.getTotalValue())
 				.build();
 	}
 
 	private static final AttributeCode ATTR_COUNTRY_OF_ORIGIN = HUAttributeConstants.ATTR_CountryOfOrigin;
 
+	// countryOfOrigin source — keep in sync with PackedHUShippingInfoService#readCountryOfOrigin:
+	// both read ATTR_CountryOfOrigin (here: inout-line ASI; there: HU attribute storage).
+	// The two resolve to the same value because ShipmentLineBuilder.transferAttributesToShipmentLine()
+	// copies HU attributes (including CountryOfOrigin) into the shipment-line ASI on shipment creation.
 	@Nullable
 	private String readCountryOfOrigin(@NonNull final PackageItem packageItem)
 	{

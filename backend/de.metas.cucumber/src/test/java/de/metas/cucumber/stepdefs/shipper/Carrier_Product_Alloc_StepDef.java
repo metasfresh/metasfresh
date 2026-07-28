@@ -30,6 +30,7 @@ import de.metas.shipping.CarrierProductId;
 import de.metas.shipper.gateway.commons.model.CarrierProductGoodsTypeAllocRepository;
 import de.metas.shipper.gateway.commons.model.CarrierProductServiceAllocRepository;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +49,30 @@ public class Carrier_Product_Alloc_StepDef
 	@NonNull private final Carrier_Product_StepDefData carrierProductTable;
 	@NonNull private final Carrier_Goods_Type_StepDefData carrierGoodsTypeTable;
 	@NonNull private final Carrier_Service_StepDefData carrierServiceTable;
+
+	/**
+	 * Creates a Carrier_Product ↔ Carrier_Goods_Type allocation record for each row.
+	 * Required columns: {@code Carrier_Product_ID}, {@code Carrier_Goods_Type_ID}
+	 * <p>
+	 * Example:
+	 * <pre>
+	 * And metasfresh contains Carrier_Product_GoodsType_Allocs:
+	 *   | Carrier_Product_ID | Carrier_Goods_Type_ID |
+	 *   | cp1                | cgt1                  |
+	 * </pre>
+	 */
+	@And("metasfresh contains Carrier_Product_GoodsType_Allocs:")
+	public void create_carrier_product_goodstype_allocs(@NonNull final DataTable dataTable)
+	{
+		DataTableRows.of(dataTable).forEach(this::createGoodsTypeAlloc);
+	}
+
+	private void createGoodsTypeAlloc(@NonNull final DataTableRow row)
+	{
+		final CarrierProductId carrierProductId = row.getAsIdentifier(I_Carrier_Product_GoodsType_Alloc.COLUMNNAME_Carrier_Product_ID).lookupNotNullIdIn(carrierProductTable);
+		final CarrierGoodsTypeId goodsTypeId = row.getAsIdentifier(I_Carrier_Product_GoodsType_Alloc.COLUMNNAME_Carrier_Goods_Type_ID).lookupNotNullIdIn(carrierGoodsTypeTable);
+		goodsTypeAllocRepo.save(carrierProductId, goodsTypeId);
+	}
 
 	/**
 	 * Asserts that each row's Carrier_Product+Carrier_Goods_Type pair has an active allocation record.

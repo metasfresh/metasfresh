@@ -119,6 +119,12 @@ public class RESTUtil
 
 		Env.setLoggedUserId(Env.getCtx(), userId);
 		Env.setOrgId(Env.getCtx(), OrgId.ofRepoId(1000000));
+		// Establish the role + client on the test thread so DIRECT (non-HTTP) service calls in step defs run
+		// under this role's UserRolePermissions. The token alone only authorises HTTP requests (via the
+		// UserAuthTokenFilter); an in-process call would otherwise have no role permissions, so an
+		// Access.READ-guarded lookup (e.g. OrgDAO.retrieveOrgIdBy) could not see orgs outside the context org.
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Role_ID, role.getId().getRepoId());
+		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, role.getClientId().getRepoId());
 
 		return userAuthTokenRecord.getAuthToken();
 	}
@@ -267,8 +273,9 @@ public class RESTUtil
 		}
 
 		final String expectErrorContaining = apiRequest.getExpectedErrorMessageContaining();
+		final String expectErrorCode = apiRequest.getExpectedErrorCode();
 		final Boolean expectErrorUserFriendly = apiRequest.getExpectErrorUserFriendly();
-		final boolean isExpectError = expectErrorContaining != null || expectErrorUserFriendly != null;
+		final boolean isExpectError = expectErrorContaining != null || expectErrorCode != null || expectErrorUserFriendly != null;
 		if (isExpectError)
 		{
 			final JsonError jsonError = apiResponse.getContentAs(JsonError.class);
@@ -279,6 +286,12 @@ public class RESTUtil
 				assertThat(jsonErrorItem.getMessage())
 						.as(() -> "Error Message of " + jsonError)
 						.contains(expectErrorContaining);
+			}
+			if (expectErrorCode != null)
+			{
+				assertThat(jsonErrorItem.getErrorCode())
+						.as(() -> "ErrorCode of " + jsonError)
+						.isEqualTo(expectErrorCode);
 			}
 			if (expectErrorUserFriendly != null)
 			{

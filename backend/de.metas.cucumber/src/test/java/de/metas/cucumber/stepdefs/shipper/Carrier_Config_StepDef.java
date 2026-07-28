@@ -56,7 +56,10 @@ public class Carrier_Config_StepDef
 	 *   <b>Password</b>                — (optional) API password. Default: {@code password}.<br>
 	 *   <b>ServiceLevel</b>            — (optional) Shipper service level token. Default: {@code serviceLevel}.<br>
 	 *   <b>Client_Id</b>               — (optional) OAuth client ID. Default: none.<br>
-	 *   <b>Client_Secret</b>           — (optional) OAuth client secret. Default: none.
+	 *   <b>Client_Secret</b>           — (optional) OAuth client secret. Default: none.<br>
+	 *   <b>IsSelectionRules</b>        — (optional) Activates nShift selection rules. {@code Y} → nShift resolves
+	 *                                    the carrier via its rules; {@code N} → the explicit carrier product is
+	 *                                    authoritative. Default: the column default {@code Y} on creation.
 	 * @cucumber.depends StepDefData: M_Shipper_StepDefData
 	 * @cucumber.example
 	 * <pre>
@@ -105,6 +108,9 @@ public class Carrier_Config_StepDef
 				.orElse(existingConfig == null ? null : existingConfig.getClient_Id()));
 		config.setClient_Secret(row.getAsOptionalString(I_Carrier_Config.COLUMNNAME_Client_Secret)
 				.orElse(existingConfig == null ? null : existingConfig.getClient_Secret()));
+		final boolean defaultSelectionRules = existingConfig == null || existingConfig.isSelectionRules();
+		config.setIsSelectionRules(row.getAsOptionalBoolean(I_Carrier_Config.COLUMNNAME_IsSelectionRules)
+				.orElse(defaultSelectionRules));
 
 		InterfaceWrapperHelper.saveRecord(config);
 	}
