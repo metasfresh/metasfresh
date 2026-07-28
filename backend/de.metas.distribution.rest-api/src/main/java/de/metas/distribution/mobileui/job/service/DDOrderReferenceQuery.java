@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
@@ -19,7 +20,7 @@ import java.util.Set;
 public class DDOrderReferenceQuery
 {
 	@NonNull UserId responsibleId;
-	@NonNull @Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
+	@NonNull @With @Default QueryLimit suggestedLimit = QueryLimit.NO_LIMIT;
 	@NonNull @Default DistributionFacetIdsCollection activeFacetIds = DistributionFacetIdsCollection.EMPTY;
 	boolean excludeAlreadyStarted;
 	@NonNull @Default DistributionJobSorting sorting = DistributionJobSorting.DEFAULT;

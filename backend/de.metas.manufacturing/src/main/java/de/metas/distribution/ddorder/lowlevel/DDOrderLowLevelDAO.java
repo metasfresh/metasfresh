@@ -41,7 +41,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -103,23 +102,6 @@ public class DDOrderLowLevelDAO
 				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
 				.addOnlyActiveRecordsFilter()
 				.create();
-	}
-
-	/**
-	 * Returns the ID of the first active (Completed) DD_Order linked to the given shipment schedule,
-	 * or empty if none exists.
-	 */
-	public Optional<DDOrderId> findActiveDDOrderForSchedule(@NonNull final ShipmentScheduleId scheduleId)
-	{
-		return queryBL
-				.createQueryBuilder(I_DD_Order.class)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_M_ShipmentSchedule_ID, scheduleId)
-				.addEqualsFilter(I_DD_Order.COLUMNNAME_DocStatus, X_DD_Order.DOCSTATUS_Completed)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_DD_Order.COLUMNNAME_DD_Order_ID)
-				.create()
-				.firstOptional(I_DD_Order.class)
-				.map(ddOrder -> DDOrderId.ofRepoId(ddOrder.getDD_Order_ID()));
 	}
 
 	/**
@@ -317,7 +299,7 @@ public class DDOrderLowLevelDAO
 
 		if (deleteOrdersQuery.isOnlySimulated())
 		{
-			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_IsSimulated, deleteOrdersQuery.isOnlySimulated());
+			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_IsSimulated, true);
 		}
 
 		if (deleteOrdersQuery.getPpOrderBOMLineId() != null)
@@ -350,7 +332,9 @@ public class DDOrderLowLevelDAO
 
 	private IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query)
 	{
-		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
+		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class)
+				.setLimit(query.getLimit());
+
 		setOrderBys(queryBuilder, query.getOrderBys());
 
 		//

@@ -13,6 +13,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.eevolution.api.PPOrderId;
@@ -41,6 +42,8 @@ public class DDOrderQuery
 	@Nullable Set<Quantity> qtysEntered;
 	@Nullable Set<ResourceId> plantIds;
 	@Nullable Set<DDOrderId> onlyDDOrderIds;
+
+	@NonNull @Builder.Default QueryLimit limit = QueryLimit.NO_LIMIT;
 
 	//
 	//

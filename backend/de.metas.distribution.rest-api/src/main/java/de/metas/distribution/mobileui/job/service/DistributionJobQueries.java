@@ -28,7 +28,9 @@ public class DistributionJobQueries
 
 	public static DDOrderQuery ddOrdersAssignedToUser(@NonNull final DDOrderReferenceQuery query)
 	{
-		return ddOrdersAssignedToUser(query.getResponsibleId(), query.getSorting()).build();
+		return ddOrdersAssignedToUser(query.getResponsibleId(), query.getSorting())
+				.limit(query.getSuggestedLimit())
+				.build();
 	}
 
 	public static DDOrderQueryBuilder ddOrdersAssignedToUser(@NonNull final UserId responsibleId)
@@ -62,6 +64,7 @@ public class DistributionJobQueries
 				.productIds(activeFacetIds.getProductIds())
 				.qtysEntered(activeFacetIds.getQuantities())
 				.plantIds(activeFacetIds.getPlantIds())
+				.limit(query.getSuggestedLimit())
 				.build();
 	}
 
