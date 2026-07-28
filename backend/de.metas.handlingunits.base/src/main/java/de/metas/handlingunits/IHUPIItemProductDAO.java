@@ -30,6 +30,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
@@ -144,4 +145,18 @@ public interface IHUPIItemProductDAO extends ISingletonService
 
 	@Nullable
 	I_M_HU_PI_Item_Product retrieveDefaultForProduct(@NonNull ProductId productId, @NonNull ZonedDateTime date);
+
+	/**
+	 * Creates a query filter that restricts {@link I_M_HU_PI_Item_Product} records to those valid on the given date.
+	 * <p>
+	 * The filter enforces: {@code ValidFrom <= date AND (ValidTo >= date OR ValidTo IS NULL)}.
+	 * <p>
+	 * When {@code date} is {@code null}, a match-all filter is returned, preserving the existing behaviour
+	 * of "no date ⇒ no validity filter".
+	 *
+	 * @param date the reference date; may be {@code null}
+	 * @return a query filter for validity date; never {@code null}
+	 */
+	@NonNull
+	IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable ZonedDateTime date);
 }

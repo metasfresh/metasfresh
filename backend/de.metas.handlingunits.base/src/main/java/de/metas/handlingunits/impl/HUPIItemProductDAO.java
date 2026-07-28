@@ -51,6 +51,7 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -381,21 +382,7 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 
 		//
 		// Valid From/To Filtering (only if Date is specified in query)
-		final ZonedDateTime date = queryVO.getDate();
-		if (date != null)
-		{
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
-			filters.addFilter(validDateFromFilter);
-
-			final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
-					.setJoinOr()
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
-					// a PLV must have a ValidFrom, but has no ValidTo.
-					// For this reason, ValidTo is not mandatory here neither
-					.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
-			filters.addFilter(validDateToFilter);
-		}
+		filters.addFilter(createValidOnDateFilter(queryVO.getDate()));
 
 		//
 		// M_HU_PI_Item Filtering
@@ -502,6 +489,31 @@ public class HUPIItemProductDAO implements IHUPIItemProductDAO
 		}
 
 		return filters;
+	}
+
+	@Override
+	public IQueryFilter<I_M_HU_PI_Item_Product> createValidOnDateFilter(@Nullable final ZonedDateTime date)
+	{
+		if (date == null)
+		{
+			return ConstantQueryFilter.of(true);
+		}
+
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		final IQueryFilter<I_M_HU_PI_Item_Product> validDateFromFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidFrom, Operator.LESS_OR_EQUAL, date);
+
+		final IQueryFilter<I_M_HU_PI_Item_Product> validDateToFilter = queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.setJoinOr()
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.GREATER_OR_EQUAL, date)
+				// a PLV must have a ValidFrom, but has no ValidTo.
+				// For this reason, ValidTo is not mandatory here neither
+				.addCompareFilter(I_M_HU_PI_Item_Product.COLUMNNAME_ValidTo, Operator.EQUAL, null);
+
+		return queryBL.createCompositeQueryFilter(I_M_HU_PI_Item_Product.class)
+				.addFilter(validDateFromFilter)
+				.addFilter(validDateToFilter);
 	}
 
 	/**
