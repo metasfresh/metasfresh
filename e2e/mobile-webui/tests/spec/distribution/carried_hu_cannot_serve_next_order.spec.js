@@ -40,10 +40,10 @@ import { expectErrorToast } from '../../utils/common';
 // the case the frontend can rule out up front — the next order asks for an article the handling unit
 // does not hold, so nothing is carried and the prompt is there from the start.
 //
-// RESIDUAL GAP, stated rather than implied: the refusal covered here is the one the operator meets at
-// the article-code prompt, where the pick is posted directly because a single unit is left to pick. A
-// multi-unit order opens the quantity dialog first; the same refusal then arrives while that dialog is
-// on screen, and no spec covers it.
+// RESIDUAL GAP, stated rather than implied: the refusal is met here at the article-code prompt,
+// because a single unit left to pick posts the pick directly. A multi-unit order opens the quantity
+// dialog first, so the operator meets the same refusal with that dialog on screen. It travels the same
+// path (DistributionPickFromScreen.onResult), and this spec does NOT cover it.
 //
 
 // One unit per order — the customer's orders ask for 1-2 Stk. At one unit remaining the pick is
