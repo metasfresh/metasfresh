@@ -36,6 +36,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedImportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ScriptedExportConversion;
 import de.metas.externalsystem.model.I_ExternalSystem_Endpoint;
+import de.metas.externalsystem.model.X_ExternalSystem_Endpoint;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_ProCareManagement;
@@ -1005,11 +1006,17 @@ class ExternalSystemConfigRepoTest
 		final I_ExternalSystem_Config validParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(ExternalSystemType.ScriptedImportConversion.getValue())
 				.build();
+		final I_ExternalSystem_Endpoint validEndpoint = newInstance(I_ExternalSystem_Endpoint.class);
+		validEndpoint.setValue("valid-orders-endpoint");
+		validEndpoint.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+		validEndpoint.setIsArrayFanOut(false);
+		saveRecord(validEndpoint);
+
 		final I_ExternalSystem_Config_ScriptedImportConversion validChild = newInstance(I_ExternalSystem_Config_ScriptedImportConversion.class);
 		validChild.setExternalSystem_Config_ID(validParent.getExternalSystem_Config_ID());
 		validChild.setExternalSystemValue("valid-orders");
 		validChild.setScriptIdentifier("echo");
-		validChild.setEndpointName("valid-orders-endpoint");
+		validChild.setExternalSystem_Endpoint_ID(validEndpoint.getExternalSystem_Endpoint_ID());
 		validChild.setAD_User_Import_ID(100);
 		saveRecord(validChild);
 
@@ -1017,11 +1024,17 @@ class ExternalSystemConfigRepoTest
 		final I_ExternalSystem_Config eddysonParent = ExternalSystemConfigTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type("eddyson")
 				.build();
+		final I_ExternalSystem_Endpoint mismatchedEndpoint = newInstance(I_ExternalSystem_Endpoint.class);
+		mismatchedEndpoint.setValue("orders-endpoint");
+		mismatchedEndpoint.setTransportType(X_ExternalSystem_Endpoint.TRANSPORTTYPE_HTTP);
+		mismatchedEndpoint.setIsArrayFanOut(false);
+		saveRecord(mismatchedEndpoint);
+
 		final I_ExternalSystem_Config_ScriptedImportConversion mismatchedChild = newInstance(I_ExternalSystem_Config_ScriptedImportConversion.class);
 		mismatchedChild.setExternalSystem_Config_ID(eddysonParent.getExternalSystem_Config_ID());
 		mismatchedChild.setExternalSystemValue("ORDERS");
 		mismatchedChild.setScriptIdentifier("echo");
-		mismatchedChild.setEndpointName("orders-endpoint");
+		mismatchedChild.setExternalSystem_Endpoint_ID(mismatchedEndpoint.getExternalSystem_Endpoint_ID());
 		mismatchedChild.setAD_User_Import_ID(100);
 		saveRecord(mismatchedChild);
 
