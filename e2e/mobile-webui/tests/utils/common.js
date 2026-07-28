@@ -1,4 +1,5 @@
 import { test } from '../../playwright.config';
+import { expect } from '@playwright/test';
 import { ErrorScreen } from './screens/ErrorScreen';
 import { ErrorToast } from './dialogs/ErrorToast';
 
@@ -15,9 +16,66 @@ export const ID_BACK_BUTTON = '#Back-button';
 
 export let page = null;
 
+// Browser-console recording. Some app code paths are invisible on screen but log a diagnostic before
+// falling back to a state that looks exactly like the normal one; the logged line is then the only
+// observable that tells the two apart (see
+// DistributionLinePickFromScreen.expectHUScanNotCausedByFailedHULookup). Recording is armed with the
+// page fixture, so no spec has to set anything up and a normal run pays no timing cost.
+//
+// Cap on the messages one test keeps, so a chatty page cannot grow the buffer without bound. Anything
+// past the cap is counted, not kept — see expectNoConsoleMessageMatching for why the count matters.
+const MAX_RECORDED_CONSOLE_MESSAGES = 5000;
+
+// The recorder of the CURRENT test, or null before the page fixture armed one.
+let consoleRecorder = null;
+
+// Each recorder owns its OWN buffer and counters, closed over by its handler — never a module-level
+// binding. A handler that closed over the *binding* would keep writing into whatever buffer is current,
+// so a page still emitting after the next test started would pollute that test's buffer and produce a
+// RED attributed to the wrong test.
+const startConsoleRecorder = (currentPage) => {
+    const messages = [];
+    let droppedMessageCount = 0;
+    const handler = (message) => {
+        if (messages.length < MAX_RECORDED_CONSOLE_MESSAGES) {
+            messages.push(`${message.type()}: ${message.text()}`);
+        } else {
+            droppedMessageCount++;
+        }
+    };
+    currentPage.on('console', handler);
+    return {
+        messages,
+        getDroppedMessageCount: () => droppedMessageCount,
+        stop: () => currentPage.off('console', handler),
+    };
+};
+
 export const setCurrentPage = (currentPage) => {
+    // Stop the previous test's recorder so its page cannot go on feeding a listener we no longer read.
+    consoleRecorder?.stop();
     page = currentPage;
+    consoleRecorder = startConsoleRecorder(currentPage);
 }
+
+/**
+ * Assert the app did NOT log a console message matching `pattern` so far in this test.
+ * Not a polling assertion: use it only for a message the app would have logged *before* a state you
+ * have already awaited (otherwise it can pass simply because the log has not happened yet).
+ */
+export const expectNoConsoleMessageMatching = ({ pattern, because }) => {
+    // A NEGATIVE assertion must never pass by omission. Two ways this one could:
+    //  - no recorder armed at all (the page fixture did not run) -> the buffer is trivially empty;
+    //  - the recorder hit its cap -> a matching message may have been dropped rather than never logged.
+    expect(consoleRecorder, 'no console recorder is armed, so the absence of a message proves nothing').not.toBeNull();
+    expect(
+        consoleRecorder.getDroppedMessageCount(),
+        `the console recorder hit its ${MAX_RECORDED_CONSOLE_MESSAGES}-message cap, so a matching message may have been`
+        + ` dropped rather than never logged - the absence assertion below would be vacuous`
+    ).toEqual(0);
+
+    expect(consoleRecorder.messages.filter((message) => pattern.test(message)), because).toEqual([]);
+};
 
 // Capture mode — OFF by default. When the env flag UAT_CAPTURE is set, the run is a deliberate
 // recording run for a UAT/documentation video; otherwise this is a no-op and the test runs at
