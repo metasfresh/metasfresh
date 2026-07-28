@@ -34,15 +34,15 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
-
-import org.compiere.util.TimeUtil;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -323,7 +323,7 @@ public class ExternalIdentifierProductLookupServiceTest
 		newRow.setM_Product_ID(product.getM_Product_ID());
 		newRow.setGTIN(gtin);
 		newRow.setQty(new BigDecimal("6"));
-		newRow.setValidFrom(TimeUtil.parseTimestamp("2026-07-01"));
+		newRow.setValidFrom(TimeUtil.parseLocalDateAsTimestamp("2026-07-01"));
 		newRow.setIsActive(true);
 		InterfaceWrapperHelper.save(newRow);
 
@@ -333,7 +333,7 @@ public class ExternalIdentifierProductLookupServiceTest
 		oldRow.setM_Product_ID(product.getM_Product_ID());
 		oldRow.setGTIN(gtin);
 		oldRow.setQty(new BigDecimal("9"));
-		oldRow.setValidFrom(TimeUtil.parseTimestamp("2019-01-01"));
+		oldRow.setValidFrom(TimeUtil.parseLocalDateAsTimestamp("2019-01-01"));
 		oldRow.setIsActive(true);
 		InterfaceWrapperHelper.save(oldRow);
 
@@ -343,7 +343,7 @@ public class ExternalIdentifierProductLookupServiceTest
 
 		// when — date before NEW's ValidFrom: only OLD is valid → expect OLD row (Qty=9).
 		// RED: ascending-ID query returns NEW (lower ID) → assertion FAILS, proving future-dated row exclusion is broken.
-		final ZonedDateTime beforeSwitch = java.time.LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
+		final ZonedDateTime beforeSwitch = LocalDate.of(2026, 6, 26).atStartOfDay(ZoneOffset.UTC);
 		final Optional<ProductAndHUPIItemProductId> resultBeforeSwitch = productLookupService.lookupProductByGTIN(identifier, beforeSwitch);
 		assertThat(resultBeforeSwitch).isPresent();
 		assertThat(resultBeforeSwitch.get().getHupiItemProductId())
@@ -351,10 +351,9 @@ public class ExternalIdentifierProductLookupServiceTest
 				.isEqualTo(oldRowId);
 
 		// when — date on/after NEW's ValidFrom: both valid, pick latest ValidFrom → expect NEW row (Qty=6).
-		// RED: ascending-ID query also returns NEW (lower ID) — coincidentally correct result, wrong reason;
-		// assertion passes only if the query also applies ValidFrom ordering, which it does not yet.
-		// After Task 3, this passes for the right reason (ValidFrom DESC + ValidFrom ≤ date filter).
-		final ZonedDateTime afterSwitch = java.time.LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
+		// RED: ascending-ID query returns NEW (lower ID) — coincidentally the expected result, NOT because the
+		// ValidFrom ordering is applied (it is not). Task 3 makes this pass for the correct reason.
+		final ZonedDateTime afterSwitch = LocalDate.of(2026, 7, 5).atStartOfDay(ZoneOffset.UTC);
 		final Optional<ProductAndHUPIItemProductId> resultAfterSwitch = productLookupService.lookupProductByGTIN(identifier, afterSwitch);
 		assertThat(resultAfterSwitch).isPresent();
 		assertThat(resultAfterSwitch.get().getHupiItemProductId())
