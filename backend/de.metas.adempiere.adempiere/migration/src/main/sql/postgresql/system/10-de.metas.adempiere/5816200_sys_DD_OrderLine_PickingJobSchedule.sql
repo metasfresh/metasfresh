@@ -345,9 +345,6 @@ CREATE TABLE DD_OrderLine_PickingJobSchedule
         REFERENCES C_UOM (C_UOM_ID) DEFERRABLE INITIALLY DEFERRED
 );
 
--- at most one contributing assignment row per line; partial, so a deactivated row never blocks its replacement
-CREATE UNIQUE INDEX ddorderline_pjs_active_uidx ON DD_OrderLine_PickingJobSchedule (DD_OrderLine_ID, M_Picking_Job_Schedule_ID) WHERE IsActive = 'Y';
-
 -- line -> contributors: settlement, guards, per-line invariant check
 CREATE INDEX ddorderline_pjs_ddorderline_idx ON DD_OrderLine_PickingJobSchedule (DD_OrderLine_ID);
 -- assignment -> lines: related-documents navigation, "is this assignment served?" watchdog predicate
