@@ -53,9 +53,9 @@ import java.util.Optional;
 @Service
 public class ExternalIdentifierProductLookupService
 {
-	private final IProductDAO productDAO = Services.get(IProductDAO.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	@NonNull private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	@NonNull private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	@NonNull private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
