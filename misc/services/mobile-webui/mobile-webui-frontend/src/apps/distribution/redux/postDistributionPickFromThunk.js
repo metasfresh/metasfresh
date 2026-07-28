@@ -41,9 +41,9 @@ export const postDistributionPickFromThunk =
           // Carry the just-picked source HU's QR code forward to the next order's Pick-From screen
           // ONLY when the next order's pre-allocated move plan draws from that SAME physical HU —
           // never unconditionally (an earlier fix carried it forward unconditionally and regressed
-          // packingTable_navigateToNextOrder + navigateToJobsListAfterPickFromComplete, where the
-          // next order's source HU is a DIFFERENT one even when it shares the source locator). Three
-          // cases, decided by HU identity (not locator):
+          // packingTable_navigateToNextOrder + navigateToJobsListAfterPickFromComplete, where the HU
+          // the operator must scan next is a DIFFERENT physical one even when it shares the source
+          // locator). Three cases, decided by HU identity (not locator):
           //  1. Same source HU (the "sweep" flow: one staging LU feeding several orders) -> carry
           //     forward, landing the operator directly on the product-scan step.
           //  2. A different source HU (distinct HU per order, even sharing a locator) -> omit
@@ -94,6 +94,12 @@ const getResolvedHUQR = async ({ scannedCode }) => {
     const { qrCode } = await getDistributionScannedHUQRCodeInfo({ qrCode: toQRCodeString(scannedCode) });
     return toQRCodeString(qrCode);
   } catch (e) {
+    // NOTE to dev: keep this message in sync with
+    // e2e/mobile-webui/tests/utils/screens/distribution/DistributionLinePickFromScreen.js
+    // -> expectHUScanNotCausedByFailedHULookup, which greps for it. On screen this fallback is
+    // indistinguishable from the no-move-plan case, so that grep is the ONLY thing telling the two
+    // apart in sweep_scan_HU_after_autoAdvance_anyHU.spec.js. Reword it and the assertion goes
+    // vacuously green.
     console.warn('Failed to resolve scanned HU QR for auto-advance carry-forward; defaulting to Scan-HU', e);
     return null; // unresolvable -> no match below -> safe default (Scan-HU)
   }
