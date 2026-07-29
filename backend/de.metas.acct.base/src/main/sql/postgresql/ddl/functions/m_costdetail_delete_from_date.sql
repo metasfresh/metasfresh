@@ -150,9 +150,17 @@ BEGIN
                 --   'A' AveragePO / 'I' AverageInvoice / 'M' MovingAverageInvoice
                 --        -> their handlers call CurrentCost.addWeightedAverage, so the formula matches.
                 --   'S' StandardCosting
-                --        -> a changing-costs inbound records amt = prevPrice*qty
-                --           (StandardCostingMethodHandler.createCostForMaterialReceipt), so the weighted
-                --           average provably reproduces prevPrice: it is a no-op, not an approximation.
+                --        -> INVARIANT: every Standard-costing handler posts amt = currentCostPrice*qty by
+                --           construction - it multiplies the CURRENT cost price of the very same cost
+                --           segment+element by the quantity and never derives a price from the document:
+                --             StandardCostingMethodHandler.createCostForMaterialReceipt /
+                --                 .createOutboundCostDefaultImpl / .createCostForMatchInvoice_MaterialCosts
+                --             ManufacturingStandardCostingMethodHandler.createIssueOrReceipt /
+                --                 .createActivityControl / .createUsageVariance
+                --           Substituting amt = prevPrice*qty into the weighted average gives
+                --           (prevPrice*prevQty + prevPrice*qty) / (prevQty + qty) = prevPrice, so the
+                --           reconstruction provably reproduces prevPrice for EVERY such inbound: it is a
+                --           no-op, not an approximation.
                 --   'p' LastPOPrice / 'i' LastInvoice are DELIBERATELY EXCLUDED: on the M_MatchPO /
                 --        M_MatchInv path their handlers REPLACE the price with amt/qty
                 --        (LastPOCostingMethodHandler.createCostForMatchPO,
