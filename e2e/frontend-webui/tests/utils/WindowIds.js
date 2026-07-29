@@ -204,6 +204,22 @@ export const PICKING_TERMINAL_V2_WINDOW_ID = 540485;
 export const PICKING_TERMINAL_V1_WINDOW_ID = 540350;
 
 // ============================================================================
+// SYSTEM ADMINISTRATION WINDOWS
+// ============================================================================
+
+/**
+ * View Invalidation on Change window (View-Invalidierung bei Änderung)
+ * Table: WEBUI_ViewInvalidateOnChange (AD_Table_ID=542631)
+ * Window ID: 542178
+ * Element: 585139
+ * Description: Minimal System-Administration admin window over the
+ * WEBUI_ViewInvalidateOnChange config table. Single tab with fields
+ * AD_Window_ID (TableDir, mandatory), AD_Table_ID (TableDir, mandatory),
+ * IsActive, AD_Org_ID, AD_Client_ID.
+ */
+export const VIEW_INVALIDATE_ON_CHANGE_WINDOW_ID = 542178;
+
+// ============================================================================
 // SYSTEM/TEST WINDOWS
 // ============================================================================
 
