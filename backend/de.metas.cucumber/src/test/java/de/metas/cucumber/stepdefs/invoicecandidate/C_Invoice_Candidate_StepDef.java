@@ -624,6 +624,15 @@ public class C_Invoice_Candidate_StepDef
 									softly.assertThat(finalInvoiceCandidate.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
 								});
 
+						row.getAsOptionalBoolean(I_C_Invoice_Candidate.COLUMNNAME_IsError)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.isError()).as("IsError").isEqualTo(expected));
+
+						row.getAsOptionalString(I_C_Invoice_Candidate.COLUMNNAME_ErrorMsg)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getErrorMsg()).as("ErrorMsg").contains(expected));
+
+						row.getAsOptionalBigDecimal(I_C_Invoice_Candidate.COLUMNNAME_PriceActual)
+								.ifPresent(expected -> softly.assertThat(finalInvoiceCandidate.getPriceActual()).as("PriceActual").isEqualByComparingTo(expected));
+
 						softly.assertAll();
 					}
 					catch (final Throwable e)
@@ -718,13 +727,40 @@ public class C_Invoice_Candidate_StepDef
 
 	}
 
+	/**
+	 * Loads the invoice candidate for the given return inout, optionally filtered by product.
+	 *
+	 * <p>Required columns:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – identifier of the vendor/customer return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 *
+	 * <p>Optional columns:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – when present, filters ICs by this product; required when
+	 *       the return generates multiple ICs (e.g. packing-material lines alongside the product line)</li>
+	 * </ul>
+	 *
+	 * @return {@code true} if exactly one matching IC was found and stored; {@code false} if none found yet
+	 */
 	private boolean loadCreditMemoCandidate(@NonNull final Map<String, String> row)
 	{
 		final String customerReturnIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final int customerReturnId = shipmentTable.get(customerReturnIdentifier).getM_InOut_ID();
 
-		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId)
+		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_M_InOut_ID, customerReturnId);
+
+		// Optional product filter — required when the return generates multiple ICs (packing-material lines alongside the product IC)
+		final String productIdentifierRaw = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (!EmptyUtil.isBlank(productIdentifierRaw))
+		{
+			final I_M_Product product = productTable.get(productIdentifierRaw);
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID());
+		}
+
+		final Optional<I_C_Invoice_Candidate> invoiceCandidate = queryBuilder
 				.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
