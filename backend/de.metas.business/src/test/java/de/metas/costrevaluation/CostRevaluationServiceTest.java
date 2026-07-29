@@ -556,6 +556,78 @@ public class CostRevaluationServiceTest
 			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("4000.00");
 			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("200");
 		}
+
+		/**
+		 * The opening is the source's cost AS OF the cut-off ({@code EvaluationStartDate}), not its live (today) cost. A
+		 * switch back-dated to a closed year-end must open the target element with the value the source carried AT that
+		 * year-end; the live {@code M_Cost} row by then already reflects every movement booked since.
+		 * <p>
+		 * Here the source moved after the cut-off: the 2026-03-01 movement's {@code Prev_*} preserve the cut-off state
+		 * (own 10 / LL 2 / qty 100) while the live row already shows own 12 / LL 3 / qty 80. Own price, LL price and qty
+		 * must ALL come from that single as-of snapshot — a fresh LL mixed with a stale own/qty would silently corrupt the
+		 * target's forward-costing base.
+		 */
+		@Test
+		public void seedsTheSourceCostAsOfTheEvaluationStartDate()
+		{
+			final ProductId productWithStock = createProduct("productWithStock");
+
+			// The live source M_Cost carries the POST-cut-off state (what a naive read would copy).
+			seedSourceCurrentCost(productWithStock, "12", "3", "80");
+
+			// The 2026 movement on the source, whose Prev_* preserve the state as of the 2025-12-31 cut-off.
+			createPostCutoffCostEventOnSourceWithPreviousAmounts(productWithStock, "10", "2", "100");
+
+			final CostRevaluationId costRevaluationId = createCopyFromCostElementHeader(); // EvaluationStartDate = 2025-12-31
+			costRevaluationService.createLines(costRevaluationId);
+
+			// The drafted line PREVIEWS the same as-of numbers the complete will write (10 / 100), not the live ones.
+			final List<I_M_CostRevaluationLine> draftedLines = costRevaluationRepository
+					.streamAllLineRecordsByCostRevaluationId(costRevaluationId)
+					.collect(ImmutableList.toImmutableList());
+			final I_M_CostRevaluationLine draftedLine = getLineForProduct(draftedLines, productWithStock);
+			assertThat(draftedLine.getNewCostPrice()).isEqualByComparingTo("10");
+			assertThat(draftedLine.getCurrentQty()).isEqualByComparingTo("100");
+
+			costRevaluationService.createDetails(costRevaluationId);
+
+			final CostSegmentAndElement targetSeg = CostSegmentAndElement.builder()
+					.costingLevel(CostingLevel.Client)
+					.acctSchemaId(acctSchemaId)
+					.costTypeId(costTypeId)
+					.clientId(ClientId.METASFRESH)
+					.orgId(OrgId.ANY)
+					.productId(productWithStock)
+					.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+					.costElementId(targetCostElementId)
+					.build();
+
+			final CurrentCost targetCurrentCost = currentCostsRepo.getOrNull(targetSeg);
+			assertThat(targetCurrentCost).isNotNull();
+			// The CUT-OFF state (10 / 2 / 100), not the live one (12 / 3 / 80).
+			assertThat(targetCurrentCost.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("10");
+			assertThat(targetCurrentCost.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("2");
+			assertThat(targetCurrentCost.getCurrentQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(targetCurrentCost.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1000");
+			assertThat(targetCurrentCost.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+
+			final List<CostDetail> anchorDetails = new CostDetailRepository()
+					.stream(CostDetailQuery.builder()
+							.acctSchemaId(acctSchemaId)
+							.costElementId(targetCostElementId)
+							.productId(productWithStock)
+							.build())
+					.collect(ImmutableList.toImmutableList());
+			assertThat(anchorDetails).hasSize(1);
+
+			final CostDetailPreviousAmounts previousAmounts = anchorDetails.get(0).getPreviousAmounts();
+			assertThat(previousAmounts).isNotNull();
+			assertThat(previousAmounts.getCostPrice().getOwnCostPrice().toBigDecimal()).isEqualByComparingTo("10");
+			assertThat(previousAmounts.getCostPrice().getComponentsCostPrice().toBigDecimal()).isEqualByComparingTo("2");
+			assertThat(previousAmounts.getQty().toBigDecimal()).isEqualByComparingTo("100");
+			assertThat(previousAmounts.getCumulatedAmt().toBigDecimal()).isEqualByComparingTo("1000");
+			assertThat(previousAmounts.getCumulatedQty().toBigDecimal()).isEqualByComparingTo("100");
+		}
 	}
 
 	@Nested
@@ -724,6 +796,45 @@ public class CostRevaluationServiceTest
 				.documentRef(CostingDocumentRef.ofInventoryLineId(2))
 				.dateAcct(Instant.parse("2025-06-15T00:00:00Z"))
 				.description("pre-cut-off 2025 history (test stand-in)"));
+	}
+
+	/**
+	 * Directly writes a changing-costs {@code M_CostDetail} on the SOURCE (AveragePO) element, dated AFTER the cut-off and
+	 * carrying in its {@code Prev_*} columns the state the source element was in immediately before that movement — i.e.
+	 * its state AS OF the cut-off.
+	 */
+	private void createPostCutoffCostEventOnSourceWithPreviousAmounts(
+			@NonNull final ProductId productId,
+			@NonNull final String prevOwnCostPrice,
+			@NonNull final String prevComponentsCostPrice,
+			@NonNull final String prevQty)
+	{
+		final BigDecimal prevCumulatedAmt = new BigDecimal(prevOwnCostPrice).multiply(new BigDecimal(prevQty));
+
+		new CostDetailRepository().create(CostDetail.builder()
+				.clientId(ClientId.METASFRESH)
+				.orgId(OrgId.ANY)
+				.acctSchemaId(acctSchemaId)
+				.costElementId(sourceCostElementId)
+				.productId(productId)
+				.attributeSetInstanceId(AttributeSetInstanceId.NONE)
+				.amtType(CostAmountType.MAIN)
+				.amt(CostAmount.of("24.00", euroCurrencyId))
+				.qty(Quantity.of("2", eachUOM))
+				.changingCosts(true)
+				.previousAmounts(CostDetailPreviousAmounts.builder()
+						.costPrice(CostPrice.builder()
+								.ownCostPrice(CostAmount.of(prevOwnCostPrice, euroCurrencyId))
+								.componentsCostPrice(CostAmount.of(prevComponentsCostPrice, euroCurrencyId))
+								.uomId(UomId.ofRepoId(eachUOM.getC_UOM_ID()))
+								.build())
+						.qty(Quantity.of(prevQty, eachUOM))
+						.cumulatedAmt(CostAmount.of(prevCumulatedAmt, euroCurrencyId))
+						.cumulatedQty(Quantity.of(prevQty, eachUOM))
+						.build())
+				.documentRef(CostingDocumentRef.ofInventoryLineId(3))
+				.dateAcct(Instant.parse("2026-03-01T00:00:00Z"))
+				.description("post-cut-off 2026 source movement (test stand-in)"));
 	}
 
 	/** Directly writes a changing-costs {@code M_CostDetail} on the TARGET (MAI) element, dated after the cut-off. */

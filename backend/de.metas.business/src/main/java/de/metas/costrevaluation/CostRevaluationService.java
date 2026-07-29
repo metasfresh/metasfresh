@@ -27,6 +27,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+
 @Service
 public class CostRevaluationService
 {
@@ -92,8 +94,9 @@ public class CostRevaluationService
 	}
 
 	/**
-	 * {@code CopyFromCostElement}: seeds lines from the SOURCE element's current cost ({@code CopyFrom_M_CostElement_ID}),
-	 * one per source {@code M_Cost} row including zero-on-hand.
+	 * {@code CopyFromCostElement}: seeds lines from the SOURCE element's cost as of the cut-off
+	 * ({@code CopyFrom_M_CostElement_ID}), one per source {@code M_Cost} row including zero-on-hand — so the drafted
+	 * lines preview exactly the numbers {@link #createDetailsForCopyFromCostElement} will write at complete time.
 	 */
 	private void createLinesFromCopyFromCostElement(
 			@NonNull final CostRevaluationId costRevaluationId,
@@ -118,7 +121,37 @@ public class CostRevaluationService
 			throw new AdempiereException("No current costs found for source cost element " + sourceCostElementId);
 		}
 
-		costRevaluationRepository.createLinesForCopyFromCostElement(costRevaluationId, costRevaluation.getCostElementId(), sourceCurrentCosts);
+		final ImmutableList<CurrentCost> sourceCostsAsOfCutoff = toCostsAsOf(sourceCurrentCosts, costRevaluation.getEvaluationStartDate());
+
+		costRevaluationRepository.createLinesForCopyFromCostElement(costRevaluationId, costRevaluation.getCostElementId(), sourceCostsAsOfCutoff);
+	}
+
+	/**
+	 * Restates each given live {@link CurrentCost} as the cost its element carried as of {@code asOfDate}. Only the
+	 * {@code CopyFromCostElement} preview uses this; the {@code Calculated} source keeps revaluating the live cost.
+	 */
+	private ImmutableList<CurrentCost> toCostsAsOf(
+			@NonNull final ImmutableList<CurrentCost> currentCosts,
+			@NonNull final Instant asOfDate)
+	{
+		return currentCosts.stream()
+				.map(currentCost -> toCostAsOf(currentCost, asOfDate))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private CurrentCost toCostAsOf(@NonNull final CurrentCost currentCost, @NonNull final Instant asOfDate)
+	{
+		final CostSegmentAndElement segmentAndElement = CostSegmentAndElement.of(currentCost.getCostSegment(), currentCost.getCostElementId());
+
+		// getCostAsOf falls back to the very live M_Cost row this CurrentCost was just read from, so an empty result
+		// means "the as-of value IS this live cost" — return it unchanged rather than restating it.
+		return costingService.getCostAsOf(segmentAndElement, asOfDate)
+				.map(costAsOf -> {
+					final CurrentCost restated = currentCost.copy();
+					restated.setFrom(costAsOf);
+					return restated;
+				})
+				.orElse(currentCost);
 	}
 
 	/**
@@ -393,6 +426,10 @@ public class CostRevaluationService
 	/**
 	 * {@code CopyFromCostElement} complete-time path: directly sets the target element's {@code M_Cost} from the source's
 	 * opening amounts and writes one opening-anchor {@code M_CostDetail}, instead of the {@code Calculated} history-replay.
+	 * <p>
+	 * The opening is the source's cost <b>as of the cut-off</b> ({@code EvaluationStartDate}) — not its live cost at
+	 * complete time. For a back-dated switch those differ: the live {@code M_Cost} row already reflects every movement
+	 * booked since the cut-off, so copying it would open the target with a value the source never had at the cut-off.
 	 */
 	private void createDetailsForCopyFromCostElement(
 			@NonNull final CostRevaluation costRevaluation,
@@ -408,15 +445,15 @@ public class CostRevaluationService
 		final CostSegment targetSegment = targetSegmentAndElement.toCostSegment();
 		final CostSegmentAndElement sourceSegmentAndElement = CostSegmentAndElement.of(targetSegment, sourceCostElementId);
 
-		final CurrentCost sourceCurrentCost = costingService.getCurrentCost(sourceSegmentAndElement)
+		final CostDetailPreviousAmounts sourceCostAsOfCutoff = costingService.getCostAsOf(sourceSegmentAndElement, costRevaluation.getEvaluationStartDate())
 				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + sourceSegmentAndElement));
 
-		// Value-neutral seed: snapshot own price + LL + qty together from a SINGLE fresh read of the source's M_Cost
-		// at complete time — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview
-		// frozen at create-lines time; a gap during which the still-active source keeps moving would make them
-		// inconsistent with a fresh LL and silently corrupt the target's forward-costing base.
-		final CostPrice sourceCostPrice = sourceCurrentCost.getCostPrice();
-		final Quantity sourceQty = sourceCurrentCost.getCurrentQty();
+		// Value-neutral seed: snapshot own price + LL + qty together from that SINGLE as-of-the-cut-off read of the
+		// source — never a stale-own/qty + fresh-LL mix. The line's own/qty are only the drafted preview frozen at
+		// create-lines time; a gap during which the still-active source keeps moving would make them inconsistent with
+		// a fresh LL and silently corrupt the target's forward-costing base.
+		final CostPrice sourceCostPrice = sourceCostAsOfCutoff.getCostPrice();
+		final Quantity sourceQty = sourceCostAsOfCutoff.getQty();
 		final CostAmount cumulatedAmt = sourceCostPrice.getOwnCostPrice().multiply(sourceQty);
 
 		// ONE opening object, reused for both the M_Cost seed and the anchor's Prev_*.
