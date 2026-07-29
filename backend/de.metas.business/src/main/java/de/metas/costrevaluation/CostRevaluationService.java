@@ -143,15 +143,13 @@ public class CostRevaluationService
 	{
 		final CostSegmentAndElement segmentAndElement = CostSegmentAndElement.of(currentCost.getCostSegment(), currentCost.getCostElementId());
 
-		// getCostAsOf falls back to the very live M_Cost row this CurrentCost was just read from, so an empty result
-		// means "the as-of value IS this live cost" — return it unchanged rather than restating it.
-		return costingService.getCostAsOf(segmentAndElement, asOfDate)
-				.map(costAsOf -> {
-					final CurrentCost restated = currentCost.copy();
-					restated.setFrom(costAsOf);
-					return restated;
-				})
-				.orElse(currentCost);
+		// Fails loudly rather than silently falling back to the live cost — the very bug the as-of read exists to fix.
+		final CostDetailPreviousAmounts costAsOf = costingService.getCostAsOf(segmentAndElement, asOfDate)
+				.orElseThrow(() -> new AdempiereException("No current cost found for source cost element " + segmentAndElement));
+
+		final CurrentCost restated = currentCost.copy();
+		restated.setFrom(costAsOf);
+		return restated;
 	}
 
 	/**
