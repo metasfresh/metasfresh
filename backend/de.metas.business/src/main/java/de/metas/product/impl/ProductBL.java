@@ -463,22 +463,26 @@ public final class ProductBL implements IProductBL
 	@Override
 	public boolean isAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
 	{
-		final String code = getById(productId).getProductLifeCycleStatus();
-		final BBSStatus status = BBSStatus.ofNullableCode(code);
-		return status == null || status.isAllowed(action);
+		return isStatusAllowed(getById(productId).getProductLifeCycleStatus(), action);
 	}
 
 	@Override
 	public void assertAllowed(@NonNull final ProductId productId, @NonNull final ProductLifeCycleAction action)
 	{
-		if (!isAllowed(productId, action))
+		final I_M_Product product = getById(productId);
+		final String code = product.getProductLifeCycleStatus();
+		if (!isStatusAllowed(code, action))
 		{
-			final I_M_Product product = getById(productId);
-			final String code = product.getProductLifeCycleStatus();
 			throw new AdempiereException(MSG_M_PRODUCT_BBSSTATUS_ACTION_BLOCKED, product.getValue(), code)
 					.setParameter("product", product.getValue())
 					.setParameter("status", code);
 		}
+	}
+
+	private static boolean isStatusAllowed(@Nullable final String code, @NonNull final ProductLifeCycleAction action)
+	{
+		final BBSStatus status = BBSStatus.ofNullableCode(code);
+		return status == null || status.isAllowed(action);
 	}
 
 	@Override
