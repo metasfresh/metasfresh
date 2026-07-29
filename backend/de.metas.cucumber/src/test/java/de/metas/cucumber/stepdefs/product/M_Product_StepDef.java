@@ -103,6 +103,30 @@ public class M_Product_StepDef
 	@NonNull private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	@NonNull private final ExternalIdentifierProductLookupService productLookupService = SpringContextHolder.instance.getBean(ExternalIdentifierProductLookupService.class);
 
+	/**
+	 * Creates or updates {@code M_Product} records (upsert by {@code Value}).
+	 *
+	 * @cucumber.stepdef
+	 * @cucumber.columns
+	 *   <b>Identifier</b> — (required) alias for cross-step reference<br>
+	 *   <b>Name</b> / <b>Value</b> — (optional) auto-generated (unique) when omitted<br>
+	 *   <b>ProductType</b> — (optional) e.g. {@code I} (item), {@code S} (service)<br>
+	 *   <b>IsSold</b> / <b>IsPurchased</b> — (optional) capability flags, default {@code true}<br>
+	 *   <b>ProductLifeCycleStatus</b> — (optional) BBS-Status code {@code O}/{@code A}/{@code G}/{@code N}<br>
+	 *   <b>M_Product_Category_ID</b> — (optional, identifier-ref)<br>
+	 *   <b>GTIN</b> / <b>UPC</b> / <b>EAN13_ProductCode</b> — (optional) product codes<br>
+	 *   <b>WeightNet</b> / <b>WeightGross</b> — (optional) quantity+UOM (kg)<br>
+	 *   <b>LengthInCm</b> / <b>WidthInCm</b> / <b>HeightInCm</b> — (optional)<br>
+	 *   <b>OPT.M_AttributeSet_ID.Identifier</b> — (optional, identifier-ref)<br>
+	 * @cucumber.depends StepDefData: M_Product_StepDefData, M_Product_Category_StepDefData
+	 * @cucumber.example
+	 * <pre>
+	 * And metasfresh contains M_Products:
+	 *   | Identifier | ProductLifeCycleStatus |
+	 *   | blocked    | G                      |
+	 *   | ok         | O                      |
+	 * </pre>
+	 */
 	@Given("metasfresh contains M_Products:")
 	public void metasfresh_contains_m_product(@NonNull final io.cucumber.datatable.DataTable dataTable)
 	{

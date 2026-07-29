@@ -46,7 +46,7 @@ Feature: product life-cycle status enforcement on order lines
       | ol_ok      | so_1                  | ok                      | 10         |
     # the Gesperrt product is rejected at order-line creation
     And metasfresh contains C_OrderLine expecting error:
-      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ErrorCode                       |
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | ErrorCode                         |
       | ol_blocked | so_1                  | blocked                 | 10         | M_Product_BBSStatus_ActionBlocked |
     # the order (carrying only the OK line) completes and produces a shipment schedule
     When the order identified by so_1 is completed
