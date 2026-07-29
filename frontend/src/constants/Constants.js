@@ -65,6 +65,8 @@ export const ARROW_UP_KEY = 'ArrowUp';
  */
 export const AMOUNT_FIELD_TYPES = ['Amount', 'CostPrice', 'Quantity'];
 
+export const NUMERIC_FIELD_TYPES = [...AMOUNT_FIELD_TYPES, 'Integer', 'Number'];
+
 /**
  * @constant
  * @type {array} ToDo: Description for the constant.

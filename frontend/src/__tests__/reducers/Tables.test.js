@@ -3,6 +3,7 @@ import { merge } from 'merge-anything';
 import { deleteTable, updateTableSelection } from '../../actions/TableActions';
 import * as ACTION_TYPES from '../../constants/ActionTypes';
 import reducer, {
+  getTableId,
   initialState,
   initialTableState,
 } from '../../reducers/tables';
@@ -237,6 +238,113 @@ describe('Tables reducer', () => {
 
       const state = reducer(initialStateData, action);
       expect(state[id].activeSort).toBe(true);
+    });
+  });
+
+  describe('Tab column sort — SORT_TAB + UPDATE_TAB_ROWS_DATA with orderBys', () => {
+    const windowId = '541851';
+    const docId = '1000001';
+    const tabId = 'AD_Tab-999';
+    const tableId = getTableId({ windowId, docId, tabId });
+
+    const numericRow = (rowId, amount) => ({
+      rowId,
+      fieldsByName: {
+        Amount: { value: amount, widgetType: 'Amount' },
+      },
+    });
+
+    const stringRow = (rowId, name) => ({
+      rowId,
+      fieldsByName: {
+        Name: { value: name, widgetType: 'Text' },
+      },
+    });
+
+    it('SORT_TAB is ignored when the table does not exist (no throw, state unchanged)', () => {
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
+      expect(() => reducer(initialState, action)).not.toThrow();
+      expect(reducer(initialState, action)).toEqual(initialState);
+    });
+
+    it('SORT_TAB is ignored when scope is not "master"', () => {
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'included', windowId, docId, tabId, field: 'Amount', asc: false };
+      expect(reducer(initialState, action)).toEqual(initialState);
+    });
+
+    it('SORT_TAB writes orderBys onto the target tab when the table exists', () => {
+      const state = createState({
+        [tableId]: { ...initialTableState, windowId, docId, tabId },
+        length: 1,
+      });
+      const action = { type: ACTION_TYPES.SORT_TAB, scope: 'master', windowId, docId, tabId, field: 'Amount', asc: true };
+      expect(reducer(state, action)[tableId].orderBys).toEqual([
+        { fieldName: 'Amount', ascending: true },
+      ]);
+    });
+
+    it('UPDATE_TAB_ROWS_DATA merges a new numeric row respecting the current ASC orderBys', () => {
+      const state = createState({
+        [tableId]: {
+          ...initialTableState,
+          windowId, docId, tabId,
+          rows: [numericRow('r1', 5), numericRow('r3', 20)],
+          orderBys: [{ fieldName: 'Amount', ascending: true }],
+        },
+        length: 1,
+      });
+      const action = {
+        type: ACTION_TYPES.UPDATE_TAB_ROWS_DATA,
+        payload: {
+          id: tableId,
+          rows: { changed: { r2: numericRow('r2', 10) }, removed: undefined },
+        },
+      };
+      const rowsAfter = reducer(state, action)[tableId].rows.map((r) => r.rowId);
+      expect(rowsAfter).toEqual(['r1', 'r2', 'r3']);
+    });
+
+    it('UPDATE_TAB_ROWS_DATA merges a new string row respecting DESC orderBys', () => {
+      const state = createState({
+        [tableId]: {
+          ...initialTableState,
+          windowId, docId, tabId,
+          rows: [stringRow('r1', 'Zeta'), stringRow('r3', 'Alpha')],
+          orderBys: [{ fieldName: 'Name', ascending: false }],
+        },
+        length: 1,
+      });
+      const action = {
+        type: ACTION_TYPES.UPDATE_TAB_ROWS_DATA,
+        payload: {
+          id: tableId,
+          rows: { changed: { r2: stringRow('r2', 'Mu') }, removed: undefined },
+        },
+      };
+      const rowsAfter = reducer(state, action)[tableId].rows.map((r) => r.rowId);
+      expect(rowsAfter).toEqual(['r1', 'r2', 'r3']);
+    });
+
+    it('UPDATE_TAB_ROWS_DATA in-place replacement preserves the numeric sort order for a value change', () => {
+      const state = createState({
+        [tableId]: {
+          ...initialTableState,
+          windowId, docId, tabId,
+          rows: [numericRow('r1', 5), numericRow('r2', 10), numericRow('r3', 20)],
+          orderBys: [{ fieldName: 'Amount', ascending: true }],
+        },
+        length: 1,
+      });
+      // r1's Amount changes from 5 to 15 → new order should be r2 (10), r1 (15), r3 (20)
+      const action = {
+        type: ACTION_TYPES.UPDATE_TAB_ROWS_DATA,
+        payload: {
+          id: tableId,
+          rows: { changed: { r1: numericRow('r1', 15) }, removed: undefined },
+        },
+      };
+      const rowsAfter = reducer(state, action)[tableId].rows.map((r) => r.rowId);
+      expect(rowsAfter).toEqual(['r2', 'r1', 'r3']);
     });
   });
 });
