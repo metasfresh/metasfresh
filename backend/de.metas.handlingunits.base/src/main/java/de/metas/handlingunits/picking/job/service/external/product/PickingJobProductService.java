@@ -10,6 +10,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.product.ProductRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -70,6 +71,11 @@ public class PickingJobProductService
 	public String getProductValue(@NonNull final ProductId productId)
 	{
 		return productBL.getProductValue(productId);
+	}
+
+	public void assertPickAllowed(@NonNull final ProductId productId)
+	{
+		productBL.assertAllowed(productId, ProductLifeCycleAction.PICK);
 	}
 
 	/**

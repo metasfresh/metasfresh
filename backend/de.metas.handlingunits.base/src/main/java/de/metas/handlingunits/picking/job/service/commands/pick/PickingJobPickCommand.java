@@ -112,6 +112,7 @@ public class PickingJobPickCommand
 	//
 	// Services
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	@NonNull private final PickingJobProductService productService;
 	@NonNull private final PickingJobBPartnerService bpartnerService;
 	@NonNull private final PickingJobWarehouseService warehouseService;
 	@NonNull private final PickingJobShipmentScheduleService shipmentScheduleService;
@@ -183,6 +184,7 @@ public class PickingJobPickCommand
 	{
 		Check.assumeGreaterOrEqualToZero(qtyToPickBD, "qtyToPickBD");
 
+		this.productService = productService;
 		this.bpartnerService = bpartnerService;
 		this.warehouseService = warehouseService;
 		this.shipmentScheduleService = shipmentScheduleService;
@@ -336,6 +338,8 @@ public class PickingJobPickCommand
 	private PickingJob executeInTrx()
 	{
 		_pickingJob.assertNotProcessed();
+
+		productService.assertPickAllowed(getProductId());
 
 		checkOrAllocatePickingSlot();
 
