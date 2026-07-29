@@ -311,3 +311,48 @@ Feature: Switch to Moving Average Invoice
     # A value-neutral seed posts no GL. This step also waits for the document to finish posting.
     #
     And no Fact_Acct records are found for documents costRevalMAI
+
+  @Id:S26253_TC8
+  Scenario: A cost recompute reaching back over the opening anchor is refused instead of deleting it
+    #
+    # Perform the switch: seed the prior method (AveragePO) at the cut-off and copy it onto
+    # MovingAverageInvoice. The opening anchor cost detail sits AT the 31.12.2025 cut-off.
+    #
+    Given update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | product      | AveragePO        | 10 CHF           |
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | costRevalMAI | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation costRevalMAI
+    And the cost revaluation identified by costRevalMAI is completed
+    Then the cost revaluation identified by costRevalMAI seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | product      | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # December is re-opened for a back-dated year-end adjustment: a zero-difference stock count dated
+    # 01.12.2025 (QtyCount = QtyBook, so no stock movement and no value change).
+    # Recomputing from that document starts the MovingAverageInvoice recompute at 01.12.2025 —
+    # i.e. BEFORE the 31.12.2025 anchor, so the anchor lies inside the recompute's delete range.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invDec2025     | invDec2025_l1      | 2025-12-01   | warehouseStd   | product      | 5       | 5        | PCE          |
+    #
+    # The recompute must refuse. Deleting the anchor would leave MovingAverageInvoice with no opening
+    # at all, silently zero-basing every cost after the cut-off. The refusal names the product and the
+    # anchor's date, so the operator knows to restart the recompute strictly after the cut-off.
+    #
+    Then invoke M_Inventory_RecomputeCosts expecting the cost-revaluation opening anchor to block it:
+      | M_Inventory_ID | C_AcctSchema_ID | CostingMethod | M_Product_ID | AnchorDateAcct |
+      | invDec2025     | acctSchema      | M             | product      | 2025-12-31     |
+    #
+    # A refused recompute destroys nothing: the opening anchor cost detail is still there, and the
+    # seeded MovingAverageInvoice current-cost row still carries the opening it was seeded with.
+    #
+    And the cost revaluation identified by costRevalMAI seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | product      | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
