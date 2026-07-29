@@ -34,10 +34,12 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.service.ISysConfigDAO;
+import org.compiere.model.X_AD_SysConfig;
 import org.jetbrains.annotations.Contract;
 import org.slf4j.Logger;
 
@@ -45,6 +47,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.IntFunction;
 import java.util.Set;
 
 /**
@@ -220,6 +223,29 @@ public class SysConfigBL implements ISysConfigBL
 		sysConfigDAO.setValue(name, value, ClientAndOrgId.ofClientAndOrg(clientId, orgId));
 	}
 
+	@Override
+	public void setValueAtConfigLevel(@NonNull final String name, @NonNull final String value)
+	{
+		sysConfigDAO.setValue(name, value, computeConfigLevelTarget(name));
+	}
+
+	private ClientAndOrgId computeConfigLevelTarget(@NonNull final String name)
+	{
+		final String level = sysConfigDAO.getConfigurationLevel(name).orElse(null);
+		if (X_AD_SysConfig.CONFIGURATIONLEVEL_System.equals(level))
+		{
+			return ClientAndOrgId.SYSTEM;
+		}
+		else if (X_AD_SysConfig.CONFIGURATIONLEVEL_Client.equals(level))
+		{
+			return ClientAndOrgId.ofClientAndOrg(ClientId.METASFRESH, OrgId.ANY);
+		}
+		else
+		{
+			return ClientAndOrgId.MAIN;
+		}
+	}
+
 	private Set<String> getNamesForPrefix(final String prefix, final ClientAndOrgId clientAndOrgId)
 	{
 		return ImmutableSet.<String>builder()
@@ -345,6 +371,37 @@ public class SysConfigBL implements ISysConfigBL
 					catch (final Exception ex)
 					{
 						logger.warn("Failed converting `{}` to enum {}. Ignoring it.", name, enumType, ex);
+						return null;
+					}
+				})
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public <T extends RepoIdAware> ImmutableSet<T> getCommaSeparatedRepoIdAwares(
+			@NonNull final String sysconfigName,
+			@NonNull final IntFunction<T> mapper)
+	{
+		final String string = StringUtils.trimBlankToNull(sysConfigDAO.getValue(sysconfigName, ClientAndOrgId.SYSTEM).orElse(null));
+		if (string == null || string.equals("-"))
+		{
+			return ImmutableSet.of();
+		}
+
+		return Splitter.on(",")
+				.trimResults()
+				.omitEmptyStrings()
+				.splitToList(string)
+				.stream()
+				.map(token -> {
+					try
+					{
+						return mapper.apply(Integer.parseInt(token));
+					}
+					catch (final Exception ex)
+					{
+						logger.warn("Failed converting `{}` to a repo-id from SysConfig `{}`. Ignoring it.", token, sysconfigName, ex);
 						return null;
 					}
 				})

@@ -13,7 +13,6 @@
 	<artifactId>de.metas.aggregation</artifactId>
 
 	<properties>
-		<migration-sql-basedir>20-de.metas.aggregation</migration-sql-basedir>
 	</properties>
 
 	<dependencies>

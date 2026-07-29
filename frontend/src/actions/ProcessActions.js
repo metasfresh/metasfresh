@@ -29,6 +29,7 @@ import {
   getProcessLayout,
   startProcess,
 } from '../api/process';
+import { logDiagEvent } from '../utils/diagnostics';
 
 export const handleProcessResponse = ({
   response,
@@ -51,6 +52,16 @@ export const handleProcessResponse = ({
       let keepProcessModal = false;
 
       if (action) {
+        logDiagEvent('processAction', {
+          processId,
+          pinstanceId,
+          actionType: action.type,
+          windowId: action.windowId,
+          viewId: action.viewId,
+          documentId: action.documentId,
+          targetTab: action.targetTab,
+        });
+
         switch (action.type) {
           case 'openCalendar': {
             await dispatch(closeModal());

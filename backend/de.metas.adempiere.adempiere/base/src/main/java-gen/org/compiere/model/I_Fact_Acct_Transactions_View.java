@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for Fact_Acct_Transactions_View
  *  @author metasfresh (generated) 
@@ -38,12 +37,33 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getA_Asset_ID();
 
-	@Nullable I_A_Asset getA_Asset();
+	@Nullable org.compiere.model.I_A_Asset getA_Asset();
 
-	void setA_Asset(@Nullable I_A_Asset A_Asset);
+	void setA_Asset(@Nullable org.compiere.model.I_A_Asset A_Asset);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_A_Asset> COLUMN_A_Asset_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "A_Asset_ID", I_A_Asset.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_A_Asset> COLUMN_A_Asset_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "A_Asset_ID", org.compiere.model.I_A_Asset.class);
 	String COLUMNNAME_A_Asset_ID = "A_Asset_ID";
+
+	/**
+	 * Set Account Role.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAccountConceptualName (@Nullable java.lang.String AccountConceptualName);
+
+	/**
+	 * Get Account Role.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAccountConceptualName();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_AccountConceptualName = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "AccountConceptualName", null);
+	String COLUMNNAME_AccountConceptualName = "AccountConceptualName";
 
 	/**
 	 * Set Account.
@@ -65,6 +85,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getAccount_ID();
 
+	org.compiere.model.I_C_ElementValue getAccount();
+
+	void setAccount(org.compiere.model.I_C_ElementValue Account);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_ElementValue> COLUMN_Account_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "Account_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_Account_ID = "Account_ID";
 
 	/**
@@ -270,11 +295,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_AcctSchema_ID();
 
-	I_C_AcctSchema getC_AcctSchema();
+	org.compiere.model.I_C_AcctSchema getC_AcctSchema();
 
-	void setC_AcctSchema(I_C_AcctSchema C_AcctSchema);
+	void setC_AcctSchema(org.compiere.model.I_C_AcctSchema C_AcctSchema);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_AcctSchema_ID", I_C_AcctSchema.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_AcctSchema> COLUMN_C_AcctSchema_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_AcctSchema_ID", org.compiere.model.I_C_AcctSchema.class);
 	String COLUMNNAME_C_AcctSchema_ID = "C_AcctSchema_ID";
 
 	/**
@@ -340,6 +365,26 @@ public interface I_Fact_Acct_Transactions_View
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
+	 * Set Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
+
+	/**
+	 * Get Location.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BPartner_Location_ID();
+
+	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
+
+	/**
 	 * Set Campaign.
 	 * Marketing Campaign
 	 *
@@ -359,12 +404,66 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_Campaign_ID();
 
-	@Nullable I_C_Campaign getC_Campaign();
+	@Nullable org.compiere.model.I_C_Campaign getC_Campaign();
 
-	void setC_Campaign(@Nullable I_C_Campaign C_Campaign);
+	void setC_Campaign(@Nullable org.compiere.model.I_C_Campaign C_Campaign);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_Campaign_ID", I_C_Campaign.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_Campaign> COLUMN_C_Campaign_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_Campaign_ID", org.compiere.model.I_C_Campaign.class);
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
+
+	/**
+	 * Set Cost Classification Category.
+	 * Groups cost classifications into higher-level analytical categories to support structured and aggregated controlling reports.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CostClassification_Category_ID (int C_CostClassification_Category_ID);
+
+	/**
+	 * Get Cost Classification Category.
+	 * Groups cost classifications into higher-level analytical categories to support structured and aggregated controlling reports.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CostClassification_Category_ID();
+
+	@Nullable org.compiere.model.I_C_CostClassification_Category getC_CostClassification_Category();
+
+	void setC_CostClassification_Category(@Nullable org.compiere.model.I_C_CostClassification_Category C_CostClassification_Category);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_CostClassification_Category> COLUMN_C_CostClassification_Category_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_CostClassification_Category_ID", org.compiere.model.I_C_CostClassification_Category.class);
+	String COLUMNNAME_C_CostClassification_Category_ID = "C_CostClassification_Category_ID";
+
+	/**
+	 * Set Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_CostClassification_ID (int C_CostClassification_ID);
+
+	/**
+	 * Get Cost Classification.
+	 * Defines the economic nature of a cost or revenue (Kostenart) as an independent controlling dimension for financial accounting and reporting.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_CostClassification_ID();
+
+	@Nullable org.compiere.model.I_C_CostClassification getC_CostClassification();
+
+	void setC_CostClassification(@Nullable org.compiere.model.I_C_CostClassification C_CostClassification);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_CostClassification> COLUMN_C_CostClassification_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_CostClassification_ID", org.compiere.model.I_C_CostClassification.class);
+	String COLUMNNAME_C_CostClassification_ID = "C_CostClassification_ID";
 
 	/**
 	 * Set Currency.
@@ -430,11 +529,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_LocFrom_ID();
 
-	@Nullable I_C_Location getC_LocFrom();
+	@Nullable org.compiere.model.I_C_Location getC_LocFrom();
 
-	void setC_LocFrom(@Nullable I_C_Location C_LocFrom);
+	void setC_LocFrom(@Nullable org.compiere.model.I_C_Location C_LocFrom);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_Location> COLUMN_C_LocFrom_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_LocFrom_ID", I_C_Location.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_Location> COLUMN_C_LocFrom_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_LocFrom_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_LocFrom_ID = "C_LocFrom_ID";
 
 	/**
@@ -457,11 +556,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_LocTo_ID();
 
-	@Nullable I_C_Location getC_LocTo();
+	@Nullable org.compiere.model.I_C_Location getC_LocTo();
 
-	void setC_LocTo(@Nullable I_C_Location C_LocTo);
+	void setC_LocTo(@Nullable org.compiere.model.I_C_Location C_LocTo);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_Location> COLUMN_C_LocTo_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_LocTo_ID", I_C_Location.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_Location> COLUMN_C_LocTo_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_LocTo_ID", org.compiere.model.I_C_Location.class);
 	String COLUMNNAME_C_LocTo_ID = "C_LocTo_ID";
 
 	/**
@@ -482,11 +581,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_OrderSO_ID();
 
-	@Nullable I_C_Order getC_OrderSO();
+	@Nullable org.compiere.model.I_C_Order getC_OrderSO();
 
-	void setC_OrderSO(@Nullable I_C_Order C_OrderSO);
+	void setC_OrderSO(@Nullable org.compiere.model.I_C_Order C_OrderSO);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_OrderSO_ID", I_C_Order.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_Order> COLUMN_C_OrderSO_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_OrderSO_ID", org.compiere.model.I_C_Order.class);
 	String COLUMNNAME_C_OrderSO_ID = "C_OrderSO_ID";
 
 	/**
@@ -507,11 +606,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getCounterpart_Fact_Acct_ID();
 
-	@Nullable I_Fact_Acct_Transactions_View getCounterpart_Fact_Acct();
+	@Nullable org.compiere.model.I_Fact_Acct_Transactions_View getCounterpart_Fact_Acct();
 
-	void setCounterpart_Fact_Acct(@Nullable I_Fact_Acct_Transactions_View Counterpart_Fact_Acct);
+	void setCounterpart_Fact_Acct(@Nullable org.compiere.model.I_Fact_Acct_Transactions_View Counterpart_Fact_Acct);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_Fact_Acct_Transactions_View> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "Counterpart_Fact_Acct_ID", I_Fact_Acct_Transactions_View.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_Fact_Acct_Transactions_View> COLUMN_Counterpart_Fact_Acct_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "Counterpart_Fact_Acct_ID", org.compiere.model.I_Fact_Acct_Transactions_View.class);
 	String COLUMNNAME_Counterpart_Fact_Acct_ID = "Counterpart_Fact_Acct_ID";
 
 	/**
@@ -534,11 +633,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_Period_ID();
 
-	I_C_Period getC_Period();
+	org.compiere.model.I_C_Period getC_Period();
 
-	void setC_Period(I_C_Period C_Period);
+	void setC_Period(org.compiere.model.I_C_Period C_Period);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_Period_ID", I_C_Period.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_Period> COLUMN_C_Period_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_Period_ID", org.compiere.model.I_C_Period.class);
 	String COLUMNNAME_C_Period_ID = "C_Period_ID";
 
 	/**
@@ -583,11 +682,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_ProjectPhase_ID();
 
-	@Nullable I_C_ProjectPhase getC_ProjectPhase();
+	@Nullable org.compiere.model.I_C_ProjectPhase getC_ProjectPhase();
 
-	void setC_ProjectPhase(@Nullable I_C_ProjectPhase C_ProjectPhase);
+	void setC_ProjectPhase(@Nullable org.compiere.model.I_C_ProjectPhase C_ProjectPhase);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_ProjectPhase_ID", I_C_ProjectPhase.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_ProjectPhase> COLUMN_C_ProjectPhase_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_ProjectPhase_ID", org.compiere.model.I_C_ProjectPhase.class);
 	String COLUMNNAME_C_ProjectPhase_ID = "C_ProjectPhase_ID";
 
 	/**
@@ -610,11 +709,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_ProjectTask_ID();
 
-	@Nullable I_C_ProjectTask getC_ProjectTask();
+	@Nullable org.compiere.model.I_C_ProjectTask getC_ProjectTask();
 
-	void setC_ProjectTask(@Nullable I_C_ProjectTask C_ProjectTask);
+	void setC_ProjectTask(@Nullable org.compiere.model.I_C_ProjectTask C_ProjectTask);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_ProjectTask_ID", I_C_ProjectTask.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_ProjectTask> COLUMN_C_ProjectTask_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_ProjectTask_ID", org.compiere.model.I_C_ProjectTask.class);
 	String COLUMNNAME_C_ProjectTask_ID = "C_ProjectTask_ID";
 
 	/**
@@ -662,11 +761,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_SalesRegion_ID();
 
-	@Nullable I_C_SalesRegion getC_SalesRegion();
+	@Nullable org.compiere.model.I_C_SalesRegion getC_SalesRegion();
 
-	void setC_SalesRegion(@Nullable I_C_SalesRegion C_SalesRegion);
+	void setC_SalesRegion(@Nullable org.compiere.model.I_C_SalesRegion C_SalesRegion);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_SalesRegion_ID", I_C_SalesRegion.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
 
 	/**
@@ -689,11 +788,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getC_SubAcct_ID();
 
-	@Nullable I_C_SubAcct getC_SubAcct();
+	@Nullable org.compiere.model.I_C_SubAcct getC_SubAcct();
 
-	void setC_SubAcct(@Nullable I_C_SubAcct C_SubAcct);
+	void setC_SubAcct(@Nullable org.compiere.model.I_C_SubAcct C_SubAcct);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_C_SubAcct> COLUMN_C_SubAcct_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_SubAcct_ID", I_C_SubAcct.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_SubAcct> COLUMN_C_SubAcct_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "C_SubAcct_ID", org.compiere.model.I_C_SubAcct.class);
 	String COLUMNNAME_C_SubAcct_ID = "C_SubAcct_ID";
 
 	/**
@@ -814,7 +913,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDescription (@Nullable String Description);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
 	 * Get Description.
@@ -823,7 +922,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDescription();
+	@Nullable java.lang.String getDescription();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_Description = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
@@ -836,7 +935,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocBaseType (@Nullable String DocBaseType);
+	void setDocBaseType (@Nullable java.lang.String DocBaseType);
 
 	/**
 	 * Get Document Base Type.
@@ -846,7 +945,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDocBaseType();
+	@Nullable java.lang.String getDocBaseType();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_DocBaseType = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "DocBaseType", null);
 	String COLUMNNAME_DocBaseType = "DocBaseType";
@@ -858,7 +957,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocStatus (@Nullable String DocStatus);
+	void setDocStatus (@Nullable java.lang.String DocStatus);
 
 	/**
 	 * Get Status.
@@ -867,7 +966,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDocStatus();
+	@Nullable java.lang.String getDocStatus();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_DocStatus = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "DocStatus", null);
 	String COLUMNNAME_DocStatus = "DocStatus";
@@ -880,7 +979,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDocumentNo (@Nullable String DocumentNo);
+	void setDocumentNo (@Nullable java.lang.String DocumentNo);
 
 	/**
 	 * Get Document No.
@@ -890,7 +989,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getDocumentNo();
+	@Nullable java.lang.String getDocumentNo();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_DocumentNo = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "DocumentNo", null);
 	String COLUMNNAME_DocumentNo = "DocumentNo";
@@ -936,11 +1035,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getGL_Budget_ID();
 
-	@Nullable I_GL_Budget getGL_Budget();
+	@Nullable org.compiere.model.I_GL_Budget getGL_Budget();
 
-	void setGL_Budget(@Nullable I_GL_Budget GL_Budget);
+	void setGL_Budget(@Nullable org.compiere.model.I_GL_Budget GL_Budget);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_GL_Budget> COLUMN_GL_Budget_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "GL_Budget_ID", I_GL_Budget.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_GL_Budget> COLUMN_GL_Budget_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "GL_Budget_ID", org.compiere.model.I_GL_Budget.class);
 	String COLUMNNAME_GL_Budget_ID = "GL_Budget_ID";
 
 	/**
@@ -963,12 +1062,35 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getGL_Category_ID();
 
-	I_GL_Category getGL_Category();
+	org.compiere.model.I_GL_Category getGL_Category();
 
-	void setGL_Category(I_GL_Category GL_Category);
+	void setGL_Category(org.compiere.model.I_GL_Category GL_Category);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_GL_Category> COLUMN_GL_Category_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "GL_Category_ID", I_GL_Category.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_GL_Category> COLUMN_GL_Category_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "GL_Category_ID", org.compiere.model.I_GL_Category.class);
 	String COLUMNNAME_GL_Category_ID = "GL_Category_ID";
+
+	/**
+	 * Set Account Overridden.
+	 * The account on this accounting fact line originated from an invoice-account override.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsAccountOverridden (boolean IsAccountOverridden);
+
+	/**
+	 * Get Account Overridden.
+	 * The account on this accounting fact line originated from an invoice-account override.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isAccountOverridden();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_IsAccountOverridden = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "IsAccountOverridden", null);
+	String COLUMNNAME_IsAccountOverridden = "IsAccountOverridden";
 
 	/**
 	 * Set Active.
@@ -992,6 +1114,27 @@ public interface I_Fact_Acct_Transactions_View
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_IsActive = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsOpenItemsReconciled (boolean IsOpenItemsReconciled);
+
+	/**
+	 * Get Open Item Reconciled.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isOpenItemsReconciled();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_IsOpenItemsReconciled = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "IsOpenItemsReconciled", null);
+	String COLUMNNAME_IsOpenItemsReconciled = "IsOpenItemsReconciled";
 
 	/**
 	 * Set Line ID.
@@ -1036,11 +1179,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getM_CostElement_ID();
 
-	@Nullable I_M_CostElement getM_CostElement();
+	@Nullable org.compiere.model.I_M_CostElement getM_CostElement();
 
-	void setM_CostElement(@Nullable I_M_CostElement M_CostElement);
+	void setM_CostElement(@Nullable org.compiere.model.I_M_CostElement M_CostElement);
 
-	ModelColumn<I_Fact_Acct_Transactions_View, I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "M_CostElement_ID", I_M_CostElement.class);
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_M_CostElement> COLUMN_M_CostElement_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "M_CostElement_ID", org.compiere.model.I_M_CostElement.class);
 	String COLUMNNAME_M_CostElement_ID = "M_CostElement_ID";
 
 	/**
@@ -1088,13 +1231,124 @@ public interface I_Fact_Acct_Transactions_View
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
+	 * Set OI Open Amount.
+	 * OI Open amount in accounting currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmount (@Nullable BigDecimal OI_OpenAmount);
+
+	/**
+	 * Get OI Open Amount.
+	 * OI Open amount in accounting currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmount();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_OI_OpenAmount = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "OI_OpenAmount", null);
+	String COLUMNNAME_OI_OpenAmount = "OI_OpenAmount";
+
+	/**
+	 * Set OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_OpenAmountSource (@Nullable BigDecimal OI_OpenAmountSource);
+
+	/**
+	 * Get OI Open Amount (source).
+	 * OI Open amount in source currency
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getOI_OpenAmountSource();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_OI_OpenAmountSource = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "OI_OpenAmountSource", null);
+	String COLUMNNAME_OI_OpenAmountSource = "OI_OpenAmountSource";
+
+	/**
+	 * Set Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOI_TrxType (@Nullable java.lang.String OI_TrxType);
+
+	/**
+	 * Get Open Item Transaction Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOI_TrxType();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_OI_TrxType = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "OI_TrxType", null);
+	String COLUMNNAME_OI_TrxType = "OI_TrxType";
+
+	/**
+	 * Set Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOpenItemKey (@Nullable java.lang.String OpenItemKey);
+
+	/**
+	 * Get Open Item Key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getOpenItemKey();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_OpenItemKey = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "OpenItemKey", null);
+	String COLUMNNAME_OpenItemKey = "OpenItemKey";
+
+	/**
+	 * Set Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPOReference (@Nullable java.lang.String POReference);
+
+	/**
+	 * Get Order Reference.
+	 * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPOReference();
+
+	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_POReference = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "POReference", null);
+	String COLUMNNAME_POReference = "POReference";
+
+	/**
 	 * Set Posting Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPostingType (String PostingType);
+	void setPostingType (java.lang.String PostingType);
 
 	/**
 	 * Get Posting Type.
@@ -1103,7 +1357,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	String getPostingType();
+	java.lang.String getPostingType();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_PostingType = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "PostingType", null);
 	String COLUMNNAME_PostingType = "PostingType";
@@ -1222,6 +1476,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getUser1_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser1();
+
+	void setUser1(@Nullable org.compiere.model.I_C_ElementValue User1);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_ElementValue> COLUMN_User1_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "User1_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User1_ID = "User1_ID";
 
 	/**
@@ -1242,6 +1501,11 @@ public interface I_Fact_Acct_Transactions_View
 	 */
 	int getUser2_ID();
 
+	@Nullable org.compiere.model.I_C_ElementValue getUser2();
+
+	void setUser2(@Nullable org.compiere.model.I_C_ElementValue User2);
+
+	ModelColumn<I_Fact_Acct_Transactions_View, org.compiere.model.I_C_ElementValue> COLUMN_User2_ID = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "User2_ID", org.compiere.model.I_C_ElementValue.class);
 	String COLUMNNAME_User2_ID = "User2_ID";
 
 	/**
@@ -1297,7 +1561,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString1 (@Nullable String UserElementString1);
+	void setUserElementString1 (@Nullable java.lang.String UserElementString1);
 
 	/**
 	 * Get UserElementString1.
@@ -1306,7 +1570,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString1();
+	@Nullable java.lang.String getUserElementString1();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString1 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString1", null);
 	String COLUMNNAME_UserElementString1 = "UserElementString1";
@@ -1318,7 +1582,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString2 (@Nullable String UserElementString2);
+	void setUserElementString2 (@Nullable java.lang.String UserElementString2);
 
 	/**
 	 * Get UserElementString2.
@@ -1327,7 +1591,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString2();
+	@Nullable java.lang.String getUserElementString2();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString2 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString2", null);
 	String COLUMNNAME_UserElementString2 = "UserElementString2";
@@ -1339,7 +1603,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString3 (@Nullable String UserElementString3);
+	void setUserElementString3 (@Nullable java.lang.String UserElementString3);
 
 	/**
 	 * Get UserElementString3.
@@ -1348,7 +1612,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString3();
+	@Nullable java.lang.String getUserElementString3();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString3 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString3", null);
 	String COLUMNNAME_UserElementString3 = "UserElementString3";
@@ -1360,7 +1624,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString4 (@Nullable String UserElementString4);
+	void setUserElementString4 (@Nullable java.lang.String UserElementString4);
 
 	/**
 	 * Get UserElementString4.
@@ -1369,7 +1633,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString4();
+	@Nullable java.lang.String getUserElementString4();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString4 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString4", null);
 	String COLUMNNAME_UserElementString4 = "UserElementString4";
@@ -1381,7 +1645,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString5 (@Nullable String UserElementString5);
+	void setUserElementString5 (@Nullable java.lang.String UserElementString5);
 
 	/**
 	 * Get UserElementString5.
@@ -1390,7 +1654,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString5();
+	@Nullable java.lang.String getUserElementString5();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString5 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString5", null);
 	String COLUMNNAME_UserElementString5 = "UserElementString5";
@@ -1402,7 +1666,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString6 (@Nullable String UserElementString6);
+	void setUserElementString6 (@Nullable java.lang.String UserElementString6);
 
 	/**
 	 * Get UserElementString6.
@@ -1411,7 +1675,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString6();
+	@Nullable java.lang.String getUserElementString6();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString6 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString6", null);
 	String COLUMNNAME_UserElementString6 = "UserElementString6";
@@ -1423,7 +1687,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setUserElementString7 (@Nullable String UserElementString7);
+	void setUserElementString7 (@Nullable java.lang.String UserElementString7);
 
 	/**
 	 * Get UserElementString7.
@@ -1432,7 +1696,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getUserElementString7();
+	@Nullable java.lang.String getUserElementString7();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
@@ -1444,7 +1708,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setVATCode (@Nullable String VATCode);
+	void setVATCode (@Nullable java.lang.String VATCode);
 
 	/**
 	 * Get VAT Code.
@@ -1453,7 +1717,7 @@ public interface I_Fact_Acct_Transactions_View
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getVATCode();
+	@Nullable java.lang.String getVATCode();
 
 	ModelColumn<I_Fact_Acct_Transactions_View, Object> COLUMN_VATCode = new ModelColumn<>(I_Fact_Acct_Transactions_View.class, "VATCode", null);
 	String COLUMNNAME_VATCode = "VATCode";

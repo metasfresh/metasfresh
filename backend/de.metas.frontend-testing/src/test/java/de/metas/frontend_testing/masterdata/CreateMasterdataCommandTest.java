@@ -14,12 +14,18 @@ import de.metas.frontend_testing.masterdata.picking_slot.JsonPickingSlotCreateRe
 import de.metas.frontend_testing.masterdata.pp_order.JsonPPOrderRequest;
 import de.metas.frontend_testing.masterdata.product.JsonCreateProductRequest;
 import de.metas.frontend_testing.masterdata.product_planning.JsonCreateProductPlanningRequest;
+import de.metas.frontend_testing.masterdata.resource.CreateResourceCommand;
 import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceRequest;
+import de.metas.frontend_testing.masterdata.resource.JsonCreateResourceResponse;
 import de.metas.frontend_testing.masterdata.sales_order.JsonSalesOrderCreateRequest;
 import de.metas.frontend_testing.masterdata.user.JsonLoginUserRequest;
 import de.metas.frontend_testing.masterdata.warehouse.JsonWarehouseRequest;
 import de.metas.frontend_testing.masterdata.workplace.JsonWorkplaceRequest;
+import de.metas.product.ResourceId;
+import de.metas.workplace.WorkplaceId;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_S_Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -153,6 +159,35 @@ public class CreateMasterdataCommandTest
 		assertThat(request.getDistributionOrders()).hasSize(1);
 		assertThat(request.getManufacturingOrders()).hasSize(1);
 		assertThat(request.getInventories()).hasSize(1);
+	}
+
+	@Test
+	public void hu_request_builder_withLocator_shouldPreserveLocator()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.locator(Identifier.ofString("locatorB"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isEqualTo(Identifier.ofString("locatorB"));
+	}
+
+	@Test
+	public void hu_request_builder_withoutLocator_shouldDefaultToNull()
+	{
+		// given/when
+		final JsonCreateHURequest request = JsonCreateHURequest.builder()
+				.product(Identifier.ofString("product"))
+				.warehouse(Identifier.ofString("warehouse"))
+				.qty(BigDecimal.TEN)
+				.build();
+
+		// then
+		assertThat(request.getLocator()).isNull();
 	}
 
 	@Test
@@ -341,6 +376,7 @@ public class CreateMasterdataCommandTest
 				.handlingUnits(ImmutableMap.of())
 				.generatedHUQRCodes(ImmutableMap.of())
 				.salesOrders(ImmutableMap.of())
+				.purchaseOrders(ImmutableMap.of())
 				.distributionOrders(ImmutableMap.of())
 				.manufacturingOrders(ImmutableMap.of())
 				.inventories(ImmutableMap.of())
@@ -352,5 +388,36 @@ public class CreateMasterdataCommandTest
 		assertThat(response.getLogin()).isEmpty();
 		assertThat(response.getBpartners()).isEmpty();
 		assertThat(response.getProducts()).isEmpty();
+	}
+
+	@Test
+	public void createResourceCommand_withWorkplaceReference_shouldSetC_Workplace_IDOnResource()
+	{
+		// given
+		final MasterdataContext context = new MasterdataContext();
+		final Identifier workplaceIdentifier = Identifier.ofString("wp1");
+		final WorkplaceId workplaceId = WorkplaceId.ofRepoId(540500);
+		context.putIdentifier(workplaceIdentifier, workplaceId);
+
+		final JsonCreateResourceRequest request = JsonCreateResourceRequest.builder()
+				.type("WS")
+				.workplace(workplaceIdentifier)
+				.build();
+
+		final Identifier resourceIdentifier = Identifier.ofString("ws1");
+		final CreateResourceCommand command = CreateResourceCommand.builder()
+				.context(context)
+				.request(request)
+				.identifier(resourceIdentifier)
+				.build();
+
+		// when
+		final JsonCreateResourceResponse response = command.execute();
+
+		// then
+		assertThat(response).isNotNull();
+		final ResourceId resourceId = context.getId(resourceIdentifier, ResourceId.class);
+		final I_S_Resource resource = InterfaceWrapperHelper.load(resourceId, I_S_Resource.class);
+		assertThat(resource.getC_Workplace_ID()).isEqualTo(workplaceId.getRepoId());
 	}
 }

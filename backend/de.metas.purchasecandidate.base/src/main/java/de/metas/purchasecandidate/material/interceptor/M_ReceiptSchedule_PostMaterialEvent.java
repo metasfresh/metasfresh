@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.purchasecandidate.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.purchasecandidate.material.interceptor;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -29,42 +51,26 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Objects;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2017 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Interceptor(I_M_ReceiptSchedule.class)
 @Component
 public class M_ReceiptSchedule_PostMaterialEvent
 {
+	private static final Logger logger = LoggerFactory.getLogger(M_ReceiptSchedule_PostMaterialEvent.class);
+
 	private final PostMaterialEventService postMaterialEventService;
 	private final ModelProductDescriptorExtractor productDescriptorFactory;
 	private final PurchaseCandidateRepository purchaseCandidateRepository;
 	private final ReplenishInfoRepository replenishInfoRepository;
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	public M_ReceiptSchedule_PostMaterialEvent(
 			@NonNull final PostMaterialEventService postMaterialEventService,
@@ -93,6 +99,7 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			I_M_ReceiptSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 			I_M_ReceiptSchedule.COLUMNNAME_MovementDate, // this is the actual order's datePromised
 			I_M_ReceiptSchedule.COLUMNNAME_IsActive, /* IsActive=N shall be threaded like a deletion */
+			I_M_ReceiptSchedule.COLUMNNAME_IsClosed, /* IsClosed=Y shall be treated like a deletion (lowers supply to already-received qty) */
 			I_M_ReceiptSchedule.COLUMNNAME_Processed,
 			I_M_ReceiptSchedule.COLUMNNAME_QtyOrderedOverUnder})
 	public void createAndFireEvent(
@@ -100,6 +107,24 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final ModelChangeType timing)
 	{
 		final AbstractReceiptScheduleEvent event = createReceiptScheduleEvent(schedule, timing);
+
+		if (logger.isDebugEnabled())
+		{
+			final I_M_ReceiptSchedule oldSchedule = InterfaceWrapperHelper.createOld(schedule, I_M_ReceiptSchedule.class);
+			logger.debug("createAndFireEvent M_ReceiptSchedule_ID={}, timing={}"
+							+ " | IsClosed: {}>{}, Processed: {}>{}, IsActive: {}>{}"
+							+ " | QtyOrdered: {}>{}, QtyToMove: {}>{}"
+							+ " | event={}, orderedQtyDelta={}, reservedQtyDelta={}",
+					schedule.getM_ReceiptSchedule_ID(), timing,
+					oldSchedule.isIsClosed(), schedule.isIsClosed(),
+					oldSchedule.isProcessed(), schedule.isProcessed(),
+					oldSchedule.isActive(), schedule.isActive(),
+					oldSchedule.getQtyOrdered(), schedule.getQtyOrdered(),
+					oldSchedule.getQtyToMove(), schedule.getQtyToMove(),
+					event.getClass().getSimpleName(),
+					event.getOrderedQuantityDelta(),
+					event.getReservedQuantityDelta());
+		}
 
 		postMaterialEventService.enqueueEventAfterNextCommit(event);
 	}
@@ -109,19 +134,52 @@ public class M_ReceiptSchedule_PostMaterialEvent
 			@NonNull final I_M_ReceiptSchedule receiptSchedule,
 			@NonNull final ModelChangeType timing)
 	{
-		final boolean created = timing.isNew() || ModelChangeUtil.isJustActivated(receiptSchedule);
+		final boolean created = timing.isNew()
+				|| ModelChangeUtil.isJustActivated(receiptSchedule)
+				|| isJustReopened(receiptSchedule);
 		if (created)
 		{
 			return createCreatedEvent(receiptSchedule);
 		}
 
-		final boolean deleted = timing.isDelete() || ModelChangeUtil.isJustDeactivated(receiptSchedule);
+		final boolean justClosed = isJustClosed(receiptSchedule);
+		final boolean deleted = timing.isDelete()
+				|| ModelChangeUtil.isJustDeactivated(receiptSchedule)
+				|| justClosed;
 		if (deleted)
 		{
-			return createDeletedEvent(receiptSchedule);
+			// When the receipt schedule is just closed, the M_ReceiptSchedule interceptor
+			// may have already zeroed QtyToMove (because Processed=true triggers recalculation).
+			// Use the OLD values so the event deltas correctly reverse the cockpit quantities.
+			final I_M_ReceiptSchedule scheduleForEvent = justClosed
+					? InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class)
+					: receiptSchedule;
+			return createDeletedEvent(scheduleForEvent);
 		}
 
 		return createUpdatedEvent(receiptSchedule);
+	}
+
+	/** IsClosed changed from false to true — treat as deletion from material dispo perspective (lowers supply to already-received qty). */
+	private static boolean isJustClosed(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (!receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return !old.isIsClosed();
+	}
+
+	/** IsClosed changed from true to false — treat as creation from material dispo perspective (restores supply). */
+	private static boolean isJustReopened(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (receiptSchedule.isIsClosed())
+		{
+			return false;
+		}
+		final I_M_ReceiptSchedule old = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		return old.isIsClosed();
 	}
 
 	private AbstractReceiptScheduleEvent createCreatedEvent(
@@ -270,8 +328,6 @@ public class M_ReceiptSchedule_PostMaterialEvent
 
 	private MaterialDescriptor createOrderMaterialDescriptor(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 		final BigDecimal orderedQuantity = receiptScheduleQtysBL.getQtyOrdered(receiptSchedule);
 
 		final Timestamp preparationDate = receiptSchedule.getMovementDate();

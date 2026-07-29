@@ -27,7 +27,8 @@ CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Sales_Order_D
                 Incoterms         character varying,
                 incotermlocation  character varying,
                 additionaltext    text,
-                isoffer           character
+                isoffer           character,
+                taxnote           text
             )
 AS
 $$
@@ -54,7 +55,8 @@ SELECT COALESCE(reft.name, ref.name)                                        AS p
            WHEN dt.docbasetype = 'SOO' AND dt.docsubtype IN ('ON', 'OB')
                THEN 'Y'
                ELSE 'N'
-       END                                                                  AS isoffer
+       END                                                                  AS isoffer,
+       report.TaxNote(p_Order_ID, NULL, p_Language)                         AS taxnote
 FROM C_Order o
 
          LEFT OUTER JOIN C_PaymentTerm pt ON o.C_PaymentTerm_ID = pt.C_PaymentTerm_ID

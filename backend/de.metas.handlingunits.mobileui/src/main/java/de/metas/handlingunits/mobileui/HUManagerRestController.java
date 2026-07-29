@@ -26,9 +26,12 @@ import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.common.handlingunits.JsonAllowedHUClearanceStatuses;
 import de.metas.common.handlingunits.JsonDisposalReasonsList;
+import de.metas.common.handlingunits.JsonGRAICodesRequest;
+import de.metas.common.handlingunits.JsonGRAICodesResponse;
 import de.metas.common.handlingunits.JsonGetSingleHUResponse;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.grai.GRAISet;
 import de.metas.handlingunits.mobileui.config.HUManagerProfile;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileLayoutSectionList;
 import de.metas.handlingunits.mobileui.config.HUManagerProfileRepository;
@@ -65,6 +68,7 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -237,5 +241,27 @@ public class HUManagerRestController
 	{
 		final String adLanguage = Env.getADLanguageOrBaseLanguage();
 		return handlingUnitsService.getLabelPrintingOptions(adLanguage);
+	}
+
+	@GetMapping("/{huId}/grai")
+	public ResponseEntity<JsonGRAICodesResponse> getGRAIs(@PathVariable final int huId)
+	{
+		assertActionAccess(HUManagerAction.ScanGRAI);
+
+		final JsonGRAICodesResponse response = handlingUnitsService.getGRAIs(HuId.ofRepoId(huId));
+		return ResponseEntity.ok(response);
+	}
+
+	@PutMapping("/{huId}/grai")
+	public ResponseEntity<JsonGRAICodesResponse> setGRAIs(
+			@PathVariable final int huId,
+			@RequestBody @NonNull final JsonGRAICodesRequest request)
+	{
+		assertActionAccess(HUManagerAction.ScanGRAI);
+
+		final JsonGRAICodesResponse response = handlingUnitsService.setGRAIs(
+				HuId.ofRepoId(huId),
+				GRAISet.parseStrings(request.getGraiCodes()));
+		return ResponseEntity.ok(response);
 	}
 }

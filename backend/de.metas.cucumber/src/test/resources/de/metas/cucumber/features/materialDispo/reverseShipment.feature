@@ -1,6 +1,9 @@
 @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
 @ghActions:run_on_executor6
 Feature: Shipping HUs interaction with material schedule
+## F5100: Material Disposition
 
   Background:
     Given infrastructure and metasfresh are running
@@ -10,6 +13,8 @@ Feature: Shipping HUs interaction with material schedule
     And AD_Scheduler for classname 'de.metas.material.cockpit.stock.process.MD_Stock_Update_From_M_HUs' is disabled
 
   @from:cucumber
+@allure.label.epic:E0155_Material_Disposition
+@allure.label.feature:F5100
   Scenario: Validate the way shipping HUs interacts with material schedule (complete, reactivate, reverse shipment)
     Given metasfresh contains M_Products:
       | Identifier | Name                     | OPT.IsPurchased |
@@ -43,11 +48,18 @@ Feature: Shipping HUs interaction with material schedule
     And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
-  # OPT.DateProjected_LocalTimeZone=2021-04-09T00:00:00 is interpreted as 2021-04-08T22:00:00Z, because we set the time-source to the zulu-TZ, but the JVM and thus jdbc-drives assumes CEST.Scenario: 
+    # Validate HU state after inventory — HU should be Active in warehouse
+    And M_HU are validated:
+      | M_HU_ID.Identifier | HUStatus | IsActive |
+      | hu_1               | A        | Y        |
+  # OPT.DateProjected_LocalTimeZone=2021-04-09T00:00:00 is interpreted as 2021-04-08T22:00:00Z, because we set the time-source to the zulu-TZ, but the JVM and thus jdbc-drives assumes CEST.Scenario:
   # If we changed the JVM to UTC, this test would succeed, but a bunch of others would fail at this stage
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected       | Qty | Qty_AvailableToPromise | 
-      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-09T00:00:00 | 100 | 100                    | 
+      | c_1        | INVENTORY_UP      |                               | p_1                     | 2021-04-09T00:00:00 | 100 | 100                    |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 100       |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -75,11 +87,17 @@ Feature: Shipping HUs interaction with material schedule
       | c_1        | INVENTORY_UP        |                               | p_1                     | 2021-04-09T00:00:00  | 100 | 100                    |
       | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
       | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | -15 | 85                     |
+    And after not more than 60 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 85        |
     When the shipment identified by s_1 is reactivated
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
       | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | 0   | 100                    |
+    And after not more than 120 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 100       |
 
     And the shipment identified by s_1 is completed
 
@@ -87,13 +105,19 @@ Feature: Shipping HUs interaction with material schedule
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | 0   | 85                     |
       | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | -15 | 85                     |
+    And after not more than 120 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 85        |
 
     And the shipment identified by s_1 is reversed
 
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type   | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | 
-      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     | 
-      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | 0   | 100                    | 
+      | c_2        | DEMAND              | SHIPMENT                      | p_1                     | 2021-04-11T21:00:00Z | -15 | 85                     |
+      | c_3        | UNEXPECTED_DECREASE | SHIPMENT                      | p_1                     | 2021-04-11T00:00:00Z | 0   | 100                    |
+    And after not more than 120 seconds metasfresh has MD_Stock data
+      | M_Product_ID.Identifier | QtyOnHand |
+      | p_1                     | 100       |
 # cleanup
     And metasfresh has current date and time
     

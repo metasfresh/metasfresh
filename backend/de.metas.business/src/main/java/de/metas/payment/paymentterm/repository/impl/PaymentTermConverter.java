@@ -39,6 +39,7 @@ class PaymentTermConverter
 				.graceDays(record.getGraceDays())
 				.isDefault(record.isDefault())
 				.isActive(record.isActive())
+				.isAllowOverrideDueDate(record.isAllowOverrideDueDate())
 				.breaks(breakRecords.stream()
 						.filter(I_C_PaymentTerm_Break::isActive)
 						.map(PaymentTermBreakConverter::fromRecord)

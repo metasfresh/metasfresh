@@ -1,14 +1,15 @@
-﻿DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN record_id numeric);
+DROP FUNCTION IF EXISTS de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric);
 
-CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN record_id numeric)
-RETURNS TABLE 
+CREATE OR REPLACE FUNCTION de_metas_endcustomer_fresh_reports.Docs_Purchase_InOut_Vendor_Returns_Root(IN p_record_id numeric)
+RETURNS TABLE
 	(
 	ad_org_id numeric,
 	displayhu text,
-	DocStatus Character (2)
+	DocStatus Character (2),
+	isFactoringPartner character(1)
 	)
 AS
-$$	
+$$
 SELECT
 	io.AD_Org_ID,
 	CASE
@@ -23,10 +24,12 @@ SELECT
 		)
 		THEN 'Y'
 		ELSE 'N'
-	END as displayhum
-	io.docstatus
+	END as displayhu,
+	io.docstatus,
+	bp.IsFactoring AS isFactoringPartner
 FROM
 	M_InOut io
+	LEFT OUTER JOIN C_BPartner bp ON bp.C_BPartner_ID = io.C_BPartner_ID
 WHERE
 	io.M_InOut_ID = $1 AND io.isActive = 'Y'
 $$

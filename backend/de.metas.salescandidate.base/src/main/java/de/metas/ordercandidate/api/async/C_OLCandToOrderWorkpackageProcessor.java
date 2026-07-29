@@ -42,6 +42,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.CreateSelectionResponse;
 import org.slf4j.Logger;
 
 import java.util.List;
@@ -57,7 +58,7 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 	 * This means that it will take much longer until the batch is done.
 	 */
 	public static final String PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD = "PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD";
-	
+
 	private final static Logger logger = LogManager.getLogger(C_OLCandToOrderWorkpackageProcessor.class);
 
 	private final IOLCandBL olCandBL = Services.get(IOLCandBL.class);
@@ -84,7 +85,14 @@ public class C_OLCandToOrderWorkpackageProcessor extends WorkpackageProcessorAda
 		final PInstanceId enqueuedSelection = queryBL.createQueryBuilder(I_C_OLCand.class)
 				.addInArrayFilter(I_C_OLCand.COLUMNNAME_C_OLCand_ID, candidateIds)
 				.create()
-				.createSelection();
+				.createSelection()
+				.map(CreateSelectionResponse::getSelectionId)
+				.orElse(null);
+		if (enqueuedSelection == null)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No OLCands enqueued to be processed for C_Queue_WorkPackage_ID={}", workPackage.getC_Queue_WorkPackage_ID());
+			return Result.SUCCESS;
+		}
 
 		final int olCandProcessorId = getParameters().getParameterAsInt(PARAM_OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 		final boolean propagateAsyncBatchIdToOrderRecord = getParameters().getParameterAsBool(PARAM_PROPAGATE_ASYNC_BATCH_ID_TO_ORDER_RECORD);

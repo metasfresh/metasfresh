@@ -282,7 +282,7 @@ LEFT JOIN C_UOM prod_uom on prod_trace.c_uom_id = prod_uom.c_uom_id
 LEFT JOIN m_hu hu ON prod_trace.m_hu_id = hu.m_hu_id
 LEFT JOIN m_inout inout on inout.m_inout_id = prod_trace.m_inout_id
 LEFT JOIN c_bpartner bp ON inout.c_bpartner_id = bp.c_bpartner_id
-JOIN m_hu_attribute mhd ON mhd.m_hu_id = prod_trace.m_hu_id AND mhd.m_attribute_id = 540020::numeric
+LEFT JOIN m_hu_attribute mhd ON mhd.m_hu_id = prod_trace.m_hu_id AND mhd.m_attribute_id = 540020::numeric
 LEFT JOIN ad_ref_list hulu_clearancestatus ON hulu_clearancestatus.ad_reference_id = 541540::numeric AND hulu_clearancestatus.value::text = hu.clearancestatus::text
 WHERE t.hutracetype IN ('PRODUCTION_RECEIPT')
   AND po.docstatus IN ('CO', 'CL')
@@ -331,8 +331,8 @@ LEFT JOIN M_InOut receipt_io ON t.m_inout_id = receipt_io.m_inout_id
 LEFT JOIN C_DocType receipt_dt ON receipt_io.c_doctype_id = receipt_dt.c_doctype_id
 LEFT JOIN c_bpartner receipt_bp ON receipt_io.c_bpartner_id = receipt_bp.c_bpartner_id
 -- Join to the material shipment (sale to customer, issotrx=Y) via lot number and product
-LEFT JOIN M_HU_Trace as shipment_trace ON 
-    shipment_trace.lotnumber = t.lotnumber 
+LEFT JOIN M_HU_Trace as shipment_trace ON
+    shipment_trace.lotnumber IS NOT DISTINCT FROM t.lotnumber
     AND shipment_trace.m_product_id = t.m_product_id
     AND shipment_trace.hutracetype = 'MATERIAL_SHIPMENT'
 LEFT JOIN M_InOut shipment_io ON shipment_trace.m_inout_id = shipment_io.m_inout_id
@@ -354,8 +354,8 @@ WHERE t.hutracetype IN ('MATERIAL_RECEIPT')
   AND shipment_io.docstatus IN ('CO', 'CL')
   -- Ensure this product was NOT manufactured (no production order)
   AND NOT EXISTS (
-      SELECT 1 FROM M_HU_Trace pt 
-      WHERE pt.lotnumber = t.lotnumber 
+      SELECT 1 FROM M_HU_Trace pt
+      WHERE pt.lotnumber IS NOT DISTINCT FROM t.lotnumber
       AND pt.m_product_id = t.m_product_id
       AND pt.hutracetype IN ('PRODUCTION_ISSUE', 'PRODUCTION_RECEIPT')
   )

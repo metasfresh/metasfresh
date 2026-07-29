@@ -1,12 +1,13 @@
 import { test } from "../../../playwright.config";
 import { Backend } from "../../utils/screens/Backend";
+import { allure } from 'allure-playwright';
 import { LoginScreen } from "../../utils/screens/LoginScreen";
 import { ApplicationsListScreen } from "../../utils/screens/ApplicationsListScreen";
 import { DistributionJobsListScreen } from "../../utils/screens/distribution/DistributionJobsListScreen";
 import { DistributionJobScreen } from '../../utils/screens/distribution/DistributionJobScreen';
 import { generateEAN13 } from '../../utils/ean13';
 
-const createMasterdata = async ({ qtyToMove }) => {
+const createMasterdata = async ({ qtyToMove, captionFormat }) => {
     return await Backend.createMasterdata({
         language: "en_US",
         request: {
@@ -14,6 +15,7 @@ const createMasterdata = async ({ qtyToMove }) => {
             mobileConfig: {
                 distribution: {
                     navigateToJobsListAfterPickFromComplete: true,
+                    captionFormat,
                 }
             },
             workplaces: { workplace1: { warehouse: 'wh2', pickFromLocator: 'wh2_l1' } },
@@ -42,8 +44,21 @@ const createMasterdata = async ({ qtyToMove }) => {
 }
 
 // noinspection JSUnusedLocalSymbols
-test('Happy case', async ({ page }) => {
-    const masterdata = await createMasterdata({ qtyToMove: 100 });
+test('Header reflects the configured caption items (incl. Product Value and Name)', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0370: Intralogistic (HUs)');
+    allure.tag('F5114: MobileUI Distribution');
+        allure.tag('F5114');  // Standalone tag for Tags section;
+    allure.story('Distribution header display');
+    allure.severity('normal');
+
+    // The DD job-detail header renders exactly the caption items configured in the Mobile
+    // Distribution Profile. Regression cover: when "Product Value and Name" is configured, it must
+    // appear in the job-detail header (which was a hardcoded field set before, ignoring the config).
+    const masterdata = await createMasterdata({
+        qtyToMove: 100,
+        captionFormat: 'LocatorFrom,LocatorTo,ProductValueAndName',
+    });
 
     await LoginScreen.login(masterdata.login.user);
     await ApplicationsListScreen.expectVisible();
@@ -53,6 +68,10 @@ test('Happy case', async ({ page }) => {
     await DistributionJobsListScreen.expectDropAllButton({ visible: false });
 
     await DistributionJobsListScreen.startJob({ launcherTestId: masterdata.distributionOrders.DD1.launcherTestId });
-    await DistributionJobScreen.expectHeaderProperty({ caption: 'From Locator', value: 'wh1_l1' })
-    await DistributionJobScreen.expectHeaderProperty({ caption: 'Locator to', value: 'wh2_l1' })
+    await DistributionJobScreen.expectHeaderProperty({ caption: 'From Locator', value: 'wh1_l1' });
+    await DistributionJobScreen.expectHeaderProperty({ caption: 'Drop to locator', value: 'wh2_l1' });
+    await DistributionJobScreen.expectHeaderProperty({
+        caption: 'Product Value and Name',
+        value: masterdata.products.P1.productCode + "_" + masterdata.products.P1.productName,
+    });
 });

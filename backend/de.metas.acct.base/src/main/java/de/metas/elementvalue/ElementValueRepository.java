@@ -31,6 +31,7 @@ import de.metas.acct.AccountConceptualName;
 import de.metas.acct.api.ChartOfAccountsId;
 import de.metas.acct.api.impl.ElementValueId;
 import de.metas.cache.CCache;
+import de.metas.cost.classification.CostClassificationId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -139,6 +140,7 @@ public class ElementValueRepository
 				.seqNo(record.getSeqNo())
 				.defaultAccountName(record.getDefault_Account())
 				.accountConceptualName(AccountConceptualName.ofNullableString(record.getAccountConceptualName()))
+				.costClassificationId(CostClassificationId.ofRepoIdOrNull(record.getC_CostClassification_ID()))
 				.isOpenItem(record.isOpenItem())
 				.build();
 	}

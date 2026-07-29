@@ -1,5 +1,6 @@
 import { Backend } from '../../utils/screens/Backend';
 import { test } from '../../../playwright.config';
+import { allure } from 'allure-playwright';
 import { LoginScreen } from '../../utils/screens/LoginScreen';
 import { ApplicationsListScreen } from '../../utils/screens/ApplicationsListScreen';
 import { PickingJobsListScreen } from '../../utils/screens/picking/PickingJobsListScreen';
@@ -47,6 +48,13 @@ const createMasterdata = async ({ externalBarcode } = {}) => {
 
 // noinspection JSUnusedLocalSymbols
 test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
+    // === ALLURE METADATA ===
+    allure.epic('E0105: Picking');
+    allure.tag('F00230: MobileUI Picking');
+        allure.tag('F00230');  // Standalone tag for Tags section;
+    allure.story('Pick by external barcode attribute');
+    allure.severity('normal');
+
     const externalBarcode = "EXT" + Date.now();
     const masterdata = await createMasterdata({ externalBarcode });
 
@@ -87,7 +95,7 @@ test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU is not yet closed
         hus: {
             [masterdata.handlingUnits.HU1.qrCode]: { huStatus: 'A', storages: { P1: '68 PCE' } },
-            lu1: { huStatus: 'S', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'S', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 
@@ -104,7 +112,7 @@ test('Pick by scanning ExternalBarcode attribute', async ({ page }) => {
         },
         pickingSlots: { [masterdata.pickingSlots.slot1.qrCode]: { queue: [] } }, // the queue is empty because LU everything is shipped now
         hus: {
-            lu1: { huStatus: 'E', storages: { P1: '12 PCE' } },
+            lu1: { huStatus: 'E', storages: { P1: '12 PCE' }, bpartner: 'BP1', bpartnerLocation: 'BP1' },
         }
     });
 });

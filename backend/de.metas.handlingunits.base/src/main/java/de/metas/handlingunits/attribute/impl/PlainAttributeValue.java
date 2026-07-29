@@ -65,9 +65,9 @@ public class PlainAttributeValue extends AbstractAttributeValue
 
 		propagationType = X_M_HU_PI_Attribute.PROPAGATIONTYPE_NoPropagation;
 
-		aggregationStrategy = NullAggregationStrategy.instance;
-		splitterStrategy = NullSplitterStrategy.instance;
-		transferStrategy = CopyHUAttributeTransferStrategy.instance;
+		aggregationStrategy = NullAggregationStrategy.newInstance();
+		splitterStrategy = NullSplitterStrategy.newInstance();
+		transferStrategy = CopyHUAttributeTransferStrategy.newInstance();
 	}
 
 	public PlainAttributeValue(
@@ -84,7 +84,7 @@ public class PlainAttributeValue extends AbstractAttributeValue
 
 		this.aggregationStrategy = aggregationStrategy;
 		this.splitterStrategy = splitterStrategy;
-		transferStrategy = CopyHUAttributeTransferStrategy.instance;
+		transferStrategy = CopyHUAttributeTransferStrategy.newInstance();
 	}
 
 	public PlainAttributeValue copy() throws InstantiationException, IllegalAccessException
@@ -227,7 +227,7 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	}
 
 	@Override
-	protected void setInternalValueDate(Date value)
+	protected void setInternalValueDate(final Date value)
 	{
 		this.valueDate = value;
 	}
@@ -239,7 +239,7 @@ public class PlainAttributeValue extends AbstractAttributeValue
 	}
 
 	@Override
-	protected void setInternalValueDateInitial(Date value)
+	protected void setInternalValueDateInitial(final Date value)
 	{
 		this.valueInitialDate = value;
 	}

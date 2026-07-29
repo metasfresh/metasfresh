@@ -1,15 +1,12 @@
 package de.metas.distribution.ddordercandidate;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
-import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
-import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLoader;
 import de.metas.distribution.event.DDOrderUserNotificationProducer;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
@@ -17,21 +14,14 @@ import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.handlingunits.HUPIItemProductId;
-import de.metas.material.event.PostMaterialEventService;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.ddorder.DDOrder;
-import de.metas.material.event.ddorder.DDOrderCreatedEvent;
 import de.metas.material.event.pporder.PPOrderRef;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.material.planning.ddorder.DistributionNetworkAndLineId;
-import de.metas.material.planning.ddorder.DistributionNetworkRepository;
-import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -47,7 +37,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -66,6 +55,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 
@@ -78,8 +68,6 @@ class DDOrderCandidateProcessCommand
 	// services
 	@NonNull private final DDOrderLowLevelService ddOrderLowLevelService;
 	@NonNull private final DDOrderCandidateService ddOrderCandidateService;
-	@NonNull private final PostMaterialEventService materialEventService;
-	@NonNull private final DDOrderLoader ddOrderLoader;
 	@NonNull private final IOrgDAO orgDAO;
 	@NonNull private final IDocTypeDAO docTypeDAO;
 	@NonNull final IDocumentBL documentBL;
@@ -90,7 +78,6 @@ class DDOrderCandidateProcessCommand
 	@NonNull final IOrderLineBL orderLineBL;
 	@NonNull final DDOrderUserNotificationProducer ddOrderUserNotificationProducer;
 
-
 	//
 	// Params
 	@NonNull private final DDOrderCandidateProcessRequest request;
@@ -98,17 +85,14 @@ class DDOrderCandidateProcessCommand
 	//
 	// State
 	private final LinkedHashMap<HeaderAggregationKey, HeaderAggregate> aggregates = new LinkedHashMap<>();
-	private final LinkedHashMap<DDOrderId, I_DD_Order> ddOrderHeaderRecords = new LinkedHashMap<>();
-	private final ArrayListMultimap<DDOrderId, I_DD_OrderLine> ddOrderLineRecords = ArrayListMultimap.create();
 	private final AggregationConfig aggregationConfig;
+	/** memoizes the warehouse default locator so the null-locator fallback resolves once per warehouse, not once per candidate */
+	private final HashMap<WarehouseId, LocatorId> defaultLocatorByWarehouse = new HashMap<>();
 
 	@Builder
 	private DDOrderCandidateProcessCommand(
 			@NonNull final DDOrderLowLevelService ddOrderLowLevelService,
 			@NonNull final DDOrderCandidateService ddOrderCandidateService,
-			@NonNull final DistributionNetworkRepository distributionNetworkRepository,
-			@NonNull final PostMaterialEventService materialEventService,
-			@NonNull final ReplenishInfoRepository replenishInfoRepository,
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final IDocTypeDAO docTypeDAO,
 			@NonNull final IDocumentBL documentBL,
@@ -122,7 +106,6 @@ class DDOrderCandidateProcessCommand
 	{
 		this.ddOrderLowLevelService = ddOrderLowLevelService;
 		this.ddOrderCandidateService = ddOrderCandidateService;
-		this.materialEventService = materialEventService;
 		this.orgDAO = orgDAO;
 		this.docTypeDAO = docTypeDAO;
 		this.documentBL = documentBL;
@@ -131,12 +114,6 @@ class DDOrderCandidateProcessCommand
 		this.warehouseBL = warehouseBL;
 		this.uomConversionBL = uomConversionBL;
 		this.orderLineBL = orderLineBL;
-		this.ddOrderLoader = DDOrderLoader.builder()
-				.productPlanningDAO(productPlanningDAO)
-				.distributionNetworkRepository(distributionNetworkRepository)
-				.ddOrderLowLevelService(ddOrderLowLevelService)
-				.replenishInfoRepository(replenishInfoRepository)
-				.build();
 
 		this.ddOrderUserNotificationProducer = DDOrderUserNotificationProducer.newInstance();
 		this.aggregationConfig = aggregationConfig;
@@ -158,14 +135,29 @@ class DDOrderCandidateProcessCommand
 
 	private void addToAggregates(@NonNull final DDOrderCandidate ddOrderCandidate)
 	{
-		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig);
+		// Resolve the source/target locators once here (candidate's own, else the warehouse default) so the
+		// aggregation key always carries concrete, non-null locators and createLine just reads them.
+		final LocatorId sourceLocatorId = resolveLocatorId(ddOrderCandidate.getSourceLocatorId(), ddOrderCandidate.getSourceWarehouseId());
+		final LocatorId targetLocatorId = resolveLocatorId(ddOrderCandidate.getTargetLocatorId(), ddOrderCandidate.getTargetWarehouseId());
+
+		final HeaderAggregationKey headerAggregationKey = HeaderAggregationKey.of(ddOrderCandidate, aggregationConfig, sourceLocatorId, targetLocatorId);
 
 		aggregates.computeIfAbsent(headerAggregationKey, aggKey -> new HeaderAggregate(aggKey, aggregationConfig))
-				.add(ddOrderCandidate);
+				.add(ddOrderCandidate, sourceLocatorId, targetLocatorId);
+	}
+
+	@NonNull
+	private LocatorId resolveLocatorId(@Nullable final LocatorId candidateLocatorId, @NonNull final WarehouseId warehouseId)
+	{
+		if (candidateLocatorId != null)
+		{
+			return candidateLocatorId;
+		}
+		return defaultLocatorByWarehouse.computeIfAbsent(warehouseId, warehouseBL::getOrCreateDefaultLocatorId);
 	}
 
 	private void createDDOrder(@NonNull final HeaderAggregate headerAggregate,
-							   @NonNull final UserId userId)
+	                           @NonNull final UserId userId)
 	{
 		if (!headerAggregate.isEligibleToCreate())
 		{
@@ -194,15 +186,6 @@ class DDOrderCandidateProcessCommand
 			return;
 		}
 
-		final DDOrderId ddOrderId = DDOrderId.ofRepoId(headerRecord.getDD_Order_ID());
-
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientOrgUserIdAndTraceId(
-				ClientAndOrgId.ofClientAndOrg(headerRecord.getAD_Client_ID(), headerRecord.getAD_Org_ID()),
-				userId,
-				headerAggregate.getKey().getTraceId());
-
-		fireDDOrderCreatedEvent(ddOrderId, eventDescriptor);
-
 		documentBL.processEx(headerRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 
 		ddOrderUserNotificationProducer.notifyGenerated(headerRecord);
@@ -212,7 +195,9 @@ class DDOrderCandidateProcessCommand
 			@NonNull final HeaderAggregationKey key,
 			@Nullable final OrderId salesOrderId)
 	{
-		final ProductPlanning productPlanning = productPlanningDAO.getById(key.getProductPlanningId());
+		final ProductPlanningId productPlanningId = key.getProductPlanningId();
+		final ProductPlanning productPlanning = productPlanningId != null ? productPlanningDAO.getById(productPlanningId) : null;
+		final UserId plannerId = productPlanning != null ? productPlanning.getPlannerId() : null;
 
 		final BPartnerLocationId orgBPartnerLocationId = bpartnerOrgBL.retrieveOrgBPLocationId(key.getOrgId());
 
@@ -226,8 +211,8 @@ class DDOrderCandidateProcessCommand
 		record.setPP_Plant_ID(ResourceId.toRepoId(key.getTargetPlantId()));
 		record.setC_BPartner_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getBpartnerId().getRepoId() : -1);
 		record.setC_BPartner_Location_ID(orgBPartnerLocationId != null ? orgBPartnerLocationId.getRepoId() : -1);
-		record.setAD_User_ID(UserId.toRepoId(productPlanning.getPlannerId())); // FIXME: improve performances/cache and retrieve Primary BP's User
-		record.setSalesRep_ID(UserId.toRepoId(productPlanning.getPlannerId()));
+		record.setAD_User_ID(UserId.toRepoId(plannerId)); // FIXME: improve performances/cache and retrieve Primary BP's User
+		record.setSalesRep_ID(UserId.toRepoId(plannerId));
 
 		record.setC_DocType_ID(getDocTypeId(key.getOrgId()).getRepoId());
 
@@ -251,7 +236,7 @@ class DDOrderCandidateProcessCommand
 		record.setM_Warehouse_From_ID(key.getSourceWarehouseId().getRepoId());
 		record.setM_Warehouse_To_ID(key.getTargetWarehouseId().getRepoId());
 
-		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanning.getId()));
+		record.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(productPlanningId));
 
 		final PPOrderRef forwardPPOrderRef = key.getForwardPPOrderRef();
 		if (forwardPPOrderRef != null)
@@ -263,7 +248,6 @@ class DDOrderCandidateProcessCommand
 		record.setC_Order_ID(OrderId.toRepoId(salesOrderId));
 
 		ddOrderLowLevelService.save(record);
-		ddOrderHeaderRecords.put(DDOrderId.ofRepoId(record.getDD_Order_ID()), record);
 
 		return record;
 	}
@@ -302,11 +286,9 @@ class DDOrderCandidateProcessCommand
 		lineRecord.setDD_NetworkDistributionLine_ID(distributionNetworkAndLineId != null ? distributionNetworkAndLineId.getLineId().getRepoId() : -1);
 
 		//
-		// Locator From/To
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_From_ID()));
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(WarehouseId.ofRepoId(header.getM_Warehouse_To_ID()));
-		lineRecord.setM_Locator_ID(locatorFromId.getRepoId());
-		lineRecord.setM_LocatorTo_ID(locatorToId.getRepoId());
+		// Locator From/To — resolved (candidate's own, else warehouse default) already in the key
+		lineRecord.setM_Locator_ID(key.getSourceLocatorId().getRepoId());
+		lineRecord.setM_LocatorTo_ID(key.getTargetLocatorId().getRepoId());
 
 		//
 		// Product, UOM, Qty
@@ -337,7 +319,6 @@ class DDOrderCandidateProcessCommand
 		// Save DD Order Line
 		ddOrderLowLevelService.save(lineRecord);
 		final DDOrderAndLineId ddOrderAndLineId = DDOrderAndLineId.ofRepoIds(lineRecord.getDD_Order_ID(), lineRecord.getDD_OrderLine_ID());
-		ddOrderLineRecords.put(ddOrderAndLineId.getDdOrderId(), lineRecord);
 
 		final DDOrderCandidateAllocList allocations = lineAggregate.getAllocations()
 				.stream()
@@ -347,24 +328,6 @@ class DDOrderCandidateProcessCommand
 				.collect(DDOrderCandidateAllocList.collect());
 
 		ddOrderCandidateService.saveAndUpdateCandidates(allocations);
-	}
-
-	private void fireDDOrderCreatedEvent(@NonNull final DDOrderId ddOrderId,
-										 @NonNull final EventDescriptor eventDescriptor)
-	{
-		@NonNull final DDOrder ddOrder = getCreatedDDOrder(ddOrderId);
-		materialEventService.enqueueEventAfterNextCommit(DDOrderCreatedEvent.of(ddOrder, eventDescriptor));
-	}
-
-	private DDOrder getCreatedDDOrder(final DDOrderId ddOrderId)
-	{
-		final I_DD_Order ddOrderRecord = ddOrderHeaderRecords.get(ddOrderId);
-		if (ddOrderRecord == null)
-		{
-			throw new AdempiereException("No DDOrder was created for " + ddOrderId);
-		}
-
-		return ddOrderLoader.load(ddOrderRecord, ddOrderLineRecords.get(ddOrderId));
 	}
 
 	//
@@ -379,6 +342,9 @@ class DDOrderCandidateProcessCommand
 		boolean aggregateBySalesOrderId;
 		boolean aggregateByPPOrderRef;
 		boolean aggregateBySalesOrderLineId;
+		boolean aggregateByProductId;
+		boolean aggregateByLocatorFrom;
+		boolean aggregateByLocatorTo;
 	}
 	//
 	//
@@ -410,7 +376,20 @@ class DDOrderCandidateProcessCommand
 
 		@Nullable String traceId;
 
-		public static HeaderAggregationKey of(@NonNull final DDOrderCandidate candidate, @NonNull final AggregationConfig aggregationConfig)
+		@Nullable ProductId productId;
+
+		// Locators are part of the header key only when the corresponding sysconfig is enabled
+		// (DDOrderAggregation.header.byLocatorFrom / .byLocatorTo). When disabled they stay null here,
+		// so candidates that differ only by locator share one DD_Order header. The DD_OrderLine still
+		// carries the resolved locator unconditionally — that comes from LineAggregationKey, not this key.
+		@Nullable LocatorId sourceLocatorId;
+		@Nullable LocatorId targetLocatorId;
+
+		public static HeaderAggregationKey of(
+				@NonNull final DDOrderCandidate candidate,
+				@NonNull final AggregationConfig aggregationConfig,
+				@NonNull final LocatorId sourceLocatorId,
+				@NonNull final LocatorId targetLocatorId)
 		{
 			final HeaderAggregationKeyBuilder keyBuilder = builder()
 					.orgId(candidate.getOrgId())
@@ -424,6 +403,14 @@ class DDOrderCandidateProcessCommand
 					.isSimulated(candidate.isSimulated())
 					.productPlanningId(candidate.getProductPlanningId())
 					.traceId(candidate.getTraceId());
+			if (aggregationConfig.isAggregateByLocatorFrom())
+			{
+				keyBuilder.sourceLocatorId(sourceLocatorId);
+			}
+			if (aggregationConfig.isAggregateByLocatorTo())
+			{
+				keyBuilder.targetLocatorId(targetLocatorId);
+			}
 			if (aggregationConfig.isAggregateBySalesOrderId())
 			{
 				keyBuilder.salesOrderId(candidate.getSalesOrderId());
@@ -431,6 +418,10 @@ class DDOrderCandidateProcessCommand
 			if (aggregationConfig.isAggregateByPPOrderRef())
 			{
 				keyBuilder.forwardPPOrderRef(candidate.getForwardPPOrderRef());
+			}
+			if (aggregationConfig.isAggregateByProductId())
+			{
+				keyBuilder.productId(candidate.getProductId());
 			}
 			return keyBuilder.build();
 		}
@@ -449,9 +440,9 @@ class DDOrderCandidateProcessCommand
 		@NonNull private final LinkedHashMap<LineAggregationKey, LineAggregate> lineAggregates = new LinkedHashMap<>();
 		@NonNull private final AggregationConfig aggregationConfig;
 
-		public void add(@NonNull final DDOrderCandidate candidate)
+		public void add(@NonNull final DDOrderCandidate candidate, @NonNull final LocatorId sourceLocatorId, @NonNull final LocatorId targetLocatorId)
 		{
-			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, aggregationConfig), LineAggregate::new)
+			lineAggregates.computeIfAbsent(LineAggregationKey.of(candidate, aggregationConfig, sourceLocatorId, targetLocatorId), LineAggregate::new)
 					.add(candidate);
 		}
 
@@ -494,7 +485,14 @@ class DDOrderCandidateProcessCommand
 		boolean isAllowPush;
 		boolean isKeepTargetPlant;
 
-		public static LineAggregationKey of(final DDOrderCandidate candidate, final @NonNull AggregationConfig aggregationConfig)
+		@NonNull LocatorId sourceLocatorId;
+		@NonNull LocatorId targetLocatorId;
+
+		public static LineAggregationKey of(
+				final DDOrderCandidate candidate,
+				final @NonNull AggregationConfig aggregationConfig,
+				final @NonNull LocatorId sourceLocatorId,
+				final @NonNull LocatorId targetLocatorId)
 		{
 			final LineAggregationKeyBuilder lineKeyBuilder = builder()
 					.productId(candidate.getProductId())
@@ -503,7 +501,9 @@ class DDOrderCandidateProcessCommand
 					.uomId(candidate.getQtyEntered().getUomId())
 					.distributionNetworkAndLineId(candidate.getDistributionNetworkAndLineId())
 					.isAllowPush(candidate.isAllowPush())
-					.isKeepTargetPlant(candidate.isKeepTargetPlant());
+					.isKeepTargetPlant(candidate.isKeepTargetPlant())
+					.sourceLocatorId(sourceLocatorId)
+					.targetLocatorId(targetLocatorId);
 			if (aggregationConfig.isAggregateBySalesOrderLineId())
 			{
 				lineKeyBuilder.salesOrderLineId(candidate.getSalesOrderLineId());

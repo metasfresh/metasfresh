@@ -192,6 +192,12 @@ public interface IHUTrxBL extends ISingletonService
 	 */
 	List<IHUTransactionCandidate> aggregateTransactions(List<IHUTransactionCandidate> transactions);
 
+	/**
+	 * Returns the counterpart trx line of the given trx line (paired debit/credit). Delegates to
+	 * {@link IHUTrxDAO#retrieveCounterpartTrxLine(I_M_HU_Trx_Line)} so callers can stay on the BL.
+	 */
+	I_M_HU_Trx_Line retrieveCounterpartTrxLine(I_M_HU_Trx_Line trxLine);
+
 	static I_C_UOM extractUOMOrNull(@NonNull final I_M_HU_Trx_Line trxLine)
 	{
 		final UomId uomId = UomId.ofRepoIdOrNull(trxLine.getC_UOM_ID());

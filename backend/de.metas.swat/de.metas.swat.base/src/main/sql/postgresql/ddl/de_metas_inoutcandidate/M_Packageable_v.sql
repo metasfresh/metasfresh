@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2026 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 DROP VIEW IF EXISTS m_packageable_v$new
 ;
 
@@ -60,6 +82,7 @@ FROM (SELECT
           --
           -- Product & ASI
           s.M_Product_ID,
+          prod.Value                                                              AS ProductValue,
           prod.Name                                                               AS ProductName,
           prod.C_UOM_ID                                                           AS C_UOM_ID, -- shipment schedule's UOM (see de.metas.inoutcandidate.api.impl.ShipmentScheduleBL.getC_UOM); IMPORTANT: before changing it, check bellow, we might use this logic to convert some Qtys to shipment schedule's UOM
           s.M_AttributeSetInstance_ID,
@@ -94,6 +117,9 @@ FROM (SELECT
              -- note that when the pc is processed (->status PR or CL), then the QtyToDeliver is decreased accordingly
              AND pc.Status = 'IP'
              AND pc.IsActive = 'Y')                                               AS QtyPickedPlanned,
+          s.qtyonhand                                                             AS QtyOnHand,
+          s.qtyscheduledforpicking                                                AS QtyScheduledForPicking,
+          s.qtyscheduledforpickingofprocessed                                     AS QtyScheduledForPickingOfProcessed,
 
           --
           -- Rules&Quantities
@@ -125,7 +151,13 @@ FROM (SELECT
           (SELECT l.LockedBy_User_ID
            FROM M_ShipmentSchedule_Lock l
            WHERE l.M_ShipmentSchedule_ID = s.M_ShipmentSchedule_ID)               AS LockedBy_User_ID,
-          o.datepromised,
+          -- Per-line promised date = the same override-inclusive value as the DeliveryDate column above
+          -- (COALESCE(DeliveryDate_Override, DeliveryDate)). M_ShipmentSchedule has no DatePromised column of its own;
+          -- "DatePromised" is the order/flag terminology for the same business date the schedule stores as DeliveryDate.
+          -- Exposing it per-line here is what makes the ship-after gate (header flag IsFixedDatePromised, applies to
+          -- ALL lines) hold each line until its OWN date. This is the single place the order(DatePromised)-vs-schedule
+          -- (DeliveryDate) naming is bridged.
+          COALESCE(s.DeliveryDate_Override, s.DeliveryDate)                        AS datepromised,
           o.IsFixedDatePromised,
           o.IsFixedPreparationDate,
           s.carrier_advising_status,
@@ -163,7 +195,7 @@ SELECT db_alter_view(
                'm_packageable_v',
                (SELECT view_definition
                 FROM information_schema.views
-                WHERE views.table_name = 'm_packageable_v$new')
+                WHERE lower(views.table_name) = lower('m_packageable_v$new'))
        )
 ;
 

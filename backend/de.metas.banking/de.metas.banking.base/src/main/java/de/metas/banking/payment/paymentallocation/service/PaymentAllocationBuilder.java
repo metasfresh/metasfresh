@@ -97,7 +97,6 @@ public class PaymentAllocationBuilder
 	private boolean allocatePayableAmountsAsIs = false;
 	private boolean allowInvoiceToCreditMemoAllocation = true;
 
-
 	// Status
 	private boolean _built = false;
 
@@ -205,9 +204,9 @@ public class PaymentAllocationBuilder
 			return candidate.toBuilder()
 					.type(AllocationLineCandidateType.SalesCreditMemoToPurchaseInvoice)
 					.amounts(amounts.toBuilder()
-									 .payAmt(amounts.getInvoiceProcessingFee().negate())
-									 .invoiceProcessingFee(null)
-									 .build())
+							.payAmt(amounts.getInvoiceProcessingFee().negate())
+							.invoiceProcessingFee(null)
+							.build())
 					.paymentDocumentRef(TableRecordReference.of(I_C_Invoice.Table_Name, serviceVendorInvoiceId))
 					.build();
 		}
@@ -252,7 +251,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate credit memos to regular invoices
-		if(allowInvoiceToCreditMemoAllocation)
+		if (allowInvoiceToCreditMemoAllocation)
 		{
 			allocationCandidates.addAll(createAllocationLineCandidates_CreditMemosToInvoices(payableDocuments));
 		}
@@ -266,7 +265,7 @@ public class PaymentAllocationBuilder
 
 		//
 		// Try to allocate sales credit memo invoices to purchase invoices
-			allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
+		allocationCandidates.addAll(createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(payableDocuments));
 
 		//
 		// Allocate payments to invoices
@@ -352,10 +351,11 @@ public class PaymentAllocationBuilder
 				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 
 				//dev-note: register payment discount when fully allocated
-				final Money paymentDiscountAmtInInvoiceCurrency = computePaymentDiscountAmtInInvoiceCurrency(payment, amountsToAllocate);
+				final Money paymentDiscountAmtInInvoiceCurrency = computeAndAllocatePaymentDiscountAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
+				final LocalDate dateAcct = TimeUtil.max(payable.getDateAcct(), payment.getDateAcct());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(type)
 						//
@@ -366,7 +366,7 @@ public class PaymentAllocationBuilder
 						.paymentDocumentRef(payment.getReference())
 						//
 						.dateTrx(dateTrx)
-						.dateAcct(dateTrx)
+						.dateAcct(dateAcct)
 						//
 						// Amounts:
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
@@ -400,7 +400,7 @@ public class PaymentAllocationBuilder
 	}
 
 	@NonNull
-	private static Money computePaymentDiscountAmtInInvoiceCurrency(
+	private static Money computeAndAllocatePaymentDiscountAmtInInvoiceCurrency(
 			@NonNull final IPaymentDocument payment,
 			@NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
 	{
@@ -408,6 +408,12 @@ public class PaymentAllocationBuilder
 				? payment.getPaymentDiscountAmt()
 				: payment.getPaymentDiscountAmt().toZero();
 
+		if (!paymentDiscountAmtInPaymentCurrency.isZero())
+		{
+			payment.addAllocatedAmt(AllocationAmounts.builder()
+					.discountAmt(paymentDiscountAmtInPaymentCurrency)
+					.build());
+		}
 		return amountsToAllocate.currencyRate.convertAmount(paymentDiscountAmtInPaymentCurrency);
 	}
 
@@ -502,7 +508,6 @@ public class PaymentAllocationBuilder
 				purchaseInvoices);
 	}
 
-
 	private List<AllocationLineCandidate> createAllocationLineCandidates_SalesCreditMemoToPurchaseInvoice(
 			@NonNull final List<PayableDocument> payableDocuments)
 	{
@@ -519,7 +524,7 @@ public class PaymentAllocationBuilder
 			{
 				arcs.add(payable);
 			}
-			else if(payable.isAPI())
+			else if (payable.isAPI())
 			{
 				apis.add(PurchaseInvoiceAsInboundPaymentDocumentWrapper.wrap(payable));
 			}
@@ -584,6 +589,7 @@ public class PaymentAllocationBuilder
 
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(paymentOut.getDate(), paymentIn.getDate());
+				final LocalDate dateAcct = TimeUtil.max(paymentOut.getDateAcct(), paymentIn.getDateAcct());
 				final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 						.type(AllocationLineCandidateType.InboundPaymentToOutboundPayment)
 						//
@@ -594,7 +600,7 @@ public class PaymentAllocationBuilder
 						.paymentDocumentRef(paymentIn.getReference())
 						//
 						.dateTrx(dateTrx)
-						.dateAcct(dateTrx)
+						.dateAcct(dateAcct)
 						//
 						// Amounts:
 						.amounts(AllocationAmounts.ofPayAmt(amtToAllocate))
@@ -628,11 +634,6 @@ public class PaymentAllocationBuilder
 		final ArrayList<AllocationLineCandidate> allocationLineCandidates = new ArrayList<>();
 		for (final PayableDocument payable : payableDocuments)
 		{
-			if (payable.getAmountsToAllocate().getWriteOffAmt().isZero())
-			{
-				continue;
-			}
-
 			final AllocationLineCandidate allocationLine = createAllocationLineCandidate_DiscountAndWriteOff(payable);
 			if (allocationLine != null)
 			{
@@ -656,7 +657,12 @@ public class PaymentAllocationBuilder
 		}
 
 		final LocalDate dateTrx = getDefaultDateTrx();
+		final LocalDate dateAcct = payable.getDateAcct();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
+		if (amountsToAllocate.getTotalAmt().isEqualByComparingTo(amountsToAllocate.getDiscountAmt()) && payableOverUnderAmt.signum() != 0)
+		{
+			return null;
+		}
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceDiscountOrWriteOff)
 				//
@@ -667,7 +673,7 @@ public class PaymentAllocationBuilder
 				.paymentDocumentRef(null) // nop
 				//
 				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
+				.dateAcct(dateAcct)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -715,6 +721,7 @@ public class PaymentAllocationBuilder
 		final OrgId orgId = payable.getClientAndOrgId().getOrgId();
 		final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation = payable.getInvoiceProcessingFeeCalculation();
 		final LocalDate dateTrx = TimeUtil.asLocalDate(invoiceProcessingFeeCalculation.getEvaluationDate(), orgDAO.getTimeZone(orgId));
+		final LocalDate dateAcct = payable.getDateAcct();
 		final Money payableOverUnderAmt = payable.computeProjectedOverUnderAmt(amountsToAllocate);
 		final AllocationLineCandidate allocationLine = AllocationLineCandidate.builder()
 				.type(AllocationLineCandidateType.InvoiceProcessingFee)
@@ -726,7 +733,7 @@ public class PaymentAllocationBuilder
 				.paymentDocumentRef(null) // nop
 				//
 				.dateTrx(dateTrx)
-				.dateAcct(dateTrx)
+				.dateAcct(dateAcct)
 				//
 				// Amounts:
 				.amounts(amountsToAllocate)
@@ -800,10 +807,7 @@ public class PaymentAllocationBuilder
 		final boolean positivePaymentAmtToAllocate = payment.getAmountToAllocateInitial().signum() >= 0;
 		if (positivePayableAmtToAllocate != positivePaymentAmtToAllocate)
 		{
-			if (!payable.isAllowAllocateAgainstDifferentSignumPayment())
-			{
-				return false;
-			}
+			return payable.isAllowAllocateAgainstDifferentSignumPayment();
 		}
 
 		//

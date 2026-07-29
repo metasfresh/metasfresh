@@ -13,11 +13,6 @@
 	<artifactId>metasfresh-dlm-swingui</artifactId>
 	<packaging>jar</packaging>
 
-	<properties>
-		<!-- empty property because the sql migration dir already contains a list of base directories -->
-		<migration-sql-basedir></migration-sql-basedir>
-	</properties>
-
 	<dependencies>
 	
 		<!-- #957: needed because we have to inject our own settings into the preferences dialog -->

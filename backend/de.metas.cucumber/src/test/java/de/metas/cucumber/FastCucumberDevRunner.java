@@ -16,6 +16,7 @@ public class FastCucumberDevRunner
 	public static void main(final String[] args)
 	{
 		System.setProperty("user.timezone", "Europe/Berlin");
+		CucumberLifeCycleSupport.beforeAll();
 		loopReadAndExecute();
 	}
 
@@ -26,14 +27,17 @@ public class FastCucumberDevRunner
 		String lastFeatureFilePath = null;
 		while (true)
 		{
-			System.out.println("\n=======================================================");
+			System.out.flush();
+			System.err.flush();
+			System.out.println("\n\n\n=======================================================");
 			System.out.println("WAITING: Paste absolute path to .feature file (or 'exit'):");
+			System.out.println("  Tip: append :LINE to run a single scenario, e.g. MyFeature.feature:55");
 			// Line 2: Contextual Instruction (Conditional)
 			if (lastFeatureFilePath != null)
 			{
 				// Extract just the filename for a cleaner display or use the full path if needed
 				final String filename = new File(lastFeatureFilePath).getName();
-				System.out.println("  > Hit ENTER to re-run last file: **" + filename + "**");
+			System.out.println("  > Hit ENTER to re-run last: **" + filename + "**");
 			}
 			else
 			{
@@ -117,7 +121,12 @@ public class FastCucumberDevRunner
 
 	private static Path createHtmlReportPathAndEnsureDirectories(@NonNull final String featureFilePath)
 	{
-		final Path featurePath = Paths.get(featureFilePath);
+		// Strip line number suffix if present (e.g., "path/file.feature:123" -> "path/file.feature")
+		final String pathWithoutLineNumber = featureFilePath.contains(":") && featureFilePath.lastIndexOf(":") > featureFilePath.lastIndexOf(File.separator)
+				? featureFilePath.substring(0, featureFilePath.lastIndexOf(":"))
+				: featureFilePath;
+
+		final Path featurePath = Paths.get(pathWithoutLineNumber);
 
 		final String featureFileName = featurePath.getFileName().toString();
 		final String baseFolderName = featureFileName.replace(".feature", "");

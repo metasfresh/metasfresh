@@ -1,14 +1,22 @@
 DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric
+)
+;
+DROP FUNCTION IF EXISTS report.Package_Licensing_InOut_Summary_Report(
+    p_DateFrom             timestamp with time zone,
+    p_DateTo               timestamp with time zone,
+    p_Country_id           numeric,
+    p_IsIncludeAllProducts varchar
 )
 ;
 
 CREATE OR REPLACE FUNCTION report.Package_Licensing_InOut_Summary_Report(
-    p_DateFrom   timestamp with time zone,
-    p_DateTo     timestamp with time zone,
-    p_Country_id numeric
+    p_DateFrom                      timestamp with time zone,
+    p_DateTo                        timestamp with time zone,
+    p_Country_id                    numeric,
+    p_IsExcludeDomesticPurchases    varchar DEFAULT 'Y'
 )
     RETURNS TABLE
             (
@@ -44,9 +52,20 @@ DECLARE
     v_report_func_call        text;
     v_column_aliases_list     text;
     v_prefixed_aliases_list   text;
-    v_q_prefixed_aliases_list text; -- **NEW: q.Glas, q.Kunststoff, etc.**
+    v_q_prefixed_aliases_list text;
+    v_org_country_code        varchar;
 
 BEGIN
+
+    -- Resolve org country code for domestic-purchase filtering
+    SELECT CountryCode INTO v_org_country_code
+    FROM C_Country
+    WHERE C_Country_ID = p_Country_id;
+
+    -- Guard: if country not resolvable, use empty string (never matches a real country code)
+    IF v_org_country_code IS NULL THEN
+        v_org_country_code := '';
+    END IF;
 
     SELECT ARRAY_AGG(name)
     INTO C_REQUIRED_MATERIALS
@@ -73,7 +92,6 @@ BEGIN
     INTO v_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
 
-    -- **NEW: Create the q. prefix list for the outer SELECT**
     SELECT TRIM(STRING_AGG(FORMAT('q.%I', material), ', '))
     INTO v_q_prefixed_aliases_list
     FROM UNNEST(v_column_aliases) AS material;
@@ -83,7 +101,7 @@ BEGIN
     SELECT TRIM(
                    STRING_AGG(
                            FORMAT(
-                                   '(SUM(t.material_weight) FILTER (WHERE t.material_name = %L))::varchar AS %I',
+                                   '(ROUND(SUM(t.material_weight) FILTER (WHERE t.material_name = %L), 3))::varchar AS %I',
                                    material_name,
                                    v_column_aliases[idx]
                            ),
@@ -107,6 +125,8 @@ BEGIN
     FROM UNNEST(C_REQUIRED_MATERIALS) WITH ORDINALITY t(material_name, idx);
 
     -- 4) Build the SQL statement to execute (separate function call argument)
+    -- The detail report is always called with IsIncludeAllProducts='Y' from the summary;
+    -- the summary's own filtering handles what to include.
     v_report_func_call := FORMAT(
             'report.Package_Licensing_InOut_Report(p_DateFrom := %L, p_DateTo := %L, p_Country_id := %s)',
             p_DateFrom, p_DateTo, p_Country_id
@@ -118,7 +138,7 @@ BEGIN
     SELECT
         q.ProductGroup,
         q.PackagingType,
-        %6$s -- **FIX: q.Glas, q.Kunststoff, etc.**
+        %6$s
     FROM (
         -- Inner Query: UNION ALL with sort column
         -- HEADER ROW
@@ -149,20 +169,30 @@ BEGIN
                     r.ProductGroup,
                     'Haushalt'::varchar AS PackagingType,
                     r.SmallPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.SmallPackagingWeight, 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.SmallPackagingMaterial = ANY(%5$s)
+                  -- Exclude domestic purchases and pre-licensed (exempt) vendors (when toggle is 'Y')
+                  AND (%8$s = 'N'
+                       OR r.VendorCountryCode IS NULL
+                       OR (r.VendorCountryCode != %7$s AND COALESCE(r.IsVendorPackageLicensingExempt, 'N') != 'Y'))
 
                 UNION ALL
 
                 -- Outer Packaging Rows
+                -- OuterPackagingWeight is the weight of the entire outer package (e.g. one cardboard box),
+                -- so we divide by PackagingInstructionFactor to get the per-unit weight.
                 SELECT
                     r.ProductGroup,
                     'Gewerbe'::varchar AS PackagingType,
                     r.OuterPackagingMaterial AS material_name,
-                    (r.MovementQty * COALESCE(r.OuterPackagingWeight, 0)) AS material_weight
+                    ((COALESCE(r.PurchaseQty, 0) - COALESCE(r.ForeignSalesQty, 0)) * COALESCE(r.OuterPackagingWeight, 0) / NULLIF(COALESCE(r.PackagingInstructionFactor, 1), 0)) AS material_weight
                 FROM %4$s r
                 WHERE r.OuterPackagingMaterial = ANY(%5$s)
+                  -- Exclude domestic purchases and pre-licensed (exempt) vendors (when toggle is 'Y')
+                  AND (%8$s = 'N'
+                       OR r.VendorCountryCode IS NULL
+                       OR (r.VendorCountryCode != %7$s AND COALESCE(r.IsVendorPackageLicensingExempt, 'N') != 'Y'))
             ) t
             GROUP BY t.ProductGroup, t.PackagingType
         ) agg
@@ -177,7 +207,9 @@ $f$,
                     v_data_cols_list, -- %3$s
                     v_report_func_call, -- %4$s
                     v_materials_sql_array, -- %5$s
-                    v_q_prefixed_aliases_list -- **%6$s (New q. prefixed list)**
+                    v_q_prefixed_aliases_list, -- %6$s
+                    QUOTE_LITERAL(v_org_country_code), -- %7$s — org country code for domestic-purchase filter
+                    QUOTE_LITERAL(p_IsExcludeDomesticPurchases) -- %8$s — toggle for domestic-purchase filter
              );
 
     -- 6) Execute and return the result.

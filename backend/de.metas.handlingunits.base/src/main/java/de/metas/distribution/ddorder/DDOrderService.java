@@ -104,6 +104,11 @@ public class DDOrderService
 		ddOrderLowLevelDAO.save(ddOrder);
 	}
 
+	public void saveLine(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		ddOrderLowLevelDAO.save(ddOrderLine);
+	}
+
 	public List<I_DD_OrderLine> retrieveLines(final I_DD_Order order)
 	{
 		return ddOrderLowLevelDAO.retrieveLines(order);
@@ -133,6 +138,18 @@ public class DDOrderService
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
 		documentBL.processEx(ddOrder, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+	}
+
+	public void complete(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+	}
+
+	public void voidIt(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		documentBL.processEx(ddOrder, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 	}
 
 	public void print(@NonNull final DDOrderId ddOrderId)
@@ -325,6 +342,17 @@ public class DDOrderService
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
 		unassignFromResponsibleAndSave(ddOrder);
+	}
+
+	/**
+	 * Marks the order as disconnected from picking ({@code IsPickingDisconnected=Y}), keeping all FKs and the
+	 * DocStatus intact. The order then becomes invisible to the picking guard/reconcile lookup while staying live.
+	 */
+	public void markAsPickingDisconnected(@NonNull final DDOrderId ddOrderId)
+	{
+		final I_DD_Order ddOrder = getById(ddOrderId);
+		ddOrder.setIsPickingDisconnected(true);
+		save(ddOrder);
 	}
 
 	public void removeAllNotStartedSchedules(final DDOrderId ddOrderId)

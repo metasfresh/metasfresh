@@ -32,6 +32,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 
 import javax.annotation.Nullable;
@@ -42,6 +43,8 @@ import java.time.ZonedDateTime;
 public class CreateVirtualInventoryWithQtyReq
 {
 	@NonNull WarehouseId warehouseId;
+	/** Optional: when set, the stock is created on this specific locator (must belong to {@link #warehouseId}); when null, the warehouse's default locator is used. */
+	@Nullable LocatorId locatorId;
 	@NonNull OrgId orgId;
 	@NonNull ClientId clientId;
 	@NonNull ProductId productId;

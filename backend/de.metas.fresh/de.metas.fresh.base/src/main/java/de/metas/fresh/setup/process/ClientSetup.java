@@ -202,9 +202,7 @@ class ClientSetup
 		{
 			// C_BPartner_Location - EDI
 			{
-				final de.metas.edi.model.I_C_BPartner_Location ediBPartnerLocation = InterfaceWrapperHelper.create(orgBPartnerLocation, de.metas.edi.model.I_C_BPartner_Location.class);
-				ediBPartnerLocation.setGLN(null); // TODO: how to set the GLN?!?
-
+				orgBPartnerLocation.setGLN(null); // TODO: how to set the GLN?!?
 			}
 		}
 

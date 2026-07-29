@@ -10,6 +10,7 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.impl.HUQtyService;
+import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
@@ -25,6 +26,7 @@ import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
@@ -42,6 +44,18 @@ public class PPOrderIssueScheduleService
 	private final HUQtyService huQtyService;
 
 	public static final AdMessageKey MSG_AlreadyIssued = AdMessageKey.of("de.metas.handlingunits.pporder.AlreadyIssuedError");
+
+	public static PPOrderIssueScheduleService newInstanceForUnitTesting()
+	{
+		SpringContextHolder.assertUnitTestMode();
+		return SpringContextHolder.getBeanOrSupply(
+				PPOrderIssueScheduleService.class,
+				() -> new PPOrderIssueScheduleService(
+						new PPOrderIssueScheduleRepository(),
+						new HUQtyService(InventoryService.newInstanceForUnitTesting())
+				)
+		);
+	}
 
 	public ImmutableList<PPOrderIssueSchedule> getByOrderId(final PPOrderId ppOrderId)
 	{
@@ -87,13 +101,14 @@ public class PPOrderIssueScheduleService
 					.generatedBy(IssueCandidateGeneratedBy.ofIssueScheduleId(issueScheduleId))
 					.createIssues(
 							HUTransformService.newInstance().husToNewCUs(
-									HUTransformService.HUsToNewCUsRequest.builder()
-											.sourceHU(issueFromHU)
-											.productId(productId)
-											.qtyCU(qtyIssued)
-											.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
-											.build()
-							)
+											HUTransformService.HUsToNewCUsRequest.builder()
+													.sourceHU(issueFromHU)
+													.productId(productId)
+													.qtyCU(qtyIssued)
+													.reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+													.build()
+									)
+									.getNewCUs()
 					);
 		}
 

@@ -51,7 +51,7 @@ public class SourceHuService_RetrieveParentHusThatAreMarkedAsSourceHUsTest
 	{
 		AdempiereTestHelper.get().init();
 
-		sourceHuService = new SourceHUsService();
+		sourceHuService = SourceHUsService.get();
 	}
 
 	@Test

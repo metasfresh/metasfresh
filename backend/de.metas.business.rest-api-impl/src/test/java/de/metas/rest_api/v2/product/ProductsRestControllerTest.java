@@ -34,10 +34,6 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalsystem.ExternalSystemRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
-import de.metas.externalsystem.ExternalSystemConfigRepo;
-import de.metas.externalsystem.audit.ExternalSystemExportAuditRepo;
-import de.metas.externalsystem.externalservice.ExternalServices;
-import de.metas.externalsystem.process.runtimeparameters.RuntimeParametersRepository;
 import de.metas.logging.LogManager;
 import de.metas.pricing.pricelist.PriceListVersionRepository;
 import de.metas.pricing.productprice.ProductPriceRepository;
@@ -49,7 +45,6 @@ import de.metas.product.ProductRepository;
 import de.metas.rest_api.bpartner_pricelist.BpartnerPriceListServicesFacade;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
-import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.rest_api.v2.pricing.PriceListRestService;
 import de.metas.rest_api.v2.pricing.ProductPriceRestService;
 import de.metas.rest_api.v2.uomconversion.UomConversionRestService;
@@ -101,14 +96,8 @@ public class ProductsRestControllerTest
 		Env.setLoggedUserId(Env.getCtx(), UserId.METASFRESH);
 
 		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade();
-		final ExternalServices externalServices = Mockito.mock(ExternalServices.class);
 
-		final ExternalSystemService externalSystemService = new ExternalSystemService(ExternalSystemConfigRepo.newInstanceForUnitTesting(),
-				ExternalSystemExportAuditRepo.newInstanceForUnitTesting(),
-				new RuntimeParametersRepository(),
-				externalServices,
-				new JsonExternalSystemRetriever(),
-				new ExternalSystemRepository());
+		final ExternalSystemService externalSystemService = ExternalSystemService.newInstanceForUnitTesting();
 
 		final ProductRepository productRepository = new ProductRepository();
 

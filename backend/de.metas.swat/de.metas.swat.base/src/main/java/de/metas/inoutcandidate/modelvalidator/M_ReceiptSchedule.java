@@ -60,6 +60,7 @@ public class M_ReceiptSchedule
 			ModelValidator.TYPE_BEFORE_CHANGE
 	}, ifColumnsChanged = {
 			I_M_ReceiptSchedule.COLUMNNAME_Processed, // on line close we want to recalculate Qty Over/Under Delivery
+			I_M_ReceiptSchedule.COLUMNNAME_IsClosed, // on line close/reopen we want to recalculate Qty Over/Under Delivery
 
 			// https://github.com/metasfresh/metasfresh/issues/315:
 			// call: onReceiptScheduleChanged if *any* for the "input" columns changed
@@ -150,7 +151,7 @@ public class M_ReceiptSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void updateHeaderAggregationKey(final I_M_ReceiptSchedule sched)
 	{
-		if (sched.isProcessed())
+		if (sched.isProcessed() || sched.isIsClosed())
 		{
 			return;
 		}

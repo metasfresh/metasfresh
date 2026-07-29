@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { closePickingTarget, useAvailablePickingTargets } from '../../../api/picking';
+import React, { useCallback, useEffect, useRef } from 'react';
+import { closePickingTarget, setTUPickingTargetFromGrai, useAvailablePickingTargets } from '../../../api/picking';
 import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { useDispatch } from 'react-redux';
@@ -12,6 +12,12 @@ import { useScreenDefinition } from '../../../hooks/useScreenDefinition';
 import { useMobileNavigation } from '../../../hooks/useMobileNavigation';
 import { PickingTargetType } from '../../../constants/PickingTargetType';
 import { pickingJobOrLineLocation } from '../../../routes/picking';
+import BarcodeScannerComponent from '../../../components/BarcodeScannerComponent';
+import { parseGraiFromRawInput } from '../../../utils/grai';
+import { extractUserFriendlyErrorMessageFromAxiosError, toastError } from '../../../utils/toast';
+import * as uiTrace from '../../../utils/ui_trace';
+
+const GRAI_DEBOUNCE_MILLIS = 1500;
 
 export const SelectPickTargetScreen = () => {
   const { history, url, wfProcessId, activityId, lineId, type } = useScreenDefinition({
@@ -24,7 +30,21 @@ export const SelectPickTargetScreen = () => {
   useHeaderUpdate({ url, currentTarget });
 
   const onCloseTargetClicked = async () => {
-    closePickingTarget().then(() => history.goBack());
+    // On success navigate back; on a server rejection (e.g. the carrier-advise consistency guard rejecting a
+    // parcel with two distinct manual carriers) stay on the screen and surface the error, instead of swallowing
+    // it — the same way completing the job surfaces it. See mobile-webui CLAUDE.md "API Error Surfacing".
+    closePickingTarget()
+      .then(() => history.goBack())
+      .catch((axiosError) => {
+        uiTrace.trace({
+          eventName: 'closePickingTargetFailed',
+          httpStatus: axiosError?.response?.status ?? null,
+          axiosCode: axiosError?.code ?? null,
+          isNetworkFailure: !axiosError?.response,
+          message: extractUserFriendlyErrorMessageFromAxiosError({ axiosError }),
+        });
+        toastError({ axiosError });
+      });
   };
 
   return (
@@ -47,7 +67,11 @@ const NewTargets = ({ wfProcessId, lineId, type }) => {
   const dispatch = useDispatch();
   const history = useMobileNavigation();
 
-  const { isTargetsLoading, targets, setPickingTarget } = useAvailablePickingTargets({ wfProcessId, lineId, type });
+  const { isTargetsLoading, targets, graiScanEnabled, setPickingTarget } = useAvailablePickingTargets({
+    wfProcessId,
+    lineId,
+    type,
+  });
 
   const onSelectTargetClicked = async (target) => {
     setPickingTarget({ target })
@@ -55,8 +79,11 @@ const NewTargets = ({ wfProcessId, lineId, type }) => {
       .then(() => history.goBack()); // go back to Picking Job
   };
 
+  const onGraiScanned = useGraiScanner({ wfProcessId, lineId, dispatch, history });
+
   return (
     <>
+      {graiScanEnabled && <GraiScanPanel onGraiScanned={onGraiScanned} />}
       {isTargetsLoading && <Spinner />}
       {targets?.map((target, index) => {
         return (
@@ -75,6 +102,99 @@ NewTargets.propTypes = {
   wfProcessId: PropTypes.string.isRequired,
   lineId: PropTypes.string,
   type: PropTypes.string.isRequired,
+};
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
+
+/**
+ * Hook that returns an `onGraiScanned(rawString)` callback implementing the
+ * debounce + exactly-one-distinct logic required by REQUIREMENTS §3.
+ *
+ * Accumulates distinct parsed GRAIs for GRAI_DEBOUNCE_MILLIS after the last
+ * scan.  When the timer fires:
+ *   - exactly one distinct GRAI → POST to the pick-target endpoint and navigate back
+ *   - two or more distinct GRAIs → toast error (i18n key: activities.picking.graiScan.multipleScanned), no list
+ * Identical repeated scans are deduplicated (count as one distinct value).
+ */
+const useGraiScanner = ({ wfProcessId, lineId, dispatch, history }) => {
+  const pendingGraisRef = useRef(new Set());
+  const debounceTimerRef = useRef(null);
+
+  const fireDebounced = useCallback(() => {
+    const distinctGrais = [...pendingGraisRef.current];
+    pendingGraisRef.current = new Set();
+    debounceTimerRef.current = null;
+
+    if (distinctGrais.length === 0) return;
+
+    if (distinctGrais.length >= 2) {
+      toastError({ plainMessage: trl('activities.picking.graiScan.multipleScanned') });
+      return;
+    }
+
+    // Exactly one distinct GRAI
+    const graiString = distinctGrais[0];
+    setTUPickingTargetFromGrai({ wfProcessId, lineId, graiString })
+      .then((wfProcess) => dispatch(updateWFProcess({ wfProcess })))
+      .then(() => history.goBack())
+      .catch((axiosError) => toastError({ axiosError }));
+  }, [wfProcessId, lineId, dispatch, history]);
+
+  const fireDebouncedRef = useRef(fireDebounced);
+  useEffect(() => {
+    fireDebouncedRef.current = fireDebounced;
+  }, [fireDebounced]);
+
+  const onGraiScanned = useCallback((rawString) => {
+    const grai = parseGraiFromRawInput(rawString);
+    if (!grai) return; // unparseable scans are ignored at this level; the scanner component handles beep/error
+
+    pendingGraisRef.current.add(grai);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => fireDebouncedRef.current(), GRAI_DEBOUNCE_MILLIS);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  return onGraiScanned;
+};
+
+//
+//
+//--------------------------------------------------------------------------
+//
+//
+
+/**
+ * Renders the live GRAI scanner (camera + RFID-as-keyboard).
+ * No tap required — the scanner runs continuously from mount.
+ */
+const GraiScanPanel = ({ onGraiScanned }) => {
+  const onResolvedResult = useCallback(
+    (resolvedResult) => {
+      onGraiScanned(resolvedResult.scannedBarcode);
+    },
+    [onGraiScanned]
+  );
+
+  return <BarcodeScannerComponent onResolvedResult={onResolvedResult} testId="grai-scan-input" />;
+};
+
+GraiScanPanel.propTypes = {
+  onGraiScanned: PropTypes.func.isRequired,
 };
 
 //

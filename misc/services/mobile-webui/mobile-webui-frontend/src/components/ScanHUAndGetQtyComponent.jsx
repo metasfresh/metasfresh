@@ -1,12 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../utils/translations';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
+import ButtonWithIndicator from './buttons/ButtonWithIndicator';
+import GraiCapturePanel from './GraiCapturePanel';
+import { getAssignedGrais, getExtraGrais, mergeGraiArrays } from '../utils/grai';
 import { formatQtyToHumanReadable, formatQtyToHumanReadableStr } from '../utils/qtys';
 import { useBooleanSetting } from '../reducers/settings';
-import { toastError, toastErrorFromObj } from '../utils/toast';
+import { toastError, toastErrorFromObj, toastNotification } from '../utils/toast';
 import { toQRCodeString } from '../utils/qrCode/hu';
 import HUScanner from './huSelector/HUScanner';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
@@ -17,10 +20,15 @@ const STATUS_NOT_INITIALIZED = 'NOT_INITIALIZED';
 const STATUS_READ_HU_BARCODE = 'READ_HU_BARCODE';
 const STATUS_READ_PRODUCT_BARCODE = 'READ_PRODUCT_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
+const STATUS_READ_GRAI = 'READ_GRAI';
 
 const DEFAULT_MSG_qtyAboveMax = 'activities.picking.qtyAboveMax';
 const DEFAULT_MSG_notPositiveQtyNotAllowed = 'activities.picking.notPositiveQtyNotAllowed';
 const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcode';
+
+// Stable empty-array default (never a fresh [] literal per render) so handleAddGrais's useCallback
+// dep on `existingLuGrais` does not change identity when the prop is simply absent/not-yet-loaded.
+const EMPTY_LU_GRAIS = [];
 
 const ScanHUAndGetQtyComponent = ({
   scannedBarcode: scannedBarcodeParam,
@@ -54,11 +62,68 @@ const ScanHUAndGetQtyComponent = ({
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
   //
+  graiScanEnabled = false,
+  existingLuGrais = EMPTY_LU_GRAIS,
+  //
   getConfirmationPromptForQty,
   onResult,
   onClose: onCloseCallback,
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_NOT_INITIALIZED);
+  // GRAI Flow-Through: when graiScanEnabled, the confirmed qty result is stashed here and the GRAI
+  // capture is shown inline (non-skippable) before the pick is reported, so qty + GRAIs go out in one
+  // atomic onResult call.
+  const [pendingGraiResult, setPendingGraiResult] = useState(null);
+  // `codes` + `skippedCodes` are ONE state object (not two separate useState calls) so both derive
+  // from a SINGLE queued functional update per scan event, and — crucially — `skippedCodes` is the
+  // actual list of already-reported LU-skips, not just a count. A skipped code is NOT added to
+  // `codes` (it must never occupy a crate slot), so without its own memory a second delivery of the
+  // same physical scan would re-skip and re-count it. BarcodeScannerComponent and
+  // useKeyboardBarcodeReader can both deliver the same scan in one event tick (see the handler-identity
+  // comment below); feeding `prev.skippedCodes` back into mergeGraiArrays makes a redelivered skip a
+  // silent no-op, so the count (and the toast) fire at most once per physical crate.
+  const [graiCapture, setGraiCapture] = useState({ codes: [], skippedCodes: [] });
+  const { codes: graiCodes, skippedCodes } = graiCapture;
+  const skippedCount = skippedCodes.length;
+  // Stable handler identities (matching the HU-Manager useGrais hook): an inline arrow here would be
+  // a new function every render, so GraiCapturePanel's onResolvedResult useCallback would change each
+  // render and BarcodeScannerComponent would re-subscribe its keyboard listener mid-scan — dropping
+  // codes during a rapid RFID burst (multiple GRAIs scanned back-to-back). handleAddGrais additionally
+  // depends on `existingLuGrais`, which is stable for the whole capture session (fetched once per
+  // pick-step entry — see useAvailablePickingTargets), so identity stability still holds.
+  const handleAddGrais = useCallback(
+    (newGrais) =>
+      setGraiCapture((prev) => {
+        const { merged, skipped } = mergeGraiArrays(prev.codes, newGrais, existingLuGrais, prev.skippedCodes);
+        const didCodesChange = merged !== prev.codes;
+        if (!didCodesChange && skipped.length === 0) {
+          return prev;
+        }
+        return {
+          codes: merged,
+          skippedCodes: skipped.length ? [...prev.skippedCodes, ...skipped] : prev.skippedCodes,
+        };
+      }),
+    [existingLuGrais]
+  );
+  const handleRemoveGrai = useCallback(
+    (grai) => setGraiCapture((prev) => ({ ...prev, codes: prev.codes.filter((g) => g !== grai) })),
+    []
+  );
+  const handleClearAllGrais = useCallback(() => setGraiCapture((prev) => ({ ...prev, codes: [] })), []);
+
+  // non-blocking "N skipped" notice — fires once per genuinely-new skip (the delta in
+  // skippedCodes.length since the last commit). Because a redelivered skip is already folded out by
+  // mergeGraiArrays (via prev.skippedCodes above), the delta is exactly the number of distinct new
+  // already-on-LU crates, so a dual-reader duplicate never produces a second (or inflated) toast.
+  const prevSkippedCountRef = useRef(0);
+  useEffect(() => {
+    const delta = skippedCount - prevSkippedCountRef.current;
+    prevSkippedCountRef.current = skippedCount;
+    if (delta > 0) {
+      toastNotification({ plainMessage: trl('activities.picking.graiScan.skippedNotice', { count: delta }) });
+    }
+  }, [skippedCount]);
   const { resolvedBarcodeData, setResolvedBarcodeData, updateResolvedBarcodeData, computeNewResolvedBarcodeData } =
     useResolvedBarcodeData({
       userInfo,
@@ -175,7 +240,9 @@ const ScanHUAndGetQtyComponent = ({
     }
 
     // Qty shall be less than or equal to qtyMax
-    if (resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
+    // NOTE: skip qtyMax validation when over-pick confirmation prompt is enabled,
+    // because the prompt handles the over-delivery scenario instead
+    if (!getConfirmationPromptForQty && resolvedBarcodeData.qtyMax && resolvedBarcodeData.qtyMax > 0) {
       const { qtyEffective: diff, uomEffective: diffUom } = formatQtyToHumanReadable({
         qty: qtyEntered - resolvedBarcodeData.qtyMax,
         uom,
@@ -200,12 +267,13 @@ const ScanHUAndGetQtyComponent = ({
     bestBeforeDate,
     productionDate,
     lotNo,
+    serialNos,
     productNo,
     barcodeType,
     isCloseTarget = false,
     isDone = true,
   }) => {
-    return onResult({
+    const result = {
       qty: qtyEnteredAndValidated,
       qtyRejected,
       reason: qtyRejectedReason,
@@ -218,10 +286,26 @@ const ScanHUAndGetQtyComponent = ({
       bestBeforeDate,
       productionDate,
       lotNo,
+      serialNos,
       productNo,
       isCloseTarget,
       isDone,
-    });
+    };
+
+    // GRAI Flow-Through: when GRAI scanning is required, do not report the pick yet — auto-invoke the
+    // inline GRAI capture (one GRAI per picked crate) and report qty + GRAIs together on save. This
+    // applies to BOTH the plain "OK" and the "OK und LU schließen" (isCloseTarget) completion paths:
+    // the close-LU result carries isCloseTarget through pendingGraiResult, so on save the backend
+    // stamps the GRAIs and then closes the LU within the same atomic pick. Closing the LU must never
+    // be a way to skip the GRAI scan for a GRAI-required partner.
+    if (graiScanEnabled && qtyEnteredAndValidated > 0) {
+      setGraiCapture({ codes: [], skippedCodes: [] });
+      setPendingGraiResult(result);
+      setProgressStatus(STATUS_READ_GRAI);
+      return undefined;
+    }
+
+    return onResult(result);
   };
 
   const onCloseDialog = () => {
@@ -299,6 +383,44 @@ const ScanHUAndGetQtyComponent = ({
         />
       );
     }
+    case STATUS_READ_GRAI: {
+      // Coerce to a number: the entered qty can arrive as a string, and `length === expectedCount`
+      // (and thus canSave) would silently fail the strict-equality check against a string.
+      const expectedCount = Number(pendingGraiResult.qty);
+      const assignedGrais = getAssignedGrais(graiCodes, expectedCount);
+      const extraGrais = getExtraGrais(graiCodes, expectedCount);
+      // Save only when exactly N (= picked crates) GRAIs are captured, no extras.
+      const canSave = graiCodes.length === expectedCount;
+      return (
+        <GraiCapturePanel
+          graiCodes={graiCodes}
+          assignedGrais={assignedGrais}
+          extraGrais={extraGrais}
+          expectedCount={expectedCount}
+          skippedCount={skippedCount}
+          countKey="activities.picking.graiScan.count"
+          countExtraKey="activities.picking.graiScan.countExtra"
+          countSkippedKey="activities.picking.graiScan.countSkipped"
+          clearAllButtonKey="activities.picking.graiScan.clearAll.buttonCaption"
+          clearAllConfirmKey="activities.picking.graiScan.clearAll.confirmQuestion"
+          onAddGrais={handleAddGrais}
+          onRemoveGrai={handleRemoveGrai}
+          onClearAll={handleClearAllGrais}
+        >
+          <ButtonWithIndicator
+            captionKey="activities.picking.graiScan.save.buttonCaption"
+            testId="grai-save-button"
+            disabled={!canSave}
+            onClick={() =>
+              onResult({ ...pendingGraiResult, setGrais: true, graiCodes: assignedGrais })?.catch?.((error) =>
+                toastErrorFromObj(error)
+              )
+            }
+            additionalCssClass="action-button"
+          />
+        </GraiCapturePanel>
+      );
+    }
     default: {
       return null;
     }
@@ -340,6 +462,14 @@ ScanHUAndGetQtyComponent.propTypes = {
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
   invalidQtyMessageKey: PropTypes.string,
+  //
+  // GRAI Flow-Through: when true, an inline GRAI capture is auto-invoked after qty entry and the
+  // captured codes are reported on the same onResult call (setGrais/graiCodes).
+  graiScanEnabled: PropTypes.bool,
+  // Canonical GRAI strings already assigned to this pick's effective loading unit (from prior picks
+  // on this LU) — mirrors the server-side LU-wide dedupe so a re-scanned code does not advance the
+  // count (see handleAddGrais).
+  existingLuGrais: PropTypes.arrayOf(PropTypes.string),
   //
   // Functions
   getConfirmationPromptForQty: PropTypes.func,

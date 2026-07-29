@@ -40,6 +40,7 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
+import de.metas.cucumber.stepdefs.rabbitMQ.RabbitMQ_StepDef;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
@@ -56,7 +57,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.planning.ProductPlanning;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IADPInstanceDAO;
@@ -65,7 +65,6 @@ import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -82,9 +81,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -142,6 +139,7 @@ public class PP_Order_StepDef
 	private final M_HU_StepDefData huTable;
 	private final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable;
 	private final M_Warehouse_StepDefData warehouseTable;
+	private final RabbitMQ_StepDef rabbitMQStepDef;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -156,8 +154,10 @@ public class PP_Order_StepDef
 			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable,
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final ExternalSystem_Config_LeichMehl_StepDefData leichMehlConfigTable,
-			@NonNull final M_Warehouse_StepDefData warehouseTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final RabbitMQ_StepDef rabbitMQStepDef)
 	{
+		this.rabbitMQStepDef = rabbitMQStepDef;
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
 		this.productPlanningTable = productPlanningTable;
@@ -173,11 +173,21 @@ public class PP_Order_StepDef
 		this.warehouseTable = warehouseTable;
 	}
 
+	/**
+	 * Waits (up to {@code timeoutSec}) for the committed {@code PP_Order} record(s) matching the DataTable.
+	 * <p>
+	 * The rabbitMQ queues are drained first via {@link RabbitMQ_StepDef#wait_empty_all_queues()} (material-events
+	 * then async-batch) so the async candidate-to-order generation chain has fully settled before the poll asserts.
+	 * This keeps the technical drain out of the feature file — see module CLAUDE.md rule 7 ("drain inside the
+	 * consuming step def, as late as possible, never as a bare step in the .feature file").
+	 */
 	@And("^after not more than (.*)s, PP_Orders are found$")
 	public void validatePP_Order(
 			final int timeoutSec,
-			@NonNull final DataTable dataTable)
+			@NonNull final DataTable dataTable) throws InterruptedException
 	{
+		rabbitMQStepDef.wait_empty_all_queues();
+
 		DataTableRows.of(dataTable).forEach(row -> validatePP_Order(timeoutSec, row));
 	}
 
@@ -190,47 +200,18 @@ public class PP_Order_StepDef
 	@And("create PP_Order:")
 	public void compute_PPOrderCreateRequest_to_create_pp_order(@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			final String ppOrderDocBaseType = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_DocBaseType);
-			final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(ppOrderDocBaseType);
-
+		DataTableRows.of(dataTable).forEach(row -> {
+			final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(row.getAsString(I_PP_Order.COLUMNNAME_DocBaseType));
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
-			final String resourceIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_S_Resource.COLUMNNAME_S_Resource_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_S_Resource testResource = resourceTable.get(resourceIdentifier);
-			assertThat(testResource).isNotNull();
-			final ResourceId resourceId = ResourceId.ofRepoId(testResource.getS_Resource_ID());
+			final ResourceId resourceId = row.getAsIdentifier(I_S_Resource.COLUMNNAME_S_Resource_ID).lookupNotNullIdIn(resourceTable);
+			final ProductId productId = row.getAsIdentifier(I_M_Product.COLUMNNAME_M_Product_ID).lookupNotNullIdIn(productTable);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
-			assertThat(product).isNotNull();
-			final ProductId productId = ProductId.ofRepoId(product.getM_Product_ID());
+			final Quantity quantity = Quantity.of(row.getAsInt(I_PP_Order.COLUMNNAME_QtyEntered), uomDAO.getEachUOM());
 
-			final int enteredQuantity = DataTableUtil.extractIntForColumnName(tableRow, I_PP_Order.COLUMNNAME_QtyEntered);
-			final I_C_UOM uom = uomDAO.getEachUOM();
-			final Quantity quantity = Quantity.of(enteredQuantity, uom);
-
-			final Instant dateOrdered = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DateOrdered);
-			final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DatePromised);
-			final Instant dateStartSchedule = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order.COLUMNNAME_DateStartSchedule);
-
-			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
-
-			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final WarehouseId warehouseId;
-			if (Check.isNotBlank(warehouseIdentifier))
-			{
-				final I_M_Warehouse warehouseRecord = warehouseTable.get(warehouseIdentifier);
-				warehouseId = WarehouseId.ofRepoId(warehouseRecord.getM_Warehouse_ID());
-			}
-			else
-			{
-				warehouseId = StepDefConstants.WAREHOUSE_ID;
-			}
+			final WarehouseId warehouseId = row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_M_Warehouse_ID)
+					.map(warehouseTable::getId)
+					.orElse(StepDefConstants.WAREHOUSE_ID);
 
 			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
@@ -239,23 +220,20 @@ public class PP_Order_StepDef
 					.warehouseId(warehouseId)
 					.productId(productId)
 					.qtyRequired(quantity)
-					.dateOrdered(dateOrdered)
-					.datePromised(datePromised)
-					.dateStartSchedule(dateStartSchedule)
-					.completeDocument(completeDocument);
+					.dateOrdered(row.getAsInstant(I_PP_Order.COLUMNNAME_DateOrdered))
+					.datePromised(row.getAsInstant(I_PP_Order.COLUMNNAME_DatePromised))
+					.dateStartSchedule(row.getAsInstant(I_PP_Order.COLUMNNAME_DateStartSchedule))
+					.completeDocument(row.getAsOptionalBoolean("completeDocument").orElseFalse());
 
-			if (Check.isNotBlank(productPlanningIdentifier))
-			{
-				final ProductPlanning productPlanning = productPlanningTable.get(productPlanningIdentifier);
-				ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull());
-			}
+			row.getAsOptionalIdentifier(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID)
+					.map(productPlanningTable::get)
+					.ifPresent(productPlanning -> ppOrderCreateRequest.productPlanningId(productPlanning.getIdNotNull()));
 
 			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
-			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
-			ppOrderTable.put(ppOrderIdentifier, ppOrder);
-		}
+			ppOrderTable.put(row.getAsIdentifier(I_PP_Order.COLUMNNAME_PP_Order_ID), ppOrder);
+		});
 	}
 
 	@And("complete planning for PP_Order:")
@@ -383,7 +361,7 @@ public class PP_Order_StepDef
 		}
 	}
 
-	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed|closed)$")
 	public void order_action(
 			@NonNull final String orderIdentifier,
 			@NonNull final String action)
@@ -399,6 +377,11 @@ public class PP_Order_StepDef
 			case completed:
 				orderRecord.setDocAction(IDocument.ACTION_Complete);
 				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case closed:
+				// Closing reports the not-yet-started routing activities, which creates the ActivityControl cost collectors.
+				orderRecord.setDocAction(IDocument.ACTION_Close);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Close, IDocument.STATUS_Closed);
 				break;
 			default:
 				throw new AdempiereException("Unhandled PP_Order action")
@@ -455,9 +438,13 @@ public class PP_Order_StepDef
 		final PPOrderId ppOrderId = row.getAsOptionalIdentifier().flatMap(ppOrderTable::getIdOptional).orElse(null);
 		if (ppOrderId != null)
 		{
-			return queryBL.createQueryBuilder(I_PP_Order.class)
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId)
-					.create();
+			final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrderId);
+
+			row.getAsOptionalEnum(I_PP_Order.COLUMNNAME_DocStatus, DocStatus.class)
+					.ifPresent(docStatus -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus));
+
+			return queryBuilder.create();
 		}
 
 		final ProductId productId = row.getAsIdentifier(I_PP_Order.COLUMNNAME_M_Product_ID).lookupIdIn(productTable);

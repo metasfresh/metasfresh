@@ -1,6 +1,7 @@
 package de.metas.material.planning;
 
 import java.time.temporal.TemporalUnit;
+import java.util.Optional;
 
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -39,7 +40,7 @@ public interface IResourceProductService extends ISingletonService
 
 	I_M_Product getProductByResourceId(ResourceId resourceId);
 
-	ProductId getProductIdByResourceId(ResourceId resourceId);
+	Optional<ProductId> getProductIdByResourceId(ResourceId resourceId);
 
 	TemporalUnit getResourceTemporalUnit(ResourceId resourceId);
 

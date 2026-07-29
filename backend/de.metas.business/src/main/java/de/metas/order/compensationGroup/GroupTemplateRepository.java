@@ -88,6 +88,7 @@ public class GroupTemplateRepository
 		return GroupTemplate.builder()
 				.id(GroupTemplateId.ofRepoId(schemaRecord.getC_CompensationGroup_Schema_ID()))
 				.name(schemaRecord.getName())
+				.isInheritPackingInstruction(schemaRecord.isInheritPackingInstruction())
 				.activityId(ActivityId.ofRepoIdOrNull(schemaRecord.getC_Activity_ID()))
 				.regularLinesToAdd(mainLines)
 				.compensationLines(compensationLines)
@@ -120,6 +121,7 @@ public class GroupTemplateRepository
 				.contractConditionsId(ConditionsId.ofRepoIdOrNull(record.getC_Flatrate_Conditions_ID()))
 				.isAllowSeparateInvoicing(record.isAllowSeparateInvoicing())
 				.isHideWhenPrinting(record.isHideWhenPrinting())
+				.isWithoutCharge(record.isWithoutCharge())
 				.build();
 	}
 

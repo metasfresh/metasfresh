@@ -10,11 +10,17 @@ import de.metas.ui.web.window.datatypes.json.JSONNullValue;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.ReferenceListAwareEnum;
+import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 
 /*
  * #%L
@@ -158,12 +164,75 @@ public final class ViewRowFieldNameAndJsonValues
 	public boolean getAsBoolean(@NonNull final String fieldName, final boolean defaultValueIfNotFoundOrError)
 	{
 		final Object valueObj = map.get(fieldName);
+		//noinspection DataFlowIssue
 		return StringUtils.toBoolean(valueObj, defaultValueIfNotFoundOrError);
+	}
+
+	@NonNull
+	public <T extends ReferenceListAwareEnum> T getAsEnum(@NonNull final String fieldName, @NonNull final Class<T> type)
+	{
+		final Object valueObj = map.get(fieldName);
+
+		if (valueObj == null || JSONNullValue.isNull(valueObj))
+		{
+			throw new AdempiereException("Value is null for " + fieldName);
+		}
+		else if (type.isInstance(valueObj))
+		{
+			return type.cast(valueObj);
+		}
+		else if (valueObj instanceof LookupValue)
+		{
+			final String code = ((LookupValue)valueObj).getIdAsString();
+			return ReferenceListAwareEnums.ofCode(code, type);
+		}
+		else
+		{
+			final String code = valueObj.toString();
+			return ReferenceListAwareEnums.ofCode(code, type);
+		}
+	}
+
+	@Nullable
+	public Instant getAsInstant(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+		return TimeUtil.asInstant(valueObj);
+	}
+
+	@Nullable
+	public String getAsString(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+
+		if (valueObj == null || JSONNullValue.isNull(valueObj))
+		{
+			return null;
+		}
+		else if (valueObj instanceof LookupValue)
+		{
+			return ((LookupValue)valueObj).getIdAsString();
+		}
+		else if (valueObj instanceof ReferenceListAwareEnum)
+		{
+			return ((ReferenceListAwareEnum)valueObj).getCode();
+		}
+		else
+		{
+			return valueObj.toString();
+		}
 	}
 
 	public boolean isEmpty(@NonNull final String fieldName)
 	{
 		final Object valueObj = map.get(fieldName);
 		return valueObj == null || JSONNullValue.isNull(valueObj) || valueObj.toString().isEmpty();
+	}
+
+	@Nullable
+	public Object get(@NonNull final String fieldName)
+	{
+		final Object valueObj = map.get(fieldName);
+		return JSONNullValue.isNull(valueObj) ? null : valueObj;
 	}
 }

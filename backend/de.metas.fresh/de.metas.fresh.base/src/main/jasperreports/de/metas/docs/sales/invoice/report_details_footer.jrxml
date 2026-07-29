@@ -8,6 +8,8 @@
 	<property name="ireport.y" value="0"/>
 	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\dev.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w1" value="316"/>
+	<property name="com.jaspersoft.studio.data.sql.SQLQueryDesigner.sash.w2" value="679"/>
 	<import value="net.sf.jasperreports.engine.*"/>
 	<import value="java.util.*"/>
 	<import value="net.sf.jasperreports.engine.data.*"/>
@@ -19,8 +21,7 @@
 		<defaultValueExpression><![CDATA[$P{ad_language}]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language} ) as i
-JOIN report.taxnote ( $P{c_invoice_id}, $P{ad_language} ) taxnote  on 1=1;]]>
+		<![CDATA[SELECT * FROM de_metas_endcustomer_fresh_reports.Docs_Invoice_Details_Footer ( $P{c_invoice_id}, $P{ad_language} ) ;]]>
 	</queryString>
 	<field name="descriptionbottom" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.name" value="descriptionbottom"/>

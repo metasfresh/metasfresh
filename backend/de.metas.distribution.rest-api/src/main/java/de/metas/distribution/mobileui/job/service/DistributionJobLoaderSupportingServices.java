@@ -2,14 +2,14 @@ package de.metas.distribution.mobileui.job.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
-import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.distribution.ddorder.DDOrderQuery;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveSchedule;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfig;
+import de.metas.distribution.mobileui.config.MobileUIDistributionConfigRepository;
 import de.metas.distribution.mobileui.external_services.hu.DistributionHUService;
 import de.metas.distribution.mobileui.external_services.hu.HUInfo;
 import de.metas.distribution.mobileui.external_services.product.DistributionProductService;
@@ -22,6 +22,8 @@ import de.metas.distribution.mobileui.external_services.warehouse.DistributionWa
 import de.metas.distribution.mobileui.external_services.warehouse.LocatorInfo;
 import de.metas.distribution.mobileui.external_services.warehouse.WarehouseInfo;
 import de.metas.handlingunits.HuId;
+import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.order.OrderId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -31,6 +33,8 @@ import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.adempiere.warehouse.LocatorId;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -90,6 +94,16 @@ public class DistributionJobLoaderSupportingServices
 				.collect(Collectors.groupingBy(ddOrderLine -> DDOrderId.ofRepoId(ddOrderLine.getDD_Order_ID()), Collectors.toList()));
 	}
 
+	public List<I_DD_OrderLine> retrieveLines(@NonNull final I_DD_Order ddOrder)
+	{
+		return ddOrderService.retrieveLines(ddOrder);
+	}
+
+	public void saveLine(@NonNull final I_DD_OrderLine ddOrderLine)
+	{
+		ddOrderService.saveLine(ddOrderLine);
+	}
+
 	public Map<DDOrderLineId, List<DDOrderMoveSchedule>> getSchedulesByDDOrderLineIds(final Set<DDOrderLineId> ddOrderLineIds)
 	{
 		if (ddOrderLineIds.isEmpty()) {return ImmutableMap.of();}
@@ -98,6 +112,11 @@ public class DistributionJobLoaderSupportingServices
 				.stream()
 				.collect(Collectors.groupingBy(DDOrderMoveSchedule::getDdOrderLineId, Collectors.toList()));
 		return CollectionUtils.fillMissingKeys(map, ddOrderLineIds, ImmutableList.of());
+	}
+
+	public boolean hasInTransitSchedules(@NonNull final LocatorId inTransitLocatorId)
+	{
+		return ddOrderMoveScheduleService.hasInTransitSchedules(inTransitLocatorId);
 	}
 
 	public ZoneId getTimeZone(final OrgId orgId)
@@ -119,6 +138,13 @@ public class DistributionJobLoaderSupportingServices
 	{
 		final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_ID());
 		return ppOrderId != null ? sourceDocService.getManufacturingOrderRef(ppOrderId) : null;
+	}
+
+	@NonNull
+	public ITranslatableString getPickingInstruction(@NonNull final I_DD_Order ddOrder)
+	{
+		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(ddOrder.getForward_PP_Order_BOMLine_ID());
+		return orderBOMLineId != null ? sourceDocService.getPickingInstruction(orderBOMLineId) : TranslatableStrings.empty();
 	}
 
 	@NonNull

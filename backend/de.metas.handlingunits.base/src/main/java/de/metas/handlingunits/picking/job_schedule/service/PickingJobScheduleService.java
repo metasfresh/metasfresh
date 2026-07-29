@@ -2,7 +2,6 @@ package de.metas.handlingunits.picking.job_schedule.service;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.handlingunits.picking.job.service.external.product.PickingJobProductService;
 import de.metas.handlingunits.picking.job.service.external.shipmentschedule.PickingJobShipmentScheduleService;
@@ -12,7 +11,10 @@ import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobSc
 import de.metas.handlingunits.picking.job_schedule.service.commands.PickingJobScheduleAutoAssignRequest;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedules;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleAndJobSchedulesCollection;
+import de.metas.bpartner.service.IBPGroupDAO;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.IOrderDAO;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingJobScheduleId;
 import de.metas.picking.api.ShipmentScheduleAndJobScheduleIdSet;
@@ -28,13 +30,14 @@ import lombok.RequiredArgsConstructor;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
+import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
@@ -42,6 +45,9 @@ import java.util.stream.Stream;
 public class PickingJobScheduleService
 {
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	@NonNull private final IBPartnerDAO bpartnersDAO = Services.get(IBPartnerDAO.class);
+	@NonNull private final IBPGroupDAO bpGroupDAO = Services.get(IBPGroupDAO.class);
+	@NonNull private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@NonNull private final PickingJobScheduleRepository pickingJobScheduleRepository;
 	@NonNull private final WorkplaceRepository workplaceRepository;
@@ -61,6 +67,17 @@ public class PickingJobScheduleService
 						PickingJobShipmentScheduleService.newInstanceForUnitTesting()
 				)
 		);
+	}
+
+	public PickingJobSchedule getById(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.getById(id);
+	}
+
+	@Nullable
+	public PickingJobSchedule findByIdOrNull(@NonNull final PickingJobScheduleId id)
+	{
+		return pickingJobScheduleRepository.findByIdOrNull(id);
 	}
 
 	public List<PickingJobSchedule> getByIds(@NonNull final Set<PickingJobScheduleId> ids)
@@ -130,33 +147,13 @@ public class PickingJobScheduleService
 		pickingJobScheduleRepository.updateByIds(ids, jobSchedule -> jobSchedule.toBuilder().processed(true).build());
 	}
 
-	public Set<ShipmentScheduleId> getShipmentScheduleIdsWithAllJobSchedulesProcessedOrMissing(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		if (shipmentScheduleIds.isEmpty()) {return ImmutableSet.of();}
-
-		final Map<ShipmentScheduleId, PickingJobScheduleCollection> jobSchedulesByShipmentScheduleId = stream(PickingJobScheduleQuery.builder().onlyShipmentScheduleIds(shipmentScheduleIds).build())
-				.collect(Collectors.groupingBy(PickingJobSchedule::getShipmentScheduleId, PickingJobScheduleCollection.collect()));
-
-		final HashSet<ShipmentScheduleId> result = new HashSet<>();
-		for (final ShipmentScheduleId shipmentScheduleId : shipmentScheduleIds)
-		{
-			final PickingJobScheduleCollection jobSchedules = jobSchedulesByShipmentScheduleId.get(shipmentScheduleId);
-			if (jobSchedules == null || jobSchedules.isAllProcessed())
-			{
-				result.add(shipmentScheduleId);
-			}
-		}
-
-		return result;
-	}
-
 	public Quantity getQtyRemainingToScheduleForPicking(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = pickingJobShipmentScheduleService.getByIdAsRecord(shipmentScheduleId);
 		final Quantity qtyToDeliver = pickingJobShipmentScheduleService.getQtyToDeliver(shipmentSchedule);
 		final Quantity qtyScheduledForPicking = pickingJobShipmentScheduleService.getQtyScheduledForPicking(shipmentSchedule);
 		return qtyToDeliver.subtract(qtyScheduledForPicking);
-		
+
 	}
 
 	public void autoAssign(@NonNull final PickingJobScheduleAutoAssignRequest request)
@@ -167,8 +164,24 @@ public class PickingJobScheduleService
 				.pickingJobShipmentScheduleService(pickingJobShipmentScheduleService)
 				.sysConfigBL(sysConfigBL)
 				.pickingJobProductService(pickingJobProductService)
+				.partnerDAO(bpartnersDAO)
+				.bpGroupDAO(bpGroupDAO)
+				.orderDAO(orderDAO)
 				.request(request)
 				.build()
 				.execute();
+	}
+
+	/**
+	 * Streams the active, not-yet-processed picking-job-schedule assignments that still need a DD_Order.
+	 * <p>
+	 * {@code completedDDOrdersQuery} is a sub-query reference (the set of DD_Orders whose schedule is already
+	 * covered), NOT a managed-entity query of this service — it is used as an anti-join filter against
+	 * {@code DD_Order.M_Picking_Job_Schedule_ID}. It is supplied by the DD_Order reconcile flow because the
+	 * "needs a DD_Order" predicate is only meaningful in that context.
+	 */
+	public Stream<PickingJobSchedule> streamAssignmentsNeedingDDOrder(@NonNull final IQuery<I_DD_Order> completedDDOrdersQuery)
+	{
+		return pickingJobScheduleRepository.streamAssignmentsNeedingDDOrder(completedDDOrdersQuery);
 	}
 }

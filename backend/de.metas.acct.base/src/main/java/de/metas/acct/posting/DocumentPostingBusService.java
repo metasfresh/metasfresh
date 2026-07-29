@@ -20,6 +20,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.DeadlockRetryPolicy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.compiere.Adempiere;
@@ -199,6 +200,7 @@ public class DocumentPostingBusService
 		@NonNull private final DocumentPostRequestHandler handler;
 		@NonNull private final EventConverter eventConverter;
 		@NonNull private final EventLogUserService eventLogUserService;
+		@NonNull private final DeadlockRetryPolicy deadlockRetryPolicy = DeadlockRetryPolicy.DEFAULT;
 
 		@Override
 		public void onEvent(@NonNull final IEventBus eventBus, @NonNull final Event event)
@@ -211,7 +213,7 @@ public class DocumentPostingBusService
 			{
 				eventLogUserService.invokeHandlerAndLog(InvokeHandlerAndLogRequest.builder()
 						.handlerClass(handler.getClass())
-						.invokaction(() -> handleRequest(request))
+						.invokaction(() -> deadlockRetryPolicy.run(() -> handleRequest(request), request))
 						.build());
 			}
 		}

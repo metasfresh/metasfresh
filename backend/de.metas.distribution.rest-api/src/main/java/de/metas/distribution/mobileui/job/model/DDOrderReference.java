@@ -2,6 +2,7 @@ package de.metas.distribution.mobileui.job.model;
 
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.frontend_testing.JsonTestId;
+import de.metas.i18n.ITranslatableString;
 import de.metas.order.OrderId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -26,6 +27,7 @@ public class DDOrderReference
 	@NonNull SeqNo seqNo;
 	@NonNull ZonedDateTime datePromised;
 	@Nullable ZonedDateTime pickDate;
+	@Nullable ITranslatableString pickingInstruction;
 	@NonNull WarehouseId fromWarehouseId;
 	@Nullable LocatorId fromLocatorId;
 	@NonNull WarehouseId toWarehouseId;

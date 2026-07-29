@@ -3,6 +3,7 @@ package de.metas.hu_consolidation.mobile.job.commands.set_target;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.qrcodes.mobile.MobileQRCodeMessages;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJob;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobId;
 import de.metas.hu_consolidation.mobile.job.HUConsolidationJobRepository;
@@ -42,7 +43,7 @@ public class SetTargetCommand
 			final I_M_HU lu = handlingUnitsBL.getById(target.getLuIdNotNull());
 			if (!handlingUnitsBL.isLoadingUnit(lu))
 			{
-				throw new AdempiereException("Target is not an LU: " + target);
+				throw new AdempiereException(MobileQRCodeMessages.LU_EXPECTED_AT_TARGET, target.getCaption());
 			}
 			if (!huStatusBL.isStatusActiveOrPicked(lu))
 			{

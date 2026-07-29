@@ -225,6 +225,8 @@ public class ManufacturingJobLoaderAndSaver
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
+				.uomConversionBL(supportingServices.getUOMConversionBL())
+				.orderBOMLineId(ppOrderBOMLineId)
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.productValue(supportingServices.getProductValue(productId))
@@ -305,6 +307,7 @@ public class ManufacturingJobLoaderAndSaver
 				.coProductBOMLineId(null)
 				.receivingTarget(extractReceivingTarget(ppOrder))
 				.catchWeightUOMId(supportingServices.getCatchWeightUOMId(productId).orElse(null))
+				.tuPIItemProductId(HUPIItemProductId.ofRepoIdOrNull(ppOrder.getCurrent_Receiving_TU_PI_Item_Product_ID()))
 				.build();
 
 	}

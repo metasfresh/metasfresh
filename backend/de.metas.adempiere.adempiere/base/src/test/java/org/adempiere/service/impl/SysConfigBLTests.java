@@ -22,6 +22,8 @@ package org.adempiere.service.impl;
  * #L%
  */
 
+import com.google.common.collect.ImmutableSet;
+import de.metas.document.DocTypeId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -77,6 +79,44 @@ public class SysConfigBLTests
 
 			final String value = sysConfigBL.getValue("name", ClientAndOrgId.ofClientAndOrg(ClientId.ofRepoId(1), OrgId.ofRepoId(1)));
 			assertThat(value).isEqualTo("valueStr");
+		}
+	}
+
+	@Nested
+	class getCommaSeparatedRepoIdAwares
+	{
+		private static final String NAME = "some.repoid.list";
+
+		@Test
+		void emptyOrUnset_returnsEmptySet()
+		{
+			// unset
+			assertThat(sysConfigBL.getCommaSeparatedRepoIdAwares(NAME, DocTypeId::ofRepoIdOrNull)).isEmpty();
+
+			sysConfigBL.setValue(NAME, "", ClientId.SYSTEM, OrgId.ANY);
+			assertThat(sysConfigBL.getCommaSeparatedRepoIdAwares(NAME, DocTypeId::ofRepoIdOrNull)).isEmpty();
+
+			// the "-" sentinel also disables the list
+			sysConfigBL.setValue(NAME, "-", ClientId.SYSTEM, OrgId.ANY);
+			assertThat(sysConfigBL.getCommaSeparatedRepoIdAwares(NAME, DocTypeId::ofRepoIdOrNull)).isEmpty();
+		}
+
+		@Test
+		void validCsv_parsesAndTrims()
+		{
+			sysConfigBL.setValue(NAME, " 1000004, 540901 ,540902 ", ClientId.SYSTEM, OrgId.ANY);
+
+			assertThat(sysConfigBL.getCommaSeparatedRepoIdAwares(NAME, DocTypeId::ofRepoIdOrNull))
+					.isEqualTo(ImmutableSet.of(DocTypeId.ofRepoId(1000004), DocTypeId.ofRepoId(540901), DocTypeId.ofRepoId(540902)));
+		}
+
+		@Test
+		void malformedToken_isSkipped_validOnesKept()
+		{
+			sysConfigBL.setValue(NAME, "1000004, not-a-number, 540901", ClientId.SYSTEM, OrgId.ANY);
+
+			assertThat(sysConfigBL.getCommaSeparatedRepoIdAwares(NAME, DocTypeId::ofRepoIdOrNull))
+					.isEqualTo(ImmutableSet.of(DocTypeId.ofRepoId(1000004), DocTypeId.ofRepoId(540901)));
 		}
 	}
 }

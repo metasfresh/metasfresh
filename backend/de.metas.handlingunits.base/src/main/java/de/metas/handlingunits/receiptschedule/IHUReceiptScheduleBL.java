@@ -79,7 +79,7 @@ public interface IHUReceiptScheduleBL extends ISingletonService
 	BigDecimal getQtyToMoveTU(I_M_ReceiptSchedule receiptSchedule);
 
 	@Value
-	@Builder
+	@Builder(toBuilder = true)
 	class CreateReceiptsParameters
 	{
 		@NonNull Properties ctx;

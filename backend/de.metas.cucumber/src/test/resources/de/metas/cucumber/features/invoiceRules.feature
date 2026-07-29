@@ -1,6 +1,10 @@
 @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
 @ghActions:run_on_executor5
 Feature: invoice rules
+## F00703: Invoice Rule
 
   Background:
     Given infrastructure and metasfresh are running
@@ -9,6 +13,9 @@ Feature: invoice rules
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after delivery
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -65,6 +72,9 @@ Feature: invoice rules
       | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after pick
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -124,6 +134,9 @@ Feature: invoice rules
       | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can invoice a sales order with invoice rule after pick and over-picked quantity
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -193,6 +206,9 @@ Feature: invoice rules
 
 
   @from:cucumber
+@allure.label.epic:E0340_Invoicing
+@allure.label.feature:F00703_Invoice_Rule
+@F00703
   Scenario: we can double-invoice a sales order with invoice rule after pick, if we pick some quantity and then override the qty to deliver to be equal to qty ordered
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
     And metasfresh contains M_Products:
@@ -313,3 +329,141 @@ Feature: invoice rules
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | Processed |
       | invoiceLine_4_1             | invoice_4               | p_3                     | 10          | true      |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00703_Invoice_Rule
+  @Id:S30448_TC1
+  @ghActions:run_on_executor5
+  Scenario: MOrder.setBPartner inherits InvoiceRule and IsAutoInvoice from BP group when BP has no direct value
+    # Verifies that MOrder.setBPartner (called from beforeSave when no location is set) resolves
+    # InvoiceRule and IsAutoInvoice via BPartnerEffectiveBL (group chain), not raw bp.getInvoiceRule().
+    Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
+    And metasfresh contains M_Products:
+      | Identifier | Name                           |
+      | product    | d_invRuleGroupInheritance_prod |
+    And metasfresh contains M_PricingSystems
+      | Identifier     | Name                           | Value                           | OPT.IsActive |
+      | pricingSystem  | d_invRuleGroupInheritance_ps   | d_invRuleGroupInheritance_psv   | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | priceList  | pricingSystem                 | DE                        | EUR                 | d_invRuleGroupInheritance_pl    | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID.Identifier | Name                             | ValidFrom  |
+      | priceListVersion | priceList                 | d_invRuleGroupInheritance_plv    | 2021-04-01 |
+    And metasfresh contains M_ProductPrices
+      | Identifier   | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | productPrice | priceListVersion                  | product                 | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BP_Groups:
+      | Identifier | OPT.InvoiceRule | OPT.IsAutoInvoice |
+      | bpGroup    | D               | Y                 |
+    And metasfresh contains C_BPartners:
+      | Identifier | Name                             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | C_BP_Group_ID.Identifier |
+      | customer   | d_invRuleGroupInheritance_cust   | N            | Y              | pricingSystem                 | bpGroup                  |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN                   | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | customerLocation | 0123456789013         | customer                 | Y                   | Y                   |
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
+      | order      | true    | customer                 | 2021-04-17  |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine  | order                 | product                 | 10         |
+    When the order identified by order is completed
+    Then validate the created orders
+      | C_Order_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | order                 | D           | true          |
+    And after not more than 60s, M_ShipmentSchedules are found:
+      | Identifier        | C_OrderLine_ID.Identifier | IsToRecompute |
+      | shipmentSchedule  | orderLine                 | N             |
+    And 'generate shipments' process is invoked individually for each M_ShipmentSchedule
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | shipmentSchedule                  | D            | true                | false       |
+    And after not more than 60s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | shipmentSchedule                  | shipment              |
+    And after not more than 60s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCandidate                  | orderLine                 | 10           |
+    And validate C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | invoiceCandidate                  | D           | true          |
+
+  @from:cucumber
+  @allure.label.epic:E0340_Invoicing
+  @allure.label.feature:F00703_Invoice_Rule
+  @Id:S30448_TC2
+  @ghActions:run_on_executor5
+  Scenario: OLCand explicit invoiceRule and isAutoInvoice win over BP-group defaults
+    # Guard scenario: when an OLCand request explicitly sets invoiceRule=I (Immediate) and isAutoInvoice=false,
+    # those values must be preserved on the resulting order even though the BP's group has InvoiceRule=D/IsAutoInvoice=Y.
+    # The OLCand path sets the location before save, so MOrder.beforeSave skips setBPartner → no group override.
+    Given metasfresh contains M_PricingSystems
+      | Identifier        | Name                              | Value                             | OPT.IsActive |
+      | psOLCandGuard     | d_olcandGuard_pricingSystem       | d_olcandGuard_pricingSystemValue  | true         |
+    And metasfresh contains M_PriceLists
+      | Identifier      | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | plOLCandGuard   | psOLCandGuard                 | DE                        | EUR                 | d_olcandGuard_priceList  | null            | true  | false         | 2              | true         |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier       | M_PriceList_ID.Identifier | Name                           | ValidFrom  |
+      | plvOLCandGuard   | plOLCandGuard             | d_olcandGuard_priceListVersion | 2021-04-01 |
+    And metasfresh contains M_Products:
+      | Identifier       | Name                    |
+      | productOLCand    | d_olcandGuard_product   |
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | ppOLCandGuard    | plvOLCandGuard                    | productOLCand           | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BP_Groups:
+      | Identifier       | OPT.InvoiceRule | OPT.IsAutoInvoice |
+      | bpGroupOLCand    | D               | Y                 |
+    And metasfresh contains C_BPartners:
+      | Identifier       | Name                     | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | C_BP_Group_ID.Identifier |
+      | custOLCandGuard  | d_olcandGuard_customer   | N            | Y              | psOLCandGuard                 | bpGroupOLCand            |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier            | GLN              | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | locOLCandGuard        | 0123456789014    | custOLCandGuard          | Y                   | Y                   |
+    When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/bulk' and fulfills with '201' status code
+  """
+{
+    "requests": [
+        {
+            "orgCode": "001",
+            "externalHeaderId": "olcandGuard30448",
+            "externalLineId": "olcandGuard30448_0",
+            "externalSystemCode": "Other",
+            "bpartner": {
+                "bpartnerIdentifier": "val-d_olcandGuard_customer",
+                "bpartnerLocationIdentifier": "gln-0123456789014"
+            },
+            "dateRequired": "2021-04-16",
+            "dateOrdered": "2021-04-16",
+            "orderDocType": "SalesOrder",
+            "paymentTerm": "val-1000002",
+            "productIdentifier": "val-d_olcandGuard_product",
+            "qty": 1,
+            "currencyCode": "EUR",
+            "discount": 0,
+            "poReference": "olcandGuard30448",
+            "deliveryViaRule": "S",
+            "isAutoInvoice": false,
+            "invoiceRule": "I"
+        }
+    ]
+}
+"""
+    And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
+"""
+{
+    "externalHeaderId": "olcandGuard30448",
+    "externalSystemCode": "Other",
+    "ship": false,
+    "invoice": false,
+    "closeOrder": false
+}
+"""
+    Then process metasfresh response
+      | C_Order_ID.Identifier |
+      | orderOLCandGuard      |
+    And validate the created orders
+      | C_Order_ID.Identifier | InvoiceRule | IsAutoInvoice |
+      | orderOLCandGuard      | I           | false         |

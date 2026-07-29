@@ -1,6 +1,7 @@
 import { test } from '../../../playwright.config';
 import { FRONTEND_BASE_URL, getPage, SLOW_ACTION_TIMEOUT, VERY_SLOW_ACTION_TIMEOUT } from '../common';
 import { SALES_INVOICE_WINDOW_ID } from '../WindowIds';
+import { PdfDownloader } from '../PdfDownloader';
 
 /**
  * Page object for Sales Invoice window (ID: 167).
@@ -155,29 +156,7 @@ export class InvoicePage {
    * This opens the PDF generation modal for the invoice.
    */
   static async openPrintModal() {
-    return await test.step('InvoicePage - Open print modal (Alt+P)', async () => {
-      const page = getPage();
-
-      // Focus page first
-      await page.locator('body').click();
-      await page.waitForTimeout(200);
-
-      // Press Alt+P to open print modal
-      await page.keyboard.press('Alt+P');
-
-      // Two-step wait pattern: Wait for modal container first
-      await page
-        .locator('.modal-content, .modal, .panel-modal')
-        .waitFor({
-          state: 'visible',
-          timeout: SLOW_ACTION_TIMEOUT,
-        });
-
-      // Wait for modal content to load
-      await page.waitForTimeout(500);
-
-      console.log('Print modal opened successfully');
-    });
+    return await PdfDownloader.openPrintModal('InvoicePage');
   }
 
   /**
@@ -186,95 +165,7 @@ export class InvoicePage {
    * @returns {Promise<Download>} Playwright download object
    */
   static async downloadPDF() {
-    return await test.step('InvoicePage - Download PDF', async () => {
-      const page = getPage();
-      const fs = require('fs');
-      const path = require('path');
-
-      // Wait for modal to be fully loaded and buttons to be ready
-      await page.waitForTimeout(1000);
-
-      // Find the Print button using data-testid (language-independent)
-      const printButton = page.getByTestId('print-modal-button');
-
-      await printButton.waitFor({ state: 'visible', timeout: SLOW_ACTION_TIMEOUT });
-
-      // Set up both download and popup listeners BEFORE clicking
-      const downloadPromise = page
-        .waitForEvent('download', {
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => null); // Don't fail if download doesn't happen
-
-      const popupPromise = page
-        .waitForEvent('popup', {
-          timeout: VERY_SLOW_ACTION_TIMEOUT,
-        })
-        .catch(() => null); // Don't fail if popup doesn't happen
-
-      console.log('Clicking Print button...');
-      await printButton.click();
-
-      // Wait for either download OR popup
-      const result = await Promise.race([
-        downloadPromise.then((d) => (d ? { type: 'download', data: d } : null)),
-        popupPromise.then((p) => (p ? { type: 'popup', data: p } : null)),
-      ]);
-
-      if (!result || !result.data) {
-        throw new Error('Neither download nor popup occurred after clicking print button');
-      }
-
-      if (result.type === 'download') {
-        console.log('PDF download started:', result.data.suggestedFilename());
-        return result.data;
-      } else {
-        // Handle popup - PDF opened in new tab
-        console.log('PDF opened in new tab');
-        const popup = result.data;
-
-        // Wait for popup to load the PDF
-        await popup.waitForLoadState('networkidle', { timeout: SLOW_ACTION_TIMEOUT }).catch(() => {});
-
-        const pdfUrl = popup.url();
-        console.log('PDF URL:', pdfUrl);
-
-        // Download PDF directly from the URL using fetch
-        const axios = require('axios');
-        const response = await axios.get(pdfUrl, {
-          responseType: 'arraybuffer',
-          headers: {
-            // Forward cookies from the browser context
-            Cookie: (await page.context().cookies())
-              .map((c) => `${c.name}=${c.value}`)
-              .join('; '),
-          },
-        });
-
-        const buffer = Buffer.from(response.data);
-
-        // Save to temp file
-        const tempDir = path.join(process.cwd(), 'test-results', 'temp-pdfs');
-        if (!fs.existsSync(tempDir)) {
-          fs.mkdirSync(tempDir, { recursive: true });
-        }
-
-        const timestamp = Date.now();
-        const tempPath = path.join(tempDir, `invoice-${timestamp}.pdf`);
-        fs.writeFileSync(tempPath, buffer);
-
-        console.log('PDF downloaded from popup:', tempPath);
-
-        // Close the popup
-        await popup.close().catch(() => {});
-
-        // Return a mock download object with path() method
-        return {
-          suggestedFilename: () => `invoice-${timestamp}.pdf`,
-          path: async () => tempPath,
-        };
-      }
-    });
+    return await PdfDownloader.downloadPdf('invoice', 'InvoicePage');
   }
 
   /**
