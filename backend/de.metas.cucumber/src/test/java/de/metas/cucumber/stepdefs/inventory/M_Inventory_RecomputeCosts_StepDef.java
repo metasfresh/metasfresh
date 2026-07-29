@@ -57,6 +57,10 @@ import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.catchThrowable;
 
+/**
+ * Runs the {@code M_Inventory_RecomputeCosts} process — recreating a product's cost details and current cost
+ * from an inventory document's date onwards — and validates its outcome.
+ */
 @RequiredArgsConstructor
 public class M_Inventory_RecomputeCosts_StepDef
 {
