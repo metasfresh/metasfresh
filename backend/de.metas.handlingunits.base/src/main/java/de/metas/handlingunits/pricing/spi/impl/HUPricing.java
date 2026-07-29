@@ -241,11 +241,11 @@ public class HUPricing extends AttributePricing
 	{
 		// If an explicit Packvorschrift was set on the pricing context (e.g. for return lines
 		// whose origin M_HU_PI_Item_Product_ID is null), prefer it over the referenced-object extraction.
-		// Only regular IDs are honored here — VIRTUAL_HU (101) and TEMPLATE_HU (100) are sentinels
-		// meaning "no packing instruction"; in that case we fall through to the referenced-object path
-		// so callers that set a non-regular explicit ID get the same behavior as if they had not set one.
+		// Only regular IDs are honored here — VIRTUAL_HU and TEMPLATE_HU sentinels mean "no packing
+		// instruction"; in that case we fall through to the referenced-object path so callers that set
+		// a non-regular explicit ID get the same behavior as if they had not set one.
 		final HUPIItemProductId explicitId = pricingCtx.getExplicitM_HU_PI_Item_Product_ID();
-		if (explicitId != null && explicitId.isRegular())
+		if (HUPIItemProductId.isRegular(explicitId))
 		{
 			return explicitId;
 		}

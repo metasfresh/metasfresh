@@ -114,5 +114,8 @@ public interface IEditablePricingContext extends IPricingContext
 
 	IEditablePricingContext setManualPrice(@Nullable final BigDecimal manualPrice);
 
+	/**
+	 * @see IPricingContext#getExplicitM_HU_PI_Item_Product_ID()
+	 */
 	IEditablePricingContext setExplicitM_HU_PI_Item_Product_ID(@Nullable HUPIItemProductId huPiItemProductId);
 }

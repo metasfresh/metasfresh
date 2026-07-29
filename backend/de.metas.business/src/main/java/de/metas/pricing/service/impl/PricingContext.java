@@ -428,6 +428,7 @@ class PricingContext implements IEditablePricingContext
 		return this;
 	}
 
+	@Override
 	@Nullable
 	public BigDecimal getManualPrice()
 	{
