@@ -84,6 +84,15 @@ public class PurchaseOrderToShipperTransportationService
 	@VisibleForTesting
 	static final AdMessageKey MSG_NoLUPackingConfigForOrderLines = AdMessageKey.of("NoLUPackingConfigForOrderLines");
 
+	/**
+	 * Order in which assigned purchase orders are processed, so the "first order" that seeds the transport order's default dates is
+	 * deterministic: earliest {@code DatePromised} first (the promised delivery date), ties broken by {@code C_Order_ID}. A missing
+	 * {@code DatePromised} sorts last.
+	 */
+	private static final Comparator<I_C_Order> SEED_ORDER_COMPARATOR = Comparator
+			.comparing(I_C_Order::getDatePromised, Comparator.nullsLast(Comparator.naturalOrder()))
+			.thenComparingInt(I_C_Order::getC_Order_ID);
+
 	@NonNull private final PurchaseOrderToShipperTransportationRepository repo;
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -141,9 +150,6 @@ public class PurchaseOrderToShipperTransportationService
 		final ImmutableList<OrderId> validPurchaseOrdersIds = availableOrderIds
 				.stream()
 				.filter(orderId -> !alreadyAssignedOrderIds.contains(orderId))
-				// Sort by C_Order_ID so the "first order" that seeds the transport order's default dates is deterministic
-				// even when several purchase orders are assigned in a single call (the DB/set encounter order is not meaningful).
-				.sorted(Comparator.comparingInt(OrderId::getRepoId))
 				.collect(ImmutableList.toImmutableList());
 
 		if (validPurchaseOrdersIds.isEmpty())
@@ -151,11 +157,15 @@ public class PurchaseOrderToShipperTransportationService
 			Loggables.addLog("No purchase orders found for shipper transportation with ID: {}", shipperTransportationId);
 		}
 
-		for (final OrderId purchaseOrderId : validPurchaseOrdersIds)
-		{
-			Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", purchaseOrderId, shipperTransportationId);
-			addPurchaseOrderToShipperTransportation(purchaseOrderId, shipperTransportationId);
-		}
+		// Process earliest-promised first (see SEED_ORDER_COMPARATOR) so the "first order" that seeds the transport order's default
+		// dates is deterministic even when several purchase orders are assigned in a single call (the DB/set encounter order is not meaningful).
+		orderDAO.getByIds(validPurchaseOrdersIds)
+				.stream()
+				.sorted(SEED_ORDER_COMPARATOR)
+				.forEach(order -> {
+					Loggables.addLog("Adding purchase order with ID: {} to shipper transportation with ID: {}", order.getC_Order_ID(), shipperTransportationId);
+					addPurchaseOrderToShipperTransportation(order, shipperTransportationId);
+				});
 	}
 
 	public void addOrderLinesToShipperTransportation(@NonNull final ShipperTransportationId shipperTransportationId, @NonNull final Set<OrderLineId> orderLineIds)
@@ -165,10 +175,10 @@ public class PurchaseOrderToShipperTransportationService
 		final I_M_ShipperTransportation shipperTransportation = shipperTransportationDAO.getById(shipperTransportationId);
 		orderToLinesMap.keySet()
 				.stream()
-				// Sort by C_Order_ID so the "first order" that seeds the transport order's default dates is deterministic
-				// even when a single call carries lines from several purchase orders (the multimap key order is not meaningful).
-				// Mirrors the ordering already applied in addPurchaseOrdersToShipperTransportation().
-				.sorted(Comparator.comparingInt(I_C_Order::getC_Order_ID))
+				// Process earliest-promised first (see SEED_ORDER_COMPARATOR) so the "first order" that seeds the transport order's
+				// default dates is deterministic even when a single call carries lines from several purchase orders (the multimap key
+				// order is not meaningful). Mirrors the ordering applied in addPurchaseOrdersToShipperTransportation().
+				.sorted(SEED_ORDER_COMPARATOR)
 				.forEach(order -> addPurchaseOrderLines(shipperTransportation, order, orderToLinesMap.get(order)));
 	}
 
