@@ -37,6 +37,6 @@ public enum ProductLifeCycleAction
 	PICK,
 	/** Manufacturing order (PP_Order) for this product. */
 	MANUFACTURE,
-	/** Shipment line creation (M_InOutLine). */
+	/** Shipment completion (M_InOut BEFORE_COMPLETE, exempting reversals). */
 	SHIP
 }
