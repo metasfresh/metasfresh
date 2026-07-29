@@ -256,6 +256,13 @@ public class CostDetailRepository implements ICostDetailRepository
 			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_M_CostDetail_Type, amtType.getCode());
 		}
 
+		// IsChangingCosts
+		// Not a "someFiltersApplied" filter on its own: it would still match half the table.
+		if (query.getChangingCosts() != null)
+		{
+			queryBuilder.addEqualsFilter(I_M_CostDetail.COLUMNNAME_IsChangingCosts, query.getChangingCosts());
+		}
+
 		// Product
 		if (query.getProductId() != null)
 		{
@@ -460,12 +467,12 @@ public class CostDetailRepository implements ICostDetailRepository
 		// Range.greaterThan => DateAcct > asOfDate, STRICTLY after. A detail dated exactly ON asOfDate is a pre-cut-off
 		// event; see ICostingService#getCostAsOf for why that boundary must not be relaxed to >=.
 		return toSqlQuery(CostDetailQuery.builderFrom(costSegmentAndElement)
+				// Only changing-costs details carry a meaningful Prev_* state; recording-only ones repeat the current one.
+				.changingCosts(true)
 				.dateAcctRage(Range.greaterThan(asOfDate))
 				.orderBy(CostDetailQuery.OrderBy.DATE_ACCT_ASC)
 				.orderBy(CostDetailQuery.OrderBy.ID_ASC)
 				.build())
-				// Only changing-costs details carry a meaningful Prev_* state; recording-only ones repeat the current one.
-				.addEqualsFilter(I_M_CostDetail.COLUMNNAME_IsChangingCosts, true)
 				.create()
 				.firstOptional()
 				.map(this::toCostDetail);
