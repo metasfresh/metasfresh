@@ -22,6 +22,7 @@ import de.metas.document.DocSubType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -294,9 +295,28 @@ public class InOutBL implements IInOutBL
 	@Override
 	public IPricingResult getProductPrice(final org.compiere.model.I_M_InOutLine inOutLine)
 	{
-		final IPricingContext pricingCtx = createPricingCtx(inOutLine);
-		return pricingBL.calculatePrice(pricingCtx);
+		return getProductPrice(inOutLine, null);
+	}
 
+	@Override
+	public IPricingResult getProductPrice(
+			final org.compiere.model.I_M_InOutLine inOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
+		final IPricingContext pricingCtx = createPricingCtx(inOutLine, explicitPackingInstruction);
+		return pricingBL.calculatePrice(pricingCtx);
+	}
+
+	private IPricingContext createPricingCtx(
+			@NonNull final org.compiere.model.I_M_InOutLine inOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
+		final IEditablePricingContext pricingCtx = (IEditablePricingContext) createPricingCtx(inOutLine);
+		if (explicitPackingInstruction != null)
+		{
+			pricingCtx.setExplicitM_HU_PI_Item_Product_ID(explicitPackingInstruction);
+		}
+		return pricingCtx;
 	}
 
 	@Override

@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
@@ -129,6 +130,16 @@ public interface IInOutBL extends ISingletonService
 	IPricingContext createPricingCtx(org.compiere.model.I_M_InOutLine inOutLine);
 
 	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine);
+
+	/**
+	 * Same as {@link #getProductPrice(org.compiere.model.I_M_InOutLine)} but overrides the Packvorschrift
+	 * (M_HU_PI_Item_Product) used during HU pricing. When {@code explicitPackingInstruction} is non-null the
+	 * explicit value takes precedence over whatever is stored on the inout line itself.
+	 * <p>
+	 * Used on the return-from-receipt path where the origin receipt line carries no PI
+	 * (it lives on the purchase order line) and must be resolved before pricing is attempted.
+	 */
+	IPricingResult getProductPrice(org.compiere.model.I_M_InOutLine inOutLine, @Nullable HUPIItemProductId explicitPackingInstruction);
 
 	/**
 	 * @return the pricing system fir for the inout,

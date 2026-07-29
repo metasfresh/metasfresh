@@ -21,6 +21,7 @@ import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -353,8 +354,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		//
 		// Pricing Informations
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0 ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
-		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse);
+		final boolean isReturnFromOrigin = inOutLineRecord.getReturn_Origin_InOutLine_ID() > 0;
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = isReturnFromOrigin ? inOutLineRecord.getReturn_Origin_InOutLine() : inOutLineRecord;
+		final HUPIItemProductId explicitPackingInstruction = isReturnFromOrigin ? resolveReturnOriginPackingInstruction(inOutLineRecordToUse) : null;
+		calculatePriceAndTaxAndUpdate(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 
 		//
 		// Description
@@ -919,16 +922,26 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	public PriceAndTax calculatePriceAndTax(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
 		final I_M_InOutLine inoutLine = getM_InOutLine(icRecord);
-		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = inoutLine.getReturn_Origin_InOutLine_ID() > 0 ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
+		final boolean isReturnFromOrigin = inoutLine.getReturn_Origin_InOutLine_ID() > 0;
+		final org.compiere.model.I_M_InOutLine inOutLineRecordToUse = isReturnFromOrigin ? inoutLine.getReturn_Origin_InOutLine() : inoutLine;
+		final HUPIItemProductId explicitPackingInstruction = isReturnFromOrigin ? resolveReturnOriginPackingInstruction(inOutLineRecordToUse) : null;
 
-		return calculatePriceAndTax(icRecord, inOutLineRecordToUse);
+		return calculatePriceAndTax(icRecord, inOutLineRecordToUse, explicitPackingInstruction);
 	}
 
 	public static PriceAndTax calculatePriceAndTax(
 			final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine inoutLineRecord)
 	{
-		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord);
+		return calculatePriceAndTax(icRecord, inoutLineRecord, null);
+	}
+
+	private static PriceAndTax calculatePriceAndTax(
+			final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine inoutLineRecord,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
+		final IPricingResult pricingResult = calculatePricingResult(inoutLineRecord, explicitPackingInstruction);
 
 		final boolean taxIncluded;
 		if (icRecord.getC_Order_ID() > 0)
@@ -986,8 +999,34 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 	private static IPricingResult calculatePricingResult(@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
+		return calculatePricingResult(fromInOutLine, null);
+	}
+
+	private static IPricingResult calculatePricingResult(
+			@NonNull final org.compiere.model.I_M_InOutLine fromInOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
 		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-		return inOutBL.getProductPrice(fromInOutLine);
+		return inOutBL.getProductPrice(fromInOutLine, explicitPackingInstruction);
+	}
+
+	/**
+	 * Resolves the effective Packvorschrift (M_HU_PI_Item_Product) for a return's origin line via its linked
+	 * order line. This mirrors the order-line fallback of {@code InOutLineHUPackingAware} (which lives in
+	 * de.metas.handlingunits.base and is not visible from this module): a vendor-receipt origin line carries
+	 * no PI in its own columns — it lives on the purchase order line — so pricing must recover it there.
+	 * Returns {@code null} when there is no order line or it carries no PI, leaving pricing behaviour
+	 * identical to before (e.g. standalone returns / empties without an order line stay unchanged).
+	 */
+	@Nullable
+	private static HUPIItemProductId resolveReturnOriginPackingInstruction(@NonNull final org.compiere.model.I_M_InOutLine originLine)
+	{
+		if (originLine.getC_OrderLine_ID() <= 0)
+		{
+			return null;
+		}
+		final de.metas.interfaces.I_C_OrderLine orderLine = create(originLine.getC_OrderLine(), de.metas.interfaces.I_C_OrderLine.class);
+		return HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 	}
 
 	@Nullable
@@ -995,9 +1034,18 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			final org.compiere.model.I_M_InOutLine fromInOutLine)
 	{
+		return calculatePriceAndTaxAndUpdate(icRecord, fromInOutLine, null);
+	}
+
+	@Nullable
+	private static PriceAndTax calculatePriceAndTaxAndUpdate(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			final org.compiere.model.I_M_InOutLine fromInOutLine,
+			@Nullable final HUPIItemProductId explicitPackingInstruction)
+	{
 		try
 		{
-			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine);
+			final PriceAndTax priceAndTax = calculatePriceAndTax(icRecord, fromInOutLine, explicitPackingInstruction);
 			IInvoiceCandInvalidUpdater.updatePriceAndTax(icRecord, priceAndTax);
 			return priceAndTax;
 		}
