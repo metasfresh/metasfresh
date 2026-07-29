@@ -1,6 +1,7 @@
 @from:cucumber
 @allure.label.epic:E0226_Costing
 @allure.label.feature:F1530_Recreate_product_costs
+@allure.label.feature:F1514_Cost_Type_Moving_Average_Invoice
 @Id:S26253_TC1
 @ghActions:run_on_executor7
 Feature: Recompute Costs - last pre-range cost detail is a weighted-average MatchPO inbound
