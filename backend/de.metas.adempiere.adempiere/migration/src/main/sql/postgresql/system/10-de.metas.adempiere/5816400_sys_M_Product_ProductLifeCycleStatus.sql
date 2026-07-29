@@ -165,7 +165,7 @@ WHERE l.IsActive='Y' AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=593038 AND 
 -- Field: Produkt(140,D) -> Produkt(180,D) -> Produktlebenszyklus-Status
 -- Column: M_Product.ProductLifeCycleStatus
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy)
-VALUES (0,593038,781848 /*From ID Server*/,0,180,0,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','N','N','N','N','N','N','Produktlebenszyklus-Status',0,0,0,1,1,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,593038,781848 /*From ID Server*/,0,180,0,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Produktlebenszyklus-Status',0,65,0,1,1,TO_TIMESTAMP('2026-07-27 14:00:25','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive)
@@ -186,5 +186,5 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=781848
 -- UI Element: Produkt(140,D) -> Produkt(180,D) -> No -> 75 -> Produktlebenszyklus-Status
 -- Column: M_Product.ProductLifeCycleStatus
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy)
-VALUES (0,781848,0,180,1000015,652772 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Produktlebenszyklus-Status',75,0,0,TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100)
+VALUES (0,781848,0,180,1000015,652772 /*From ID Server*/,'F',TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','Y','N','N',0,'Produktlebenszyklus-Status',75,65,0,TO_TIMESTAMP('2026-07-27 14:00:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
