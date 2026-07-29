@@ -141,6 +141,22 @@ public class CostingService implements ICostingService
 	}
 
 	@Override
+	public Optional<CostDetailPreviousAmounts> getCostAsOf(
+			@NonNull final CostSegmentAndElement costSegmentAndElement,
+			@NonNull final Instant asOfDate)
+	{
+		final Optional<CostDetail> firstDetailAfter = costDetailsService.getFirstChangingCostsDetailAfter(costSegmentAndElement, asOfDate);
+		if (firstDetailAfter.isPresent())
+		{
+			// That detail's Prev_* IS the state as of asOfDate: the state right before the first movement booked after it.
+			return firstDetailAfter.map(CostDetail::getPreviousAmounts);
+		}
+
+		// Nothing moved after asOfDate, so the live M_Cost row still carries the state as of asOfDate.
+		return getCurrentCost(costSegmentAndElement).map(CostDetailPreviousAmounts::of);
+	}
+
+	@Override
 	public CostDetailCreateResultsList createCostDetail(@NonNull final CostDetailCreateRequest request)
 	{
 		return createCostDetailOrEmpty(request).orElseThrow();
