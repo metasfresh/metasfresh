@@ -307,6 +307,8 @@ public class M_Product_StepDef
 				.ifPresent(value -> productRecord.setUPC(nullToken2Null(value)));
 		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_EAN13_ProductCode)
 				.ifPresent(value -> productRecord.setEAN13_ProductCode(nullToken2Null(value)));
+		tableRow.getAsOptionalString(I_M_Product.COLUMNNAME_ProductLifeCycleStatus)
+				.ifPresent(value -> productRecord.setProductLifeCycleStatus(nullToken2Null(value)));
 
 		tableRow.getAsOptionalQuantity("WeightNet", uomDAO::getByX12DE355)
 				.ifPresent(netWeight -> {
