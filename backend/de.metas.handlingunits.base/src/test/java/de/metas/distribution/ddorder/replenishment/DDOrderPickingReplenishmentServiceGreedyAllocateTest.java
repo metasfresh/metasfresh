@@ -614,6 +614,39 @@ class DDOrderPickingReplenishmentServiceGreedyAllocateTest
 				.containsExactly(tuple(p1.getId(), 6));
 	}
 
+	/**
+	 * The freeze is symmetric in the batched fixed-point path too: the {@code frozenLineIds} form of the guard must
+	 * refuse a GROW to a line under movement, not only a shrink. The frozen locator's newly-required qty (15) is
+	 * HIGHER than the line's QtyOrdered (10), yet the frozen line stays put — the grown qty lands in the refused map
+	 * and only the remainder flows on to the idle locator. Mirrors {@code aFrozenLine_isNotGrown}, which pins the same
+	 * grow-refusal for the single-line {@code updateDDOrderLineQtyInPlace} overload.
+	 */
+	@Test
+	void frozenSplit_doesNotGrowAFrozenLineUnderMovement()
+	{
+		final LocatorId l1 = createLocator("10-A", 50);
+		final LocatorId l2 = createLocator("20-B", 50);
+		final PickingJobSchedule p1 = contributor(1, "20");
+
+		final I_DD_OrderLine lineL1 = createDDOrderLine(101, "10", true); // frozen; currently carries QtyOrdered 10
+		when(contributorRepository.getByLineIds(ImmutableSet.of(DDOrderLineId.ofRepoId(101))))
+				.thenReturn(ImmutableList.of(DDOrderLineContributor.of(p1.getId(), each("6"))));
+
+		// Required at the frozen locator (15) EXCEEDS its QtyOrdered (10) -> a grow, which must be refused just like a shrink.
+		final DDOrderPickingReplenishmentService.FrozenSplit split = service.computeFrozenSplit(
+				ImmutableList.of(p1),
+				ImmutableMap.of(l1, each("15"), l2, each("5")),
+				ImmutableMap.of(l1, lineL1),
+				ImmutableMap.of());
+
+		assertThat(split.getRefusedQtyByLocator()).containsOnlyKeys(l1);
+		assertThat(split.getRefusedQtyByLocator().get(l1).toBigDecimal()).isEqualByComparingTo("15");
+		assertThat(split.getAttribution()).containsOnlyKeys(l2);
+		assertThat(split.getAttribution().get(l2))
+				.extracting(DDOrderLineContributor::getPickingJobScheduleId, c -> c.getQty().toBigDecimal().intValue())
+				.containsExactly(tuple(p1.getId(), 5));
+	}
+
 	@Test
 	void attribution_aPartiallyFrozenContributorIsOnlyAttributedItsRemainingDemand()
 	{

@@ -817,7 +817,7 @@ public class DDOrderPickingReplenishmentService
 				}
 
 				final Quantity plannedQty = sumOfShares(attribution.get(entry.getKey()), entry.getValue());
-				if (isShrinkRefusedByMoveInProgress(existingLine, plannedQty, frozenLineIds))
+				if (isWriteRefusedByMoveInProgress(existingLine, plannedQty, frozenLineIds))
 				{
 					newlyRefused.put(entry.getKey(), plannedQty);
 				}
@@ -1192,13 +1192,13 @@ public class DDOrderPickingReplenishmentService
 			return true;
 		}
 
-		if (isShrinkRefusedByMoveInProgress(line, newQty))
+		if (isWriteRefusedByMoveInProgress(line, newQty))
 		{
 			Loggables.addLog(
-					"DD_Order picking replenishment: not shrinking DD_OrderLine_ID={0} (DD_Order_ID={1}) in place:"
-							+ " it has an in-progress DD_Order_MoveSchedule (the mover has picked and not yet dropped) and"
-							+ " the new qty {2} is lower than the ordered qty {3}; left untouched"
-							+ " (its contributor shares are left untouched too)",
+					"DD_Order picking replenishment: not writing DD_OrderLine_ID={0} (DD_Order_ID={1}) in place:"
+							+ " it has an in-progress DD_Order_MoveSchedule (the mover has picked and not yet dropped),"
+							+ " so the line is under movement and its qty is frozen; refusing to change it from the ordered qty {3}"
+							+ " to the new qty {2}; left untouched (its contributor shares are left untouched too)",
 					line.getDD_OrderLine_ID(),
 					line.getDD_Order_ID(),
 					newQtyBD,
@@ -1228,6 +1228,10 @@ public class DDOrderPickingReplenishmentService
 	/**
 	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are frozen.
 	 *
+	 * <p>A line under movement is frozen against <em>any</em> qty change (grow or shrink alike) — only a genuine no-op
+	 * write (the qty already carried, guarded by {@link #alreadyCarriesQty}) is let through, so an unchanged rewrite is
+	 * never spuriously refused.</p>
+	 *
 	 * <p>Keyed on an IN_PROGRESS {@code DD_Order_MoveSchedule} — picked from the source, not yet dropped at the
 	 * workstation — which is what the mobile mover actually writes ({@code Status} {@code NS} → {@code IP} on the pick,
 	 * {@code CO} on the drop). {@code DD_OrderLine.QtyDelivered} / {@code QtyInTransit} are written by no production
@@ -1235,32 +1239,25 @@ public class DDOrderPickingReplenishmentService
 	 * LINE because the write is per line. This single-line form asks the service directly — used at the lone
 	 * {@link #updateDDOrderLineQtyInPlace} write site, one call per write.</p>
 	 */
-	private boolean isShrinkRefusedByMoveInProgress(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
+	private boolean isWriteRefusedByMoveInProgress(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
-		return isShrinkOf(line, newQty)
+		return !alreadyCarriesQty(line, newQty.toBigDecimal())
 				&& ddOrderMoveScheduleService.hasInProgressSchedules(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()));
 	}
 
 	/**
-	 * The {@link #computeFrozenSplit} fixed-point-loop form of {@link #isShrinkRefusedByMoveInProgress(I_DD_OrderLine, Quantity)}:
+	 * The {@link #computeFrozenSplit} fixed-point-loop form of {@link #isWriteRefusedByMoveInProgress(I_DD_OrderLine, Quantity)}:
 	 * the freeze verdict is pre-resolved into {@code frozenLineIds} once before the loop (N+1 budget)
-	 * and this only tests membership — never re-asking the service per iteration. Same freeze signal, same shrink math,
+	 * and this only tests membership — never re-asking the service per iteration. Same freeze signal, same no-op guard,
 	 * so the two forms cannot disagree about which lines are frozen.
 	 */
-	private static boolean isShrinkRefusedByMoveInProgress(
+	private static boolean isWriteRefusedByMoveInProgress(
 			@NonNull final I_DD_OrderLine line,
 			@NonNull final Quantity newQty,
 			@NonNull final Set<DDOrderLineId> frozenLineIds)
 	{
-		return isShrinkOf(line, newQty)
+		return !alreadyCarriesQty(line, newQty.toBigDecimal())
 				&& frozenLineIds.contains(DDOrderLineId.ofRepoId(line.getDD_OrderLine_ID()));
-	}
-
-	private static boolean isShrinkOf(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
-	{
-		final BigDecimal newQtyBD = newQty.toBigDecimal();
-		return !alreadyCarriesQty(line, newQtyBD)
-				&& newQtyBD.compareTo(line.getQtyOrdered()) < 0;
 	}
 
 	private I_DD_OrderLine saveDraftDDOrder(@NonNull final CreateDDOrderReplenishmentRequest request)
