@@ -45,7 +45,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
- * Creates, seeds and completes {@link I_M_CostRevaluation} cost-revaluation documents.
+ * Creates, seeds and completes {@link I_M_CostRevaluation} cost-revaluation documents, and validates the cost details
+ * they wrote.
  */
 @RequiredArgsConstructor
 public class M_CostRevaluation_StepDef
@@ -211,6 +212,11 @@ public class M_CostRevaluation_StepDef
 	 * a product's target cost element — the anchor at which the target's moving average starts.
 	 * <p>
 	 * Scoped to the given document's own line, so an anchor left by another scenario or another switch cannot satisfy it.
+	 * <p>
+	 * Deliberately does NOT reuse {@code M_CostDetail_StepDef}'s matcher machinery: {@link CostDetailMatcher} never
+	 * asserts {@code DateAcct} (the whole point here — the anchor must sit AT the cut-off), and
+	 * {@link CostingDocumentRefResolver} cannot resolve a {@code M_CostRevaluationLine}-scoped document ref because
+	 * revaluation lines are created by the document itself and so are held in no {@code StepDefData} registry.
 	 *
 	 * @cucumber.stepdef
 	 * @cucumber.columns
