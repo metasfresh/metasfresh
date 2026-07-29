@@ -4,6 +4,9 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.matchinv.service.MatchInvoiceService;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.product.ProductLifeCycleAction;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +51,25 @@ import java.util.List;
 public class M_InOutLine
 {
 	@NonNull private final MatchInvoiceService matchInvoiceService;
+
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	/**
+	 * Blocks creating a shipment line for a product whose life-cycle status forbids shipping.
+	 * Only sales-transaction (shipment) documents are checked; receipts are not affected.
+	 */
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void assertProductAllowedForShipment(final I_M_InOutLine inOutLine)
+	{
+		if (inOutLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+		if (inOutLine.getM_InOut().isSOTrx())
+		{
+			productBL.assertAllowed(ProductId.ofRepoId(inOutLine.getM_Product_ID()), ProductLifeCycleAction.SHIP);
+		}
+	}
 
 	/**
 	 * Sets <code>M_PackingMaterial_InOutLine_ID</code> to <code>null</code> for all inOutLines that reference the given <code>packingMaterialLine</code>.
