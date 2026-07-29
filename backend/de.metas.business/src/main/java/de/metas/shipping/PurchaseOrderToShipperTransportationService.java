@@ -63,7 +63,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -274,14 +273,13 @@ public class PurchaseOrderToShipperTransportationService
 	 * Defaults the transport order's date fields from the first assigned purchase order (each value stays user-overridable afterwards):
 	 * <ul>
 	 *     <li>ETA = the purchase order's {@code DatePromised} (the promised arrival date)</li>
-	 *     <li>ETD = the purchase order's provisioning/ready date: its {@code PreparationDate} (already derived by tour planning as
-	 *         {@code DatePromised} minus the vendor transport days, honouring tours), falling back to that same computation
-	 *         ({@code DatePromised} minus {@link IOrderBL#getMaxPurchaseTransportDays(I_C_Order)}) when {@code PreparationDate} is unset</li>
+	 *     <li>ETD = the purchase order's {@code PreparationDate} (its ready/provisioning date), taken as already calculated on the
+	 *         order &mdash; by tour planning, or its {@code DatePromised} minus the vendor transport days fallback. We do NOT re-derive
+	 *         it here, so the transport-days rule stays in exactly one place ({@code OrderDeliveryDayBL}). Left unset when the PO has none.</li>
 	 *     <li>ATD = ETD</li>
 	 *     <li>ATA = ETA</li>
 	 *     <li>B/L date = ATD</li>
 	 * </ul>
-	 * The vendor transport lead time is taken from the purchase order's own dates rather than re-added here, so it is never double-counted.
 	 * Only applies to purchase (inbound) transport orders; the sales flow is left untouched.
 	 */
 	private void applyDefaultDatesFromFirstOrder(@NonNull final I_M_ShipperTransportation shipperTransportation, @NonNull final I_C_Order order)
@@ -292,19 +290,15 @@ public class PurchaseOrderToShipperTransportationService
 		}
 
 		// ETA = the PO's promised (arrival) date; guaranteed non-null here (the caller already dereferences it when building the base
-		// package request, and this runs only for completed/closed purchase orders). ETD = the PO's ready/provisioning date: its
-		// PreparationDate when set (already computed by tour planning), else DatePromised minus the max vendor transport days across
-		// the PO's lines. The vendor lead time is thus taken from the PO's own dates, never re-added.
+		// package request, and this runs only for completed/closed purchase orders). ETD = the PO's ready/provisioning date, taken
+		// straight from its PreparationDate exactly as already calculated on the order (may be null); we never recompute it.
 		final Timestamp eta = order.getDatePromised();
-		final Timestamp preparationDate = order.getPreparationDate();
-		final Timestamp etd = preparationDate != null
-				? preparationDate
-				: TimeUtil.addDays(eta, -orderBL.getMaxPurchaseTransportDays(order));
+		final Timestamp etd = order.getPreparationDate();
 
 		// Fill each field ONLY if the user has not already set it: these are defaults, so a value entered before the first PO
 		// was assigned must be kept. (After assignment every value stays freely editable as well.)
 		boolean changed = false;
-		if (shipperTransportation.getETD() == null)
+		if (etd != null && shipperTransportation.getETD() == null)
 		{
 			shipperTransportation.setETD(etd);
 			changed = true;
@@ -316,19 +310,21 @@ public class PurchaseOrderToShipperTransportationService
 		}
 		// ATD/ATA/B-L date derive from the transport order's ETD/ETA FIELDS (read after the fills above), not from the raw PO
 		// dates: if the user pre-set ETD/ETA to something other than the PO default, ATD/ATA/B-L date must follow that value.
-		if (shipperTransportation.getATD() == null)
+		// Each is filled only when its source field is non-null, so an unset ETD (PO without a PreparationDate) never triggers a
+		// pointless null-to-null write on ATD/B-L date.
+		if (shipperTransportation.getETD() != null && shipperTransportation.getATD() == null)
 		{
 			shipperTransportation.setATD(shipperTransportation.getETD()); // ATD = ETD
 			changed = true;
 		}
-		if (shipperTransportation.getATA() == null)
+		if (shipperTransportation.getETA() != null && shipperTransportation.getATA() == null)
 		{
 			shipperTransportation.setATA(shipperTransportation.getETA()); // ATA = ETA
 			changed = true;
 		}
-		if (shipperTransportation.getBLDate() == null)
+		if (shipperTransportation.getATD() != null && shipperTransportation.getBLDate() == null)
 		{
-			shipperTransportation.setBLDate(shipperTransportation.getATD()); // B/L date = ATD (guaranteed non-null: the ATD fill block runs above)
+			shipperTransportation.setBLDate(shipperTransportation.getATD()); // B/L date = ATD
 			changed = true;
 		}
 
