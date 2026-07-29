@@ -1183,7 +1183,8 @@ public class DDOrderPickingReplenishmentService
 	 * @return {@code false} when the already-delivered guard left the line at its old quantity; the caller must then
 	 * leave the line's contributor set alone too, so line quantity and shares stay in sync.
 	 */
-	private boolean updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
+	@VisibleForTesting
+	boolean updateDDOrderLineQtyInPlace(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{
 		final BigDecimal newQtyBD = newQty.toBigDecimal();
 		if (alreadyCarriesQty(line, newQtyBD))
