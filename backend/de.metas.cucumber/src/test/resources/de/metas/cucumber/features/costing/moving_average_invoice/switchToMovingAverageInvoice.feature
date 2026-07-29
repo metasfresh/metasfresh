@@ -359,3 +359,130 @@ Feature: Switch to Moving Average Invoice
     And validate current costs
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
+
+  @Id:S26253_TC10
+  Scenario: A batched cost recompute stages its documents, releases them in document-date order, and resumes after a crash
+    #
+    # The recompute driver deliberately has no product parameter: it recomputes EVERY product of the
+    # accounting schema. So this scenario is separated from what other scenarios leave behind in the shared
+    # test database by ACCOUNTING DATE - it books its post-switch stock counts into 2027 and recomputes from
+    # 2027 onwards - and every assertion below names the documents it expects rather than counting rows.
+    #
+    # Whatever an earlier scenario left in the repost queue is let through first, so this run starts from a
+    # queue the accounting server has caught up with.
+    #
+    Given after not more than 60s, the repost queue is drained
+    And metasfresh contains M_Products:
+      | Identifier |
+      | product1   |
+      | product2   |
+      | product3   |
+    #
+    # The prior method (AveragePO) carries 10 CHF for each of the three products, and a pre-cut-off stock
+    # count gives each of them 10 PCE of history before the cut-off. That history is what the opening balance
+    # is made of, so the switch has something non-trivial to copy.
+    #
+    And update current costs
+      | M_Product_ID | M_CostElement_ID | CurrentCostPrice |
+      | product1     | AveragePO        | 10 CHF           |
+      | product2     | AveragePO        | 10 CHF           |
+      | product3     | AveragePO        | 10 CHF           |
+    And metasfresh contains single line completed inventories
+      | M_Inventory_ID    | M_InventoryLine_ID   | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invPreCutProduct1 | invPreCutProduct1_l1 | 2025-12-15   | warehouseStd   | product1     | 0       | 10       | PCE          |
+      | invPreCutProduct2 | invPreCutProduct2_l1 | 2025-12-15   | warehouseStd   | product2     | 0       | 10       | PCE          |
+      | invPreCutProduct3 | invPreCutProduct3_l1 | 2025-12-15   | warehouseStd   | product3     | 0       | 10       | PCE          |
+    #
+    # One post-cut-off stock count per product, each on its own accounting date. Posting explodes into EVERY
+    # active material cost element, so MovingAverageInvoice already carries 2027 cost details before the
+    # switch - built without an opening balance, i.e. from zero. Purging exactly those is the driver's first job.
+    # The dates deliberately run opposite to the product order: the driver batches products by M_Product_ID
+    # but must release documents by accounting date, so the two orders have to disagree to prove anything.
+    #
+    When metasfresh contains single line completed inventories
+      | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
+      | invProduct1    | invProduct1_l1     | 2027-03-01   | warehouseStd   | product1     | 10      | 20       | PCE          |
+      | invProduct2    | invProduct2_l1     | 2027-02-01   | warehouseStd   | product2     | 10      | 20       | PCE          |
+      | invProduct3    | invProduct3_l1     | 2027-01-15   | warehouseStd   | product3     | 10      | 20       | PCE          |
+    #
+    # Switch to MovingAverageInvoice, back-dated to the 31.12.2025 cut-off: one opening anchor per product,
+    # dated at the cut-off and therefore far outside the recompute's range.
+    #
+    And metasfresh contains M_CostRevaluation:
+      | Identifier | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | switch     | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation switch
+    And the cost revaluation identified by switch is completed
+    Then the cost revaluation identified by switch seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | product1     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | product2     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | product3     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # First run, one product per commit-batch, dies while staging product3's stock count - the shape of the
+    # abort this driver exists for. The batches before it stay committed and their documents stay parked in
+    # the staging table: nothing reaches the repost queue, because releasing is the run's very last step.
+    #
+    When the cost recompute driver run dies while staging document invProduct3:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume |
+      | acctSchema      | AveragePO        | 2027-01-01    | 1                 | N      |
+    Then the cost recompute run left these documents:
+      | Record_ID   | IsStaged | IsReleased |
+      | invProduct1 | Y        | N          |
+      | invProduct2 | Y        | N          |
+      | invProduct3 | N        | N          |
+    #
+    # The resume run picks up where the crash left off - it must finish only the one batch that was missing,
+    # never redo the batches before it - and then releases everything staged across both runs, in
+    # accounting-date order: product3's count (15.01.) first, product1's (01.03.) last.
+    #
+    When the cost recompute driver runs:
+      | C_AcctSchema_ID | M_CostElement_ID | StartDateAcct | ProductsPerCommit | Resume |
+      | acctSchema      | AveragePO        | 2027-01-01    | 1                 | Y      |
+    Then the cost recompute run finished 1 more batch than the run before it
+    And the cost recompute run left these documents:
+      | Record_ID   | IsStaged | IsReleased |
+      | invProduct3 | N        | Y          |
+      | invProduct2 | N        | Y          |
+      | invProduct1 | N        | Y          |
+    And the cost recompute staging table is empty
+    #
+    # From here the accounting server takes over: it drains the queue and reposts, and reposting is what
+    # recreates the cost details.
+    #
+    And after not more than 120s, the repost queue is drained
+    #
+    # Every product's cost details are rebuilt for the recomputed element (AveragePO): the pre-cut-off count
+    # was never touched, and the post-cut-off one - which the run deleted - is back, at the same value.
+    #
+    And after not more than 60s, M_CostDetails are found for product product1 and cost element AveragePO
+      | TableName       | Record_ID            | Amt     | Qty    |
+      | M_InventoryLine | invPreCutProduct1_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invProduct1_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product product2 and cost element AveragePO
+      | TableName       | Record_ID            | Amt     | Qty    |
+      | M_InventoryLine | invPreCutProduct2_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invProduct2_l1       | 100 CHF | 10 PCE |
+    And after not more than 60s, M_CostDetails are found for product product3 and cost element AveragePO
+      | TableName       | Record_ID            | Amt     | Qty    |
+      | M_InventoryLine | invPreCutProduct3_l1 | 100 CHF | 10 PCE |
+      | M_InventoryLine | invProduct3_l1       | 100 CHF | 10 PCE |
+    #
+    # MovingAverageInvoice was rebuilt from the SEEDED OPENING (10 CHF / 10 PCE / 100 CHF), not from zero -
+    # which is exactly what the purge step guarantees. The current cost is the proof: the run had rewound the
+    # element to its opening and deleted its post-cut-off detail, so reaching 20 PCE / 200 CHF is only
+    # possible if the repost recreated that detail on top of the opening.
+    #
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product1     | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+      | acctSchema      | product2     | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+      | acctSchema      | product3     | MovingAverageInvoice | 10 CHF           | 20 PCE     | 200 CHF      |
+    #
+    # And the opening anchors are all still there: the recompute never reached back over the cut-off.
+    #
+    And the cost revaluation identified by switch seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | product1     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | product2     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+      | product3     | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
