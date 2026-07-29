@@ -1,8 +1,8 @@
 package de.metas.pricing.service.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
 import de.metas.money.CurrencyId;
