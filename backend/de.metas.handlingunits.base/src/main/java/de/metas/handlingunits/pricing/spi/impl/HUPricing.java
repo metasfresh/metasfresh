@@ -239,6 +239,14 @@ public class HUPricing extends AttributePricing
 	@Nullable
 	private HUPIItemProductId getPackingMaterialId(final IPricingContext pricingCtx)
 	{
+		// If an explicit Packvorschrift was set on the pricing context (e.g. for return lines
+		// whose origin M_HU_PI_Item_Product_ID is null), prefer it over the referenced-object extraction.
+		final HUPIItemProductId explicitId = pricingCtx.getExplicitM_HU_PI_Item_Product_ID();
+		if (explicitId != null && explicitId.isRegular())
+		{
+			return explicitId;
+		}
+
 		final Object referencedObj = pricingCtx.getReferencedObject();
 		if (referencedObj == null)
 		{
