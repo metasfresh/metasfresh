@@ -1,12 +1,6 @@
 import { test } from '../../../../playwright.config';
 import { expect } from '@playwright/test';
-import {
-    expectNoConsoleMessageMatching,
-    FAST_ACTION_TIMEOUT,
-    ID_BACK_BUTTON,
-    page,
-    SLOW_ACTION_TIMEOUT,
-} from '../../common';
+import { FAST_ACTION_TIMEOUT, ID_BACK_BUTTON, page, SLOW_ACTION_TIMEOUT } from '../../common';
 import { BarcodeScannerComponent } from '../../components/BarcodeScannerComponent';
 import { GetQuantityDialog } from '../picking/GetQuantityDialog';
 import { DistributionUtils } from './DistributionUtils';
@@ -59,19 +53,6 @@ export const DistributionLinePickFromScreen = {
             await DistributionLinePickFromScreen.waitForScreen();
             await expect(page.getByTestId('scanHUBarcode-input')).toBeVisible({ timeout: SLOW_ACTION_TIMEOUT });
             await expect(page.getByTestId('scanProductCode-input')).toHaveCount(0, { timeout: FAST_ACTION_TIMEOUT });
-        }),
-
-        // Of the two causes for landing on "Scan HU" after an auto-advance, only the failed-HU-lookup
-        // fallback logs this warning; on screen the two are identical. Sound to assert without polling:
-        // the app awaits that lookup before it navigates, so once this screen is up the warning has
-        // either been logged already or never will be.
-        expectHUScanNotCausedByFailedHULookup: async () => await test.step(`${NAME} - Expect the HU scan is not the fallback of a failed HU lookup`, async () => {
-            await DistributionLinePickFromScreen.waitForScreen();
-            expectNoConsoleMessageMatching({
-                pattern: /Failed to resolve scanned HU QR for auto-advance carry-forward/,
-                because: 'the auto-advance asked for the HU again because it could NOT re-resolve the just-picked HU'
-                    + ' — not because the next order has no source HU of its own',
-            });
         }),
 
         scanHUToMove: async ({ huQRCode, productScannedCode, expectQuantityDialog = true, expectedQtyToMove, expectNextScreen }) => await test.step(`${NAME} - Scan HU to move`, async () => {
