@@ -217,3 +217,97 @@ Feature: Switch to Moving Average Invoice
       | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
       | acctSchema      | product1     | MovingAverageInvoice | 10 CHF           | 0 PCE      | 0 CHF        |
       | acctSchema      | product2     | MovingAverageInvoice | 20 CHF           | 0 PCE      | 0 CHF        |
+
+  @Id:S26253_TC7
+  Scenario: A back-dated switch opens MovingAverageInvoice with the source cost as of the cut-off, not its later value
+    #
+    # Purchasing masterdata for the two purchases below.
+    #
+    Given metasfresh contains M_PricingSystems
+      | Identifier |
+      | purchasePS |
+    And metasfresh contains M_PriceLists
+      | Identifier | M_PricingSystem_ID | C_Country_ID | C_Currency_ID | SOTrx |
+      | purchasePL | purchasePS         | CH           | CHF           | false |
+    And metasfresh contains M_PriceList_Versions
+      | Identifier  | M_PriceList_ID |
+      | purchasePLV | purchasePL     |
+    And metasfresh contains M_ProductPrices
+      | M_PriceList_Version_ID | M_Product_ID | PriceStd | C_UOM_ID |
+      | purchasePLV            | product      | 10.0     | PCE      |
+    And metasfresh contains C_BPartners without locations:
+      | Identifier | IsVendor | IsCustomer | M_PricingSystem_ID |
+      | vendor     | Y        | N          | purchasePS         |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier     | C_BPartner_ID | C_Country_ID | IsShipToDefault | IsBillToDefault |
+      | vendorLocation | vendor        | CH           | Y               | Y               |
+    #
+    # Pre-cut-off purchase, received 2025-12-15: 10 PCE @ 10 CHF.
+    # The prior method (AveragePO) therefore carries 10 CHF / 10 PCE at the 31.12.2025 cut-off.
+    #
+    And metasfresh has date and time 2025-12-15T09:00:00+01:00[Europe/Berlin]
+    And for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po2025_l1      | vendor        | 2025-12-15  | POO         | warehouseStd   | product      | 10         | 10    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOutLine_ID    | M_MatchPO_ID |
+      | po2025_l1      | receipt2025_line1 | mpo2025      |
+    # Only the M_MatchPO detail changes the AveragePO cost; the receipt line records the same amount without
+    # changing it. Waiting for both to be posted is what this step does before comparing.
+    And after not more than 30s, M_CostDetails are found for product product and cost element AveragePO
+      | TableName   | Record_ID         | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_MatchPO   | mpo2025           | N       | 100 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt2025_line1 | N       | 100 CHF | 10 PCE | N               |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | AveragePO        | 10 CHF           | 10 PCE     | 100 CHF      |
+    #
+    # Post-cut-off purchase, received and invoiced 2026-01-15: 10 PCE @ 30 CHF.
+    # It moves the still-active AveragePO cost on to the weighted average (100 + 300) / 20 = 20 CHF / 20 PCE
+    # — a value the prior method never had at the cut-off.
+    #
+    When metasfresh has date and time 2026-01-15T09:00:00+01:00[Europe/Berlin]
+    And for costing, create completed order with one line
+      | C_OrderLine_ID | C_BPartner_ID | DateOrdered | DocBaseType | M_Warehouse_ID | M_Product_ID | QtyEntered | Price |
+      | po2026_l1      | vendor        | 2026-01-15  | POO         | warehouseStd   | product      | 10         | 30    |
+    And for costing, create completed material receipt with one line
+      | C_OrderLine_ID | M_InOutLine_ID    | M_MatchPO_ID |
+      | po2026_l1      | receipt2026_line1 | mpo2026      |
+    And for costing, create completed invoice with one line
+      | C_OrderLine_ID | M_MatchInv_ID |
+      | po2026_l1      | matchInv2026  |
+    And after not more than 30s, M_CostDetails are found for product product and cost element AveragePO
+      | TableName   | Record_ID         | IsSOTrx | Amt     | Qty    | IsChangingCosts |
+      | M_MatchPO   | mpo2025           | N       | 100 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt2025_line1 | N       | 100 CHF | 10 PCE | N               |
+      | M_MatchPO   | mpo2026           | N       | 300 CHF | 10 PCE | Y               |
+      | M_InOutLine | receipt2026_line1 | N       | 300 CHF | 10 PCE | N               |
+      | M_MatchInv  | matchInv2026      | N       | 300 CHF | 10 PCE | N               |
+    And validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | AveragePO        | 20 CHF           | 20 PCE     | 400 CHF      |
+    #
+    # Switch to MovingAverageInvoice, back-dated to the 31.12.2025 cut-off.
+    #
+    When metasfresh contains M_CostRevaluation:
+      | Identifier   | C_AcctSchema_ID | M_CostElement_ID     | RevaluationSource   | CopyFrom_M_CostElement_ID | EvaluationStartDate | DateAcct   |
+      | costRevalMAI | acctSchema      | MovingAverageInvoice | CopyFromCostElement | AveragePO                 | 2025-12-31          | 2025-12-31 |
+    And create lines for cost revaluation costRevalMAI
+    And the cost revaluation identified by costRevalMAI is completed
+    #
+    # The MovingAverageInvoice opening is the source's price AND quantity as of the cut-off (10 CHF / 10 PCE),
+    # not the live post-cut-off value (20 CHF / 20 PCE) the source has moved on to.
+    #
+    Then validate current costs
+      | C_AcctSchema_ID | M_Product_ID | M_CostElement_ID     | CurrentCostPrice | CurrentQty | CumulatedAmt |
+      | acctSchema      | product      | MovingAverageInvoice | 10 CHF           | 10 PCE     | 100 CHF      |
+    #
+    # The opening is anchored AT the cut-off and is value-neutral: the anchor itself moves no quantity and no value.
+    #
+    And the cost revaluation identified by costRevalMAI seeded opening cost details:
+      | M_Product_ID | M_CostElement_ID     | DateAcct   | Qty   | Amt   |
+      | product      | MovingAverageInvoice | 2025-12-31 | 0 PCE | 0 CHF |
+    #
+    # A value-neutral seed posts no GL. This step also waits for the document to finish posting.
+    #
+    And no Fact_Acct records are found for documents costRevalMAI
