@@ -1226,18 +1226,11 @@ public class DDOrderPickingReplenishmentService
 	}
 
 	/**
-	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are frozen.
+	 * Shared with {@link #computeFrozenSplit}, so the attribution and the write cannot disagree about which lines are
+	 * frozen: a line under movement refuses <em>any</em> qty change, a no-op rewrite excepted.
 	 *
-	 * <p>A line under movement is frozen against <em>any</em> qty change (grow or shrink alike) — only a genuine no-op
-	 * write (the qty already carried, guarded by {@link #alreadyCarriesQty}) is let through, so an unchanged rewrite is
-	 * never spuriously refused.</p>
-	 *
-	 * <p>Keyed on an IN_PROGRESS {@code DD_Order_MoveSchedule} — picked from the source, not yet dropped at the
-	 * workstation — which is what the mobile mover actually writes ({@code Status} {@code NS} → {@code IP} on the pick,
-	 * {@code CO} on the drop). {@code DD_OrderLine.QtyDelivered} / {@code QtyInTransit} are written by no production
-	 * flow at all, so a refusal keyed on them never fires. Same signal as {@link #ordersHoldingMovedGoods}, asked per
-	 * LINE because the write is per line. This single-line form asks the service directly — used at the lone
-	 * {@link #updateDDOrderLineQtyInPlace} write site, one call per write.</p>
+	 * <p>Keyed on an IN_PROGRESS {@code DD_Order_MoveSchedule} and not on {@code DD_OrderLine.QtyDelivered} /
+	 * {@code QtyInTransit}, which no production flow writes at all — a refusal keyed on those would never fire.</p>
 	 */
 	private boolean isWriteRefusedByMoveInProgress(@NonNull final I_DD_OrderLine line, @NonNull final Quantity newQty)
 	{

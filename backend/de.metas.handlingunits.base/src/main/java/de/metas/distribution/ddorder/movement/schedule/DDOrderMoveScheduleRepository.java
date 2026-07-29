@@ -23,6 +23,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
+/**
+ * Owns the move-schedule aggregate persistence (DD_Order_MoveSchedule header + its HU candidates);
+ * loading and saving of the aggregate is delegated to {@link DDOrderMoveScheduleLoaderAndSaver}.
+ *
+ * Repository Tables: DD_Order_MoveSchedule, DD_OrderLine_HU_Candidate
+ * Repository Cluster: DDOrderMoveScheduleRepository, DDOrderMoveScheduleLoaderAndSaver
+ */
 @Repository
 public class DDOrderMoveScheduleRepository
 {
