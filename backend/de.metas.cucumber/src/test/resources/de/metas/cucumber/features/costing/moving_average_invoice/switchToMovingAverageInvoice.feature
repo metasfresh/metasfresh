@@ -339,9 +339,12 @@ Feature: Switch to Moving Average Invoice
       | M_Inventory_ID | M_InventoryLine_ID | MovementDate | M_Warehouse_ID | M_Product_ID | QtyBook | QtyCount | UOM.X12DE355 |
       | invDec2025     | invDec2025_l1      | 2025-12-01   | warehouseStd   | product      | 5       | 5        | PCE          |
     #
-    # The recompute must refuse. Deleting the anchor would leave MovingAverageInvoice with no opening
-    # at all, silently zero-basing every cost after the cut-off. The refusal names the product and the
-    # anchor's date, so the operator knows to restart the recompute strictly after the cut-off.
+    # The recompute must refuse. Deleting the anchor does NOT corrupt M_Cost — the anchor is
+    # cost-changing and its Prev_* equal the opening, so the recompute restores M_Cost to identical
+    # numbers. What is lost is the anchor row itself: the only record of the opening balance, the row
+    # reverseSeededCurrentCost deletes to undo the switch, and the marker the double-seed guard keys
+    # on — so once it is gone, a re-switch re-seeds a cost that is already in use. The refusal names
+    # the product and the anchor's date, so the operator knows to restart strictly after the cut-off.
     #
     Then invoke M_Inventory_RecomputeCosts expecting the cost-revaluation opening anchor to block it:
       | M_Inventory_ID | C_AcctSchema_ID | CostingMethod | M_Product_ID | AnchorDateAcct |
