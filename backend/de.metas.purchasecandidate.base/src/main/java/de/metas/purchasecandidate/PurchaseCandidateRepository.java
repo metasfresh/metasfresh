@@ -29,10 +29,8 @@ import de.metas.material.planning.IProductPlanningDAO.ProductPlanningQuery;
 import de.metas.material.planning.ProductPlanning;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
-import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
-import de.metas.product.ProductLifeCycleAction;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate_Alloc;
@@ -114,7 +112,6 @@ public class PurchaseCandidateRepository
 
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final transient IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final transient IUOMDAO uomsRepo = Services.get(IUOMDAO.class);
 	private final LockOwner lockOwner = LockOwner.newOwner(PurchaseCandidateRepository.class.getSimpleName());
 	private final ILockManager lockManager = Services.get(ILockManager.class);
@@ -365,7 +362,6 @@ public class PurchaseCandidateRepository
 		I_C_PurchaseCandidate record = existingRecord;
 		if (record == null)
 		{
-			productBL.assertAllowed(purchaseCandidate.getProductId(), ProductLifeCycleAction.PURCHASE);
 			record = newInstance(I_C_PurchaseCandidate.class);
 		}
 

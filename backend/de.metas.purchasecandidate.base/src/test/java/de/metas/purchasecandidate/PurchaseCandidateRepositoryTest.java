@@ -16,7 +16,6 @@ import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.Purch
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
 import de.metas.quantity.Quantity;
 import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_UOM;
@@ -32,7 +31,6 @@ import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /*
  * #%L
@@ -72,13 +70,6 @@ public class PurchaseCandidateRepositoryTest
 
 	private I_M_Product productRecord;
 
-	/**
-	 * The product referenced by {@link PurchaseCandidateTestTool#createPurchaseCandidate(int, Quantity)}
-	 * (hardcoded {@code M_Product_ID=5}). Needed because {@code createOrUpdateRecord} now asserts the
-	 * product's life-cycle status allows PURCHASE on creation, which loads this record.
-	 */
-	private I_M_Product testToolProductRecord;
-
 	private I_C_PurchaseCandidate purchaseCandidateRecord;
 
 	@BeforeEach
@@ -103,14 +94,6 @@ public class PurchaseCandidateRepositoryTest
 		productRecord.setValue("product.Value");
 		productRecord.setC_UOM_ID(uom.getC_UOM_ID());
 		saveRecord(productRecord);
-
-		// Product referenced by PurchaseCandidateTestTool.createPurchaseCandidate (hardcoded M_Product_ID=5).
-		// No life-cycle status => allowed for PURCHASE, so the creation guard passes for the happy-path save().
-		testToolProductRecord = newInstance(I_M_Product.class);
-		testToolProductRecord.setM_Product_ID(5);
-		testToolProductRecord.setValue("testTool.product.Value");
-		testToolProductRecord.setC_UOM_ID(uom.getC_UOM_ID());
-		saveRecord(testToolProductRecord);
 
 		purchaseCandidateRecord = newInstance(I_C_PurchaseCandidate.class);
 		purchaseCandidateRecord.setVendor_ID(VENDOR_ID);
@@ -226,21 +209,5 @@ public class PurchaseCandidateRepositoryTest
 		assertThat(profitInfo.getPurchasePriceActual())
 				.isPresent()
 				.contains(Money.of(TWO, currencyId));
-	}
-
-	@Test
-	public void save_blockedLifeCycleStatus_throws()
-	{
-		Mockito.doReturn("nextDemandReference").when(referenceGenerator).getNextDemandReference();
-
-		// "G" = Gesperrt / BLOCKED => blocks all actions incl. PURCHASE
-		testToolProductRecord.setProductLifeCycleStatus("G");
-		saveRecord(testToolProductRecord);
-
-		// createPurchaseCandidate builds a NEW candidate (id=0) for M_Product_ID=5 => creation path => assertAllowed
-		final PurchaseCandidate purchaseCandidate = PurchaseCandidateTestTool.createPurchaseCandidate(0, Quantity.of(TEN, uom));
-
-		assertThatThrownBy(() -> purchaseCandidateRepository.save(purchaseCandidate))
-				.isInstanceOf(AdempiereException.class);
 	}
 }
