@@ -253,12 +253,12 @@ Feature: Vendor Return from Material Receipt
   @Id:S30583_TC1
   @allure.label.epic:E0140_Purchasing
   @allure.label.feature:F00600_Purchase_Order
-  Scenario: Vendor return invoice candidate prices correctly when product price is keyed on Packvorschrift (RED until Task 3 fix)
-    # The product has TWO PI-keyed prices (one for the order-line PI, one decoy for a different PI).
-    # Having ≥2 prices defeats UniqueProductPriceFallbackRule (which would otherwise silently mask the bug).
-    # With the bug present: origin receipt line has null PI → strict rules find no PI-keyed match → IsError=Y.
-    # After Task 3 fix: the order-line PI is resolved and passed to pricing → correct price found → IsError=N.
-    # RED assertion (IsError=false, PriceActual=15) fails now because the bug makes IsError=Y; it turns GREEN after the fix.
+  Scenario: Vendor return invoice candidate prices correctly when product price is keyed on Packvorschrift
+    # The product has TWO PI-keyed prices (the order-line PI + a decoy for a different PI). Having ≥2 prices
+    # defeats UniqueProductPriceFallbackRule, which would otherwise return the single price and mask the defect.
+    # The origin receipt line carries no Packvorschrift (vendor receipt lines are not PI-stamped); pricing must
+    # resolve it from the linked purchase-order line. The invoice candidate is then priced correctly:
+    # IsError=N and PriceActual=15 (the original PO price).
 
     # Step 0: Define the return product first — it is referenced by the PI chains and prices below.
     Given metasfresh contains M_Products:
@@ -346,9 +346,9 @@ Feature: Vendor Return from Material Receipt
 
     And the return inOut identified by vendorReturn_VR_PI is completed
 
-    # Step 6: Wait for the product IC (filter by product to exclude packing-material ICs) and assert desired post-fix state.
-    # RED now (bug present: IsError=Y because origin receipt line PI=null → ≥2 PI-keyed prices → strict rules → no match).
-    # GREEN after Task 3 fix (order-line PI resolved → pp_VR_PI matched → IsError=N, PriceActual=15).
+    # Step 6: Wait for the product IC (filter by product to exclude packing-material ICs) and assert the price.
+    # The return invoice candidate is priced from the origin receipt line (PI null); resolving the PI from the
+    # order line finds the PI-keyed price: IsError=N, PriceActual=15 (the original PO price).
     And after not more than 60s, credit memo candidates are found:
       | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
       | vendorReturn_VR_PI    | ic_VR_PI                          | product_VR_PI               |

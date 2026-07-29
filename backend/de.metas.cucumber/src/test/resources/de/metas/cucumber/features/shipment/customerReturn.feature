@@ -196,12 +196,13 @@ Feature: Customer Return from Shipment
   @Id:S30583_TC2
   @allure.label.epic:E0110_Sales
   @allure.label.feature:F00200_Sales_Order
-  Scenario: Customer return invoice candidate prices correctly when product price is keyed on Packvorschrift (RED until Task 3 fix)
-    # The product has TWO PI-keyed prices (one for the order-line PI, one decoy for a different PI).
-    # Having ≥2 prices defeats UniqueProductPriceFallbackRule (which would otherwise silently mask the bug).
-    # With the bug present: origin shipment line has null PI → strict rules find no PI-keyed match → IsError=Y.
-    # After Task 3 fix: the order-line PI is resolved and passed to pricing → correct price found → IsError=N.
-    # RED assertion (IsError=false, PriceActual=20) fails now because the bug makes IsError=Y; it turns GREEN after the fix.
+  Scenario: Customer return invoice candidate prices correctly when product price is keyed on Packvorschrift
+    # Regression guard for the customer-return path. Unlike vendor receipt lines, HU shipment lines ARE
+    # PI-stamped (ShipmentLineBuilder writes the Override/Calculated columns from the order line), so a
+    # customer return pricing from its origin shipment line already finds the PI-keyed price — customer
+    # returns are NOT affected by the vendor-return defect. This scenario therefore prices correctly both
+    # before and after the fix (IsError=N, PriceActual=20), guarding that the return-scoped fix does not
+    # regress customer-return pricing. The product carries two PI-keyed prices (a realistic setup).
 
     # Step 1a: Build the primary PI chain for the SO order line
     Given metasfresh contains M_Products:
@@ -244,8 +245,8 @@ Feature: Customer Return from Shipment
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID | ValidFrom  |
       | plv_CR_PI  | pl_CR_PI       | 2022-03-01 |
-    # pp_CR_PI is keyed on the SO order-line PI (PriceStd=20, the expected post-fix price).
-    # pp_CR_PI_decoy is keyed on the decoy PI. Having ≥2 PI-keyed rows defeats UniqueProductPriceFallbackRule.
+    # pp_CR_PI is keyed on the SO order-line PI (PriceStd=20, the price the return resolves to).
+    # pp_CR_PI_decoy is keyed on a different PI — a realistic second PI-keyed row for the same product.
     And metasfresh contains M_ProductPrices
       | Identifier           | M_PriceList_Version_ID | M_Product_ID  | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName | M_HU_PI_Item_Product_ID  |
       | pp_CR_PI             | plv_CR_PI              | product_CR_PI | 20.0     | PCE               | Normal                        | huPiItemProd_CR_PI       |
@@ -265,7 +266,8 @@ Feature: Customer Return from Shipment
     When the order identified by order_CR_PI is completed
 
     # Step 3: Wait for shipment schedule, generate and complete shipment
-    # Shipment line PI columns are null by design (ShipmentLineBuilder only stamps PI when HU storage supplies it)
+    # The shipment line IS PI-stamped (ShipmentLineBuilder writes the Override/Calculated columns from the
+    # order line) — this is why the customer return, pricing from this origin line, is not affected by the bug.
     And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier     | C_OrderLine_ID  | IsToRecompute |
       | schedule_CR_PI | orderLine_CR_PI | N             |
@@ -285,9 +287,9 @@ Feature: Customer Return from Shipment
 
     And the return inOut identified by customerReturn_CR_PI is completed
 
-    # Step 5: Wait for the product IC (filter by product to exclude packing-material ICs) and assert desired post-fix state.
-    # RED now (bug present: IsError=Y because origin shipment line PI=null → ≥2 PI-keyed prices → strict rules → no match).
-    # GREEN after Task 3 fix (order-line PI resolved → pp_CR_PI matched → IsError=N, PriceActual=20).
+    # Step 5: Wait for the product IC (filter by product to exclude packing-material ICs) and assert the price.
+    # The customer return prices correctly regardless of the fix (origin shipment line carries the PI):
+    # IsError=N, PriceActual=20 (the original sales price).
     And after not more than 60s, credit memo candidates are found:
       | M_InOut_ID.Identifier | C_Invoice_Candidate_ID.Identifier | OPT.M_Product_ID.Identifier |
       | customerReturn_CR_PI  | ic_CR_PI                          | product_CR_PI               |

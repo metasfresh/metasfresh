@@ -268,6 +268,21 @@ public class C_Invoice_Candidate_StepDef
 		return invoiceCandidateHolder.getValueNotNull();
 	}
 
+	/**
+	 * Polls (up to {@code timeoutSec}) for the invoice candidate(s) of a vendor/customer return inout and
+	 * stores each under its identifier. Each DataTable row is delegated to {@link #loadCreditMemoCandidate(Map)}.
+	 *
+	 * <p>Required columns per row:
+	 * <ul>
+	 *   <li>{@code M_InOut_ID.Identifier} – the return inout</li>
+	 *   <li>{@code C_Invoice_Candidate_ID.Identifier} – identifier under which to store the found IC</li>
+	 * </ul>
+	 * <p>Optional columns per row:
+	 * <ul>
+	 *   <li>{@code OPT.M_Product_ID.Identifier} – filters the lookup to this product; required when the return
+	 *       generates several ICs (e.g. HU packing-material lines alongside the product line)</li>
+	 * </ul>
+	 */
 	@And("^after not more than (.*)s, credit memo candidates are found:$")
 	public void find_credit_memo_candidates(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{

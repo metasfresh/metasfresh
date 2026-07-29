@@ -234,7 +234,7 @@ public class InOutBL implements IInOutBL
 	}
 
 	@Override
-	public IPricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
+	public IEditablePricingContext createPricingCtx(@NonNull final org.compiere.model.I_M_InOutLine inOutLine)
 	{
 		final I_M_InOut inOut = inOutLine.getM_InOut();
 
@@ -311,7 +311,7 @@ public class InOutBL implements IInOutBL
 			@NonNull final org.compiere.model.I_M_InOutLine inOutLine,
 			@Nullable final HUPIItemProductId explicitPackingInstruction)
 	{
-		final IEditablePricingContext pricingCtx = (IEditablePricingContext) createPricingCtx(inOutLine);
+		final IEditablePricingContext pricingCtx = createPricingCtx(inOutLine);
 		if (explicitPackingInstruction != null)
 		{
 			pricingCtx.setExplicitM_HU_PI_Item_Product_ID(explicitPackingInstruction);
